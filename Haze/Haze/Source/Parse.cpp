@@ -1,66 +1,351 @@
+Ôªø#include <cctype>
+#include <fstream>
+
+#include "Haze.h"
+#include "HazeVM.h"
 #include "Parse.h"
+#include "ASTBase.h"
+#include "HazeLog.h"
 
-#include <cctype>
+#define HAZE_SINGLE_COMMENT				L"//"
+#define HAZE_MUTIL_COMMENT_START		L"/*"
+#define HAZE_MUTIL_COMMENT_END			L"*/"
 
-#define TOKEN_BOOL L"≤º∂˚"
-#define TOKEN_CHAR L"◊÷∑˚"
-#define TOKEN_BYTE L"◊÷Ω⁄"
-#define TOKEN_SHORT L"À´◊÷Ω⁄"
-#define TOKEN_INT L"’˚ ˝"
-#define TOKEN_FLOAT L"–° ˝"
-#define TOKEN_LONG L"≥§’˚ ˝"
-#define TOKEN_DOUBLE L"≥§–° ˝"
+#define TOKEN_BOOL				HAZE_TEXT("Â∏ÉÂ∞î")
+#define TOKEN_CHAR				HAZE_TEXT("Â≠óÁ¨¶")
+#define TOKEN_BYTE				HAZE_TEXT("Â≠óËäÇ")
+#define TOKEN_SHORT				HAZE_TEXT("ÂèåÂ≠óËäÇ")
+#define TOKEN_INT				HAZE_TEXT("Êï¥Êï∞")
+#define TOKEN_FLOAT				HAZE_TEXT("Â∞èÊï∞")
+#define TOKEN_LONG				HAZE_TEXT("ÈïøÊï¥Êï∞")
+#define TOKEN_DOUBLE			HAZE_TEXT("ÈïøÂ∞èÊï∞")
 
-#define TOKEN_UNSIGN_BYTE L"’˝◊÷Ω⁄"
-#define TOKEN_UNSIGN_SHORT L"’˝À´◊÷Ω⁄"
-#define TOKEN_UNSIGN_INT L"’˝’˚ ˝"
-#define TOKEN_UNSIGN_FLOAT L"’˝–° ˝"
-#define TOKEN_UNSIGN_LONG L"’˝≥§’˚ ˝"
-#define TOKEN_UNSIGN_DOUBLE L"’˝≥§–° ˝"
+#define TOKEN_UNSIGN_BYTE		HAZE_TEXT("Ê≠£Â≠óËäÇ")
+#define TOKEN_UNSIGN_SHORT		HAZE_TEXT("Ê≠£ÂèåÂ≠óËäÇ")
+#define TOKEN_UNSIGN_INT		HAZE_TEXT("Ê≠£Êï¥Êï∞")
+#define TOKEN_UNSIGN_LONG		HAZE_TEXT("Ê≠£ÈïøÊï¥Êï∞")
 
-#define TOKEN_CLASS L"¿‡"
-#define TOKEN_DATA L" ˝æ›"
-#define TOKEN_FUNCTION L"∫Ø ˝"
+#define TOKEN_CLASS				HAZE_TEXT("Á±ª")
+#define TOKEN_CLASS_DATA		HAZE_TEXT("Á±ªÊï∞ÊçÆ")
+#define TOKEN_CLASS_FUNCTION	HAZE_TEXT("Á±ªÂáΩÊï∞")
 
-Parse::Parse()
+#define TOKEN_TRUE				HAZE_TEXT("Áúü")
+#define TOKEN_FALSE				HAZE_TEXT("ÂÅá")
+
+#define TOKEN_ADD				HAZE_TEXT("+")
+#define TOKEN_SUB				HAZE_TEXT("-")
+#define TOKEN_MUL				HAZE_TEXT("*")
+#define TOKEN_DIV				HAZE_TEXT("/")
+#define TOKEN_MOD				HAZE_TEXT("%")
+
+#define TOKEN_AND				HAZE_TEXT("‰∏é")
+#define TOKEN_OR				HAZE_TEXT("Êàñ")
+#define TOKEN_NOT				HAZE_TEXT("Èùû")
+
+#define TOKEN_LEFT_MOVE			HAZE_TEXT("<<")
+#define TOKEN_RIGHT_MOVE		HAZE_TEXT(">>")
+
+#define TOKEN_ASSIGN			HAZE_TEXT("=")
+#define TOKEN_EQUAL				HAZE_TEXT("==")
+#define TOKEN_NOT_EQUAL			HAZE_TEXT("!=")
+#define TOKEN_GREATER			HAZE_TEXT(">")
+#define TOKEN_GREATER_EQUAL		HAZE_TEXT(">=")
+#define TOKEN_LESS				HAZE_TEXT("<")
+#define TOKEN_LESS_EQUAL		HAZE_TEXT("<=")
+
+#define TOKEN_LEFT_PARENTHESES	HAZE_TEXT("(")
+#define TOKEN_RIGHT_PARENTHESES	HAZE_TEXT(")")
+
+#define TOKEN_LEFT_BRACE		HAZE_TEXT("{")
+#define TOKEN_RIGHT_BRACE		HAZE_TEXT("}")
+
+//
+#define TOKEN_IF				HAZE_TEXT("Ëã•")
+#define TOKEN_ELSE				HAZE_TEXT("Âê¶Âàô")
+
+#define TOKEN_FOR				HAZE_TEXT("ÈÅçÂéÜ")
+#define TOKEN_FOR_STEP			HAZE_TEXT("Ê≠•Ëøõ")
+
+#define TOKEN_BREAK				HAZE_TEXT("ÊâìÊñ≠")
+#define TOKEN_CONTINUE			HAZE_TEXT("ÁªßÁª≠")
+#define TOKEN_RETURN			HAZE_TEXT("ËøîÂõû")
+
+#define TOKEN_WHILE				HAZE_TEXT("ÂΩì")
+
+#define TOKEN_CAST				HAZE_TEXT("ËΩ¨")
+
+#define TOKEN_REFERENCE			HAZE_TEXT("ÂºïÁî®")
+
+#define TOKEN_DEFINE			HAZE_TEXT("ÂÆö‰πâ")
+
+#define TOKEN_IMPORT_MODULE		HAZE_TEXT("Âºï")
+
+static std::unordered_map<std::wstring, HazeToken> TokenMap =
 {
-	CodeText = nullptr;
+	{TOKEN_BOOL, HazeToken::Bool},
+	{TOKEN_CHAR, HazeToken::Char},
+	{TOKEN_BYTE, HazeToken::Byte},
+	{TOKEN_SHORT, HazeToken::Short},
+	{TOKEN_INT, HazeToken::Int},
+	{TOKEN_FLOAT, HazeToken::Float},
+	{TOKEN_LONG, HazeToken::Long},
+	{TOKEN_DOUBLE, HazeToken::Double},
+
+	{TOKEN_UNSIGN_BYTE, HazeToken::UnsignByte},
+	{TOKEN_UNSIGN_SHORT, HazeToken::UnsignShort},
+	{TOKEN_UNSIGN_INT, HazeToken::UnsignInt},
+	{TOKEN_UNSIGN_LONG, HazeToken::UnsignLong},
+
+	{TOKEN_CLASS, HazeToken::Class},
+	{TOKEN_CLASS_DATA, HazeToken::ClassData},
+	{TOKEN_CLASS_FUNCTION, HazeToken::ClassFunction},
+
+	{TOKEN_TRUE, HazeToken::True},
+	{TOKEN_FALSE, HazeToken::False},
+
+	{TOKEN_ADD, HazeToken::Add},
+	{TOKEN_SUB, HazeToken::Sub},
+	{TOKEN_MUL, HazeToken::Mul},
+	{TOKEN_DIV, HazeToken::Div},
+	{TOKEN_MOD, HazeToken::Mod},
+
+	{TOKEN_AND, HazeToken::And},
+	{TOKEN_OR, HazeToken::Or},
+	{TOKEN_NOT, HazeToken::Not},
+
+	{TOKEN_LEFT_MOVE, HazeToken::LeftMove},
+	{TOKEN_NOT, HazeToken::RightMove},
+
+	{TOKEN_ASSIGN, HazeToken::Assign},
+	{TOKEN_EQUAL, HazeToken::Equal},
+	{TOKEN_NOT_EQUAL, HazeToken::NotEqual},
+	{TOKEN_GREATER, HazeToken::Greater},
+	{TOKEN_GREATER_EQUAL, HazeToken::GreaterEqual},
+	{TOKEN_LESS, HazeToken::Less},
+	{TOKEN_LESS_EQUAL, HazeToken::LessEqual},
+
+	{TOKEN_LEFT_PARENTHESES, HazeToken::LeftParentheses},
+	{TOKEN_RIGHT_PARENTHESES, HazeToken::RightParentheses},
+	{TOKEN_LEFT_BRACE, HazeToken::LeftBrace},
+	{TOKEN_RIGHT_BRACE, HazeToken::RightBrace},
+
+	{TOKEN_IF, HazeToken::If},
+	{TOKEN_ELSE, HazeToken::Else},
+
+	{TOKEN_FOR, HazeToken::For},
+	{TOKEN_FOR_STEP, HazeToken::ForStep},
+
+	{TOKEN_BREAK, HazeToken::Break},
+	{TOKEN_CONTINUE, HazeToken::Continue},
+	{TOKEN_RETURN, HazeToken::Return},
+
+	{TOKEN_WHILE, HazeToken::While},
+
+	{TOKEN_CAST, HazeToken::Cast},
+
+	{TOKEN_REFERENCE, HazeToken::Reference},
+
+	{TOKEN_DEFINE, HazeToken::Define},
+
+	{TOKEN_IMPORT_MODULE, HazeToken::ImportModule},
+};
+
+Parse::Parse(HazeVM* VM) :VM(VM)
+{
 }
 
 Parse::~Parse()
 {
 }
 
-void Parse::InitializeFile()
+void Parse::InitializeFile(const std::wstring& FilePath)
 {
+	std::wifstream FS(FilePath);
+	FS.imbue(std::locale("chs"));
+	std::wstring Content(std::istreambuf_iterator<wchar_t>(FS), {});
+	CodeText = std::move(Content);
+	FS.close();
 }
 
 void Parse::InitializeString(const std::wstring& String)
 {
-	CodeText = String.c_str();
+	CodeText = String;
 }
 
-HazeToken Parse::GetToken()
+void Parse::ParseContent()
 {
-	if (!*CodeText)
+	HazeToken Token;
+	while (!TokenIsNone(Token = GetNextToken()))
+	{
+		switch (Token)
+		{
+		case HazeToken::None:
+			break;
+		case HazeToken::Bool:
+		case HazeToken::Char:
+		case HazeToken::Byte:
+		case HazeToken::Short:
+		case HazeToken::Int:
+		case HazeToken::Float:
+		case HazeToken::Long:
+		case HazeToken::Double:
+		case HazeToken::UnsignByte:
+		case HazeToken::UnsignShort:
+		case HazeToken::UnsignInt:
+		case HazeToken::UnsignLong:
+			ParseExpression();
+			break;
+		case HazeToken::Class:
+			break;
+		case HazeToken::ClassData:
+			break;
+		case HazeToken::ClassFunction:
+			break;
+		case HazeToken::ImportModule:
+			break;
+		case HazeToken::Identifier:
+			ParseUnaryExpression();
+			break;
+
+		default:
+			break;
+		}
+	}
+}
+
+HazeToken Parse::GetNextToken()
+{
+	const wchar_t* Code = CodeText.c_str();
+	if (!*Code)
 	{
 		return HazeToken::None;
 	}
 
-	while (isspace(*CodeText))
+	while (isspace(*Code))
 	{
-		CodeText++;
+		Code++;
 	}
 
 	//Match Token
-	TokenString = *CodeText;
-	while (!isspace(*CodeText))
+	CurrLexeme.clear();
+	while (!isspace(*Code))
 	{
-		TokenString += ++CodeText;
+		CurrLexeme += *(Code++);
 	}
 
-	if (TokenString == TOKEN_BOOL)
+	auto It = TokenMap.find(CurrLexeme);
+	if (It != TokenMap.end())
 	{
-		return HazeToken::Bool;
+		CurrToken = It->second;
 	}
+	else
+	{
+		CurrToken = HazeToken::Identifier;
+	}
+
+	return CurrToken;
+}
+
+void Parse::HandleParseExpression()
+{
+	ParseExpression();
+}
+
+std::unique_ptr<ASTBase> Parse::ParseExpression()
+{
+	std::unique_ptr<ASTBase> Left = ParseUnaryExpression();
+	if (Left)
+	{
+		return ParseBinaryOperateExpression();
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
+{
+	/*HazeToken TypeToken = Token;
+	std::wstring Name = L"";
+
+	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Parse expression except name error\n")))
+	{
+		Name = CurrLexeme;
+	}
+
+	HazeToken ExpressionToken = GetNextToken();
+	if (ExpressionToken == HazeToken::Assign)
+	{
+		//ËµãÂÄº
+		ParseUnaryExpression();
+	}
+	else if (ExpressionToken == HazeToken::LeftParentheses)
+	{
+		//ÂáΩÊï∞
+	}
+	else
+	{
+		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Parse expression error\n"));
+	}*/
+}
+
+std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression()
+{
+	return std::unique_ptr<ASTBase>();
+}
+
+std::unique_ptr<ASTBase> Parse::ParsePrimary()
+{
+	HazeToken Token = CurrToken;
+	switch (Token)
+	{
+	case HazeToken::Bool:
+	case HazeToken::Char:
+	case HazeToken::Byte:
+	case HazeToken::Short:
+	case HazeToken::Int:
+	case HazeToken::Float:
+	case HazeToken::Long:
+	case HazeToken::Double:
+	case HazeToken::UnsignByte:
+	case HazeToken::UnsignShort:
+	case HazeToken::UnsignInt:
+	case HazeToken::UnsignLong:
+		return ParseVariableDefine();
+	default:
+		break;
+	}
+	return std::unique_ptr<ASTBase>();
+}
+
+std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
+{
+	HazeToken TypeToken = CurrToken;
+	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse bool expression name wrong\n")))
+	{
+		std::wstring VariableName = CurrLexeme;
+
+		if (ExpectNextTokenIs(HazeToken::Assign, HAZE_TEXT("Error: Parse bool expression expect = \n")))
+		{
+			std::unique_ptr<ASTBase> Expression = ParseExpression();
+		}
+	}
+
+	return std::unique_ptr<ASTBase>();
+}
+
+std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
+{
+	return nullptr;
+}
+
+bool Parse::ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo)
+{
+	HazeToken NextToken = GetNextToken();
+	if (Token != NextToken)
+	{
+		HazeLog::LogInfo(HazeLog::Error, ErrorInfo);
+		return false;
+	}
+
+	return true;
 }

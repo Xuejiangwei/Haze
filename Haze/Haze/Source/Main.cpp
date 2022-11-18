@@ -2,13 +2,22 @@
 //
 
 #include <iostream>
+#include <filesystem>
 
+#include "Haze.h"
 #include "HazeVM.h"
 
+//解析文本  --->  生成字节码   --->  用虚拟机解析字节码，并执行
 int main()
 {
+	std::wstring Path = std::filesystem::current_path();
+
+	std::filesystem::create_directory(Path + HAZE_TEXT("\\HazeOpCodeFile"));
+
 	HazeVM VM;
-	VM.DoString(L"Haze 测试 \n");
+	VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"));
+
+	//VM.ParseString(L"Haze 测试 \n");
 
 	std::cout << "Hello World!\n";
 	getchar();
