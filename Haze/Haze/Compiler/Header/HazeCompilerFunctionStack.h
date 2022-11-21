@@ -8,11 +8,3 @@ public:
 
 private:
 };
-
-HazeCompilerFunctionStack::HazeCompilerFunctionStack()
-{
-}
-
-HazeCompilerFunctionStack::~HazeCompilerFunctionStack()
-{
-}

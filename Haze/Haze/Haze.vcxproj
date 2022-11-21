@@ -135,6 +135,7 @@
     <ClCompile Include="AST\Source\ASTFunction.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompiler.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerFunction.cpp" />
+    <ClCompile Include="Compiler\Source\HazeCompilerFunctionStack.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerModule.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp" />
     <ClCompile Include="MetaData\Source\HazeClass.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Compiler\Header\HazeCompilerFunctionStack.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerModule.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
+    <ClInclude Include="Compiler\Header\HazeParseString.h" />
     <ClInclude Include="Header\Haze.h" />
     <ClInclude Include="Header\HazeInstruction.h" />
     <ClInclude Include="Header\HazeLog.h" />

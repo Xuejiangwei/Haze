@@ -16,11 +16,15 @@ public:
 
 	bool InitializeCompiler(const HAZE_STRING& ModuleName);
 
-	std::unique_ptr<HazeCompilerModule>& GetCurrModule() { return MapModules[CurrModule]; }
+	void GenBinaryFile();
 
-	HazeCompilerValue* GenGlobalVariable();
+	std::unique_ptr<HazeCompilerModule>& GetCurrModule();
+
+	HazeCompilerValue* GenGlobalVariable(const HAZE_STRING& Name, HazeValueType Type);
 
 	HazeCompilerValue* GenLocalVariable();
+
+	HazeCompilerValue* GenDataVariable(HazeValue& Value);
 
 	HazeCompilerValue* GetGlobalVariable(const HAZE_STRING& Name);
 
@@ -30,6 +34,4 @@ private:
 	HAZE_STRING CurrModule;
 
 	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> MapModules;
-	std::unordered_map<HAZE_STRING, HazeCompilerValue> GlobalVarialbs;
-	std::unordered_map<HAZE_STRING, HazeCompilerValue> GlobalFunctions;
 };

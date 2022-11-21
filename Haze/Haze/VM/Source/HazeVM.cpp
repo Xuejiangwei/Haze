@@ -1,7 +1,6 @@
 #include <iostream>
 #include <locale>
 
-#include "Haze.h"
 #include "HazeVM.h"
 #include "HazeCompiler.h"
 #include "Parse.h"
@@ -18,21 +17,22 @@ HazeVM::~HazeVM()
 {
 }
 
-void HazeVM::ParseString(const std::wstring& String)
+void HazeVM::ParseString(const HAZE_STRING& String)
 {
 	Parse P(this);
 	P.InitializeString(String);
 	P.ParseContent();
 }
 
-void HazeVM::ParseFile(const std::wstring& FilePath)
+void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName)
 {
-	if (Compiler->InitializeCompiler(FilePath))
+	if (Compiler->InitializeCompiler(ModuleName))
 	{
 		Parse P(this);
 		P.InitializeFile(FilePath);
 		P.ParseContent();
 	}
+	Compiler->GenBinaryFile();
 }
 
 VirtualRegister* HazeVM::GetVirtualRegister(int64_t Index)

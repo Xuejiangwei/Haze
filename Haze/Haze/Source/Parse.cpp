@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "Haze.h"
+#include "HazeParseString.h"
 #include "HazeVM.h"
 #include "Parse.h"
 #include "ASTBase.h"
@@ -20,10 +21,10 @@
 #define TOKEN_LONG				HAZE_TEXT("长整数")
 #define TOKEN_DOUBLE			HAZE_TEXT("长小数")
 
-#define TOKEN_UNSIGN_BYTE		HAZE_TEXT("正字节")
-#define TOKEN_UNSIGN_SHORT		HAZE_TEXT("正双字节")
-#define TOKEN_UNSIGN_INT		HAZE_TEXT("正整数")
-#define TOKEN_UNSIGN_LONG		HAZE_TEXT("正长整数")
+#define TOKEN_UNSIGNED_BYTE		HAZE_TEXT("正字节")
+#define TOKEN_UNSIGNED_SHORT		HAZE_TEXT("正双字节")
+#define TOKEN_UNSIGNED_INT		HAZE_TEXT("正整数")
+#define TOKEN_UNSIGNED_LONG		HAZE_TEXT("正长整数")
 
 #define TOKEN_CLASS				HAZE_TEXT("类")
 #define TOKEN_CLASS_DATA		HAZE_TEXT("类数据")
@@ -80,7 +81,7 @@
 
 #define TOKEN_IMPORT_MODULE		HAZE_TEXT("引")
 
-static std::unordered_map<std::wstring, HazeToken> TokenMap =
+static std::unordered_map<std::wstring, HazeToken> MapToken =
 {
 	{TOKEN_BOOL, HazeToken::Bool},
 	{TOKEN_CHAR, HazeToken::Char},
@@ -91,10 +92,10 @@ static std::unordered_map<std::wstring, HazeToken> TokenMap =
 	{TOKEN_LONG, HazeToken::Long},
 	{TOKEN_DOUBLE, HazeToken::Double},
 
-	{TOKEN_UNSIGN_BYTE, HazeToken::UnsignByte},
-	{TOKEN_UNSIGN_SHORT, HazeToken::UnsignShort},
-	{TOKEN_UNSIGN_INT, HazeToken::UnsignInt},
-	{TOKEN_UNSIGN_LONG, HazeToken::UnsignLong},
+	{TOKEN_UNSIGNED_BYTE, HazeToken::UnsignedByte},
+	{TOKEN_UNSIGNED_SHORT, HazeToken::UnsignedShort},
+	{TOKEN_UNSIGNED_INT, HazeToken::UnsignedInt},
+	{TOKEN_UNSIGNED_LONG, HazeToken::UnsignedLong},
 
 	{TOKEN_CLASS, HazeToken::Class},
 	{TOKEN_CLASS_DATA, HazeToken::ClassData},
@@ -150,6 +151,22 @@ static std::unordered_map<std::wstring, HazeToken> TokenMap =
 	{TOKEN_IMPORT_MODULE, HazeToken::ImportModule},
 };
 
+static std::unordered_map<HazeToken, HazeValueType> MapValueType =
+{
+	{HazeToken::Bool, HazeValueType::Bool},
+	{HazeToken::Char, HazeValueType::Char},
+	{HazeToken::Byte, HazeValueType::Byte},
+	{HazeToken::Short, HazeValueType::Short},
+	{HazeToken::Int, HazeValueType::Int},
+	{HazeToken::Float, HazeValueType::Float},
+	{HazeToken::Long, HazeValueType::Long},
+	{HazeToken::Double, HazeValueType::Double},
+	{HazeToken::UnsignedByte, HazeValueType::UnsignedByte},
+	{HazeToken::UnsignedShort, HazeValueType::UnsignedShort},
+	{HazeToken::UnsignedInt, HazeValueType::UnsignedInt},
+	{HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
+};
+
 Parse::Parse(HazeVM* VM) :VM(VM)
 {
 }
@@ -164,6 +181,7 @@ void Parse::InitializeFile(const std::wstring& FilePath)
 	FS.imbue(std::locale("chs"));
 	std::wstring Content(std::istreambuf_iterator<wchar_t>(FS), {});
 	CodeText = std::move(Content);
+	CurrCode = CodeText.c_str();
 	FS.close();
 }
 
@@ -189,12 +207,15 @@ void Parse::ParseContent()
 		case HazeToken::Float:
 		case HazeToken::Long:
 		case HazeToken::Double:
-		case HazeToken::UnsignByte:
-		case HazeToken::UnsignShort:
-		case HazeToken::UnsignInt:
-		case HazeToken::UnsignLong:
-			ParseExpression();
-			break;
+		case HazeToken::UnsignedByte:
+		case HazeToken::UnsignedShort:
+		case HazeToken::UnsignedInt:
+		case HazeToken::UnsignedLong:
+		{
+			auto AST = ParseExpression();
+			AST->CodeGen();
+		}
+		break;
 		case HazeToken::Class:
 			break;
 		case HazeToken::ClassData:
@@ -215,28 +236,36 @@ void Parse::ParseContent()
 
 HazeToken Parse::GetNextToken()
 {
-	const wchar_t* Code = CodeText.c_str();
-	if (!*Code)
+	if (!*CurrCode)
 	{
 		return HazeToken::None;
 	}
 
-	while (isspace(*Code))
+	while (isspace(*CurrCode))
 	{
-		Code++;
+		CurrCode++;
+	}
+
+	if (HAZE_STRING(CurrCode) == HAZE_TEXT(""))
+	{
+		return HazeToken::None;
 	}
 
 	//Match Token
 	CurrLexeme.clear();
-	while (!isspace(*Code))
+	while (!isspace(*CurrCode))
 	{
-		CurrLexeme += *(Code++);
+		CurrLexeme += *(CurrCode++);
 	}
 
-	auto It = TokenMap.find(CurrLexeme);
-	if (It != TokenMap.end())
+	auto It = MapToken.find(CurrLexeme);
+	if (It != MapToken.end())
 	{
 		CurrToken = It->second;
+	}
+	else if (IsNumber(CurrLexeme))
+	{
+		CurrToken = HazeToken::Number;
 	}
 	else
 	{
@@ -246,9 +275,9 @@ HazeToken Parse::GetNextToken()
 	return CurrToken;
 }
 
-void Parse::HandleParseExpression()
+std::unique_ptr<ASTBase> Parse::HandleParseExpression()
 {
-	ParseExpression();
+	return ParseExpression();
 }
 
 std::unique_ptr<ASTBase> Parse::ParseExpression()
@@ -256,7 +285,7 @@ std::unique_ptr<ASTBase> Parse::ParseExpression()
 	std::unique_ptr<ASTBase> Left = ParseUnaryExpression();
 	if (Left)
 	{
-		return ParseBinaryOperateExpression();
+		return ParseBinaryOperateExpression(std::move(Left));
 	}
 
 	return nullptr;
@@ -264,32 +293,24 @@ std::unique_ptr<ASTBase> Parse::ParseExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
 {
-	/*HazeToken TypeToken = Token;
-	std::wstring Name = L"";
+	return ParsePrimary();
 
-	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Parse expression except name error\n")))
-	{
-		Name = CurrLexeme;
-	}
+	/*int Opc = CurrToken;
+	GetNextToken();
 
-	HazeToken ExpressionToken = GetNextToken();
-	if (ExpressionToken == HazeToken::Assign)
+	if (auto Operand = ParseUnaryExpression())
 	{
-		//赋值
-		ParseUnaryExpression();
-	}
-	else if (ExpressionToken == HazeToken::LeftParentheses)
-	{
-		//函数
-	}
-	else
-	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Parse expression error\n"));
+		return std::make_unique<UnaryExprAST>(Opc, std::move(Operand));
 	}*/
+	//return nullptr;
 }
 
-std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression()
+std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(std::unique_ptr<ASTBase> Left)
 {
+	if (true)
+	{
+		return Left;
+	}
 	return std::unique_ptr<ASTBase>();
 }
 
@@ -306,11 +327,16 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::Float:
 	case HazeToken::Long:
 	case HazeToken::Double:
-	case HazeToken::UnsignByte:
-	case HazeToken::UnsignShort:
-	case HazeToken::UnsignInt:
-	case HazeToken::UnsignLong:
+	case HazeToken::UnsignedByte:
+	case HazeToken::UnsignedShort:
+	case HazeToken::UnsignedInt:
+	case HazeToken::UnsignedLong:
 		return ParseVariableDefine();
+	case HazeToken::Number:
+		return ParseNumberExpression();
+	case HazeToken::True:
+	case HazeToken::False:
+		return ParseBoolExpression();
 	default:
 		break;
 	}
@@ -320,22 +346,37 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 {
 	HazeToken TypeToken = CurrToken;
+	VariableDefineType = MapValueType[TypeToken];
 	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse bool expression name wrong\n")))
 	{
-		std::wstring VariableName = CurrLexeme;
+		HAZE_STRING VariableName = CurrLexeme;
 
 		if (ExpectNextTokenIs(HazeToken::Assign, HAZE_TEXT("Error: Parse bool expression expect = \n")))
 		{
+			GetNextToken();		//吃掉赋值符号
 			std::unique_ptr<ASTBase> Expression = ParseExpression();
+
+			return std::make_unique<ASTVariableDefine>(VM, CurrSectionSignal, VariableDefineType, VariableName, Expression);
 		}
 	}
 
-	return std::unique_ptr<ASTBase>();
+	return nullptr;
 }
 
 std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 {
-	return nullptr;
+	HazeValue Value;
+	Value.Type = HazeValueType::Bool;
+	Value.Value.BoolValue = CurrLexeme == TOKEN_TRUE;
+	return std::make_unique<ASTBool>(VM, Value);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
+{
+	HazeValue Value;
+	Value.Type = VariableDefineType;
+	StringToNumber(CurrLexeme, Value);
+	return std::make_unique<ASTNumber>(VM, Value);
 }
 
 bool Parse::ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo)

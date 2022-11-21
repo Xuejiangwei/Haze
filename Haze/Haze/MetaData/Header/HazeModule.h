@@ -4,9 +4,8 @@
 
 #include "Haze.h"
 
-class HazeValue;
-class HazeClass;
-class HazeFunction;
+//class HazeClass;
+//class HazeFunction;
 
 class HazeModule
 {
@@ -17,7 +16,7 @@ public:
 	HazeValue* AddGlobalVariable();
 
 private:
-	std::unordered_map<HAZE_STRING, HazeCompilerValue> MapGlobalVariables;
-	std::vector<HazeClass> Classes;
-	std::vector<HazeFunction> Functions;
+	//std::unordered_map<HAZE_STRING, HazeCompilerValue> MapGlobalVariables;
+	//std::vector<HazeClass> Classes;
+	//std::vector<HazeFunction> Functions;
 };

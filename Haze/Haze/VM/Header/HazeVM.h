@@ -5,10 +5,11 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "Haze.h"
+
 class HazeCompiler;
 
 //class Module;
-class HazeClass;
 
 struct VirtualRegister
 {
@@ -21,9 +22,9 @@ public:
 	HazeVM();
 	~HazeVM();
 
-	void ParseString(const std::wstring& String);
+	void ParseString(const HAZE_STRING& String);
 
-	void ParseFile(const std::wstring& FilePath);
+	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName);
 
 	VirtualRegister* GetVirtualRegister(int64_t Index);
 
@@ -31,7 +32,6 @@ public:
 
 private:
 	//std::unordered_map<std::wstring, std::unique_ptr<Module>> MapModule;
-	std::unordered_map<std::wstring, std::unique_ptr<HazeClass>> MapClass;
 	std::unordered_set<std::wstring> MapString;
 
 	VirtualRegister AX, BX, CX, DX;

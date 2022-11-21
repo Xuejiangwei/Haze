@@ -2,8 +2,8 @@
 
 #include <vector>
 
-class HazeVariable;
-class HazeFunction;
+//class HazeVariable;
+//class HazeFunction;
 
 class HazeClass
 {
@@ -15,6 +15,6 @@ public:
 	void AddMemberFunction();
 
 private:
-	std::vector<HazeVariable> Variables;
-	std::vector<HazeFunction> Functions;
+	//std::vector<HazeVariable> Variables;
+	//std::vector<HazeFunction> Functions;
 };

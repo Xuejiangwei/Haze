@@ -10,7 +10,7 @@ public:
 	OpCodeProcessor(HazeVM* VM);
 	~OpCodeProcessor();
 
-	int64_t GetNextBinary();
+	int64_t GetNextBinary() { return 0; }
 
 	HazeVM* GetVM() { return VM; }
 

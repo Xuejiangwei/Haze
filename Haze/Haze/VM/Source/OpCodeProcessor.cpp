@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include <functional>
 
+#include "Haze.h"
 #include "OpCodeProcessor.h"
 #include "HazeVM.h"
 
@@ -111,27 +112,27 @@ static void Instruction_Call(OpCodeProcessor* Processor)
 {
 }
 
-static std::unordered_map <InstructCode, std::function<void(OpCodeProcessor*)>> MapInstructInvoke =
+static std::unordered_map <InstructionOpCode, std::function<void(OpCodeProcessor*)>> MapInstructInvoke =
 {
-	{InstructCode::MOV, Instruction_Mov},
-	{InstructCode::ADD, Instruction_Add},
-	{InstructCode::SUB, Instruction_Sub},
-	{InstructCode::MUL, Instruction_Mul},
-	{InstructCode::DIV, Instruction_Div},
-	{InstructCode::MOD, Instruction_Mod},
-	{InstructCode::EXP, Instruction_Exp},
-	{InstructCode::NEG, Instruction_Neg},
-	{InstructCode::INC, Instruction_Inc},
-	{InstructCode::DEC, Instruction_Dec},
-	{InstructCode::AND, Instruction_And},
-	{InstructCode::OR, Instruction_Or},
-	{InstructCode::NOT, Instruction_Not},
-	{InstructCode::XOR, Instruction_XOR},
-	{InstructCode::SHL, Instruction_SHL},
-	{InstructCode::SHR, Instruction_SHR},
-	{InstructCode::PUSH, Instruction_Push},
-	{InstructCode::POP, Instruction_Pop},
-	{InstructCode::CALL, Instruction_Call},
+	{InstructionOpCode::MOV, Instruction_Mov},
+	{InstructionOpCode::ADD, Instruction_Add},
+	{InstructionOpCode::SUB, Instruction_Sub},
+	{InstructionOpCode::MUL, Instruction_Mul},
+	{InstructionOpCode::DIV, Instruction_Div},
+	{InstructionOpCode::MOD, Instruction_Mod},
+	{InstructionOpCode::EXP, Instruction_Exp},
+	{InstructionOpCode::NEG, Instruction_Neg},
+	{InstructionOpCode::INC, Instruction_Inc},
+	{InstructionOpCode::DEC, Instruction_Dec},
+	{InstructionOpCode::AND, Instruction_And},
+	{InstructionOpCode::OR, Instruction_Or},
+	{InstructionOpCode::NOT, Instruction_Not},
+	{InstructionOpCode::XOR, Instruction_XOR},
+	{InstructionOpCode::SHL, Instruction_SHL},
+	{InstructionOpCode::SHR, Instruction_SHR},
+	{InstructionOpCode::PUSH, Instruction_Push},
+	{InstructionOpCode::POP, Instruction_Pop},
+	{InstructionOpCode::CALL, Instruction_Call},
 };
 
 OpCodeProcessor::OpCodeProcessor(HazeVM* VM) : VM(VM)

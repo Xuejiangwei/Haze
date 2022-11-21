@@ -7,7 +7,7 @@
 class OpCodeGenerator;
 class ASTBase;
 
-enum class HazeToken
+enum class HazeToken : unsigned int
 {
 	None,
 	Identifier,
@@ -20,10 +20,10 @@ enum class HazeToken
 	Long,
 	Double,
 
-	UnsignByte,
-	UnsignShort,
-	UnsignInt,
-	UnsignLong,
+	UnsignedByte,
+	UnsignedShort,
+	UnsignedInt,
+	UnsignedLong,
 
 	Class,
 	ClassData,
@@ -78,6 +78,10 @@ enum class HazeToken
 	Define,
 
 	ImportModule,
+
+	//NoMatch
+	Number,
+	String,
 };
 
 class Parse
@@ -101,11 +105,11 @@ public:
 	static bool TokenIsNone(HazeToken Token) { return Token == HazeToken::None; }
 
 private:
-	void HandleParseExpression();
+	std::unique_ptr<ASTBase> HandleParseExpression();
 
 	std::unique_ptr<ASTBase> ParseExpression();
 	std::unique_ptr<ASTBase> ParseUnaryExpression();
-	std::unique_ptr<ASTBase> ParseBinaryOperateExpression();
+	std::unique_ptr<ASTBase> ParseBinaryOperateExpression(std::unique_ptr<ASTBase> Left);
 
 	std::unique_ptr<ASTBase> ParsePrimary();
 
@@ -113,18 +117,23 @@ private:
 
 	std::unique_ptr<ASTBase> ParseBoolExpression();
 
+	std::unique_ptr<ASTBase> ParseNumberExpression();
+
 private:
 	bool ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo);
 
 private:
 	class HazeVM* VM;
 
-	std::wstring CodeText;
+	HAZE_STRING CodeText;
 
 	HazeToken CurrToken;
-	std::wstring CurrLexeme;
+	const HAZE_CHAR* CurrCode;
+	HAZE_STRING CurrLexeme;
 
 	HazeSectionSignal CurrSectionSignal;
 
 	std::shared_ptr<OpCodeGenerator> Generator;
+
+	HazeValueType VariableDefineType;
 };

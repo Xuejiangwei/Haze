@@ -4,7 +4,13 @@
 #include "HazeCompilerValue.h"
 
 //Base
-ASTBase::ASTBase()
+ASTBase::ASTBase(HazeVM* VM) : VM(VM)
+{
+	Value.Type = HazeValueType::Int;
+	Value.Value.IntValue = 0;
+}
+
+ASTBase::ASTBase(HazeVM* VM, HazeValue Value) : VM(VM), Value(Value)
 {
 }
 
@@ -12,11 +18,41 @@ ASTBase::~ASTBase()
 {
 }
 
-ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, HazeValueType Type, HazeValue Value, std::unique_ptr<ASTBase> Expression)
-	: SectionSignal(Section), ValueType(Type), Expression(std::move(Expression))
+ASTBool::ASTBool(HazeVM* VM, HazeValue V) : ASTBase(VM, V)
 {
-	this->VM = VM;
-	this->Value = Value;
+}
+
+ASTBool::~ASTBool()
+{
+}
+
+HazeCompilerValue* ASTBool::CodeGen()
+{
+	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
+	HazeCompilerValue* RetValue = Compiler->GenDataVariable(Value);
+
+	return RetValue;
+}
+
+ASTNumber::ASTNumber(HazeVM* VM, HazeValue V) : ASTBase(VM, V)
+{
+}
+
+ASTNumber::~ASTNumber()
+{
+}
+
+HazeCompilerValue* ASTNumber::CodeGen()
+{
+	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
+	HazeCompilerValue* RetValue = Compiler->GenDataVariable(Value);
+
+	return RetValue;
+}
+
+ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, HazeValueType Type, HAZE_STRING& Name, std::unique_ptr<ASTBase>& Expression)
+	: ASTBase(VM), SectionSignal(Section), Type(Type), Name(std::move(Name)), Expression(std::move(Expression))
+{
 }
 
 ASTVariableDefine::~ASTVariableDefine()
@@ -25,132 +61,26 @@ ASTVariableDefine::~ASTVariableDefine()
 
 HazeCompilerValue* ASTVariableDefine::CodeGen()
 {
-	HazeCompilerValue* Value = nullptr;
+	HazeCompilerValue* RetValue = nullptr;
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
 		//生成全局变量字节码
-		Value = Compiler->GenGlobalVariable();
+		RetValue = Compiler->GenGlobalVariable(Name, Type);
 	}
 	else if (SectionSignal == HazeSectionSignal::Local)
 	{
 		//生成局部变量字节码
-		Value = Compiler->GenLocalVariable();
+		RetValue = Compiler->GenLocalVariable();
 	}
 
 	HazeCompilerValue* ExprValue = nullptr;
 	if (Expression)
 	{
 		ExprValue = Expression->CodeGen();
+
+		RetValue->StoreValue(ExprValue);
 	}
 
-	Value->StoreValue(ExprValue);
-
-	return Value;
-}
-
-//Bool
-ASTBool::ASTBool(HazeValue V) //: ASTBase(V)
-{
-}
-
-ASTBool::~ASTBool()
-{
-}
-
-//Char
-ASTChar::ASTChar(HazeValue V) //: ASTBase(V)
-{
-}
-
-ASTChar::~ASTChar()
-{
-}
-
-//Byte
-ASTByte::ASTByte(HazeValue V) //: ASTBase(V)
-{
-}
-
-ASTByte::~ASTByte()
-{
-}
-
-//Short
-ASTShort::ASTShort(HazeValue V) //: ASTBase(V)
-{
-}
-
-ASTShort::~ASTShort()
-{
-}
-
-//Int
-ASTInt::ASTInt(HazeValue V) //: ASTBase(V)
-{
-}
-ASTInt::~ASTInt()
-{
-}
-
-//Float
-ASTFloat::ASTFloat(HazeValue V) //: ASTBase(V)
-{
-}
-
-ASTFloat::~ASTFloat()
-{
-}
-
-//Long
-ASTLong::ASTLong(HazeValue V) //: ASTBase(V)
-{
-}
-
-ASTLong::~ASTLong()
-{
-}
-
-//Double
-ASTDouble::ASTDouble(HazeValue V) : ASTBase(V)
-{
-}
-
-ASTDouble::~ASTDouble()
-{
-}
-
-//Unsigned byte
-ASTUnsignedByte::ASTUnsignedByte(HazeValue V) : ASTBase(V)
-{
-}
-
-ASTUnsignedByte::~ASTUnsignedByte()
-{
-}
-
-//Unsigned short
-ASTUnsignedShort::ASTUnsignedShort(HazeValue V) : ASTBase(V)
-{
-}
-
-ASTUnsignedShort::~ASTUnsignedShort()
-{
-}
-
-//Unsigned int
-ASTUnsignedInt::ASTUnsignedInt(HazeValue V) : ASTBase(V)
-{
-}
-ASTUnsignedInt::~ASTUnsignedInt()
-{
-}
-
-//Unsigned long
-ASTUnsignedLong::ASTUnsignedLong(HazeValue V) : ASTBase(V)
-{
-}
-
-ASTUnsignedLong::~ASTUnsignedLong()
-{
+	return RetValue;
 }
