@@ -6,20 +6,36 @@
 
 #include "ASTBase.h"
 
-namespace AST
+class ASTFunction
 {
-	class ASTFunction
-	{
-	public:
-		ASTFunction(std::string& Name, std::vector<std::unique_ptr<ASTBase>>& Return, std::vector<std::unique_ptr<ASTBase>>& Param,
-			std::vector<std::unique_ptr<ASTBase>>& LocalVariable);
+public:
+	ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body);
 
-		~ASTFunction();
+	~ASTFunction();
 
-	private:
-		std::string FunctionName;
-		std::vector<std::unique_ptr<ASTBase>> FunctionReturn;
-		std::vector<std::unique_ptr<ASTBase>> FunctionParam; //从左到右
-		std::vector<std::unique_ptr<ASTBase>> FunctionLocalVariable;
-	};
-}
+	HazeValue* CodeGen();
+
+private:
+	HazeVM* VM;
+	HazeSectionSignal Section;
+
+	HAZE_STRING FunctionName;
+	HazeDefineType FunctionType;
+	std::vector<HazeDefineVariable> FunctionParam; //从左到右
+	std::unique_ptr<ASTBase> Body;
+};
+
+
+class ASTFunctionSection
+{
+public:
+	ASTFunctionSection(HazeVM* VM, std::vector<std::unique_ptr<ASTFunction>>& Functions);
+	~ASTFunctionSection();
+
+	void CodeGen();
+
+private:
+	HazeVM* VM;
+	std::vector<std::unique_ptr<ASTFunction>> Functions;
+};
+

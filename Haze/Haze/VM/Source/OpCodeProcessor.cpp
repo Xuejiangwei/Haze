@@ -5,43 +5,66 @@
 #include "OpCodeProcessor.h"
 #include "HazeVM.h"
 
+enum OpCodeType
+{
+	Register,		//寄存器
+	Immediate,		//立即数
+};
+
+static std::unordered_map<int64_t, OpCodeType> MapOpCode =
+{
+	{0, OpCodeType::Register},
+	{1, OpCodeType::Immediate},
+};
+
 static void Instruction_Mov(OpCodeProcessor* Processor)
 {
-	enum MovOpCodeType
-	{
-		Register,		//寄存器
-		Immediate,		//立即数
-	};
-	static std::unordered_map<int64_t, MovOpCodeType> MapMovOpCode =
-	{
-		{0, MovOpCodeType::Register},
-		{1, MovOpCodeType::Immediate},
-	};
-
-	//Mov (寄存器 操作数类型 操作数)
+	//Mov (寄存器 操作数类型 操作数 操作数类型 操作数)
 	//局部变量
 
 	//寄存器
 	uint64_t Code = Processor->GetNextBinary();
-	VirtualRegister* R = Processor->GetVM()->GetVirtualRegister(Code);
+	HazeValue* R = Processor->GetVM()->GetVirtualRegister(Code);
 
 	//操作数类型
 	Code = Processor->GetNextBinary();
 
-	auto It = MapMovOpCode.find(Code);
-	if (It->second == MovOpCodeType::Register)
+	auto It = MapOpCode.find(Code);
+	if (It->second == OpCodeType::Register)
 	{
-		VirtualRegister* R1 = Processor->GetVM()->GetVirtualRegister(Processor->GetNextBinary());
-		R->Data = R1->Data;
+		Code = Processor->GetNextBinary();
+		HazeValue* R1 = Processor->GetVM()->GetVirtualRegister(Code);
+		*R = *R1;
 	}
-	else if (It->second == MovOpCodeType::Immediate)
+	else if (It->second == OpCodeType::Immediate)
 	{
-		R->Data = Processor->GetNextBinary();
+		*R = Processor->GetNextBinary();
 	}
 }
 
 static void Instruction_Add(OpCodeProcessor* Processor)
 {
+	//Add (寄存器 操作数类型 操作数)
+	//局部变量
+
+	//寄存器
+	uint64_t Code = Processor->GetNextBinary();
+	HazeValue* R = Processor->GetVM()->GetVirtualRegister(Code);
+
+	//操作数类型
+	Code = Processor->GetNextBinary();
+
+	auto It = MapOpCode.find(Code);
+	if (It->second == OpCodeType::Register)
+	{
+		Code = Processor->GetNextBinary();
+		HazeValue* R1 = Processor->GetVM()->GetVirtualRegister(Code);
+		*R += *R1;
+	}
+	else if (It->second == OpCodeType::Immediate)
+	{
+		//*R = Processor->GetNextBinary();
+	}
 }
 
 static void Instruction_Sub(OpCodeProcessor* Processor)

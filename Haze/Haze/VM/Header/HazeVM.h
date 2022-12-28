@@ -9,12 +9,7 @@
 
 class HazeCompiler;
 
-//class Module;
-
-struct VirtualRegister
-{
-	uint64_t Data;
-};
+class HazeStack;
 
 class HazeVM
 {
@@ -26,15 +21,19 @@ public:
 
 	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName);
 
-	VirtualRegister* GetVirtualRegister(int64_t Index);
+	HazeValue* GetVirtualRegister(uint64_t Index);
 
 	std::unique_ptr<HazeCompiler>& GetCompiler() { return Compiler; }
 
 private:
-	//std::unordered_map<std::wstring, std::unique_ptr<Module>> MapModule;
-	std::unordered_set<std::wstring> MapString;
-
-	VirtualRegister AX, BX, CX, DX;
+	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;
+	std::unordered_set<HAZE_STRING> MapString;
 
 	std::unique_ptr<HazeCompiler> Compiler;
+
+	std::unique_ptr<HazeStack> VMStack;
+
+	HazeValue FunctionReturn;
+
+	int PC; //µ±«∞÷∏¡Ó
 };

@@ -17,6 +17,7 @@ HazeCompilerModule::HazeCompilerModule(const HAZE_STRING& ModuleName)
 
 HazeCompilerModule::~HazeCompilerModule()
 {
+	FS << "1 1 1 1" << std::endl;
 	if (FS.is_open())
 	{
 		FS.close();
@@ -33,26 +34,49 @@ void HazeCompilerModule::GenBinaryFile()
 	}
 }
 
-HazeCompilerValue* HazeCompilerModule::AddGlobalVariable(const HAZE_STRING& Name, HazeValueType Type)
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
 {
-	auto It = MapGlobalVariable.find(Name);
+	return MapGlobalFunction[CurrFunction];
+}
+
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(HAZE_STRING& Name)
+{
+	auto It = MapGlobalFunction.find(Name);
+	if (It != MapGlobalFunction.end())
+	{
+		return It->second;
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::AddFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
+{
+	auto It = MapGlobalFunction.find(Name);
+	if (It == MapGlobalFunction.end())
+	{
+		MapGlobalFunction[Name] = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param);
+		CurrFunction = Name;
+		return MapGlobalFunction[Name];
+	}
+	return It->second;
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddGlobalVariable(const HazeDefineVariable& Var)
+{
+	auto It = MapGlobalVariable.find(Var.second);
 	if (It != MapGlobalVariable.end())
 	{
 		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("编译器错误 添加全局变量重复"));
 		return nullptr;
 	}
 
-	MapGlobalVariable[Name] = HazeCompilerValue(this, Type);
+	MapGlobalVariable[Var.second] = std::make_shared<HazeCompilerValue>(this, Var.first);
 
-	return &MapGlobalVariable[Name];
+	return MapGlobalVariable[Var.second];
 }
 
-HazeCompilerValue* HazeCompilerModule::AddLocalVariable()
-{
-	return CurrFunction->AddLocalVariable(this);
-}
-
-HazeCompilerValue* HazeCompilerModule::AddDataVariable(HazeValue& Value)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddDataVariable(HazeValue& Value)
 {
 	switch (Value.Type)
 	{
@@ -65,36 +89,36 @@ HazeCompilerValue* HazeCompilerModule::AddDataVariable(HazeValue& Value)
 	case HazeValueType::UnsignedInt:
 	case HazeValueType::UnsignedLong:
 	{
-		auto It = MapIntDataValue.find(Value.Value.LongValue);
+		auto It = MapIntDataValue.find(Value.Value.Long);
 		if (It == MapIntDataValue.end())
 		{
-			MapIntDataValue[Value.Value.LongValue] = HazeCompilerValue(this, Value);
+			MapIntDataValue[Value.Value.Long] = std::make_shared<HazeCompilerValue>(this, Value);
 		}
 
-		return &MapIntDataValue[Value.Value.LongValue];
+		return MapIntDataValue[Value.Value.Long];
 	}
 	break;
 	case HazeValueType::Float:
 	case HazeValueType::Double:
 	{
-		auto It = MapFloatDataValue.find(Value.Value.DoubleValue);
+		auto It = MapFloatDataValue.find(Value.Value.Double);
 		if (It == MapFloatDataValue.end())
 		{
-			MapFloatDataValue[Value.Value.DoubleValue] = HazeCompilerValue(this, Value);
+			MapFloatDataValue[Value.Value.Double] = std::make_shared<HazeCompilerValue>(this, Value);
 		}
 
-		return &MapFloatDataValue[Value.Value.DoubleValue];
+		return MapFloatDataValue[Value.Value.Double];
 	}
 	break;
 	case HazeValueType::Bool:
 	{
-		auto It = MapBoolDataValue.find(Value.Value.BoolValue);
+		auto It = MapBoolDataValue.find(Value.Value.Bool);
 		if (It == MapBoolDataValue.end())
 		{
-			MapBoolDataValue[Value.Value.DoubleValue] = HazeCompilerValue(this, Value);
+			MapBoolDataValue[Value.Value.Double] = std::make_shared<HazeCompilerValue>(this, Value);
 		}
 
-		return &MapBoolDataValue[Value.Value.DoubleValue];
+		return MapBoolDataValue[Value.Value.Double];
 	}
 	break;
 	default:
@@ -102,4 +126,9 @@ HazeCompilerValue* HazeCompilerModule::AddDataVariable(HazeValue& Value)
 	}
 
 	return nullptr;
+}
+
+HazeValueType HazeCompilerModule::FindClass(const HAZE_STRING& ClassName)
+{
+	return HazeValueType::Class;
 }

@@ -6,6 +6,7 @@
 #include "HazeVM.h"
 #include "Parse.h"
 #include "ASTBase.h"
+#include "ASTFunction.h"
 #include "HazeLog.h"
 
 #define HAZE_SINGLE_COMMENT				L"//"
@@ -27,8 +28,11 @@
 #define TOKEN_UNSIGNED_LONG		HAZE_TEXT("正长整数")
 
 #define TOKEN_CLASS				HAZE_TEXT("类")
-#define TOKEN_CLASS_DATA		HAZE_TEXT("类数据")
-#define TOKEN_CLASS_FUNCTION	HAZE_TEXT("类函数")
+#define TOKEN_CLASS_DATA		HAZE_TEXT("数据")
+
+#define TOKEN_FUNCTION			HAZE_TEXT("函数")
+
+#define TOKEN_MAIN_FUNCTION		HAZE_TEXT("主函数")
 
 #define TOKEN_TRUE				HAZE_TEXT("真")
 #define TOKEN_FALSE				HAZE_TEXT("假")
@@ -54,8 +58,13 @@
 #define TOKEN_LESS				HAZE_TEXT("<")
 #define TOKEN_LESS_EQUAL		HAZE_TEXT("<=")
 
+#define TOKEN_INC				HAZE_TEXT("++")
+#define TOKEN_DEC				HAZE_TEXT("--")
+
 #define TOKEN_LEFT_PARENTHESES	HAZE_TEXT("(")
 #define TOKEN_RIGHT_PARENTHESES	HAZE_TEXT(")")
+
+#define TOKEN_COMMA				HAZE_TEXT(",")
 
 #define TOKEN_LEFT_BRACE		HAZE_TEXT("{")
 #define TOKEN_RIGHT_BRACE		HAZE_TEXT("}")
@@ -81,7 +90,7 @@
 
 #define TOKEN_IMPORT_MODULE		HAZE_TEXT("引")
 
-static std::unordered_map<std::wstring, HazeToken> MapToken =
+static std::unordered_map<HAZE_STRING, HazeToken> MapToken =
 {
 	{TOKEN_BOOL, HazeToken::Bool},
 	{TOKEN_CHAR, HazeToken::Char},
@@ -97,9 +106,12 @@ static std::unordered_map<std::wstring, HazeToken> MapToken =
 	{TOKEN_UNSIGNED_INT, HazeToken::UnsignedInt},
 	{TOKEN_UNSIGNED_LONG, HazeToken::UnsignedLong},
 
+	{TOKEN_FUNCTION, HazeToken::Function},
+
+	{TOKEN_MAIN_FUNCTION, HazeToken::MainFunction},
+
 	{TOKEN_CLASS, HazeToken::Class},
 	{TOKEN_CLASS_DATA, HazeToken::ClassData},
-	{TOKEN_CLASS_FUNCTION, HazeToken::ClassFunction},
 
 	{TOKEN_TRUE, HazeToken::True},
 	{TOKEN_FALSE, HazeToken::False},
@@ -125,8 +137,14 @@ static std::unordered_map<std::wstring, HazeToken> MapToken =
 	{TOKEN_LESS, HazeToken::Less},
 	{TOKEN_LESS_EQUAL, HazeToken::LessEqual},
 
+	{TOKEN_INC, HazeToken::Inc},
+	{TOKEN_DEC, HazeToken::Dec},
+
 	{TOKEN_LEFT_PARENTHESES, HazeToken::LeftParentheses},
 	{TOKEN_RIGHT_PARENTHESES, HazeToken::RightParentheses},
+
+	{TOKEN_COMMA, HazeToken::Comma},
+
 	{TOKEN_LEFT_BRACE, HazeToken::LeftBrace},
 	{TOKEN_RIGHT_BRACE, HazeToken::RightBrace},
 
@@ -151,21 +169,50 @@ static std::unordered_map<std::wstring, HazeToken> MapToken =
 	{TOKEN_IMPORT_MODULE, HazeToken::ImportModule},
 };
 
-static std::unordered_map<HazeToken, HazeValueType> MapValueType =
+static std::unordered_map<HazeToken, int> MapBinOp =
 {
-	{HazeToken::Bool, HazeValueType::Bool},
-	{HazeToken::Char, HazeValueType::Char},
-	{HazeToken::Byte, HazeValueType::Byte},
-	{HazeToken::Short, HazeValueType::Short},
-	{HazeToken::Int, HazeValueType::Int},
-	{HazeToken::Float, HazeValueType::Float},
-	{HazeToken::Long, HazeValueType::Long},
-	{HazeToken::Double, HazeValueType::Double},
-	{HazeToken::UnsignedByte, HazeValueType::UnsignedByte},
-	{HazeToken::UnsignedShort, HazeValueType::UnsignedShort},
-	{HazeToken::UnsignedInt, HazeValueType::UnsignedInt},
-	{HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
+	{ HazeToken::Assign, 10 },
+	{ HazeToken::Or, 14 },
+	{ HazeToken::And, 15 },
+
+	{ HazeToken::Equal, 20 },
+	{ HazeToken::NotEqual, 20 },
+
+	{ HazeToken::Greater, 21 },
+	{ HazeToken::GreaterEqual, 21 },
+	{ HazeToken::Less, 21 },
+	{ HazeToken::LessEqual, 21 },
+
+	{ HazeToken::LeftMove, 30 },
+	{ HazeToken::RightMove, 30 },
+
+
+	{ HazeToken::Add, 40 },
+	{ HazeToken::Sub, 40 },
+
+	{ HazeToken::Mul, 50 },
+	{ HazeToken::Div, 50 },
+	{ HazeToken::Mod, 50 },
+
+	{ HazeToken::Not, 60 },
+	{ HazeToken::Inc, 60 },
 };
+
+//static std::unordered_map<HazeToken, HazeValueType> MapValueType =
+//{
+//	{HazeToken::Bool, HazeValueType::Bool},
+//	{HazeToken::Char, HazeValueType::Char},
+//	{HazeToken::Byte, HazeValueType::Byte},
+//	{HazeToken::Short, HazeValueType::Short},
+//	{HazeToken::Int, HazeValueType::Int},
+//	{HazeToken::Float, HazeValueType::Float},
+//	{HazeToken::Long, HazeValueType::Long},
+//	{HazeToken::Double, HazeValueType::Double},
+//	{HazeToken::UnsignedByte, HazeValueType::UnsignedByte},
+//	{HazeToken::UnsignedShort, HazeValueType::UnsignedShort},
+//	{HazeToken::UnsignedInt, HazeValueType::UnsignedInt},
+//	{HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
+//};
 
 Parse::Parse(HazeVM* VM) :VM(VM)
 {
@@ -179,26 +226,26 @@ void Parse::InitializeFile(const std::wstring& FilePath)
 {
 	std::wifstream FS(FilePath);
 	FS.imbue(std::locale("chs"));
-	std::wstring Content(std::istreambuf_iterator<wchar_t>(FS), {});
+	HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(FS), {});
 	CodeText = std::move(Content);
 	CurrCode = CodeText.c_str();
 	FS.close();
 }
 
-void Parse::InitializeString(const std::wstring& String)
+void Parse::InitializeString(const HAZE_STRING& String)
 {
 	CodeText = String;
 }
 
 void Parse::ParseContent()
 {
-	HazeToken Token;
-	while (!TokenIsNone(Token = GetNextToken()))
+	StackSectionSignal.push(HazeSectionSignal::Global);
+	GetNextToken();
+
+	while (!TokenIsNone(CurrToken))
 	{
-		switch (Token)
+		switch (CurrToken)
 		{
-		case HazeToken::None:
-			break;
 		case HazeToken::Bool:
 		case HazeToken::Char:
 		case HazeToken::Byte:
@@ -211,6 +258,7 @@ void Parse::ParseContent()
 		case HazeToken::UnsignedShort:
 		case HazeToken::UnsignedInt:
 		case HazeToken::UnsignedLong:
+		case HazeToken::Identifier:
 		{
 			auto AST = ParseExpression();
 			AST->CodeGen();
@@ -220,24 +268,34 @@ void Parse::ParseContent()
 			break;
 		case HazeToken::ClassData:
 			break;
-		case HazeToken::ClassFunction:
-			break;
+		case HazeToken::Function:
+		{
+			auto AST = ParseFunction();
+			AST->CodeGen();
+		}
+		break;
+		case HazeToken::MainFunction:
+		{
+			auto AST = ParseMainFunction();
+			AST->CodeGen();
+		}
+		break;
 		case HazeToken::ImportModule:
 			break;
-		case HazeToken::Identifier:
-			ParseUnaryExpression();
-			break;
-
 		default:
 			break;
 		}
 	}
+
+	StackSectionSignal.pop();
 }
 
 HazeToken Parse::GetNextToken()
 {
 	if (!*CurrCode)
 	{
+		CurrToken = HazeToken::None;
+		CurrLexeme = HAZE_TEXT("");
 		return HazeToken::None;
 	}
 
@@ -255,6 +313,15 @@ HazeToken Parse::GetNextToken()
 	CurrLexeme.clear();
 	while (!isspace(*CurrCode))
 	{
+		if (IsHazeSignalToken(*CurrCode))
+		{
+			if (CurrLexeme.length() == 0)
+			{
+				CurrLexeme += *(CurrCode++);
+			}
+			break;
+		}
+
 		CurrLexeme += *(CurrCode++);
 	}
 
@@ -283,9 +350,10 @@ std::unique_ptr<ASTBase> Parse::HandleParseExpression()
 std::unique_ptr<ASTBase> Parse::ParseExpression()
 {
 	std::unique_ptr<ASTBase> Left = ParseUnaryExpression();
+
 	if (Left)
 	{
-		return ParseBinaryOperateExpression(std::move(Left));
+		return ParseBinaryOperateExpression(0, std::move(Left));
 	}
 
 	return nullptr;
@@ -293,25 +361,68 @@ std::unique_ptr<ASTBase> Parse::ParseExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
 {
-	return ParsePrimary();
-
-	/*int Opc = CurrToken;
-	GetNextToken();
-
-	if (auto Operand = ParseUnaryExpression())
+	auto it = MapBinOp.find(CurrToken);
+	if (it == MapBinOp.end())
 	{
-		return std::make_unique<UnaryExprAST>(Opc, std::move(Operand));
-	}*/
-	//return nullptr;
+		return ParsePrimary();
+	}
+	return nullptr;
 }
 
-std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(std::unique_ptr<ASTBase> Left)
+std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::unique_ptr<ASTBase> Left)
 {
-	if (true)
+	// highest.
+
+	auto it = MapBinOp.find(CurrToken);
+	if (it == MapBinOp.end())
 	{
 		return Left;
 	}
-	return std::unique_ptr<ASTBase>();
+	else
+	{
+		while (true)
+		{
+			if (it->second < Prec)
+			{
+				return Left;
+			}
+
+			HazeToken OpToken = CurrToken;
+
+			GetNextToken();
+
+			std::unique_ptr<ASTBase> Right = ParseUnaryExpression();
+			if (!Right)
+			{
+				return nullptr;
+			}
+
+			auto NextPrec = MapBinOp.find(CurrToken);
+			if (NextPrec != MapBinOp.end() && it->second < NextPrec->second)
+			{
+				Right = ParseBinaryOperateExpression(it->second, std::move(Right));
+				if (!Right)
+				{
+					return nullptr;
+				}
+
+				NextPrec = MapBinOp.find(CurrToken);
+				if (NextPrec == MapBinOp.end())
+				{
+					return std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
+				}
+			}
+			else
+			{
+				return std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
+			}
+
+			// Merge LHS/RHS.
+			Left = std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
+		}
+	}
+
+	return nullptr;
 }
 
 std::unique_ptr<ASTBase> Parse::ParsePrimary()
@@ -337,26 +448,68 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::True:
 	case HazeToken::False:
 		return ParseBoolExpression();
+	case HazeToken::Identifier:
+		return ParseIdentifer();
+	case HazeToken::Return:
+		return ParseReturn();
 	default:
 		break;
 	}
 	return std::unique_ptr<ASTBase>();
 }
 
+std::unique_ptr<ASTBase> Parse::ParseIdentifer()
+{
+	HAZE_STRING IdentiferName = CurrLexeme;
+	if (GetNextToken() == HazeToken::LeftParentheses)
+	{
+		//函数调用
+		std::vector<std::unique_ptr<ASTBase>> VectorParam;
+		while (true)
+		{
+			HazeDefineVariable Param;
+			if (GetNextToken() == HazeToken::RightParentheses)
+			{
+				break;
+			}
+
+			VectorParam.push_back(ParseExpression());
+
+			if (!TokenIs(HazeToken::Comma))
+			{
+				break;
+			}
+		}
+
+		GetNextToken();
+		return std::make_unique<ASTFunctionCall>(VM, StackSectionSignal.top(), IdentiferName, VectorParam);
+	}
+	else
+	{
+		return std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName);
+	}
+
+	return nullptr;
+}
+
 std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 {
-	HazeToken TypeToken = CurrToken;
-	VariableDefineType = MapValueType[TypeToken];
+	DefineVariable.first.first = CurrToken;
+	DefineVariable.first.second = HAZE_TEXT("");
 	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse bool expression name wrong\n")))
 	{
-		HAZE_STRING VariableName = CurrLexeme;
+		DefineVariable.second = CurrLexeme;
 
 		if (ExpectNextTokenIs(HazeToken::Assign, HAZE_TEXT("Error: Parse bool expression expect = \n")))
 		{
 			GetNextToken();		//吃掉赋值符号
 			std::unique_ptr<ASTBase> Expression = ParseExpression();
 
-			return std::make_unique<ASTVariableDefine>(VM, CurrSectionSignal, VariableDefineType, VariableName, Expression);
+			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, std::move(Expression));
+		}
+		else if ((CurrToken == HazeToken::RightParentheses || CurrToken == HazeToken::Comma) && StackSectionSignal.top() == HazeSectionSignal::Function)
+		{
+			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
 		}
 	}
 
@@ -367,16 +520,170 @@ std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 {
 	HazeValue Value;
 	Value.Type = HazeValueType::Bool;
-	Value.Value.BoolValue = CurrLexeme == TOKEN_TRUE;
+	Value.Value.Bool = CurrLexeme == TOKEN_TRUE;
+
 	return std::make_unique<ASTBool>(VM, Value);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
 	HazeValue Value;
-	Value.Type = VariableDefineType;
+	Value.Type = GetValueTypeByToken(DefineVariable.first.first);
 	StringToNumber(CurrLexeme, Value);
+
+	GetNextToken();
 	return std::make_unique<ASTNumber>(VM, Value);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseReturn()
+{
+	GetNextToken();
+	auto ReturnExpression = ParseExpression();
+	return std::make_unique<ASTReturn>(VM, ReturnExpression);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseMutiExpression()
+{
+	std::vector<std::unique_ptr<ASTBase>> VectorExpr;
+
+	GetNextToken();
+	while (auto e = ParseExpression())
+	{
+		VectorExpr.push_back(std::move(e));
+
+		if (TokenIs(HazeToken::RightBrace))
+		{
+			break;
+		}
+	}
+
+	return std::make_unique<ASTMutiExpression>(VM, StackSectionSignal.top(), VectorExpr);
+}
+
+std::unique_ptr<ASTFunctionSection> Parse::ParseFunction()
+{
+	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function expression expect { \n")))
+	{
+		std::vector<std::unique_ptr<ASTFunction>> Functions;
+
+		GetNextToken();
+		while (CurrToken != HazeToken::RightBrace)
+		{
+			StackSectionSignal.push(HazeSectionSignal::Function);
+			
+			//获得函数返回类型及是自定义类型时获得类型名字
+			HazeDefineType FuncType;
+			FuncType.first = CurrToken;
+			if (FuncType.first == HazeToken::Identifier)
+			{
+				FuncType.second = CurrLexeme;
+			}
+
+			//获得函数名
+			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse function expression expect correct function name \n")))
+			{
+				HAZE_STRING FunctionName = CurrLexeme;
+				if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
+				{
+					std::vector<HazeDefineVariable> VectorParam;
+
+					while (!TokenIs(HazeToken::LeftBrace))
+					{
+						HazeDefineVariable Param;
+						if (GetNextToken() == HazeToken::RightParentheses)
+						{
+							break;
+						}
+
+						Param.first.first = CurrToken;
+						if (Param.first.first == HazeToken::Identifier)
+						{
+							Param.first.second = CurrLexeme;
+						}
+
+						GetNextToken();
+						Param.second = CurrLexeme;
+
+						VectorParam.push_back(Param);
+
+						if (!ExpectNextTokenIs(HazeToken::Comma))
+						{
+							break;
+						}
+					}
+
+					if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function body expect { \n")))
+					{
+						std::unique_ptr<ASTBase> Body = ParseMutiExpression();
+
+						if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse function expression expect function body expect } \n")))
+						{
+							StackSectionSignal.pop();
+
+							GetNextToken();
+							Functions.push_back(std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, FuncType, VectorParam, Body));
+						}
+					}
+				}
+			}
+		}
+
+		GetNextToken();
+		return std::make_unique<ASTFunctionSection>(VM, Functions);
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
+{
+	HAZE_STRING FunctionName = CurrLexeme;
+	StackSectionSignal.push(HazeSectionSignal::Function);
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
+	{
+		std::vector<HazeDefineVariable> VectorParam;
+
+		while (!TokenIs(HazeToken::LeftBrace))
+		{
+			HazeDefineVariable Param;
+			if (GetNextToken() == HazeToken::RightParentheses)
+			{
+				break;
+			}
+
+			Param.first.first = CurrToken;
+			if (Param.first.first == HazeToken::Identifier)
+			{
+				Param.first.second = CurrLexeme;
+			}
+
+			GetNextToken();
+			Param.second = CurrLexeme;
+
+			VectorParam.push_back(Param);
+
+			if (!ExpectNextTokenIs(HazeToken::Comma))
+			{
+				break;
+			}
+		}
+
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function body expect { \n")))
+		{
+			std::unique_ptr<ASTBase> Body = ParseMutiExpression();
+
+			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse function expression expect function body expect } \n")))
+			{
+				StackSectionSignal.pop();
+
+				GetNextToken();
+				HazeDefineType DefineType = { HazeToken::Int, HAZE_TEXT("") };
+				return std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, DefineType, VectorParam, Body);
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 bool Parse::ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo)
@@ -384,9 +691,40 @@ bool Parse::ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo)
 	HazeToken NextToken = GetNextToken();
 	if (Token != NextToken)
 	{
-		HazeLog::LogInfo(HazeLog::Error, ErrorInfo);
+		if (ErrorInfo)
+		{
+			HazeLog::LogInfo(HazeLog::Error, ErrorInfo);
+		}
 		return false;
 	}
 
 	return true;
+}
+
+bool Parse::TokenIs(HazeToken Token, const wchar_t* ErrorInfo)
+{
+	if (Token != CurrToken)
+	{
+		if (ErrorInfo)
+		{
+			HazeLog::LogInfo(HazeLog::Error, ErrorInfo);
+		}
+		return false;
+	}
+
+	return true;
+}
+
+bool Parse::IsHazeSignalToken(HAZE_CHAR Char)
+{
+	static std::unordered_set<HAZE_STRING> SetTokenText =
+	{
+		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
+		TOKEN_ASSIGN, TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
+		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, TOKEN_COMMA, TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE
+	};
+
+	HAZE_STRING WS;
+	WS = Char;
+	return SetTokenText.find(WS) != SetTokenText.end();
 }

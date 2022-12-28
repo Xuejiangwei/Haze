@@ -2,24 +2,44 @@
 
 #include "HazeCompilerFunction.h"
 
-HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module) : Module(Module)
+HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& VectorParam)
+	: Module(Module), Name(Name), Type(Type)
 {
+	for (auto it : VectorParam)
+	{
+	}
 }
 
 HazeCompilerFunction::~HazeCompilerFunction()
 {
 }
 
-HazeCompilerValue* HazeCompilerFunction::AddLocalVariable(HazeCompilerModule* Module)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::AddLocalVariable(const HazeDefineVariable& Variable)
 {
-	auto It = MapLocalVariable.find(HAZE_TEXT(""));
+	auto It = MapLocalVariable.find(Variable.second);
 	if (It != MapLocalVariable.end())
 	{
 		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("编译器错误 添加局部变量重复"));
 		return nullptr;
 	}
 
-	MapLocalVariable[HAZE_TEXT("1")] = HazeCompilerValue(Module);
+	MapLocalVariable[Variable.second] = std::make_shared<HazeCompilerValue>(Module, Variable.first);
 
-	return &MapLocalVariable[HAZE_TEXT("1")];
+	return MapLocalVariable[Variable.second];
+}
+
+bool HazeCompilerFunction::GeneratorOpCode()
+{
+	//生成函数label
+
+	//Push所有参数，从右到左
+	for (auto& it : VectorParam)
+	{
+	}
+
+	//Push返回地址
+
+	//Push临时变量
+
+	return true;
 }

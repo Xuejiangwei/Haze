@@ -16,18 +16,26 @@ public:
 
 	void GenBinaryFile();
 
-	HazeCompilerValue* AddGlobalVariable(const HAZE_STRING& Name, HazeValueType Type);
+	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
-	HazeCompilerValue* AddLocalVariable();
+	std::shared_ptr<HazeCompilerFunction> GetFunction(HAZE_STRING& Name);
 
-	HazeCompilerValue* AddDataVariable(HazeValue& Value);
+	std::shared_ptr<HazeCompilerFunction> AddFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
+
+	std::shared_ptr<HazeCompilerValue> AddGlobalVariable(const HazeDefineVariable& Var);
+
+	std::shared_ptr<HazeCompilerValue> AddDataVariable(HazeValue& Value);
+
+	HazeValueType FindClass(const HAZE_STRING& ClassName);
 
 private:
 	std::wofstream FS;
 
-	std::unique_ptr<HazeCompilerFunction> CurrFunction;
-	std::unordered_map<HAZE_STRING, HazeCompilerValue> MapGlobalVariable;
-	std::unordered_map<long long, HazeCompilerValue> MapIntDataValue;
-	std::unordered_map<bool, HazeCompilerValue> MapBoolDataValue;
-	std::unordered_map<double, HazeCompilerValue> MapFloatDataValue;
+	HAZE_STRING CurrFunction;
+	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerFunction>> MapGlobalFunction;
+
+	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> MapGlobalVariable;
+	std::unordered_map<long long, std::shared_ptr<HazeCompilerValue>> MapIntDataValue;
+	std::unordered_map<bool, std::shared_ptr<HazeCompilerValue>> MapBoolDataValue;
+	std::unordered_map<double, std::shared_ptr<HazeCompilerValue>> MapFloatDataValue;
 };

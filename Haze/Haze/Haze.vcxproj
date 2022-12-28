@@ -142,6 +142,7 @@
     <ClCompile Include="MetaData\Source\HazeFunction.cpp" />
     <ClCompile Include="MetaData\Source\HazeModule.cpp" />
     <ClCompile Include="MetaData\Source\HazeVariable.cpp" />
+    <ClCompile Include="Source\Haze.cpp" />
     <ClCompile Include="Source\HazeInstruction.cpp" />
     <ClCompile Include="Source\HazeLog.cpp" />
     <ClCompile Include="Source\HazeStack.cpp" />

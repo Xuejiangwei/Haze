@@ -2,6 +2,7 @@
 #include <locale>
 
 #include "HazeVM.h"
+#include "HazeStack.h"
 #include "HazeCompiler.h"
 #include "Parse.h"
 #include "HazeLog.h"
@@ -10,7 +11,9 @@ HazeVM::HazeVM()
 {
 	std::wcout.imbue(std::locale("chs"));
 
+	FunctionReturn.Type = HazeValueType::Null;
 	Compiler = std::make_unique<HazeCompiler>();
+	VMStack = std::make_unique<HazeStack>();
 }
 
 HazeVM::~HazeVM()
@@ -35,21 +38,7 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 	Compiler->GenBinaryFile();
 }
 
-VirtualRegister* HazeVM::GetVirtualRegister(int64_t Index)
+HazeValue* HazeVM::GetVirtualRegister(uint64_t Index)
 {
-	static std::unordered_map<int64_t, VirtualRegister*> MapRegister =
-	{
-		{0, &AX},
-		{1, &BX},
-		{2, &CX},
-		{3, &DX},
-	};
-
-	auto It = MapRegister.find(Index);
-	if (It == MapRegister.end())
-	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("½âÎö×Ö½ÚÂëÖÐ »ñÈ¡¼Ä´æÆ÷´íÎó\n"));
-	}
-
-	return It->second;
+	return VMStack->GetVirtualRegister(Index);
 }

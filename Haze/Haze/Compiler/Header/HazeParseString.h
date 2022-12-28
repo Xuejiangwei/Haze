@@ -19,42 +19,42 @@ void StringToNumber(const HAZE_STRING& Str, HazeValue& Value)
 	switch (Value.Type)
 	{
 	case HazeValueType::Float:
-		WSS >> Value.Value.FloatValue;
+		WSS >> Value.Value.Float;
 		break;
 	case HazeValueType::Double:
-		WSS >> Value.Value.DoubleValue;
+		WSS >> Value.Value.Double;
 		break;
 	case HazeValueType::Byte:
 	{
 		short Temp;
 		WSS >> Temp;
-		memcpy(&Value.Value.ByteValue, &Temp, sizeof(Value.Value.ByteValue));
+		memcpy(&Value.Value.Byte, &Temp, sizeof(Value.Value.Byte));
 	}
 	break;
 	case HazeValueType::Short:
-		WSS >> Value.Value.ShortValue;
+		WSS >> Value.Value.Short;
 		break;
 	case HazeValueType::Int:
-		WSS >> Value.Value.IntValue;
+		WSS >> Value.Value.Int;
 		break;
 	case HazeValueType::Long:
-		WSS >> Value.Value.LongValue;
+		WSS >> Value.Value.Long;
 		break;
 	case HazeValueType::UnsignedByte:
 	{
 		unsigned short Temp;
 		WSS >> Temp;
-		memcpy(&Value.Value.UnsignedByteValue, &Temp, sizeof(Value.Value.ByteValue));
+		memcpy(&Value.Value.UnsignedByte, &Temp, sizeof(Value.Value.Byte));
 	}
 	break;
 	case HazeValueType::UnsignedShort:
-		WSS >> Value.Value.UnsignedShortValue;
+		WSS >> Value.Value.UnsignedShort;
 		break;
 	case HazeValueType::UnsignedInt:
-		WSS >> Value.Value.UnsignedIntValue;
+		WSS >> Value.Value.UnsignedInt;
 		break;
 	case HazeValueType::UnsignedLong:
-		WSS >> Value.Value.UnsignedLongValue;
+		WSS >> Value.Value.UnsignedLong;
 		break;
 	default:
 		break;

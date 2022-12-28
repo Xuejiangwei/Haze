@@ -1,88 +1,15 @@
 #pragma once
 
+#include <stack>
 #include <string>
 
 #include "Haze.h"
 
 class OpCodeGenerator;
 class ASTBase;
-
-enum class HazeToken : unsigned int
-{
-	None,
-	Identifier,
-	Bool,
-	Char,
-	Byte,
-	Short,
-	Int,
-	Float,
-	Long,
-	Double,
-
-	UnsignedByte,
-	UnsignedShort,
-	UnsignedInt,
-	UnsignedLong,
-
-	Class,
-	ClassData,
-	ClassFunction,
-
-	True,
-	False,
-
-	Add,
-	Sub,
-	Mul,
-	Div,
-	Mod,
-
-	And,
-	Or,
-	Not,
-
-	LeftMove,
-	RightMove,
-
-	Assign,
-	Equal,
-	NotEqual,
-	Greater,
-	GreaterEqual,
-	Less,
-	LessEqual,
-
-	LeftParentheses,
-	RightParentheses,
-
-	LeftBrace,
-	RightBrace,
-
-	If,
-	Else,
-
-	For,
-	ForStep,
-
-	Break,
-	Continue,
-	Return,
-
-	While,
-
-	Cast,
-
-	Reference,
-
-	Define,
-
-	ImportModule,
-
-	//NoMatch
-	Number,
-	String,
-};
+class ASTClass;
+class ASTFunction;
+class ASTFunctionSection;
 
 class Parse
 {
@@ -92,15 +19,15 @@ public:
 
 	void InitializeFile(const std::wstring& FilePath);
 
-	void InitializeString(const std::wstring& String);
+	void InitializeString(const HAZE_STRING& String);
 
 	void ParseContent();
 
 	HazeToken GetNextToken();
 
-	const std::wstring& GetCurrLexeme() const { return CurrLexeme; }
+	const HAZE_STRING& GetCurrLexeme() const { return CurrLexeme; }
 
-	const std::wstring& GetLookAtAheadChar() {}
+	const HAZE_STRING& GetLookAtAheadChar() {}
 
 	static bool TokenIsNone(HazeToken Token) { return Token == HazeToken::None; }
 
@@ -108,10 +35,14 @@ private:
 	std::unique_ptr<ASTBase> HandleParseExpression();
 
 	std::unique_ptr<ASTBase> ParseExpression();
+
 	std::unique_ptr<ASTBase> ParseUnaryExpression();
-	std::unique_ptr<ASTBase> ParseBinaryOperateExpression(std::unique_ptr<ASTBase> Left);
+
+	std::unique_ptr<ASTBase> ParseBinaryOperateExpression(int Prec, std::unique_ptr<ASTBase> Left);
 
 	std::unique_ptr<ASTBase> ParsePrimary();
+
+	std::unique_ptr<ASTBase> ParseIdentifer();
 
 	std::unique_ptr<ASTBase> ParseVariableDefine();
 
@@ -119,8 +50,20 @@ private:
 
 	std::unique_ptr<ASTBase> ParseNumberExpression();
 
+	std::unique_ptr<ASTBase> ParseReturn();
+
+	std::unique_ptr<ASTBase> ParseMutiExpression();
+
+	std::unique_ptr<ASTFunctionSection> ParseFunction();
+
+	std::unique_ptr<ASTFunction> ParseMainFunction();
+
 private:
-	bool ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo);
+	bool ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo = nullptr);
+
+	bool TokenIs(HazeToken Token, const wchar_t* ErrorInfo = nullptr);
+
+	bool IsHazeSignalToken(HAZE_CHAR Char);
 
 private:
 	class HazeVM* VM;
@@ -131,9 +74,9 @@ private:
 	const HAZE_CHAR* CurrCode;
 	HAZE_STRING CurrLexeme;
 
-	HazeSectionSignal CurrSectionSignal;
+	std::stack<HazeSectionSignal> StackSectionSignal;
 
 	std::shared_ptr<OpCodeGenerator> Generator;
 
-	HazeValueType VariableDefineType;
+	HazeDefineVariable DefineVariable;
 };
