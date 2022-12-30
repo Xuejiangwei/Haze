@@ -17,7 +17,7 @@ public:
 
 	bool InitializeCompiler(const HAZE_STRING& ModuleName);
 
-	void GenBinaryFile();
+	void FinishModule();
 
 	std::unique_ptr<HazeCompilerModule>& GetCurrModule();
 
@@ -28,9 +28,16 @@ public:
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name);
 
 public:		//Éú³Éop code
+	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable);
+
+	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var);
+
 	std::shared_ptr<HazeCompilerValue> CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param);
+
+private:
+	void GenModuleCodeFile();
 
 private:
 	HAZE_STRING CurrModule;

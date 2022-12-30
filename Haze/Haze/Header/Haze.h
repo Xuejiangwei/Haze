@@ -8,6 +8,11 @@
 
 #define HAZE_TEXT(S) L##S
 
+#define HAZE_MAIN_FUNCTION_TEXT HAZE_TEXT("主函数")
+
+#define HAZE_ASS_ENABLE			1
+#define HAZE_OP_CODE_ENABLE		1
+
 enum class HazeSectionSignal : unsigned __int8
 {
 	Global,
@@ -233,6 +238,7 @@ enum class InstructionOpCode : unsigned int
 //函数及函数调用处理同Jmp处理
 
 extern HazeValueType GetValueTypeByToken(HazeToken Token);
+extern unsigned int GetSize(HazeValueType Type);
 
 using HazeDefineType = std::pair<HazeToken, HAZE_STRING>;			//Token, Token是identifier时的类型名
 using HazeDefineVariable = std::pair<HazeDefineType, HAZE_STRING>;	//HazeDefineType, 定义的变量名

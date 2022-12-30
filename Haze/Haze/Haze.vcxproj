@@ -136,6 +136,7 @@
     <ClCompile Include="Compiler\Source\HazeCompiler.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerFunction.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerFunctionStack.cpp" />
+    <ClCompile Include="Compiler\Source\HazeCompilerHelper.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerModule.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp" />
     <ClCompile Include="MetaData\Source\HazeClass.cpp" />
@@ -158,6 +159,7 @@
     <ClInclude Include="Compiler\Header\HazeCompiler.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerFunction.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerFunctionStack.h" />
+    <ClInclude Include="Compiler\Header\HazeCompilerHelper.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerModule.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
     <ClInclude Include="Compiler\Header\HazeParseString.h" />

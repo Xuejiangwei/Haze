@@ -122,15 +122,16 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 {
 	std::shared_ptr<HazeCompilerValue> RetValue = nullptr;
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
+	std::unique_ptr<HazeCompilerModule>& Module = VM->GetCompiler()->GetCurrModule();
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
 		//生成全局变量字节码
-		RetValue = Compiler->GetCurrModule()->AddGlobalVariable(DefineVariable);
+		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable);
 	}
 	else if (SectionSignal == HazeSectionSignal::Function)
 	{
 		//生成局部变量字节码
-		RetValue = Compiler->GetCurrModule()->GetCurrFunction()->AddLocalVariable(DefineVariable);
+		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable);
 	}
 
 	std::shared_ptr<HazeCompilerValue> ExprValue = nullptr;

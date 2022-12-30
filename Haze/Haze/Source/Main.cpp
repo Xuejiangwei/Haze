@@ -12,7 +12,7 @@ int main()
 {
 	std::wstring Path = std::filesystem::current_path();
 
-	std::filesystem::create_directory(Path + HAZE_TEXT("\\HazeOpCodeFile"));
+	std::filesystem::create_directory(Path + HAZE_TEXT("\\HazeOpCode"));
 
 	HazeVM VM;
 	VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));

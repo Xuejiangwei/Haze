@@ -35,7 +35,7 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 		P.InitializeFile(FilePath);
 		P.ParseContent();
 	}
-	Compiler->GenBinaryFile();
+	Compiler->FinishModule();
 }
 
 HazeValue* HazeVM::GetVirtualRegister(uint64_t Index)

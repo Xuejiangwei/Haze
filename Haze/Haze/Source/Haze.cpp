@@ -26,3 +26,29 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 
 	return HazeValueType::Null;
 }
+
+unsigned int GetSize(HazeValueType Type)
+{
+	switch (Type)
+	{
+	case Bool:
+	case Char:
+	case Byte:
+	case UnsignedByte:
+		return 1;
+	case Short:
+	case UnsignedShort:
+		return 2;
+	case Int:
+	case Float:
+	case UnsignedInt:
+		return 4;
+	case Long:
+	case Double:
+	case UnsignedLong:
+		return 8;
+	default:
+		break;
+	}
+	return 0;
+}

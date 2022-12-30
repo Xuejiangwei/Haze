@@ -25,9 +25,14 @@ bool HazeCompiler::InitializeCompiler(const HAZE_STRING& ModuleName)
 	return true;
 }
 
-void HazeCompiler::GenBinaryFile()
+void HazeCompiler::FinishModule()
 {
-	MapModules[CurrModule]->GenBinaryFile();
+	GenModuleCodeFile();
+}
+
+void HazeCompiler::GenModuleCodeFile()
+{
+	MapModules[CurrModule]->GenCodeFile();
 }
 
 std::unique_ptr<HazeCompilerModule>& HazeCompiler::GetCurrModule()
@@ -131,6 +136,16 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STR
 	return nullptr;
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable)
+{
+	return Function->CreateLocalVariable(Variable);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var)
+{
+	return Module->CreateGlobalVariable(Var);
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
 	std::shared_ptr<HazeCompilerValue> CompilerValue = std::make_shared<HazeCompilerValue>();
@@ -170,5 +185,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param)
 {
-	return std::shared_ptr<HazeCompilerValue>();
+	auto& Module = GetCurrModule();
+	
+	return Module->CreateFunctionCall(Function, Param);
 }
