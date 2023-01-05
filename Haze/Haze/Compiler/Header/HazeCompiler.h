@@ -44,6 +44,7 @@ private:
 
 	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> MapModules;
 
+	//³£Á¿
 	std::unordered_map<bool, std::shared_ptr<HazeCompilerValue>> MapBoolConstantValue;
 	std::unordered_map<char, std::shared_ptr<HazeCompilerValue>> MapIntConstantValue;
 	std::unordered_map<long long, std::shared_ptr<HazeCompilerValue>> MapLongConstantValue;

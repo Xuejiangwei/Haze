@@ -1,6 +1,7 @@
 #include "HazeLog.h"
 
 #include "HazeCompilerHelper.h"
+#include "HazeCompilerModule.h"
 #include "HazeCompilerFunction.h"
 
 HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
@@ -10,6 +11,10 @@ HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRI
 	{
 		AddFunctionParam(it);
 	}
+
+	ReturnValue = std::make_shared<HazeCompilerValue>(Module, Type, HazeCompilerValue::ValueSection::Local);
+	
+	FunctionASSCode = HAZE_STRING(HAZE_TEXT("Label_")) + Name + HAZE_TEXT("\n");
 }
 
 HazeCompilerFunction::~HazeCompilerFunction()
@@ -27,13 +32,26 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 		}
 	}
 
-	VectorLocalVariable.push_back({ Variable.second, std::make_shared<HazeCompilerValue>(Module, Variable.first) });
+	VectorLocalVariable.push_back({ Variable.second, std::make_shared<HazeCompilerValue>(Module, Variable.first,HazeCompilerValue::ValueSection::Local, (int)VectorLocalVariable.size()) });
+
+	HAZE_STRING_STREAM SStream;
+	HazeCompilerStream(SStream, VectorLocalVariable.back().second.get());
+
+	FunctionASSCode += HAZE_TEXT("Push ") + SStream.str() + HAZE_TEXT(" \n");
 
 	return VectorLocalVariable.back().second;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(HAZE_STRING& Name)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& Name)
 {
+	for (auto& it : VectorParam)
+	{
+		if (it.first == Name)
+		{
+			return it.second;
+		}
+	}
+
 	for (auto& it : VectorLocalVariable)
 	{
 		if (it.first == Name)
@@ -45,27 +63,30 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(HAZE_S
 	return nullptr;
 }
 
-bool HazeCompilerFunction::GenASSCode(HazeCompilerModule* Module)
+
+void HazeCompilerFunction::FunctionFinish()
 {
-	//生成函数label
-	//FS << HAZE_TEXT("label_") <<Name << std::endl;
-
-	//Push所有参数，从右到左
-	for (int i = (int)VectorParam.size() - 1; i >= 0; i--)
-	{
-		PushAssCode(Module, VectorParam[i].second.get());
-	}
-
-	//Push返回地址
-	//FS << "Push " << -1 << std::endl;
-
-	//Push临时变量
-	//FS << "Push " << -2 << std::endl;
-
-	return false;
 }
 
-bool HazeCompilerFunction::GeneratorOpCode(HazeCompilerModule* Module)
+void HazeCompilerFunction::GenCode(HazeCompilerModule* Module)
+{
+#if HAZE_ASS_ENABLE
+	GenASSCode(Module);
+#endif // HAZE_ASS_ENABLE
+
+#ifdef HAZE_OP_CODE_ENABLE
+	GenOpCode(Module);
+#endif // HAZE_OP_CODE_ENABLE
+
+}
+
+void HazeCompilerFunction::GenASSCode(HazeCompilerModule* Module)
+{
+	//生成函数label
+	Module->GenASS_Label(Name);
+}
+
+void HazeCompilerFunction::GenOpCode(HazeCompilerModule* Module)
 {
 	//生成函数label
 
@@ -80,11 +101,9 @@ bool HazeCompilerFunction::GeneratorOpCode(HazeCompilerModule* Module)
 
 	//Push临时变量
 	//FS << "Push " << -2 << std::endl;
-
-	return true;
 }
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& Variable)
 {
-	VectorParam.push_back({ Variable.second, std::make_shared<HazeCompilerValue>(Module, Variable.first) });
+	VectorParam.push_back({ Variable.second, std::make_shared<HazeCompilerValue>(Module, Variable.first,HazeCompilerValue::ValueSection::Local,(int)VectorParam.size()) });
 }

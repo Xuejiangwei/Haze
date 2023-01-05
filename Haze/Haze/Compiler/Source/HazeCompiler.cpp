@@ -127,13 +127,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetGlobalVariable(const HAZE_STRING& Name)
 {
-	//std::unique_ptr<HazeCompilerModule>& Module = GetCurrModule();
-	return nullptr;
+	return GetCurrModule()->GetGlobalVariable(Name);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STRING& Name)
 {
-	return nullptr;
+	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name);;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable)
@@ -156,7 +155,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeC
 	case HazeValueType::Byte:
 	case HazeValueType::Short:
 	case HazeValueType::Int:
+	{
 		Value.Value.Int = Left->GetValue().Value.Int + Right->GetValue().Value.Int;
+		GetCurrModule()->GenASS_Add(Left, Right);
+	}
 		break;
 	case HazeValueType::Long:
 		Value.Value.Long = Left->GetValue().Value.Long + Right->GetValue().Value.Long;

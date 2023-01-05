@@ -79,7 +79,7 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
 	return MapGlobalFunction[CurrFunction];
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(HAZE_STRING& Name)
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE_STRING& Name)
 {
 	auto It = MapGlobalFunction.find(Name);
 	if (It != MapGlobalFunction.end())
@@ -90,30 +90,77 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(HAZE_STRIN
 	return nullptr;
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::AddFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
 {
 	auto It = MapGlobalFunction.find(Name);
 	if (It == MapGlobalFunction.end())
 	{
 		MapGlobalFunction[Name] = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param);
 		CurrFunction = Name;
+
 		return MapGlobalFunction[Name];
 	}
 	return It->second;
 }
 
+void HazeCompilerModule::FinishFunction()
+{
+	GetCurrFunction()->FunctionFinish();
+	CurrFunction = HAZE_TEXT("");
+}
+
+void HazeCompilerModule::GenASS_Label(HAZE_STRING& Label)
+{
+	FS_Ass << HAZE_TEXT("label_") << Label << std::endl;
+}
+
+void HazeCompilerModule::GenASS_Add(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	if (CurrFunction.empty())
+	{
+
+	}
+	else
+	{
+		HAZE_STRING_STREAM SStream;
+		SStream << HAZE_TEXT("Add ");
+
+		if (Left->IsConstant())
+		{
+			HazeCompilerStream(SStream, Left.get());
+		}
+		else
+		{
+			SStream << Left->GetAddress() << HAZE_TEXT(" ");
+		}
+
+		if (Right->IsConstant())
+		{
+			HazeCompilerStream(SStream, Right.get());
+		}
+		else
+		{
+			SStream << Right->GetAddress() << HAZE_TEXT("\n");
+		}
+
+		GetCurrFunction()->FunctionASSCode += SStream.str();
+	}
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var)
 {
-	auto It = MapGlobalVariable.find(Var.second);
-	if (It != MapGlobalVariable.end())
+	for (auto& it : VectorGlobalVariable)
 	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("编译器错误 添加全局变量重复"));
-		return nullptr;
+		if (it.first == Var.second)
+		{
+			HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("编译器错误 添加全局变量重复"));
+			return nullptr;
+		}
 	}
 
-	MapGlobalVariable[Var.second] = std::make_shared<HazeCompilerValue>(this, Var.first);
+	VectorGlobalVariable.push_back({ Var.second, std::make_shared<HazeCompilerValue>(this, Var.first, HazeCompilerValue::ValueSection::Global, (int)VectorGlobalVariable.size()) });
 
-	auto CompilerValue = MapGlobalVariable[Var.second];
+	auto& CompilerValue = VectorGlobalVariable.back().second;
 
 	GlobalVariableSize += GetSize(CompilerValue->GetValue().Type);
 
@@ -126,12 +173,18 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	if (FS_Ass.is_open())
 	{
 		int EBP = StackTop;
+		
+		//Push所有参数，从右到左
 		for (auto& it : Param)
 		{
 			PushAssCode(this, it.get());
 		}
 
+		//Push 返回地址
 		FS_Ass << "Push " << EBP << std::endl;
+
+		//Jmp 跳转到函数
+		FS_Ass << "Jmp " << Function->GetName() << std::endl;
 	}
 #endif
 
@@ -144,7 +197,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 
 #endif
 
-	return std::shared_ptr<HazeCompilerValue>();
+	return Function->GetReturnValue();
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddGlobalStringVariable(const HazeDefineVariable& Var)
@@ -152,54 +205,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddGlobalStringVariable(c
 	return nullptr;
 }
 
-
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddDataVariable(HazeValue& Value)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const HAZE_STRING& Name)
 {
-	switch (Value.Type)
+	for (auto& it : VectorGlobalVariable)
 	{
-	case HazeValueType::Byte:
-	case HazeValueType::Short:
-	case HazeValueType::Int:
-	case HazeValueType::Long:
-	case HazeValueType::UnsignedByte:
-	case HazeValueType::UnsignedShort:
-	case HazeValueType::UnsignedInt:
-	case HazeValueType::UnsignedLong:
-	{
-		auto It = MapIntDataValue.find(Value.Value.Long);
-		if (It == MapIntDataValue.end())
+		if (it.first == Name)
 		{
-			MapIntDataValue[Value.Value.Long] = std::make_shared<HazeCompilerValue>(this, Value);
+			return it.second;
 		}
-
-		return MapIntDataValue[Value.Value.Long];
-	}
-	break;
-	case HazeValueType::Float:
-	case HazeValueType::Double:
-	{
-		auto It = MapFloatDataValue.find(Value.Value.Double);
-		if (It == MapFloatDataValue.end())
-		{
-			MapFloatDataValue[Value.Value.Double] = std::make_shared<HazeCompilerValue>(this, Value);
-		}
-
-		return MapFloatDataValue[Value.Value.Double];
-	}
-	break;
-	case HazeValueType::Bool:
-	{
-		auto It = MapBoolDataValue.find(Value.Value.Bool);
-		if (It == MapBoolDataValue.end())
-		{
-			MapBoolDataValue[Value.Value.Double] = std::make_shared<HazeCompilerValue>(this, Value);
-		}
-
-		return MapBoolDataValue[Value.Value.Double];
-	}
-	break;
-	default:
-		break;
 	}
 
 	return nullptr;
@@ -231,13 +244,13 @@ void HazeCompilerModule::GenASS_Instruction()
 {
 	for (auto& it : MapGlobalFunction)
 	{
-		it.second->GenASSCode(this);
+		it.second->GenCode(this);
 	}
 }
 
 void HazeCompilerModule::GenASS_GlobalData()
 {
-	for (auto& it : MapGlobalVariable)
+	for (auto& it : VectorGlobalVariable)
 	{
 		PushAssCode(this, it.second.get());
 	}

@@ -1,18 +1,2 @@
-1 1
-1,024
-4
-1
-label_加法
-Push 0
-Push 0
-Push -1
-Push -2
-label_减法
-Push 0
-Push 0
-Push -1
-Push -2
-label_主函数
-Push -1
-Push -2
-Push 60
+Add 01
+Add 00

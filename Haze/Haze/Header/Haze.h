@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include <string>
 
+#define HAZE_STRING_STREAM std::wstringstream
+#define HAZE_OFSTREAM std::wofstream
 #define HAZE_STRING std::wstring
 #define HAZE_CHAR wchar_t
 
@@ -200,11 +202,20 @@ enum class InstructionOpCodeType : unsigned char
 	UnsignedLong,
 };
 
+enum class InstructionDataType : unsigned int
+{
+	None,
+	Global,
+	Local,
+	Constant,
+	Register,
+};
+
 enum class InstructionOpCode : unsigned int
 {
-	NONE,					//指令码id	目标内存地址		源数据类型	源数据内存
-	MOV,					//1			需要				需要			需要
-	ADD,
+	NONE,					//指令码id	目标数据类型(InstructionDataType)		目标内存地址		源数据类型(InstructionDataType)		源数据内存
+	MOV,					//1			需要									需要				需要									需要
+	ADD,					//2			需要									需要				需要									需要
 	SUB,
 	MUL,
 	DIV,

@@ -2,6 +2,7 @@
 #include "HazeVM.h"
 
 #include "HazeCompiler.h"
+#include "HazeCompilerFunction.h"
 #include "HazeCompilerModule.h"
 
 ASTFunction::ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
@@ -21,9 +22,23 @@ HazeValue* ASTFunction::CodeGen()
 {
 	auto& Module = VM->GetCompiler()->GetCurrModule();
 
+	std::shared_ptr<HazeCompilerFunction> CompilerFunction = nullptr;
+
 	if (Section == HazeSectionSignal::Global)
 	{
-		Module->AddFunction(FunctionName, FunctionType, FunctionParam);
+		CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, FunctionParam);
+	}
+
+	if (Body)
+	{
+		Body->CodeGen();
+	}
+	
+
+	//生成函数字节码
+	if (CompilerFunction)
+	{
+		CompilerFunction->FunctionFinish();
 	}
 
 	return nullptr;
