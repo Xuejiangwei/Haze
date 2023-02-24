@@ -2,14 +2,13 @@
 #include <fstream>
 
 #include "Haze.h"
-#include "HazeParseString.h"
 #include "HazeVM.h"
 #include "Parse.h"
 #include "ASTBase.h"
 #include "ASTFunction.h"
 #include "HazeLog.h"
 
-#define HAZE_SINGLE_COMMENT				L"//"
+#define HAZE_SINGLE_COMMENT				L"#"
 #define HAZE_MUTIL_COMMENT_START		L"/*"
 #define HAZE_MUTIL_COMMENT_END			L"*/"
 
@@ -222,7 +221,7 @@ Parse::~Parse()
 {
 }
 
-void Parse::InitializeFile(const std::wstring& FilePath)
+void Parse::InitializeFile(const HAZE_STRING& FilePath)
 {
 	std::wifstream FS(FilePath);
 	FS.imbue(std::locale("chs"));
@@ -323,6 +322,18 @@ HazeToken Parse::GetNextToken()
 		}
 
 		CurrLexeme += *(CurrCode++);
+	}
+
+	if (CurrLexeme == HAZE_STRING(HAZE_SINGLE_COMMENT))
+	{
+		HAZE_STRING WS;
+		WS = *CurrCode;
+		while (WS != HAZE_TEXT("\n"))
+		{
+			CurrCode++;
+			WS = *CurrCode;
+		}
+		return GetNextToken();
 	}
 
 	auto It = MapToken.find(CurrLexeme);
@@ -529,7 +540,7 @@ std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
 	HazeValue Value;
 	Value.Type = GetValueTypeByToken(DefineVariable.first.first);
-	StringToNumber(CurrLexeme, Value);
+	StringToHazeValueNumber(CurrLexeme, Value);
 
 	GetNextToken();
 	return std::make_unique<ASTNumber>(VM, Value);
@@ -721,7 +732,7 @@ bool Parse::IsHazeSignalToken(HAZE_CHAR Char)
 	{
 		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
 		TOKEN_ASSIGN, TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
-		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, TOKEN_COMMA, TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE
+		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, TOKEN_COMMA, TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, HAZE_SINGLE_COMMENT
 	};
 
 	HAZE_STRING WS;

@@ -1,36 +1,36 @@
 #include <filesystem>
 
 #include "HazeLog.h"
+#include "HazeCompiler.h"
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
+#include "HazeBaseBlock.h"
 
 HazeCompilerModule::HazeCompilerModule(const HAZE_STRING& ModuleName)
 {
-	std::wstring Path = std::filesystem::current_path();
+	HAZE_STRING Path = std::filesystem::current_path();
 	
-#if HAZE_ASS_ENABLE
+#if HAZE_I_CODE_ENABLE
 
-	std::wstring ASSPath = Path + HAZE_TEXT("\\HazeASS\\");
-	ASSPath += ModuleName + HAZE_TEXT(".Hza");
+	HAZE_STRING I_CodePath = Path + HAZE_TEXT("\\HazeICode\\");
+	I_CodePath += ModuleName + HAZE_TEXT(".Hzic");
 
-	FS_Ass.imbue(std::locale("chs"));
-	FS_Ass.open(ASSPath);
+	FS_I_Code.imbue(std::locale("chs"));
+	FS_I_Code.open(I_CodePath);
 
 #endif
 
 #if HAZE_OP_CODE_ENABLE
 
-	std::wstring OpCodePath = Path + HAZE_TEXT("\\HazeOpCode\\");
+	HAZE_STRING OpCodePath = Path + HAZE_TEXT("\\HazeOpCode\\");
 	OpCodePath += ModuleName + HAZE_TEXT(".Hzb");
 
 	FS_OpCode.imbue(std::locale("chs"));
 	FS_OpCode.open(OpCodePath);
 
 #endif
-
-	GlobalVariableSize = 0;
 	StackTop = 0;
 }
 
@@ -38,9 +38,9 @@ HazeCompilerModule::~HazeCompilerModule()
 {
 	FS_OpCode << "1 1 1 1" << std::endl;
 
-	if (FS_Ass.is_open())
+	if (FS_I_Code.is_open())
 	{
-		FS_Ass.close();
+		FS_I_Code.close();
 	}
 
 	if (FS_OpCode.is_open())
@@ -51,19 +51,18 @@ HazeCompilerModule::~HazeCompilerModule()
 
 void HazeCompilerModule::GenCodeFile()
 {
-	//根据一定格式生成所有的字节码
-#if HAZE_ASS_ENABLE
+#if HAZE_I_CODE_ENABLE
 
-	if (FS_Ass.is_open())
+	//生成中间代码先不需要计算symbol table表中的偏移，等统一生成字节码时在进行替换
+	if (FS_I_Code.is_open())
 	{
-		GenASS_FileHeader();
-		GenASS_Instruction();
-		GenASS_GlobalData();
-
-		FS_Ass.close();
+		GenICode();
+		FS_I_Code.close();
 	}
+
 #endif
 
+	//字节码应统一生成与替换，此处需要修改
 #if HAZE_OP_CODE_ENABLE
 	
 	if (FS_OpCode.is_open())
@@ -76,13 +75,17 @@ void HazeCompilerModule::GenCodeFile()
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
 {
-	return MapGlobalFunction[CurrFunction];
+	if (CurrFunction.empty())
+	{
+		return nullptr;
+	}
+	return Map_Function[CurrFunction];
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE_STRING& Name)
 {
-	auto It = MapGlobalFunction.find(Name);
-	if (It != MapGlobalFunction.end())
+	auto It = Map_Function.find(Name);
+	if (It != Map_Function.end())
 	{
 		return It->second;
 	}
@@ -92,13 +95,13 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
 {
-	auto It = MapGlobalFunction.find(Name);
-	if (It == MapGlobalFunction.end())
+	auto It = Map_Function.find(Name);
+	if (It == Map_Function.end())
 	{
-		MapGlobalFunction[Name] = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param);
+		Map_Function[Name] = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param);
 		CurrFunction = Name;
 
-		return MapGlobalFunction[Name];
+		return Map_Function[Name];
 	}
 	return It->second;
 }
@@ -109,13 +112,10 @@ void HazeCompilerModule::FinishFunction()
 	CurrFunction = HAZE_TEXT("");
 }
 
-void HazeCompilerModule::GenASS_Label(HAZE_STRING& Label)
+void HazeCompilerModule::GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code)
 {
-	FS_Ass << HAZE_TEXT("label_") << Label << std::endl;
-}
+	auto Function = GetCurrFunction();
 
-void HazeCompilerModule::GenASS_Add(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
 	if (CurrFunction.empty())
 	{
 
@@ -123,33 +123,114 @@ void HazeCompilerModule::GenASS_Add(std::shared_ptr<HazeCompilerValue> Left, std
 	else
 	{
 		HAZE_STRING_STREAM SStream;
-		SStream << HAZE_TEXT("Add ");
+		SStream << HazeCompiler::GetInstructionOpName(IO_Code) << " ";
+
+		HAZE_STRING VarName;
 
 		if (Left->IsConstant())
 		{
+			SStream << (unsigned int)InstructionDataType::Constant << " ";
 			HazeCompilerStream(SStream, Left.get());
+		}
+		else if (Left->IsRegister())
+		{
+			SStream << (unsigned int)InstructionDataType::Register << " ";
+			SStream << HazeCompiler::GetRegisterName(Left);
 		}
 		else
 		{
-			SStream << Left->GetAddress() << HAZE_TEXT(" ");
+			bool bFind = Function->GetLocalVariableName(Left, VarName);
+
+			if (bFind)
+			{
+				SStream << (unsigned int)InstructionDataType::Local << " ";
+				SStream << VarName;
+			}
+			else
+			{
+				GetGlobalVariableName(Left, VarName);
+				SStream << (unsigned int)InstructionDataType::Global << " ";
+				SStream << VarName;
+			}
 		}
+
+		SStream << " ";
 
 		if (Right->IsConstant())
 		{
+			SStream << (unsigned int)InstructionDataType::Constant << " ";
 			HazeCompilerStream(SStream, Right.get());
+		}
+		else if (Right->IsRegister())
+		{
+			SStream << (unsigned int)InstructionDataType::Register << " ";
+			SStream << HazeCompiler::GetRegisterName(Right);
 		}
 		else
 		{
-			SStream << Right->GetAddress() << HAZE_TEXT("\n");
+			bool bFind = Function->GetLocalVariableName(Right, VarName);
+
+			if (bFind)
+			{
+				SStream << (unsigned int)InstructionDataType::Local << " ";
+				SStream << VarName;
+			}
+			else
+			{
+				GetGlobalVariableName(Right, VarName);
+				SStream << (unsigned int)InstructionDataType::Global << " ";
+				SStream << VarName;
+			}
 		}
 
-		GetCurrFunction()->FunctionASSCode += SStream.str();
+		SStream << std::endl;
+
+		std::shared_ptr<HazeBaseBlock>& BB = Function->GetTopBaseBlock();
+		BB->PushIRCode(SStream.str());
 	}
+}
+
+void HazeCompilerModule::GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value)
+{
+	auto Function = GetCurrFunction();
+	HAZE_STRING_STREAM SStream;
+	SStream << HAZE_TEXT("Ret ");
+
+	HAZE_STRING VarName;
+	if (Value->IsLocal())
+	{
+		SStream << (unsigned int)InstructionDataType::Local << " ";
+		Function->GetLocalVariableName(Value, VarName);
+
+		SStream << VarName;
+	}
+	else if (Value->IsGlobal())
+	{
+		SStream << (unsigned int)InstructionDataType::Global << " ";
+		GetGlobalVariableName(Value, VarName);
+		SStream << VarName;
+	}
+	else if (Value->IsRegister())
+	{
+		SStream << (unsigned int)InstructionDataType::Register << " ";
+		VarName = HazeCompiler::GetRegisterName(Value);
+		SStream << VarName;
+	}
+	else if (Value->IsConstant())
+	{
+		SStream << (unsigned int)InstructionDataType::Constant << " ";
+		HazeCompilerStream(SStream, Value.get());
+	}
+
+	SStream << std::endl;
+
+	std::shared_ptr<HazeBaseBlock>& BB = Function->GetTopBaseBlock();
+	BB->PushIRCode(SStream.str());
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var)
 {
-	for (auto& it : VectorGlobalVariable)
+	for (auto& it : Vector_Variable)
 	{
 		if (it.first == Var.second)
 		{
@@ -158,46 +239,48 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 		}
 	}
 
-	VectorGlobalVariable.push_back({ Var.second, std::make_shared<HazeCompilerValue>(this, Var.first, HazeCompilerValue::ValueSection::Global, (int)VectorGlobalVariable.size()) });
+	Vector_Variable.push_back({ Var.second, std::make_shared<HazeCompilerValue>(this, Var.first, HazeCompilerValue::ValueSection::Global) });
 
-	auto& CompilerValue = VectorGlobalVariable.back().second;
-
-	GlobalVariableSize += GetSize(CompilerValue->GetValue().Type);
+	auto& CompilerValue = Vector_Variable.back().second;
 
 	return CompilerValue;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param)
 {
-#if HAZE_ASS_ENABLE
-	if (FS_Ass.is_open())
+
+	std::shared_ptr<HazeBaseBlock>& BB = GetCurrFunction()->GetTopBaseBlock();
+
+	HAZE_STRING VarName;
+	
+	for (auto& iter : Param)
 	{
-		int EBP = StackTop;
-		
-		//Push所有参数，从右到左
-		for (auto& it : Param)
+		if (iter->IsLocal())
 		{
-			PushAssCode(this, it.get());
+			CallFunction->GetLocalVariableName(iter, VarName);
+		}
+		else if (iter->IsGlobal())
+		{
+			GetGlobalVariableName(iter, VarName);
+		}
+		else if (iter->IsRegister())
+		{
+			VarName = HazeCompiler::GetRegisterName(iter);
+		}
+		else if (iter->IsConstant())
+		{
+			HAZE_STRING_STREAM HSS;
+			HazeCompilerStream(HSS, iter.get());
+			VarName = HSS.str();
 		}
 
-		//Push 返回地址
-		FS_Ass << "Push " << EBP << std::endl;
-
-		//Jmp 跳转到函数
-		FS_Ass << "Jmp " << Function->GetName() << std::endl;
-	}
-#endif
-
-#if HAZE_OP_CODE_ENABLE
-
-	if (FS_OpCode.is_open())
-	{
-		FS_OpCode.close();
+		VarName = HAZE_STRING(HAZE_TEXT("Push ")) + VarName + HAZE_TEXT("\n");
+		BB->PushIRCode(VarName);
 	}
 
-#endif
+	BB->PushIRCode(HAZE_STRING(HAZE_TEXT("Call ")) + CallFunction->GetName() + HAZE_TEXT("\n"));
 
-	return Function->GetReturnValue();
+	return HazeCompiler::GetReturnRegister();
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddGlobalStringVariable(const HazeDefineVariable& Var)
@@ -207,7 +290,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddGlobalStringVariable(c
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const HAZE_STRING& Name)
 {
-	for (auto& it : VectorGlobalVariable)
+	for (auto& it : Vector_Variable)
 	{
 		if (it.first == Name)
 		{
@@ -218,40 +301,74 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const H
 	return nullptr;
 }
 
+bool HazeCompilerModule::GetGlobalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
+{
+	for (auto& it : Vector_Variable)
+	{
+		if (it.second == Value)
+		{
+			OutName = it.first;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 HazeValueType HazeCompilerModule::FindClass(const HAZE_STRING& ClassName)
 {
 	return HazeValueType::Class;
 }
 
-void HazeCompilerModule::GenASS_FileHeader()
+void HazeCompilerModule::GenICode()
 {
 	//版本 2个字节
-	FS_Ass << "1 1" << std::endl;
+	//FS_Ass << "1 1" << std::endl;
 
 	//堆栈 4个字节
-	FS_Ass << 1024 << std::endl;
+	//FS_Ass << 1024 << std::endl;
 
-	//全局数据大小 4个字节
-	FS_Ass << GlobalVariableSize << std::endl;
+	/*
+	*	全局数据 ：	个数 
+	*				数据名 数据类型 数据			
+	*/
+	FS_I_Code << GetGlobalDataHeaderString() << std::endl;
+	FS_I_Code << Vector_Variable.size() << std::endl;
 
-	//Main函数是否存在
+	for (auto& iter : Vector_Variable)
+	{
+		FS_I_Code << iter.first << " " << iter.second->GetValue().Type << " ";
+		HazeCompilerOFStream(FS_I_Code, iter.second.get());
+		FS_I_Code << std::endl;
+	}
+
+	/*
+	*	字符串表 ：	个数
+	*				字符串长度 字符串
+	*/
+	FS_I_Code << GetStringTableHeaderString() << std::endl;
+	FS_I_Code << Map_StringVariable.size() << std::endl;
+
+	for (auto& iter : Map_StringVariable)
+	{
+		FS_I_Code << iter.first.length() << " " << iter.first << std::endl;
+	}
+
+	/*
+	*	函数表 ：	个数
+	*				名称 指令流
+	* 
+	*/
+	FS_I_Code << GetFucntionTableHeaderString() << std::endl;
+	FS_I_Code << Map_Function.size() << std::endl;
+
+	for (auto& iter : Map_Function)
+	{
+		iter.second->GenI_Code(this, FS_I_Code);
+	}
+
+	/*Main函数是否存在
 	auto MainFuncIter = MapGlobalFunction.find(HAZE_MAIN_FUNCTION_TEXT);
 	bool HasMain = MainFuncIter != MapGlobalFunction.end();
-	FS_Ass << HasMain << std::endl;
-}
-
-void HazeCompilerModule::GenASS_Instruction()
-{
-	for (auto& it : MapGlobalFunction)
-	{
-		it.second->GenCode(this);
-	}
-}
-
-void HazeCompilerModule::GenASS_GlobalData()
-{
-	for (auto& it : VectorGlobalVariable)
-	{
-		PushAssCode(this, it.second.get());
-	}
+	FS_Ass << HasMain << std::endl;*/
 }

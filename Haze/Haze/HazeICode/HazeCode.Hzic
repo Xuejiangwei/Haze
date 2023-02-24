@@ -1,0 +1,41 @@
+GlobalDataTable
+1
+正己 5 0
+StringTable
+0
+FunctionTable
+3
+Function 加法
+Param 甲 5
+Param 乙 5
+Start
+Push 丙 5
+ADD 3 50 2 甲
+MOV 2 丙 4 Add_R
+ADD 3 50 1 正己
+MOV 1 正己 4 Add_R
+Ret 2 丙
+End
+Function 减法
+Param 甲 5
+Param 乙 5
+Start
+SUB 2 甲 2 乙
+Ret 4 Sub_R
+End
+Function 主函数
+Start
+Push 甲 5
+Push 1
+Push 2
+Call 加法
+MOV 2 甲 4 Ret_R
+Push 乙 5
+Push 2
+Push 10
+Call 减法
+MOV 2 乙 4 Ret_R
+Push 丙 5
+ADD 2 甲 2 乙
+MOV 2 丙 4 Add_R
+End

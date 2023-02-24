@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Section(HazeCompilerValue::ValueSection::Local), Address(-1)
+HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Section(HazeCompilerValue::ValueSection::Local)
 {
 	memset(&Value, 0, sizeof(Value));
 }
@@ -19,11 +19,11 @@ HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, HazeValueType T
 	memset(&Value.Value, 0, sizeof(Value.Value));
 }*/
 
-HazeCompilerValue::HazeCompilerValue(HazeValue Value) : Module(nullptr), Value(Value), Section(HazeCompilerValue::ValueSection::Local), Address(-1)
+HazeCompilerValue::HazeCompilerValue(HazeValue Value, HazeCompilerValue::ValueSection Section) : Module(nullptr), Value(Value), Section(Section)
 {
 }
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeCompilerValue::ValueSection Section, int Address) : Module(Module), Section(Section), Address(Address)
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeCompilerValue::ValueSection Section) : Module(Module), Section(Section)
 {
 	Value.Type = GetValueTypeByToken(DefineType.first);
 	if (Value.Type == HazeValueType::Null)

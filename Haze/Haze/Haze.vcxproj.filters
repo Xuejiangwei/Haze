@@ -78,6 +78,15 @@
     <ClCompile Include="Compiler\Source\HazeCompilerHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeBaseBlock.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Backend\Source\BackendParse.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Backend\Source\ModuleUnit.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -137,10 +146,16 @@
     <ClInclude Include="Compiler\Header\HazeCompilerFunctionStack.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeParseString.h">
+    <ClInclude Include="Compiler\Header\HazeCompilerHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerHelper.h">
+    <ClInclude Include="Compiler\Header\HazeBaseBlock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Backend\Header\BackendParse.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Backend\Header\ModuleUnit.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\AST\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Compiler\Header;$(SolutionDir)Haze\MetaData\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\AST\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Compiler\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\Backend\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -133,6 +133,9 @@
     <ClCompile Include="AST\Source\ASTBase.cpp" />
     <ClCompile Include="AST\Source\ASTClass.cpp" />
     <ClCompile Include="AST\Source\ASTFunction.cpp" />
+    <ClCompile Include="Backend\Source\BackendParse.cpp" />
+    <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
+    <ClCompile Include="Compiler\Source\HazeBaseBlock.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompiler.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerFunction.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerFunctionStack.cpp" />
@@ -156,13 +159,15 @@
     <ClInclude Include="AST\Header\ASTBase.h" />
     <ClInclude Include="AST\Header\ASTClass.h" />
     <ClInclude Include="AST\Header\ASTFunction.h" />
+    <ClInclude Include="Backend\Header\BackendParse.h" />
+    <ClInclude Include="Backend\Header\ModuleUnit.h" />
+    <ClInclude Include="Compiler\Header\HazeBaseBlock.h" />
     <ClInclude Include="Compiler\Header\HazeCompiler.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerFunction.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerFunctionStack.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerHelper.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerModule.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
-    <ClInclude Include="Compiler\Header\HazeParseString.h" />
     <ClInclude Include="Header\Haze.h" />
     <ClInclude Include="Header\HazeInstruction.h" />
     <ClInclude Include="Header\HazeLog.h" />

@@ -17,7 +17,7 @@ public:
 	Parse(class HazeVM* VM);
 	~Parse();
 
-	void InitializeFile(const std::wstring& FilePath);
+	void InitializeFile(const HAZE_STRING& FilePath);
 
 	void InitializeString(const HAZE_STRING& String);
 

@@ -12,6 +12,8 @@ class HazeCompilerValue
 public:
 	enum class ValueSection : int8_t
 	{
+		Register,
+		Constant,
 		Global,
 		Local,
 	};
@@ -23,25 +25,26 @@ public:
 
 	//HazeCompilerValue(HazeCompilerModule* Module, HazeValueType Type);
 
-	HazeCompilerValue(HazeValue Value);
+	HazeCompilerValue(HazeValue Value, ValueSection Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, ValueSection Section, int Address = -1);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, ValueSection Section);
 
 	~HazeCompilerValue();
 
 	void StoreValue(std::shared_ptr<HazeCompilerValue> Value);
 
-	int GetAddress() { return Address; }
-
 	HazeValue& GetValue() { return Value; }
 
-	bool IsConstant() { return !Module; }
+	bool IsRegister() { return Section == ValueSection::Register; }
+
+	bool IsConstant() { return Section == ValueSection::Constant; }
 
 	bool IsGlobal() { return Section == ValueSection::Global; }
+
+	bool IsLocal() { return Section == ValueSection::Local; }
 
 private:
 	HazeValue Value;
 	HazeCompilerModule* Module;
 	ValueSection Section;
-	int Address;
 };

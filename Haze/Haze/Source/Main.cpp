@@ -15,7 +15,8 @@ int main()
 	std::filesystem::create_directory(Path + HAZE_TEXT("\\HazeOpCode"));
 
 	HazeVM VM;
-	VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
+	VM.InitVM({ {Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode")} });
+	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
 
 	//VM.ParseString(L"Haze 测试 \n");
 

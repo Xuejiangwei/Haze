@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <unordered_map>
+#include <sstream>
 #include <string>
 
 #define HAZE_STRING_STREAM std::wstringstream
@@ -12,7 +13,7 @@
 
 #define HAZE_MAIN_FUNCTION_TEXT HAZE_TEXT("主函数")
 
-#define HAZE_ASS_ENABLE			1
+#define HAZE_I_CODE_ENABLE			1
 #define HAZE_OP_CODE_ENABLE		1
 
 enum class HazeSectionSignal : unsigned __int8
@@ -249,7 +250,47 @@ enum class InstructionOpCode : unsigned int
 //函数及函数调用处理同Jmp处理
 
 extern HazeValueType GetValueTypeByToken(HazeToken Token);
+
+extern void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value);
+
 extern unsigned int GetSize(HazeValueType Type);
+
+extern bool IsNumber(const HAZE_STRING& Str);
+
+/*
+ * Generate file header string
+ */
+extern const HAZE_CHAR* GetGlobalDataHeaderString();
+
+extern const HAZE_CHAR* GetStringTableHeaderString();
+
+extern const HAZE_CHAR* GetFucntionTableHeaderString();
+
+extern const HAZE_CHAR* GetFunctionLabelHeader();
+
+extern const HAZE_CHAR* GetFunctionParamHeader();
+
+extern const HAZE_CHAR* GetFunctionStartHeader();
+
+extern const HAZE_CHAR* GetFunctionEndHeader();
+
+template <typename T>
+T StringToInt(HAZE_STRING& String)
+{
+	HAZE_STRING_STREAM WSS;
+	WSS << String;
+
+	T Ret;
+	WSS >> Ret;
+
+	return Ret;
+}
+
+/*
+ * Instruction string
+ */
+extern InstructionOpCode GetInstructionByString(const HAZE_STRING& String);
 
 using HazeDefineType = std::pair<HazeToken, HAZE_STRING>;			//Token, Token是identifier时的类型名
 using HazeDefineVariable = std::pair<HazeDefineType, HAZE_STRING>;	//HazeDefineType, 定义的变量名
+

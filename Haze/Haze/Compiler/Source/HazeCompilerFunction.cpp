@@ -3,6 +3,7 @@
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerFunction.h"
+#include "HazeBaseBlock.h"
 
 HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
 	: Module(Module), Name(Name), Type(Type)
@@ -11,10 +12,6 @@ HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRI
 	{
 		AddFunctionParam(it);
 	}
-
-	ReturnValue = std::make_shared<HazeCompilerValue>(Module, Type, HazeCompilerValue::ValueSection::Local);
-	
-	FunctionASSCode = HAZE_STRING(HAZE_TEXT("Label_")) + Name + HAZE_TEXT("\n");
 }
 
 HazeCompilerFunction::~HazeCompilerFunction()
@@ -23,7 +20,11 @@ HazeCompilerFunction::~HazeCompilerFunction()
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable)
 {
-	for (auto& it : VectorLocalVariable)
+	auto BB = BBList.front();
+
+	return BB->CreateAlloce(Variable);
+
+	/*for (auto& it : VectorLocalVariable)
 	{
 		if (it.first == Variable.second)
 		{
@@ -39,24 +40,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 
 	FunctionASSCode += HAZE_TEXT("Push ") + SStream.str() + HAZE_TEXT(" \n");
 
-	return VectorLocalVariable.back().second;
+	return VectorLocalVariable.back().second;*/
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& Name)
 {
-	for (auto& it : VectorParam)
+	for (auto& iter : BBList)
 	{
-		if (it.first == Name)
+		for (auto& Value : iter->GetAllocaList())
 		{
-			return it.second;
-		}
-	}
-
-	for (auto& it : VectorLocalVariable)
-	{
-		if (it.first == Name)
-		{
-			return it.second;
+			if (Value.first == Name)
+			{
+				return Value.second;
+			}
 		}
 	}
 
@@ -66,44 +62,70 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 
 void HazeCompilerFunction::FunctionFinish()
 {
+	
 }
 
-void HazeCompilerFunction::GenCode(HazeCompilerModule* Module)
+void HazeCompilerFunction::GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream)
 {
-#if HAZE_ASS_ENABLE
-	GenASSCode(Module);
-#endif // HAZE_ASS_ENABLE
+#if HAZE_I_CODE_ENABLE
+	OFStream << GetFunctionLabelHeader() << " " << Name;
+	/*if (!Type.second.empty())
+	{
+		OFStream << Type.second;
+	}
+	else
+	{
+		OFStream << GetValueTypeByToken(Type.first);
+	}*/
 
-#ifdef HAZE_OP_CODE_ENABLE
-	GenOpCode(Module);
-#endif // HAZE_OP_CODE_ENABLE
+	OFStream << std::endl;
 
-}
-
-void HazeCompilerFunction::GenASSCode(HazeCompilerModule* Module)
-{
-	//生成函数label
-	Module->GenASS_Label(Name);
-}
-
-void HazeCompilerFunction::GenOpCode(HazeCompilerModule* Module)
-{
-	//生成函数label
-
-	//Push所有参数，从右到左
+	//Push所有参数，从右到左, push 参数与返回地址的事由call去做
 	for (auto& it : VectorParam)
 	{
-		PushAssCode(Module, it.second.get());
+		OFStream << GetFunctionParamHeader() << " " << it.first << " "<< it.second->GetValue().Type << std::endl;
 	}
 
-	//Push返回地址
-	//FS << "Push " << -1 << std::endl;
+	OFStream << GetFunctionStartHeader() << std::endl;
 
-	//Push临时变量
-	//FS << "Push " << -2 << std::endl;
+	size_t ParamCount = VectorParam.size();
+	for (auto& it : BBList)
+	{
+		for (auto& code : it->GetIRCode()) 
+		{
+			if (ParamCount > 0)
+			{
+				ParamCount--;
+			}
+			else
+			{
+				OFStream << code;
+			}
+		}
+	}
+
+	OFStream << GetFunctionEndHeader() << std::endl;
+#endif // HAZE_ASS_ENABLE
+}
+
+bool HazeCompilerFunction::GetLocalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& NameOut)
+{
+	for (auto& iter : BBList)
+	{
+		for (auto& it : iter->GetAllocaList())
+		{
+			if (it.second == Value)
+			{
+				NameOut = it.first;
+				return true;
+			}
+		}
+	}
+
+	return false;
 }
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& Variable)
 {
-	VectorParam.push_back({ Variable.second, std::make_shared<HazeCompilerValue>(Module, Variable.first,HazeCompilerValue::ValueSection::Local,(int)VectorParam.size()) });
+	VectorParam.push_back({ Variable.second, std::make_shared<HazeCompilerValue>(Module, Variable.first,HazeCompilerValue::ValueSection::Local) });
 }

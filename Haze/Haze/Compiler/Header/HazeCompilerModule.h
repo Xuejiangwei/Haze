@@ -30,19 +30,21 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 
+	bool GetGlobalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+
 	HazeValueType FindClass(const HAZE_STRING& ClassName);
 
 public:
 	template<typename T>
 	void Stream(T Value)
 	{
-		FS_Ass << Value;
+		FS_I_Code << Value;
 	}
 
 	template<typename T>
 	void Push(T Value)
 	{
-		FS_Ass << "Push " << Value << std::endl;
+		FS_I_Code << "Push " << Value << std::endl;
 		StackTop++;
 	}
 
@@ -50,33 +52,29 @@ public:
 	{
 		StackTop--;
 	}
-
-	void GenASS_Label(HAZE_STRING& Label);
 	
-	void GenASS_Add(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);
+	void GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code);
+
+	void GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value);
 
 private:
 	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var);
 
-	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param);
+	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param);
 
 private:
-	void GenASS_FileHeader();
-	void GenASS_Instruction();
-	void GenASS_GlobalData();
+	void GenICode();
 
 private:
-	HAZE_OFSTREAM FS_Ass;
+	HAZE_OFSTREAM FS_I_Code;
 	HAZE_OFSTREAM FS_OpCode;
 
 	int StackTop;
 
 	HAZE_STRING CurrFunction;
-	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerFunction>> MapGlobalFunction;
+	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerFunction>> Map_Function;
 
-	unsigned int GlobalVariableSize;
-	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> VectorGlobalVariable;
+	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Vector_Variable; //这个是Symbol table(符号表)
 
-	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> MapGlobalStringVariable;
-
+	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> Map_StringVariable;
 };

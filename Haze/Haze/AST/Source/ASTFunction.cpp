@@ -2,6 +2,7 @@
 #include "HazeVM.h"
 
 #include "HazeCompiler.h"
+#include "HazeBaseBlock.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerModule.h"
 
@@ -20,13 +21,22 @@ ASTFunction::~ASTFunction()
 
 HazeValue* ASTFunction::CodeGen()
 {
-	auto& Module = VM->GetCompiler()->GetCurrModule();
+	auto& Compiler = VM->GetCompiler();
+	auto& Module = Compiler->GetCurrModule();
 
 	std::shared_ptr<HazeCompilerFunction> CompilerFunction = nullptr;
 
 	if (Section == HazeSectionSignal::Global)
 	{
 		CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, FunctionParam);
+
+		std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction.get());
+		Compiler->SetInsertBlock(BB);
+	
+		for (auto& iter : FunctionParam)
+		{
+			Compiler->CreateLocalVariable(CompilerFunction, iter);
+		}
 	}
 
 	if (Body)
@@ -36,6 +46,7 @@ HazeValue* ASTFunction::CodeGen()
 	
 
 	//生成函数字节码
+
 	if (CompilerFunction)
 	{
 		CompilerFunction->FunctionFinish();

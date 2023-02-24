@@ -52,7 +52,53 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value)
 	}
 }
 
-void PushAssCode(HazeCompilerModule* Module, HazeCompilerValue* Value)
+void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
+{
+	const auto& V = Value->GetValue();
+	switch (V.Type)
+	{
+	case Bool:
+		OFStream << V.Value.Bool;
+		break;
+	case Char:
+		OFStream << V.Value.Char;
+		break;
+	case Byte:
+		OFStream << V.Value.Byte;
+		break;
+	case UnsignedByte:
+		OFStream << V.Value.UnsignedByte;
+		break;
+	case Short:
+		OFStream << V.Value.Short;
+		break;
+	case UnsignedShort:
+		OFStream << V.Value.UnsignedShort;
+		break;
+	case Int:
+		OFStream << V.Value.Int;
+		break;
+	case Float:
+		OFStream << V.Value.Float;
+		break;
+	case UnsignedInt:
+		OFStream << V.Value.UnsignedInt;
+		break;
+	case Long:
+		OFStream << V.Value.Long;
+		break;
+	case Double:
+		OFStream << V.Value.Double;
+		break;
+	case UnsignedLong:
+		OFStream << V.Value.UnsignedLong;
+		break;
+	default:
+		break;
+	}
+}
+
+void PushICode(HazeCompilerModule* Module, HazeCompilerValue* Value)
 {
 	const auto& V = Value->GetValue();
 	switch (V.Type)

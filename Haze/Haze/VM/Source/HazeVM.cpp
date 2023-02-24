@@ -7,6 +7,8 @@
 #include "Parse.h"
 #include "HazeLog.h"
 
+#include "BackendParse.h"
+
 HazeVM::HazeVM()
 {
 	std::wcout.imbue(std::locale("chs"));
@@ -18,6 +20,22 @@ HazeVM::HazeVM()
 
 HazeVM::~HazeVM()
 {
+}
+
+void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
+{
+	for (auto& iter : Vector_ModulePath)
+	{
+		ParseFile(iter.first, iter.second);
+	}
+
+	BackendParse BP(this);
+	BP.Parse();
+}
+
+void HazeVM::StartMainFunction()
+{
+
 }
 
 void HazeVM::ParseString(const HAZE_STRING& String)
@@ -36,6 +54,12 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 		P.ParseContent();
 	}
 	Compiler->FinishModule();
+
+	auto Module = UnorderedMap_Module.find(ModuleName);
+	if (Module == UnorderedMap_Module.end())
+	{
+		UnorderedMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
+	}
 }
 
 HazeValue* HazeVM::GetVirtualRegister(uint64_t Index)

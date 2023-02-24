@@ -139,7 +139,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	{
 		ExprValue = Expression->CodeGen();
 
-		RetValue->StoreValue(ExprValue);
+		Compiler->StoreValue(RetValue, ExprValue);
 	}
 
 	return RetValue;
@@ -156,7 +156,8 @@ ASTReturn::~ASTReturn()
 
 std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 {
-	return Expression->CodeGen();
+	std::shared_ptr<HazeCompilerValue> Value = Expression->CodeGen();
+	return VM->GetCompiler()->CreateRet(Value);
 }
 
 ASTMutiExpression::ASTMutiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression)
@@ -200,10 +201,13 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		return Compiler->CreateAdd(LeftValue, RightValue);
 		break;
 	case HazeToken::Sub:
+		return Compiler->CreateSub(LeftValue, RightValue);
 		break;
 	case HazeToken::Mul:
+		return Compiler->CreateMul(LeftValue, RightValue);
 		break;
 	case HazeToken::Div:
+		return Compiler->CreateDiv(LeftValue, RightValue);
 		break;
 	case HazeToken::Mod:
 		break;
@@ -216,6 +220,9 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	case HazeToken::LeftMove:
 		break;
 	case HazeToken::RightMove:
+		break;
+	case HazeToken::Assign:
+		return Compiler->CreateMov(LeftValue, RightValue);
 		break;
 	case HazeToken::Equal:
 		break;
