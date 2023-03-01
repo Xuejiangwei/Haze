@@ -7,29 +7,13 @@
 
 #include "HazeBaseBlock.h"
 
-#define ADD_REGISTER HAZE_TEXT("Add_R")
-#define SUB_REGISTER HAZE_TEXT("Sub_R")
-#define MUL_REGISTER HAZE_TEXT("Mul_R")
-#define DIV_REGISTER HAZE_TEXT("Div_R")
-
-#define RET_REGISTER HAZE_TEXT("Ret_R")
-
-static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> Map_GlobalRegister = {
-	{ ADD_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineType(HazeToken::Int, HAZE_TEXT("Add_Register")), HazeCompilerValue::ValueSection::Register) },
-	{ SUB_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineType(HazeToken::Int, HAZE_TEXT("Sub_Register")), HazeCompilerValue::ValueSection::Register) },
-	{ MUL_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineType(HazeToken::Int, HAZE_TEXT("Mul_Register")), HazeCompilerValue::ValueSection::Register) },
-	{ DIV_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineType(HazeToken::Int, HAZE_TEXT("Div_Register")), HazeCompilerValue::ValueSection::Register) },
-	{ RET_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineType(HazeToken::Int, HAZE_TEXT("Ret_Register")), HazeCompilerValue::ValueSection::Register) },
-};
-
-static std::unordered_map<InstructionOpCode, const HAZE_CHAR*> Map_InsOpCodeName = {
-	{ InstructionOpCode::ADD, HAZE_TEXT("ADD") },
-	{ InstructionOpCode::SUB, HAZE_TEXT("SUB") },
-	{ InstructionOpCode::MUL, HAZE_TEXT("MUL") },
-	{ InstructionOpCode::DIV, HAZE_TEXT("DIV") },
-	{ InstructionOpCode::MOV, HAZE_TEXT("MOV") },
-};
-
+//static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> Map_GlobalRegister = {
+//	{ ADD_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData({{HazeToken::Int, HAZE_TEXT("Add_Register")}, HazeCompilerValue::ValueSection::Register} },
+//	{ SUB_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Sub_Register")), HazeCompilerValue::ValueSection::Register) },
+//	{ MUL_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Mul_Register")), HazeCompilerValue::ValueSection::Register) },
+//	{ DIV_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Div_Register")), HazeCompilerValue::ValueSection::Register) },
+//	{ RET_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Ret_Register")), HazeCompilerValue::ValueSection::Register) },
+//};
 
 HazeCompiler::HazeCompiler()
 {
@@ -74,40 +58,29 @@ HAZE_STRING HazeCompiler::GetCurrModuleOpFile() const
 	return Path + HAZE_TEXT("\\HazeOpCode\\") + CurrModule + HAZE_TEXT(".Hzb");
 }
 
-const HAZE_CHAR* HazeCompiler::GetInstructionOpName(InstructionOpCode IO_Code)
-{
-	auto iter = Map_InsOpCodeName.find(IO_Code);
-	if (iter != Map_InsOpCodeName.end())
-	{
-		return iter->second;
-	}
-
-	return nullptr;
-}
-
-const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue> Register)
-{
-	for (auto& iter : Map_GlobalRegister)
-	{
-		if (iter.second == Register)
-		{
-			return iter.first;
-		}
-	}
-
-	return nullptr;
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompiler::GetReturnRegister()
-{
-	auto iter = Map_GlobalRegister.find(RET_REGISTER);
-	if (iter != Map_GlobalRegister.end())
-	{
-		return iter->second;
-	}
-
-	return nullptr;
-}
+//const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue> Register)
+//{
+//	for (auto& iter : Map_GlobalRegister)
+//	{
+//		if (iter.second == Register)
+//		{
+//			return iter.first;
+//		}
+//	}
+//
+//	return nullptr;
+//}
+//
+//std::shared_ptr<HazeCompilerValue> HazeCompiler::GetReturnRegister()
+//{
+//	auto iter = Map_GlobalRegister.find(RET_REGISTER);
+//	if (iter != Map_GlobalRegister.end())
+//	{
+//		return iter->second;
+//	}
+//
+//	return nullptr;
+//}
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValue& Var)
 {
@@ -124,7 +97,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		return MapBoolConstantValue[Var.Value.Bool];
 	}
 	case HazeValueType::Char:
-	case HazeValueType::Byte:
 	case HazeValueType::Short:
 	case HazeValueType::Int:
 	{
@@ -146,7 +118,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		MapLongConstantValue[Var.Value.Long] = std::make_shared<HazeCompilerValue>(Var, HazeCompilerValue::ValueSection::Constant);
 		return MapLongConstantValue[Var.Value.Long];
 	}
-	case HazeValueType::UnsignedByte:
 	case HazeValueType::UnsignedInt:
 	{
 		auto it = MapUnsignedIntConstantValue.find(Var.Value.UnsignedInt);
@@ -243,11 +214,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	std::shared_ptr<HazeCompilerValue> AddR = Map_GlobalRegister[ADD_REGISTER];
+	/*std::shared_ptr<HazeCompilerValue> AddR = Map_GlobalRegister[ADD_REGISTER];
 	HazeValue& Value = AddR->GetValue();
-	Value.Type = Left->GetValue().Type;
+	Value.Type = Left->GetValue().Type;*/
 
-	switch (Left->GetValue().Type)
+	/*switch (Left->GetValue().Type)
 	{
 	case HazeValueType::Char:
 	case HazeValueType::Byte:
@@ -274,20 +245,18 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeC
 		break;
 	default:
 		break;
-	}
+	}*/
 
-	GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::ADD);
-
-	return AddR;
+	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::ADD);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	std::shared_ptr<HazeCompilerValue> SubR = Map_GlobalRegister[SUB_REGISTER];
+	/*std::shared_ptr<HazeCompilerValue> SubR = Map_GlobalRegister[SUB_RGISTER];
 	HazeValue& Value = SubR->GetValue();
-	Value.Type = Left->GetValue().Type;
+	Value.Type = Left->GetValue().Type;*/
 
-	switch (Left->GetValue().Type)
+	/*switch (Left->GetValue().Type)
 	{
 	case HazeValueType::Char:
 	case HazeValueType::Byte:
@@ -314,20 +283,18 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeC
 		break;
 	default:
 		break;
-	}
+	}*/
 
-	GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SUB);
-
-	return SubR;
+	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SUB);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	std::shared_ptr<HazeCompilerValue> MulR = Map_GlobalRegister[MUL_REGISTER];
+	/*std::shared_ptr<HazeCompilerValue> MulR = Map_GlobalRegister[MUL_REGISTER];
 	HazeValue& Value = MulR->GetValue();
-	Value.Type = Left->GetValue().Type;
+	Value.Type = Left->GetValue().Type;*/
 
-	switch (Left->GetValue().Type)
+	/*switch (Left->GetValue().Type)
 	{
 	case HazeValueType::Char:
 	case HazeValueType::Byte:
@@ -354,20 +321,18 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMul(std::shared_ptr<HazeC
 		break;
 	default:
 		break;
-	}
+	}*/
 
-	GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MUL);
-
-	return MulR;
+	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MUL);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	std::shared_ptr<HazeCompilerValue> DivR = Map_GlobalRegister[DIV_REGISTER];
+	/*std::shared_ptr<HazeCompilerValue> DivR = Map_GlobalRegister[DIV_REGISTER];
 	HazeValue& Value = DivR->GetValue();
-	Value.Type = Left->GetValue().Type;
+	Value.Type = Left->GetValue().Type;*/
 
-	switch (Left->GetValue().Type)
+	/*switch (Left->GetValue().Type)
 	{
 	case HazeValueType::Char:
 	case HazeValueType::Byte:
@@ -394,11 +359,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDiv(std::shared_ptr<HazeC
 		break;
 	default:
 		break;
-	}
+	}*/
 
-	GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::DIV);
-
-	return DivR;
+	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::DIV);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param)

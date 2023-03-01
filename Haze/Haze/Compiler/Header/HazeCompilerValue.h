@@ -16,6 +16,7 @@ public:
 		Constant,
 		Global,
 		Local,
+		Temp,
 	};
 
 public:
@@ -27,7 +28,7 @@ public:
 
 	HazeCompilerValue(HazeValue Value, ValueSection Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, ValueSection Section);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, ValueSection Section);
 
 	~HazeCompilerValue();
 

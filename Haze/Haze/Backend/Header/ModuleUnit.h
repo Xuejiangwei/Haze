@@ -20,13 +20,24 @@ public:
 
 	struct GlobalDataTable
 	{
-		unsigned int Num;
 		std::vector<GlobalData> Vector_Data;
 
 		GlobalDataTable()
 		{
-			Num = 0;
 			Vector_Data.clear();
+		}
+
+		unsigned int GetIndex(const HAZE_STRING& Name)
+		{
+			for (size_t i = 0; i < Vector_Data.size(); i++)
+			{
+				if (Vector_Data[i].Name == Name)
+				{
+					return (unsigned int)i;
+				}
+			}
+
+			return 0;
 		}
 	};
 
@@ -39,21 +50,20 @@ public:
 
 	struct StringTable
 	{
-		unsigned int Num;
 		std::vector<StringTableData> Vector_Data;
 
 		StringTable()
 		{
-			Num = 0;
 			Vector_Data.clear();
 		}
 	};
 
 public:
+	
 	struct FunctionInstruction
 	{
 		InstructionOpCode InsCode;
-		std::vector<std::pair<InstructionDataType, HAZE_STRING>> Operator;
+		std::vector<InstructionData> Operator;
 	};
 
 	struct FunctionTableData
@@ -65,6 +75,7 @@ public:
 
 		FunctionTableData()
 		{
+			Type = HazeValueType::Null;
 			Vector_Param.clear();
 			Vector_Instruction.clear();
 		}
@@ -72,12 +83,10 @@ public:
 
 	struct FunctionTable
 	{
-		unsigned int Num;
 		std::vector<FunctionTableData> Vector_Data;
 
 		FunctionTable()
 		{
-			Num = 0;
 			Vector_Data.clear();
 		}
 	};

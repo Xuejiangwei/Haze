@@ -6,7 +6,7 @@
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerModule.h"
 
-ASTFunction::ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
+ASTFunction::ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
 	: VM(VM), Section(Section),
 	FunctionName(std::move(Name)),
 	FunctionType(std::move(Type)),

@@ -10,40 +10,34 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value)
 		const auto& V = Value->GetValue();
 		switch (V.Type)
 		{
-		case Bool:
+		case HazeValueType::Bool:
 			Stream << V.Value.Bool;
 			break;
-		case Char:
+		case HazeValueType::Char:
 			Stream << V.Value.Char;
 			break;
-		case Byte:
-			Stream << V.Value.Byte;
-			break;
-		case UnsignedByte:
-			Stream << V.Value.UnsignedByte;
-			break;
-		case Short:
+		case HazeValueType::Short:
 			Stream << V.Value.Short;
 			break;
-		case UnsignedShort:
+		case HazeValueType::UnsignedShort:
 			Stream << V.Value.UnsignedShort;
 			break;
-		case Int:
+		case HazeValueType::Int:
 			Stream << V.Value.Int;
 			break;
-		case Float:
+		case HazeValueType::Float:
 			Stream << V.Value.Float;
 			break;
-		case UnsignedInt:
+		case HazeValueType::UnsignedInt:
 			Stream << V.Value.UnsignedInt;
 			break;
-		case Long:
+		case HazeValueType::Long:
 			Stream << V.Value.Long;
 			break;
-		case Double:
+		case HazeValueType::Double:
 			Stream << V.Value.Double;
 			break;
-		case UnsignedLong:
+		case HazeValueType::UnsignedLong:
 			Stream << V.Value.UnsignedLong;
 			break;
 		default:
@@ -57,133 +51,35 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
 	const auto& V = Value->GetValue();
 	switch (V.Type)
 	{
-	case Bool:
+	case HazeValueType::Bool:
 		OFStream << V.Value.Bool;
 		break;
-	case Char:
+	case HazeValueType::Char:
 		OFStream << V.Value.Char;
 		break;
-	case Byte:
-		OFStream << V.Value.Byte;
-		break;
-	case UnsignedByte:
-		OFStream << V.Value.UnsignedByte;
-		break;
-	case Short:
+	case HazeValueType::Short:
 		OFStream << V.Value.Short;
 		break;
-	case UnsignedShort:
+	case HazeValueType::UnsignedShort:
 		OFStream << V.Value.UnsignedShort;
 		break;
-	case Int:
+	case HazeValueType::Int:
 		OFStream << V.Value.Int;
 		break;
-	case Float:
+	case HazeValueType::Float:
 		OFStream << V.Value.Float;
 		break;
-	case UnsignedInt:
+	case HazeValueType::UnsignedInt:
 		OFStream << V.Value.UnsignedInt;
 		break;
-	case Long:
+	case HazeValueType::Long:
 		OFStream << V.Value.Long;
 		break;
-	case Double:
+	case HazeValueType::Double:
 		OFStream << V.Value.Double;
 		break;
-	case UnsignedLong:
+	case HazeValueType::UnsignedLong:
 		OFStream << V.Value.UnsignedLong;
-		break;
-	default:
-		break;
-	}
-}
-
-void PushICode(HazeCompilerModule* Module, HazeCompilerValue* Value)
-{
-	const auto& V = Value->GetValue();
-	switch (V.Type)
-	{
-	case Bool:
-		Module->Push(V.Value.Bool);
-		break;
-	case Char:
-		Module->Push(V.Value.Char);
-		break;
-	case Byte:
-		Module->Push(V.Value.Byte);
-		break;
-	case UnsignedByte:
-		Module->Push(V.Value.UnsignedByte);
-		break;
-	case Short:
-		Module->Push(V.Value.Short);
-		break;
-	case UnsignedShort:
-		Module->Push(V.Value.UnsignedShort);
-		break;
-	case Int:
-		Module->Push(V.Value.Int);
-		break;
-	case Float:
-		Module->Push(V.Value.Float);
-		break;
-	case UnsignedInt:
-		Module->Push(V.Value.UnsignedInt);
-		break;
-	case Long:
-		Module->Push(V.Value.Long);
-		break;
-	case Double:
-		Module->Push(V.Value.Double);
-		break;
-	case UnsignedLong:
-		Module->Push(V.Value.UnsignedLong);
-		break;
-	default:
-		break;
-	}
-}
-
-void StreamAssCode(HazeCompilerModule* Module, HazeCompilerValue* Value)
-{
-	const auto& V = Value->GetValue();
-	switch (V.Type)
-	{
-	case Bool:
-		Module->Stream(V.Value.Bool);
-		break;
-	case Char:
-		Module->Stream(V.Value.Char);
-		break;
-	case Byte:
-		Module->Stream(V.Value.Byte);
-		break;
-	case UnsignedByte:
-		Module->Stream(V.Value.UnsignedByte);
-		break;
-	case Short:
-		Module->Stream(V.Value.Short);
-		break;
-	case UnsignedShort:
-		Module->Stream(V.Value.UnsignedShort);
-		break;
-	case Int:
-		Module->Stream(V.Value.Int);
-		break;
-	case Float:
-		Module->Stream(V.Value.Float);
-		break;
-	case UnsignedInt:
-		Module->Stream(V.Value.UnsignedInt);
-		break;
-	case Long:
-		Module->Stream(V.Value.Long);
-		break;
-	case Double:
-		Module->Stream(V.Value.Double);
-		break;
-	case UnsignedLong:
-		Module->Stream(V.Value.UnsignedLong);
 		break;
 	default:
 		break;

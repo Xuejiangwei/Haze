@@ -223,7 +223,7 @@ Parse::~Parse()
 
 void Parse::InitializeFile(const HAZE_STRING& FilePath)
 {
-	std::wifstream FS(FilePath);
+	HAZE_IFSTREAM FS(FilePath);
 	FS.imbue(std::locale("chs"));
 	HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(FS), {});
 	CodeText = std::move(Content);
@@ -505,11 +505,16 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 
 std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 {
-	DefineVariable.first.first = CurrToken;
-	DefineVariable.first.second = HAZE_TEXT("");
+	DefineVariable.Type.Type = GetValueTypeByToken(CurrToken);
+	if (CurrToken == HazeToken::Identifier)
+	{
+		DefineVariable.Type.Type = HazeValueType::Null;
+		DefineVariable.Type.CustomName = CurrLexeme;
+	}
+
 	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse bool expression name wrong\n")))
 	{
-		DefineVariable.second = CurrLexeme;
+		DefineVariable.Name = CurrLexeme;
 
 		if (ExpectNextTokenIs(HazeToken::Assign, HAZE_TEXT("Error: Parse bool expression expect = \n")))
 		{
@@ -539,7 +544,7 @@ std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
 	HazeValue Value;
-	Value.Type = GetValueTypeByToken(DefineVariable.first.first);
+	Value.Type = DefineVariable.Type.Type;
 	StringToHazeValueNumber(CurrLexeme, Value);
 
 	GetNextToken();
@@ -583,11 +588,11 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunction()
 			StackSectionSignal.push(HazeSectionSignal::Function);
 			
 			//获得函数返回类型及是自定义类型时获得类型名字
-			HazeDefineType FuncType;
-			FuncType.first = CurrToken;
-			if (FuncType.first == HazeToken::Identifier)
+			HazeDefineData FuncType;
+			FuncType.Type = GetValueTypeByToken(CurrToken);
+			if (CurrToken == HazeToken::Identifier)
 			{
-				FuncType.second = CurrLexeme;
+				FuncType.CustomName = CurrLexeme;
 			}
 
 			//获得函数名
@@ -606,14 +611,15 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunction()
 							break;
 						}
 
-						Param.first.first = CurrToken;
-						if (Param.first.first == HazeToken::Identifier)
+						Param.Type.Type = GetValueTypeByToken(CurrToken);
+						if (CurrToken == HazeToken::Identifier)
 						{
-							Param.first.second = CurrLexeme;
+							Param.Type.Type = HazeValueType::Null;
+							Param.Type.CustomName = CurrLexeme;
 						}
 
 						GetNextToken();
-						Param.second = CurrLexeme;
+						Param.Name = CurrLexeme;
 
 						VectorParam.push_back(Param);
 
@@ -662,14 +668,15 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 				break;
 			}
 
-			Param.first.first = CurrToken;
-			if (Param.first.first == HazeToken::Identifier)
+			Param.Type.Type = GetValueTypeByToken(CurrToken);
+			if (CurrToken == HazeToken::Identifier)
 			{
-				Param.first.second = CurrLexeme;
+				Param.Type.Type = HazeValueType::Null;
+				Param.Type.CustomName = CurrLexeme;
 			}
 
 			GetNextToken();
-			Param.second = CurrLexeme;
+			Param.Name = CurrLexeme;
 
 			VectorParam.push_back(Param);
 
@@ -688,7 +695,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 				StackSectionSignal.pop();
 
 				GetNextToken();
-				HazeDefineType DefineType = { HazeToken::Int, HAZE_TEXT("") };
+				HazeDefineData DefineType = { HazeValueType::Int, HAZE_TEXT("") };
 				return std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, DefineType, VectorParam, Body);
 			}
 		}

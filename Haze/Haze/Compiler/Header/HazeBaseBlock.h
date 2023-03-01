@@ -13,6 +13,8 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define);
 
+	std::shared_ptr<HazeCompilerValue> CreateTempAlloce(const HazeDefineVariable& Define);
+
 	const std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& GetAllocaList() const { return BlockAllocaList; }
 
 	const std::vector<HAZE_STRING>& GetIRCode() const { return IRCode; }

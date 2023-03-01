@@ -30,19 +30,13 @@
     <ClCompile Include="AST\Source\ASTFunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Source\HazeLog.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\HazeInstruction.cpp">
+    <ClCompile Include="Log\Source\HazeLog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Source\HazeStack.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="VM\Source\HazeVM.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="VM\Source\OpCodeProcessor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="MetaData\Source\HazeClass.cpp">
@@ -107,19 +101,13 @@
     <ClInclude Include="Header\Haze.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Header\HazeLog.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Header\HazeInstruction.h">
+    <ClInclude Include="Log\Header\HazeLog.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Header\HazeStack.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="VM\Header\HazeVM.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="VM\Header\OpCodeProcessor.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MetaData\Header\HazeModule.h">
@@ -158,5 +146,31 @@
     <ClInclude Include="Backend\Header\ModuleUnit.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Define\Header\HazeStrcut.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeDefine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Header\HazeHeaderDefine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeToken.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeFile.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeInstruction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Define\Header\HazeTemplate.inl">
+      <Filter>头文件</Filter>
+    </None>
   </ItemGroup>
 </Project>

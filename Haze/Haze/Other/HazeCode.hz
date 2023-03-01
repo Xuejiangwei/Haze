@@ -4,7 +4,7 @@
 {
 	整数 加法(整数 甲, 整数 乙)
 	{
-		整数 丙 = 50 + 甲 # Push 丙   Add 50 甲    Mov 丙 AddRigster 
+		整数 丙 = 50 + 甲 # Push 丙 5	Push TempAdd0 5		Add TempAdd0 50		Add TempAdd0 甲	  Mov 丙 TempAdd0		Pop TempAdd0
 		正己 = 50 + 正己	 # Add 50 正己		Mov 正己 AddRigster
 		返回 丙			 # Ret 丙
 	}

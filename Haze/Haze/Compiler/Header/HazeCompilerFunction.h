@@ -19,7 +19,7 @@ public:
 	friend class HazeCompiler;
 	friend class HazeCompilerModule;
 
-	HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
+	HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
 	~HazeCompilerFunction();
 
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name);
@@ -47,7 +47,7 @@ private:
 	HazeCompilerModule* Module;
 
 	HAZE_STRING Name;
-	HazeDefineType Type;
+	HazeDefineData Type;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> VectorParam; //从右到左加入参数
 

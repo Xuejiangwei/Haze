@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\AST\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Compiler\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\Backend\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\AST\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Compiler\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\Log\Header;$(SolutionDir)Haze\Backend\Header;$(SolutionDir)Haze\Define\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -147,13 +147,11 @@
     <ClCompile Include="MetaData\Source\HazeModule.cpp" />
     <ClCompile Include="MetaData\Source\HazeVariable.cpp" />
     <ClCompile Include="Source\Haze.cpp" />
-    <ClCompile Include="Source\HazeInstruction.cpp" />
-    <ClCompile Include="Source\HazeLog.cpp" />
+    <ClCompile Include="Log\Source\HazeLog.cpp" />
     <ClCompile Include="Source\HazeStack.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Parse.cpp" />
     <ClCompile Include="VM\Source\HazeVM.cpp" />
-    <ClCompile Include="VM\Source\OpCodeProcessor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AST\Header\ASTBase.h" />
@@ -168,17 +166,25 @@
     <ClInclude Include="Compiler\Header\HazeCompilerHelper.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerModule.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
+    <ClInclude Include="Define\Header\HazeFile.h" />
+    <ClInclude Include="Define\Header\HazeInstruction.h" />
+    <ClInclude Include="Define\Header\HazeToken.h" />
+    <ClInclude Include="Define\Header\HazeValue.h" />
     <ClInclude Include="Header\Haze.h" />
-    <ClInclude Include="Header\HazeInstruction.h" />
-    <ClInclude Include="Header\HazeLog.h" />
+    <ClInclude Include="Define\Header\HazeDefine.h" />
+    <ClInclude Include="Header\HazeHeaderDefine.h" />
+    <ClInclude Include="Log\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeStack.h" />
     <ClInclude Include="Header\Parse.h" />
     <ClInclude Include="MetaData\Header\HazeClass.h" />
     <ClInclude Include="MetaData\Header\HazeFunction.h" />
     <ClInclude Include="MetaData\Header\HazeModule.h" />
     <ClInclude Include="MetaData\Header\HazeVariable.h" />
+    <ClInclude Include="Define\Header\HazeStrcut.h" />
     <ClInclude Include="VM\Header\HazeVM.h" />
-    <ClInclude Include="VM\Header\OpCodeProcessor.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Define\Header\HazeTemplate.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

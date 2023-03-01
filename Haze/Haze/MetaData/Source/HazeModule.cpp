@@ -16,7 +16,7 @@ HazeModule::~HazeModule()
 
 void HazeModule::ParseOpFile(const HAZE_STRING& OpFile)
 {
-	std::wifstream FS(OpFile);
+	HAZE_IFSTREAM FS(OpFile);
 	//FS.imbue(std::locale("chs"));
 	HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(FS), {});
 	

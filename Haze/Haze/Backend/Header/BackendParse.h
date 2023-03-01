@@ -1,9 +1,11 @@
 #pragma once
 
+#include <fstream>
+
 #include "Haze.h"
+#include "ModuleUnit.h"
 
 class HazeVM;
-class ModuleUnit;
 
 class BackendParse
 {
@@ -14,19 +16,22 @@ public:
 	void Parse();
 
 private:
-	void ToParse();
+	void GetNextLexeme();
 
-	void ParseHeader();
+	void Parse_I_Code();
 
-	void ParseInstruction();
+	void ParseInstruction(ModuleUnit::FunctionInstruction& Instruction);
 
-	InstructionOpCode GetNextInstruction();
+	void GenOpCodeFile();
+
+	void WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction);
 
 private:
 	HazeVM* VM;
 
+	HAZE_BINARY_OFSTREAM FS_OpCode;
+
 	const HAZE_CHAR* CurrCode = nullptr;
-	InstructionOpCode CurrInstruction;
 	HAZE_STRING CurrLexeme;
 
 	std::shared_ptr<ModuleUnit> CurrParseModule;

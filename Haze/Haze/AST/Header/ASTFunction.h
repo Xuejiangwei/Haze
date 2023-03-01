@@ -9,7 +9,7 @@
 class ASTFunction
 {
 public:
-	ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body);
+	ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body);
 
 	~ASTFunction();
 
@@ -20,7 +20,7 @@ private:
 	HazeSectionSignal Section;
 
 	HAZE_STRING FunctionName;
-	HazeDefineType FunctionType;
+	HazeDefineData FunctionType;
 	std::vector<HazeDefineVariable> FunctionParam; //´Ó×óµ½ÓÒ
 	std::unique_ptr<ASTBase> Body;
 };

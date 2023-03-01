@@ -28,11 +28,34 @@ public:
 
 	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName);
 
-	HazeValue* GetVirtualRegister(uint64_t Index);
+	HazeValue* GetVirtualRegister(const HAZE_CHAR* Name);
 
 	std::unique_ptr<HazeCompiler>& GetCompiler() { return Compiler; }
 
 	const std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>>& GetModules() const { return UnorderedMap_Module; }
+
+public:
+	struct FunctionData
+	{
+		HazeValueType Type;
+		std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_Param;
+		unsigned int InstructionNum;
+		unsigned int InstructionStartAddress;
+	};
+
+	struct Instruction
+	{
+		InstructionOpCode InsCode;
+		std::vector<InstructionData> Operator;
+	};
+
+private:
+	void LoadOpCodeFile();
+
+	void ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instruction);
+
+private:
+	void RunInstruction(const Instruction& Ins);
 
 private:
 	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;
@@ -44,7 +67,12 @@ private:
 
 	HazeValue FunctionReturn;
 
-	int PC; //µ±«∞÷∏¡Ó
-
 	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>> UnorderedMap_Module;
+
+	std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_GlobalData;
+
+	std::vector<std::pair<HAZE_STRING, HAZE_STRING>> Vector_StringTable;
+
+	std::vector<std::pair<HAZE_STRING, FunctionData>> Vector_FunctionTable;
+	std::vector<Instruction> Vector_Instruction;
 };

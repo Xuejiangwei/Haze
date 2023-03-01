@@ -22,7 +22,7 @@ public:
 
 	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
 
-	std::shared_ptr<HazeCompilerFunction> CreateFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
+	std::shared_ptr<HazeCompilerFunction> CreateFunction(HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
 
 	void FinishFunction();
 
@@ -35,25 +35,7 @@ public:
 	HazeValueType FindClass(const HAZE_STRING& ClassName);
 
 public:
-	template<typename T>
-	void Stream(T Value)
-	{
-		FS_I_Code << Value;
-	}
-
-	template<typename T>
-	void Push(T Value)
-	{
-		FS_I_Code << "Push " << Value << std::endl;
-		StackTop++;
-	}
-
-	void Pop()
-	{
-		StackTop--;
-	}
-	
-	void GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code);
+	std::shared_ptr<HazeCompilerValue> GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code);
 
 	void GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value);
 
@@ -67,9 +49,6 @@ private:
 
 private:
 	HAZE_OFSTREAM FS_I_Code;
-	HAZE_OFSTREAM FS_OpCode;
-
-	int StackTop;
 
 	HAZE_STRING CurrFunction;
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerFunction>> Map_Function;

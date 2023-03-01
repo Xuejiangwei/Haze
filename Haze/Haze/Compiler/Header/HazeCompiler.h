@@ -34,11 +34,9 @@ public:
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name);
 
 public:
-	static const HAZE_CHAR* GetInstructionOpName(InstructionOpCode IO_Code);
+	//static const HAZE_CHAR* GetRegisterName(std::shared_ptr<HazeCompilerValue> Register);
 
-	static const HAZE_CHAR* GetRegisterName(std::shared_ptr<HazeCompilerValue> Register);
-
-	static std::shared_ptr<HazeCompilerValue> GetReturnRegister();
+	//static std::shared_ptr<HazeCompilerValue> GetReturnRegister();
 
 public:
 	//Base block : IP

@@ -23,12 +23,12 @@ HazeCompilerValue::HazeCompilerValue(HazeValue Value, HazeCompilerValue::ValueSe
 {
 }
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeCompilerValue::ValueSection Section) : Module(Module), Section(Section)
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, HazeCompilerValue::ValueSection Section) : Module(Module), Section(Section)
 {
-	Value.Type = GetValueTypeByToken(DefineType.first);
+	Value.Type = DefineType.Type;
 	if (Value.Type == HazeValueType::Null)
 	{
-		Value.Type = Module->FindClass(DefineType.second);
+		Value.Type = Module->FindClass(DefineType.CustomName);
 	}
 	memset(&Value.Value, 0, sizeof(Value.Value));
 }

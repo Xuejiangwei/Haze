@@ -1,5 +1,6 @@
 #include <regex>
-
+#include <Windows.h>
+#include <set>
 
 #include "Haze.h"
 
@@ -13,7 +14,8 @@
 #define FUNCTION_START_HEADER HAZE_TEXT("Start")
 #define FUNCTION_END_HEADER HAZE_TEXT("End")
 
-static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code = {
+static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code = 
+{
 	{HAZE_TEXT("MOV"), InstructionOpCode::MOV },
 	{HAZE_TEXT("ADD"), InstructionOpCode::ADD },
 	{HAZE_TEXT("SUB"), InstructionOpCode::SUB },
@@ -36,6 +38,7 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code = 
 	{HAZE_TEXT("POP"), InstructionOpCode::POP },
 	
 	{HAZE_TEXT("CALL"), InstructionOpCode::CALL },
+	{HAZE_TEXT("RET"), InstructionOpCode::RET },
 };
 
 bool IsNumber(const HAZE_STRING& Str)
@@ -44,19 +47,53 @@ bool IsNumber(const HAZE_STRING& Str)
 	return std::regex_match(Str, Pattern);
 }
 
+HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
+{
+	static std::unordered_map<HazeValueType, std::set<HazeValueType>> HashMap_Table =
+	{
+		{ HazeValueType::Char, { HazeValueType::Short, HazeValueType::Int, HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
+		{ HazeValueType::Short, { HazeValueType::Int, HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
+		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
+		{ HazeValueType::UnsignedChar, { HazeValueType::UnsignedShort, HazeValueType::UnsignedInt, HazeValueType::UnsignedLong } },
+		{ HazeValueType::UnsignedShort, { HazeValueType::UnsignedInt, HazeValueType::UnsignedLong } },
+		{ HazeValueType::UnsignedInt, { HazeValueType::UnsignedLong } },
+		{ HazeValueType::Float, { HazeValueType::Double} }
+	};
+
+	if (Type1 == Type2)
+	{
+		return Type1;
+	}
+	else
+	{
+		auto it1 = HashMap_Table.find(Type1);
+		auto it2 = HashMap_Table.find(Type2);
+		if (it1 != HashMap_Table.end() && it1->second.find(Type2) != it1->second.end())
+		{
+			return Type2;
+		}
+		else if (it2 != HashMap_Table.end() && it2->second.find(Type1) != it2->second.end())
+		{
+			return Type1;
+		}
+	}
+
+	static_assert(true, "Not find stronger type!");
+
+	return HazeValueType::Null;
+}
+
 HazeValueType GetValueTypeByToken(HazeToken Token)
 {
 	static std::unordered_map<HazeToken, HazeValueType> MapHashTable =
 	{
 		{ HazeToken::Bool, HazeValueType::Bool },
 		{ HazeToken::Char, HazeValueType::Char },
-		{ HazeToken::Byte, HazeValueType::Byte },
 		{ HazeToken::Short, HazeValueType::Short },
 		{ HazeToken::Int, HazeValueType::Int },
 		{ HazeToken::Float, HazeValueType::Float },
 		{ HazeToken::Long, HazeValueType::Long },
 		{ HazeToken::Double, HazeValueType::Double },
-		{ HazeToken::UnsignedByte, HazeValueType::UnsignedByte },
 		{ HazeToken::UnsignedShort, HazeValueType::UnsignedShort },
 		{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
 		{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong}
@@ -75,21 +112,19 @@ unsigned int GetSize(HazeValueType Type)
 {
 	switch (Type)
 	{
-	case Bool:
-	case Char:
-	case Byte:
-	case UnsignedByte:
+	case HazeValueType::Bool:
+	case HazeValueType::Char:
 		return 1;
-	case Short:
-	case UnsignedShort:
+	case HazeValueType::Short:
+	case HazeValueType::UnsignedShort:
 		return 2;
-	case Int:
-	case Float:
-	case UnsignedInt:
+	case HazeValueType::Int:
+	case HazeValueType::Float:
+	case HazeValueType::UnsignedInt:
 		return 4;
-	case Long:
-	case Double:
-	case UnsignedLong:
+	case HazeValueType::Long:
+	case HazeValueType::Double:
+	case HazeValueType::UnsignedLong:
 		return 8;
 	default:
 		break;
@@ -110,12 +145,6 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value)
 	case HazeValueType::Double:
 		WSS >> Value.Value.Double;
 		break;
-	case HazeValueType::Byte:
-	{
-		short Temp;
-		WSS >> Temp;
-		memcpy(&Value.Value.Byte, &Temp, sizeof(Value.Value.Byte));
-	}
 	break;
 	case HazeValueType::Short:
 		WSS >> Value.Value.Short;
@@ -126,12 +155,6 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value)
 	case HazeValueType::Long:
 		WSS >> Value.Value.Long;
 		break;
-	case HazeValueType::UnsignedByte:
-	{
-		unsigned short Temp;
-		WSS >> Temp;
-		memcpy(&Value.Value.UnsignedByte, &Temp, sizeof(Value.Value.Byte));
-	}
 	break;
 	case HazeValueType::UnsignedShort:
 		WSS >> Value.Value.UnsignedShort;
@@ -182,6 +205,27 @@ const HAZE_CHAR* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
+const HAZE_CHAR* GetInstructionString(InstructionOpCode Code)
+{
+	static std::unordered_map<InstructionOpCode, const HAZE_CHAR*> HashMap_Code2String;
+
+	if (HashMap_Code2String.size() <= 0)
+	{
+		for (auto& iter : HashMap_String2Code)
+		{
+			HashMap_Code2String[iter.second] = iter.first.c_str();
+		}
+	}
+
+	auto iter = HashMap_Code2String.find(Code);
+	if (iter != HashMap_Code2String.end())
+	{
+		return iter->second;
+	}
+
+	return nullptr;
+}
+
 InstructionOpCode GetInstructionByString(const HAZE_STRING& String)
 {
 	auto iter = HashMap_String2Code.find(String);
@@ -191,4 +235,64 @@ InstructionOpCode GetInstructionByString(const HAZE_STRING& String)
 	}
 
 	return InstructionOpCode::NONE;
+}
+
+HAZE_STRING String2WString(std::string& str)
+{
+	std::wstring result;
+	//获取缓冲区大小，并申请空间，缓冲区大小按字符计算  
+	int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), NULL, 0);
+	TCHAR* buffer = new TCHAR[len + 1];
+	//多字节编码转换成宽字节编码  
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), buffer, len);
+	buffer[len] = '\0';             //添加字符串结尾  
+	//删除缓冲区并返回值  
+	result.append(buffer);
+	delete[] buffer;
+	return result;
+}
+
+std::string WString2String(std::wstring& wstr)
+{
+	std::string result;
+	//获取缓冲区大小，并申请空间，缓冲区大小事按字节计算的  
+	int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), NULL, 0, NULL, NULL);
+	char* buffer = new char[len + 1];
+	//宽字节编码转换成多字节编码  
+	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), buffer, len, NULL, NULL);
+	buffer[len] = '\0';
+	//删除缓冲区并返回值  
+	result.append(buffer);
+	delete[] buffer;
+	return result;
+}
+
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value)
+{
+	switch (Value.Type)
+	{
+	case HazeValueType::Bool:
+		return (HAZE_BINARY_CHAR*)&Value.Value.Bool;
+	case HazeValueType::Char:
+		return (HAZE_BINARY_CHAR*)&Value.Value.Char;
+	case HazeValueType::Short:
+		return (HAZE_BINARY_CHAR*)&Value.Value.Short;
+	case HazeValueType::UnsignedShort:
+		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedShort;
+	case HazeValueType::Int:
+		return (HAZE_BINARY_CHAR*)&Value.Value.Int;
+	case HazeValueType::Float:
+		return (HAZE_BINARY_CHAR*)&Value.Value.Float;
+	case HazeValueType::UnsignedInt:
+		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedInt;
+	case HazeValueType::Long:
+		return (HAZE_BINARY_CHAR*)&Value.Value.Long;
+	case HazeValueType::Double:
+		return (HAZE_BINARY_CHAR*)&Value.Value.Double;
+	case HazeValueType::UnsignedLong:
+		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
+	default:
+		break;
+	}
+	return nullptr;
 }
