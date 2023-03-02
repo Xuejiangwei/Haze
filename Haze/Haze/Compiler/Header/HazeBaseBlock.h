@@ -24,6 +24,8 @@ public:
 
 	void PushIRCode(const HAZE_STRING& Code);
 
+	void ClearTempIRCode();
+
 public:
 	HazeBaseBlock(const HazeBaseBlock&) = delete;
 

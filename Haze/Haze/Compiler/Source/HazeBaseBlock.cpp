@@ -47,6 +47,23 @@ void HazeBaseBlock::PushIRCode(const HAZE_STRING& Code)
 	IRCode.push_back(Code);
 }
 
+void HazeBaseBlock::ClearTempIRCode()
+{
+	for (int i = BlockAllocaList.size() - 1; i >= 0; i--)
+	{
+		if (BlockAllocaList[i].second->IsTemp())
+		{
+			HAZE_STRING_STREAM SStream;
+			SStream << GetInstructionString(InstructionOpCode::POP) << " " << BlockAllocaList[i].first << std::endl;
+			PushIRCode(SStream.str());
+		}
+		else if (!BlockAllocaList[i].second->IsTemp())
+		{
+			return;
+		}
+	}
+}
+
 std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define)
 {
 	std::shared_ptr<HazeCompilerValue> Alloce = std::make_shared<HazeCompilerValue>(ParentFunction->GetModule(), Define.Type, InstructionScopeType::Local);
@@ -55,7 +72,7 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 	HAZE_STRING_STREAM SStream;
 	SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << (unsigned int)Alloce->GetValue().Type << " " << Define.Name << " "<< (unsigned int)InstructionScopeType::Local << std::endl;
 
-	IRCode.push_back(SStream.str());
+	PushIRCode(SStream.str());
 
 	return Alloce;
 }
@@ -68,7 +85,7 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateTempAlloce(const HazeDef
 	HAZE_STRING_STREAM SStream;
 	SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << (unsigned int)Alloce->GetValue().Type << " " << Define.Name << " " << (unsigned int)InstructionScopeType::Temp << std::endl;
 
-	IRCode.push_back(SStream.str());
+	PushIRCode(SStream.str());
 
 	return Alloce;
 }

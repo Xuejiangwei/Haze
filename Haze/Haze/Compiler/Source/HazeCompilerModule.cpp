@@ -84,6 +84,13 @@ void HazeCompilerModule::FinishFunction()
 	CurrFunction = HAZE_TEXT("");
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::ADD);
+
+	return std::shared_ptr<HazeCompilerValue>();
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code)
 {
 	std::shared_ptr<HazeCompilerValue> Ret = nullptr;

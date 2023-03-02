@@ -35,6 +35,8 @@ public:
 	HazeValueType FindClass(const HAZE_STRING& ClassName);
 
 public:
+	std::shared_ptr<HazeCompilerValue> CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);
+
 	std::shared_ptr<HazeCompilerValue> GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code);
 
 	void GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value);
