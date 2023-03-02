@@ -95,14 +95,17 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 	}
 	else
 	{
-		HazeDefineVariable Var;
-		Var.Name = HAZE_TEXT("TempBinaryValue");
-		Var.Type.Type = GetStrongerType(Left->GetValue().Type, Right->GetValue().Type);
-		Ret = Function->GetTopBaseBlock()->CreateTempAlloce(Var);
-
 		HAZE_STRING_STREAM SStream;
-		SStream << GetInstructionString(IO_Code) << " " << Var.Name << "";
 
+		if (!Left->IsTemp())
+		{
+			HazeDefineVariable Var;
+			Var.Name = HAZE_TEXT("TempBinaryValue");
+			Var.Type.Type = GetStrongerType(Left->GetValue().Type, Right->GetValue().Type);
+			Ret = Function->GetTopBaseBlock()->CreateTempAlloce(Var);
+		}
+
+		SStream << GetInstructionString(IO_Code) << " ";
 		HAZE_STRING VarName;
 
 		if (Left->IsConstant())
@@ -219,7 +222,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 		}
 	}
 
-	Vector_Variable.push_back({ Var.Name, std::make_shared<HazeCompilerValue>(this, Var.Type, HazeCompilerValue::ValueSection::Global) });
+	Vector_Variable.push_back({ Var.Name, std::make_shared<HazeCompilerValue>(this, Var.Type, InstructionScopeType::Global) });
 
 	auto& CompilerValue = Vector_Variable.back().second;
 
@@ -272,7 +275,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << std::endl;
 	BB->PushIRCode(SStream.str());
 
-	return nullptr;
+	return HazeCompiler::GetReturnRegister();
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddGlobalStringVariable(const HazeDefineVariable& Var)

@@ -14,6 +14,14 @@ struct HazeDefineData
 {
 	HazeValueType Type;			//Token类型
 	HAZE_STRING CustomName;		//自定义类型名
+
+	HazeDefineData() : Type(HazeValueType::Null)
+	{
+	}
+
+	HazeDefineData(HazeValueType Type, HAZE_STRING CustomName) : Type(Type), CustomName(std::move(CustomName))
+	{
+	}
 };
 
 struct HazeDefineVariable

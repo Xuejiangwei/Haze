@@ -55,7 +55,7 @@ enum class InstructionOpCode : unsigned int
 	SHL,
 	SHR,
 
-	PUSH,
+	PUSH,					//17		操作数类型
 	POP,
 
 	CALL,

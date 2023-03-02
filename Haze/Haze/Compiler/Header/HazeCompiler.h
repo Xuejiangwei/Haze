@@ -36,7 +36,9 @@ public:
 public:
 	//static const HAZE_CHAR* GetRegisterName(std::shared_ptr<HazeCompilerValue> Register);
 
-	//static std::shared_ptr<HazeCompilerValue> GetReturnRegister();
+	static std::shared_ptr<HazeCompilerValue> GetReturnRegister();
+
+	static const HAZE_CHAR* GetReturnRegisterName();
 
 public:
 	//Base block : IP

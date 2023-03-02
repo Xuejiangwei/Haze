@@ -108,5 +108,5 @@ bool HazeCompilerFunction::GetLocalVariableName(std::shared_ptr<HazeCompilerValu
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& Variable)
 {
-	VectorParam.push_back({ Variable.Name, std::make_shared<HazeCompilerValue>(Module, Variable.Type, HazeCompilerValue::ValueSection::Local) });
+	VectorParam.push_back({ Variable.Name, std::make_shared<HazeCompilerValue>(Module, Variable.Type, InstructionScopeType::Local) });
 }

@@ -36,12 +36,12 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 		BP.Parse();
 	}
 
-	LoadOpCodeFile();
+	//LoadOpCodeFile();
 }
 
 void HazeVM::StartMainFunction()
 {
-	unsigned int StartAddress = 0;
+	int StartAddress = -1;
 	for (auto& i : Vector_FunctionTable)
 	{
 		if (i.first == HAZE_MAIN_FUNCTION_TEXT)
@@ -51,7 +51,10 @@ void HazeVM::StartMainFunction()
 		}
 	}
 
-	RunInstruction(Vector_Instruction[StartAddress]);
+	if (StartAddress >= 0)
+	{
+		RunInstruction(Vector_Instruction[StartAddress]);
+	}
 }
 
 void HazeVM::ParseString(const HAZE_STRING& String)

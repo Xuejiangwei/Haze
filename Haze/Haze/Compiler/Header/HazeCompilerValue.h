@@ -10,25 +10,15 @@ class HazeCompilerModule;
 class HazeCompilerValue
 {
 public:
-	enum class ValueSection : int8_t
-	{
-		Register,
-		Constant,
-		Global,
-		Local,
-		Temp,
-	};
-
-public:
 	HazeCompilerValue();
 
 	//HazeCompilerValue(HazeCompilerModule* Module);
 
 	//HazeCompilerValue(HazeCompilerModule* Module, HazeValueType Type);
 
-	HazeCompilerValue(HazeValue Value, ValueSection Section);
+	HazeCompilerValue(HazeValue Value, InstructionScopeType Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, ValueSection Section);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope);
 
 	~HazeCompilerValue();
 
@@ -36,16 +26,18 @@ public:
 
 	HazeValue& GetValue() { return Value; }
 
-	bool IsRegister() { return Section == ValueSection::Register; }
+	bool IsRegister() { return Scope == InstructionScopeType::Register; }
 
-	bool IsConstant() { return Section == ValueSection::Constant; }
+	bool IsConstant() { return Scope == InstructionScopeType::Constant; }
 
-	bool IsGlobal() { return Section == ValueSection::Global; }
+	bool IsGlobal() { return Scope == InstructionScopeType::Global; }
 
-	bool IsLocal() { return Section == ValueSection::Local; }
+	bool IsLocal() { return Scope == InstructionScopeType::Local; }
+
+	bool IsTemp() { return Scope == InstructionScopeType::Temp; }
 
 private:
 	HazeValue Value;
 	HazeCompilerModule* Module;
-	ValueSection Section;
+	InstructionScopeType Scope;
 };
