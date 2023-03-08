@@ -63,3 +63,7 @@ public:
 		return *this;
 	}
 };
+
+bool IsNumberType(HazeValueType Type);
+
+void AddValueByType(HazeValueType Type, const char* Source, const char* Target);

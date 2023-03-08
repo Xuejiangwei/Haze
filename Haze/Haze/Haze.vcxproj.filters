@@ -81,6 +81,12 @@
     <ClCompile Include="Backend\Source\ModuleUnit.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Define\Source\HazeInstruction.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Define\Source\HazeValue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">

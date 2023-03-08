@@ -222,7 +222,10 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	case HazeToken::RightMove:
 		break;
 	case HazeToken::Assign:
-		return Compiler->CreateMov(LeftValue, RightValue);
+	{
+		Compiler->StoreValue(LeftValue, RightValue);
+		return LeftValue;
+	}
 		break;
 	case HazeToken::Equal:
 		break;

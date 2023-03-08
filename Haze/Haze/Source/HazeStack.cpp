@@ -1,15 +1,10 @@
+#include "HazeVM.h"
 #include "HazeStack.h"
 
-static std::unordered_map<HAZE_STRING, HazeValue*>  HashMap_VirtualRegister = 
-{
-	{ADD_REGISTER, nullptr},
-	{SUB_REGISTER, nullptr},
-	{MUL_REGISTER, nullptr},
-	{DIV_REGISTER, nullptr},
-	{RET_REGISTER, nullptr},
-};
+extern std::unordered_map<HAZE_STRING, HazeValue*> HashMap_VirtualRegister;
+extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor;
 
-HazeStack::HazeStack()
+HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 {
 	PC = 0;
 	EBP = 0;
@@ -23,59 +18,28 @@ HazeStack::~HazeStack()
 {
 }
 
-HazeValue* HazeStack::GetVirtualRegister(const HAZE_CHAR* Name)
-{
-	auto Iter = HashMap_VirtualRegister.find(Name);
-	if (Iter != HashMap_VirtualRegister.end())
-	{
-		return Iter->second;
-	}
-	return nullptr;
-}
 
-void HazeStack::Call()
+void HazeStack::Start(unsigned int Address)
 {
-	EBP = PC;
-}
-
-void HazeStack::Push(const std::vector<InstructionData>& Operator)
-{
-	if (Operator.size() == 1)
+	PC = Address;
+	Stack_Function.push_back(HAZE_MAIN_FUNCTION_TEXT);
+	while (PC < VM->Vector_Instruction.size())
 	{
-		if (Operator[0].Scope == InstructionScopeType::Global)
+#ifdef _DEBUG
+		auto Iter = HashMap_InstructionProcessor.find(VM->Vector_Instruction[PC].InsCode);
+		if (Iter != HashMap_InstructionProcessor.end())
 		{
-
+			Iter->second(this);
 		}
-		else if (Operator[0].Scope == InstructionScopeType::Local)
+		else
 		{
-			HazeValueType Type = (HazeValueType)Operator[0].Type;
-			int Size = GetSize(Type);
-
-			memset(&Stack_Main[PC], 0, Size);
-
-			PC += Size;
+			return;
 		}
-	}
-}
+#else
+		HashMap_InstructionProcessor[Vector_Instruction[PC].InsCode](this);
+#endif // DEBUG
 
-void HazeStack::Pop()
-{
-	PC--;
-}
-
-void HazeStack::Add(const std::vector<InstructionData>& Operator)
-{
-	if (Operator.size() == 2)
-	{
-		HazeValue* AddRegister = GetVirtualRegister(ADD_REGISTER);
-
-		HazeValue* Value1 = GetInstructionValue(Operator[0]);
-		HazeValue* Value2 = GetInstructionValue(Operator[1]);
-
-	}
-	else
-	{
-
+		++PC;
 	}
 }
 
@@ -83,15 +47,12 @@ void HazeStack::InitRegisterToStack()
 {
 	for (auto& i : HashMap_VirtualRegister)
 	{
-		memset(&Stack_Main[PC], 0, sizeof(HazeValue));
+		memset(&Stack_Main[ESP], 0, sizeof(HazeValue));
 
-		i.second = (HazeValue*)&Stack_Main[PC];
+		i.second = (HazeValue*)&Stack_Main[ESP];
 
-		PC += sizeof(HazeValue);
+		ESP += sizeof(HazeValue);
 	}
-}
 
-HazeValue* HazeStack::GetInstructionValue(const InstructionData& InsData)
-{
-	return nullptr;
+	Stack_EBP.push_back(ESP);
 }

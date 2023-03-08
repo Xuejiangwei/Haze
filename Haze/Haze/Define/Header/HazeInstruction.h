@@ -1,5 +1,9 @@
 ﻿#pragma once
 
+#define HAZE_PUSH_ADDRESS_SIZE 4
+
+//操作数数据顺序 ValueType Name Scope
+
 /*  指令字节码说明
 	uint8		uint8		uint8		uint64		(uint8		uint64)		...(uint8		uint64)
 	指令字节id	操作数个数	操作数类型	操作数值		(操作数类型	操作数值)	...(操作数类型	操作数值)
@@ -32,6 +36,8 @@ enum class InstructionScopeType : unsigned int
 	Constant,
 	Register,
 	Temp,
+
+	Address,
 };
 
 enum class InstructionOpCode : unsigned int
@@ -77,5 +83,19 @@ struct InstructionData
 	InstructionScopeType Scope;
 	HAZE_STRING Name;
 	HazeValueType Type;
-	unsigned int Index = -1;
+	int IndexOrOffset = -1;
+};
+
+struct Instruction
+{
+	InstructionOpCode InsCode;
+	std::vector<InstructionData> Operator;
+};
+
+struct FunctionData
+{
+	HazeValueType Type;
+	std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_Param;
+	unsigned int InstructionNum;
+	unsigned int InstructionStartAddress;
 };

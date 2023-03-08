@@ -17,7 +17,7 @@ HazeVM::HazeVM()
 
 	FunctionReturn.Type = HazeValueType::Null;
 	Compiler = std::make_unique<HazeCompiler>();
-	VMStack = std::make_unique<HazeStack>();
+	VMStack = std::make_unique<HazeStack>(this);
 }
 
 HazeVM::~HazeVM()
@@ -36,24 +36,15 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 		BP.Parse();
 	}
 
-	//LoadOpCodeFile();
+	LoadOpCodeFile();
 }
 
 void HazeVM::StartMainFunction()
 {
-	int StartAddress = -1;
-	for (auto& i : Vector_FunctionTable)
+	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
+	if (Iter != HashMap_FunctionTable.end())
 	{
-		if (i.first == HAZE_MAIN_FUNCTION_TEXT)
-		{
-			StartAddress = i.second.InstructionStartAddress;
-			break;
-		}
-	}
-
-	if (StartAddress >= 0)
-	{
-		RunInstruction(Vector_Instruction[StartAddress]);
+		VMStack->Start(Vector_FunctionTable[Iter->second].InstructionStartAddress);
 	}
 }
 
@@ -79,11 +70,6 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 	{
 		UnorderedMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
 	}
-}
-
-HazeValue* HazeVM::GetVirtualRegister(const HAZE_CHAR* Name)
-{
-	return VMStack->GetVirtualRegister(Name);
 }
 
 void HazeVM::LoadOpCodeFile()
@@ -142,26 +128,26 @@ void HazeVM::LoadOpCodeFile()
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 		B_String.resize(Num);
 		FS.read(B_String.data(), Num);
-		Vector_FunctionTable[i].first = String2WString(B_String);
+		HashMap_FunctionTable[String2WString(B_String)] = (unsigned int)i;
 
-		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].second.Type));
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Type));
 
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
-		Vector_FunctionTable[i].second.Vector_Param.resize(Num);
+		Vector_FunctionTable[i].Vector_Param.resize(Num);
 
-		for (size_t j = 0; j < Vector_FunctionTable[i].second.Vector_Param.size(); j++)
+		for (size_t j = 0; j < Vector_FunctionTable[i].Vector_Param.size(); j++)
 		{
 			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 			B_String.resize(Num);
 			FS.read(B_String.data(), Num);
-			Vector_FunctionTable[i].second.Vector_Param[j].first = String2WString(B_String);
+			Vector_FunctionTable[i].Vector_Param[j].first = String2WString(B_String);
 
-			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].second.Vector_Param[j].second.Type));
-			FS.read(GetBinaryPointer(Vector_FunctionTable[i].second.Vector_Param[j].second), GetSize(Vector_FunctionTable[i].second.Vector_Param[j].second.Type));
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Param[j].second.Type));
+			FS.read(GetBinaryPointer(Vector_FunctionTable[i].Vector_Param[j].second), GetSize(Vector_FunctionTable[i].Vector_Param[j].second.Type));
 		}
 
-		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].second.InstructionNum));
-		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].second.InstructionStartAddress));
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].InstructionNum));
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].InstructionStartAddress));
 	}
 
 	//¶ÁÈ¡Ö¸Áî
@@ -190,69 +176,26 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 		B_IFS.read(BinaryString.data(), Int);
 		i.Name = String2WString(BinaryString);
 
-		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Index));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Scope));
+
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.IndexOrOffset));
 	}
 }
 
-void HazeVM::RunInstruction(const Instruction& Ins)
+unsigned int HazeVM::GetFucntionIndexByName(const HAZE_STRING& Name)
 {
-	switch (Ins.InsCode)
-	{
-	case InstructionOpCode::NONE:
-		break;
-	case InstructionOpCode::MOV: 
-	{
+	return HashMap_FunctionTable[Name];
+}
 
-	}
-		break;
-	case InstructionOpCode::ADD:
-		break;
-	case InstructionOpCode::SUB:
-		break;
-	case InstructionOpCode::MUL:
-		break;
-	case InstructionOpCode::DIV:
-		break;
-	case InstructionOpCode::MOD:
-		break;
-	case InstructionOpCode::EXP:
-		break;
-	case InstructionOpCode::NEG:
-		break;
-	case InstructionOpCode::INC:
-		break;
-	case InstructionOpCode::DEC:
-		break;
-	case InstructionOpCode::AND:
-		break;
-	case InstructionOpCode::OR:
-		break;
-	case InstructionOpCode::NOT:
-		break;
-	case InstructionOpCode::XOR:
-		break;
-	case InstructionOpCode::SHL:
-		break;
-	case InstructionOpCode::SHR:
-		break;
-	case InstructionOpCode::PUSH:
+HazeValue* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
+{
+	for (auto& Iter : Vector_GlobalData)
 	{
-		VMStack->Push(Ins.Operator);
+		if (Iter.first == Name)
+		{
+			return &Iter.second;
+		}
 	}
-		break;
-	case InstructionOpCode::POP:
-		break;
-	case InstructionOpCode::CALL:
-		break;
-	case InstructionOpCode::RET:
-		break;
-	case InstructionOpCode::Concat:
-		break;
-	case InstructionOpCode::GetChar:
-		break;
-	case InstructionOpCode::SetChar:
-		break;
-	default:
-		break;
-	}
+
+	return nullptr;
 }

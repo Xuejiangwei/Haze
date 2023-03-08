@@ -49,13 +49,16 @@ void HazeBaseBlock::PushIRCode(const HAZE_STRING& Code)
 
 void HazeBaseBlock::ClearTempIRCode()
 {
-	for (int i = BlockAllocaList.size() - 1; i >= 0; i--)
+	for (size_t i = BlockAllocaList.size() - 1; i >= 0; i--)
 	{
 		if (BlockAllocaList[i].second->IsTemp())
 		{
 			HAZE_STRING_STREAM SStream;
-			SStream << GetInstructionString(InstructionOpCode::POP) << " " << BlockAllocaList[i].first << std::endl;
+			SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetValue().Type)
+				<< " " << BlockAllocaList[i].first << " " << (unsigned int)InstructionScopeType::Temp << std::endl;
 			PushIRCode(SStream.str());
+
+			BlockAllocaList.pop_back();
 		}
 		else if (!BlockAllocaList[i].second->IsTemp())
 		{

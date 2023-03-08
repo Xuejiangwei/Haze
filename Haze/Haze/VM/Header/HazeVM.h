@@ -15,6 +15,9 @@ class HazeStack;
 class HazeVM
 {
 public:
+	friend class InstructionProcessor;
+	friend class HazeStack;
+
 	HazeVM();
 	~HazeVM();
 
@@ -34,28 +37,14 @@ public:
 
 	const std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>>& GetModules() const { return UnorderedMap_Module; }
 
-public:
-	struct FunctionData
-	{
-		HazeValueType Type;
-		std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_Param;
-		unsigned int InstructionNum;
-		unsigned int InstructionStartAddress;
-	};
+	unsigned int GetFucntionIndexByName(const HAZE_STRING& Name);
 
-	struct Instruction
-	{
-		InstructionOpCode InsCode;
-		std::vector<InstructionData> Operator;
-	};
+	HazeValue* GetGlobalValue(const HAZE_STRING& Name);
 
 private:
 	void LoadOpCodeFile();
 
 	void ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instruction);
-
-private:
-	void RunInstruction(const Instruction& Ins);
 
 private:
 	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;
@@ -73,6 +62,8 @@ private:
 
 	std::vector<std::pair<HAZE_STRING, HAZE_STRING>> Vector_StringTable;
 
-	std::vector<std::pair<HAZE_STRING, FunctionData>> Vector_FunctionTable;
+	std::vector<FunctionData> Vector_FunctionTable;
+	std::unordered_map<HAZE_STRING, unsigned int> HashMap_FunctionTable;
+
 	std::vector<Instruction> Vector_Instruction;
 };

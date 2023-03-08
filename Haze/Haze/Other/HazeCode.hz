@@ -17,7 +17,7 @@
 
 主函数()
 {
-	整数 甲 = 加法(1, 2) # Push 1 Push 2 Call 加法 Mov 甲 RetR 
+	整数 甲 = 加法(255, 2) # Push 1 Push 2 Call 加法 Mov 甲 RetR 
 	整数 乙 = 减法(2, 10)
 	整数 丙 = 甲 + 乙
 	打印(甲, 乙, 丙)

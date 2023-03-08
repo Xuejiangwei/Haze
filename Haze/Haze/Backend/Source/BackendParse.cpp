@@ -4,6 +4,10 @@
 #include "BackendParse.h"
 #include "HazeVM.h"
 
+#include "HazeLog.h"
+
+#define ENABLE_BACKEND_INSTRUCTION_LOG 1
+
 BackendParse::BackendParse(HazeVM* VM) : VM(VM)
 {
 	CurrCode = nullptr;
@@ -152,10 +156,10 @@ void BackendParse::Parse_I_Code()
 					GetNextLexeme();
 
 					std::pair<HAZE_STRING, HazeValue> Param;
-					Param.first = CurrLexeme;
+					Param.second.Type = (HazeValueType)StringToInt<unsigned int>(CurrLexeme);
 
 					GetNextLexeme();
-					Param.second.Type = (HazeValueType)StringToInt<unsigned int>(CurrLexeme);
+					Param.first = CurrLexeme;
 
 					Table.Vector_Data[i].Vector_Param.push_back(std::move(Param));
 
@@ -200,16 +204,22 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		InstructionData OperatorTwo;
 
 		GetNextLexeme();
-		OperatorOne.Scope = (InstructionScopeType)StringToInt<unsigned int>(CurrLexeme);
+		OperatorOne.Type = (HazeValueType)StringToInt<unsigned int>(CurrLexeme);
 
 		GetNextLexeme();
 		OperatorOne.Name = CurrLexeme;
 
 		GetNextLexeme();
-		OperatorTwo.Scope = (InstructionScopeType)StringToInt<unsigned int>(CurrLexeme);
+		OperatorOne.Scope = (InstructionScopeType)StringToInt<unsigned int>(CurrLexeme);
+
+		GetNextLexeme();
+		OperatorTwo.Type = (HazeValueType)StringToInt<unsigned int>(CurrLexeme);
 
 		GetNextLexeme();
 		OperatorTwo.Name = CurrLexeme;
+
+		GetNextLexeme();
+		OperatorTwo.Scope = (InstructionScopeType)StringToInt<unsigned int>(CurrLexeme);
 
 		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
@@ -253,15 +263,32 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		InstructionData OperatorOne;
 
 		GetNextLexeme();
-		OperatorOne.Scope = (InstructionScopeType)StringToInt<unsigned int>(CurrLexeme);
+		OperatorOne.Type = (HazeValueType)StringToInt<unsigned int>(CurrLexeme);
 
 		GetNextLexeme();
 		OperatorOne.Name = CurrLexeme;
+
+		GetNextLexeme();
+		OperatorOne.Scope = (InstructionScopeType)StringToInt<unsigned int>(CurrLexeme);
 
 		Instruction.Operator = { OperatorOne };
 	}
 	break;
 	case InstructionOpCode::POP:
+	{
+		InstructionData OperatorOne;
+
+		GetNextLexeme();
+		OperatorOne.Type = (HazeValueType)StringToInt<unsigned int>(CurrLexeme);
+
+		GetNextLexeme();
+		OperatorOne.Name = CurrLexeme;
+
+		GetNextLexeme();
+		OperatorOne.Scope = (InstructionScopeType)StringToInt<unsigned int>(CurrLexeme);
+
+		Instruction.Operator = { OperatorOne };
+	}
 		break;
 	case InstructionOpCode::CALL:
 	{
@@ -291,7 +318,6 @@ void BackendParse::GenOpCodeFile()
 	ModuleUnit::StringTable NewStringTable;
 	ModuleUnit::FunctionTable NewFunctionTable;
 
-	
 	for (auto& iter : HashMap_Modules)
 	{
 		NewGlobalDataTable.Vector_Data.insert(NewGlobalDataTable.Vector_Data.end(), iter.second->Table_GlobalData.Vector_Data.begin(), iter.second->Table_GlobalData.Vector_Data.end());
@@ -299,29 +325,92 @@ void BackendParse::GenOpCodeFile()
 		NewFunctionTable.Vector_Data.insert(NewFunctionTable.Vector_Data.end(), iter.second->Table_Function.Vector_Data.begin(), iter.second->Table_Function.Vector_Data.end());
 	}
 	
-	//替换变量为索引
-	for (auto& iter : NewFunctionTable.Vector_Data)
+	std::unordered_map<HAZE_STRING, size_t> HashMap_FunctionIndexAndAddress;
+	for (size_t i = 0; i < NewFunctionTable.Vector_Data.size(); i++)
 	{
-		for (size_t i = 0; i < iter.Vector_Instruction.size(); ++i)
+		HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Data[i].Name] = i;
+	}
+
+	//替换变量为索引或相对函数起始偏移
+	for (size_t k = 0; k < NewFunctionTable.Vector_Data.size(); ++k)
+	{
+		for (size_t i = 0; i < NewFunctionTable.Vector_Data[k].Vector_Instruction.size(); ++i)
 		{
-			for (auto& it : iter.Vector_Instruction[i].Operator)
+			for (auto& it : NewFunctionTable.Vector_Data[k].Vector_Instruction[i].Operator)
 			{
 				if (it.Scope == InstructionScopeType::Global)
 				{
-					it.Index = NewGlobalDataTable.GetIndex(it.Name);
+					it.IndexOrOffset = NewGlobalDataTable.GetIndex(it.Name);
 				}
-				else if (it.Scope == InstructionScopeType::Local)
+				else if (it.Scope == InstructionScopeType::Local || it.Scope == InstructionScopeType::Temp)
 				{
+					//需要先判断是不是函数参数，设置为负的索引
+					int AddressOffset = 0 - (int)sizeof(int);	 	//入栈的返回地址数据占用空间
+					bool Find = false;
+					for (size_t j = 0; j < NewFunctionTable.Vector_Data[k].Vector_Param.size(); ++j)
+					{
+						if (NewFunctionTable.Vector_Data[k].Vector_Param[j].first == it.Name)
+						{
+							it.IndexOrOffset = AddressOffset;
+							Find = true;
+							break;
+						}
+						else
+						{
+							AddressOffset -= GetSize(NewFunctionTable.Vector_Data[k].Vector_Param[j].second.Type);
+						}
+					}
+
+					if (Find)
+					{
+						continue;
+					}
+
+
+					int Offset = 0;
 					for (unsigned int j = 0; j < i; j++)
 					{
-						if (iter.Vector_Instruction[j].InsCode == InstructionOpCode::PUSH && iter.Vector_Instruction[j].Operator[0].Name == it.Name)
+						if (NewFunctionTable.Vector_Data[k].Vector_Instruction[j].InsCode == InstructionOpCode::PUSH)
 						{
-							it.Index = j;
-							break;
+							if (NewFunctionTable.Vector_Data[k].Vector_Instruction[j].Operator[0].Name == it.Name)
+							{
+								it.IndexOrOffset = Offset;
+								break;
+							}
+							else
+							{
+								Offset+=GetSize(NewFunctionTable.Vector_Data[k].Vector_Instruction[j].Operator[0].Type);
+							}
+						}
+						else if (NewFunctionTable.Vector_Data[k].Vector_Instruction[j].InsCode == InstructionOpCode::POP)
+						{
+							Offset -= GetSize(NewFunctionTable.Vector_Data[k].Vector_Instruction[j].Operator[0].Type);;
+						}
+						else if (NewFunctionTable.Vector_Data[k].Vector_Instruction[j].InsCode == InstructionOpCode::CALL)
+						{
+							static int AddressOffset = 1;
+
+							for (auto& Param : NewFunctionTable.Vector_Data[HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Data[k].Vector_Instruction[j].Operator[0].Name]].Vector_Param)
+							{
+								Offset -= GetSize(Param.second.Type);
+
+							}
 						}
 					}
 				}
 			}
+
+#if ENABLE_BACKEND_INSTRUCTION_LOG
+			HAZE_STRING_STREAM WSS;
+			WSS << GetInstructionString(NewFunctionTable.Vector_Data[k].Vector_Instruction[i].InsCode) << " ";
+			for (auto& it : NewFunctionTable.Vector_Data[k].Vector_Instruction[i].Operator)
+			{
+				WSS << it.Name << " " << it.IndexOrOffset << " ";
+			}
+			WSS << std::endl;
+
+			std::wcout << WSS.str();
+#endif // ENABLE_BACKEND_INSTRUCTION_LOG
 		}
 	}
 
@@ -406,25 +495,29 @@ void BackendParse::GenOpCodeFile()
 
 void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction)
 {
-	unsigned int Int = 0;
+	unsigned int UnsignedInt = 0;
+	int Int = 0;
 	HAZE_BINARY_STRING BinaryString;
 
 	B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Instruction.InsCode));		//字节码
-	Int = (unsigned int)Instruction.Operator.size();										
-	B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Int));						//操作数个数
+	UnsignedInt = (unsigned int)Instruction.Operator.size();										
+	B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));						//操作数个数
 
 	//std::pair<InstructionDataType, std::pair<HAZE_STRING, unsigned int>>;
 	for (auto& i : Instruction.Operator)
 	{
-		Int = (unsigned int)i.Scope;
-		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Int));					//操作数类型
+		UnsignedInt = (unsigned int)i.Type;
+		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));					//操作数类型
 
 		BinaryString = WString2String(i.Name);
-		Int = (unsigned int)BinaryString.size();
-		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Int));
-		FS_OpCode.write(BinaryString.data(), Int);							//操作数名字
+		UnsignedInt = (unsigned int)BinaryString.size();
+		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
+		FS_OpCode.write(BinaryString.data(), UnsignedInt);							//操作数名字
 
-		Int = (unsigned int)i.Index;
+		UnsignedInt = (unsigned int)i.Scope;
+		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));					//操作数作用域
+
+		Int = (int)i.IndexOrOffset;
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Int));					//操作数索引
 	}
 	/*switch (Instruction.InsCode)

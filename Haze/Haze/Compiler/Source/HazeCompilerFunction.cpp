@@ -62,9 +62,9 @@ void HazeCompilerFunction::GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& 
 	OFStream << std::endl;
 
 	//Push所有参数，从右到左, push 参数与返回地址的事由call去做
-	for (auto& it : VectorParam)
+	for (int i = (int)VectorParam.size() - 1; i >= 0; i--)
 	{
-		OFStream << GetFunctionParamHeader() << " " << HAZE_CAST_VALUE_TYPE(it.second->GetValue().Type) << " "<< it.first << std::endl;
+		OFStream << GetFunctionParamHeader() << " " << HAZE_CAST_VALUE_TYPE(VectorParam[i].second->GetValue().Type) << " " << VectorParam[i].first << std::endl;
 	}
 
 	OFStream << GetFunctionStartHeader() << std::endl;

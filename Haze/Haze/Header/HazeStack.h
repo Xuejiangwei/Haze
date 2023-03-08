@@ -5,37 +5,30 @@
 #include "Haze.h"
 
 
-class HazeFrameStack
-{
-};
+class HazeVM;
 
 class HazeStack
 {
 public:
-	HazeStack();
+	friend class InstructionProcessor;
+
+	HazeStack(HazeVM* VM);
 
 	~HazeStack();
 
-	HazeValue* GetVirtualRegister(const HAZE_CHAR* Name);
-
-	void Call();
-
-	void Push(const std::vector<InstructionData>& Operator);
-
-	void Pop();
-
-	void Add(const std::vector<InstructionData>& Operator);
+	void Start(unsigned int Address);
 
 private:
 	void InitRegisterToStack();
 
-	HazeValue* GetInstructionValue(const InstructionData& InsData);
-
 private:
-	std::vector<char> Stack_Main;
-	std::vector<HazeValueType> Stack_Type; // 暂时不需要辅助栈
+	HazeVM* VM;
 
-	unsigned int PC;
+	std::vector<char> Stack_Main;
+	std::vector<char> Stack_EBP;
+	std::vector<HAZE_STRING> Stack_Function; // 暂时不需要辅助栈
+
+	int PC;
 	unsigned int EBP;		//栈底
 	unsigned int ESP;		//栈顶
 };

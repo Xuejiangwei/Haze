@@ -1,5 +1,5 @@
 template <typename T>
-T StringToInt(HAZE_STRING& String)
+T StringToInt(const HAZE_STRING& String)
 {
 	HAZE_STRING_STREAM WSS;
 	WSS << String;

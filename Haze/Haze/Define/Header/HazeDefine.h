@@ -26,6 +26,8 @@
 #define DIV_REGISTER HAZE_TEXT("Div_R")
 #define RET_REGISTER HAZE_TEXT("Ret_R")
 
+#define HAZE_CALL_PUSH_ADDRESS_NAME HAZE_TEXT("Address")
+
 #define HAZE_I_CODE_ENABLE			1
 #define HAZE_OP_CODE_ENABLE			1
 

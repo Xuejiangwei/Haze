@@ -189,6 +189,10 @@ void HazeCompiler::ClearBlockPoint()
 void HazeCompiler::StoreValue(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
 {
 	GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOV);
+
+	Alloca->StoreValue(Value);
+
+	ClearFunctionTemp();
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable)
@@ -201,18 +205,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::uniqu
 	return Module->CreateGlobalVariable(Var);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MOV);
-	GetCurrModule()->GetCurrFunction()->GetTopBaseBlock()->ClearTempIRCode();
-
-	return Left;
-}
-
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeCompilerValue> Value)
 {
 	GetCurrModule()->GenIRCode_Ret(Value);
-
 	return Value;
 }
 
@@ -373,4 +368,13 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_
 	auto& Module = GetCurrModule();
 	
 	return Module->CreateFunctionCall(Function, Param);
+}
+
+void HazeCompiler::ClearFunctionTemp()
+{
+	std::shared_ptr<HazeCompilerFunction> Function = GetCurrModule()->GetCurrFunction();
+	if (Function)
+	{
+		Function->GetTopBaseBlock()->ClearTempIRCode();
+	}
 }

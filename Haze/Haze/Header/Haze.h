@@ -38,7 +38,7 @@ extern const HAZE_CHAR* GetFunctionStartHeader();
 extern const HAZE_CHAR* GetFunctionEndHeader();
 
 template <typename T>
-T StringToInt(HAZE_STRING& String);
+T StringToInt(const HAZE_STRING& String);
 
 /*
  * Instruction string
