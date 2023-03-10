@@ -94,7 +94,7 @@ ASTFunctionCall::~ASTFunctionCall()
 std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 {
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
-	auto Function = Compiler->GetCurrModule()->GetFunction(Name);
+	auto Function = Compiler->GetFunction(Name);
 	if (Function)
 	{
 		std::vector<std::shared_ptr<HazeCompilerValue>> Param;
@@ -160,16 +160,16 @@ std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 	return VM->GetCompiler()->CreateRet(Value);
 }
 
-ASTMutiExpression::ASTMutiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression)
+ASTMultiExpression::ASTMultiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression)
 	: ASTBase(VM), SectionSignal(Section), VectorExpression(std::move(VectorExpression))
 {
 }
 
-ASTMutiExpression::~ASTMutiExpression()
+ASTMultiExpression::~ASTMultiExpression()
 {
 }
 
-std::shared_ptr<HazeCompilerValue> ASTMutiExpression::CodeGen()
+std::shared_ptr<HazeCompilerValue> ASTMultiExpression::CodeGen()
 {
 	for (auto& it : VectorExpression)
 	{
@@ -251,4 +251,18 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	return nullptr;
 }
 
+ASTImportModule::ASTImportModule(HazeVM* VM, const HAZE_STRING& ModuleName) : ASTBase(VM), ModuleName(ModuleName)
+{
+}
 
+ASTImportModule::~ASTImportModule()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTImportModule::CodeGen()
+{
+	auto& Compiler = VM->GetCompiler();
+	VM->ParseModule(ModuleName);
+
+	return nullptr;
+}

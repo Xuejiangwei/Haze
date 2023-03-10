@@ -10,7 +10,7 @@ ASTFunction::ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Nam
 	: VM(VM), Section(Section),
 	FunctionName(std::move(Name)),
 	FunctionType(std::move(Type)),
-	FunctionParam(std::move(Param)),
+	Vector_FunctionParam(std::move(Param)),
 	Body(std::move(Body))
 {
 }
@@ -28,12 +28,12 @@ HazeValue* ASTFunction::CodeGen()
 
 	if (Section == HazeSectionSignal::Global)
 	{
-		CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, FunctionParam);
+		CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
 
 		std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction.get());
 		Compiler->SetInsertBlock(BB);
 	
-		for (auto& iter : FunctionParam)
+		for (auto& iter : Vector_FunctionParam)
 		{
 			Compiler->CreateLocalVariable(CompilerFunction, iter);
 		}
@@ -70,4 +70,20 @@ void ASTFunctionSection::CodeGen()
 	{
 		it->CodeGen();
 	}
+}
+
+ASTFunctionDefine::ASTFunctionDefine(HazeVM* VM, const HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param) 
+	: VM(VM), FunctionName(Name), FunctionType(Type), Vector_FunctionParam(std::move(Param))
+{
+}
+
+ASTFunctionDefine::~ASTFunctionDefine()
+{
+}
+
+void ASTFunctionDefine::CodeGen()
+{
+	auto& Compiler = VM->GetCompiler();
+	auto& Module = Compiler->GetCurrModule();
+	Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
 }

@@ -16,12 +16,13 @@ int main()
 
 	HazeVM VM;
 	VM.InitVM({ {Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode")} });
+	VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode")} });
 	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
 	VM.StartMainFunction();
 
 	//VM.ParseString(L"Haze 测试 \n");
 
-	std::cout << "Hello World!\n";
+	//std::cout << "Hello World!\n";
 	getchar();
 }
 

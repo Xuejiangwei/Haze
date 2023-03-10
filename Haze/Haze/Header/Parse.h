@@ -10,6 +10,7 @@ class ASTBase;
 class ASTClass;
 class ASTFunction;
 class ASTFunctionSection;
+class ASTStandardLibrary;
 
 class Parse
 {
@@ -52,11 +53,15 @@ private:
 
 	std::unique_ptr<ASTBase> ParseReturn();
 
-	std::unique_ptr<ASTBase> ParseMutiExpression();
+	std::unique_ptr<ASTBase> ParseMultiExpression();
 
 	std::unique_ptr<ASTFunctionSection> ParseFunction();
 
 	std::unique_ptr<ASTFunction> ParseMainFunction();
+
+	std::unique_ptr<ASTStandardLibrary> ParseStandardLibrary();
+
+	std::unique_ptr<ASTBase> ParseImportModule();
 
 private:
 	bool ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo = nullptr);

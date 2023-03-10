@@ -22,8 +22,6 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("MUL"), InstructionOpCode::MUL },
 	{HAZE_TEXT("DIV"), InstructionOpCode::DIV },
 	{HAZE_TEXT("MOD"), InstructionOpCode::MOD },
-	{HAZE_TEXT("EXP"), InstructionOpCode::EXP },
-	{HAZE_TEXT("NEG"), InstructionOpCode::NEG },
 	{HAZE_TEXT("INC"), InstructionOpCode::INC },
 	{HAZE_TEXT("DEC"), InstructionOpCode::DEC },
 
@@ -45,6 +43,21 @@ bool IsNumber(const HAZE_STRING& Str)
 {
 	std::wregex Pattern(HAZE_TEXT("-[0-9]+(.[0-9]+)?|[0-9]+(.[0-9]+)?"));
 	return std::regex_match(Str, Pattern);
+}
+
+HazeValueType GetNumberDefaultType(const HAZE_STRING& Str)
+{
+	std::wregex Pattern(HAZE_TEXT("^[0-9]+(.[0-9])+$"));
+	bool IsFloat = std::regex_match(Str, Pattern);
+	if (IsFloat)
+	{
+		return HazeValueType::Float;
+	}
+	else
+	{
+		return HazeValueType::Int;
+	}
+	return HazeValueType::Int;
 }
 
 HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
@@ -87,6 +100,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 {
 	static std::unordered_map<HazeToken, HazeValueType> MapHashTable =
 	{
+		{ HazeToken::Void, HazeValueType::Void },
 		{ HazeToken::Bool, HazeValueType::Bool },
 		{ HazeToken::Char, HazeValueType::Char },
 		{ HazeToken::Short, HazeValueType::Short },
@@ -96,7 +110,9 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 		{ HazeToken::Double, HazeValueType::Double },
 		{ HazeToken::UnsignedShort, HazeValueType::UnsignedShort },
 		{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
-		{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong}
+		{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
+
+		{ HazeToken::MultiVariable, HazeValueType::MultiVar},
 	};
 
 	auto it = MapHashTable.find(Token);

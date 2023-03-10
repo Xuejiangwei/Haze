@@ -5,6 +5,7 @@
 enum class HazeValueType : unsigned int
 {
 	Null,
+	Void,
 	Bool,
 	Char,
 
@@ -21,6 +22,8 @@ enum class HazeValueType : unsigned int
 
 	Class,
 	Function,
+
+	MultiVar,
 };
 
 struct HazeValue
@@ -64,6 +67,8 @@ public:
 	}
 };
 
+enum class InstructionOpCode : unsigned int;
+
 bool IsNumberType(HazeValueType Type);
 
-void AddValueByType(HazeValueType Type, const char* Source, const char* Target);
+void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const char* Source, const char* Target);

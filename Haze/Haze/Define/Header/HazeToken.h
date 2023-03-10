@@ -4,6 +4,7 @@ enum class HazeToken : unsigned int
 {
 	None,
 	Identifier,
+	Void,
 	Bool,
 	Char,
 	Byte,
@@ -78,7 +79,10 @@ enum class HazeToken : unsigned int
 
 	Define,
 
+	StandardLibrary,
 	ImportModule,
+
+	MultiVariable,
 
 	//NoMatch
 	Number,

@@ -120,15 +120,28 @@ private:
 };
 
 //多行表达式
-class ASTMutiExpression : public ASTBase
+class ASTMultiExpression : public ASTBase
 {
 public:
-	ASTMutiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression);
-	virtual ~ASTMutiExpression() override;
+	ASTMultiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression);
+	virtual ~ASTMultiExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
 	HazeSectionSignal SectionSignal;
 	std::vector<std::unique_ptr<ASTBase>> VectorExpression;
+};
+
+//引用库
+class ASTImportModule : public ASTBase
+{
+public:
+	ASTImportModule(HazeVM* VM, const HAZE_STRING& ModuleName);
+	virtual ~ASTImportModule() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	HAZE_STRING ModuleName;
 };

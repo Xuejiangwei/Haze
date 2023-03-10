@@ -39,18 +39,6 @@
     <ClCompile Include="VM\Source\HazeVM.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MetaData\Source\HazeClass.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="MetaData\Source\HazeModule.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="MetaData\Source\HazeFunction.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="MetaData\Source\HazeVariable.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Compiler\Source\HazeCompiler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -87,6 +75,27 @@
     <ClCompile Include="Define\Source\HazeValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="MetaData\Source\HazeClass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaData\Source\HazeFunction.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaData\Source\HazeModule.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaData\Source\HazeVariable.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AST\Source\ASTStandardLibrary.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StandardLibrary\Source\HazeStream.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="StandardLibrary\Source\HazeStandardLibraryBase.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -101,9 +110,6 @@
     <ClInclude Include="AST\Header\ASTFunction.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MetaData\Header\HazeClass.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Header\Haze.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -114,15 +120,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="VM\Header\HazeVM.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MetaData\Header\HazeModule.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MetaData\Header\HazeFunction.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="MetaData\Header\HazeVariable.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompiler.h">
@@ -171,6 +168,27 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Define\Header\HazeInstruction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaData\Header\HazeClass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaData\Header\HazeFunction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaData\Header\HazeModule.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaData\Header\HazeVariable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AST\Header\ASTStandardLibrary.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardLibrary\Header\HazeStream.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="StandardLibrary\Header\HazeStandardLibraryBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

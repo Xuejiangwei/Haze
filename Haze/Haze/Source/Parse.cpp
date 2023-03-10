@@ -6,12 +6,15 @@
 #include "Parse.h"
 #include "ASTBase.h"
 #include "ASTFunction.h"
+#include "ASTStandardLibrary.h"
+
 #include "HazeLog.h"
 
-#define HAZE_SINGLE_COMMENT				L"#"
-#define HAZE_MUTIL_COMMENT_START		L"/*"
-#define HAZE_MUTIL_COMMENT_END			L"*/"
+#define HAZE_SINGLE_COMMENT				HAZE_TEXT("#")
+#define HAZE_MULTI_COMMENT_START		HAZE_TEXT("/*")
+#define HAZE_MULTI_COMMENT_END			HAZE_TEXT("*/")
 
+#define TOKEN_VOID				HAZE_TEXT("空")
 #define TOKEN_BOOL				HAZE_TEXT("布尔")
 #define TOKEN_CHAR				HAZE_TEXT("字符")
 #define TOKEN_BYTE				HAZE_TEXT("字节")
@@ -87,10 +90,14 @@
 
 #define TOKEN_DEFINE			HAZE_TEXT("定义")
 
+#define TOKEN_STANDARD_LIBRARY	HAZE_TEXT("标准库")
 #define TOKEN_IMPORT_MODULE		HAZE_TEXT("引")
+
+#define TOKEN_MULTI_VARIABLE		HAZE_TEXT("...")
 
 static std::unordered_map<HAZE_STRING, HazeToken> MapToken =
 {
+	{TOKEN_VOID, HazeToken::Void},
 	{TOKEN_BOOL, HazeToken::Bool},
 	{TOKEN_CHAR, HazeToken::Char},
 	{TOKEN_BYTE, HazeToken::Byte},
@@ -165,7 +172,10 @@ static std::unordered_map<HAZE_STRING, HazeToken> MapToken =
 
 	{TOKEN_DEFINE, HazeToken::Define},
 
+	{TOKEN_STANDARD_LIBRARY, HazeToken::StandardLibrary},
 	{TOKEN_IMPORT_MODULE, HazeToken::ImportModule},
+
+	{TOKEN_MULTI_VARIABLE, HazeToken::MultiVariable},
 };
 
 static std::unordered_map<HazeToken, int> MapBinOp =
@@ -279,8 +289,18 @@ void Parse::ParseContent()
 			AST->CodeGen();
 		}
 		break;
+		case HazeToken::StandardLibrary:
+		{
+			auto AST = ParseStandardLibrary();
+			AST->CodeGen();
+		}
+		break;
 		case HazeToken::ImportModule:
-			break;
+		{
+			auto AST = ParseImportModule();
+			AST->CodeGen();
+		}
+		break;
 		default:
 			break;
 		}
@@ -544,7 +564,15 @@ std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
 	HazeValue Value;
-	Value.Type = DefineVariable.Type.Type;
+	if (DefineVariable.Type.Type != HazeValueType::Null)
+	{
+		Value.Type = DefineVariable.Type.Type;
+	}
+	else
+	{
+		Value.Type = GetNumberDefaultType(CurrLexeme);
+	}
+
 	StringToHazeValueNumber(CurrLexeme, Value);
 
 	GetNextToken();
@@ -558,7 +586,7 @@ std::unique_ptr<ASTBase> Parse::ParseReturn()
 	return std::make_unique<ASTReturn>(VM, ReturnExpression);
 }
 
-std::unique_ptr<ASTBase> Parse::ParseMutiExpression()
+std::unique_ptr<ASTBase> Parse::ParseMultiExpression()
 {
 	std::vector<std::unique_ptr<ASTBase>> VectorExpr;
 
@@ -573,7 +601,7 @@ std::unique_ptr<ASTBase> Parse::ParseMutiExpression()
 		}
 	}
 
-	return std::make_unique<ASTMutiExpression>(VM, StackSectionSignal.top(), VectorExpr);
+	return std::make_unique<ASTMultiExpression>(VM, StackSectionSignal.top(), VectorExpr);
 }
 
 std::unique_ptr<ASTFunctionSection> Parse::ParseFunction()
@@ -601,7 +629,7 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunction()
 				HAZE_STRING FunctionName = CurrLexeme;
 				if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
 				{
-					std::vector<HazeDefineVariable> VectorParam;
+					std::vector<HazeDefineVariable> Vector_Param;
 
 					while (!TokenIs(HazeToken::LeftBrace))
 					{
@@ -618,10 +646,19 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunction()
 							Param.Type.CustomName = CurrLexeme;
 						}
 
+						if (Param.Type.Type == HazeValueType::MultiVar)
+						{
+							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
+							Vector_Param.push_back(Param);
+
+							GetNextToken();
+							break;
+						}
+
 						GetNextToken();
 						Param.Name = CurrLexeme;
 
-						VectorParam.push_back(Param);
+						Vector_Param.push_back(Param);
 
 						if (!ExpectNextTokenIs(HazeToken::Comma))
 						{
@@ -631,14 +668,14 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunction()
 
 					if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function body expect { \n")))
 					{
-						std::unique_ptr<ASTBase> Body = ParseMutiExpression();
+						std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
 						if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse function expression expect function body expect } \n")))
 						{
 							StackSectionSignal.pop();
 
 							GetNextToken();
-							Functions.push_back(std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, FuncType, VectorParam, Body));
+							Functions.push_back(std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body));
 						}
 					}
 				}
@@ -658,7 +695,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 	StackSectionSignal.push(HazeSectionSignal::Function);
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
 	{
-		std::vector<HazeDefineVariable> VectorParam;
+		std::vector<HazeDefineVariable> Vector_Param;
 
 		while (!TokenIs(HazeToken::LeftBrace))
 		{
@@ -678,7 +715,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 			GetNextToken();
 			Param.Name = CurrLexeme;
 
-			VectorParam.push_back(Param);
+			Vector_Param.push_back(Param);
 
 			if (!ExpectNextTokenIs(HazeToken::Comma))
 			{
@@ -688,7 +725,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 
 		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function body expect { \n")))
 		{
-			std::unique_ptr<ASTBase> Body = ParseMutiExpression();
+			std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
 			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse function expression expect function body expect } \n")))
 			{
@@ -696,12 +733,112 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 
 				GetNextToken();
 				HazeDefineData DefineType = { HazeValueType::Int, HAZE_TEXT("") };
-				return std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, DefineType, VectorParam, Body);
+				return std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, DefineType, Vector_Param, Body);
 			}
 		}
 	}
 
 	return nullptr;
+}
+
+std::unique_ptr<ASTStandardLibrary> Parse::ParseStandardLibrary()
+{
+	GetNextToken();
+	HAZE_STRING StandardLibraryName = CurrLexeme;
+
+	StackSectionSignal.push(HazeSectionSignal::StandardLibrary);
+
+	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse standard library expect { \n")))
+	{
+		if (ExpectNextTokenIs(HazeToken::Function, HAZE_TEXT("Error: Parse standard library expect function token \n")))
+		{
+			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse standard library function section expect { \n")))
+			{
+				std::vector<std::unique_ptr<ASTFunctionDefine>> Vector_FunctionDefine;
+
+
+				GetNextToken();
+				while (CurrToken != HazeToken::RightBrace)
+				{
+					StackSectionSignal.push(HazeSectionSignal::Function);
+
+					//获得函数返回类型及是自定义类型时获得类型名字
+					HazeDefineData FuncType;
+					FuncType.Type = GetValueTypeByToken(CurrToken);
+					if (CurrToken == HazeToken::Identifier)
+					{
+						FuncType.CustomName = CurrLexeme;
+					}
+
+					//获得函数名
+					if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse function expression expect correct function name \n")))
+					{
+						HAZE_STRING FunctionName = CurrLexeme;
+						if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
+						{
+							std::vector<HazeDefineVariable> Vector_Param;
+
+							while (!TokenIs(HazeToken::LeftBrace))
+							{
+								HazeDefineVariable Param;
+								if (GetNextToken() == HazeToken::RightParentheses)
+								{
+									break;
+								}
+
+								Param.Type.Type = GetValueTypeByToken(CurrToken);
+								if (CurrToken == HazeToken::Identifier)
+								{
+									Param.Type.Type = HazeValueType::Null;
+									Param.Type.CustomName = CurrLexeme;
+								}
+
+								if (Param.Type.Type == HazeValueType::MultiVar)
+								{
+									ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
+									Vector_Param.push_back(Param);
+
+									GetNextToken();
+									break;
+								}
+
+								GetNextToken();
+								Param.Name = CurrLexeme;
+
+								Vector_Param.push_back(Param);
+
+								if (!ExpectNextTokenIs(HazeToken::Comma))
+								{
+									break;
+								}
+							}
+
+							StackSectionSignal.pop();
+							Vector_FunctionDefine.push_back(std::make_unique<ASTFunctionDefine>(VM, FunctionName, FuncType, Vector_Param));
+							
+						}
+					}
+				}
+
+				ExpectNextTokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse standard library end need } \n"));
+				StackSectionSignal.pop();
+
+				GetNextToken();
+
+				return std::make_unique<ASTStandardLibrary>(VM, StandardLibraryName, Vector_FunctionDefine);
+			}
+			
+		}
+	}
+	
+	StackSectionSignal.pop();
+	return nullptr;
+}
+
+std::unique_ptr<ASTBase> Parse::ParseImportModule()
+{
+	GetNextToken();
+	return std::make_unique<ASTImportModule>(VM, CurrLexeme);
 }
 
 bool Parse::ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo)
@@ -739,7 +876,8 @@ bool Parse::IsHazeSignalToken(HAZE_CHAR Char)
 	{
 		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
 		TOKEN_ASSIGN, TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
-		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, TOKEN_COMMA, TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, HAZE_SINGLE_COMMENT
+		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, TOKEN_COMMA, TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, HAZE_SINGLE_COMMENT, 
+		TOKEN_MULTI_VARIABLE
 	};
 
 	HAZE_STRING WS;

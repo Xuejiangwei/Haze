@@ -8,6 +8,7 @@ enum class HazeSectionSignal : unsigned __int8
 	Global,
 	Function,
 	Class,
+	StandardLibrary,
 };
 
 struct HazeDefineData

@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\AST\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Compiler\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\Log\Header;$(SolutionDir)Haze\Backend\Header;$(SolutionDir)Haze\Define\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\AST\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Compiler\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\Log\Header;$(SolutionDir)Haze\Backend\Header;$(SolutionDir)Haze\Define\Header;$(SolutionDir)Haze\StandardLibrary\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
@@ -130,6 +130,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AST\Source\ASTStandardLibrary.cpp" />
     <ClCompile Include="AST\Source\ASTBase.cpp" />
     <ClCompile Include="AST\Source\ASTClass.cpp" />
     <ClCompile Include="AST\Source\ASTFunction.cpp" />
@@ -153,12 +154,15 @@
     <ClCompile Include="Source\HazeStack.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Parse.cpp" />
+    <ClCompile Include="StandardLibrary\Source\HazeStandardLibraryBase.cpp" />
+    <ClCompile Include="StandardLibrary\Source\HazeStream.cpp" />
     <ClCompile Include="VM\Source\HazeVM.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AST\Header\ASTBase.h" />
     <ClInclude Include="AST\Header\ASTClass.h" />
     <ClInclude Include="AST\Header\ASTFunction.h" />
+    <ClInclude Include="AST\Header\ASTStandardLibrary.h" />
     <ClInclude Include="Backend\Header\BackendParse.h" />
     <ClInclude Include="Backend\Header\ModuleUnit.h" />
     <ClInclude Include="Compiler\Header\HazeBaseBlock.h" />
@@ -178,11 +182,13 @@
     <ClInclude Include="Log\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeStack.h" />
     <ClInclude Include="Header\Parse.h" />
+    <ClInclude Include="Define\Header\HazeStrcut.h" />
     <ClInclude Include="MetaData\Header\HazeClass.h" />
     <ClInclude Include="MetaData\Header\HazeFunction.h" />
     <ClInclude Include="MetaData\Header\HazeModule.h" />
     <ClInclude Include="MetaData\Header\HazeVariable.h" />
-    <ClInclude Include="Define\Header\HazeStrcut.h" />
+    <ClInclude Include="StandardLibrary\Header\HazeStandardLibraryBase.h" />
+    <ClInclude Include="StandardLibrary\Header\HazeStream.h" />
     <ClInclude Include="VM\Header\HazeVM.h" />
   </ItemGroup>
   <ItemGroup>

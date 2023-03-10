@@ -20,6 +20,8 @@ extern unsigned int GetSize(HazeValueType Type);
 
 extern bool IsNumber(const HAZE_STRING& Str);
 
+extern HazeValueType GetNumberDefaultType(const HAZE_STRING& Str);
+
 /*
  * Generate file header string
  */

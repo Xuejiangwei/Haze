@@ -10,9 +10,11 @@
 #include "HazeBaseBlock.h"
 
 HazeCompilerModule::HazeCompilerModule(const HAZE_STRING& ModuleName)
+	: IsStdLib(false)
 {
+
 	HAZE_STRING Path = std::filesystem::current_path();
-	
+
 #if HAZE_I_CODE_ENABLE
 
 	HAZE_STRING I_CodePath = Path + HAZE_TEXT("\\HazeICode\\");
@@ -32,18 +34,26 @@ HazeCompilerModule::~HazeCompilerModule()
 	}
 }
 
+void HazeCompilerModule::MarkStandardLibrary()
+{
+	IsStdLib = true;
+}
+
 void HazeCompilerModule::GenCodeFile()
 {
+	if (!IsStdLib)
+	{
 #if HAZE_I_CODE_ENABLE
 
-	//生成中间代码先不需要计算symbol table表中的偏移，等统一生成字节码时在进行替换
-	if (FS_I_Code.is_open())
-	{
-		GenICode();
-		FS_I_Code.close();
-	}
+		//生成中间代码先不需要计算symbol table表中的偏移，等统一生成字节码时在进行替换
+		if (FS_I_Code.is_open())
+		{
+			GenICode();
+			FS_I_Code.close();
+		}
 
 #endif
+	}
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
@@ -297,7 +307,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Int) << " " << HAZE_CALL_PUSH_ADDRESS_NAME
 		<< " " << (unsigned int)InstructionScopeType::Address << std::endl;
 
-	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << std::endl;
+	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << Param.size() << std::endl;
 	BB->PushIRCode(SStream.str());
 
 	return HazeCompiler::GetReturnRegister();

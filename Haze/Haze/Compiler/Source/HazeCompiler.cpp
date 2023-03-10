@@ -34,8 +34,8 @@ bool HazeCompiler::InitializeCompiler(const HAZE_STRING& ModuleName)
 		return false;
 	}
 
-	CurrModule = ModuleName;
-	MapModules[CurrModule] = std::make_unique<HazeCompilerModule>(ModuleName);
+	Vector_ModuleNameStack.push_back(ModuleName);
+	MapModules[GetCurrModuleName()] = std::make_unique<HazeCompilerModule>(ModuleName);
 	return true;
 }
 
@@ -46,18 +46,38 @@ void HazeCompiler::FinishModule()
 
 void HazeCompiler::GenModuleCodeFile()
 {
-	MapModules[CurrModule]->GenCodeFile();
+	MapModules[GetCurrModuleName()]->GenCodeFile();
 }
 
 std::unique_ptr<HazeCompilerModule>& HazeCompiler::GetCurrModule()
 {
-	return MapModules[CurrModule];
+	return MapModules[GetCurrModuleName()];
+}
+
+bool HazeCompiler::CurrModuleIsStdLib()
+{
+	return GetCurrModule()->IsStandardLibrary();
+}
+
+std::shared_ptr<HazeCompilerFunction> HazeCompiler::GetFunction(const HAZE_STRING& Name)
+{
+	std::shared_ptr<HazeCompilerFunction> Function = nullptr;
+	for (auto& Iter : MapModules)
+	{
+		Function = Iter.second->GetFunction(Name);
+		if (Function)
+		{
+			return Function;
+		}
+	}
+
+	return Function;
 }
 
 HAZE_STRING HazeCompiler::GetCurrModuleOpFile() const
 {
 	HAZE_STRING Path = std::filesystem::current_path();
-	return Path + HAZE_TEXT("\\HazeOpCode\\") + CurrModule + HAZE_TEXT(".Hzb");
+	return Path + HAZE_TEXT("\\HazeOpCode\\") + GetCurrModuleName() + HAZE_TEXT(".Hzb");
 }
 
 //const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue> Register)

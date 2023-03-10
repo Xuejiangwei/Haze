@@ -1,24 +1,26 @@
-整数 正己 = 60
+引 标准流
 
-函数
-{
-	整数 加法(整数 甲, 整数 乙)
-	{
-		整数 丙 = 50 + 甲 # Push 丙 5	Push TempAdd0 5		Add TempAdd0 50		Add TempAdd0 甲	  Mov 丙 TempAdd0		Pop TempAdd0
-		正己 = 50 + 正己	 # Add 50 正己		Mov 正己 AddRigster
-		返回 丙			 # Ret 丙
-	}
+#整数 正己 = 60
 
-	整数 减法(整数 甲, 整数 乙)
-	{
-		返回 甲 - 乙
-	}
-}
+# 函数
+# {
+#	整数 加法(整数 甲, 整数 乙)
+#	{
+#		整数 丙 = 乙 + 甲 # Push 丙 5	Push TempAdd0 5		Add TempAdd0 50		Add TempAdd0 甲	  Mov 丙 TempAdd0		Pop TempAdd0
+#		正己 = 50 + 正己	 # Add 50 正己		Mov 正己 AddRigster
+#		返回 丙			 # Ret 丙
+#	}
+
+#	整数 减法(整数 甲, 整数 乙)
+#	{
+#		返回 甲 - 乙
+#	}
+# }
 
 主函数()
 {
-	整数 甲 = 加法(255, 2) # Push 1 Push 2 Call 加法 Mov 甲 RetR 
-	整数 乙 = 减法(2, 10)
-	整数 丙 = 甲 + 乙
-	打印(甲, 乙, 丙)
+	# 整数 甲 = 加法(255, 2) # Push 1 Push 2 Call 加法 Mov 甲 RetR 
+	# 整数 乙 = 减法(2, 10)
+	# 整数 丙 = 甲 + 乙
+	打印(150)
 }

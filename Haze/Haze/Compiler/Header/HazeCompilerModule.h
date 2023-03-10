@@ -16,11 +16,12 @@ public:
 	HazeCompilerModule(const HAZE_STRING& ModuleName);
 	~HazeCompilerModule();
 
+	void MarkStandardLibrary();
+	
 	void GenCodeFile();
 
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
-	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
 
 	std::shared_ptr<HazeCompilerFunction> CreateFunction(HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
 
@@ -46,10 +47,15 @@ private:
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param);
 
+	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
+
+	bool IsStandardLibrary() { return IsStdLib; }
 private:
 	void GenICode();
 
 private:
+	bool IsStdLib;
+
 	HAZE_OFSTREAM FS_I_Code;
 
 	HAZE_STRING CurrFunction;

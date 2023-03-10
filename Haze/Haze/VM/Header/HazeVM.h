@@ -25,19 +25,21 @@ public:
 
 	void InitVM(std::vector<ModulePair> Vector_ModulePath);
 
+	void LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath);
+
 	void StartMainFunction();
 
 	void ParseString(const HAZE_STRING& String);
 
 	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName);
 
-	HazeValue* GetVirtualRegister(const HAZE_CHAR* Name);
+	void ParseModule(const HAZE_STRING& ModuleName);
 
 	std::unique_ptr<HazeCompiler>& GetCompiler() { return Compiler; }
 
 	const std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>>& GetModules() const { return UnorderedMap_Module; }
 
-	unsigned int GetFucntionIndexByName(const HAZE_STRING& Name);
+	int GetFucntionIndexByName(const HAZE_STRING& Name);
 
 	HazeValue* GetGlobalValue(const HAZE_STRING& Name);
 

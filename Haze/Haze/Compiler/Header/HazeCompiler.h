@@ -23,7 +23,13 @@ public:
 
 	std::unique_ptr<HazeCompilerModule>& GetCurrModule();
 
-	const HAZE_STRING& GetCurrModuleName() const { return CurrModule; }
+	bool CurrModuleIsStdLib();
+
+	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
+
+	const HAZE_STRING& GetCurrModuleName() const { return Vector_ModuleNameStack.back(); }
+
+	void PopCurrModule() { return Vector_ModuleNameStack.pop_back(); }
 
 	HAZE_STRING GetCurrModuleOpFile() const;
 
@@ -72,7 +78,7 @@ private:
 	void GenModuleCodeFile();
 
 private:
-	HAZE_STRING CurrModule;
+	std::vector<HAZE_STRING> Vector_ModuleNameStack;
 
 	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> MapModules;
 

@@ -52,9 +52,9 @@ void BackendParse::Parse()
 
 		CodeText = std::move(Content);
 		CurrCode = CodeText.c_str();
-		
+
 		Parse_I_Code();
-		
+
 		FS.close();
 	}
 
@@ -198,7 +198,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::MUL:
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::MOD:
-	case InstructionOpCode::EXP:
 	{
 		InstructionData OperatorOne;
 		InstructionData OperatorTwo;
@@ -224,8 +223,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
 	break;
-	case InstructionOpCode::NEG:
-		break;
 	case InstructionOpCode::INC:
 		break;
 	case InstructionOpCode::DEC:
@@ -298,15 +295,12 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		OperatorOne.Scope = InstructionScopeType::None;
 		OperatorOne.Name = CurrLexeme;
 
+		GetNextLexeme();
+		OperatorOne.Extra.FunctionCallParamNum = StringToInt<int>(CurrLexeme);
+
 		Instruction.Operator = { OperatorOne };
 	}
 	break;
-	case InstructionOpCode::Concat:
-		break;
-	case InstructionOpCode::GetChar:
-		break;
-	case InstructionOpCode::SetChar:
-		break;
 	default:
 		break;
 	}
@@ -340,24 +334,21 @@ void BackendParse::GenOpCodeFile()
 			{
 				if (it.Scope == InstructionScopeType::Global)
 				{
-					it.IndexOrOffset = NewGlobalDataTable.GetIndex(it.Name);
+					it.Extra.Index = NewGlobalDataTable.GetIndex(it.Name);
 				}
 				else if (it.Scope == InstructionScopeType::Local || it.Scope == InstructionScopeType::Temp)
 				{
 					//需要先判断是不是函数参数，设置为负的索引
 					int AddressOffset = 0 - (int)sizeof(int);	 	//入栈的返回地址数据占用空间
 					bool Find = false;
-					for (size_t j = 0; j < NewFunctionTable.Vector_Data[k].Vector_Param.size(); ++j)
+					for (int j = (int)NewFunctionTable.Vector_Data[k].Vector_Param.size() - 1; j >= 0 ; --j)
 					{
+						AddressOffset -= GetSize(NewFunctionTable.Vector_Data[k].Vector_Param[j].second.Type);
 						if (NewFunctionTable.Vector_Data[k].Vector_Param[j].first == it.Name)
 						{
-							it.IndexOrOffset = AddressOffset;
+							it.Extra.Offset = AddressOffset;
 							Find = true;
 							break;
-						}
-						else
-						{
-							AddressOffset -= GetSize(NewFunctionTable.Vector_Data[k].Vector_Param[j].second.Type);
 						}
 					}
 
@@ -374,7 +365,7 @@ void BackendParse::GenOpCodeFile()
 						{
 							if (NewFunctionTable.Vector_Data[k].Vector_Instruction[j].Operator[0].Name == it.Name)
 							{
-								it.IndexOrOffset = Offset;
+								it.Extra.Offset = Offset;
 								break;
 							}
 							else
@@ -405,7 +396,7 @@ void BackendParse::GenOpCodeFile()
 			WSS << GetInstructionString(NewFunctionTable.Vector_Data[k].Vector_Instruction[i].InsCode) << " ";
 			for (auto& it : NewFunctionTable.Vector_Data[k].Vector_Instruction[i].Operator)
 			{
-				WSS << it.Name << " " << it.IndexOrOffset << " ";
+				WSS << it.Name << " " << it.Extra.Offset << " ";
 			}
 			WSS << std::endl;
 
@@ -517,7 +508,7 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		UnsignedInt = (unsigned int)i.Scope;
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));					//操作数作用域
 
-		Int = (int)i.IndexOrOffset;
+		Int = (int)i.Extra.Index;
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Int));					//操作数索引
 	}
 	/*switch (Instruction.InsCode)
@@ -534,8 +525,6 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 	{
 		
 	}
-		break;
-	case InstructionOpCode::NEG:
 		break;
 	case InstructionOpCode::INC:
 		break;

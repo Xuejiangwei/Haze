@@ -42,15 +42,13 @@ enum class InstructionScopeType : unsigned int
 
 enum class InstructionOpCode : unsigned int
 {
-	NONE,					//指令码id	目标数据类型(InstructionDataType)		目标内存地址		源数据类型(InstructionDataType)		源数据内存
-	MOV,					//1			需要									需要				需要									需要
-	ADD,					//2			需要									需要				需要									需要
-	SUB,					//3			需要									需要				需要									需要
-	MUL,					//4			需要									需要				需要									需要
+	NONE,
+	MOV,
+	ADD,
+	SUB,
+	MUL,
 	DIV,
 	MOD,
-	EXP,
-	NEG,
 	INC,
 	DEC,
 
@@ -61,16 +59,11 @@ enum class InstructionOpCode : unsigned int
 	SHL,
 	SHR,
 
-	PUSH,					//17		操作数类型
+	PUSH,
 	POP,
 
 	CALL,
 	RET,
-
-	//字符串
-	Concat,//连接两个字符串
-	GetChar,
-	SetChar,
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，
@@ -83,7 +76,13 @@ struct InstructionData
 	InstructionScopeType Scope;
 	HAZE_STRING Name;
 	HazeValueType Type;
-	int IndexOrOffset = -1;
+
+	union
+	{
+		int Index;
+		int Offset;
+		int FunctionCallParamNum;
+	} Extra;
 };
 
 struct Instruction

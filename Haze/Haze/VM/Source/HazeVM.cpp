@@ -11,6 +11,7 @@
 
 #include "BackendParse.h"
 
+
 HazeVM::HazeVM()
 {
 	std::wcout.imbue(std::locale("chs"));
@@ -39,6 +40,10 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 	LoadOpCodeFile();
 }
 
+void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
+{
+}
+
 void HazeVM::StartMainFunction()
 {
 	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
@@ -62,14 +67,27 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 		Parse P(this);
 		P.InitializeFile(FilePath);
 		P.ParseContent();
+		Compiler->FinishModule();
 	}
-	Compiler->FinishModule();
 
-	auto Module = UnorderedMap_Module.find(ModuleName);
-	if (Module == UnorderedMap_Module.end())
+	if (!Compiler->CurrModuleIsStdLib())
 	{
-		UnorderedMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
+		auto Module = UnorderedMap_Module.find(ModuleName);
+		if (Module == UnorderedMap_Module.end())
+		{
+			UnorderedMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
+		}
 	}
+	
+	Compiler->PopCurrModule();
+}
+
+void HazeVM::ParseModule(const HAZE_STRING& ModuleName)
+{
+	HAZE_STRING FilePath = std::filesystem::current_path();
+	FilePath += (HAZE_TEXT("\\Other\\") + ModuleName + HAZE_TEXT(".hz"));
+
+	ParseFile(FilePath, ModuleName);
 }
 
 void HazeVM::LoadOpCodeFile()
@@ -178,13 +196,18 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Scope));
 
-		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.IndexOrOffset));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.Index));
 	}
 }
 
-unsigned int HazeVM::GetFucntionIndexByName(const HAZE_STRING& Name)
+int HazeVM::GetFucntionIndexByName(const HAZE_STRING& Name)
 {
-	return HashMap_FunctionTable[Name];
+	auto Iter = HashMap_FunctionTable.find(Name);
+	if (Iter == HashMap_FunctionTable.end())
+	{
+		return -1;
+	}
+	return Iter->second;
 }
 
 HazeValue* HazeVM::GetGlobalValue(const HAZE_STRING& Name)

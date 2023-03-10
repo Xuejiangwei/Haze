@@ -2,6 +2,9 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
 
+extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(int)>*> Hash_MapStdLib;
+
+
 std::unordered_map<HAZE_STRING, HazeValue*>  HashMap_VirtualRegister =
 {
 	//{ADD_REGISTER, nullptr},
@@ -44,7 +47,7 @@ public:
 			}
 			else if (Operator[1].Scope == InstructionScopeType::Local)
 			{
-				memcpy(GetAddressByOperator(Stack, Operator[0]), &Stack->Stack_Main[Stack->EBP + Operator[1].IndexOrOffset], GetSize(Operator[0].Type));
+				memcpy(GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]), GetSize(Operator[0].Type));
 			}
 			else if (Operator[1].Scope == InstructionScopeType::Register)
 			{
@@ -68,17 +71,36 @@ public:
 			Stack->Stack_Function.push_back(Operator[0].Name);
 
 			int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Name);
-			int Size = 0;
-			for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
+			if (FunctionIndex >= 0)
 			{
-				Size += GetSize(Iter.second.Type);
+				int Size = 0;
+				for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
+				{
+					Size += GetSize(Iter.second.Type);
+				}
+
+				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_PUSH_ADDRESS_SIZE + Size));
+
+				unsigned int Index = Stack->VM->GetFucntionIndexByName(Operator[0].Name);
+				Stack->PC = Stack->VM->Vector_FunctionTable[Index].InstructionStartAddress;
+				--Stack->PC;
 			}
-
-			Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_PUSH_ADDRESS_SIZE + Size));
-
-			unsigned int Index = Stack->VM->GetFucntionIndexByName(Operator[0].Name);
-			Stack->PC = Stack->VM->Vector_FunctionTable[Index].InstructionStartAddress;
-			--Stack->PC;
+			else
+			{
+				//±ê×¼¿â²éÕÒ
+				auto Iter = Hash_MapStdLib.find(HAZE_TEXT("HazeStream"));
+				if (Iter != Hash_MapStdLib.end())
+				{
+					auto Function = Iter->second->find(Operator[0].Name);
+					if (Function != Iter->second->end())
+					{
+						int i = 0;
+						memcpy(&i, &Stack->Stack_Main[Stack->ESP - HAZE_PUSH_ADDRESS_SIZE - 4], sizeof(i));
+						Function->second(i);
+					}
+				}
+			}
+			
 		}
 	}
 
@@ -138,7 +160,103 @@ public:
 		{
 			if (IsNumberType(Operator[0].Type))
 			{
-				AddValueByType(Operator[0].Type, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::ADD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Sub(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::SUB, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Mul(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::MUL, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Div(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::DIV, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Mod(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::MOD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Inc(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::INC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Dec(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -184,7 +302,7 @@ private:
 		}
 		else if (Operator.Scope == InstructionScopeType::Local || Operator.Scope == InstructionScopeType::Temp)
 		{
-			return &Stack->Stack_Main[Stack->EBP + Operator.IndexOrOffset];
+			return &Stack->Stack_Main[Stack->EBP + Operator.Extra.Offset];
 		}
 
 		return nullptr;
@@ -194,9 +312,26 @@ private:
 std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor =
 {
 	{InstructionOpCode::MOV, &InstructionProcessor::Mov},
-	{InstructionOpCode::CALL, &InstructionProcessor::Call},
+
+	{InstructionOpCode::ADD, &InstructionProcessor::Add},
+	{InstructionOpCode::SUB, &InstructionProcessor::Sub},
+	{InstructionOpCode::MUL, &InstructionProcessor::Mul},
+	{InstructionOpCode::DIV, &InstructionProcessor::Div},
+	{InstructionOpCode::MOD, &InstructionProcessor::Mod},
+	{InstructionOpCode::INC, &InstructionProcessor::Inc},
+	{InstructionOpCode::DEC, &InstructionProcessor::Dec},
+
+	{InstructionOpCode::AND, &InstructionProcessor::Dec},
+	{InstructionOpCode::OR, &InstructionProcessor::Dec},
+	{InstructionOpCode::NOT, &InstructionProcessor::Dec},
+	{InstructionOpCode::XOR, &InstructionProcessor::Dec},
+
+	{InstructionOpCode::SHL, &InstructionProcessor::Dec},
+	{InstructionOpCode::SHR, &InstructionProcessor::Dec},
+
 	{InstructionOpCode::PUSH, &InstructionProcessor::Push},
 	{InstructionOpCode::POP, &InstructionProcessor::Pop},
-	{InstructionOpCode::ADD, &InstructionProcessor::Add},
+
+	{InstructionOpCode::CALL, &InstructionProcessor::Call},
 	{InstructionOpCode::RET, &InstructionProcessor::Ret},
 };

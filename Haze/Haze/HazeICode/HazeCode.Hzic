@@ -1,54 +1,12 @@
 GlobalDataTable
-1
-正己 4 50
+0
 StringTable
 0
 FunctionTable
-3
-Function 加法 4
-Param 4 乙
-Param 4 甲
+1
+Function 主函数 5
 Start
-PUSH 4 丙 2
-PUSH 4 TempBinaryValue 5
-MOV 4 TempBinaryValue 2 4 50 3
-ADD 4 TempBinaryValue 5 4 甲 2
-MOV 4 丙 2 4 TempBinaryValue 2
-POP 4 TempBinaryValue 5
-PUSH 4 TempBinaryValue 5
-MOV 4 TempBinaryValue 2 4 50 3
-ADD 4 TempBinaryValue 5 4 正己 1
-MOV 4 正己 1 4 TempBinaryValue 2
-POP 4 TempBinaryValue 5
-RET 4 丙 2
-End
-Function 减法 4
-Param 4 乙
-Param 4 甲
-Start
-PUSH 4 TempBinaryValue 5
-MOV 4 TempBinaryValue 2 4 甲 2
-SUB 4 TempBinaryValue 5 4 乙 2
-RET 4 TempBinaryValue 5
-End
-Function 主函数 4
-Start
-PUSH 4 甲 2
-PUSH 4 2 3
-PUSH 4 255 3
-PUSH 4 Address 6
-CALL 加法
-MOV 4 甲 2 12 Ret_Register 4
-PUSH 4 乙 2
-PUSH 4 10 3
-PUSH 4 2 3
-PUSH 4 Address 6
-CALL 减法
-MOV 4 乙 2 12 Ret_Register 4
-PUSH 4 丙 2
-PUSH 4 TempBinaryValue 5
-MOV 4 TempBinaryValue 2 4 甲 2
-ADD 4 TempBinaryValue 5 4 乙 2
-MOV 4 丙 2 4 TempBinaryValue 2
-POP 4 TempBinaryValue 5
+PUSH 6 150 3
+PUSH 5 Address 6
+CALL 打印 1
 End
