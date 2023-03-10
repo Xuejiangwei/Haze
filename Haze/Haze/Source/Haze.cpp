@@ -239,7 +239,7 @@ const HAZE_CHAR* GetInstructionString(InstructionOpCode Code)
 		return iter->second;
 	}
 
-	return nullptr;
+	return HAZE_TEXT("None");
 }
 
 InstructionOpCode GetInstructionByString(const HAZE_STRING& String)

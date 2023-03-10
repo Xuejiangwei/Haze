@@ -41,19 +41,14 @@ void HazeCompilerModule::MarkStandardLibrary()
 
 void HazeCompilerModule::GenCodeFile()
 {
-	if (!IsStdLib)
-	{
 #if HAZE_I_CODE_ENABLE
-
-		//生成中间代码先不需要计算symbol table表中的偏移，等统一生成字节码时在进行替换
-		if (FS_I_Code.is_open())
-		{
-			GenICode();
-			FS_I_Code.close();
-		}
-
-#endif
+	//生成中间代码先不需要计算symbol table表中的偏移，等统一生成字节码时在进行替换
+	if (FS_I_Code.is_open())
+	{
+		GenICode();
+		FS_I_Code.close();
 	}
+#endif
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
@@ -261,20 +256,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 	return CompilerValue;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& Param)
 {
 	std::shared_ptr<HazeBaseBlock>& BB = GetCurrFunction()->GetTopBaseBlock();
 
 	HAZE_STRING_STREAM SStream;
-	HAZE_STRING VarName;
 	
 	for (int i = (int)Param.size() -1; i >= 0; i--)
 	{
-		SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(Param[i]->GetValue().Type) << " ";
+		SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(Param[i].second->GetValue().Type) << " ";
 	
-		if (Param[i]->IsConstant())
+		if (Param[i].second->IsConstant())
 		{
-			HazeCompilerStream(SStream, Param[i].get());
+			HazeCompilerStream(SStream, Param[i].second.get());
 			SStream << " " << (unsigned int)InstructionScopeType::Constant;
 		}
 		/*else if (iter->IsRegister())
@@ -284,17 +278,16 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		}*/
 		else
 		{
-			bool bFind = CallFunction->GetLocalVariableName(Param[i], VarName);
+			SStream << Param[i].first;
 
-			if (bFind)
+			auto Var = GetCurrFunction()->GetLocalVariable(Param[i].first); //CallFunction->GetFunctionParamNameByIndex(i, VarName);
+
+			if (Var)
 			{
-				SStream << VarName;
 				SStream << " " << (unsigned int)InstructionScopeType::Local;
 			}
 			else
 			{
-				GetGlobalVariableName(Param[i], VarName);
-				SStream << VarName;
 				SStream << " " << (unsigned int)InstructionScopeType::Global;
 			}
 		}
@@ -357,6 +350,9 @@ void HazeCompilerModule::GenICode()
 
 	//堆栈 4个字节
 	//FS_Ass << 1024 << std::endl;
+
+	//是不是标准库
+	FS_I_Code << IsStdLib << std::endl;
 
 	/*
 	*	全局数据 ：	个数 

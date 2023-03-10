@@ -78,6 +78,10 @@ void BackendParse::GetNextLexeme()
 
 void BackendParse::Parse_I_Code()
 {
+	//Standard lib
+	GetNextLexeme();
+	CurrParseModule->IsStdLib = StringToInt<unsigned int>(CurrLexeme);
+
 	//Global data
 	GetNextLexeme();
 	if (CurrLexeme == GetGlobalDataHeaderString())
@@ -144,6 +148,8 @@ void BackendParse::Parse_I_Code()
 
 			if (CurrLexeme == GetFunctionLabelHeader())
 			{
+				Table.Vector_Data[i].DescType = (InstructionFunctionType)CurrParseModule->IsStdLib;
+
 				GetNextLexeme();
 				Table.Vector_Data[i].Name = CurrLexeme;
 
@@ -451,6 +457,7 @@ void BackendParse::GenOpCodeFile()
 		FS_OpCode.write(BinaryString.data(), Num);
 
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Type));
+		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.DescType));
 
 		Num = (unsigned int)i.Vector_Param.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Num));

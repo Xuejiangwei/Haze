@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#define HAZE_PUSH_ADDRESS_SIZE 4
-
 //操作数数据顺序 ValueType Name Scope
 
 /*  指令字节码说明
@@ -71,6 +69,14 @@ enum class InstructionOpCode : unsigned int
 
 //函数及函数调用处理同Jmp处理
 
+enum class InstructionFunctionType : unsigned int
+{
+	HazeFunction,
+	StdLibFunction,
+};
+
+
+
 struct InstructionData
 {
 	InstructionScopeType Scope;
@@ -91,10 +97,25 @@ struct Instruction
 	std::vector<InstructionData> Operator;
 };
 
+struct FunctionDescData
+{
+	InstructionFunctionType Type;
+	unsigned int InstructionStartAddress;
+};
+
+
+
 struct FunctionData
 {
+	using StdLibFunctionCall = void(*)(HAZE_STD_CALL_PARAM);
+
 	HazeValueType Type;
 	std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_Param;
 	unsigned int InstructionNum;
-	unsigned int InstructionStartAddress;
+
+	union
+	{
+		FunctionDescData FunctionDescData;
+		StdLibFunctionCall StdLibFunction;
+	} Extra;
 };

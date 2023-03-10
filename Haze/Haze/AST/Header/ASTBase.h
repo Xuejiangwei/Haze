@@ -19,6 +19,8 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() { return  nullptr; }
 
+	virtual const HAZE_CHAR* GetName() { return HAZE_TEXT(""); }
+
 protected:
 	HazeVM* VM;
 	HazeValue Value;
@@ -54,6 +56,8 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
+	virtual const HAZE_CHAR* GetName() { return Name.c_str(); }
+
 private:
 	HazeSectionSignal SectionSignal;
 	HAZE_STRING Name;
@@ -67,6 +71,8 @@ public:
 	virtual ~ASTFunctionCall() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+	virtual const HAZE_CHAR* GetName() { return Name.c_str(); }
 
 private:
 	HazeSectionSignal SectionSignal;

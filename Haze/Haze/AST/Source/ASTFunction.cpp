@@ -85,5 +85,13 @@ void ASTFunctionDefine::CodeGen()
 {
 	auto& Compiler = VM->GetCompiler();
 	auto& Module = Compiler->GetCurrModule();
-	Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
+	std::shared_ptr<HazeCompilerFunction> CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
+
+	std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction.get());
+	Compiler->SetInsertBlock(BB);
+
+	for (auto& iter : Vector_FunctionParam)
+	{
+		Compiler->CreateLocalVariable(CompilerFunction, iter);
+	}
 }

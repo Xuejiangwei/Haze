@@ -11,6 +11,7 @@
 
 #include "BackendParse.h"
 
+extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 HazeVM::HazeVM()
 {
@@ -49,7 +50,7 @@ void HazeVM::StartMainFunction()
 	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
 	if (Iter != HashMap_FunctionTable.end())
 	{
-		VMStack->Start(Vector_FunctionTable[Iter->second].InstructionStartAddress);
+		VMStack->Start(Vector_FunctionTable[Iter->second].Extra.FunctionDescData.InstructionStartAddress);
 	}
 }
 
@@ -70,13 +71,10 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 		Compiler->FinishModule();
 	}
 
-	if (!Compiler->CurrModuleIsStdLib())
+	auto Module = UnorderedMap_Module.find(ModuleName);
+	if (Module == UnorderedMap_Module.end())
 	{
-		auto Module = UnorderedMap_Module.find(ModuleName);
-		if (Module == UnorderedMap_Module.end())
-		{
-			UnorderedMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
-		}
+		UnorderedMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
 	}
 	
 	Compiler->PopCurrModule();
@@ -149,6 +147,7 @@ void HazeVM::LoadOpCodeFile()
 		HashMap_FunctionTable[String2WString(B_String)] = (unsigned int)i;
 
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Type));
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Extra.FunctionDescData.Type));
 
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 		Vector_FunctionTable[i].Vector_Param.resize(Num);
@@ -165,7 +164,7 @@ void HazeVM::LoadOpCodeFile()
 		}
 
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].InstructionNum));
-		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].InstructionStartAddress));
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Extra.FunctionDescData.InstructionStartAddress));
 	}
 
 	//读取指令
@@ -175,6 +174,24 @@ void HazeVM::LoadOpCodeFile()
 	{
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_Instruction[i].InsCode));
 		ReadInstruction(FS, Vector_Instruction[i]);
+	}
+
+	//重新指认std lib 函数指针
+	for (auto& Iter : HashMap_FunctionTable)
+	{
+		auto& Function = Vector_FunctionTable[Iter.second];
+		if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
+		{
+			for (auto& I : Hash_MapStdLib)
+			{
+				auto P = I.second->find(Iter.first);
+				if (P != I.second->end())
+				{
+					Function.Extra.StdLibFunction = P->second;
+				}
+			}
+			
+		}
 	}
 }
 

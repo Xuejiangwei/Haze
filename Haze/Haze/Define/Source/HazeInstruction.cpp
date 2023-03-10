@@ -2,7 +2,7 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
 
-extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(int)>*> Hash_MapStdLib;
+extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 
 std::unordered_map<HAZE_STRING, HazeValue*>  HashMap_VirtualRegister =
@@ -37,7 +37,6 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-
 			HazeValue Value;
 			Value.Type = Operator[1].Type;
 			if (Operator[1].Scope == InstructionScopeType::Constant)
@@ -71,10 +70,11 @@ public:
 			Stack->Stack_Function.push_back(Operator[0].Name);
 
 			int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Name);
-			if (FunctionIndex >= 0)
+			auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
+			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 			{
 				int Size = 0;
-				for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
+				for (auto& Iter : Function.Vector_Param)
 				{
 					Size += GetSize(Iter.second.Type);
 				}
@@ -82,25 +82,16 @@ public:
 				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_PUSH_ADDRESS_SIZE + Size));
 
 				unsigned int Index = Stack->VM->GetFucntionIndexByName(Operator[0].Name);
-				Stack->PC = Stack->VM->Vector_FunctionTable[Index].InstructionStartAddress;
+				Stack->PC = Function.Extra.FunctionDescData.InstructionStartAddress;
 				--Stack->PC;
 			}
 			else
 			{
 				//±ê×¼¿â²éÕÒ
-				auto Iter = Hash_MapStdLib.find(HAZE_TEXT("HazeStream"));
-				if (Iter != Hash_MapStdLib.end())
-				{
-					auto Function = Iter->second->find(Operator[0].Name);
-					if (Function != Iter->second->end())
-					{
-						int i = 0;
-						memcpy(&i, &Stack->Stack_Main[Stack->ESP - HAZE_PUSH_ADDRESS_SIZE - 4], sizeof(i));
-						Function->second(i);
-					}
-				}
+				Function.Extra.StdLibFunction(Stack, &Function);
+				int i = 0;
+				memcpy(&i, &Stack->Stack_Main[Stack->ESP - HAZE_PUSH_ADDRESS_SIZE - 4], sizeof(int));
 			}
-			
 		}
 	}
 
@@ -121,11 +112,18 @@ public:
 			{
 				memcpy(&Stack->Stack_Main[Stack->ESP], &Stack->PC, Size);
 			}*/
-			else
+			else if (Operator[0].Scope == InstructionScopeType::Local)
 			{
-				memset(&Stack->Stack_Main[Stack->ESP], 0, Size);
+				if (Operator[0].Extra.Offset + (int)Stack->EBP >= 0)
+				{
+					memset(&Stack->Stack_Main[Stack->ESP], Stack->Stack_Main[Operator[0].Extra.Offset + Stack->EBP], Size);
+				}
+				else
+				{
+					memset(&Stack->Stack_Main[Stack->ESP], 0, Size);
+				}
+				
 			}
-
 
 			Stack->ESP += Size;
 			/*if (Operator[0].Scope == InstructionScopeType::Global)

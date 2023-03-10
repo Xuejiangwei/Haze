@@ -1,12 +1,30 @@
+0
 GlobalDataTable
 0
 StringTable
 0
 FunctionTable
-1
+2
+Function ¼õ·¨ 5
+Param 5 ÒÒ
+Param 5 ¼×
+Start
+PUSH 5 TempBinaryValue 5
+MOV 5 TempBinaryValue 2 5 ¼× 2
+SUB 5 TempBinaryValue 5 5 ÒÒ 2
+RET 5 TempBinaryValue 5
+End
 Function Ö÷º¯Êý 5
 Start
-PUSH 6 150 3
+PUSH 5 ¼× 2
+MOV 5 ¼× 2 5 1 3
+PUSH 5 ÒÒ 2
+PUSH 5 10 3
+PUSH 5 2 3
+PUSH 5 Address 6
+CALL ¼õ·¨ 2
+MOV 5 ÒÒ 2 13 Ret_Register 4
+PUSH 5 ÒÒ 2
 PUSH 5 Address 6
 CALL ´òÓ¡ 1
 End

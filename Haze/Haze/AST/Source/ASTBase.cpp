@@ -97,10 +97,10 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	auto Function = Compiler->GetFunction(Name);
 	if (Function)
 	{
-		std::vector<std::shared_ptr<HazeCompilerValue>> Param;
+		std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Param;
 		for (auto& it : FunctionParam)
 		{
-			Param.push_back(it->CodeGen());
+			Param.push_back({ it->GetName(),  it->CodeGen() });
 		}
 
 		return Compiler->CreateFunctionCall(Function, Param);

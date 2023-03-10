@@ -26,9 +26,13 @@
 #define DIV_REGISTER HAZE_TEXT("Div_R")
 #define RET_REGISTER HAZE_TEXT("Ret_R")
 
+#define HAZE_PUSH_ADDRESS_SIZE 4
 #define HAZE_CALL_PUSH_ADDRESS_NAME HAZE_TEXT("Address")
 
 #define HAZE_I_CODE_ENABLE			1
 #define HAZE_OP_CODE_ENABLE			1
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 20
+
+#define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data
+

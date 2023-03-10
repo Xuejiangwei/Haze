@@ -38,6 +38,8 @@ public:
 
 	bool GetLocalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& NameOut);
 
+	bool GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& NameOut);
+
 private:
 	void AddFunctionParam(const HazeDefineVariable& Variable);
 

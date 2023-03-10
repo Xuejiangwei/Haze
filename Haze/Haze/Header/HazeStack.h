@@ -18,6 +18,9 @@ public:
 
 	void Start(unsigned int Address);
 
+public:
+	char* GetAddressByEBP(int Offset) { return &Stack_Main[EBP + Offset]; }
+
 private:
 	void InitRegisterToStack();
 

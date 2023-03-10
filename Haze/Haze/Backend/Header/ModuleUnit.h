@@ -72,6 +72,7 @@ public:
 		HazeValueType Type;
 		std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_Param;
 		std::vector<FunctionInstruction> Vector_Instruction;
+		InstructionFunctionType DescType;
 
 		FunctionTableData()
 		{
@@ -92,6 +93,8 @@ public:
 	};
 
 private:
+	bool IsStdLib;
+
 	GlobalDataTable Table_GlobalData;
 	StringTable Table_String;
 	FunctionTable Table_Function;

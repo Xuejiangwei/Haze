@@ -106,6 +106,20 @@ bool HazeCompilerFunction::GetLocalVariableName(std::shared_ptr<HazeCompilerValu
 	return false;
 }
 
+bool HazeCompilerFunction::GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& NameOut)
+{
+	if (BBList.size() > 0)
+	{
+		if (BBList.front()->GetAllocaList().size() > Index)
+		{
+			NameOut = BBList.front()->GetAllocaList()[Index].first;
+			return true;
+		}
+	}
+
+	return false;
+}
+
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& Variable)
 {
 	VectorParam.push_back({ Variable.Name, std::make_shared<HazeCompilerValue>(Module, Variable.Type, InstructionScopeType::Local) });
