@@ -112,7 +112,7 @@ public:
 			{
 				memcpy(&Stack->Stack_Main[Stack->ESP], &Stack->PC, Size);
 			}*/
-			else if (Operator[0].Scope == InstructionScopeType::Local)
+			else if (Operator[0].Scope == InstructionScopeType::Local || Operator[0].Scope == InstructionScopeType::Global)
 			{
 				if (Operator[0].Extra.Offset + (int)Stack->EBP >= 0)
 				{

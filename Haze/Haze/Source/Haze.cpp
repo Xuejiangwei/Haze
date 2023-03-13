@@ -64,7 +64,6 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
 {
 	static std::unordered_map<HazeValueType, std::set<HazeValueType>> HashMap_Table =
 	{
-		{ HazeValueType::Char, { HazeValueType::Short, HazeValueType::Int, HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
 		{ HazeValueType::Short, { HazeValueType::Int, HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
 		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
 		{ HazeValueType::UnsignedChar, { HazeValueType::UnsignedShort, HazeValueType::UnsignedInt, HazeValueType::UnsignedLong } },
@@ -102,7 +101,6 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 	{
 		{ HazeToken::Void, HazeValueType::Void },
 		{ HazeToken::Bool, HazeValueType::Bool },
-		{ HazeToken::Char, HazeValueType::Char },
 		{ HazeToken::Short, HazeValueType::Short },
 		{ HazeToken::Int, HazeValueType::Int },
 		{ HazeToken::Float, HazeValueType::Float },
@@ -111,6 +109,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 		{ HazeToken::UnsignedShort, HazeValueType::UnsignedShort },
 		{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
 		{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
+		{ HazeToken::String, HazeValueType::String},
 
 		{ HazeToken::MultiVariable, HazeValueType::MultiVar},
 	};
@@ -129,7 +128,6 @@ unsigned int GetSize(HazeValueType Type)
 	switch (Type)
 	{
 	case HazeValueType::Bool:
-	case HazeValueType::Char:
 		return 1;
 	case HazeValueType::Short:
 	case HazeValueType::UnsignedShort:
@@ -142,6 +140,8 @@ unsigned int GetSize(HazeValueType Type)
 	case HazeValueType::Double:
 	case HazeValueType::UnsignedLong:
 		return 8;
+	case HazeValueType::String:
+		return 4;
 	default:
 		break;
 	}
@@ -180,6 +180,9 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value)
 		break;
 	case HazeValueType::UnsignedLong:
 		WSS >> Value.Value.UnsignedLong;
+		break;
+	case HazeValueType::String:
+		WSS >> Value.Value.String.StringTableIndex;
 		break;
 	default:
 		break;
@@ -256,6 +259,8 @@ InstructionOpCode GetInstructionByString(const HAZE_STRING& String)
 HAZE_STRING String2WString(std::string& str)
 {
 	std::wstring result;
+#ifdef WIN32
+
 	//获取缓冲区大小，并申请空间，缓冲区大小按字符计算  
 	int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), str.size(), NULL, 0);
 	TCHAR* buffer = new TCHAR[len + 1];
@@ -265,12 +270,18 @@ HAZE_STRING String2WString(std::string& str)
 	//删除缓冲区并返回值  
 	result.append(buffer);
 	delete[] buffer;
+
+#endif // WIN32
+
 	return result;
 }
 
 std::string WString2String(std::wstring& wstr)
 {
 	std::string result;
+
+#ifdef WIN32
+
 	//获取缓冲区大小，并申请空间，缓冲区大小事按字节计算的  
 	int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), wstr.size(), NULL, 0, NULL, NULL);
 	char* buffer = new char[len + 1];
@@ -280,6 +291,9 @@ std::string WString2String(std::wstring& wstr)
 	//删除缓冲区并返回值  
 	result.append(buffer);
 	delete[] buffer;
+
+#endif // WIN32
+
 	return result;
 }
 
@@ -289,8 +303,6 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value)
 	{
 	case HazeValueType::Bool:
 		return (HAZE_BINARY_CHAR*)&Value.Value.Bool;
-	case HazeValueType::Char:
-		return (HAZE_BINARY_CHAR*)&Value.Value.Char;
 	case HazeValueType::Short:
 		return (HAZE_BINARY_CHAR*)&Value.Value.Short;
 	case HazeValueType::UnsignedShort:
@@ -307,6 +319,8 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value)
 		return (HAZE_BINARY_CHAR*)&Value.Value.Double;
 	case HazeValueType::UnsignedLong:
 		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
+	case HazeValueType::String:
+		return (HAZE_BINARY_CHAR*)&Value.Value.String.StringTableIndex;
 	default:
 		break;
 	}

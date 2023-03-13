@@ -55,6 +55,23 @@ std::shared_ptr<HazeCompilerValue> ASTNumber::CodeGen()
 	return RetValue;
 }
 
+ASTStringText::ASTStringText(HazeVM* VM, HAZE_STRING& Text) : ASTBase(VM), Text(std::move(Text))
+{
+}
+
+ASTStringText::~ASTStringText()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
+{
+	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
+	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenString(Text);
+
+	return RetValue;
+}
+
+
 ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name)
 	: ASTBase(VM), SectionSignal(Section), Name(std::move(Name))
 {

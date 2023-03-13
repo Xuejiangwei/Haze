@@ -1,5 +1,6 @@
 #pragma once
 
+#include "HazeDefine.h"
 #include <iostream>
 
 enum class HazeValueType : unsigned int
@@ -7,7 +8,6 @@ enum class HazeValueType : unsigned int
 	Null,
 	Void,
 	Bool,
-	Char,
 
 	Short,
 	Int,
@@ -19,6 +19,8 @@ enum class HazeValueType : unsigned int
 	UnsignedShort,
 	UnsignedInt,
 	UnsignedLong,
+
+	String,
 
 	Class,
 	Function,
@@ -33,9 +35,7 @@ struct HazeValue
 	union
 	{
 		bool Bool;
-		char Char;
 
-		__int8 Byte;
 		short Short;
 		int Int;
 		float Float;
@@ -46,6 +46,13 @@ struct HazeValue
 		unsigned short UnsignedShort;
 		unsigned int UnsignedInt;
 		unsigned long long UnsignedLong;
+
+		union
+		{
+			int StringTableIndex;
+			//const HAZE_STRING* StringPointer;
+		} String;
+		
 	} Value;
 
 public:

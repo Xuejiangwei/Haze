@@ -42,13 +42,6 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
 {
     switch (Type)
     {
-    case HazeValueType::Char:
-    {
-        CALC_VARIABLE_DEFINE_INIT(char, Source, Target);
-        CALC_VARIABLE_CALCULATE(char, TypeCode);
-        CALC_ASSIGN(char);
-    }
-    break;
     case HazeValueType::Short:
     {
         CALC_VARIABLE_DEFINE_INIT(short, Source, Target);

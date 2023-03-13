@@ -6,8 +6,6 @@ enum class HazeToken : unsigned int
 	Identifier,
 	Void,
 	Bool,
-	Char,
-	Byte,
 	Short,
 	Int,
 	Float,
@@ -18,6 +16,9 @@ enum class HazeToken : unsigned int
 	UnsignedShort,
 	UnsignedInt,
 	UnsignedLong,
+
+	StringStart,
+	StringEnd,
 
 	Function,
 

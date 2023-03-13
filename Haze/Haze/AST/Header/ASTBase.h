@@ -47,6 +47,20 @@ public:
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 };
 
+//×Ö·û´®
+class ASTStringText : public ASTBase
+{
+public:
+	ASTStringText(HazeVM* VM, HAZE_STRING& Text);
+	virtual ~ASTStringText() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	HAZE_STRING Text;
+};
+
+
 //±äÁ¿
 class ASTIdentifier : public ASTBase
 {

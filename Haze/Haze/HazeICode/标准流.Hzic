@@ -4,8 +4,12 @@ GlobalDataTable
 StringTable
 0
 FunctionTable
-1
+2
 Function ´òÓ¡ 1
-Param 5 ¼×
+Param 4 ¼×
+Start
+End
+Function ´òÓ¡×Ö·û 1
+Param 12 ¼×
 Start
 End

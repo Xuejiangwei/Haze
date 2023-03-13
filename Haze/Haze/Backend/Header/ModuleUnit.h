@@ -44,7 +44,7 @@ public:
 public:
 	struct StringTableData
 	{
-		HAZE_STRING Name;
+		//HAZE_STRING Name;
 		HAZE_STRING String;
 	};
 

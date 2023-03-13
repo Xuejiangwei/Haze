@@ -21,6 +21,8 @@ public:
 public:
 	char* GetAddressByEBP(int Offset) { return &Stack_Main[EBP + Offset]; }
 
+	const HazeVM* GetVM() const { return VM; }
+
 private:
 	void InitRegisterToStack();
 

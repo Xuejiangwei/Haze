@@ -122,9 +122,9 @@ void BackendParse::Parse_I_Code()
 
 		for (size_t i = 0; i < Table.Vector_Data.size(); i++)
 		{
-			GetNextLexeme();
+			/*GetNextLexeme();
 
-			Table.Vector_Data[i].Name = CurrLexeme;
+			Table.Vector_Data[i].Name = CurrLexeme;*/
 
 			GetNextLexeme();
 
@@ -433,10 +433,10 @@ void BackendParse::GenOpCodeFile()
 
 	for (auto& i : NewStringTable.Vector_Data)
 	{	
-		BinaryString = WString2String(i.Name);
+		/*BinaryString = WString2String(i.Name);
 		Num = (unsigned int)BinaryString.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Num));
-		FS_OpCode.write(BinaryString.data(), Num);
+		FS_OpCode.write(BinaryString.data(), Num);*/
 
 		BinaryString = WString2String(i.String);
 		Num = (unsigned int)BinaryString.size();

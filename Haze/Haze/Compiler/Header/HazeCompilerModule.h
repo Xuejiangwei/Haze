@@ -27,7 +27,7 @@ public:
 
 	void FinishFunction();
 
-	std::shared_ptr<HazeCompilerValue> AddGlobalStringVariable(const HazeDefineVariable& Var);
+	std::shared_ptr<HazeCompilerValue> GetGlobalStringVariable(const HAZE_STRING& String);
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 
@@ -59,9 +59,10 @@ private:
 	HAZE_OFSTREAM FS_I_Code;
 
 	HAZE_STRING CurrFunction;
-	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerFunction>> Map_Function;
+	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerFunction>> HashMap_Function;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Vector_Variable; //这个是Symbol table(符号表)
 
-	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> Map_StringVariable;
+	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> HashMap_StringTable;
+	std::unordered_map<int, const HAZE_STRING*> HashMap_StringMapping;
 };

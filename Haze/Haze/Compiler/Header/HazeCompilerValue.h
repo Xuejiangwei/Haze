@@ -36,8 +36,12 @@ public:
 
 	bool IsTemp() { return Scope == InstructionScopeType::Temp; }
 
+	bool IsString() { return Scope == InstructionScopeType::String; }
+
 private:
 	HazeValue Value;
 	HazeCompilerModule* Module;
 	InstructionScopeType Scope;
+
+
 };

@@ -57,13 +57,13 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
 	{
 		return nullptr;
 	}
-	return Map_Function[CurrFunction];
+	return HashMap_Function[CurrFunction];
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE_STRING& Name)
 {
-	auto It = Map_Function.find(Name);
-	if (It != Map_Function.end())
+	auto It = HashMap_Function.find(Name);
+	if (It != HashMap_Function.end())
 	{
 		return It->second;
 	}
@@ -73,13 +73,13 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param)
 {
-	auto It = Map_Function.find(Name);
-	if (It == Map_Function.end())
+	auto It = HashMap_Function.find(Name);
+	if (It == HashMap_Function.end())
 	{
-		Map_Function[Name] = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param);
+		HashMap_Function[Name] = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param);
 		CurrFunction = Name;
 
-		return Map_Function[Name];
+		return HashMap_Function[Name];
 	}
 	return It->second;
 }
@@ -306,9 +306,25 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	return HazeCompiler::GetReturnRegister();
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::AddGlobalStringVariable(const HazeDefineVariable& Var)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalStringVariable(const HAZE_STRING& String)
 {
-	return nullptr;
+	auto it = HashMap_StringTable.find(String);
+	if (it != HashMap_StringTable.end())
+	{
+		return it->second;
+	}
+	HashMap_StringTable[String] = nullptr;
+
+	it = HashMap_StringTable.find(String);
+
+	HashMap_StringMapping[(int)HashMap_StringMapping.size()] = &it->first;
+
+	HazeValue Value;
+	Value.Type = HazeValueType::String;
+	Value.Value.String.StringTableIndex = (int)HashMap_StringMapping.size() - 1;
+
+	it->second = std::make_shared<HazeCompilerValue>(Value, InstructionScopeType::String);
+	return it->second;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const HAZE_STRING& Name)
@@ -372,12 +388,18 @@ void HazeCompilerModule::GenICode()
 	*	×Ö·û´®±í £º	¸öÊý
 	*				×Ö·û´®³¤¶È ×Ö·û´®
 	*/
-	FS_I_Code << GetStringTableHeaderString() << std::endl;
-	FS_I_Code << Map_StringVariable.size() << std::endl;
-
-	for (auto& iter : Map_StringVariable)
+	if (HashMap_StringMapping.size() != HashMap_StringTable.size())
 	{
-		FS_I_Code << iter.first.length() << " " << iter.first << std::endl;
+		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Parse header file string table size error : mapping size %d, table size %d"),
+			HashMap_StringMapping.size(), HashMap_StringTable.size());
+		return;
+	}
+	FS_I_Code << GetStringTableHeaderString() << std::endl;
+	FS_I_Code << HashMap_StringMapping.size() << std::endl;
+
+	for (auto& iter : HashMap_StringMapping)
+	{
+		FS_I_Code /*<< iter.second->length() << " "*/ << *iter.second << std::endl;
 	}
 
 	/*
@@ -386,9 +408,9 @@ void HazeCompilerModule::GenICode()
 	* 
 	*/
 	FS_I_Code << GetFucntionTableHeaderString() << std::endl;
-	FS_I_Code << Map_Function.size() << std::endl;
+	FS_I_Code << HashMap_Function.size() << std::endl;
 
-	for (auto& iter : Map_Function)
+	for (auto& iter : HashMap_Function)
 	{
 		iter.second->GenI_Code(this, FS_I_Code);
 	}

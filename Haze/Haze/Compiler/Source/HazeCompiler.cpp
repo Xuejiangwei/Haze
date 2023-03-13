@@ -109,81 +109,85 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 	{
 	case HazeValueType::Bool:
 	{
-		auto it = MapBoolConstantValue.find(Var.Value.Bool);
-		if (it != MapBoolConstantValue.end())
+		auto it = HashMap_BoolConstantValue.find(Var.Value.Bool);
+		if (it != HashMap_BoolConstantValue.end())
 		{
 			return it->second;
 		}
-		MapBoolConstantValue[Var.Value.Bool] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
-		return MapBoolConstantValue[Var.Value.Bool];
+		HashMap_BoolConstantValue[Var.Value.Bool] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		return HashMap_BoolConstantValue[Var.Value.Bool];
 	}
-	case HazeValueType::Char:
 	case HazeValueType::Short:
 	case HazeValueType::Int:
 	{
-		auto it = MapIntConstantValue.find(Var.Value.Int);
-		if (it != MapIntConstantValue.end())
+		auto it = HashMap_IntConstantValue.find(Var.Value.Int);
+		if (it != HashMap_IntConstantValue.end())
 		{
 			return it->second;
 		}
-		MapIntConstantValue[Var.Value.Int] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
-		return MapIntConstantValue[Var.Value.Int];
+		HashMap_IntConstantValue[Var.Value.Int] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		return HashMap_IntConstantValue[Var.Value.Int];
 	}
 	case HazeValueType::Long:
 	{
-		auto it = MapLongConstantValue.find(Var.Value.Long);
-		if (it != MapLongConstantValue.end())
+		auto it = HashMap_LongConstantValue.find(Var.Value.Long);
+		if (it != HashMap_LongConstantValue.end())
 		{
 			return it->second;
 		}
-		MapLongConstantValue[Var.Value.Long] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
-		return MapLongConstantValue[Var.Value.Long];
+		HashMap_LongConstantValue[Var.Value.Long] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		return HashMap_LongConstantValue[Var.Value.Long];
 	}
 	case HazeValueType::UnsignedInt:
 	{
-		auto it = MapUnsignedIntConstantValue.find(Var.Value.UnsignedInt);
-		if (it != MapUnsignedIntConstantValue.end())
+		auto it = HashMap_UnsignedIntConstantValue.find(Var.Value.UnsignedInt);
+		if (it != HashMap_UnsignedIntConstantValue.end())
 		{
 			return it->second;
 		}
-		MapUnsignedIntConstantValue[Var.Value.UnsignedInt] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
-		return MapUnsignedIntConstantValue[Var.Value.UnsignedInt];
+		HashMap_UnsignedIntConstantValue[Var.Value.UnsignedInt] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		return HashMap_UnsignedIntConstantValue[Var.Value.UnsignedInt];
 	}
 	case HazeValueType::UnsignedLong:
 	{
-		auto it = MapUnsignedLongConstantValue.find(Var.Value.UnsignedLong);
-		if (it != MapUnsignedLongConstantValue.end())
+		auto it = HashMap_UnsignedLongConstantValue.find(Var.Value.UnsignedLong);
+		if (it != HashMap_UnsignedLongConstantValue.end())
 		{
 			return it->second;
 		}
-		MapUnsignedLongConstantValue[Var.Value.UnsignedLong] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
-		return MapUnsignedLongConstantValue[Var.Value.UnsignedLong];
+		HashMap_UnsignedLongConstantValue[Var.Value.UnsignedLong] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		return HashMap_UnsignedLongConstantValue[Var.Value.UnsignedLong];
 	}
 	case HazeValueType::Float:
 	{
-		auto it = MapFloatConstantValue.find(Var.Value.Float);
-		if (it != MapFloatConstantValue.end())
+		auto it = HashMap_FloatConstantValue.find(Var.Value.Float);
+		if (it != HashMap_FloatConstantValue.end())
 		{
 			return it->second;
 		}
-		MapFloatConstantValue[Var.Value.Float] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
-		return MapFloatConstantValue[Var.Value.Float];
+		HashMap_FloatConstantValue[Var.Value.Float] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		return HashMap_FloatConstantValue[Var.Value.Float];
 	}
 	case HazeValueType::Double:
 	{
-		auto it = MapDobuleConstantValue.find(Var.Value.Double);
-		if (it != MapDobuleConstantValue.end())
+		auto it = HashMap_DobuleConstantValue.find(Var.Value.Double);
+		if (it != HashMap_DobuleConstantValue.end())
 		{
 			return it->second;
 		}
-		MapDobuleConstantValue[Var.Value.Double] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
-		return MapDobuleConstantValue[Var.Value.Double];
+		HashMap_DobuleConstantValue[Var.Value.Double] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		return HashMap_DobuleConstantValue[Var.Value.Double];
 	}
 	default:
 		break;
 	}
 
 	return nullptr;
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GenString(HAZE_STRING& String)
+{
+	return GetCurrModule()->GetGlobalStringVariable(String);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetGlobalVariable(const HAZE_STRING& Name)

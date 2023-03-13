@@ -13,9 +13,6 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value)
 		case HazeValueType::Bool:
 			Stream << V.Value.Bool;
 			break;
-		case HazeValueType::Char:
-			Stream << V.Value.Char;
-			break;
 		case HazeValueType::Short:
 			Stream << V.Value.Short;
 			break;
@@ -54,9 +51,6 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
 	case HazeValueType::Bool:
 		OFStream << V.Value.Bool;
 		break;
-	case HazeValueType::Char:
-		OFStream << V.Value.Char;
-		break;
 	case HazeValueType::Short:
 		OFStream << V.Value.Short;
 		break;
@@ -80,6 +74,9 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
 		break;
 	case HazeValueType::UnsignedLong:
 		OFStream << V.Value.UnsignedLong;
+		break;
+	case HazeValueType::String:
+		OFStream << V.Value.String.StringTableIndex;
 		break;
 	default:
 		break;

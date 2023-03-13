@@ -125,10 +125,10 @@ void HazeVM::LoadOpCodeFile()
 
 	for (size_t i = 0; i < Vector_StringTable.size(); i++)
 	{
-		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+		/*FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 		B_String.resize(Num);
 		FS.read(B_String.data(), Num);
-		Vector_StringTable[i].first = String2WString(B_String);
+		Vector_StringTable[i].first = String2WString(B_String);*/
 
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 		B_String.resize(Num);

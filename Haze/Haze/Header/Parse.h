@@ -47,6 +47,8 @@ private:
 
 	std::unique_ptr<ASTBase> ParseVariableDefine();
 
+	std::unique_ptr<ASTBase> ParseStringText();
+
 	std::unique_ptr<ASTBase> ParseBoolExpression();
 
 	std::unique_ptr<ASTBase> ParseNumberExpression();

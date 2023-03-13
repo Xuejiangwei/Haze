@@ -16,8 +16,6 @@
 
 #define TOKEN_VOID				HAZE_TEXT("空")
 #define TOKEN_BOOL				HAZE_TEXT("布尔")
-#define TOKEN_CHAR				HAZE_TEXT("字符")
-#define TOKEN_BYTE				HAZE_TEXT("字节")
 #define TOKEN_SHORT				HAZE_TEXT("双字节")
 #define TOKEN_INT				HAZE_TEXT("整数")
 #define TOKEN_FLOAT				HAZE_TEXT("小数")
@@ -28,6 +26,10 @@
 #define TOKEN_UNSIGNED_SHORT	HAZE_TEXT("正双字节")
 #define TOKEN_UNSIGNED_INT		HAZE_TEXT("正整数")
 #define TOKEN_UNSIGNED_LONG		HAZE_TEXT("正长整数")
+
+#define TOKEN_STRING			HAZE_TEXT("字符")
+#define TOKEN_STRING_START		HAZE_TEXT("[")
+#define TOKEN_STRING_END		HAZE_TEXT("]")
 
 #define TOKEN_CLASS				HAZE_TEXT("类")
 #define TOKEN_CLASS_DATA		HAZE_TEXT("数据")
@@ -99,8 +101,6 @@ static std::unordered_map<HAZE_STRING, HazeToken> MapToken =
 {
 	{TOKEN_VOID, HazeToken::Void},
 	{TOKEN_BOOL, HazeToken::Bool},
-	{TOKEN_CHAR, HazeToken::Char},
-	{TOKEN_BYTE, HazeToken::Byte},
 	{TOKEN_SHORT, HazeToken::Short},
 	{TOKEN_INT, HazeToken::Int},
 	{TOKEN_FLOAT, HazeToken::Float},
@@ -111,6 +111,11 @@ static std::unordered_map<HAZE_STRING, HazeToken> MapToken =
 	{TOKEN_UNSIGNED_SHORT, HazeToken::UnsignedShort},
 	{TOKEN_UNSIGNED_INT, HazeToken::UnsignedInt},
 	{TOKEN_UNSIGNED_LONG, HazeToken::UnsignedLong},
+
+	{TOKEN_STRING, HazeToken::String},
+
+	{TOKEN_STRING_START, HazeToken::StringStart},
+	{TOKEN_STRING_END, HazeToken::StringEnd},
 
 	{TOKEN_FUNCTION, HazeToken::Function},
 
@@ -256,8 +261,6 @@ void Parse::ParseContent()
 		switch (CurrToken)
 		{
 		case HazeToken::Bool:
-		case HazeToken::Char:
-		case HazeToken::Byte:
 		case HazeToken::Short:
 		case HazeToken::Int:
 		case HazeToken::Float:
@@ -267,6 +270,7 @@ void Parse::ParseContent()
 		case HazeToken::UnsignedShort:
 		case HazeToken::UnsignedInt:
 		case HazeToken::UnsignedLong:
+		case HazeToken::String:
 		case HazeToken::Identifier:
 		{
 			auto AST = ParseExpression();
@@ -462,8 +466,6 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	switch (Token)
 	{
 	case HazeToken::Bool:
-	case HazeToken::Char:
-	case HazeToken::Byte:
 	case HazeToken::Short:
 	case HazeToken::Int:
 	case HazeToken::Float:
@@ -473,9 +475,12 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::UnsignedShort:
 	case HazeToken::UnsignedInt:
 	case HazeToken::UnsignedLong:
+	case HazeToken::String:
 		return ParseVariableDefine();
 	case HazeToken::Number:
 		return ParseNumberExpression();
+	case HazeToken::StringStart:
+		return ParseStringText();
 	case HazeToken::True:
 	case HazeToken::False:
 		return ParseBoolExpression();
@@ -547,6 +552,20 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		{
 			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
 		}
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<ASTBase> Parse::ParseStringText()
+{
+	GetNextToken();
+	HAZE_STRING Text = CurrLexeme;
+
+	if (ExpectNextTokenIs(HazeToken::StringEnd, HAZE_TEXT("Parse string expect end signal ] ")))
+	{
+		GetNextToken();
+		return std::make_unique<ASTStringText>(VM, Text);
 	}
 
 	return nullptr;
@@ -877,7 +896,7 @@ bool Parse::IsHazeSignalToken(HAZE_CHAR Char)
 		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
 		TOKEN_ASSIGN, TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
 		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, TOKEN_COMMA, TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, HAZE_SINGLE_COMMENT, 
-		TOKEN_MULTI_VARIABLE
+		TOKEN_MULTI_VARIABLE, TOKEN_STRING_START, TOKEN_STRING_END
 	};
 
 	HAZE_STRING WS;

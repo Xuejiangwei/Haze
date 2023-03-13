@@ -35,6 +35,8 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GenConstantValue(const HazeValue& Var);
 
+	std::shared_ptr<HazeCompilerValue> GenString(HAZE_STRING& String);
+
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name);
@@ -83,14 +85,14 @@ private:
 	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> MapModules;
 
 	//³£Á¿
-	std::unordered_map<bool, std::shared_ptr<HazeCompilerValue>> MapBoolConstantValue;
-	std::unordered_map<char, std::shared_ptr<HazeCompilerValue>> MapIntConstantValue;
-	std::unordered_map<long long, std::shared_ptr<HazeCompilerValue>> MapLongConstantValue;
-	std::unordered_map<unsigned int, std::shared_ptr<HazeCompilerValue>> MapUnsignedIntConstantValue;
-	std::unordered_map<unsigned long long, std::shared_ptr<HazeCompilerValue>> MapUnsignedLongConstantValue;
-	std::unordered_map<float, std::shared_ptr<HazeCompilerValue>> MapFloatConstantValue;
-	std::unordered_map<double, std::shared_ptr<HazeCompilerValue>> MapDobuleConstantValue;
-	std::unordered_map<HazeValueType, std::shared_ptr<HazeCompilerValue>> MapDefineConstantValue;
+	std::unordered_map<bool, std::shared_ptr<HazeCompilerValue>> HashMap_BoolConstantValue;
+	std::unordered_map<int, std::shared_ptr<HazeCompilerValue>> HashMap_IntConstantValue;
+	std::unordered_map<long long, std::shared_ptr<HazeCompilerValue>> HashMap_LongConstantValue;
+	std::unordered_map<unsigned int, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedIntConstantValue;
+	std::unordered_map<unsigned long long, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedLongConstantValue;
+	std::unordered_map<float, std::shared_ptr<HazeCompilerValue>> HashMap_FloatConstantValue;
+	std::unordered_map<double, std::shared_ptr<HazeCompilerValue>> HashMap_DobuleConstantValue;
+	std::unordered_map<HazeValueType, std::shared_ptr<HazeCompilerValue>> HashMap_DefineConstantValue;
 
 	//BaseBlock
 	std::shared_ptr<HazeBaseBlock> InsertBaseBlock;
