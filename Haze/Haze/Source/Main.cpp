@@ -22,7 +22,7 @@ int main()
 
 	//VM.ParseString(L"Haze 测试 \n");
 
-	//std::cout << "Hello World!\n";
+	std::cout << "Haze End!\n";
 	getchar();
 }
 

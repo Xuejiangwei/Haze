@@ -23,6 +23,9 @@ void HazeStack::Start(unsigned int Address)
 {
 	PC = Address;
 	Stack_Function.push_back(HAZE_MAIN_FUNCTION_TEXT);
+
+	EBP = ESP;
+	Stack_EBP.push_back(EBP);
 	while (PC < VM->Vector_Instruction.size())
 	{
 #ifdef _DEBUG
@@ -54,5 +57,4 @@ void HazeStack::InitRegisterToStack()
 		ESP += sizeof(HazeValue);
 	}
 
-	Stack_EBP.push_back(ESP);
 }

@@ -116,7 +116,7 @@ public:
 			{
 				if (Operator[0].Extra.Offset + (int)Stack->EBP >= 0)
 				{
-					memset(&Stack->Stack_Main[Stack->ESP], Stack->Stack_Main[Operator[0].Extra.Offset + Stack->EBP], Size);
+					memcpy(&Stack->Stack_Main[Stack->ESP], GetAddressByOperator(Stack, Operator[0]), Size);
 				}
 				else
 				{
