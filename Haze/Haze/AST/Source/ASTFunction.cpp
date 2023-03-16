@@ -55,7 +55,7 @@ HazeValue* ASTFunction::CodeGen()
 	return nullptr;
 }
 
-ASTFunctionSection::ASTFunctionSection(HazeVM* VM, std::vector<std::unique_ptr<ASTFunction>>& Functions)
+ASTFunctionSection::ASTFunctionSection(HazeVM* VM,std::vector<std::unique_ptr<ASTFunction>>& Functions)
 	: VM(VM), Functions(std::move(Functions))
 {
 }
@@ -94,4 +94,19 @@ void ASTFunctionDefine::CodeGen()
 	{
 		Compiler->CreateLocalVariable(CompilerFunction, iter);
 	}
+}
+
+ASTClassFunctionSection::ASTClassFunctionSection(HazeVM* VM, std::vector<std::vector<std::unique_ptr<ASTFunction>>>& Functions)
+	: VM(VM), Functions(std::move(Functions))
+{
+
+}
+
+ASTClassFunctionSection::~ASTClassFunctionSection()
+{
+}
+
+void ASTClassFunctionSection::CodeGen()
+{
+
 }

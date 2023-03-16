@@ -307,6 +307,20 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		Instruction.Operator = { OperatorOne };
 	}
 	break;
+	case InstructionOpCode::NEW:
+	{
+		InstructionData OperatorOne;
+
+		GetNextLexeme();
+		OperatorOne.Scope = InstructionScopeType::None;
+		OperatorOne.Type = (HazeValueType)StringToInt<int>(CurrLexeme); 
+
+		GetNextLexeme();
+		OperatorOne.Name = CurrLexeme;
+
+		Instruction.Operator = { OperatorOne };
+	}
+	break;
 	default:
 		break;
 	}

@@ -37,6 +37,8 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	
 	{HAZE_TEXT("CALL"), InstructionOpCode::CALL },
 	{HAZE_TEXT("RET"), InstructionOpCode::RET },
+
+	{HAZE_TEXT("NEW"), InstructionOpCode::NEW },
 };
 
 bool IsNumber(const HAZE_STRING& Str)
@@ -66,7 +68,6 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
 	{
 		{ HazeValueType::Short, { HazeValueType::Int, HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
 		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
-		{ HazeValueType::UnsignedChar, { HazeValueType::UnsignedShort, HazeValueType::UnsignedInt, HazeValueType::UnsignedLong } },
 		{ HazeValueType::UnsignedShort, { HazeValueType::UnsignedInt, HazeValueType::UnsignedLong } },
 		{ HazeValueType::UnsignedInt, { HazeValueType::UnsignedLong } },
 		{ HazeValueType::Float, { HazeValueType::Double} }
@@ -109,7 +110,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 		{ HazeToken::UnsignedShort, HazeValueType::UnsignedShort },
 		{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
 		{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
-		{ HazeToken::String, HazeValueType::String},
+		{ HazeToken::Identifier, HazeValueType::Class},
 
 		{ HazeToken::MultiVariable, HazeValueType::MultiVar},
 	};
@@ -140,8 +141,6 @@ unsigned int GetSize(HazeValueType Type)
 	case HazeValueType::Double:
 	case HazeValueType::UnsignedLong:
 		return 8;
-	case HazeValueType::String:
-		return 4;
 	default:
 		break;
 	}
@@ -180,9 +179,6 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value)
 		break;
 	case HazeValueType::UnsignedLong:
 		WSS >> Value.Value.UnsignedLong;
-		break;
-	case HazeValueType::String:
-		WSS >> Value.Value.String.StringTableIndex;
 		break;
 	default:
 		break;
@@ -319,8 +315,6 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value)
 		return (HAZE_BINARY_CHAR*)&Value.Value.Double;
 	case HazeValueType::UnsignedLong:
 		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
-	case HazeValueType::String:
-		return (HAZE_BINARY_CHAR*)&Value.Value.String.StringTableIndex;
 	default:
 		break;
 	}

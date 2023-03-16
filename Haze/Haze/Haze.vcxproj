@@ -139,12 +139,13 @@
     <ClCompile Include="Compiler\Source\HazeBaseBlock.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompiler.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerFunction.cpp" />
-    <ClCompile Include="Compiler\Source\HazeCompilerFunctionStack.cpp" />
+    <ClCompile Include="Compiler\Source\HazeCompilerClass.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerHelper.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerModule.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp" />
     <ClCompile Include="Define\Source\HazeValue.cpp" />
     <ClCompile Include="Define\Source\HazeInstruction.cpp" />
+    <ClCompile Include="MetaData\Source\HazeString.cpp" />
     <ClCompile Include="MetaData\Source\HazeClass.cpp" />
     <ClCompile Include="MetaData\Source\HazeFunction.cpp" />
     <ClCompile Include="MetaData\Source\HazeModule.cpp" />
@@ -157,6 +158,8 @@
     <ClCompile Include="StandardLibrary\Source\HazeStandardLibraryBase.cpp" />
     <ClCompile Include="StandardLibrary\Source\HazeStream.cpp" />
     <ClCompile Include="VM\Source\HazeVM.cpp" />
+    <ClCompile Include="VM\Source\MemoryBucket.cpp" />
+    <ClCompile Include="VM\Source\MemoryPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AST\Header\ASTBase.h" />
@@ -168,7 +171,7 @@
     <ClInclude Include="Compiler\Header\HazeBaseBlock.h" />
     <ClInclude Include="Compiler\Header\HazeCompiler.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerFunction.h" />
-    <ClInclude Include="Compiler\Header\HazeCompilerFunctionStack.h" />
+    <ClInclude Include="Compiler\Header\HazeCompilerClass.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerHelper.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerModule.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
@@ -186,10 +189,13 @@
     <ClInclude Include="MetaData\Header\HazeClass.h" />
     <ClInclude Include="MetaData\Header\HazeFunction.h" />
     <ClInclude Include="MetaData\Header\HazeModule.h" />
+    <ClInclude Include="MetaData\Header\HazeString.h" />
     <ClInclude Include="MetaData\Header\HazeVariable.h" />
     <ClInclude Include="StandardLibrary\Header\HazeStandardLibraryBase.h" />
     <ClInclude Include="StandardLibrary\Header\HazeStream.h" />
     <ClInclude Include="VM\Header\HazeVM.h" />
+    <ClInclude Include="VM\Header\MemoryBucket.h" />
+    <ClInclude Include="VM\Header\MemoryPool.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Define\Header\HazeTemplate.inl" />

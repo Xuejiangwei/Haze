@@ -75,9 +75,6 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
 	case HazeValueType::UnsignedLong:
 		OFStream << V.Value.UnsignedLong;
 		break;
-	case HazeValueType::String:
-		OFStream << V.Value.String.StringTableIndex;
-		break;
 	default:
 		break;
 	}

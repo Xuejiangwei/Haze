@@ -33,8 +33,12 @@ enum class InstructionScopeType : unsigned int
 	Local,
 	Constant,
 	String,
-	Register,
 	Temp,
+
+	RegisterBegin,
+	RegisterRet,
+	RegisterNew,
+	RegisterEnd,
 
 	Address,
 };
@@ -63,6 +67,8 @@ enum class InstructionOpCode : unsigned int
 
 	CALL,
 	RET,
+
+	NEW,
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，
@@ -104,8 +110,6 @@ struct FunctionDescData
 	unsigned int InstructionStartAddress;
 };
 
-
-
 struct FunctionData
 {
 	using StdLibFunctionCall = void(*)(HAZE_STD_CALL_PARAM);
@@ -120,3 +124,5 @@ struct FunctionData
 		StdLibFunctionCall StdLibFunction;
 	} Extra;
 };
+
+bool IsRegisterScope(InstructionScopeType Scope);

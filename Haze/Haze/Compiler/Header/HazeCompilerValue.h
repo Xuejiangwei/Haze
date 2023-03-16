@@ -26,7 +26,9 @@ public:
 
 	HazeValue& GetValue() { return Value; }
 
-	bool IsRegister() { return Scope == InstructionScopeType::Register; }
+	InstructionScopeType GetScope() { return Scope; }
+
+	bool IsRegister() { return IsRegisterScope(Scope); }
 
 	bool IsConstant() { return Scope == InstructionScopeType::Constant; }
 

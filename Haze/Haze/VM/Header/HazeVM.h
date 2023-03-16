@@ -10,6 +10,7 @@
 
 class HazeCompiler;
 
+class MemoryPool;
 class HazeStack;
 
 class HazeVM
@@ -37,13 +38,18 @@ public:
 
 	std::unique_ptr<HazeCompiler>& GetCompiler() { return Compiler; }
 
-	const std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>>& GetModules() const { return UnorderedMap_Module; }
+	const std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>>& GetModules() const { return HashMap_Module; }
 
 	int GetFucntionIndexByName(const HAZE_STRING& Name);
 
 	const HAZE_STRING& GetHazeStringByIndex(int Index) const { return Vector_StringTable[Index].second; }
 
 	HazeValue* GetGlobalValue(const HAZE_STRING& Name);
+
+	bool IsClass(const HAZE_STRING& Name);
+
+public:
+	void* Alloca(HazeValueType Type, unsigned int Size);
 
 private:
 	void LoadOpCodeFile();
@@ -56,11 +62,13 @@ private:
 
 	std::unique_ptr<HazeCompiler> Compiler;
 
+	std::vector<std::unique_ptr<MemoryPool>> Vector_MemoryPool;
+
 	std::unique_ptr<HazeStack> VMStack;
 
 	HazeValue FunctionReturn;
 
-	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>> UnorderedMap_Module;
+	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>> HashMap_Module;
 
 	std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_GlobalData;
 

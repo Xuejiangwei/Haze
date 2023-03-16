@@ -1,4 +1,5 @@
 #include "ASTBase.h"
+
 #include "HazeVM.h"
 #include "HazeCompiler.h"
 #include "HazeCompilerModule.h"
@@ -8,11 +9,14 @@
 //Base
 ASTBase::ASTBase(HazeVM* VM) : VM(VM)
 {
-
+	DefineVariable.Name = HAZE_TEXT("");
+	DefineVariable.Type = { HazeValueType::Null, HAZE_TEXT("") };
 }
 
 ASTBase::ASTBase(HazeVM* VM, const HazeDefineVariable& Var) : VM(VM), DefineVariable(Var)
 {
+	Value.Type = HazeValueType::Null;
+	memset(&Value.Value, 0, sizeof(Value.Value));
 }
 
 ASTBase::ASTBase(HazeVM* VM, const HazeValue& Value) : VM(VM), Value(Value)
@@ -177,6 +181,20 @@ std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 	return VM->GetCompiler()->CreateRet(Value);
 }
 
+ASTNew::ASTNew(HazeVM* VM, const HazeDefineVariable& Define) : ASTBase(VM, Define)
+{
+}
+
+ASTNew::~ASTNew()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
+{
+	return VM->GetCompiler()->CreateNew(VM->GetCompiler()->GetCurrModule()->GetCurrFunction(), DefineVariable.Type);
+}
+
+
 ASTMultiExpression::ASTMultiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression)
 	: ASTBase(VM), SectionSignal(Section), VectorExpression(std::move(VectorExpression))
 {
@@ -283,3 +301,4 @@ std::shared_ptr<HazeCompilerValue> ASTImportModule::CodeGen()
 
 	return nullptr;
 }
+

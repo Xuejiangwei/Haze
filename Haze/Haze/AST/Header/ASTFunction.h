@@ -25,7 +25,6 @@ private:
 	std::unique_ptr<ASTBase> Body;
 };
 
-
 class ASTFunctionSection
 {
 public:
@@ -37,6 +36,18 @@ public:
 private:
 	HazeVM* VM;
 	std::vector<std::unique_ptr<ASTFunction>> Functions;
+};
+
+class ASTClassFunctionSection
+{
+public:
+	ASTClassFunctionSection(HazeVM* VM, std::vector<std::vector<std::unique_ptr<ASTFunction>>>& Functions);
+	~ASTClassFunctionSection();
+
+	void CodeGen();
+private:
+	HazeVM* VM;
+	std::vector<std::vector<std::unique_ptr<ASTFunction>>> Functions;
 };
 
 class ASTFunctionDefine

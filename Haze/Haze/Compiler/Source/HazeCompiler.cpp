@@ -7,15 +7,14 @@
 
 #include "HazeBaseBlock.h"
 
-//static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> Map_GlobalRegister = {
-//	{ ADD_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData({{HazeToken::Int, HAZE_TEXT("Add_Register")}, HazeCompilerValue::ValueSection::Register} },
-//	{ SUB_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Sub_Register")), HazeCompilerValue::ValueSection::Register) },
-//	{ MUL_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Mul_Register")), HazeCompilerValue::ValueSection::Register) },
-//	{ DIV_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Div_Register")), HazeCompilerValue::ValueSection::Register) },
-//	{ RET_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Ret_Register")), HazeCompilerValue::ValueSection::Register) },
-//};
-
-static std::shared_ptr<HazeCompilerValue> RetRegister = std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeValueType::Null, HAZE_TEXT("Ret_Register")), InstructionScopeType::Register);
+static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalRegister = {
+	//{ ADD_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData({{HazeToken::Int, HAZE_TEXT("Add_Register")}, HazeCompilerValue::ValueSection::Register} },
+	//{ SUB_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Sub_Register")), HazeCompilerValue::ValueSection::Register) },
+	//{ MUL_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Mul_Register")), HazeCompilerValue::ValueSection::Register) },
+	//{ DIV_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Div_Register")), HazeCompilerValue::ValueSection::Register) },
+	{ RET_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeValueType::Null, HAZE_TEXT("Ret_Register")), InstructionScopeType::RegisterRet) },
+	{ NEW_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeValueType::Null, HAZE_TEXT("New_Register")), InstructionScopeType::RegisterNew) },
+};
 
 HazeCompiler::HazeCompiler()
 {
@@ -28,14 +27,14 @@ HazeCompiler::~HazeCompiler()
 bool HazeCompiler::InitializeCompiler(const HAZE_STRING& ModuleName)
 {
 	//Éú³ÉÄ£¿é
-	auto It = MapModules.find(ModuleName);
-	if (It != MapModules.end())
+	auto It = HashMap_CompilerModule.find(ModuleName);
+	if (It != HashMap_CompilerModule.end())
 	{
 		return false;
 	}
 
 	Vector_ModuleNameStack.push_back(ModuleName);
-	MapModules[GetCurrModuleName()] = std::make_unique<HazeCompilerModule>(ModuleName);
+	HashMap_CompilerModule[GetCurrModuleName()] = std::make_unique<HazeCompilerModule>(ModuleName);
 	return true;
 }
 
@@ -46,12 +45,12 @@ void HazeCompiler::FinishModule()
 
 void HazeCompiler::GenModuleCodeFile()
 {
-	MapModules[GetCurrModuleName()]->GenCodeFile();
+	HashMap_CompilerModule[GetCurrModuleName()]->GenCodeFile();
 }
 
 std::unique_ptr<HazeCompilerModule>& HazeCompiler::GetCurrModule()
 {
-	return MapModules[GetCurrModuleName()];
+	return HashMap_CompilerModule[GetCurrModuleName()];
 }
 
 bool HazeCompiler::CurrModuleIsStdLib()
@@ -62,7 +61,7 @@ bool HazeCompiler::CurrModuleIsStdLib()
 std::shared_ptr<HazeCompilerFunction> HazeCompiler::GetFunction(const HAZE_STRING& Name)
 {
 	std::shared_ptr<HazeCompilerFunction> Function = nullptr;
-	for (auto& Iter : MapModules)
+	for (auto& Iter : HashMap_CompilerModule)
 	{
 		Function = Iter.second->GetFunction(Name);
 		if (Function)
@@ -93,14 +92,41 @@ HAZE_STRING HazeCompiler::GetCurrModuleOpFile() const
 //	return nullptr;
 //}
 //
-std::shared_ptr<HazeCompilerValue> HazeCompiler::GetReturnRegister()
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetRegister(const HAZE_CHAR* Name)
 {
-	return RetRegister;
+	auto Iter = HashMap_GlobalRegister.find(Name);
+	if (Iter != HashMap_GlobalRegister.end())
+	{
+		return Iter->second;
+	}
+
+	return nullptr;
 }
 
-const HAZE_CHAR* HazeCompiler::GetReturnRegisterName()
+const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue>& Value)
 {
-	return HAZE_TEXT("Ret_Register");
+	for (auto& Iter : HashMap_GlobalRegister)
+	{
+		if (Iter.second == Value)
+		{
+			return Iter.first;
+		}
+	}
+
+	return nullptr;
+}
+
+bool HazeCompiler::IsClass(const HAZE_STRING& Name)
+{
+	for (auto& Iter : HashMap_CompilerModule)
+	{
+		if (Iter.second->FindClass(Name))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValue& Var)
@@ -392,6 +418,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_
 	auto& Module = GetCurrModule();
 	
 	return Module->CreateFunctionCall(Function, Param);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineData& Data)
+{
+	Function->CreateNew(Data);
+	return GetRegister(NEW_REGISTER);
 }
 
 void HazeCompiler::ClearFunctionTemp()

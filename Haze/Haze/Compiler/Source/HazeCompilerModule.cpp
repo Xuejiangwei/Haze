@@ -8,6 +8,7 @@
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
+#include "HazeCompilerClass.h"
 
 HazeCompilerModule::HazeCompilerModule(const HAZE_STRING& ModuleName)
 	: IsStdLib(false)
@@ -49,6 +50,17 @@ void HazeCompilerModule::GenCodeFile()
 		FS_I_Code.close();
 	}
 #endif
+}
+
+std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, const HazeClassData& ClassData)
+{
+	std::shared_ptr<HazeCompilerClass> Class = FindClass(Name);
+	if (!Class)
+	{
+		HashMap_Class[Name] = std::make_shared<HazeCompilerClass>(Name, ClassData);
+		Class = HashMap_Class[Name];
+	}
+	return Class;
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
@@ -172,8 +184,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 		}
 		else if (Right->IsRegister())
 		{
-			SStream << HazeCompiler::GetReturnRegisterName();
-			SStream << " " << (unsigned int)InstructionScopeType::Register;
+			SStream << HazeCompiler::GetRegisterName(Right);
+			SStream << " " << (unsigned int)Right->GetScope();
 		}
 		else
 		{
@@ -303,7 +315,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << Param.size() << std::endl;
 	BB->PushIRCode(SStream.str());
 
-	return HazeCompiler::GetReturnRegister();
+	return HazeCompiler::GetRegister(RET_REGISTER);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalStringVariable(const HAZE_STRING& String)
@@ -320,8 +332,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalStringVariable(c
 	HashMap_StringMapping[(int)HashMap_StringMapping.size()] = &it->first;
 
 	HazeValue Value;
-	Value.Type = HazeValueType::String;
-	Value.Value.String.StringTableIndex = (int)HashMap_StringMapping.size() - 1;
+	//Value.Type = HazeValueType::String;
+	//Value.Value.Extra.StringTableIndex = (int)HashMap_StringMapping.size() - 1;
 
 	it->second = std::make_shared<HazeCompilerValue>(Value, InstructionScopeType::String);
 	return it->second;
@@ -354,9 +366,15 @@ bool HazeCompilerModule::GetGlobalVariableName(std::shared_ptr<HazeCompilerValue
 	return false;
 }
 
-HazeValueType HazeCompilerModule::FindClass(const HAZE_STRING& ClassName)
+std::shared_ptr<HazeCompilerClass> HazeCompilerModule::FindClass(const HAZE_STRING& ClassName)
 {
-	return HazeValueType::Class;
+	auto Iter = HashMap_Class.find(ClassName);
+	if (Iter != HashMap_Class.end())
+	{
+		return Iter->second;
+	}
+	
+	return nullptr;
 }
 
 void HazeCompilerModule::GenICode()

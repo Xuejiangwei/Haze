@@ -24,6 +24,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 	return BB->CreateAlloce(Variable);
 }
 
+void HazeCompilerFunction::CreateNew(const HazeDefineData& Data)
+{
+	HAZE_STRING_STREAM SStream;
+	SStream << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)Data.Type << " " <<Data.CustomName << std::endl;
+	auto BB = BBList.front();
+	BB->PushIRCode(SStream.str());
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& Name)
 {
 	for (auto& iter : BBList)
@@ -39,7 +47,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 
 	return nullptr;
 }
-
 
 void HazeCompilerFunction::FunctionFinish()
 {

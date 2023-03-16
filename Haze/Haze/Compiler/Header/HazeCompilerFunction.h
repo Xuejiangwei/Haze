@@ -8,7 +8,6 @@
 
 #include "Haze.h"
 #include "HazeCompilerValue.h"
-#include "HazeCompilerFunctionStack.h"
 
 class HazeCompilerModule;
 class HazeBaseBlock;
@@ -45,6 +44,8 @@ private:
 
 	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable);
 
+	void CreateNew(const HazeDefineData& Data);
+
 private:
 	HazeCompilerModule* Module;
 
@@ -52,8 +53,6 @@ private:
 	HazeDefineData Type;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> VectorParam; //从右到左加入参数
-
-	HazeCompilerFunctionStack StackFrame;
 
 	std::list<std::shared_ptr<HazeBaseBlock>> BBList;
 

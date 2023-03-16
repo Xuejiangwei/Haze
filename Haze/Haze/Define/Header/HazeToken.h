@@ -3,16 +3,21 @@
 enum class HazeToken : unsigned int
 {
 	None,
+
 	Identifier,
+	
 	Void,
+	
 	Bool,
+	
+	Char,
+	
 	Short,
 	Int,
 	Float,
 	Long,
 	Double,
 
-	UnsignedByte,
 	UnsignedShort,
 	UnsignedInt,
 	UnsignedLong,
@@ -26,6 +31,9 @@ enum class HazeToken : unsigned int
 
 	Class,
 	ClassData,
+	ClassPublic,
+	ClassPrivate,
+	ClassProtected,
 
 	True,
 	False,
@@ -85,7 +93,12 @@ enum class HazeToken : unsigned int
 
 	MultiVariable,
 
+	New,
+
 	//NoMatch
 	Number,
 	String,
+
+	Pointer,
+
 };

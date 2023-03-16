@@ -12,6 +12,7 @@ std::unordered_map<HAZE_STRING, HazeValue*>  HashMap_VirtualRegister =
 	//{MUL_REGISTER, nullptr},
 	//{DIV_REGISTER, nullptr},
 	{RET_REGISTER, nullptr},
+	{NEW_REGISTER, nullptr},
 };
 
 HazeValue* GetVirtualRegister(const HAZE_CHAR* Name)
@@ -27,6 +28,11 @@ HazeValue* GetVirtualRegister(const HAZE_CHAR* Name)
 HazeValue* GetInstructionValue(const InstructionData& InsData)
 {
 	return nullptr;
+}
+
+bool IsRegisterScope(InstructionScopeType Scope)
+{
+	return InstructionScopeType::RegisterBegin < Scope && Scope < InstructionScopeType::RegisterEnd;
 }
 
 class InstructionProcessor
@@ -48,12 +54,12 @@ public:
 			{
 				memcpy(GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]), GetSize(Operator[0].Type));
 			}
-			else if (Operator[1].Scope == InstructionScopeType::Register)
+			else if (IsRegisterScope(Operator[1].Scope))
 			{
-				HazeValue* RetRegister = GetVirtualRegister(RET_REGISTER);
-				int Size = GetSize(RetRegister->Type);
+				HazeValue* Register = GetVirtualRegister(Operator[1].Name.c_str());
+				int Size = GetSize(Register->Type);
 
-				memcpy(GetAddressByOperator(Stack, Operator[0]) , &RetRegister->Value, Size);
+				memcpy(GetAddressByOperator(Stack, Operator[0]) , &Register->Value, Size);
 			}
 		}
 	}
@@ -263,6 +269,102 @@ public:
 		}
 	}
 
+	static void And(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Or(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Not(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Xor(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Shl(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
+	static void Shr(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Type))
+			{
+				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+
+		}
+	}
+
 	static void Ret(HazeStack* Stack)
 	{
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
@@ -289,6 +391,20 @@ public:
 		Stack->Stack_EBP.pop_back();
 		Stack->EBP = Stack->Stack_EBP.back();
 		Stack->ESP -= (HAZE_PUSH_ADDRESS_SIZE + Size);
+	}
+
+	static void New(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			HazeValue* NewRegister = GetVirtualRegister(NEW_REGISTER);
+			NewRegister->Type = (HazeValueType)Operator[0].Type;
+
+			int Size = GetSize(NewRegister->Type);
+
+			NewRegister->Value.Pointer = Stack->VM->Alloca(NewRegister->Type, Size);
+		}
 	}
 
 private:
@@ -319,17 +435,18 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::INC, &InstructionProcessor::Inc},
 	{InstructionOpCode::DEC, &InstructionProcessor::Dec},
 
-	{InstructionOpCode::AND, &InstructionProcessor::Dec},
-	{InstructionOpCode::OR, &InstructionProcessor::Dec},
-	{InstructionOpCode::NOT, &InstructionProcessor::Dec},
-	{InstructionOpCode::XOR, &InstructionProcessor::Dec},
+	{InstructionOpCode::AND, &InstructionProcessor::And},
+	{InstructionOpCode::OR, &InstructionProcessor::Or},
+	{InstructionOpCode::NOT, &InstructionProcessor::Not},
+	{InstructionOpCode::XOR, &InstructionProcessor::Xor},
 
-	{InstructionOpCode::SHL, &InstructionProcessor::Dec},
-	{InstructionOpCode::SHR, &InstructionProcessor::Dec},
+	{InstructionOpCode::SHL, &InstructionProcessor::Shl},
+	{InstructionOpCode::SHR, &InstructionProcessor::Shr},
 
 	{InstructionOpCode::PUSH, &InstructionProcessor::Push},
 	{InstructionOpCode::POP, &InstructionProcessor::Pop},
 
 	{InstructionOpCode::CALL, &InstructionProcessor::Call},
 	{InstructionOpCode::RET, &InstructionProcessor::Ret},
+	{InstructionOpCode::NEW, &InstructionProcessor::New},
 };

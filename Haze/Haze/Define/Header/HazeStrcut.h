@@ -20,7 +20,11 @@ struct HazeDefineData
 	{
 	}
 
-	HazeDefineData(HazeValueType Type, HAZE_STRING CustomName) : Type(Type), CustomName(std::move(CustomName))
+	HazeDefineData(HazeValueType Type, const HAZE_STRING& CustomName) : Type(Type), CustomName(CustomName)
+	{
+	}
+
+	HazeDefineData(HazeValueType Type, const HAZE_CHAR* CustomName) : Type(Type), CustomName(CustomName)
 	{
 	}
 };
@@ -29,4 +33,9 @@ struct HazeDefineVariable
 {
 	HazeDefineData Type;		//变量类型
 	HAZE_STRING Name;			//变量名
+};
+
+struct HazeClassData
+{
+
 };

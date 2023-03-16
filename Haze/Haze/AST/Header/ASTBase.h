@@ -122,6 +122,16 @@ private:
 	std::unique_ptr<ASTBase> Expression;
 };
 
+//New
+class ASTNew : public ASTBase
+{
+public:
+	ASTNew(HazeVM* VM, const HazeDefineVariable& Define);
+	virtual ~ASTNew() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+};
+
 //二元表达式
 class ASTBinaryExpression : public ASTBase
 {

@@ -28,7 +28,7 @@ HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefin
 	Value.Type = DefineType.Type;
 	if (Value.Type == HazeValueType::Null)
 	{
-		Value.Type = Module->FindClass(DefineType.CustomName);
+		//Value.Type = Module->FindClass(DefineType.CustomName);
 	}
 	memset(&Value.Value, 0, sizeof(Value.Value));
 }

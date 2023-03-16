@@ -9,18 +9,19 @@ enum class HazeValueType : unsigned int
 	Void,
 	Bool,
 
+	Char,
+
 	Short,
 	Int,
 	Float,
 	Long,
 	Double,
 
-	UnsignedChar,
 	UnsignedShort,
 	UnsignedInt,
 	UnsignedLong,
 
-	String,
+	Pointer,
 
 	Class,
 	Function,
@@ -47,11 +48,14 @@ struct HazeValue
 		unsigned int UnsignedInt;
 		unsigned long long UnsignedLong;
 
+		const void* Pointer;
+
 		union
 		{
-			int StringTableIndex;
+			//int StringTableIndex;
+			int MemorySize;
 			//const HAZE_STRING* StringPointer;
-		} String;
+		} Extra;
 		
 	} Value;
 
@@ -75,6 +79,8 @@ public:
 };
 
 enum class InstructionOpCode : unsigned int;
+
+bool IsHazeDefaultType(HazeValueType Type);
 
 bool IsNumberType(HazeValueType Type);
 

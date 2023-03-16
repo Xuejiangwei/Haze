@@ -3,6 +3,11 @@
 #include "HazeValue.h"
 #include "Haze.h"
 
+bool IsHazeDefaultType(HazeValueType Type)
+{
+    return HazeValueType::Void <= Type && Type <= HazeValueType::UnsignedLong;
+}
+
 bool IsNumberType(HazeValueType Type)
 {
     static std::unordered_set<HazeValueType> HashSet_Table =
@@ -75,13 +80,6 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
         CALC_VARIABLE_DEFINE_INIT(double, Source, Target);
         CALC_VARIABLE_CALCULATE(double, TypeCode);
         CALC_ASSIGN(double);
-    }
-        break;
-    case HazeValueType::UnsignedChar:
-    {
-        CALC_VARIABLE_DEFINE_INIT(unsigned char, Source, Target);
-        CALC_VARIABLE_CALCULATE(unsigned char, TypeCode);
-        CALC_ASSIGN(unsigned char);
     }
         break;
     case HazeValueType::UnsignedShort:

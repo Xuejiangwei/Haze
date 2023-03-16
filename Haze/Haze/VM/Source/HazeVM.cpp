@@ -4,6 +4,7 @@
 #include <filesystem>
 
 #include "HazeVM.h"
+#include "MemoryPool.h"
 #include "HazeStack.h"
 #include "HazeCompiler.h"
 #include "Parse.h"
@@ -20,6 +21,9 @@ HazeVM::HazeVM()
 	FunctionReturn.Type = HazeValueType::Null;
 	Compiler = std::make_unique<HazeCompiler>();
 	VMStack = std::make_unique<HazeStack>(this);
+
+	Vector_MemoryPool.clear();
+	Vector_MemoryPool.push_back(std::make_unique<MemoryPool>(this));
 }
 
 HazeVM::~HazeVM()
@@ -71,10 +75,10 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 		Compiler->FinishModule();
 	}
 
-	auto Module = UnorderedMap_Module.find(ModuleName);
-	if (Module == UnorderedMap_Module.end())
+	auto Module = HashMap_Module.find(ModuleName);
+	if (Module == HashMap_Module.end())
 	{
-		UnorderedMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
+		HashMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
 	}
 	
 	Compiler->PopCurrModule();
@@ -238,4 +242,26 @@ HazeValue* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 	}
 
 	return nullptr;
+}
+
+bool HazeVM::IsClass(const HAZE_STRING& Name)
+{
+	return Compiler->IsClass(Name);
+}
+
+void* HazeVM::Alloca(HazeValueType Type, unsigned int Size)
+{
+	void* Ret = nullptr;
+	for (auto& Iter : Vector_MemoryPool)
+	{
+		Ret = Iter->Alloca(Type, Size);
+		if (Ret)
+		{
+			return Ret;
+		}
+	}
+	Vector_MemoryPool.push_back(std::make_unique<MemoryPool>(this));
+	Ret = Vector_MemoryPool.back()->Alloca(Type, Size);
+
+	return Ret;
 }

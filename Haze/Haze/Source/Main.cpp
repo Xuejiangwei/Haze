@@ -5,11 +5,24 @@
 #include <filesystem>
 
 #include "Haze.h"
+#include "HazeLog.h"
 #include "HazeVM.h"
+
+void HazeNewHandler()
+{
+	HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Haze no memory!!!!\n"));
+}
+
+void HazeInit()
+{
+	std::set_new_handler(HazeNewHandler);
+};
 
 //解析文本  --->  生成字节码   --->  用虚拟机解析字节码，并执行
 int main()
 {
+	HazeInit();
+
 	std::wstring Path = std::filesystem::current_path();
 
 	std::filesystem::create_directory(Path + HAZE_TEXT("\\HazeOpCode"));

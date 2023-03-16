@@ -1,20 +1,38 @@
 #pragma once
 
-#include <vector>
-#include <memory>
-#include <string>
+#include "Haze.h"
 
+class HazeVM;
 class ASTBase;
-class ASTFunction;
+class ASTFunctionSection;
+class ASTFunctionDefine;
 
 class ASTClass
 {
 public:
-	ASTClass(std::string& Name, std::vector<std::shared_ptr<ASTBase>>& Data, std::vector<std::shared_ptr<ASTFunction>> Function);
+	ASTClass(HazeVM* VM, HAZE_STRING& Name, std::vector<std::vector<std::unique_ptr<ASTBase>>>& Data, std::unique_ptr<ASTFunctionSection>& FunctionSection);
 	~ASTClass();
 
+	void CodeGen();
 private:
-	std::string ClassName;
-	std::vector<std::shared_ptr<ASTBase>> ClassData;
-	std::vector<std::shared_ptr<ASTFunction>> ClassFunction;
+	HazeVM* VM;
+
+	HAZE_STRING ClassName;
+	std::vector<std::vector<std::unique_ptr<ASTBase>>> Vector_ClassData;
+	std::unique_ptr<ASTFunctionSection> ClassFunctionSection;
+};
+
+class ASTClassDefine
+{
+public:
+	ASTClassDefine(HazeVM* VM, HAZE_STRING& Name, std::vector<std::vector<std::unique_ptr<ASTBase>>>& Data, std::vector<std::unique_ptr<ASTFunctionDefine>>& Function);
+	~ASTClassDefine();
+
+	void CodeGen();
+private:
+	HazeVM* VM;
+
+	HAZE_STRING ClassName;
+	std::vector<std::vector<std::unique_ptr<ASTBase>>> ClassData;
+	std::vector<std::unique_ptr<ASTFunctionDefine>> ClassFunction;
 };

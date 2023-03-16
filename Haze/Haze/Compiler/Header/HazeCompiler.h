@@ -42,11 +42,11 @@ public:
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name);
 
 public:
-	//static const HAZE_CHAR* GetRegisterName(std::shared_ptr<HazeCompilerValue> Register);
+	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* Name);
 
-	static std::shared_ptr<HazeCompilerValue> GetReturnRegister();
+	static const HAZE_CHAR* GetRegisterName(std::shared_ptr<HazeCompilerValue>& Value);
 
-	static const HAZE_CHAR* GetReturnRegisterName();
+	bool IsClass(const HAZE_STRING& Name);
 
 public:
 	//Base block : IP
@@ -73,6 +73,8 @@ public:		//生成op code
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& Param);
 
+	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineData& Data);
+
 private:
 	void ClearFunctionTemp();
 
@@ -82,7 +84,7 @@ private:
 private:
 	std::vector<HAZE_STRING> Vector_ModuleNameStack;
 
-	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> MapModules;
+	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> HashMap_CompilerModule;
 
 	//常量
 	std::unordered_map<bool, std::shared_ptr<HazeCompilerValue>> HashMap_BoolConstantValue;

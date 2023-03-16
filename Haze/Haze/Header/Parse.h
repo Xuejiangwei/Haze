@@ -7,9 +7,15 @@
 
 class OpCodeGenerator;
 class ASTBase;
+
 class ASTClass;
+class ASTClassDefine;
+
 class ASTFunction;
 class ASTFunctionSection;
+class ASTFunctionDefine;
+class ASTClassFunctionSection;
+
 class ASTStandardLibrary;
 
 class Parse
@@ -53,27 +59,49 @@ private:
 
 	std::unique_ptr<ASTBase> ParseNumberExpression();
 
+	std::unique_ptr<ASTBase> ParseIfExpression();
+
+	std::unique_ptr<ASTBase> ParseForExpression();
+
+	std::unique_ptr<ASTBase> ParseWhileExpression();
+
 	std::unique_ptr<ASTBase> ParseReturn();
+
+	std::unique_ptr<ASTBase> ParseNew();
 
 	std::unique_ptr<ASTBase> ParseMultiExpression();
 
-	std::unique_ptr<ASTFunctionSection> ParseFunction();
+	std::unique_ptr<ASTFunctionSection> ParseFunctionSection();
 
 	std::unique_ptr<ASTFunction> ParseMainFunction();
 
 	std::unique_ptr<ASTStandardLibrary> ParseStandardLibrary();
 
+	std::unique_ptr<ASTClassDefine> ParseStandardLibrary_ClassDefine();
+
+	std::vector<std::unique_ptr<ASTFunctionDefine>> ParseStandardLibrary_FunctionDefine();
+
 	std::unique_ptr<ASTBase> ParseImportModule();
 
+	std::unique_ptr<ASTClass> ParseClass();
+
+	std::vector<std::vector<std::unique_ptr<ASTBase>>> ParseClassData();
+
+	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& ClassName);
+
 private:
+	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* ClassName = nullptr);
+
 	bool ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo = nullptr);
 
 	bool TokenIs(HazeToken Token, const wchar_t* ErrorInfo = nullptr);
 
 	bool IsHazeSignalToken(HAZE_CHAR Char);
 
+	bool IsPointer(const HAZE_STRING& Str);
+
 private:
-	class HazeVM* VM;
+	class HazeVM* VM; // Parse里不需要VM
 
 	HAZE_STRING CodeText;
 

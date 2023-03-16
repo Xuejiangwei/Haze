@@ -18,13 +18,18 @@
 
 #define HAZE_CAST_VALUE_TYPE(X) (unsigned int)(X)
 
+#define HAZE_CLASS_THIS HAZE_TEXT("¼º")
+
 #define HAZE_MAIN_FUNCTION_TEXT HAZE_TEXT("Ö÷º¯Êý")
 
 #define ADD_REGISTER HAZE_TEXT("Add_R")
 #define SUB_REGISTER HAZE_TEXT("Sub_R")
 #define MUL_REGISTER HAZE_TEXT("Mul_R")
 #define DIV_REGISTER HAZE_TEXT("Div_R")
+
 #define RET_REGISTER HAZE_TEXT("Ret_R")
+
+#define NEW_REGISTER HAZE_TEXT("New_R")
 
 #define HAZE_PUSH_ADDRESS_SIZE 4
 #define HAZE_CALL_PUSH_ADDRESS_NAME HAZE_TEXT("Address")
