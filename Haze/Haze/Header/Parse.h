@@ -8,6 +8,8 @@
 class OpCodeGenerator;
 class ASTBase;
 
+class ASTVariableDefine;
+
 class ASTClass;
 class ASTClassDefine;
 
@@ -51,7 +53,7 @@ private:
 
 	std::unique_ptr<ASTBase> ParseIdentifer();
 
-	std::unique_ptr<ASTBase> ParseVariableDefine();
+	std::unique_ptr<ASTVariableDefine> ParseVariableDefine();
 
 	std::unique_ptr<ASTBase> ParseStringText();
 
@@ -85,7 +87,7 @@ private:
 
 	std::unique_ptr<ASTClass> ParseClass();
 
-	std::vector<std::vector<std::unique_ptr<ASTBase>>> ParseClassData();
+	std::vector<std::vector<std::unique_ptr<ASTVariableDefine>>> ParseClassData();
 
 	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& ClassName);
 

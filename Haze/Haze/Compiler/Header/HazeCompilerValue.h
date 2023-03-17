@@ -40,10 +40,12 @@ public:
 
 	bool IsString() { return Scope == InstructionScopeType::String; }
 
+	void SetUseClassMember(int Offset, HazeDefineData& Data);
+
 private:
 	HazeValue Value;
 	HazeCompilerModule* Module;
 	InstructionScopeType Scope;
 
-
+	std::pair<int, HazeDefineData> CurrUseMember;
 };

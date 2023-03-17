@@ -65,7 +65,7 @@ private:
 class ASTIdentifier : public ASTBase
 {
 public:
-	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name);
+	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName = nullptr);
 	virtual ~ASTIdentifier() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -75,6 +75,7 @@ public:
 private:
 	HazeSectionSignal SectionSignal;
 	HAZE_STRING Name;
+	HAZE_STRING ClassMemberName;
 };
 
 //º¯Êýµ÷ÓÃ
@@ -99,6 +100,8 @@ private:
 class ASTVariableDefine : public ASTBase
 {
 public:
+	friend class ASTClass;
+
 	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression);
 	virtual ~ASTVariableDefine() override;
 

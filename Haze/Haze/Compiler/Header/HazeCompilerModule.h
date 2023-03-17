@@ -21,11 +21,13 @@ public:
 	
 	void GenCodeFile();
 
-	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, const HazeClassData& ClassData);
+	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& ClassData);
 
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
 	std::shared_ptr<HazeCompilerFunction> CreateFunction(HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
+
+	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> Class, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
 
 	void FinishFunction();
 
@@ -60,6 +62,7 @@ private:
 
 	HAZE_OFSTREAM FS_I_Code;
 
+	HAZE_STRING CurrClass;
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerClass>> HashMap_Class;
 
 	HAZE_STRING CurrFunction;

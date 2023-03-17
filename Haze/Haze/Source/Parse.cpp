@@ -546,7 +546,7 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 	return nullptr;
 }
 
-std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
+std::unique_ptr<ASTVariableDefine> Parse::ParseVariableDefine()
 {
 	DefineVariable.Type.Type = GetValueTypeByToken(CurrToken);
 	if (CurrToken == HazeToken::Identifier)
@@ -682,6 +682,7 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunctionSection()
 		GetNextToken();
 		while (CurrToken != HazeToken::RightBrace)
 		{
+			GetNextToken();
 			Functions.push_back(ParseFunction());
 		}
 
@@ -719,6 +720,73 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				ThisParam.Type.Type = HazeValueType::Pointer;
 				ThisParam.Type.CustomName = *ClassName;
 				
+				Vector_Param.push_back(ThisParam);
+			}
+
+			while (!TokenIs(HazeToken::LeftBrace))
+			{
+				HazeDefineVariable Param;
+				if (GetNextToken() == HazeToken::RightParentheses)
+				{
+					break;
+				}
+
+				Param.Type.Type = GetValueTypeByToken(CurrToken);
+				if (CurrToken == HazeToken::Identifier)
+				{
+					Param.Type.Type = HazeValueType::Null;
+					Param.Type.CustomName = CurrLexeme;
+				}
+
+				if (Param.Type.Type == HazeValueType::MultiVar)
+				{
+					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
+					Vector_Param.push_back(Param);
+
+					GetNextToken();
+					break;
+				}
+
+				GetNextToken();
+				Param.Name = CurrLexeme;
+
+				Vector_Param.push_back(Param);
+
+				if (!ExpectNextTokenIs(HazeToken::Comma))
+				{
+					break;
+				}
+			}
+
+			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function body expect { \n")))
+			{
+				std::unique_ptr<ASTBase> Body = ParseMultiExpression();
+
+				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse function expression expect function body expect } \n")))
+				{
+					StackSectionSignal.pop();
+
+					GetNextToken();
+					return std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body);
+				}
+			}
+		}
+	}
+	else if (*ClassName == FuncType.CustomName)
+	{
+		//类构造函数
+		HAZE_STRING FunctionName = FuncType.CustomName;
+		if (CurrToken == HazeToken::LeftParentheses)
+		{
+			std::vector<HazeDefineVariable> Vector_Param;
+
+			if (ClassName && !ClassName->empty())
+			{
+				HazeDefineVariable ThisParam;
+				ThisParam.Name = HAZE_CLASS_THIS;
+				ThisParam.Type.Type = HazeValueType::Pointer;
+				ThisParam.Type.CustomName = *ClassName;
+
 				Vector_Param.push_back(ThisParam);
 			}
 
@@ -968,8 +1036,8 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 		{
 			StackSectionSignal.push(HazeSectionSignal::Class);
 
-			std::vector<std::vector<std::unique_ptr<ASTBase>>> Vector_ClassData;
-			std::unique_ptr<ASTFunctionSection> ClassFunction;
+			std::vector<std::vector<std::unique_ptr<ASTVariableDefine>>> Vector_ClassData;
+			std::unique_ptr<ASTClassFunctionSection> ClassFunction;
 
 			GetNextToken();
 			while (CurrToken == HazeToken::ClassData || CurrToken == HazeToken::Function)
@@ -987,11 +1055,13 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 				}
 				else if (CurrToken == HazeToken::Function)
 				{
-					ClassFunction = ParseFunctionSection();
+					ClassFunction = ParseClassFunction(Name);
 				}
 			}
 
 			StackSectionSignal.pop();
+
+			GetNextToken();
 			return std::make_unique<ASTClass>(VM, Name, Vector_ClassData, ClassFunction);
 		}
 	}
@@ -999,17 +1069,17 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 	return nullptr;
 }
 
-std::vector<std::vector<std::unique_ptr<ASTBase>>> Parse::ParseClassData()
+std::vector<std::vector<std::unique_ptr<ASTVariableDefine>>> Parse::ParseClassData()
 {
-	std::vector<std::vector<std::unique_ptr<ASTBase>>> Vector_ClassData;
+	std::vector<std::vector<std::unique_ptr<ASTVariableDefine>>> Vector_ClassData;
 
 	if (ExpectNextTokenIs(HazeToken::LeftBrace, (HAZE_TEXT("expect { ") + CurrLexeme).c_str()))
 	{
 		GetNextToken();
 
-		std::vector<std::unique_ptr<ASTBase>> Vector_ClassDataPublic;
-		std::vector<std::unique_ptr<ASTBase>> Vector_ClassDataPrivate;
-		std::vector<std::unique_ptr<ASTBase>> Vector_ClassDataProtected;
+		std::vector<std::unique_ptr<ASTVariableDefine>> Vector_ClassDataPublic;
+		std::vector<std::unique_ptr<ASTVariableDefine>> Vector_ClassDataPrivate;
+		std::vector<std::unique_ptr<ASTVariableDefine>> Vector_ClassDataProtected;
 
 		while (CurrToken == HazeToken::ClassPublic || CurrToken == HazeToken::ClassPrivate || CurrToken == HazeToken::ClassProtected)
 		{
@@ -1026,6 +1096,7 @@ std::vector<std::vector<std::unique_ptr<ASTBase>>> Parse::ParseClassData()
 
 					GetNextToken();
 				}
+				Vector_ClassData.push_back(std::move(Vector_ClassDataPublic));
 			}
 			else if (CurrToken == HazeToken::ClassPrivate)
 			{
@@ -1040,6 +1111,7 @@ std::vector<std::vector<std::unique_ptr<ASTBase>>> Parse::ParseClassData()
 
 					GetNextToken();
 				}
+				Vector_ClassData.push_back(std::move(Vector_ClassDataPrivate));
 			}
 			else if (CurrToken == HazeToken::ClassProtected)
 			{
@@ -1054,12 +1126,10 @@ std::vector<std::vector<std::unique_ptr<ASTBase>>> Parse::ParseClassData()
 
 					GetNextToken();
 				}
+				Vector_ClassData.push_back(std::move(Vector_ClassDataProtected));
 			}
 		}
 
-		Vector_ClassData.push_back(std::move(Vector_ClassDataPublic));
-		Vector_ClassData.push_back(std::move(Vector_ClassDataPrivate));
-		Vector_ClassData.push_back(std::move(Vector_ClassDataProtected));
 	
 		GetNextToken();
 	}
@@ -1069,64 +1139,74 @@ std::vector<std::vector<std::unique_ptr<ASTBase>>> Parse::ParseClassData()
 
 std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_STRING& ClassName)
 {
-	GetNextToken();
-
-	std::vector<std::vector<std::unique_ptr<ASTFunction>>> Vector_ClassFunction;
-
-	while (CurrToken == HazeToken::ClassPublic || CurrToken == HazeToken::ClassPrivate || CurrToken == HazeToken::ClassProtected)
+	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("class function expect { ")))
 	{
+		GetNextToken();
+
+		std::vector<std::vector<std::unique_ptr<ASTFunction>>> Vector_ClassFunction;
+
 		std::vector<std::unique_ptr<ASTFunction>> Vector_FunctionPublic;
 		std::vector<std::unique_ptr<ASTFunction>> Vector_FunctionPrivate;
 		std::vector<std::unique_ptr<ASTFunction>> Vector_FunctionProtected;
 
-
-		if (CurrToken == HazeToken::ClassPublic)
+		while (CurrToken == HazeToken::ClassPublic || CurrToken == HazeToken::ClassPrivate || CurrToken == HazeToken::ClassProtected)
 		{
-			if (Vector_FunctionPublic.size() == 0)
+			if (CurrToken == HazeToken::ClassPublic)
 			{
-				GetNextToken();
-				while (CurrToken != HazeToken::RightBrace)
+				if (Vector_FunctionPublic.size() == 0)
 				{
 					GetNextToken();
-					Vector_FunctionPublic.push_back(ParseFunction(&ClassName));
-				}
+					GetNextToken();
+					while (CurrToken != HazeToken::RightBrace)
+					{
+						Vector_FunctionPublic.push_back(ParseFunction(&ClassName));
+					}
 
-				GetNextToken();
+					GetNextToken();
+				}
 			}
-		}
-		else if (CurrToken == HazeToken::ClassPrivate)
-		{
-			if (Vector_FunctionPrivate.size() == 0)
+			else if (CurrToken == HazeToken::ClassPrivate)
 			{
-				GetNextToken();
-				while (CurrToken != HazeToken::RightBrace)
+				if (Vector_FunctionPrivate.size() == 0)
 				{
 					GetNextToken();
-					Vector_FunctionPrivate.push_back(ParseFunction(&ClassName));
-				}
+					GetNextToken();
 
-				GetNextToken();
+					while (CurrToken != HazeToken::RightBrace)
+					{
+						Vector_FunctionPrivate.push_back(ParseFunction(&ClassName));
+					}
+
+					GetNextToken();
+				}
 			}
-		}
-		else if (CurrToken == HazeToken::ClassProtected)
-		{
-			if (Vector_FunctionProtected.size() == 0)
+			else if (CurrToken == HazeToken::ClassProtected)
 			{
-				GetNextToken();
-				while (CurrToken != HazeToken::RightBrace)
+				if (Vector_FunctionProtected.size() == 0)
 				{
 					GetNextToken();
-					Vector_FunctionProtected.push_back(ParseFunction(&ClassName));
-				}
+					GetNextToken();
 
-				GetNextToken();
+					while (CurrToken != HazeToken::RightBrace)
+					{
+						Vector_FunctionProtected.push_back(ParseFunction(&ClassName));
+					}
+
+					GetNextToken();
+				}
 			}
+
 		}
 
+		Vector_ClassFunction.push_back(std::move(Vector_FunctionPublic));
+		Vector_ClassFunction.push_back(std::move(Vector_FunctionPrivate));
+		Vector_ClassFunction.push_back(std::move(Vector_FunctionProtected));
+
+		GetNextToken();
+		return std::make_unique<ASTClassFunctionSection>(VM, Vector_ClassFunction);
 	}
 
-	GetNextToken();
-	return std::make_unique<ASTClassFunctionSection>(VM, Vector_ClassFunction);
+	return nullptr;
 }
 
 bool Parse::ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo)

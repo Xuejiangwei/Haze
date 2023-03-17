@@ -52,14 +52,16 @@ void HazeCompilerModule::GenCodeFile()
 #endif
 }
 
-std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, const HazeClassData& ClassData)
+std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& ClassData)
 {
 	std::shared_ptr<HazeCompilerClass> Class = FindClass(Name);
 	if (!Class)
 	{
-		HashMap_Class[Name] = std::make_shared<HazeCompilerClass>(Name, ClassData);
+		HashMap_Class[Name] = std::make_shared<HazeCompilerClass>(this, Name, ClassData);
 		Class = HashMap_Class[Name];
 	}
+
+	CurrClass = Name;
 	return Class;
 }
 
@@ -69,7 +71,14 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
 	{
 		return nullptr;
 	}
-	return HashMap_Function[CurrFunction];
+
+	auto Iter = HashMap_Function.find(CurrFunction);
+	if (Iter == HashMap_Function.end())
+	{
+		return FindClass(CurrClass)->FindFunction(CurrFunction);
+	}
+
+	return Iter->second;
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE_STRING& Name)
@@ -94,6 +103,20 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(HAZE_ST
 		return HashMap_Function[Name];
 	}
 	return It->second;
+}
+
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(std::shared_ptr<HazeCompilerClass> Class, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param)
+{
+	std::shared_ptr<HazeCompilerFunction> Function = Class->FindFunction(Name);
+	if (!Function)
+	{
+		Function = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param, Class.get());
+		Class->AddFunction(Function);
+
+		CurrFunction = Name;
+	}
+
+	return Function;
 }
 
 void HazeCompilerModule::FinishFunction()

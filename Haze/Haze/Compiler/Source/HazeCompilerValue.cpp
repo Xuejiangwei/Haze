@@ -44,4 +44,11 @@ void HazeCompilerValue::StoreValue(std::shared_ptr<HazeCompilerValue> Value)
 	//Éú³É×Ö½ÚÂë
 }
 
+void HazeCompilerValue::SetUseClassMember(int Offset, HazeDefineData& Data)
+{
+	CurrUseMember.first = Offset;
+	CurrUseMember.second.CustomName = Data.CustomName;
+	CurrUseMember.second.Type = Data.Type;
+}
+
 

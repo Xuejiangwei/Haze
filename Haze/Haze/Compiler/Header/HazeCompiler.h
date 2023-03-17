@@ -39,7 +39,7 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 
-	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name);
+	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name, const HAZE_STRING* MemberName = nullptr);
 
 public:
 	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* Name);

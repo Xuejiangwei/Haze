@@ -76,9 +76,13 @@ std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 }
 
 
-ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name)
+ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName)
 	: ASTBase(VM), SectionSignal(Section), Name(std::move(Name))
 {
+	if (MemberName)
+	{
+		ClassMemberName = std::move(*MemberName);
+	}
 }
 
 ASTIdentifier::~ASTIdentifier()

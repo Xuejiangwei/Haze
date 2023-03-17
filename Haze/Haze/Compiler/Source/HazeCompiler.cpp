@@ -221,9 +221,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetGlobalVariable(const HAZE_ST
 	return GetCurrModule()->GetGlobalVariable(Name);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STRING& Name)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STRING& Name, const HAZE_STRING* MemberName)
 {
-	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name);;
+	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name, MemberName);
 }
 
 void HazeCompiler::SetInsertBlock(std::shared_ptr<HazeBaseBlock> BB)

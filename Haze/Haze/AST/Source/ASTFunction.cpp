@@ -30,13 +30,20 @@ HazeValue* ASTFunction::CodeGen()
 	{
 		CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
 
-		std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction.get());
-		Compiler->SetInsertBlock(BB);
-	
-		for (auto& iter : Vector_FunctionParam)
-		{
-			Compiler->CreateLocalVariable(CompilerFunction, iter);
-		}
+		
+	}
+	else if (Section == HazeSectionSignal::Class)
+	{
+		auto Class = Module->FindClass(Vector_FunctionParam[0].Type.CustomName);
+		CompilerFunction = Module->CreateFunction(Class, FunctionName, FunctionType, Vector_FunctionParam);
+	}
+
+	std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction.get());
+	Compiler->SetInsertBlock(BB);
+
+	for (auto& iter : Vector_FunctionParam)
+	{
+		Compiler->CreateLocalVariable(CompilerFunction, iter);
 	}
 
 	if (Body)
@@ -108,5 +115,11 @@ ASTClassFunctionSection::~ASTClassFunctionSection()
 
 void ASTClassFunctionSection::CodeGen()
 {
-
+	for (auto& Iter : Functions)
+	{
+		for (auto& F : Iter)
+		{
+			F->CodeGen();
+		}
+	}
 }

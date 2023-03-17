@@ -10,6 +10,7 @@
 #include "HazeCompilerValue.h"
 
 class HazeCompilerModule;
+class HazeCompilerClass;
 class HazeBaseBlock;
 
 class HazeCompilerFunction
@@ -18,10 +19,10 @@ public:
 	friend class HazeCompiler;
 	friend class HazeCompilerModule;
 
-	HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
+	HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class = nullptr);
 	~HazeCompilerFunction();
 
-	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name);
+	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name, const HAZE_STRING* MemberName = nullptr);
 
 	const HAZE_STRING& GetName() const { return Name; }
 	
@@ -35,9 +36,9 @@ public:
 
 	std::list<std::shared_ptr<HazeBaseBlock>>& GetBaseBlockList() { return BBList; }
 
-	bool GetLocalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& NameOut);
+	bool GetLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
-	bool GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& NameOut);
+	bool GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName);
 
 private:
 	void AddFunctionParam(const HazeDefineVariable& Variable);
@@ -48,6 +49,7 @@ private:
 
 private:
 	HazeCompilerModule* Module;
+	HazeCompilerClass* Class;
 
 	HAZE_STRING Name;
 	HazeDefineData Type;

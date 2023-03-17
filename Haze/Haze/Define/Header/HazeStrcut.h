@@ -37,5 +37,5 @@ struct HazeDefineVariable
 
 struct HazeClassData
 {
-
+	std::vector<HazeDefineVariable> Vector_Data;
 };

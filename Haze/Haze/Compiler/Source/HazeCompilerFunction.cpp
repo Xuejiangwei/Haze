@@ -2,11 +2,12 @@
 
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"
+#include "HazeCompilerClass.h"
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
 
-HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param)
-	: Module(Module), Name(Name), Type(Type)
+HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class)
+	: Module(Module), Name(Name), Type(Type), Class(Class)
 {
 	for (auto& it : Param)
 	{
@@ -32,20 +33,32 @@ void HazeCompilerFunction::CreateNew(const HazeDefineData& Data)
 	BB->PushIRCode(SStream.str());
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& Name)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& Name, const HAZE_STRING* MemberName)
 {
+	std::shared_ptr<HazeCompilerValue> Ret = nullptr;
 	for (auto& iter : BBList)
 	{
 		for (auto& Value : iter->GetAllocaList())
 		{
 			if (Value.first == Name)
 			{
-				return Value.second;
+				Ret = Value.second;
 			}
 		}
 	}
 
-	return nullptr;
+	if (Class)
+	{
+		Ret = Class->GetClassData(Name);
+	}
+
+	if (MemberName)
+	{
+		HazeDefineData DefineData;
+		Ret->SetUseClassMember(0, DefineData);
+	}
+
+	return Ret;
 }
 
 void HazeCompilerFunction::FunctionFinish()
@@ -96,7 +109,7 @@ void HazeCompilerFunction::GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& 
 #endif // HAZE_ASS_ENABLE
 }
 
-bool HazeCompilerFunction::GetLocalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& NameOut)
+bool HazeCompilerFunction::GetLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {
 	for (auto& iter : BBList)
 	{
@@ -104,22 +117,27 @@ bool HazeCompilerFunction::GetLocalVariableName(std::shared_ptr<HazeCompilerValu
 		{
 			if (it.second == Value)
 			{
-				NameOut = it.first;
+				OutName = it.first;
 				return true;
 			}
 		}
 	}
 
+	if (Class)
+	{
+		return Class->GetDataName(Value, OutName);
+	}
+
 	return false;
 }
 
-bool HazeCompilerFunction::GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& NameOut)
+bool HazeCompilerFunction::GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName)
 {
 	if (BBList.size() > 0)
 	{
 		if (BBList.front()->GetAllocaList().size() > Index)
 		{
-			NameOut = BBList.front()->GetAllocaList()[Index].first;
+			OutName = BBList.front()->GetAllocaList()[Index].first;
 			return true;
 		}
 	}
