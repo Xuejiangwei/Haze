@@ -734,7 +734,6 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				Param.Type.Type = GetValueTypeByToken(CurrToken);
 				if (CurrToken == HazeToken::Identifier)
 				{
-					Param.Type.Type = HazeValueType::Null;
 					Param.Type.CustomName = CurrLexeme;
 				}
 

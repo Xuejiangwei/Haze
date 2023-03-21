@@ -40,6 +40,8 @@ public:
 
 	bool IsString() { return Scope == InstructionScopeType::String; }
 
+	bool IsClass() { return Scope == InstructionScopeType::Class; }
+
 	void SetUseClassMember(int Offset, HazeDefineData& Data);
 
 private:

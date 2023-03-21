@@ -444,12 +444,33 @@ void HazeCompilerModule::GenICode()
 	}
 
 	/*
+	*	类表 ：	个数
+	*				名称 指令流
+	*
+	*/
+	size_t FunctionSize = 0;
+	
+	FS_I_Code << GetClassTableHeaderString() << std::endl;
+	FS_I_Code << HashMap_Class.size() << std::endl;
+
+	for (auto& iter : HashMap_Class)
+	{
+		iter.second->GenClassData_I_Code(this, FS_I_Code);
+		FunctionSize += iter.second->GetFunctionSize();
+	}
+
+	/*
 	*	函数表 ：	个数
 	*				名称 指令流
 	* 
 	*/
 	FS_I_Code << GetFucntionTableHeaderString() << std::endl;
-	FS_I_Code << HashMap_Function.size() << std::endl;
+	FS_I_Code << HashMap_Function.size() + FunctionSize << std::endl;
+
+	for (auto& iter : HashMap_Class)
+	{
+		iter.second->GenClassFunction_I_Code(this, FS_I_Code);
+	}
 
 	for (auto& iter : HashMap_Function)
 	{

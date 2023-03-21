@@ -78,6 +78,8 @@ public:		//Éú³Éop code
 private:
 	void ClearFunctionTemp();
 
+	static std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, InstructionScopeType Scope);
+
 private:
 	void GenModuleCodeFile();
 

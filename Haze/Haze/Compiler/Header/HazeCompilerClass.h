@@ -18,9 +18,15 @@ public:
 
 	std::shared_ptr<HazeCompilerFunction> AddFunction(std::shared_ptr<HazeCompilerFunction>& Function);
 
+	size_t GetFunctionSize() { return Vector_Function.size(); }
+
 	std::shared_ptr<HazeCompilerValue> GetClassData(const HAZE_STRING& Name);
 
 	bool GetDataName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+
+	void GenClassData_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream);
+
+	void GenClassFunction_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream);
 
 private:
 	HazeCompilerModule* Module;

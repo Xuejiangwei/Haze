@@ -44,10 +44,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 			{
 				Ret = Value.second;
 			}
+			else if (Value.second->GetValue().Type == HazeValueType::Class)
+			{
+				HAZE_STRING ClassObjectName = Name.substr(0, Value.first.size());
+				if (Value.first == ClassObjectName)
+				{
+					HAZE_STRING MemberName = Name.substr(Value.first.size() + 1);
+					Ret = Class->GetClassData(MemberName);
+				}
+			}
 		}
 	}
 
-	if (Class)
+	if (!Ret && Class)
 	{
 		Ret = Class->GetClassData(Name);
 	}

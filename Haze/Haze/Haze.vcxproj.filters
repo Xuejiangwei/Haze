@@ -105,6 +105,9 @@
     <ClCompile Include="VM\Source\MemoryBucket.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerClassValue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -207,6 +210,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="VM\Header\MemoryBucket.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerClassValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

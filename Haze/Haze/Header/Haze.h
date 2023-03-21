@@ -29,6 +29,10 @@ extern const HAZE_CHAR* GetGlobalDataHeaderString();
 
 extern const HAZE_CHAR* GetStringTableHeaderString();
 
+extern const HAZE_CHAR* GetClassTableHeaderString();
+
+extern const HAZE_CHAR* GetClassLabelHeader();
+
 extern const HAZE_CHAR* GetFucntionTableHeaderString();
 
 extern const HAZE_CHAR* GetFunctionLabelHeader();

@@ -7,8 +7,10 @@
 
 #define HEADER_STRING_GLOBAL_DATA HAZE_TEXT("GlobalDataTable")
 #define HEADER_STRING_STRING_TABLE HAZE_TEXT("StringTable")
+#define HEADER_STRING_CLASS_TABLE HAZE_TEXT("ClassTable")
 #define HEADER_STRING_FUNCTION_TABLE HAZE_TEXT("FunctionTable")
 
+#define CLASS_LABEL_HEADER HAZE_TEXT("Class")
 #define FUNCTION_LABEL_HEADER HAZE_TEXT("Function")
 #define FUNCTION_PARAM_HEADER HAZE_TEXT("Param")
 #define FUNCTION_START_HEADER HAZE_TEXT("Start")
@@ -193,6 +195,16 @@ const HAZE_CHAR* GetGlobalDataHeaderString()
 const HAZE_CHAR* GetStringTableHeaderString()
 {
 	return HEADER_STRING_STRING_TABLE;
+}
+
+const HAZE_CHAR* GetClassTableHeaderString()
+{
+	return HEADER_STRING_CLASS_TABLE;
+}
+
+const HAZE_CHAR* GetClassLabelHeader()
+{
+	return CLASS_LABEL_HEADER;
 }
 
 const HAZE_CHAR* GetFucntionTableHeaderString()

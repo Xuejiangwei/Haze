@@ -434,3 +434,8 @@ void HazeCompiler::ClearFunctionTemp()
 		Function->GetTopBaseBlock()->ClearTempIRCode();
 	}
 }
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, InstructionScopeType Scope)
+{
+	return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope);
+}

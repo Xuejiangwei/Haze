@@ -65,3 +65,33 @@ bool HazeCompilerClass::GetDataName(const std::shared_ptr<HazeCompilerValue>& Va
 	}
 	return false;
 }
+
+void HazeCompilerClass::GenClassData_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream)
+{
+#if HAZE_I_CODE_ENABLE
+	OFStream << GetClassLabelHeader() << " " << Name << std::endl;
+
+	for (size_t i = 0; i < Vector_Data.size(); ++i)
+	{
+		for (auto& Iter : HashMap_Data)
+		{
+			if (Iter.second == i)
+			{
+				OFStream << Iter.first << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i]->GetValue().Type) << std::endl;
+				break;
+			}
+		}
+
+	}
+#endif //HAZE_I_CODE_ENABLE
+}
+
+void HazeCompilerClass::GenClassFunction_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream)
+{
+#if HAZE_I_CODE_ENABLE
+	for (auto& Iter : Vector_Function)
+	{
+		Iter->GenI_Code(Module, OFStream);
+	}
+#endif //HAZE_I_CODE_ENABLE
+}
