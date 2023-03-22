@@ -4,16 +4,13 @@
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerModule.h"
+#include "HazeCompilerHelper.h"
 
 #include "HazeBaseBlock.h"
 
 static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalRegister = {
-	//{ ADD_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData({{HazeToken::Int, HAZE_TEXT("Add_Register")}, HazeCompilerValue::ValueSection::Register} },
-	//{ SUB_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Sub_Register")), HazeCompilerValue::ValueSection::Register) },
-	//{ MUL_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Mul_Register")), HazeCompilerValue::ValueSection::Register) },
-	//{ DIV_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeToken::Int, HAZE_TEXT("Div_Register")), HazeCompilerValue::ValueSection::Register) },
-	{ RET_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeValueType::Null, HAZE_TEXT("Ret_Register")), InstructionScopeType::RegisterRet) },
-	{ NEW_REGISTER, std::make_shared<HazeCompilerValue>(nullptr, HazeDefineData(HazeValueType::Null, HAZE_TEXT("New_Register")), InstructionScopeType::RegisterNew) },
+	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineData(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), InstructionScopeType::RegisterRet) },
+	{ NEW_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineData(HazeValueType::Void, HAZE_TEXT("New_Register")), HAZE_TEXT("")), InstructionScopeType::RegisterNew) },
 };
 
 HazeCompiler::HazeCompiler()
@@ -140,7 +137,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_BoolConstantValue[Var.Value.Bool] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		HashMap_BoolConstantValue[Var.Value.Bool] = CreateVariable(Var, InstructionScopeType::Constant);
 		return HashMap_BoolConstantValue[Var.Value.Bool];
 	}
 	case HazeValueType::Short:
@@ -151,7 +148,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_IntConstantValue[Var.Value.Int] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		HashMap_IntConstantValue[Var.Value.Int] = CreateVariable(Var, InstructionScopeType::Constant);
 		return HashMap_IntConstantValue[Var.Value.Int];
 	}
 	case HazeValueType::Long:
@@ -161,7 +158,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_LongConstantValue[Var.Value.Long] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		HashMap_LongConstantValue[Var.Value.Long] = CreateVariable(Var, InstructionScopeType::Constant);
 		return HashMap_LongConstantValue[Var.Value.Long];
 	}
 	case HazeValueType::UnsignedInt:
@@ -171,7 +168,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_UnsignedIntConstantValue[Var.Value.UnsignedInt] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		HashMap_UnsignedIntConstantValue[Var.Value.UnsignedInt] = CreateVariable(Var, InstructionScopeType::Constant);
 		return HashMap_UnsignedIntConstantValue[Var.Value.UnsignedInt];
 	}
 	case HazeValueType::UnsignedLong:
@@ -181,7 +178,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_UnsignedLongConstantValue[Var.Value.UnsignedLong] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		HashMap_UnsignedLongConstantValue[Var.Value.UnsignedLong] = CreateVariable(Var, InstructionScopeType::Constant);
 		return HashMap_UnsignedLongConstantValue[Var.Value.UnsignedLong];
 	}
 	case HazeValueType::Float:
@@ -191,7 +188,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_FloatConstantValue[Var.Value.Float] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		HashMap_FloatConstantValue[Var.Value.Float] = CreateVariable(Var, InstructionScopeType::Constant);
 		return HashMap_FloatConstantValue[Var.Value.Float];
 	}
 	case HazeValueType::Double:
@@ -201,7 +198,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_DobuleConstantValue[Var.Value.Double] = std::make_shared<HazeCompilerValue>(Var, InstructionScopeType::Constant);
+		HashMap_DobuleConstantValue[Var.Value.Double] = CreateVariable(Var, InstructionScopeType::Constant);
 		return HashMap_DobuleConstantValue[Var.Value.Double];
 	}
 	default:
@@ -433,9 +430,4 @@ void HazeCompiler::ClearFunctionTemp()
 	{
 		Function->GetTopBaseBlock()->ClearTempIRCode();
 	}
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, InstructionScopeType Scope)
-{
-	return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope);
 }

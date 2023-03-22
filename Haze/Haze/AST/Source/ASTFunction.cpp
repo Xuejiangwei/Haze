@@ -29,8 +29,6 @@ HazeValue* ASTFunction::CodeGen()
 	if (Section == HazeSectionSignal::Global)
 	{
 		CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
-
-		
 	}
 	else if (Section == HazeSectionSignal::Class)
 	{

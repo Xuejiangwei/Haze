@@ -95,7 +95,7 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
 
 	static_assert(true, "Not find stronger type!");
 
-	return HazeValueType::Null;
+	return HazeValueType::Void;
 }
 
 HazeValueType GetValueTypeByToken(HazeToken Token)
@@ -123,7 +123,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 		return it->second;
 	}
 
-	return HazeValueType::Null;
+	return HazeValueType::Void;
 }
 
 unsigned int GetSize(HazeValueType Type)

@@ -76,7 +76,7 @@ public:
 
 		FunctionTableData()
 		{
-			Type = HazeValueType::Null;
+			Type = HazeValueType::Void;
 			Vector_Param.clear();
 			Vector_Instruction.clear();
 		}

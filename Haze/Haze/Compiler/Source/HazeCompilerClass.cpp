@@ -1,12 +1,13 @@
 #include "HazeCompilerClass.h"
 #include "HazeCompilerFunction.h"
+#include "HazeCompilerHelper.h"
 
 HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& Data)
 	:Module(Module), Name(Name)
 {
 	for (size_t i = 0; i < Data.size(); i++)
 	{
-		auto Param = std::make_shared<HazeCompilerValue>(Module, (*Data[i]).Type, InstructionScopeType::Class);
+		auto Param = CreateVariable(Module, *Data[i], InstructionScopeType::Class);
 		Vector_Data.push_back(Param);
 		HashMap_Data[Data[i]->Name] = (unsigned int)i;
 	}
@@ -59,7 +60,9 @@ bool HazeCompilerClass::GetDataName(const std::shared_ptr<HazeCompilerValue>& Va
 	{
 		if (Vector_Data[Iter.second] == Value)
 		{
-			OutName = Iter.first;
+			OutName += HAZE_CLASS_THIS;
+			OutName += HAZE_CLASS_POINTER_ATTR;
+			OutName += Iter.first;
 			return true;
 		}
 	}
@@ -69,7 +72,7 @@ bool HazeCompilerClass::GetDataName(const std::shared_ptr<HazeCompilerValue>& Va
 void HazeCompilerClass::GenClassData_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream)
 {
 #if HAZE_I_CODE_ENABLE
-	OFStream << GetClassLabelHeader() << " " << Name << std::endl;
+	OFStream << GetClassLabelHeader() << " " << Name << " " << Vector_Data.size() << std::endl;
 
 	for (size_t i = 0; i < Vector_Data.size(); ++i)
 	{

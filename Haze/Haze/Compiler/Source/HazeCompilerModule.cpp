@@ -284,7 +284,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 		}
 	}
 
-	Vector_Variable.push_back({ Var.Name, std::make_shared<HazeCompilerValue>(this, Var.Type, InstructionScopeType::Global) });
+	Vector_Variable.push_back({ Var.Name, CreateVariable(this, Var, InstructionScopeType::Global) });
 
 	auto& CompilerValue = Vector_Variable.back().second;
 
@@ -358,7 +358,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalStringVariable(c
 	//Value.Type = HazeValueType::String;
 	//Value.Value.Extra.StringTableIndex = (int)HashMap_StringMapping.size() - 1;
 
-	it->second = std::make_shared<HazeCompilerValue>(Value, InstructionScopeType::String);
+	it->second = CreateVariable(Value, InstructionScopeType::String);
 	return it->second;
 }
 

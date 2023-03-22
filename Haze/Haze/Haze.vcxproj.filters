@@ -78,9 +78,6 @@
     <ClCompile Include="MetaData\Source\HazeClass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MetaData\Source\HazeFunction.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="MetaData\Source\HazeModule.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -106,6 +103,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Compiler\Source\HazeCompilerClassValue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerPointerValue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MetaData\Source\HazeFunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -185,9 +188,6 @@
     <ClInclude Include="MetaData\Header\HazeClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MetaData\Header\HazeFunction.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="MetaData\Header\HazeModule.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -213,6 +213,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerClassValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerPointerValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MetaData\Header\HazeFunction.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

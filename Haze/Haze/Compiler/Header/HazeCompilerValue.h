@@ -5,22 +5,16 @@
 
 class HazeCompilerModule;
 
-
-
 class HazeCompilerValue
 {
 public:
 	HazeCompilerValue();
 
-	//HazeCompilerValue(HazeCompilerModule* Module);
-
-	//HazeCompilerValue(HazeCompilerModule* Module, HazeValueType Type);
-
 	HazeCompilerValue(HazeValue Value, InstructionScopeType Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope, std::shared_ptr<HazeCompilerValue> Parent);
 
-	~HazeCompilerValue();
+	virtual ~HazeCompilerValue();
 
 	void StoreValue(std::shared_ptr<HazeCompilerValue> Value);
 
@@ -42,12 +36,14 @@ public:
 
 	bool IsClass() { return Scope == InstructionScopeType::Class; }
 
-	void SetUseClassMember(int Offset, HazeDefineData& Data);
+	bool HasParent() { return Parent != nullptr; }
 
-private:
+	const std::shared_ptr<HazeCompilerValue>& GetParent() const { return Parent; }
+
+protected:
+	std::shared_ptr<HazeCompilerValue> Parent;
+
 	HazeValue Value;
 	HazeCompilerModule* Module;
 	InstructionScopeType Scope;
-
-	std::pair<int, HazeDefineData> CurrUseMember;
 };

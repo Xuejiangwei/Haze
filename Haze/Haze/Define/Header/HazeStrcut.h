@@ -16,7 +16,7 @@ struct HazeDefineData
 	HazeValueType Type;			//Token类型
 	HAZE_STRING CustomName;		//自定义类型名
 
-	HazeDefineData() : Type(HazeValueType::Null)
+	HazeDefineData() : Type(HazeValueType::Void)
 	{
 	}
 
@@ -33,6 +33,9 @@ struct HazeDefineVariable
 {
 	HazeDefineData Type;		//变量类型
 	HAZE_STRING Name;			//变量名
+
+	HazeDefineVariable() {}
+	HazeDefineVariable(const HazeDefineData& Type, const HAZE_STRING& Name) : Type(Type), Name(Name) {}
 };
 
 struct HazeClassData

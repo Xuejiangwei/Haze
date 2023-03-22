@@ -1,0 +1,29 @@
+0
+GlobalDataTable
+0
+StringTable
+0
+ClassTable
+1
+Class 点 2
+横坐标 5
+纵坐标 5
+FunctionTable
+3
+Function 点 12
+Param 5 乙
+Param 5 甲
+Param 11 己
+Start
+MOV 5 己指之横坐标 2 5 甲 2
+MOV 5 己指之纵坐标 2 5 乙 2
+End
+Function 加 0
+Param 12 值
+Param 11 己
+Start
+MOV 5 己指之横坐标 2 5 己指之横坐标己指之横坐标 2
+End
+Function 主函数 4
+Start
+End

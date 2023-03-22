@@ -18,7 +18,7 @@ HazeVM::HazeVM()
 {
 	std::wcout.imbue(std::locale("chs"));
 
-	FunctionReturn.Type = HazeValueType::Null;
+	FunctionReturn.Type = HazeValueType::Void;
 	Compiler = std::make_unique<HazeCompiler>();
 	VMStack = std::make_unique<HazeStack>(this);
 

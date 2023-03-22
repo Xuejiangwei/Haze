@@ -5,7 +5,6 @@
 
 enum class HazeValueType : unsigned int
 {
-	Null,
 	Void,
 	Bool,
 

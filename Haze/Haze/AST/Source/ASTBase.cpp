@@ -10,12 +10,12 @@
 ASTBase::ASTBase(HazeVM* VM) : VM(VM)
 {
 	DefineVariable.Name = HAZE_TEXT("");
-	DefineVariable.Type = { HazeValueType::Null, HAZE_TEXT("") };
+	DefineVariable.Type = { HazeValueType::Void, HAZE_TEXT("") };
 }
 
 ASTBase::ASTBase(HazeVM* VM, const HazeDefineVariable& Var) : VM(VM), DefineVariable(Var)
 {
-	Value.Type = HazeValueType::Null;
+	Value.Type = HazeValueType::Void;
 	memset(&Value.Value, 0, sizeof(Value.Value));
 }
 

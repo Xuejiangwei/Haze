@@ -61,11 +61,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 		Ret = Class->GetClassData(Name);
 	}
 
-	if (MemberName)
+	/*if (MemberName)
 	{
 		HazeDefineData DefineData;
 		Ret->SetUseClassMember(0, DefineData);
-	}
+	}*/
 
 	return Ret;
 }
@@ -156,5 +156,5 @@ bool HazeCompilerFunction::GetFunctionParamNameByIndex(unsigned int Index, HAZE_
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& Variable)
 {
-	VectorParam.push_back({ Variable.Name, std::make_shared<HazeCompilerValue>(Module, Variable.Type, InstructionScopeType::Local) });
+	VectorParam.push_back({ Variable.Name, CreateVariable(Module, Variable, InstructionScopeType::Local) });
 }

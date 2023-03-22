@@ -551,7 +551,7 @@ std::unique_ptr<ASTVariableDefine> Parse::ParseVariableDefine()
 	DefineVariable.Type.Type = GetValueTypeByToken(CurrToken);
 	if (CurrToken == HazeToken::Identifier)
 	{
-		DefineVariable.Type.Type = HazeValueType::Null;
+		DefineVariable.Type.Type = HazeValueType::Void;
 		DefineVariable.Type.CustomName = CurrLexeme;
 	}
 
@@ -606,7 +606,7 @@ std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
 	HazeValue Value;
-	if (DefineVariable.Type.Type != HazeValueType::Null)
+	if (DefineVariable.Type.Type != HazeValueType::Void)
 	{
 		Value.Type = DefineVariable.Type.Type;
 	}
@@ -800,7 +800,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				Param.Type.Type = GetValueTypeByToken(CurrToken);
 				if (CurrToken == HazeToken::Identifier)
 				{
-					Param.Type.Type = HazeValueType::Null;
+					Param.Type.Type = HazeValueType::Class;
 					Param.Type.CustomName = CurrLexeme;
 				}
 
@@ -861,7 +861,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 			Param.Type.Type = GetValueTypeByToken(CurrToken);
 			if (CurrToken == HazeToken::Identifier)
 			{
-				Param.Type.Type = HazeValueType::Null;
+				Param.Type.Type = HazeValueType::Class;
 				Param.Type.CustomName = CurrLexeme;
 			}
 
@@ -978,7 +978,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 						Param.Type.Type = GetValueTypeByToken(CurrToken);
 						if (CurrToken == HazeToken::Identifier)
 						{
-							Param.Type.Type = HazeValueType::Null;
+							Param.Type.Type = HazeValueType::Class;
 							Param.Type.CustomName = CurrLexeme;
 						}
 

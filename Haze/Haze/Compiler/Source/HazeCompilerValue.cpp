@@ -23,13 +23,10 @@ HazeCompilerValue::HazeCompilerValue(HazeValue Value, InstructionScopeType Scope
 {
 }
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope) : Module(Module), Scope(Scope)
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope, std::shared_ptr<HazeCompilerValue> Parent) 
+	: Module(Module), Scope(Scope), Parent(Parent)
 {
 	Value.Type = DefineType.Type;
-	if (Value.Type == HazeValueType::Null)
-	{
-		//Value.Type = Module->FindClass(DefineType.CustomName);
-	}
 	memset(&Value.Value, 0, sizeof(Value.Value));
 }
 
@@ -44,11 +41,5 @@ void HazeCompilerValue::StoreValue(std::shared_ptr<HazeCompilerValue> Value)
 	//Éú³É×Ö½ÚÂë
 }
 
-void HazeCompilerValue::SetUseClassMember(int Offset, HazeDefineData& Data)
-{
-	CurrUseMember.first = Offset;
-	CurrUseMember.second.CustomName = Data.CustomName;
-	CurrUseMember.second.Type = Data.Type;
-}
 
 
