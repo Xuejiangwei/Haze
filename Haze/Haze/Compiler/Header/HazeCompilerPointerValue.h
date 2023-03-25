@@ -5,16 +5,22 @@
 class HazeCompilerPointerValue : public HazeCompilerValue
 {
 public:
-	HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope, std::shared_ptr<HazeCompilerValue> Parent);
+	HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope);
 
-	~HazeCompilerPointerValue();
+	virtual ~HazeCompilerPointerValue() override;
+
+	void InitPointerTo(HazeCompilerValue* Value);
+
+	HazeCompilerValue* GetPointerValue() { return PointerValue; }
 
 	bool IsHazeTypePointer();
 
 	bool IsClassPointer();
 
+	const HazeDefineData& GetPointerType() { return PointerType; }
+
 private:
 	HazeDefineData PointerType;
 	
-	std::shared_ptr<HazeCompilerValue> PointerValue;
+	HazeCompilerValue* PointerValue;
 };

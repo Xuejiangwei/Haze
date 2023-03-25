@@ -121,7 +121,7 @@ void HazeVM::LoadOpCodeFile()
 		Vector_GlobalData[i].first = String2WString(B_String);
 
 		FS.read((char*)&Vector_GlobalData[i].second.Type, sizeof(HazeValue::Type));
-		FS.read(GetBinaryPointer(Vector_GlobalData[i].second), GetSize(Vector_GlobalData[i].second.Type));
+		FS.read(GetBinaryPointer(Vector_GlobalData[i].second), GetSizeByType(Vector_GlobalData[i].second.Type));
 	}
 
 	FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
@@ -164,7 +164,7 @@ void HazeVM::LoadOpCodeFile()
 			Vector_FunctionTable[i].Vector_Param[j].first = String2WString(B_String);
 
 			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Param[j].second.Type));
-			FS.read(GetBinaryPointer(Vector_FunctionTable[i].Vector_Param[j].second), GetSize(Vector_FunctionTable[i].Vector_Param[j].second.Type));
+			FS.read(GetBinaryPointer(Vector_FunctionTable[i].Vector_Param[j].second), GetSizeByType(Vector_FunctionTable[i].Vector_Param[j].second.Type));
 		}
 
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].InstructionNum));

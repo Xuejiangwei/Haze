@@ -12,7 +12,7 @@ public:
 
 	HazeCompilerValue(HazeValue Value, InstructionScopeType Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope, std::shared_ptr<HazeCompilerValue> Parent);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope);
 
 	virtual ~HazeCompilerValue();
 
@@ -34,15 +34,12 @@ public:
 
 	bool IsString() { return Scope == InstructionScopeType::String; }
 
-	bool IsClass() { return Scope == InstructionScopeType::Class; }
+	bool IsClassMember() { return Scope == InstructionScopeType::ClassMember; }
 
-	bool HasParent() { return Parent != nullptr; }
-
-	const std::shared_ptr<HazeCompilerValue>& GetParent() const { return Parent; }
+public:
+	virtual unsigned int GetSize();
 
 protected:
-	std::shared_ptr<HazeCompilerValue> Parent;
-
 	HazeValue Value;
 	HazeCompilerModule* Module;
 	InstructionScopeType Scope;

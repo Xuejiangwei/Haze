@@ -95,6 +95,8 @@ enum class HazeToken : unsigned int
 
 	New,
 
+	CustomClass,
+
 	//NoMatch
 	Number,
 	String,

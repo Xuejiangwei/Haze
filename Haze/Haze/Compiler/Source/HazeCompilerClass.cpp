@@ -1,17 +1,27 @@
 #include "HazeCompilerClass.h"
+#include "HazeCompilerModule.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerHelper.h"
+#include "HazeCompilerClassValue.h"
 
 HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& Data)
-	:Module(Module), Name(Name)
+	: Module(Module), Name(Name)
 {
+	DataSize = 0;
+	Vector_Data.resize(Data.size());
 	for (size_t i = 0; i < Data.size(); i++)
 	{
-		auto Param = CreateVariable(Module, *Data[i], InstructionScopeType::Class);
-		Vector_Data.push_back(Param);
-		HashMap_Data[Data[i]->Name] = (unsigned int)i;
-	}
+		Vector_Data[i] = *Data[i];
 
+		if (Vector_Data[i].Type.CustomName.empty())
+		{
+			DataSize += GetSizeByType(Vector_Data[i].Type.Type);
+		}
+		else
+		{
+			DataSize += Module->FindClass(Vector_Data[i].Type.CustomName)->GetDataSize();
+		}
+	}
 }
 
 HazeCompilerClass::~HazeCompilerClass()
@@ -43,48 +53,60 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared
 	return Vector_Function[Iter->second];
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerClass::GetClassData(const HAZE_STRING& Name)
+void HazeCompilerClass::InitThisValue()
 {
-	auto Iter = HashMap_Data.find(Name);
-	if (Iter != HashMap_Data.end())
+	ThisValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineData(HazeValueType::Class, Name), HAZE_CLASS_THIS), InstructionScopeType::ClassThis));
+}
+
+size_t HazeCompilerClass::GetMemberIndex(const HAZE_STRING& Name)
+{
+	for (size_t i = 0; i < Vector_Data.size(); i++)
 	{
-		return Vector_Data[Iter->second];
+		if (Vector_Data[i].Name == Name)
+		{
+			return i;
+		}
+	}
+
+	return 0;
+}
+
+void HazeCompilerClass::GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& Name)
+{
+	for (size_t i = 0; i < ThisValue->Vector_Data.size(); i++)
+	{
+		if (Value == ThisValue->Vector_Data[i])
+		{
+			Name += HAZE_CLASS_THIS;
+			Name += HAZE_CLASS_POINTER_ATTR + Vector_Data[i].Name;
+			return;
+		}
+	}
+}
+
+const HazeDefineVariable* HazeCompilerClass::GetClassData(const HAZE_STRING& Name) const
+{
+	for (auto& Iter : Vector_Data)
+	{
+		if (Iter.Name == Name) 
+		{
+			return &Iter;
+		}
 	}
 
 	return nullptr;
 }
 
-bool HazeCompilerClass::GetDataName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
-{
-	for (auto& Iter : HashMap_Data)
-	{
-		if (Vector_Data[Iter.second] == Value)
-		{
-			OutName += HAZE_CLASS_THIS;
-			OutName += HAZE_CLASS_POINTER_ATTR;
-			OutName += Iter.first;
-			return true;
-		}
-	}
-	return false;
-}
-
 void HazeCompilerClass::GenClassData_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream)
 {
 #if HAZE_I_CODE_ENABLE
-	OFStream << GetClassLabelHeader() << " " << Name << " " << Vector_Data.size() << std::endl;
+	OFStream << GetClassLabelHeader() << " " << Name << " " << GetDataSize() << " " << Vector_Data.size() << std::endl;
 
 	for (size_t i = 0; i < Vector_Data.size(); ++i)
 	{
-		for (auto& Iter : HashMap_Data)
-		{
-			if (Iter.second == i)
-			{
-				OFStream << Iter.first << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i]->GetValue().Type) << std::endl;
-				break;
-			}
-		}
-
+		OFStream << Vector_Data[i].Name << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].Type.Type) << " "
+			<< Vector_Data[i].Type.CustomName.size() << " " << Vector_Data[i].Type.CustomName << std::endl;
+		
 	}
 #endif //HAZE_I_CODE_ENABLE
 }
@@ -97,4 +119,9 @@ void HazeCompilerClass::GenClassFunction_I_Code(HazeCompilerModule* Module, HAZE
 		Iter->GenI_Code(Module, OFStream);
 	}
 #endif //HAZE_I_CODE_ENABLE
+}
+
+unsigned int HazeCompilerClass::GetDataSize()
+{
+	return DataSize;
 }

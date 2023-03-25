@@ -8,15 +8,23 @@ class HazeCompilerClass;
 class HazeCompilerClassValue : public HazeCompilerValue
 {
 public:
-	HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope, std::shared_ptr<HazeCompilerValue> Parent);
+	friend class HazeCompilerClass;
+
+	HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope);
 
 	virtual ~HazeCompilerClassValue() override;
 
-	void SetUseClassMember(int Offset, HazeDefineData& Data);
+	virtual unsigned int GetSize() override;
+
+	HazeCompilerClass* GetOwnerClass() { return OwnerClass; };
+
+	std::shared_ptr<HazeCompilerValue> GetMember(const HAZE_STRING& Name);
+
+	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
 private:
-	std::shared_ptr<HazeCompilerClass> OwnerClass;
+	HazeCompilerClass* OwnerClass;
 	
-	std::pair<int, HazeDefineData> CurrUseMember;
+	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_Data;
 };
 

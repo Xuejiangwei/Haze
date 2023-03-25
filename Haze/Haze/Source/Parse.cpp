@@ -386,6 +386,10 @@ HazeToken Parse::GetNextToken()
 	{
 		CurrToken = HazeToken::Pointer;
 	}
+	else if (VM->IsClass(CurrLexeme))
+	{
+		CurrToken = HazeToken::CustomClass;
+	}
 	else
 	{
 		CurrToken = HazeToken::Identifier;
@@ -492,6 +496,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::UnsignedInt:
 	case HazeToken::UnsignedLong:
 	case HazeToken::String:
+	case HazeToken::CustomClass:
 		return ParseVariableDefine();
 	case HazeToken::Number:
 		return ParseNumberExpression();
@@ -549,9 +554,8 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 std::unique_ptr<ASTVariableDefine> Parse::ParseVariableDefine()
 {
 	DefineVariable.Type.Type = GetValueTypeByToken(CurrToken);
-	if (CurrToken == HazeToken::Identifier)
+	if (CurrToken == HazeToken::CustomClass)
 	{
-		DefineVariable.Type.Type = HazeValueType::Void;
 		DefineVariable.Type.CustomName = CurrLexeme;
 	}
 
@@ -570,6 +574,24 @@ std::unique_ptr<ASTVariableDefine> Parse::ParseVariableDefine()
 		{
 			//函数调用
 			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
+		}
+		else if (DefineVariable.Type.Type == HazeValueType::Class && CurrToken == HazeToken::LeftParentheses)
+		{
+			//类对象定义
+			GetNextToken();
+			if (CurrToken == HazeToken::RightParentheses)
+			{
+				GetNextToken();
+				return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
+			}
+			else
+			{
+				//自定义构造函数
+				/*while (CurrToken != HazeToken::RightParentheses)
+				{
+					
+				}*/
+			}
 		}
 		else
 		{
@@ -734,6 +756,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				Param.Type.Type = GetValueTypeByToken(CurrToken);
 				if (CurrToken == HazeToken::Identifier)
 				{
+					Param.Type.Type = HazeValueType::Class;//此处有待优化
 					Param.Type.CustomName = CurrLexeme;
 				}
 

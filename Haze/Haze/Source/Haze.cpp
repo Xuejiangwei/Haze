@@ -112,7 +112,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 		{ HazeToken::UnsignedShort, HazeValueType::UnsignedShort },
 		{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
 		{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
-		{ HazeToken::Identifier, HazeValueType::Class},
+		{ HazeToken::CustomClass, HazeValueType::Class},
 
 		{ HazeToken::MultiVariable, HazeValueType::MultiVar},
 	};
@@ -126,7 +126,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 	return HazeValueType::Void;
 }
 
-unsigned int GetSize(HazeValueType Type)
+unsigned int GetSizeByType(HazeValueType Type)
 {
 	switch (Type)
 	{
@@ -142,6 +142,7 @@ unsigned int GetSize(HazeValueType Type)
 	case HazeValueType::Long:
 	case HazeValueType::Double:
 	case HazeValueType::UnsignedLong:
+	case HazeValueType::Pointer:
 		return 8;
 	default:
 		break;

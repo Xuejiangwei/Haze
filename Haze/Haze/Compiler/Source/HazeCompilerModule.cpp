@@ -59,6 +59,8 @@ std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_ST
 	{
 		HashMap_Class[Name] = std::make_shared<HazeCompilerClass>(this, Name, ClassData);
 		Class = HashMap_Class[Name];
+
+		Class->InitThisValue();
 	}
 
 	CurrClass = Name;
@@ -186,7 +188,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 				if (bFind)
 				{
 					SStream << VarName;
-					SStream << " " << (unsigned int)InstructionScopeType::Local;
+					SStream << " " << (unsigned int)Left->GetScope();
 				}
 				else
 				{
@@ -217,7 +219,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 			if (bFind)
 			{
 				SStream << VarName;
-				SStream << " " << (unsigned int)InstructionScopeType::Local;
+				SStream << " " << (unsigned int)Right->GetScope();
 			}
 			else
 			{

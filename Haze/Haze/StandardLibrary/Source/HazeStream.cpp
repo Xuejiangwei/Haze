@@ -31,7 +31,7 @@ void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)
 	int Size = 0;
 	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
 	{
-		Size = GetSize(Data->Vector_Param[i].second.Type);
+		Size = GetSizeByType(Data->Vector_Param[i].second.Type);
 		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_PUSH_ADDRESS_SIZE), Size);
 	}
 
@@ -49,7 +49,7 @@ void HazeStream::HazePrintString(HAZE_STD_CALL_PARAM)
 	int Size = 0;
 	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
 	{
-		Size = GetSize(Data->Vector_Param[i].second.Type);
+		Size = GetSizeByType(Data->Vector_Param[i].second.Type);
 		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_PUSH_ADDRESS_SIZE), Size);
 	}
 

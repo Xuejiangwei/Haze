@@ -28,6 +28,8 @@ public:
 	
 	HazeCompilerModule* GetModule() const { return Module; }
 
+	HazeCompilerClass* GetClass() const { return Class; }
+
 	void FunctionFinish();
 
 	void GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream);

@@ -3,7 +3,10 @@
 
 #include "HazeCompiler.h"
 #include "HazeBaseBlock.h"
+#include "HazeCompilerPointerValue.h"
 #include "HazeCompilerFunction.h"
+#include "HazeCompilerClass.h"
+#include "HazeCompilerClassValue.h"
 #include "HazeCompilerModule.h"
 
 ASTFunction::ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
@@ -25,6 +28,7 @@ HazeValue* ASTFunction::CodeGen()
 	auto& Module = Compiler->GetCurrModule();
 
 	std::shared_ptr<HazeCompilerFunction> CompilerFunction = nullptr;
+	std::shared_ptr<HazeCompilerClass> Class = nullptr;
 
 	if (Section == HazeSectionSignal::Global)
 	{
@@ -32,7 +36,7 @@ HazeValue* ASTFunction::CodeGen()
 	}
 	else if (Section == HazeSectionSignal::Class)
 	{
-		auto Class = Module->FindClass(Vector_FunctionParam[0].Type.CustomName);
+		Class = Module->FindClass(Vector_FunctionParam[0].Type.CustomName);
 		CompilerFunction = Module->CreateFunction(Class, FunctionName, FunctionType, Vector_FunctionParam);
 	}
 
@@ -42,6 +46,12 @@ HazeValue* ASTFunction::CodeGen()
 	for (auto& iter : Vector_FunctionParam)
 	{
 		Compiler->CreateLocalVariable(CompilerFunction, iter);
+	}
+
+	if (Class)
+	{
+		std::shared_ptr<HazeCompilerPointerValue> PointerThis = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CompilerFunction->GetLocalVariable(HAZE_CLASS_THIS));
+		PointerThis->InitPointerTo(Class->GetThisValue().get());
 	}
 
 	if (Body)

@@ -5,6 +5,7 @@
 class HazeCompilerModule;
 class HazeCompilerFunction;
 class HazeCompilerValue;
+class HazeCompilerClassValue;
 
 class HazeCompilerClass
 {
@@ -12,6 +13,7 @@ public:
 	friend class HazeCompiler;
 
 	HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& Data);
+
 	~HazeCompilerClass();
 
 	std::shared_ptr<HazeCompilerFunction> FindFunction(const HAZE_STRING& Name);
@@ -20,21 +22,38 @@ public:
 
 	size_t GetFunctionSize() { return Vector_Function.size(); }
 
-	std::shared_ptr<HazeCompilerValue> GetClassData(const HAZE_STRING& Name);
+	void InitThisValue();
 
-	bool GetDataName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	std::shared_ptr<HazeCompilerClassValue> GetThisValue() { return ThisValue; }
+
+	const HAZE_STRING& GetName() { return Name; }
+
+	size_t GetMemberIndex(const HAZE_STRING& Name);
+
+	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& Name);
+
+	const std::vector<HazeDefineVariable>& GetClassMemberData() const { return Vector_Data; }
+
+	const HazeDefineVariable* GetClassData(const HAZE_STRING& Name) const;
+
+	//bool GetDataName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
 	void GenClassData_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream);
 
 	void GenClassFunction_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream);
+
+	unsigned int GetDataSize();
 
 private:
 	HazeCompilerModule* Module;
 
 	HAZE_STRING Name;
 
-	std::unordered_map<HAZE_STRING, unsigned int> HashMap_Data;
-	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_Data;
+	unsigned int DataSize;
+
+	std::shared_ptr<HazeCompilerClassValue> ThisValue; //所有同类对象只想此同一个this Value
+
+	std::vector<HazeDefineVariable> Vector_Data;
 
 	std::vector<std::shared_ptr<HazeCompilerFunction>> Vector_Function;
 	std::unordered_map<HAZE_STRING, unsigned int> HashMap_Function;

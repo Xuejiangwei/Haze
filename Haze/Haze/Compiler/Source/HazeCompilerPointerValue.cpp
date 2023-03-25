@@ -1,12 +1,17 @@
 #include "HazeCompilerPointerValue.h"
 
-HazeCompilerPointerValue::HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope, std::shared_ptr<HazeCompilerValue> Parent)
-	: HazeCompilerValue(Module, DefineType, Scope, Parent), PointerType(DefineType)
+HazeCompilerPointerValue::HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope)
+	: HazeCompilerValue(Module, DefineType, Scope), PointerType(DefineType)
 {
 }
 
 HazeCompilerPointerValue::~HazeCompilerPointerValue()
 {
+}
+
+void HazeCompilerPointerValue::InitPointerTo(HazeCompilerValue* Value)
+{
+	PointerValue = Value;
 }
 
 bool HazeCompilerPointerValue::IsHazeTypePointer()

@@ -45,3 +45,4 @@
 
 #define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data
 
+#define HAZE_ADDRESS_SIZE (int)sizeof(int)

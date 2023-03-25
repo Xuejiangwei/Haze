@@ -42,6 +42,8 @@ enum class InstructionScopeType : unsigned int
 
 	Address,
 	Class,
+	ClassThis,
+	ClassMember,
 };
 
 enum class InstructionOpCode : unsigned int

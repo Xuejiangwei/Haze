@@ -16,7 +16,7 @@ extern HazeValueType GetValueTypeByToken(HazeToken Token);
 
 extern void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value);
 
-extern unsigned int GetSize(HazeValueType Type);
+extern unsigned int GetSizeByType(HazeValueType Type);
 
 extern bool IsNumber(const HAZE_STRING& Str);
 
@@ -44,7 +44,7 @@ extern const HAZE_CHAR* GetFunctionStartHeader();
 extern const HAZE_CHAR* GetFunctionEndHeader();
 
 template <typename T>
-T StringToInt(const HAZE_STRING& String);
+T StringToStandardType(const HAZE_STRING& String);
 
 /*
  * Instruction string

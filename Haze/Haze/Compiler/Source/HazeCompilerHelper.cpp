@@ -81,7 +81,7 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
 	}
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, InstructionScopeType Scope, std::shared_ptr<HazeCompilerValue> Parent)
+std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, InstructionScopeType Scope)
 {
 	switch (Var.Type.Type)
 	{
@@ -96,13 +96,13 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 	case HazeValueType::UnsignedShort:
 	case HazeValueType::UnsignedInt:
 	case HazeValueType::UnsignedLong:
-		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope, Parent);
+		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope);
 		break;
 	case HazeValueType::Pointer:
-		return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope, Parent);
+		return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope);
 		break;
 	case HazeValueType::Class:
-		return std::make_shared<HazeCompilerClassValue>(Module, Var.Type, Scope, Parent);
+		return std::make_shared<HazeCompilerClassValue>(Module, Var.Type, Scope);
 		break;
 	default:
 		break;

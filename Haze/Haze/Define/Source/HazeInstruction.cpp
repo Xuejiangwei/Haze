@@ -48,16 +48,16 @@ public:
 			if (Operator[1].Scope == InstructionScopeType::Constant)
 			{
 				StringToHazeValueNumber(Operator[1].Name, Value);
-				memcpy(GetAddressByOperator(Stack, Operator[0]), &Value.Value, GetSize(Operator[0].Type));
+				memcpy(GetAddressByOperator(Stack, Operator[0]), &Value.Value, GetSizeByType(Operator[0].Type));
 			}
 			else if (Operator[1].Scope == InstructionScopeType::Local)
 			{
-				memcpy(GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]), GetSize(Operator[0].Type));
+				memcpy(GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]), GetSizeByType(Operator[0].Type));
 			}
 			else if (IsRegisterScope(Operator[1].Scope))
 			{
 				HazeValue* Register = GetVirtualRegister(Operator[1].Name.c_str());
-				int Size = GetSize(Register->Type);
+				int Size = GetSizeByType(Register->Type);
 
 				memcpy(GetAddressByOperator(Stack, Operator[0]) , &Register->Value, Size);
 			}
@@ -82,7 +82,7 @@ public:
 				int Size = 0;
 				for (auto& Iter : Function.Vector_Param)
 				{
-					Size += GetSize(Iter.second.Type);
+					Size += GetSizeByType(Iter.second.Type);
 				}
 
 				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_PUSH_ADDRESS_SIZE + Size));
@@ -107,11 +107,11 @@ public:
 		if (Operator.size() == 1)
 		{
 			HazeValueType Type = (HazeValueType)Operator[0].Type;
-			int Size = GetSize(Type);
+			int Size = GetSizeByType(Type);
 
 			if (Operator[0].Scope == InstructionScopeType::Constant)
 			{
-				int N = StringToInt<int>(Operator[0].Name);
+				int N = StringToStandardType<int>(Operator[0].Name);
 				memcpy(&Stack->Stack_Main[Stack->ESP], &N, Size);
 			}
 			/*else if (Operator[0].Scope == InstructionScopeType::Address)
@@ -153,7 +153,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			Stack->ESP -= GetSize(Operator[0].Type);
+			Stack->ESP -= GetSizeByType(Operator[0].Type);
 		}
 	}
 
@@ -373,7 +373,7 @@ public:
 			HazeValue* RetRegister = GetVirtualRegister(RET_REGISTER);
 			RetRegister->Type = (HazeValueType)Operator[0].Type;
 
-			int Size = GetSize(RetRegister->Type);
+			int Size = GetSizeByType(RetRegister->Type);
 
 			memcpy(&RetRegister->Value, GetAddressByOperator(Stack, Operator[0]), Size);
 		}
@@ -383,7 +383,7 @@ public:
 		int Size = 0;
 		for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
 		{
-			Size += GetSize(Iter.second.Type);
+			Size += GetSizeByType(Iter.second.Type);
 		}
 
 		memcpy(&Stack->PC, &(Stack->Stack_Main[Stack->EBP - 4]), HAZE_PUSH_ADDRESS_SIZE);
@@ -401,7 +401,7 @@ public:
 			HazeValue* NewRegister = GetVirtualRegister(NEW_REGISTER);
 			NewRegister->Type = (HazeValueType)Operator[0].Type;
 
-			int Size = GetSize(NewRegister->Type);
+			int Size = GetSizeByType(NewRegister->Type);
 
 			NewRegister->Value.Pointer = Stack->VM->Alloca(NewRegister->Type, Size);
 		}

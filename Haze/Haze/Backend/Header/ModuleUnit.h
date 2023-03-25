@@ -50,12 +50,25 @@ public:
 
 	struct StringTable
 	{
-		std::vector<StringTableData> Vector_Data;
+		std::vector<StringTableData> Vector_String;
 
 		StringTable()
 		{
-			Vector_Data.clear();
+			Vector_String.clear();
 		}
+	};
+
+public:
+	struct ClassTableData
+	{
+		HAZE_STRING Name;
+		unsigned int Size;
+		std::vector<HazeDefineVariable> Vector_Member;
+	};
+
+	struct ClassTable
+	{
+		std::vector<ClassTableData> Vector_Class;
 	};
 
 public:
@@ -70,7 +83,7 @@ public:
 	{
 		HAZE_STRING Name;
 		HazeValueType Type;
-		std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_Param;
+		std::vector<HazeDefineVariable> Vector_Param;
 		std::vector<FunctionInstruction> Vector_Instruction;
 		InstructionFunctionType DescType;
 
@@ -84,11 +97,11 @@ public:
 
 	struct FunctionTable
 	{
-		std::vector<FunctionTableData> Vector_Data;
+		std::vector<FunctionTableData> Vector_Function;
 
 		FunctionTable()
 		{
-			Vector_Data.clear();
+			Vector_Function.clear();
 		}
 	};
 
@@ -97,5 +110,6 @@ private:
 
 	GlobalDataTable Table_GlobalData;
 	StringTable Table_String;
+	ClassTable Table_Class;
 	FunctionTable Table_Function;
 };
