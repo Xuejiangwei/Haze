@@ -9,25 +9,13 @@ Class 点 8 2
 横坐标 5 0 
 纵坐标 5 0 
 FunctionTable
-3
-Function 点 0
-Param 乙 5
-Param 甲 5
-Param 己 11
-Start
-MOV 5 己指之横坐标 13 5 甲 2
-MOV 5 己指之纵坐标 13 5 乙 2
-RET 0
-End
-Function 加 0
-Param 值 12
-Param 己 11
-Start
-MOV 5 己指之横坐标 13 5 值之横坐标 13
-RET 0
-End
+1
 Function 主函数 4
 Start
-PUSH 12 甲 2
+PUSH 12 测试甲 2
+MOV 5 测试甲之纵坐标 1 5 4.5 3
+PUSH 5 测试甲之纵坐标 2
+PUSH 4 Address 10
+CALL 打印小数 1
 RET 0
 End

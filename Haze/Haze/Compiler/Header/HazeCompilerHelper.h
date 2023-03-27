@@ -1,6 +1,5 @@
 #pragma once
 
-#include <sstream>
 #include "Haze.h"
 
 class HazeCompilerModule;

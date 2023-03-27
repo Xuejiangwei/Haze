@@ -3,13 +3,19 @@ GlobalDataTable
 0
 StringTable
 0
+ClassTable
+0
 FunctionTable
-2
-Function 打印 1
-Param 5 甲
+3
+Function 打印小数 0
+Param 甲 5
 Start
 End
-Function 打印字符 1
-Param 0 甲
+Function 打印 0
+Param 甲 4
+Start
+End
+Function 打印字符 0
+Param 甲 0
 Start
 End

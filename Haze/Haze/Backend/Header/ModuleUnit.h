@@ -77,6 +77,10 @@ public:
 	{
 		InstructionOpCode InsCode;
 		std::vector<InstructionData> Operator;
+
+		FunctionInstruction() : InsCode(InstructionOpCode::NONE), Operator()
+		{
+		}
 	};
 
 	struct FunctionTableData

@@ -161,10 +161,14 @@ void HazeVM::LoadOpCodeFile()
 			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 			B_String.resize(Num);
 			FS.read(B_String.data(), Num);
-			Vector_FunctionTable[i].Vector_Param[j].first = String2WString(B_String);
+			Vector_FunctionTable[i].Vector_Param[j].Name = String2WString(B_String);
 
-			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Param[j].second.Type));
-			FS.read(GetBinaryPointer(Vector_FunctionTable[i].Vector_Param[j].second), GetSizeByType(Vector_FunctionTable[i].Vector_Param[j].second.Type));
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Param[j].Type.Type));
+
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+			B_String.resize(Num);
+			FS.read(B_String.data(), Num);
+			Vector_FunctionTable[i].Vector_Param[j].Type.CustomName = String2WString(B_String);
 		}
 
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].InstructionNum));
@@ -194,31 +198,44 @@ void HazeVM::LoadOpCodeFile()
 					Function.Extra.StdLibFunction = P->second;
 				}
 			}
-			
 		}
 	}
 }
 
 void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instruction)
 {
-	unsigned int Int = 0;
+	unsigned int UnsignedInt = 0;
+	int Int = 0;
 	HAZE_BINARY_STRING BinaryString;
-	B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Int));
-	Instruction.Operator.resize(Int);
+	B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
+	Instruction.Operator.resize(UnsignedInt);
 
 	for (auto& i : Instruction.Operator)
 	{
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Type));
 
-		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Int));
-		BinaryString.resize(Int);
-		B_IFS.read(BinaryString.data(), Int);
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
+		BinaryString.resize(UnsignedInt);
+		B_IFS.read(BinaryString.data(), UnsignedInt);
 		i.Name = String2WString(BinaryString);
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Scope));
 
-		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.Index));
+		//B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.Index));
+		//B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.AddressOffset));
 	}
+
+#if HAZE_INS_LOG
+	HAZE_STRING_STREAM WSS;
+	WSS << GetInstructionString(Instruction.InsCode) << " ";
+	for (auto& it : Instruction.Operator)
+	{
+		WSS << it.Name << " " << (unsigned int)it.Type << " " << (unsigned int)it.Scope << " " << it.Extra.Index << " ";
+	}
+	WSS << std::endl;
+
+	std::wcout << WSS.str();
+#endif
 }
 
 int HazeVM::GetFucntionIndexByName(const HAZE_STRING& Name)

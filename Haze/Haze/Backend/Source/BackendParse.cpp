@@ -6,8 +6,6 @@
 
 #include "HazeLog.h"
 
-#define ENABLE_BACKEND_INSTRUCTION_LOG 1
-
 BackendParse::BackendParse(HazeVM* VM) : VM(VM)
 {
 	CurrCode = nullptr;
@@ -209,13 +207,9 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 					GetNextLexmeAssign_CustomType<unsigned int>(Param.Type.Type);
 
-					GetNextLexeme();
-					if (IsNumber(CurrLexeme))
+					if (Param.Type.Type == HazeValueType::Pointer || Param.Type.Type == HazeValueType::Class)
 					{
-						Param.Type.Type = (HazeValueType)StringToStandardType<unsigned int>(CurrLexeme);
-					}
-					else
-					{
+						GetNextLexeme();
 						Param.Type.CustomName = CurrLexeme;
 					}
 
@@ -394,6 +388,7 @@ void BackendParse::GenOpCodeFile()
 				if (it.Scope == InstructionScopeType::Global)
 				{
 					it.Extra.Index = NewGlobalDataTable.GetIndex(it.Name);
+					it.Extra.AddressOffset = 0;
 				}
 				else if (it.Scope == InstructionScopeType::ClassMember)
 				{
@@ -414,7 +409,7 @@ void BackendParse::GenOpCodeFile()
 						if (Pos != HAZE_STRING::npos)
 						{
 							ObjName = it.Name.substr(0, Pos);
-							MemberName = it.Name.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
+							MemberName = it.Name.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
 							IsPointer = false;
 						}
 					}
@@ -437,26 +432,18 @@ void BackendParse::GenOpCodeFile()
 							if (IsPointer)
 							{
 								//需要存储一个指针指向地址的相对偏移
+								AddressOffset -= GetSizeByType(CurrFunction.Vector_Param[j].Type.Type);
+								it.Extra.Address = AddressOffset;
+								it.Extra.AddressOffset = GetMemberOffset(*Class, MemberName);
+								break;
 							}
 							else
 							{
 								AddressOffset -= GetMemberOffset(*Class, MemberName);
+								it.Extra.Address = AddressOffset - GetMemberOffset(*Class, MemberName);
+								it.Extra.AddressOffset = 0;
+								break;
 							}
-							
-
-							/*for (auto& M : HashMap_Modules)
-							{
-								for (auto& C : M.second->Table_Class.Vector_Class) 
-								{
-									if (C.Name)
-									{
-										it.Extra.Offset -=
-											break;
-									}
-								}
-							}*/
-
-							
 						}
 					}
 				}
@@ -470,7 +457,8 @@ void BackendParse::GenOpCodeFile()
 						AddressOffset -= GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Param[j].Type.Type);
 						if (NewFunctionTable.Vector_Function[k].Vector_Param[j].Name == it.Name)
 						{
-							it.Extra.Offset = AddressOffset;
+							it.Extra.Address = AddressOffset;
+							it.Extra.AddressOffset = 0;
 							Find = true;
 							break;
 						}
@@ -489,7 +477,8 @@ void BackendParse::GenOpCodeFile()
 						{
 							if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Name == it.Name)
 							{
-								it.Extra.Offset = Offset;
+								it.Extra.Address = Offset;
+								it.Extra.AddressOffset = 0;
 								break;
 							}
 							else
@@ -515,12 +504,12 @@ void BackendParse::GenOpCodeFile()
 				}
 			}
 
-#if ENABLE_BACKEND_INSTRUCTION_LOG
+#if BACKEND_INSTRUCTION_LOG
 			HAZE_STRING_STREAM WSS;
 			WSS << GetInstructionString(NewFunctionTable.Vector_Function[k].Vector_Instruction[i].InsCode) << " ";
 			for (auto& it : NewFunctionTable.Vector_Function[k].Vector_Instruction[i].Operator)
 			{
-				WSS << it.Name << " " << it.Extra.Offset << " ";
+				WSS << it.Name << " " << it.Extra.Address << " ";
 			}
 			WSS << std::endl;
 
@@ -614,83 +603,56 @@ void BackendParse::GenOpCodeFile()
 
 void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction)
 {
+	/*if (!(Instruction.InsCode == InstructionOpCode::RET || Instruction.InsCode == InstructionOpCode::CALL))
+	{
+		return;
+	}*/
+
 	unsigned int UnsignedInt = 0;
-	int Int = 0;
 	HAZE_BINARY_STRING BinaryString;
 
-	B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Instruction.InsCode));		//字节码
+	B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Instruction.InsCode));				//字节码
+
 	UnsignedInt = (unsigned int)Instruction.Operator.size();										
 	B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));						//操作数个数
 
 	//std::pair<InstructionDataType, std::pair<HAZE_STRING, unsigned int>>;
 	for (auto& i : Instruction.Operator)
 	{
-		UnsignedInt = (unsigned int)i.Type;
-		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));					//操作数类型
+		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Type));					//操作数类型
 
 		BinaryString = WString2String(i.Name);
 		UnsignedInt = (unsigned int)BinaryString.size();
-		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
-		FS_OpCode.write(BinaryString.data(), UnsignedInt);							//操作数名字
+		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
+		B_OFS.write(BinaryString.data(), UnsignedInt);						//操作数名字
 
-		UnsignedInt = (unsigned int)i.Scope;
-		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));					//操作数作用域
+		if (i.Scope == InstructionScopeType::Address)
+		{
+			UnsignedInt = (unsigned int)10;
+			B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
+		}
+		else
+		{
+			B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Scope));				//操作数作用域
+		}
 
-		Int = (int)i.Extra.Index;
-		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Int));					//操作数索引
-	}
-	/*switch (Instruction.InsCode)
-	{
-	case InstructionOpCode::NONE:
-		break;
-	case InstructionOpCode::MOV:
-	case InstructionOpCode::ADD:
-	case InstructionOpCode::SUB:
-	case InstructionOpCode::MUL:
-	case InstructionOpCode::DIV:
-	case InstructionOpCode::MOD:
-	case InstructionOpCode::EXP:
-	{
-		
-	}
-		break;
-	case InstructionOpCode::INC:
-		break;
-	case InstructionOpCode::DEC:
-		break;
-	case InstructionOpCode::AND:
-		break;
-	case InstructionOpCode::OR:
-		break;
-	case InstructionOpCode::NOT:
-		break;
-	case InstructionOpCode::XOR:
-		break;
-	case InstructionOpCode::SHL:
-		break;
-	case InstructionOpCode::SHR:
-		break;
-	case InstructionOpCode::PUSH:
-	case InstructionOpCode::RET:
-	{
-	}
-		break;
-	case InstructionOpCode::POP:
-		break;
-	case InstructionOpCode::CALL:
-	{
+		//B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Extra.Index));					//操作数索引
 
+		//Int = (int)i.Extra.AddressOffset;
+		//B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Int));					//操作数地址偏移
 	}
-		break;
-	case InstructionOpCode::Concat:
-		break;
-	case InstructionOpCode::GetChar:
-		break;
-	case InstructionOpCode::SetChar:
-		break;
-	default:
-		break;
-	}*/
+
+#if HAZE_INS_LOG
+	HAZE_STRING_STREAM WSS;
+	WSS << GetInstructionString(Instruction.InsCode) << " ";
+	for (auto& it : Instruction.Operator)
+	{
+		WSS << it.Name << " " << (unsigned int)it.Type << " " << (unsigned int)it.Scope << " " << it.Extra.Index << " ";
+	}
+	WSS << std::endl;
+
+	std::wcout << WSS.str();
+#endif
 }
 
 const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING& ClassName)

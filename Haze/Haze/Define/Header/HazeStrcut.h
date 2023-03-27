@@ -14,7 +14,7 @@ enum class HazeSectionSignal : unsigned __int8
 struct HazeDefineData
 {
 	HazeValueType Type;			//Token类型
-	HAZE_STRING CustomName;		//自定义类型名
+	HAZE_STRING CustomName;		//自定义类型名或指针指向类型
 
 	HazeDefineData() : Type(HazeValueType::Void)
 	{

@@ -70,7 +70,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			memcpy(&Stack->Stack_Main[Stack->ESP - HAZE_PUSH_ADDRESS_SIZE], &Stack->PC, HAZE_PUSH_ADDRESS_SIZE);
+			memcpy(&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], &Stack->PC, HAZE_ADDRESS_SIZE);
 
 			Stack->EBP = Stack->ESP;
 			Stack->Stack_Function.push_back(Operator[0].Name);
@@ -82,10 +82,10 @@ public:
 				int Size = 0;
 				for (auto& Iter : Function.Vector_Param)
 				{
-					Size += GetSizeByType(Iter.second.Type);
+					Size += GetSizeByType(Iter.Type.Type);
 				}
 
-				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_PUSH_ADDRESS_SIZE + Size));
+				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_ADDRESS_SIZE + Size));
 
 				unsigned int Index = Stack->VM->GetFucntionIndexByName(Operator[0].Name);
 				Stack->PC = Function.Extra.FunctionDescData.InstructionStartAddress;
@@ -96,7 +96,7 @@ public:
 				//±ê×¼¿â²éÕÒ
 				Function.Extra.StdLibFunction(Stack, &Function);
 				int i = 0;
-				memcpy(&i, &Stack->Stack_Main[Stack->ESP - HAZE_PUSH_ADDRESS_SIZE - 4], sizeof(int));
+				memcpy(&i, &Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE - 4], sizeof(int));
 			}
 		}
 	}
@@ -120,7 +120,7 @@ public:
 			}*/
 			else if (Operator[0].Scope == InstructionScopeType::Local || Operator[0].Scope == InstructionScopeType::Global)
 			{
-				if (Operator[0].Extra.Offset + (int)Stack->EBP >= 0)
+				if (Operator[0].Extra.Address + (int)Stack->EBP >= 0)
 				{
 					memcpy(&Stack->Stack_Main[Stack->ESP], GetAddressByOperator(Stack, Operator[0]), Size);
 				}
@@ -383,14 +383,14 @@ public:
 		int Size = 0;
 		for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
 		{
-			Size += GetSizeByType(Iter.second.Type);
+			Size += GetSizeByType(Iter.Type.Type);
 		}
 
-		memcpy(&Stack->PC, &(Stack->Stack_Main[Stack->EBP - 4]), HAZE_PUSH_ADDRESS_SIZE);
+		memcpy(&Stack->PC, &(Stack->Stack_Main[Stack->EBP - 4]), HAZE_ADDRESS_SIZE);
 
 		Stack->Stack_EBP.pop_back();
 		Stack->EBP = Stack->Stack_EBP.back();
-		Stack->ESP -= (HAZE_PUSH_ADDRESS_SIZE + Size);
+		Stack->ESP -= (HAZE_ADDRESS_SIZE + Size);
 	}
 
 	static void New(HazeStack* Stack)
@@ -416,7 +416,7 @@ private:
 		}
 		else if (Operator.Scope == InstructionScopeType::Local || Operator.Scope == InstructionScopeType::Temp)
 		{
-			return &Stack->Stack_Main[Stack->EBP + Operator.Extra.Offset];
+			return &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address];
 		}
 
 		return nullptr;

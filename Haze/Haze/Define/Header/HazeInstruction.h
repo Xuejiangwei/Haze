@@ -96,9 +96,15 @@ struct InstructionData
 	union
 	{
 		int Index;
-		int Offset;
+		int Address;
+		int AddressOffset;
 		int FunctionCallParamNum;
 	} Extra;
+
+	InstructionData() : Scope(InstructionScopeType::None), Type(HazeValueType::Void)
+	{
+		memset(&Extra, 0, sizeof(Extra));
+	}
 };
 
 struct Instruction
@@ -118,7 +124,7 @@ struct FunctionData
 	using StdLibFunctionCall = void(*)(HAZE_STD_CALL_PARAM);
 
 	HazeValueType Type;
-	std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_Param;
+	std::vector<HazeDefineVariable> Vector_Param;
 	unsigned int InstructionNum;
 
 	union

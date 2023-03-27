@@ -628,14 +628,7 @@ std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
 	HazeValue Value;
-	if (DefineVariable.Type.Type != HazeValueType::Void)
-	{
-		Value.Type = DefineVariable.Type.Type;
-	}
-	else
-	{
-		Value.Type = GetNumberDefaultType(CurrLexeme);
-	}
+	Value.Type = GetNumberDefaultType(CurrLexeme);
 
 	StringToHazeValueNumber(CurrLexeme, Value);
 

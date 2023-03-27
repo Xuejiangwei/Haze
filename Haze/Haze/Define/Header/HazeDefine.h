@@ -1,5 +1,7 @@
 #pragma once
 
+#include "HazeDebug.h"
+
 #define HAZE_STRING_STREAM std::wstringstream
 #define HAZE_OFSTREAM std::wofstream
 #define HAZE_IFSTREAM std::wifstream
@@ -33,8 +35,7 @@
 
 #define NEW_REGISTER					HAZE_TEXT("New_R")
 
-#define HAZE_PUSH_ADDRESS_SIZE 4
-#define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_TEXT("Address")
+#define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_STRING(HAZE_TEXT("Address"))
 
 #define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
 

@@ -31,8 +31,8 @@ void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)
 	int Size = 0;
 	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
 	{
-		Size = GetSizeByType(Data->Vector_Param[i].second.Type);
-		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_PUSH_ADDRESS_SIZE), Size);
+		Size = GetSizeByType(Data->Vector_Param[i].Type.Type);
+		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
 	}
 
 	HazePrintCall(V);
@@ -43,14 +43,32 @@ void HazeStream::HazePrintCall(int V)
 	std::cout << V << std::endl;
 }
 
+void HazeStream::HazePrintFloat(HAZE_STD_CALL_PARAM)
+{
+	float V;
+	int Size = 0;
+	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
+	{
+		Size = GetSizeByType(Data->Vector_Param[i].Type.Type);
+		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
+	}
+
+	HazePrintFloatCall(V);
+}
+
+void HazeStream::HazePrintFloatCall(float V)
+{
+	std::wcout << V << std::endl;
+}
+
 void HazeStream::HazePrintString(HAZE_STD_CALL_PARAM)
 {
 	int V;
 	int Size = 0;
 	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
 	{
-		Size = GetSizeByType(Data->Vector_Param[i].second.Type);
-		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_PUSH_ADDRESS_SIZE), Size);
+		Size = GetSizeByType(Data->Vector_Param[i].Type.Type);
+		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
 	}
 
 	HazePrintStringCall(Stack->GetVM()->GetHazeStringByIndex(V));

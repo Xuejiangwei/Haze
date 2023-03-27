@@ -104,7 +104,7 @@ void HazeCompilerFunction::GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& 
 	{
 		OFStream << GetFunctionParamHeader() << " " << VectorParam[i].first << " " << HAZE_CAST_VALUE_TYPE(VectorParam[i].second->GetValue().Type);
 
-		if (VectorParam[i].second->GetValue().Type == HazeValueType::Pointer)
+		if (VectorParam[i].second->IsPointer())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(VectorParam[i].second);
 			if (PointerValue->IsHazeTypePointer())
@@ -116,7 +116,7 @@ void HazeCompilerFunction::GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& 
 				OFStream << " " << PointerValue->GetPointerType().CustomName;
 			}
 		}
-		else if (VectorParam[i].second->IsClassMember())
+		else if (VectorParam[i].second->IsClass())
 		{
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(VectorParam[i].second);
 			OFStream << " " << ClassValue->GetOwnerClass()->GetName();

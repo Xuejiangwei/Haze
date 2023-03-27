@@ -29,7 +29,11 @@ void ASTClass::CodeGen()
 
 	VM->GetCompiler()->GetCurrModule()->CreateClass(ClassName, Data);
 
-	ClassFunctionSection->CodeGen();
+	if (ClassFunctionSection)
+	{
+		ClassFunctionSection->CodeGen();
+
+	}
 }
 
 ASTClassDefine::ASTClassDefine(HazeVM* VM, HAZE_STRING& Name, std::vector<std::vector<std::unique_ptr<ASTBase>>>& Data, std::vector<std::unique_ptr<ASTFunctionDefine>>& Function)

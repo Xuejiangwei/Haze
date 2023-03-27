@@ -36,6 +36,10 @@ public:
 
 	bool IsClassMember() { return Scope == InstructionScopeType::ClassMember; }
 
+	bool IsPointer() { return Value.Type == HazeValueType::Pointer; }
+
+	bool IsClass() { return Value.Type == HazeValueType::Class; }
+
 public:
 	virtual unsigned int GetSize();
 

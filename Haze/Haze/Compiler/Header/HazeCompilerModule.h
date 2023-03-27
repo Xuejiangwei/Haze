@@ -46,6 +46,8 @@ public:
 
 	void GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value);
 
+	static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue>& Value);
+
 private:
 	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var);
 
@@ -54,6 +56,7 @@ private:
 	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
 
 	bool IsStandardLibrary() { return IsStdLib; }
+
 private:
 	void GenICode();
 
