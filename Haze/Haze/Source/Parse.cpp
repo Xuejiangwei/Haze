@@ -553,7 +553,7 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 
 std::unique_ptr<ASTVariableDefine> Parse::ParseVariableDefine()
 {
-	DefineVariable.Type.Type = GetValueTypeByToken(CurrToken);
+	DefineVariable.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 	if (CurrToken == HazeToken::CustomClass)
 	{
 		DefineVariable.Type.CustomName = CurrLexeme;
@@ -575,7 +575,7 @@ std::unique_ptr<ASTVariableDefine> Parse::ParseVariableDefine()
 			//函数调用
 			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
 		}
-		else if (DefineVariable.Type.Type == HazeValueType::Class && CurrToken == HazeToken::LeftParentheses)
+		else if (DefineVariable.Type.PrimaryType == HazeValueType::Class && CurrToken == HazeToken::LeftParentheses)
 		{
 			//类对象定义
 			GetNextToken();
@@ -663,8 +663,12 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	GetNextToken();
 
 	HazeDefineVariable Define;
-	Define.Type.Type = GetValueTypeByToken(CurrToken);
-	Define.Type.CustomName = CurrLexeme;
+	Define.Type.PrimaryType = GetValueTypeByToken(CurrToken);
+
+	if (Define.Type.PrimaryType == HazeValueType::Class)
+	{
+		Define.Type.CustomName = CurrLexeme;
+	}
 
 	GetNextToken();
 	return std::make_unique<ASTNew>(VM, Define);
@@ -713,8 +717,8 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 	StackSectionSignal.push(HazeSectionSignal::Function);
 
 	//获得函数返回类型及是自定义类型时获得类型名字
-	HazeDefineData FuncType;
-	FuncType.Type = GetValueTypeByToken(CurrToken);
+	HazeDefineType FuncType;
+	FuncType.PrimaryType = GetValueTypeByToken(CurrToken);
 	if (CurrToken == HazeToken::Identifier)
 	{
 		FuncType.CustomName = CurrLexeme;
@@ -732,8 +736,8 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 			{
 				HazeDefineVariable ThisParam;
 				ThisParam.Name = HAZE_CLASS_THIS;
-				ThisParam.Type.Type = HazeValueType::Pointer;
-				ThisParam.Type.CustomName = *ClassName;
+				ThisParam.Type.PrimaryType = HazeValueType::PointerClass;
+				ThisParam.Type.CustomName = ClassName->c_str();
 				
 				Vector_Param.push_back(ThisParam);
 			}
@@ -746,14 +750,14 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 					break;
 				}
 
-				Param.Type.Type = GetValueTypeByToken(CurrToken);
+				Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 				if (CurrToken == HazeToken::Identifier)
 				{
-					Param.Type.Type = HazeValueType::Class;//此处有待优化
+					Param.Type.PrimaryType = HazeValueType::Class;//此处有待优化
 					Param.Type.CustomName = CurrLexeme;
 				}
 
-				if (Param.Type.Type == HazeValueType::MultiVar)
+				if (Param.Type.PrimaryType == HazeValueType::MultiVar)
 				{
 					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
 					Vector_Param.push_back(Param);
@@ -799,7 +803,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 			{
 				HazeDefineVariable ThisParam;
 				ThisParam.Name = HAZE_CLASS_THIS;
-				ThisParam.Type.Type = HazeValueType::Pointer;
+				ThisParam.Type.PrimaryType = HazeValueType::PointerClass;
 				ThisParam.Type.CustomName = *ClassName;
 
 				Vector_Param.push_back(ThisParam);
@@ -813,14 +817,14 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 					break;
 				}
 
-				Param.Type.Type = GetValueTypeByToken(CurrToken);
+				Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 				if (CurrToken == HazeToken::Identifier)
 				{
-					Param.Type.Type = HazeValueType::Class;
+					Param.Type.PrimaryType = HazeValueType::Class;
 					Param.Type.CustomName = CurrLexeme;
 				}
 
-				if (Param.Type.Type == HazeValueType::MultiVar)
+				if (Param.Type.PrimaryType == HazeValueType::MultiVar)
 				{
 					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
 					Vector_Param.push_back(Param);
@@ -874,10 +878,10 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 				break;
 			}
 
-			Param.Type.Type = GetValueTypeByToken(CurrToken);
+			Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 			if (CurrToken == HazeToken::Identifier)
 			{
-				Param.Type.Type = HazeValueType::Class;
+				Param.Type.PrimaryType = HazeValueType::Class;
 				Param.Type.CustomName = CurrLexeme;
 			}
 
@@ -901,7 +905,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 				StackSectionSignal.pop();
 
 				GetNextToken();
-				HazeDefineData DefineType = { HazeValueType::Int, HAZE_TEXT("") };
+				HazeDefineType DefineType = { HazeValueType::Int, HAZE_TEXT("") };
 				return std::make_unique<ASTFunction>(VM, StackSectionSignal.top(), FunctionName, DefineType, Vector_Param, Body);
 			}
 		}
@@ -968,8 +972,8 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 			StackSectionSignal.push(HazeSectionSignal::Function);
 
 			//获得函数返回类型及是自定义类型时获得类型名字
-			HazeDefineData FuncType;
-			FuncType.Type = GetValueTypeByToken(CurrToken);
+			HazeDefineType FuncType;
+			FuncType.PrimaryType = GetValueTypeByToken(CurrToken);
 			if (CurrToken == HazeToken::Identifier)
 			{
 				FuncType.CustomName = CurrLexeme;
@@ -991,14 +995,14 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 							break;
 						}
 
-						Param.Type.Type = GetValueTypeByToken(CurrToken);
+						Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 						if (CurrToken == HazeToken::Identifier)
 						{
-							Param.Type.Type = HazeValueType::Class;
+							Param.Type.PrimaryType = HazeValueType::Class;
 							Param.Type.CustomName = CurrLexeme;
 						}
 
-						if (Param.Type.Type == HazeValueType::MultiVar)
+						if (Param.Type.PrimaryType == HazeValueType::MultiVar)
 						{
 							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
 							Vector_Param.push_back(Param);
@@ -1065,7 +1069,7 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 					}
 					else
 					{
-						HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("class only one data define section  class :%ws \n"), Name);
+						HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("class only one data define section  class :%ws \n"), Name.c_str());
 					}
 				}
 				else if (CurrToken == HazeToken::Function)

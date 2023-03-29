@@ -9,7 +9,7 @@
 class ASTFunction
 {
 public:
-	ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body);
+	ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body);
 
 	~ASTFunction();
 
@@ -20,7 +20,7 @@ private:
 	HazeSectionSignal Section;
 
 	HAZE_STRING FunctionName;
-	HazeDefineData FunctionType;
+	HazeDefineType FunctionType;
 	std::vector<HazeDefineVariable> Vector_FunctionParam; //从左到右
 	std::unique_ptr<ASTBase> Body;
 };
@@ -53,7 +53,7 @@ private:
 class ASTFunctionDefine
 {
 public:
-	ASTFunctionDefine(HazeVM* VM, const HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
+	ASTFunctionDefine(HazeVM* VM, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 	~ASTFunctionDefine();
 
 	void CodeGen();
@@ -61,6 +61,6 @@ public:
 private:
 	HazeVM* VM;
 	HAZE_STRING FunctionName;
-	HazeDefineData FunctionType;
+	HazeDefineType FunctionType;
 	std::vector<HazeDefineVariable> Vector_FunctionParam; //从左到右
 };

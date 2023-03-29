@@ -91,20 +91,20 @@ ASTIdentifier::~ASTIdentifier()
 
 std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 {
-	std::shared_ptr<HazeCompilerValue> Value = nullptr;
+	std::shared_ptr<HazeCompilerValue> RetValue = nullptr;
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
 	}
 	else if (SectionSignal == HazeSectionSignal::Function)
 	{
-		Value = VM->GetCompiler()->GetLocalVariable(Name);
-		if (!Value)
+		RetValue = VM->GetCompiler()->GetLocalVariable(Name);
+		if (!RetValue)
 		{
-			Value = VM->GetCompiler()->GetGlobalVariable(Name);
+			RetValue = VM->GetCompiler()->GetGlobalVariable(Name);
 		}
 	}
 
-	return Value;
+	return RetValue;
 }
 
 ASTFunctionCall::ASTFunctionCall(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTBase>>& FunctionParam)
@@ -181,8 +181,8 @@ ASTReturn::~ASTReturn()
 
 std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 {
-	std::shared_ptr<HazeCompilerValue> Value = Expression->CodeGen();
-	return VM->GetCompiler()->CreateRet(Value);
+	std::shared_ptr<HazeCompilerValue> RetValue = Expression->CodeGen();
+	return VM->GetCompiler()->CreateRet(RetValue);
 }
 
 ASTNew::ASTNew(HazeVM* VM, const HazeDefineVariable& Define) : ASTBase(VM, Define)
@@ -300,9 +300,7 @@ ASTImportModule::~ASTImportModule()
 
 std::shared_ptr<HazeCompilerValue> ASTImportModule::CodeGen()
 {
-	auto& Compiler = VM->GetCompiler();
 	VM->ParseModule(ModuleName);
-
 	return nullptr;
 }
 

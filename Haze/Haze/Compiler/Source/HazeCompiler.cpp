@@ -3,14 +3,15 @@
 #include "HazeCompiler.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
+#include "HazeCompilerClass.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerHelper.h"
 
 #include "HazeBaseBlock.h"
 
 static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalRegister = {
-	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineData(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), InstructionScopeType::RegisterRet) },
-	{ NEW_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineData(HazeValueType::Void, HAZE_TEXT("New_Register")), HAZE_TEXT("")), InstructionScopeType::RegisterNew) },
+	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), InstructionScopeType::RegisterRet) },
+	{ NEW_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("New_Register")), HAZE_TEXT("")), InstructionScopeType::RegisterNew) },
 };
 
 HazeCompiler::HazeCompiler()
@@ -126,6 +127,20 @@ bool HazeCompiler::IsClass(const HAZE_STRING& Name)
 	return false;
 }
 
+const HAZE_CHAR* HazeCompiler::GetClassName(const HAZE_STRING& Name)
+{
+	for (auto& Iter : HashMap_CompilerModule)
+	{
+		auto Class = Iter.second->FindClass(Name);
+		if (Class)
+		{
+			return Class->GetName().c_str();
+		}
+	}
+
+	return nullptr;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValue& Var)
 {
 	switch (Var.Type)
@@ -218,9 +233,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetGlobalVariable(const HAZE_ST
 	return GetCurrModule()->GetGlobalVariable(Name);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STRING& Name, const HAZE_STRING* MemberName)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STRING& Name)
 {
-	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name, MemberName);
+	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name);
 }
 
 void HazeCompiler::SetInsertBlock(std::shared_ptr<HazeBaseBlock> BB)
@@ -417,7 +432,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_
 	return Module->CreateFunctionCall(Function, Param);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineData& Data)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data)
 {
 	Function->CreateNew(Data);
 	return GetRegister(NEW_REGISTER);

@@ -25,9 +25,9 @@ public:
 
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
-	std::shared_ptr<HazeCompilerFunction> CreateFunction(HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
+	std::shared_ptr<HazeCompilerFunction> CreateFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 
-	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> Class, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param);
+	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> Class, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 
 	void FinishFunction();
 
@@ -37,7 +37,10 @@ public:
 
 	bool GetGlobalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
+public:
 	std::shared_ptr<HazeCompilerClass> FindClass(const HAZE_STRING& ClassName);
+	
+	uint GetClassSize(const HAZE_STRING& ClassName);
 
 public:
 	std::shared_ptr<HazeCompilerValue> CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);

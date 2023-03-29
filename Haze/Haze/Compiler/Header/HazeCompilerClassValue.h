@@ -10,7 +10,7 @@ class HazeCompilerClassValue : public HazeCompilerValue
 public:
 	friend class HazeCompilerClass;
 
-	HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope);
+	HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, InstructionScopeType Scope);
 
 	virtual ~HazeCompilerClassValue() override;
 
@@ -18,9 +18,11 @@ public:
 
 	HazeCompilerClass* GetOwnerClass() { return OwnerClass; };
 
+	const HAZE_STRING& GetOwnerClassName();
+
 	std::shared_ptr<HazeCompilerValue> GetMember(const HAZE_STRING& Name);
 
-	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& MemberValue, HAZE_STRING& OutName);
 
 private:
 	HazeCompilerClass* OwnerClass;

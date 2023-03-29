@@ -1,3 +1,10 @@
+
+template <typename T>
+unsigned int GetSizeByType(HazeDefineType Type, T* This)
+{
+	return Type.PrimaryType == HazeValueType::Class ? This->GetClassSize(Type.CustomName) : GetSizeByHazeType(Type.PrimaryType);
+}
+
 template <typename T>
 T StringToStandardType(const HAZE_STRING& String)
 {
@@ -9,3 +16,4 @@ T StringToStandardType(const HAZE_STRING& String)
 
 	return Ret;
 }
+

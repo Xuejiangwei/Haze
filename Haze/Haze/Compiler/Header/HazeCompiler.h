@@ -39,7 +39,7 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 
-	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name, const HAZE_STRING* MemberName = nullptr);
+	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name);
 
 public:
 	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* Name);
@@ -47,6 +47,8 @@ public:
 	static const HAZE_CHAR* GetRegisterName(std::shared_ptr<HazeCompilerValue>& Value);
 
 	bool IsClass(const HAZE_STRING& Name);
+
+	const HAZE_CHAR* GetClassName(const HAZE_STRING& Name);
 
 public:
 	//Base block : IP
@@ -73,7 +75,7 @@ public:		//Éú³Éop code
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& Param);
 
-	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineData& Data);
+	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data);
 
 private:
 	void ClearFunctionTemp();

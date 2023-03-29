@@ -46,6 +46,12 @@ public:
 
 	HazeValue* GetGlobalValue(const HAZE_STRING& Name);
 
+	ClassData* FindClass(const HAZE_STRING& ClassName);
+
+	unsigned int GetClassSize(const HAZE_STRING& ClassName);
+
+public:
+	//[[deprecated("will remove")]]
 	bool IsClass(const HAZE_STRING& Name);
 
 public:
@@ -57,10 +63,12 @@ private:
 	void ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instruction);
 
 private:
+	std::unique_ptr<HazeCompiler> Compiler;
+
+private:
 	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;
 	std::unordered_set<HAZE_STRING> MapString;
 
-	std::unique_ptr<HazeCompiler> Compiler;
 
 	std::vector<std::unique_ptr<MemoryPool>> Vector_MemoryPool;
 
@@ -73,6 +81,8 @@ private:
 	std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_GlobalData;
 
 	std::vector<std::pair<HAZE_STRING, HAZE_STRING>> Vector_StringTable;
+
+	std::vector<ClassData> Vector_ClassTable;
 
 	std::vector<FunctionData> Vector_FunctionTable;
 	std::unordered_map<HAZE_STRING, unsigned int> HashMap_FunctionTable;

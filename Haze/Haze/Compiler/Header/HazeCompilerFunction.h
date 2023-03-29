@@ -19,20 +19,20 @@ public:
 	friend class HazeCompiler;
 	friend class HazeCompilerModule;
 
-	HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class = nullptr);
+	HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class = nullptr);
 	~HazeCompilerFunction();
 
-	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& Name, const HAZE_STRING* MemberName = nullptr);
+	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& VariableName);
 
 	const HAZE_STRING& GetName() const { return Name; }
 	
 	HazeCompilerModule* GetModule() const { return Module; }
 
-	HazeCompilerClass* GetClass() const { return Class; }
+	HazeCompilerClass* GetClass() const { return OwnerClass; }
 
 	void FunctionFinish();
 
-	void GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream);
+	void GenI_Code(HAZE_OFSTREAM& OFStream);
 
 	std::shared_ptr<HazeBaseBlock>& GetTopBaseBlock() { return BBList.back(); }
 
@@ -47,14 +47,14 @@ private:
 
 	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable);
 
-	void CreateNew(const HazeDefineData& Data);
+	void CreateNew(const HazeDefineType& Data);
 
 private:
 	HazeCompilerModule* Module;
-	HazeCompilerClass* Class;
+	HazeCompilerClass* OwnerClass;
 
 	HAZE_STRING Name;
-	HazeDefineData Type;
+	HazeDefineType Type;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> VectorParam; //从右到左加入参数
 

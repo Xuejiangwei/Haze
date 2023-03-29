@@ -1,6 +1,6 @@
 #include "HazeCompilerPointerValue.h"
 
-HazeCompilerPointerValue::HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope)
+HazeCompilerPointerValue::HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, InstructionScopeType Scope)
 	: HazeCompilerValue(Module, DefineType, Scope), PointerType(DefineType)
 {
 }
@@ -9,17 +9,17 @@ HazeCompilerPointerValue::~HazeCompilerPointerValue()
 {
 }
 
-void HazeCompilerPointerValue::InitPointerTo(HazeCompilerValue* Value)
+void HazeCompilerPointerValue::InitPointerTo(HazeCompilerValue* PointerToValue)
 {
-	PointerValue = Value;
+	PointerValue = PointerToValue;
 }
 
 bool HazeCompilerPointerValue::IsHazeTypePointer()
 {
-	return PointerType.CustomName.empty();
+	return Value.Type == HazeValueType::PointerBase;
 }
 
 bool HazeCompilerPointerValue::IsClassPointer()
 {
-	return !PointerType.CustomName.empty();
+	return  Value.Type == HazeValueType::PointerClass;
 }

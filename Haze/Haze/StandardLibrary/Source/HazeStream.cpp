@@ -9,6 +9,7 @@ static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> HashMap_Fun
 {
 	{ HAZE_TEXT("打印"), &HazeStream::HazePrint },
 	{ HAZE_TEXT("打印字符"), &HazeStream::HazePrintString },
+	{ HAZE_TEXT("打印小数"), &HazeStream::HazePrintFloat },
 };
 
 static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &HashMap_Function);
@@ -27,11 +28,11 @@ static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("H
 
 void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)
 {
-	int V;
+	int V = 0;
 	int Size = 0;
 	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
 	{
-		Size = GetSizeByType(Data->Vector_Param[i].Type.Type);
+		Size = GetSizeByHazeType(Data->Vector_Param[i].Type.PrimaryType);
 		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
 	}
 
@@ -45,11 +46,11 @@ void HazeStream::HazePrintCall(int V)
 
 void HazeStream::HazePrintFloat(HAZE_STD_CALL_PARAM)
 {
-	float V;
+	float V = 0;
 	int Size = 0;
 	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
 	{
-		Size = GetSizeByType(Data->Vector_Param[i].Type.Type);
+		Size = GetSizeByHazeType(Data->Vector_Param[i].Type.PrimaryType);
 		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
 	}
 
@@ -63,11 +64,11 @@ void HazeStream::HazePrintFloatCall(float V)
 
 void HazeStream::HazePrintString(HAZE_STD_CALL_PARAM)
 {
-	int V;
+	int V = 0;
 	int Size = 0;
 	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
 	{
-		Size = GetSizeByType(Data->Vector_Param[i].Type.Type);
+		Size = GetSizeByHazeType(Data->Vector_Param[i].Type.PrimaryType);
 		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
 	}
 

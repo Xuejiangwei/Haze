@@ -11,31 +11,40 @@ enum class HazeSectionSignal : unsigned __int8
 	StandardLibrary,
 };
 
-struct HazeDefineData
+struct HazeDefineType
 {
-	HazeValueType Type;			//Token类型
-	HAZE_STRING CustomName;		//自定义类型名或指针指向类型
+	HazeValueType PrimaryType;								//Type类型
+	
 
-	HazeDefineData() : Type(HazeValueType::Void)
+	//待优化
+	HazeValueType PointerToType;				//指针指向类型
+	HAZE_STRING CustomName;				//自定义类型名
+
+	HazeDefineType() : PrimaryType(HazeValueType::Void)
+	{
+		PointerToType = HazeValueType::Void;
+	}
+
+	~HazeDefineType()
 	{
 	}
 
-	HazeDefineData(HazeValueType Type, const HAZE_STRING& CustomName) : Type(Type), CustomName(CustomName)
+	HazeDefineType(HazeValueType Type, const HAZE_STRING& CustomName) : PrimaryType(Type), CustomName(CustomName.c_str())
 	{
 	}
 
-	HazeDefineData(HazeValueType Type, const HAZE_CHAR* CustomName) : Type(Type), CustomName(CustomName)
+	HazeDefineType(HazeValueType Type, const HAZE_CHAR* CustomName) : PrimaryType(Type), CustomName(CustomName)
 	{
 	}
 };
 
 struct HazeDefineVariable
 {
-	HazeDefineData Type;		//变量类型
+	HazeDefineType Type;		//变量类型
 	HAZE_STRING Name;			//变量名
 
 	HazeDefineVariable() {}
-	HazeDefineVariable(const HazeDefineData& Type, const HAZE_STRING& Name) : Type(Type), Name(Name) {}
+	HazeDefineVariable(const HazeDefineType& Type, const HAZE_STRING& Name) : Type(Type), Name(Name) {}
 };
 
 struct HazeClassData

@@ -23,10 +23,10 @@ HazeCompilerValue::HazeCompilerValue(HazeValue Value, InstructionScopeType Scope
 {
 }
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope) 
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, InstructionScopeType Scope) 
 	: Module(Module), Scope(Scope)
 {
-	Value.Type = DefineType.Type;
+	Value.Type = DefineType.PrimaryType;
 	memset(&Value.Value, 0, sizeof(Value.Value));
 }
 
@@ -41,7 +41,7 @@ void HazeCompilerValue::StoreValue(std::shared_ptr<HazeCompilerValue> Value)
 
 unsigned int HazeCompilerValue::GetSize()
 {
-	return GetSizeByType(Value.Type);
+	return GetSizeByHazeType(Value.Type);
 }
 
 

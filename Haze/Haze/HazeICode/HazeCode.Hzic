@@ -6,15 +6,15 @@ StringTable
 ClassTable
 1
 Class 点 8 2
-横坐标 5 0 
-纵坐标 5 0 
+横坐标 5
+纵坐标 5
 FunctionTable
 1
 Function 主函数 4
 Start
-PUSH 12 测试甲 2
-MOV 5 测试甲之纵坐标 1 5 4.5 3
-PUSH 5 测试甲之纵坐标 2
+PUSH 13 测试甲 2 点
+MOV 5 测试甲之纵坐标 13 5 4.5 3
+PUSH 5 测试甲之纵坐标 13
 PUSH 4 Address 10
 CALL 打印小数 1
 RET 0

@@ -5,11 +5,11 @@
 class HazeCompilerPointerValue : public HazeCompilerValue
 {
 public:
-	HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope);
+	HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, InstructionScopeType Scope);
 
 	virtual ~HazeCompilerPointerValue() override;
 
-	void InitPointerTo(HazeCompilerValue* Value);
+	void InitPointerTo(HazeCompilerValue* PointerToValue);
 
 	HazeCompilerValue* GetPointerValue() { return PointerValue; }
 
@@ -17,10 +17,10 @@ public:
 
 	bool IsClassPointer();
 
-	const HazeDefineData& GetPointerType() { return PointerType; }
+	const HazeDefineType& GetPointerType() { return PointerType; }
 
 private:
-	HazeDefineData PointerType;
+	HazeDefineType PointerType;
 	
 	HazeCompilerValue* PointerValue;
 };

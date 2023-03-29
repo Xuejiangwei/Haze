@@ -20,7 +20,8 @@ enum class HazeValueType : unsigned int
 	UnsignedInt,
 	UnsignedLong,
 
-	Pointer,
+	PointerBase,
+	PointerClass,
 
 	Class,
 	Function,
@@ -70,11 +71,6 @@ public:
 		memcpy(&this->Value, &V, sizeof(V));
 		return *this;
 	}
-
-	HazeValue& operator +=(const HazeValue& V)
-	{
-		return *this;
-	}
 };
 
 enum class InstructionOpCode : unsigned int;
@@ -84,3 +80,5 @@ bool IsHazeDefaultType(HazeValueType Type);
 bool IsNumberType(HazeValueType Type);
 
 void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const char* Source, const char* Target);
+
+size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);

@@ -15,6 +15,9 @@ public:
 
 	void Parse();
 
+public:
+	unsigned int const GetClassSize(const HAZE_STRING& ClassName);
+
 private:
 	void GetNextLexeme();
 
@@ -54,11 +57,12 @@ private:
 
 	void GenOpCodeFile();
 
+	void ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable,
+		ModuleUnit::ClassTable& NewClassTable, ModuleUnit::FunctionTable& NewFunctionTable);
+
 	void WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction);
 
 	const ModuleUnit::ClassTableData* const GetClass(const HAZE_STRING& ClassName);
-
-	unsigned int const GetClassSize(const HAZE_STRING& ClassName);
 
 	unsigned int GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName);
 	

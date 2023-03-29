@@ -8,8 +8,8 @@
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
 
-HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class)
-	: Module(Module), Name(Name), Type(Type), Class(Class)
+HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class)
+	: Module(Module), Name(Name), Type(Type), OwnerClass(Class)
 {
 	for (auto& it : Param)
 	{
@@ -27,31 +27,31 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 	return BB->CreateAlloce(Variable);
 }
 
-void HazeCompilerFunction::CreateNew(const HazeDefineData& Data)
+void HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
 {
 	HAZE_STRING_STREAM SStream;
-	SStream << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)Data.Type << " " <<Data.CustomName << std::endl;
+	SStream << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)Data.PrimaryType << " " <<Data.CustomName << std::endl;
 	auto BB = BBList.front();
 	BB->PushIRCode(SStream.str());
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& Name, const HAZE_STRING* MemberName)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& VariableName)
 {
 	std::shared_ptr<HazeCompilerValue> Ret = nullptr;
 	for (auto& iter : BBList)
 	{
 		for (auto& Value : iter->GetAllocaList())
 		{
-			if (Value.first == Name)
+			if (Value.first == VariableName)
 			{
 				Ret = Value.second;
 			}
 			else if (Value.second->GetValue().Type == HazeValueType::Class)
 			{
-				HAZE_STRING ClassObjectName = Name.substr(0, Value.first.size());
+				HAZE_STRING ClassObjectName = VariableName.substr(0, Value.first.size());
 				if (Value.first == ClassObjectName)
 				{
-					HAZE_STRING MemberName = Name.substr(Value.first.size() + 1);
+					HAZE_STRING MemberName = VariableName.substr(Value.first.size() + 1);
 
 					auto ClassVlaue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value.second);
 					Ret = ClassVlaue->GetMember(MemberName);
@@ -60,9 +60,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 		}
 	}
 
-	if (!Ret && Class)
+	if (!Ret && OwnerClass)
 	{
-		Ret = Class->GetThisValue()->GetMember(Name);
+		Ret = OwnerClass->GetThisValue()->GetMember(VariableName);
 	}
 
 	/*if (MemberName)
@@ -76,7 +76,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 
 void HazeCompilerFunction::FunctionFinish()
 {
-	if (Type.Type == HazeValueType::Void || Name == HAZE_MAIN_FUNCTION_TEXT)
+	if (Type.PrimaryType == HazeValueType::Void || Name == HAZE_MAIN_FUNCTION_TEXT)
 	{
 		HAZE_STRING_STREAM SStream;
 		SStream << GetInstructionString(InstructionOpCode::RET) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Void) << std::endl;
@@ -84,10 +84,10 @@ void HazeCompilerFunction::FunctionFinish()
 	}
 }
 
-void HazeCompilerFunction::GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream)
+void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 {
 #if HAZE_I_CODE_ENABLE
-	OFStream << GetFunctionLabelHeader() << " " << Name << " " << HAZE_CAST_VALUE_TYPE(Type.Type);
+	OFStream << GetFunctionLabelHeader() << " " << Name << " " << HAZE_CAST_VALUE_TYPE(Type.PrimaryType);
 	/*if (!Type.second.empty())
 	{
 		OFStream << Type.second;
@@ -109,7 +109,7 @@ void HazeCompilerFunction::GenI_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& 
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(VectorParam[i].second);
 			if (PointerValue->IsHazeTypePointer())
 			{
-				OFStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetPointerType().Type);
+				OFStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetPointerType().PrimaryType);
 			}
 			else
 			{
@@ -158,6 +158,20 @@ bool HazeCompilerFunction::GetLocalVariableName(const std::shared_ptr<HazeCompil
 				OutName = it.first;
 				return true;
 			}
+			else if (it.second->GetValue().Type == HazeValueType::PointerClass && Value->IsClassMember())
+			{
+				auto Pointer = std::dynamic_pointer_cast<HazeCompilerPointerValue>(it.second);
+				if ((void*)Pointer->GetPointerValue() != OwnerClass)
+				{
+					auto Class = dynamic_cast<HazeCompilerClassValue*>(Pointer->GetPointerValue());
+					Class->GetMemberName(Value, OutName);
+					if (!OutName.empty())
+					{
+						OutName = it.first + HAZE_CLASS_ATTR + OutName;
+						return true;
+					}
+				}
+			}
 			else if (it.second->GetValue().Type == HazeValueType::Class && Value->IsClassMember())
 			{
 				auto Class = std::dynamic_pointer_cast<HazeCompilerClassValue>(it.second);
@@ -165,14 +179,15 @@ bool HazeCompilerFunction::GetLocalVariableName(const std::shared_ptr<HazeCompil
 				if (!OutName.empty())
 				{
 					OutName = it.first + HAZE_CLASS_ATTR + OutName;
+					return true;
 				}
 			}
 		}
 	}
 
-	if (Class)
+	if (OwnerClass)
 	{
-		Class->GetMemberName(Value, OutName);
+		OwnerClass->GetMemberName(Value, OutName);
 		return true;
 	}
 

@@ -98,7 +98,7 @@ void HazeVM::LoadOpCodeFile()
 	HAZE_STRING OpCodePath = Path + HAZE_TEXT("\\HazeOpCode\\");
 	OpCodePath += HAZE_TEXT("Main.Hzb");
 
-	HAZE_BINARY_IFSTREAM FS(OpCodePath, std::ios::binary);
+	HAZE_BINARY_IFSTREAM FS(OpCodePath, std::ios::in | std::ios::binary);
 	FS.imbue(std::locale("chs"));
 
 	//HAZE_BINARY_STRING Content(std::istreambuf_iterator<HAZE_BINARY_CHAR>(FS), {});
@@ -121,7 +121,7 @@ void HazeVM::LoadOpCodeFile()
 		Vector_GlobalData[i].first = String2WString(B_String);
 
 		FS.read((char*)&Vector_GlobalData[i].second.Type, sizeof(HazeValue::Type));
-		FS.read(GetBinaryPointer(Vector_GlobalData[i].second), GetSizeByType(Vector_GlobalData[i].second.Type));
+		FS.read(GetBinaryPointer(Vector_GlobalData[i].second), GetSizeByHazeType(Vector_GlobalData[i].second.Type));
 	}
 
 	FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
@@ -129,15 +129,43 @@ void HazeVM::LoadOpCodeFile()
 
 	for (size_t i = 0; i < Vector_StringTable.size(); i++)
 	{
-		/*FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
-		B_String.resize(Num);
-		FS.read(B_String.data(), Num);
-		Vector_StringTable[i].first = String2WString(B_String);*/
-
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 		B_String.resize(Num);
 		FS.read(B_String.data(), Num);
 		Vector_StringTable[i].second = String2WString(B_String);
+	}
+
+	FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+	Vector_ClassTable.resize(Num);
+
+	for (size_t i = 0; i < Vector_ClassTable.size(); i++)
+	{
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+		B_String.resize(Num);
+		FS.read(B_String.data(), Num);
+		Vector_ClassTable[i].Name = String2WString(B_String);
+
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_ClassTable[i].Size));
+
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+		Vector_ClassTable[i].Vector_Member.resize(Num);
+
+		for (size_t j = 0; j < Vector_ClassTable[i].Vector_Member.size(); j++)
+		{
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+			B_String.resize(Num);
+			FS.read(B_String.data(), Num);
+			Vector_ClassTable[i].Vector_Member[j].Name = String2WString(B_String);
+
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_ClassTable[i].Vector_Member[j].Type.PrimaryType));
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+
+			FS.read(B_String.data(), Num);
+			if (Num > 0)
+			{
+				Vector_ClassTable[i].Vector_Member[j].Type.CustomName = String2WString(B_String);
+			}
+		}
 	}
 
 	FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
@@ -163,7 +191,7 @@ void HazeVM::LoadOpCodeFile()
 			FS.read(B_String.data(), Num);
 			Vector_FunctionTable[i].Vector_Param[j].Name = String2WString(B_String);
 
-			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Param[j].Type.Type));
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Param[j].Type.PrimaryType));
 
 			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 			B_String.resize(Num);
@@ -212,16 +240,21 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 
 	for (auto& i : Instruction.Operator)
 	{
-		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Type));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Variable.Type.PrimaryType));
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
 		BinaryString.resize(UnsignedInt);
 		B_IFS.read(BinaryString.data(), UnsignedInt);
-		i.Name = String2WString(BinaryString);
+		i.Variable.Name = String2WString(BinaryString);
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Scope));
 
-		//B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.Index));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
+		BinaryString.resize(UnsignedInt);
+		B_IFS.read(BinaryString.data(), UnsignedInt);
+		i.Variable.Type.CustomName = String2WString(BinaryString);
+
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.Index));
 		//B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.AddressOffset));
 	}
 
@@ -230,7 +263,7 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 	WSS << GetInstructionString(Instruction.InsCode) << " ";
 	for (auto& it : Instruction.Operator)
 	{
-		WSS << it.Name << " " << (unsigned int)it.Type << " " << (unsigned int)it.Scope << " " << it.Extra.Index << " ";
+		WSS << it.Variable.Name << " " << (unsigned int)it.Variable.Type.PrimaryType << " " << (unsigned int)it.Scope << " " << it.Extra.Index << " ";
 	}
 	WSS << std::endl;
 
@@ -259,6 +292,25 @@ HazeValue* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 	}
 
 	return nullptr;
+}
+
+ClassData* HazeVM::FindClass(const HAZE_STRING& ClassName)
+{
+	for (auto& Iter : Vector_ClassTable)
+	{
+		if (Iter.Name == ClassName)
+		{
+			return &Iter;
+		}
+	}
+
+	return nullptr;
+}
+
+unsigned int HazeVM::GetClassSize(const HAZE_STRING& ClassName)
+{
+	auto Class = FindClass(ClassName);
+	return Class ? Class->Size : 0;
 }
 
 bool HazeVM::IsClass(const HAZE_STRING& Name)

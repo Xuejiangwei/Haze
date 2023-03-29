@@ -126,7 +126,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 	return HazeValueType::Void;
 }
 
-unsigned int GetSizeByType(HazeValueType Type)
+unsigned int GetSizeByHazeType(HazeValueType Type)
 {
 	switch (Type)
 	{
@@ -142,7 +142,8 @@ unsigned int GetSizeByType(HazeValueType Type)
 	case HazeValueType::Long:
 	case HazeValueType::Double:
 	case HazeValueType::UnsignedLong:
-	case HazeValueType::Pointer:
+	case HazeValueType::PointerBase:
+	case HazeValueType::PointerClass:
 		return 8;
 	default:
 		break;
@@ -285,7 +286,7 @@ HAZE_STRING String2WString(std::string& str)
 	return result;
 }
 
-std::string WString2String(std::wstring& wstr)
+std::string WString2String(const std::wstring& wstr)
 {
 	std::string result;
 

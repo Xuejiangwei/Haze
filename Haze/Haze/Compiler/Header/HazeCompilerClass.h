@@ -16,7 +16,7 @@ public:
 
 	~HazeCompilerClass();
 
-	std::shared_ptr<HazeCompilerFunction> FindFunction(const HAZE_STRING& Name);
+	std::shared_ptr<HazeCompilerFunction> FindFunction(const HAZE_STRING& FunctionName);
 
 	std::shared_ptr<HazeCompilerFunction> AddFunction(std::shared_ptr<HazeCompilerFunction>& Function);
 
@@ -28,19 +28,19 @@ public:
 
 	const HAZE_STRING& GetName() { return Name; }
 
-	size_t GetMemberIndex(const HAZE_STRING& Name);
+	size_t GetMemberIndex(const HAZE_STRING& MemberName);
 
-	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& Name);
+	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
 	const std::vector<HazeDefineVariable>& GetClassMemberData() const { return Vector_Data; }
 
-	const HazeDefineVariable* GetClassData(const HAZE_STRING& Name) const;
+	const HazeDefineVariable* GetClassMemberData(const HAZE_STRING& MemberName) const;
 
 	//bool GetDataName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
-	void GenClassData_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream);
+	void GenClassData_I_Code(HAZE_OFSTREAM& OFStream);
 
-	void GenClassFunction_I_Code(HazeCompilerModule* Module, HAZE_OFSTREAM& OFStream);
+	void GenClassFunction_I_Code(HAZE_OFSTREAM& OFStream);
 
 	unsigned int GetDataSize();
 

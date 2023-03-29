@@ -9,7 +9,7 @@
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerModule.h"
 
-ASTFunction::ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
+ASTFunction::ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
 	: VM(VM), Section(Section),
 	FunctionName(std::move(Name)),
 	FunctionType(std::move(Type)),
@@ -87,7 +87,7 @@ void ASTFunctionSection::CodeGen()
 	}
 }
 
-ASTFunctionDefine::ASTFunctionDefine(HazeVM* VM, const HAZE_STRING& Name, HazeDefineData& Type, std::vector<HazeDefineVariable>& Param) 
+ASTFunctionDefine::ASTFunctionDefine(HazeVM* VM, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param) 
 	: VM(VM), FunctionName(Name), FunctionType(Type), Vector_FunctionParam(std::move(Param))
 {
 }

@@ -10,7 +10,6 @@ HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 	EBP = 0;
 
 	Stack_Main.resize(HAZE_VM_STACK_SIZE);
-
 	InitRegisterToStack();
 }
 
@@ -22,10 +21,9 @@ HazeStack::~HazeStack()
 void HazeStack::Start(unsigned int Address)
 {
 	PC = Address;
-	Stack_Function.push_back(HAZE_MAIN_FUNCTION_TEXT);
 
-	EBP = ESP;
-	Stack_EBP.push_back(EBP);
+	PushMainFuntion();
+
 	while (PC < VM->Vector_Instruction.size())
 	{
 #ifdef _DEBUG
@@ -46,15 +44,29 @@ void HazeStack::Start(unsigned int Address)
 	}
 }
 
+void HazeStack::PushMainFuntion()
+{
+	int FaultPC = -2;
+	memcpy(&Stack_Main[ESP], &FaultPC, HAZE_ADDRESS_SIZE);
+	
+	ESP += HAZE_ADDRESS_SIZE;
+
+	Stack_EBP.push_back(EBP);
+
+	EBP = ESP;
+
+	Stack_Function.push_back(HAZE_MAIN_FUNCTION_TEXT);
+}
+
 void HazeStack::InitRegisterToStack()
 {
-	for (auto& i : HashMap_VirtualRegister)
+	/*for (auto& i : HashMap_VirtualRegister)
 	{
 		memset(&Stack_Main[ESP], 0, sizeof(HazeValue));
 
 		i.second = (HazeValue*)&Stack_Main[ESP];
 
 		ESP += sizeof(HazeValue);
-	}
+	}*/
 
 }

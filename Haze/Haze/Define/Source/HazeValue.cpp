@@ -106,6 +106,9 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
     default:
         break;
     }
+}
 
-   
+size_t GetHazeCharPointerLength(const HAZE_CHAR* Char)
+{
+    return wcslen(Char);
 }

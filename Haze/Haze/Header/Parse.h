@@ -103,7 +103,7 @@ private:
 	bool IsPointer(const HAZE_STRING& Str);
 
 private:
-	class HazeVM* VM; // Parse里不需要VM
+	class HazeVM* VM;
 
 	HAZE_STRING CodeText;
 

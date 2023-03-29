@@ -24,16 +24,18 @@ public:
 	const HazeVM* GetVM() const { return VM; }
 
 private:
+	void PushMainFuntion();
+
 	void InitRegisterToStack();
 
 private:
 	HazeVM* VM;
 
 	std::vector<char> Stack_Main;
-	std::vector<char> Stack_EBP;
+	std::vector<uint> Stack_EBP;
 	std::vector<HAZE_STRING> Stack_Function; // ÔÝÊ±²»ÐèÒª¸¨ÖúÕ»
 
 	int PC;
-	unsigned int EBP;		//Õ»µ×
-	unsigned int ESP;		//Õ»¶¥
+	uint EBP;		//Õ»µ×
+	uint ESP;		//Õ»¶¥
 };

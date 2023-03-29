@@ -5,14 +5,14 @@
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 
-std::unordered_map<HAZE_STRING, HazeValue*>  HashMap_VirtualRegister =
+std::unordered_map<HAZE_STRING, HazeValue>  HashMap_VirtualRegister =
 {
 	//{ADD_REGISTER, nullptr},
 	//{SUB_REGISTER, nullptr},
 	//{MUL_REGISTER, nullptr},
 	//{DIV_REGISTER, nullptr},
-	{RET_REGISTER, nullptr},
-	{NEW_REGISTER, nullptr},
+	{RET_REGISTER, HazeValue()},
+	{NEW_REGISTER, HazeValue()},
 };
 
 HazeValue* GetVirtualRegister(const HAZE_CHAR* Name)
@@ -20,13 +20,8 @@ HazeValue* GetVirtualRegister(const HAZE_CHAR* Name)
 	auto Iter = HashMap_VirtualRegister.find(Name);
 	if (Iter != HashMap_VirtualRegister.end())
 	{
-		return Iter->second;
+		return &Iter->second;
 	}
-	return nullptr;
-}
-
-HazeValue* GetInstructionValue(const InstructionData& InsData)
-{
 	return nullptr;
 }
 
@@ -44,20 +39,20 @@ public:
 		if (Operator.size() == 2)
 		{
 			HazeValue Value;
-			Value.Type = Operator[1].Type;
+			Value.Type = Operator[1].Variable.Type.PrimaryType;
 			if (Operator[1].Scope == InstructionScopeType::Constant)
 			{
-				StringToHazeValueNumber(Operator[1].Name, Value);
-				memcpy(GetAddressByOperator(Stack, Operator[0]), &Value.Value, GetSizeByType(Operator[0].Type));
+				StringToHazeValueNumber(Operator[1].Variable.Name, Value);
+				memcpy(GetAddressByOperator(Stack, Operator[0]), &Value.Value, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 			}
 			else if (Operator[1].Scope == InstructionScopeType::Local)
 			{
-				memcpy(GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]), GetSizeByType(Operator[0].Type));
+				memcpy(GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]), GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 			}
 			else if (IsRegisterScope(Operator[1].Scope))
 			{
-				HazeValue* Register = GetVirtualRegister(Operator[1].Name.c_str());
-				int Size = GetSizeByType(Register->Type);
+				HazeValue* Register = GetVirtualRegister(Operator[1].Variable.Name.c_str());
+				int Size = GetSizeByHazeType(Register->Type);
 
 				memcpy(GetAddressByOperator(Stack, Operator[0]) , &Register->Value, Size);
 			}
@@ -72,31 +67,45 @@ public:
 		{
 			memcpy(&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], &Stack->PC, HAZE_ADDRESS_SIZE);
 
-			Stack->EBP = Stack->ESP;
-			Stack->Stack_Function.push_back(Operator[0].Name);
-
-			int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Name);
+			int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
 			auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
 			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 			{
+				Stack->EBP = Stack->ESP;
+				Stack->Stack_Function.push_back(Operator[0].Variable.Name);
+
 				int Size = 0;
 				for (auto& Iter : Function.Vector_Param)
 				{
-					Size += GetSizeByType(Iter.Type.Type);
+					Size += GetSizeByType(Iter.Type, Stack->VM);
 				}
 
 				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_ADDRESS_SIZE + Size));
 
-				unsigned int Index = Stack->VM->GetFucntionIndexByName(Operator[0].Name);
+				//unsigned int Index = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
 				Stack->PC = Function.Extra.FunctionDescData.InstructionStartAddress;
 				--Stack->PC;
 			}
 			else
 			{
+				uint TempEBP = Stack->EBP;
+				Stack->EBP = Stack->ESP;
+
 				//±ê×¼¿â²éÕÒ
 				Function.Extra.StdLibFunction(Stack, &Function);
-				int i = 0;
-				memcpy(&i, &Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE - 4], sizeof(int));
+
+				int Size = 0;
+				for (auto& Iter : Function.Vector_Param)
+				{
+					Size += GetSizeByHazeType(Iter.Type.PrimaryType);
+				}
+
+
+				Stack->ESP -= (Size + HAZE_ADDRESS_SIZE);
+
+				Stack->Stack_EBP.push_back(Stack->ESP);
+
+				Stack->EBP = TempEBP;
 			}
 		}
 	}
@@ -106,19 +115,18 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			HazeValueType Type = (HazeValueType)Operator[0].Type;
-			int Size = GetSizeByType(Type);
+			int Size = GetSizeByType(Operator[0].Variable.Type, Stack->VM);
 
 			if (Operator[0].Scope == InstructionScopeType::Constant)
 			{
-				int N = StringToStandardType<int>(Operator[0].Name);
+				int N = StringToStandardType<int>(Operator[0].Variable.Name);
 				memcpy(&Stack->Stack_Main[Stack->ESP], &N, Size);
 			}
-			/*else if (Operator[0].Scope == InstructionScopeType::Address)
+			else if (Operator[0].Scope == InstructionScopeType::Address)
 			{
 				memcpy(&Stack->Stack_Main[Stack->ESP], &Stack->PC, Size);
-			}*/
-			else if (Operator[0].Scope == InstructionScopeType::Local || Operator[0].Scope == InstructionScopeType::Global)
+			}
+			else/* if (Operator[0].Scope == InstructionScopeType::Local || Operator[0].Scope == InstructionScopeType::Global)*/
 			{
 				if (Operator[0].Extra.Address + (int)Stack->EBP >= 0)
 				{
@@ -153,7 +161,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			Stack->ESP -= GetSizeByType(Operator[0].Type);
+			Stack->ESP -= GetSizeByHazeType(Operator[0].Variable.Type.PrimaryType);
 		}
 	}
 
@@ -162,9 +170,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::ADD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::ADD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -178,9 +186,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::SUB, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SUB, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -194,9 +202,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::MUL, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MUL, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -210,9 +218,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::DIV, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DIV, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -226,9 +234,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::MOD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MOD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -242,9 +250,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::INC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::INC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -258,9 +266,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -274,9 +282,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -290,9 +298,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -306,9 +314,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -322,9 +330,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -338,9 +346,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -354,9 +362,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Type))
-			{
-				CalculateValueByType(Operator[0].Type, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{ 
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 		else
@@ -371,9 +379,9 @@ public:
 		if (Operator.size() == 1)
 		{
 			HazeValue* RetRegister = GetVirtualRegister(RET_REGISTER);
-			RetRegister->Type = (HazeValueType)Operator[0].Type;
+			RetRegister->Type = (HazeValueType)Operator[0].Variable.Type.PrimaryType;
 
-			int Size = GetSizeByType(RetRegister->Type);
+			int Size = GetSizeByHazeType(RetRegister->Type);
 
 			memcpy(&RetRegister->Value, GetAddressByOperator(Stack, Operator[0]), Size);
 		}
@@ -383,14 +391,15 @@ public:
 		int Size = 0;
 		for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
 		{
-			Size += GetSizeByType(Iter.Type.Type);
+			Size += GetSizeByHazeType(Iter.Type.PrimaryType);
 		}
 
 		memcpy(&Stack->PC, &(Stack->Stack_Main[Stack->EBP - 4]), HAZE_ADDRESS_SIZE);
 
+		uint TempEBP = Stack->EBP;
 		Stack->Stack_EBP.pop_back();
 		Stack->EBP = Stack->Stack_EBP.back();
-		Stack->ESP -= (HAZE_ADDRESS_SIZE + Size);
+		Stack->ESP = TempEBP - (HAZE_ADDRESS_SIZE + Size);
 	}
 
 	static void New(HazeStack* Stack)
@@ -399,9 +408,9 @@ public:
 		if (Operator.size() == 1)
 		{
 			HazeValue* NewRegister = GetVirtualRegister(NEW_REGISTER);
-			NewRegister->Type = (HazeValueType)Operator[0].Type;
+			NewRegister->Type = (HazeValueType)Operator[0].Variable.Type.PrimaryType;
 
-			int Size = GetSizeByType(NewRegister->Type);
+			int Size = GetSizeByHazeType(NewRegister->Type);
 
 			NewRegister->Value.Pointer = Stack->VM->Alloca(NewRegister->Type, Size);
 		}
@@ -412,9 +421,9 @@ private:
 	{
 		if (Operator.Scope == InstructionScopeType::Global)
 		{
-			return (char*)&Stack->VM->GetGlobalValue(Operator.Name)->Value;
+			return (char*)&Stack->VM->GetGlobalValue(Operator.Variable.Name)->Value;
 		}
-		else if (Operator.Scope == InstructionScopeType::Local || Operator.Scope == InstructionScopeType::Temp)
+		else /*if (Operator.Scope == InstructionScopeType::Local || Operator.Scope == InstructionScopeType::Temp)*/
 		{
 			return &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address];
 		}

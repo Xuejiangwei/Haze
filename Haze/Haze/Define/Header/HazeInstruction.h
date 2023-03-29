@@ -43,7 +43,7 @@ enum class InstructionScopeType : unsigned int
 	Address,
 	Class,
 	ClassThis,
-	ClassMember,
+	ClassMember_Local,
 };
 
 enum class InstructionOpCode : unsigned int
@@ -85,13 +85,10 @@ enum class InstructionFunctionType : unsigned int
 	StdLibFunction,
 };
 
-
-
 struct InstructionData
 {
+	HazeDefineVariable Variable;
 	InstructionScopeType Scope;
-	HAZE_STRING Name;
-	HazeValueType Type;
 
 	union
 	{
@@ -101,9 +98,13 @@ struct InstructionData
 		int FunctionCallParamNum;
 	} Extra;
 
-	InstructionData() : Scope(InstructionScopeType::None), Type(HazeValueType::Void)
+	InstructionData() : Scope(InstructionScopeType::None), Variable()
 	{
 		memset(&Extra, 0, sizeof(Extra));
+	}
+
+	~InstructionData()
+	{
 	}
 };
 
@@ -117,6 +118,13 @@ struct FunctionDescData
 {
 	InstructionFunctionType Type;
 	unsigned int InstructionStartAddress;
+};
+
+struct ClassData
+{
+	HAZE_STRING Name;
+	unsigned int Size;
+	std::vector<HazeDefineVariable> Vector_Member;
 };
 
 struct FunctionData

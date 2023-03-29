@@ -12,7 +12,7 @@ public:
 
 	HazeCompilerValue(HazeValue Value, InstructionScopeType Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineData& DefineType, InstructionScopeType Scope);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, InstructionScopeType Scope);
 
 	virtual ~HazeCompilerValue();
 
@@ -34,9 +34,9 @@ public:
 
 	bool IsString() { return Scope == InstructionScopeType::String; }
 
-	bool IsClassMember() { return Scope == InstructionScopeType::ClassMember; }
+	bool IsClassMember() { return Scope == InstructionScopeType::ClassMember_Local; }
 
-	bool IsPointer() { return Value.Type == HazeValueType::Pointer; }
+	bool IsPointer() { return Value.Type == HazeValueType::PointerBase || Value.Type == HazeValueType::PointerClass; }
 
 	bool IsClass() { return Value.Type == HazeValueType::Class; }
 
