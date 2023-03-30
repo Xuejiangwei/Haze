@@ -12,8 +12,8 @@ bool IsNumberType(HazeValueType Type)
 {
     static std::unordered_set<HazeValueType> HashSet_Table =
     {
-		HazeValueType::Short, HazeValueType::Int, HazeValueType::Float, HazeValueType::Long, HazeValueType::Double, 
-        HazeValueType::UnsignedShort, HazeValueType::UnsignedInt, HazeValueType::UnsignedLong,
+		HazeValueType::Int, HazeValueType::Float, HazeValueType::Long, HazeValueType::Double, 
+        HazeValueType::UnsignedInt, HazeValueType::UnsignedLong,
     };
 
     return HashSet_Table.find(Type) != HashSet_Table.end();
@@ -47,13 +47,6 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
 {
     switch (Type)
     {
-    case HazeValueType::Short:
-    {
-        CALC_VARIABLE_DEFINE_INIT(short, Source, Target);
-        CALC_VARIABLE_CALCULATE(short, TypeCode);
-        CALC_ASSIGN(short);
-    }
-    break;
     case HazeValueType::Int:
     {
         CALC_VARIABLE_DEFINE_INIT(int, Source, Target);
@@ -80,13 +73,6 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
         CALC_VARIABLE_DEFINE_INIT(double, Source, Target);
         CALC_VARIABLE_CALCULATE(double, TypeCode);
         CALC_ASSIGN(double);
-    }
-        break;
-    case HazeValueType::UnsignedShort:
-    {
-        CALC_VARIABLE_DEFINE_INIT(unsigned short, Source, Target);
-        CALC_VARIABLE_CALCULATE(unsigned short, TypeCode);
-        CALC_ASSIGN(unsigned short);
     }
         break;
     case HazeValueType::UnsignedInt:

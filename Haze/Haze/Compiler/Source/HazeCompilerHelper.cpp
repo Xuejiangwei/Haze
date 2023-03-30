@@ -14,11 +14,8 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value)
 		case HazeValueType::Bool:
 			Stream << V.Value.Bool;
 			break;
-		case HazeValueType::Short:
-			Stream << V.Value.Short;
-			break;
-		case HazeValueType::UnsignedShort:
-			Stream << V.Value.UnsignedShort;
+		case HazeValueType::Char:
+			Stream << V.Value.Char;
 			break;
 		case HazeValueType::Int:
 			Stream << V.Value.Int;
@@ -52,11 +49,8 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
 	case HazeValueType::Bool:
 		OFStream << V.Value.Bool;
 		break;
-	case HazeValueType::Short:
-		OFStream << V.Value.Short;
-		break;
-	case HazeValueType::UnsignedShort:
-		OFStream << V.Value.UnsignedShort;
+	case HazeValueType::Char:
+		OFStream << V.Value.Char;
 		break;
 	case HazeValueType::Int:
 		OFStream << V.Value.Int;
@@ -88,14 +82,13 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 	case HazeValueType::Void:
 	case HazeValueType::Bool:
 	case HazeValueType::Char:
-	case HazeValueType::Short:
 	case HazeValueType::Int:
 	case HazeValueType::Float:
 	case HazeValueType::Long:
 	case HazeValueType::Double:
-	case HazeValueType::UnsignedShort:
 	case HazeValueType::UnsignedInt:
 	case HazeValueType::UnsignedLong:
+	case HazeValueType::MultiVariable:
 		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope);
 		break;
 	case HazeValueType::PointerBase:

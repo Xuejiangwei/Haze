@@ -26,6 +26,8 @@
 
 #define HAZE_MAIN_FUNCTION_TEXT			HAZE_TEXT("主函数")
 
+#define HAZE_CONSTANT_STRING_NAME		HAZE_TEXT("常字符串指针")
+
 #define ADD_REGISTER					HAZE_TEXT("Add_R")
 #define SUB_REGISTER					HAZE_TEXT("Sub_R")
 #define MUL_REGISTER					HAZE_TEXT("Mul_R")
@@ -44,7 +46,7 @@
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 20
 
-#define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data
+#define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data, int MultiParamNum
 
 #define HAZE_ADDRESS_SIZE (int)sizeof(int)
 

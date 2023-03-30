@@ -98,9 +98,9 @@ private:
 
 	bool TokenIs(HazeToken Token, const wchar_t* ErrorInfo = nullptr);
 
-	bool IsHazeSignalToken(HAZE_CHAR Char);
+	bool IsHazeSignalToken(HAZE_CHAR Char, const HAZE_CHAR* OutChar = nullptr);
 
-	bool IsPointer(const HAZE_STRING& Str);
+	bool IsPointer(const HAZE_STRING& Str, HazeToken& OutToken);
 
 private:
 	class HazeVM* VM;

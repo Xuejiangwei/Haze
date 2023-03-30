@@ -34,9 +34,9 @@ HazeCompilerValue::~HazeCompilerValue()
 {
 }
 
-void HazeCompilerValue::StoreValue(std::shared_ptr<HazeCompilerValue> Value)
+void HazeCompilerValue::StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue)
 {
-	memcpy(&this->Value.Value, &Value->Value.Value, sizeof(this->Value.Value));
+	memcpy(&this->Value.Value, &SrcValue->Value.Value, sizeof(this->Value.Value));
 }
 
 unsigned int HazeCompilerValue::GetSize()

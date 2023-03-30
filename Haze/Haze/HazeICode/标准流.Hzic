@@ -6,16 +6,9 @@ StringTable
 ClassTable
 0
 FunctionTable
-3
-Function 打印小数 0
-Param 甲 5
-Start
-End
+1
 Function 打印 0
-Param 甲 4
-Start
-End
-Function 打印字符 0
-Param 甲 0
+Param  13
+Param 甲 9 9
 Start
 End

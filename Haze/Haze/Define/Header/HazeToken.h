@@ -9,16 +9,14 @@ enum class HazeToken : unsigned int
 	Void,
 	
 	Bool,
-	
+
 	Char,
-	
-	Short,
+
 	Int,
 	Float,
 	Long,
 	Double,
 
-	UnsignedShort,
 	UnsignedInt,
 	UnsignedLong,
 
@@ -101,6 +99,7 @@ enum class HazeToken : unsigned int
 	Number,
 	String,
 
-	Pointer,
+	PointerBase,
+	PointerClass,
 
 };

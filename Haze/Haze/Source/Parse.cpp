@@ -30,7 +30,7 @@
 #define TOKEN_UNSIGNED_INT				HAZE_TEXT("正整数")
 #define TOKEN_UNSIGNED_LONG				HAZE_TEXT("正长整数")
 
-#define TOKEN_STRING					HAZE_TEXT("字符")
+#define TOKEN_CHAR						HAZE_TEXT("字符")
 #define TOKEN_STRING_START				HAZE_TEXT("[")
 #define TOKEN_STRING_END				HAZE_TEXT("]")
 
@@ -105,21 +105,18 @@
 
 #define TOKEN_NEW						HAZE_TEXT("得")
 
-static std::unordered_map<HAZE_STRING, HazeToken> MapToken =
+static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 {
 	{TOKEN_VOID, HazeToken::Void},
 	{TOKEN_BOOL, HazeToken::Bool},
-	{TOKEN_SHORT, HazeToken::Short},
+	{TOKEN_CHAR, HazeToken::Char},
 	{TOKEN_INT, HazeToken::Int},
 	{TOKEN_FLOAT, HazeToken::Float},
 	{TOKEN_LONG, HazeToken::Long},
 	{TOKEN_DOUBLE, HazeToken::Double},
 
-	{TOKEN_UNSIGNED_SHORT, HazeToken::UnsignedShort},
 	{TOKEN_UNSIGNED_INT, HazeToken::UnsignedInt},
 	{TOKEN_UNSIGNED_LONG, HazeToken::UnsignedLong},
-
-	{TOKEN_STRING, HazeToken::String},
 
 	{TOKEN_STRING_START, HazeToken::StringStart},
 	{TOKEN_STRING_END, HazeToken::StringEnd},
@@ -273,12 +270,11 @@ void Parse::ParseContent()
 		switch (CurrToken)
 		{
 		case HazeToken::Bool:
-		case HazeToken::Short:
+		case HazeToken::Char:
 		case HazeToken::Int:
 		case HazeToken::Float:
 		case HazeToken::Long:
 		case HazeToken::Double:
-		case HazeToken::UnsignedShort:
 		case HazeToken::UnsignedInt:
 		case HazeToken::UnsignedLong:
 		case HazeToken::String:
@@ -347,11 +343,28 @@ HazeToken Parse::GetNextToken()
 
 	//Match Token
 	CurrLexeme.clear();
-	while (!isspace(*CurrCode))
+	const HAZE_CHAR* Signal = nullptr;
+	while (!isspace(*CurrCode) || CurrToken == HazeToken::StringStart)
 	{
-		if (IsHazeSignalToken(*CurrCode))
+		if (IsHazeSignalToken(*CurrCode, Signal))
 		{
-			if (CurrLexeme.length() == 0)
+			if (CurrToken == HazeToken::StringStart)
+			{
+				static HAZE_STRING TempString;
+				TempString = *(CurrCode++);
+				auto Iter = HashMap_Token.find(TempString);
+				if (Iter != HashMap_Token.end() && Iter->second == HazeToken::StringEnd)
+				{
+					CurrToken = Iter->second;
+					return CurrToken;
+				}
+				else
+				{
+					CurrLexeme += TempString;
+				}
+				continue;
+			}
+			else if (CurrLexeme.length() == 0 || IsPointer(CurrLexeme + *CurrCode, CurrToken))
 			{
 				CurrLexeme += *(CurrCode++);
 			}
@@ -373,8 +386,8 @@ HazeToken Parse::GetNextToken()
 		return GetNextToken();
 	}
 
-	auto It = MapToken.find(CurrLexeme);
-	if (It != MapToken.end())
+	auto It = HashMap_Token.find(CurrLexeme);
+	if (It != HashMap_Token.end())
 	{
 		CurrToken = It->second;
 	}
@@ -382,9 +395,8 @@ HazeToken Parse::GetNextToken()
 	{
 		CurrToken = HazeToken::Number;
 	}
-	else if (IsPointer(CurrLexeme))
+	else if (IsPointer(CurrLexeme, CurrToken))
 	{
-		CurrToken = HazeToken::Pointer;
 	}
 	else if (VM->IsClass(CurrLexeme))
 	{
@@ -487,12 +499,11 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	switch (Token)
 	{
 	case HazeToken::Bool:
-	case HazeToken::Short:
+	case HazeToken::Char:
 	case HazeToken::Int:
 	case HazeToken::Float:
 	case HazeToken::Long:
 	case HazeToken::Double:
-	case HazeToken::UnsignedShort:
 	case HazeToken::UnsignedInt:
 	case HazeToken::UnsignedLong:
 	case HazeToken::String:
@@ -547,8 +558,6 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 	{
 		return std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName);
 	}
-
-	return nullptr;
 }
 
 std::unique_ptr<ASTVariableDefine> Parse::ParseVariableDefine()
@@ -607,13 +616,8 @@ std::unique_ptr<ASTBase> Parse::ParseStringText()
 	GetNextToken();
 	HAZE_STRING Text = CurrLexeme;
 
-	if (ExpectNextTokenIs(HazeToken::StringEnd, HAZE_TEXT("Parse string expect end signal ] ")))
-	{
-		GetNextToken();
-		return std::make_unique<ASTStringText>(VM, Text);
-	}
-
-	return nullptr;
+	GetNextToken();
+	return std::make_unique<ASTStringText>(VM, Text);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
@@ -757,7 +761,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 					Param.Type.CustomName = CurrLexeme;
 				}
 
-				if (Param.Type.PrimaryType == HazeValueType::MultiVar)
+				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
 					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
 					Vector_Param.push_back(Param);
@@ -824,7 +828,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 					Param.Type.CustomName = CurrLexeme;
 				}
 
-				if (Param.Type.PrimaryType == HazeValueType::MultiVar)
+				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
 					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
 					Vector_Param.push_back(Param);
@@ -1001,8 +1005,16 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 							Param.Type.PrimaryType = HazeValueType::Class;
 							Param.Type.CustomName = CurrLexeme;
 						}
+						else if (CurrToken == HazeToken::PointerBase)
+						{
+							Param.Type.PointerToType = GetValueTypeByToken(HashMap_Token.find(CurrLexeme.substr(0, CurrLexeme.length() - 1))->second);
+						}
+						else if (CurrToken == HazeToken::PointerClass)
+						{
+							Param.Type.CustomName = CurrLexeme.substr(0, CurrLexeme.length() - 1);
+						}
 
-						if (Param.Type.PrimaryType == HazeValueType::MultiVar)
+						if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 						{
 							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
 							Vector_Param.push_back(Param);
@@ -1030,7 +1042,6 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 		}
 
 		ExpectNextTokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse standard library end need } \n"));
-		StackSectionSignal.pop();
 
 		GetNextToken();
 
@@ -1257,9 +1268,9 @@ bool Parse::TokenIs(HazeToken Token, const wchar_t* ErrorInfo)
 	return true;
 }
 
-bool Parse::IsHazeSignalToken(HAZE_CHAR Char)
+bool Parse::IsHazeSignalToken(HAZE_CHAR Char, const HAZE_CHAR* OutChar)
 {
-	static std::unordered_set<HAZE_STRING> SetTokenText =
+	static std::unordered_set<HAZE_STRING> HashSet_TokenText =
 	{
 		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
 		TOKEN_ASSIGN, TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
@@ -1269,24 +1280,39 @@ bool Parse::IsHazeSignalToken(HAZE_CHAR Char)
 
 	HAZE_STRING WS;
 	WS = Char;
-	return SetTokenText.find(WS) != SetTokenText.end();
+
+	auto Iter = HashSet_TokenText.find(WS);
+	if (Iter != HashSet_TokenText.end())
+	{
+		OutChar = Iter->c_str();
+	}
+	
+	return Iter != HashSet_TokenText.end();
 }
 
-bool Parse::IsPointer(const HAZE_STRING& Str)
+bool Parse::IsPointer(const HAZE_STRING& Str, HazeToken& OutToken)
 {
 	HAZE_STRING TypeName = Str.substr(0, Str.length() - 1);
 	HAZE_STRING PointerChar = Str.substr(Str.length() - 1, 1);
 
 	if (PointerChar == TOKEN_MUL)
 	{
-		auto It = MapToken.find(TypeName);
-		if (It != MapToken.end())
+		auto It = HashMap_Token.find(TypeName);
+		if (It != HashMap_Token.end())
 		{
-			IsHazeDefaultType(GetValueTypeByToken(It->second));
+			if (IsHazeDefaultType(GetValueTypeByToken(It->second)))
+			{
+				OutToken = HazeToken::PointerBase;
+				return true;
+			}
 		}
 		else
 		{
-			return VM->GetCompiler()->IsClass(TypeName);
+			if (VM->GetCompiler()->IsClass(TypeName))
+			{
+				OutToken = HazeToken::PointerClass;
+				return true;
+			}
 		}
 		
 	}

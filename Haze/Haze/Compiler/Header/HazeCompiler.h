@@ -35,7 +35,7 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GenConstantValue(const HazeValue& Var);
 
-	std::shared_ptr<HazeCompilerValue> GenString(HAZE_STRING& String);
+	std::shared_ptr<HazeCompilerValue> GenStringVariable(HAZE_STRING& String);
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 

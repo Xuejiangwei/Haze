@@ -23,8 +23,6 @@ void* MemoryPool::Alloca(HazeValueType Type, unsigned int Size)
 	switch (Type)
 	{
 	case HazeValueType::Bool:
-	case HazeValueType::Short:
-	case HazeValueType::UnsignedShort:
 	case HazeValueType::Int:
 	case HazeValueType::UnsignedInt:
 	case HazeValueType::Float:

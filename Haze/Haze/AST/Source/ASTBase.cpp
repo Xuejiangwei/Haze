@@ -70,7 +70,7 @@ ASTStringText::~ASTStringText()
 std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 {
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
-	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenString(Text);
+	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenStringVariable(Text);
 
 	return RetValue;
 }

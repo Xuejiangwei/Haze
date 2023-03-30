@@ -6,6 +6,8 @@
 
 #include "HazeLog.h"
 
+static std::pair<bool, int> ParseStringCount = { false, 0 };
+
 BackendParse::BackendParse(HazeVM* VM) : VM(VM)
 {
 	CurrCode = nullptr;
@@ -68,9 +70,10 @@ void BackendParse::GetNextLexeme()
 	}
 
 	CurrLexeme.clear();
-	while (!isspace(*CurrCode))
+	while (!isspace(*CurrCode) || (ParseStringCount.first && ParseStringCount.second > 0))
 	{
 		CurrLexeme += *(CurrCode++);
+		ParseStringCount.second--;
 	}
 }
 
@@ -130,10 +133,13 @@ void BackendParse::Parse_I_Code_StringTable()
 		ModuleUnit::StringTable& Table = CurrParseModule->Table_String;
 		Table.Vector_String.resize(Num);
 
+		ParseStringCount.first = true;
 		for (size_t i = 0; i < Table.Vector_String.size(); i++)
 		{
+			GetNextLexmeAssign_StandardType(ParseStringCount.second);
 			GetNextLexmeAssign_HazeString(Table.Vector_String[i].String);
 		}
+		ParseStringCount.first = false;
 	}
 }
 
@@ -249,12 +255,19 @@ void BackendParse::Parse_I_Code_FunctionTable()
 void BackendParse::ParseInstructionData(InstructionData& Data)
 {
 	GetNextLexmeAssign_CustomType<uint>(Data.Variable.Type.PrimaryType);
+	
 	GetNextLexmeAssign_HazeString(Data.Variable.Name);
+
 	GetNextLexmeAssign_CustomType<uint>(Data.Scope);
 
 	if (Data.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 	{
 		GetNextLexmeAssign_CustomType<uint>(Data.Variable.Type.PointerToType);
+
+		if (Data.Scope == InstructionScopeType::ConstantString)
+		{
+			GetNextLexmeAssign_CustomType<int>(Data.Extra.Index);
+		}
 	}
 	else if (Data.Variable.Type.PrimaryType == HazeValueType::PointerClass || Data.Variable.Type.PrimaryType == HazeValueType::Class)
 	{

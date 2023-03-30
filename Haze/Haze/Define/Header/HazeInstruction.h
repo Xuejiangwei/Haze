@@ -32,7 +32,7 @@ enum class InstructionScopeType : unsigned int
 	Global,
 	Local,
 	Constant,
-	String,
+	ConstantString,
 	Temp,
 
 	RegisterBegin,

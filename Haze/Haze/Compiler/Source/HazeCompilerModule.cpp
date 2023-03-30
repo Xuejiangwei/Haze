@@ -6,6 +6,7 @@
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerValue.h"
+#include "HazeCompilerPointerValue.h"
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
@@ -254,13 +255,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		if (Param[i].second->IsConstant())
 		{
 			HazeCompilerStream(SStream, Param[i].second.get());
-			SStream << " " << (unsigned int)InstructionScopeType::Constant;
+			SStream << " " << (uint)Param[i].second->GetScope();
 		}
-		/*else if (iter->IsRegister())
+		else if (Param[i].second->IsString())
 		{
-			SStream << HazeCompiler::GetRegisterName(iter);
-			SStream << " " << (unsigned int)InstructionScopeType::Register;
-		}*/
+			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Param[i].second);
+			SStream << HAZE_CONSTANT_STRING_NAME << " " << (uint)Param[i].second->GetScope() << " " << (uint)PointerValue->GetPointerType().PointerToType
+				<< " " << Param[i].second->GetValue().Value.Extra.StringTableIndex;
+		}
 		else
 		{
 			SStream << Param[i].first << " " << (uint)Param[i].second->GetScope();
@@ -272,7 +274,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	}
 
 	SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Int) << " " << HAZE_CALL_PUSH_ADDRESS_NAME
-		<< " " << (unsigned int)InstructionScopeType::Address << std::endl;
+		<< " " << (uint)InstructionScopeType::Address << std::endl;
 
 	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << Param.size() << std::endl;
 	BB->PushIRCode(SStream.str());
@@ -293,11 +295,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalStringVariable(c
 
 	HashMap_StringMapping[(int)HashMap_StringMapping.size()] = &it->first;
 
-	HazeValue Value;
-	//Value.Type = HazeValueType::String;
-	//Value.Value.Extra.StringTableIndex = (int)HashMap_StringMapping.size() - 1;
+	HazeDefineVariable Define;
+	Define.Type.PrimaryType = HazeValueType::PointerBase;
+	Define.Type.PointerToType = HazeValueType::Char;
 
-	it->second = CreateVariable(Value, InstructionScopeType::String);
+	it->second = CreateVariable(this, Define, InstructionScopeType::ConstantString);
+
+	it->second->GetValue().Value.Extra.StringTableIndex = (int)HashMap_StringMapping.size() - 1;
+
 	return it->second;
 }
 
@@ -419,7 +424,7 @@ void HazeCompilerModule::GenICode()
 
 	for (auto& iter : HashMap_StringMapping)
 	{
-		FS_I_Code /*<< iter.second->length() << " "*/ << *iter.second << std::endl;
+		FS_I_Code << iter.second->length() << " " << *iter.second << std::endl;
 	}
 
 	/*

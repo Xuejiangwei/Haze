@@ -16,7 +16,7 @@ public:
 
 	virtual ~HazeCompilerValue();
 
-	void StoreValue(std::shared_ptr<HazeCompilerValue> Value);
+	void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
 
 	HazeValue& GetValue() { return Value; }
 
@@ -32,7 +32,7 @@ public:
 
 	bool IsTemp() { return Scope == InstructionScopeType::Temp; }
 
-	bool IsString() { return Scope == InstructionScopeType::String; }
+	bool IsString() { return Scope == InstructionScopeType::ConstantString; }
 
 	bool IsClassMember() { return Scope == InstructionScopeType::ClassMember_Local; }
 

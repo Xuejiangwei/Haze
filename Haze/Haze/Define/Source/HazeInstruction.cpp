@@ -92,7 +92,7 @@ public:
 				Stack->EBP = Stack->ESP;
 
 				//±ê×¼¿â²éÕÒ
-				Function.Extra.StdLibFunction(Stack, &Function);
+				Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.FunctionCallParamNum);
 
 				int Size = 0;
 				for (auto& Iter : Function.Vector_Param)
@@ -427,8 +427,6 @@ private:
 		{
 			return &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address];
 		}
-
-		return nullptr;
 	}
 };
 

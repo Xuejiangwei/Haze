@@ -10,13 +10,11 @@ enum class HazeValueType : unsigned int
 
 	Char,
 
-	Short,
 	Int,
 	Float,
 	Long,
 	Double,
 
-	UnsignedShort,
 	UnsignedInt,
 	UnsignedLong,
 
@@ -26,7 +24,7 @@ enum class HazeValueType : unsigned int
 	Class,
 	Function,
 
-	MultiVar,
+	MultiVariable,
 };
 
 struct HazeValue
@@ -37,14 +35,12 @@ struct HazeValue
 	{
 		bool Bool;
 
-		short Short;
+		HAZE_CHAR Char;
 		int Int;
 		float Float;
 		long long Long;
 		double Double;
 
-		unsigned __int8 UnsignedByte;
-		unsigned short UnsignedShort;
 		unsigned int UnsignedInt;
 		unsigned long long UnsignedLong;
 
@@ -52,7 +48,7 @@ struct HazeValue
 
 		union
 		{
-			//int StringTableIndex;
+			int StringTableIndex;
 			int MemorySize;
 			//const HAZE_STRING* StringPointer;
 		} Extra;

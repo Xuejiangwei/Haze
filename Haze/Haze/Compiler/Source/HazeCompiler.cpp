@@ -155,7 +155,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		HashMap_BoolConstantValue[Var.Value.Bool] = CreateVariable(Var, InstructionScopeType::Constant);
 		return HashMap_BoolConstantValue[Var.Value.Bool];
 	}
-	case HazeValueType::Short:
 	case HazeValueType::Int:
 	{
 		auto it = HashMap_IntConstantValue.find(Var.Value.Int);
@@ -223,7 +222,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 	return nullptr;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::GenString(HAZE_STRING& String)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GenStringVariable(HAZE_STRING& String)
 {
 	return GetCurrModule()->GetGlobalStringVariable(String);
 }
@@ -275,153 +274,21 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	/*std::shared_ptr<HazeCompilerValue> AddR = Map_GlobalRegister[ADD_REGISTER];
-	HazeValue& Value = AddR->GetValue();
-	Value.Type = Left->GetValue().Type;*/
-
-	/*switch (Left->GetValue().Type)
-	{
-	case HazeValueType::Char:
-	case HazeValueType::Byte:
-	case HazeValueType::Short:
-	case HazeValueType::Int:
-		Value.Value.Int = Left->GetValue().Value.Int + Right->GetValue().Value.Int;
-		break;
-	case HazeValueType::Long:
-		Value.Value.Long = Left->GetValue().Value.Long + Right->GetValue().Value.Long;
-		break;
-	case HazeValueType::Float:
-		Value.Value.Float = Left->GetValue().Value.Float + Right->GetValue().Value.Float;
-		break;
-	case HazeValueType::Double:
-		Value.Value.Double = Left->GetValue().Value.Double + Right->GetValue().Value.Double;
-		break;
-	case HazeValueType::UnsignedByte:
-	case HazeValueType::UnsignedShort:
-	case HazeValueType::UnsignedInt:
-		Value.Value.UnsignedInt = Left->GetValue().Value.UnsignedInt + Right->GetValue().Value.UnsignedInt;
-		break;
-	case HazeValueType::UnsignedLong:
-		Value.Value.UnsignedLong = Left->GetValue().Value.UnsignedLong + Right->GetValue().Value.UnsignedLong;
-		break;
-	default:
-		break;
-	}*/
-
 	return GetCurrModule()->CreateAdd(Left, Right);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	/*std::shared_ptr<HazeCompilerValue> SubR = Map_GlobalRegister[SUB_RGISTER];
-	HazeValue& Value = SubR->GetValue();
-	Value.Type = Left->GetValue().Type;*/
-
-	/*switch (Left->GetValue().Type)
-	{
-	case HazeValueType::Char:
-	case HazeValueType::Byte:
-	case HazeValueType::Short:
-	case HazeValueType::Int:
-		Value.Value.Int = Left->GetValue().Value.Int - Right->GetValue().Value.Int;
-		break;
-	case HazeValueType::Long:
-		Value.Value.Long = Left->GetValue().Value.Long - Right->GetValue().Value.Long;
-		break;
-	case HazeValueType::Float:
-		Value.Value.Float = Left->GetValue().Value.Float - Right->GetValue().Value.Float;
-		break;
-	case HazeValueType::Double:
-		Value.Value.Double = Left->GetValue().Value.Double - Right->GetValue().Value.Double;
-		break;
-	case HazeValueType::UnsignedByte:
-	case HazeValueType::UnsignedShort:
-	case HazeValueType::UnsignedInt:
-		Value.Value.UnsignedInt = Left->GetValue().Value.UnsignedInt - Right->GetValue().Value.UnsignedInt;
-		break;
-	case HazeValueType::UnsignedLong:
-		Value.Value.UnsignedLong = Left->GetValue().Value.UnsignedLong - Right->GetValue().Value.UnsignedLong;
-		break;
-	default:
-		break;
-	}*/
-
 	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SUB);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	/*std::shared_ptr<HazeCompilerValue> MulR = Map_GlobalRegister[MUL_REGISTER];
-	HazeValue& Value = MulR->GetValue();
-	Value.Type = Left->GetValue().Type;*/
-
-	/*switch (Left->GetValue().Type)
-	{
-	case HazeValueType::Char:
-	case HazeValueType::Byte:
-	case HazeValueType::Short:
-	case HazeValueType::Int:
-		Value.Value.Int = Left->GetValue().Value.Int * Right->GetValue().Value.Int;
-		break;
-	case HazeValueType::Long:
-		Value.Value.Long = Left->GetValue().Value.Long * Right->GetValue().Value.Long;
-		break;
-	case HazeValueType::Float:
-		Value.Value.Float = Left->GetValue().Value.Float * Right->GetValue().Value.Float;
-		break;
-	case HazeValueType::Double:
-		Value.Value.Double = Left->GetValue().Value.Double * Right->GetValue().Value.Double;
-		break;
-	case HazeValueType::UnsignedByte:
-	case HazeValueType::UnsignedShort:
-	case HazeValueType::UnsignedInt:
-		Value.Value.UnsignedInt = Left->GetValue().Value.UnsignedInt * Right->GetValue().Value.UnsignedInt;
-		break;
-	case HazeValueType::UnsignedLong:
-		Value.Value.UnsignedLong = Left->GetValue().Value.UnsignedLong * Right->GetValue().Value.UnsignedLong;
-		break;
-	default:
-		break;
-	}*/
-
 	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MUL);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	/*std::shared_ptr<HazeCompilerValue> DivR = Map_GlobalRegister[DIV_REGISTER];
-	HazeValue& Value = DivR->GetValue();
-	Value.Type = Left->GetValue().Type;*/
-
-	/*switch (Left->GetValue().Type)
-	{
-	case HazeValueType::Char:
-	case HazeValueType::Byte:
-	case HazeValueType::Short:
-	case HazeValueType::Int:
-		Value.Value.Int = Left->GetValue().Value.Int / Right->GetValue().Value.Int;
-		break;
-	case HazeValueType::Long:
-		Value.Value.Long = Left->GetValue().Value.Long / Right->GetValue().Value.Long;
-		break;
-	case HazeValueType::Float:
-		Value.Value.Float = Left->GetValue().Value.Float / Right->GetValue().Value.Float;
-		break;
-	case HazeValueType::Double:
-		Value.Value.Double = Left->GetValue().Value.Double / Right->GetValue().Value.Double;
-		break;
-	case HazeValueType::UnsignedByte:
-	case HazeValueType::UnsignedShort:
-	case HazeValueType::UnsignedInt:
-		Value.Value.UnsignedInt = Left->GetValue().Value.UnsignedInt / Right->GetValue().Value.UnsignedInt;
-		break;
-	case HazeValueType::UnsignedLong:
-		Value.Value.UnsignedLong = Left->GetValue().Value.UnsignedLong / Right->GetValue().Value.UnsignedLong;
-		break;
-	default:
-		break;
-	}*/
-
 	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::DIV);
 }
 

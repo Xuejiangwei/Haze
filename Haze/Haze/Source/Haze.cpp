@@ -68,9 +68,7 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
 {
 	static std::unordered_map<HazeValueType, std::set<HazeValueType>> HashMap_Table =
 	{
-		{ HazeValueType::Short, { HazeValueType::Int, HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
 		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
-		{ HazeValueType::UnsignedShort, { HazeValueType::UnsignedInt, HazeValueType::UnsignedLong } },
 		{ HazeValueType::UnsignedInt, { HazeValueType::UnsignedLong } },
 		{ HazeValueType::Float, { HazeValueType::Double} }
 	};
@@ -104,17 +102,17 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 	{
 		{ HazeToken::Void, HazeValueType::Void },
 		{ HazeToken::Bool, HazeValueType::Bool },
-		{ HazeToken::Short, HazeValueType::Short },
+		{ HazeToken::Char, HazeValueType::Char },
 		{ HazeToken::Int, HazeValueType::Int },
 		{ HazeToken::Float, HazeValueType::Float },
 		{ HazeToken::Long, HazeValueType::Long },
 		{ HazeToken::Double, HazeValueType::Double },
-		{ HazeToken::UnsignedShort, HazeValueType::UnsignedShort },
 		{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
 		{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
 		{ HazeToken::CustomClass, HazeValueType::Class},
-
-		{ HazeToken::MultiVariable, HazeValueType::MultiVar},
+		{ HazeToken::PointerBase, HazeValueType::PointerBase},
+		{ HazeToken::PointerClass, HazeValueType::PointerClass},
+		{ HazeToken::MultiVariable, HazeValueType::MultiVariable},
 	};
 
 	auto it = MapHashTable.find(Token);
@@ -132,8 +130,7 @@ unsigned int GetSizeByHazeType(HazeValueType Type)
 	{
 	case HazeValueType::Bool:
 		return 1;
-	case HazeValueType::Short:
-	case HazeValueType::UnsignedShort:
+	case HazeValueType::Char:
 		return 2;
 	case HazeValueType::Int:
 	case HazeValueType::Float:
@@ -164,19 +161,11 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value)
 	case HazeValueType::Double:
 		WSS >> Value.Value.Double;
 		break;
-	break;
-	case HazeValueType::Short:
-		WSS >> Value.Value.Short;
-		break;
 	case HazeValueType::Int:
 		WSS >> Value.Value.Int;
 		break;
 	case HazeValueType::Long:
 		WSS >> Value.Value.Long;
-		break;
-	break;
-	case HazeValueType::UnsignedShort:
-		WSS >> Value.Value.UnsignedShort;
 		break;
 	case HazeValueType::UnsignedInt:
 		WSS >> Value.Value.UnsignedInt;
@@ -313,10 +302,6 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value)
 	{
 	case HazeValueType::Bool:
 		return (HAZE_BINARY_CHAR*)&Value.Value.Bool;
-	case HazeValueType::Short:
-		return (HAZE_BINARY_CHAR*)&Value.Value.Short;
-	case HazeValueType::UnsignedShort:
-		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedShort;
 	case HazeValueType::Int:
 		return (HAZE_BINARY_CHAR*)&Value.Value.Int;
 	case HazeValueType::Float:
