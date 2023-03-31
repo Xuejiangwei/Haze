@@ -69,12 +69,23 @@ public:
 	}
 };
 
-enum class InstructionOpCode : unsigned int;
+enum class InstructionOpCode : uint;
+enum class HazeToken : uint;
+
+uint GetSizeByHazeType(HazeValueType Type);
+
+HazeValueType GetValueTypeByToken(HazeToken Token);
+
+HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2);
 
 bool IsHazeDefaultType(HazeValueType Type);
 
 bool IsNumberType(HazeValueType Type);
 
+void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value);
+
 void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const char* Source, const char* Target);
 
 size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
+
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value);

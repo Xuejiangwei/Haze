@@ -39,7 +39,7 @@ static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form) {
 	}
 
 	*(form++) = HAZE_CHAR('%');
-	memcpy(form, strfrmt, len * sizeof(char));
+	memcpy(form, strfrmt, len * sizeof(HAZE_CHAR));
 	*(form + len) = '\0';
 	return strfrmt + len - 1;
 }
@@ -101,16 +101,15 @@ void HazeStream::HazePrintStringCall(const HAZE_STRING& V)
 void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 {
 #define PRE_SIGN HAZE_CHAR('%')
-	int V = 0;
+	
+	decltype(InstructionData::Extra::Index) V = 0;
 
-	int Size = -(int)sizeof(V) - HAZE_ADDRESS_SIZE;
-	memcpy(&V, Stack->GetAddressByEBP(Size), sizeof(V));
+	int Offset = -(int)sizeof(V) - HAZE_ADDRESS_SIZE;
+	memcpy(&V, Stack->GetAddressByEBP(Offset), sizeof(V));
 
 	HAZE_STRING_STREAM HSS;
 
 	int ArgNum = 1;
-
-	int Offset = -HAZE_ADDRESS_SIZE;
 
 	const HAZE_STRING& String = Stack->GetVM()->GetHazeStringByIndex(V);
 	auto Start = String.cbegin();
@@ -133,6 +132,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 			HAZE_CHAR Form[MAX_FORMAT];
 			Start._Ptr = GetFormat(Start._Ptr, Form);
 		
+			Start++;
 			if (*Start == HAZE_CHAR('d'))
 			{
 				Offset -= sizeof(int);
@@ -141,6 +141,17 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				char* Address = Stack->GetAddressByEBP(Offset);
 				memcpy(&TempV, Address, sizeof(int));
 				HSS << TempV;
+				Start++;
+			}
+			else if (*Start == HAZE_CHAR('f'))
+			{
+				Offset -= sizeof(float);
+
+				float TempV;
+				char* Address = Stack->GetAddressByEBP(Offset);
+				memcpy(&TempV, Address, sizeof(float));
+				HSS << TempV;
+				Start++;
 			}
 		}
 	}

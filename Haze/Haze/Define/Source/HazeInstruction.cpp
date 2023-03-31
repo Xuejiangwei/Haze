@@ -5,6 +5,33 @@
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 
+static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
+{
+	{HAZE_TEXT("MOV"), InstructionOpCode::MOV },
+	{HAZE_TEXT("ADD"), InstructionOpCode::ADD },
+	{HAZE_TEXT("SUB"), InstructionOpCode::SUB },
+	{HAZE_TEXT("MUL"), InstructionOpCode::MUL },
+	{HAZE_TEXT("DIV"), InstructionOpCode::DIV },
+	{HAZE_TEXT("MOD"), InstructionOpCode::MOD },
+	{HAZE_TEXT("INC"), InstructionOpCode::INC },
+	{HAZE_TEXT("DEC"), InstructionOpCode::DEC },
+
+	{HAZE_TEXT("AND"), InstructionOpCode::AND },
+	{HAZE_TEXT("OR"), InstructionOpCode::OR },
+	{HAZE_TEXT("NOT"), InstructionOpCode::NOT },
+	{HAZE_TEXT("XOR"), InstructionOpCode::XOR },
+	{HAZE_TEXT("SHL"), InstructionOpCode::SHL },
+	{HAZE_TEXT("SHR"), InstructionOpCode::SHR },
+
+	{HAZE_TEXT("PUSH"), InstructionOpCode::PUSH },
+	{HAZE_TEXT("POP"), InstructionOpCode::POP },
+
+	{HAZE_TEXT("CALL"), InstructionOpCode::CALL },
+	{HAZE_TEXT("RET"), InstructionOpCode::RET },
+
+	{HAZE_TEXT("NEW"), InstructionOpCode::NEW },
+};
+
 std::unordered_map<HAZE_STRING, HazeValue>  HashMap_VirtualRegister =
 {
 	//{ADD_REGISTER, nullptr},
@@ -25,9 +52,41 @@ HazeValue* GetVirtualRegister(const HAZE_CHAR* Name)
 	return nullptr;
 }
 
-bool IsRegisterScope(InstructionScopeType Scope)
+bool IsRegisterScope(HazeDataDesc Scope)
 {
-	return InstructionScopeType::RegisterBegin < Scope && Scope < InstructionScopeType::RegisterEnd;
+	return HazeDataDesc::RegisterBegin < Scope && Scope < HazeDataDesc::RegisterEnd;
+}
+
+const HAZE_CHAR* GetInstructionString(InstructionOpCode Code)
+{
+	static std::unordered_map<InstructionOpCode, const HAZE_CHAR*> HashMap_Code2String;
+
+	if (HashMap_Code2String.size() <= 0)
+	{
+		for (auto& iter : HashMap_String2Code)
+		{
+			HashMap_Code2String[iter.second] = iter.first.c_str();
+		}
+	}
+
+	auto iter = HashMap_Code2String.find(Code);
+	if (iter != HashMap_Code2String.end())
+	{
+		return iter->second;
+	}
+
+	return HAZE_TEXT("None");
+}
+
+InstructionOpCode GetInstructionByString(const HAZE_STRING& String)
+{
+	auto iter = HashMap_String2Code.find(String);
+	if (iter != HashMap_String2Code.end())
+	{
+		return iter->second;
+	}
+
+	return InstructionOpCode::NONE;
 }
 
 class InstructionProcessor
@@ -40,12 +99,12 @@ public:
 		{
 			HazeValue Value;
 			Value.Type = Operator[1].Variable.Type.PrimaryType;
-			if (Operator[1].Scope == InstructionScopeType::Constant)
+			if (Operator[1].Scope == HazeDataDesc::Constant)
 			{
 				StringToHazeValueNumber(Operator[1].Variable.Name, Value);
 				memcpy(GetAddressByOperator(Stack, Operator[0]), &Value.Value, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 			}
-			else if (Operator[1].Scope == InstructionScopeType::Local)
+			else if (Operator[1].Scope == HazeDataDesc::Local)
 			{
 				memcpy(GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]), GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 			}
@@ -117,12 +176,12 @@ public:
 		{
 			int Size = GetSizeByType(Operator[0].Variable.Type, Stack->VM);
 
-			if (Operator[0].Scope == InstructionScopeType::Constant)
+			if (Operator[0].Scope == HazeDataDesc::Constant)
 			{
 				int N = StringToStandardType<int>(Operator[0].Variable.Name);
 				memcpy(&Stack->Stack_Main[Stack->ESP], &N, Size);
 			}
-			else if (Operator[0].Scope == InstructionScopeType::Address)
+			else if (Operator[0].Scope == HazeDataDesc::Address)
 			{
 				memcpy(&Stack->Stack_Main[Stack->ESP], &Stack->PC, Size);
 			}
@@ -130,7 +189,8 @@ public:
 			{
 				if (Operator[0].Extra.Address + (int)Stack->EBP >= 0)
 				{
-					memcpy(&Stack->Stack_Main[Stack->ESP], GetAddressByOperator(Stack, Operator[0]), Size);
+					memcpy(&Stack->Stack_Main[Stack->ESP], GetAddressByOperator(Stack, Operator[0]), 
+						Operator[0].Scope == HazeDataDesc::ConstantString ? Size = sizeof(Operator[0].Extra.Index) : Size);
 				}
 				else
 				{
@@ -419,9 +479,13 @@ public:
 private:
 	static char* GetAddressByOperator(HazeStack* Stack, const InstructionData& Operator)
 	{
-		if (Operator.Scope == InstructionScopeType::Global)
+		if (Operator.Scope == HazeDataDesc::Global)
 		{
 			return (char*)&Stack->VM->GetGlobalValue(Operator.Variable.Name)->Value;
+		}
+		else if (Operator.Scope == HazeDataDesc::ConstantString)
+		{
+			return (char*)&Operator.Extra.Index;
 		}
 		else /*if (Operator.Scope == InstructionScopeType::Local || Operator.Scope == InstructionScopeType::Temp)*/
 		{

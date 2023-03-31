@@ -210,5 +210,5 @@ bool HazeCompilerFunction::GetFunctionParamNameByIndex(unsigned int Index, HAZE_
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& Variable)
 {
-	VectorParam.push_back({ Variable.Name, CreateVariable(Module, Variable, InstructionScopeType::Local) });
+	VectorParam.push_back({ Variable.Name, CreateVariable(Module, Variable, HazeDataDesc::Local) });
 }

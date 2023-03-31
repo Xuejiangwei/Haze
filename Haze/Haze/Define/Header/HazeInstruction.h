@@ -26,7 +26,7 @@ enum class InstructionOpCodeType : unsigned char
 	UnsignedLong,
 };
 
-enum class InstructionScopeType : unsigned int
+enum class HazeDataDesc : unsigned int
 {
 	None,
 	Global,
@@ -43,7 +43,12 @@ enum class InstructionScopeType : unsigned int
 	Address,
 	Class,
 	ClassThis,
-	ClassMember_Local,
+	ClassMember_Local_Public,
+	ClassMember_Local_Private,
+	ClassMember_Local_Protected,
+	ClassFunction_Local_Public,
+	ClassFunction_Local_Private,
+	ClassFunction_Local_Protected,
 };
 
 enum class InstructionOpCode : unsigned int
@@ -88,9 +93,9 @@ enum class InstructionFunctionType : unsigned int
 struct InstructionData
 {
 	HazeDefineVariable Variable;
-	InstructionScopeType Scope;
+	HazeDataDesc Scope;
 
-	union
+	union Extra
 	{
 		int Index;
 		int Address;
@@ -98,7 +103,7 @@ struct InstructionData
 		int FunctionCallParamNum;
 	} Extra;
 
-	InstructionData() : Scope(InstructionScopeType::None), Variable()
+	InstructionData() : Scope(HazeDataDesc::None), Variable()
 	{
 		memset(&Extra, 0, sizeof(Extra));
 	}
@@ -142,4 +147,8 @@ struct FunctionData
 	} Extra;
 };
 
-bool IsRegisterScope(InstructionScopeType Scope);
+bool IsRegisterScope(HazeDataDesc Scope);
+
+const HAZE_CHAR* GetInstructionString(InstructionOpCode Code);
+
+InstructionOpCode GetInstructionByString(const HAZE_STRING& String);

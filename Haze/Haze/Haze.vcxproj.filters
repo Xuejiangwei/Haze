@@ -108,6 +108,9 @@
     <ClCompile Include="MetaData\Source\HazeFunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Define\Source\HazeUtility.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -216,6 +219,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Define\Header\HazeDebug.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeUtility.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

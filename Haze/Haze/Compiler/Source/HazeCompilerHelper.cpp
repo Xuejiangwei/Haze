@@ -75,7 +75,7 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
 	}
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, InstructionScopeType Scope)
+std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope)
 {
 	switch (Var.Type.PrimaryType)
 	{
@@ -105,7 +105,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 	return nullptr;
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(const HazeValue& Var, InstructionScopeType Scope)
+std::shared_ptr<HazeCompilerValue> CreateVariable(const HazeValue& Var, HazeDataDesc Scope)
 {
 	return std::make_shared<HazeCompilerValue>(Var, Scope);
 }

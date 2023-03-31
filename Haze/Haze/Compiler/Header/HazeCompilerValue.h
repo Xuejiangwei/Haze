@@ -10,9 +10,9 @@ class HazeCompilerValue
 public:
 	HazeCompilerValue();
 
-	HazeCompilerValue(HazeValue Value, InstructionScopeType Section);
+	HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, InstructionScopeType Scope);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope);
 
 	virtual ~HazeCompilerValue();
 
@@ -20,21 +20,21 @@ public:
 
 	HazeValue& GetValue() { return Value; }
 
-	InstructionScopeType GetScope() { return Scope; }
+	HazeDataDesc GetScope() { return Scope; }
 
 	bool IsRegister() { return IsRegisterScope(Scope); }
 
-	bool IsConstant() { return Scope == InstructionScopeType::Constant; }
+	bool IsConstant() { return Scope == HazeDataDesc::Constant; }
 
-	bool IsGlobal() { return Scope == InstructionScopeType::Global; }
+	bool IsGlobal() { return Scope == HazeDataDesc::Global; }
 
-	bool IsLocal() { return Scope == InstructionScopeType::Local; }
+	bool IsLocal() { return Scope == HazeDataDesc::Local; }
 
-	bool IsTemp() { return Scope == InstructionScopeType::Temp; }
+	bool IsTemp() { return Scope == HazeDataDesc::Temp; }
 
-	bool IsString() { return Scope == InstructionScopeType::ConstantString; }
+	bool IsString() { return Scope == HazeDataDesc::ConstantString; }
 
-	bool IsClassMember() { return Scope == InstructionScopeType::ClassMember_Local; }
+	bool IsClassMember() { return Scope == HazeDataDesc::ClassMember_Local_Public; }
 
 	bool IsPointer() { return Value.Type == HazeValueType::PointerBase || Value.Type == HazeValueType::PointerClass; }
 
@@ -46,5 +46,5 @@ public:
 protected:
 	HazeValue Value;
 	HazeCompilerModule* Module;
-	InstructionScopeType Scope;
+	HazeDataDesc Scope;
 };

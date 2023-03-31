@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Scope(InstructionScopeType::Local)
+HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Scope(HazeDataDesc::Local)
 {
 	memset(&Value, 0, sizeof(Value));
 }
@@ -19,11 +19,11 @@ HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, HazeValueType T
 	memset(&Value.Value, 0, sizeof(Value.Value));
 }*/
 
-HazeCompilerValue::HazeCompilerValue(HazeValue Value, InstructionScopeType Scope) : Module(nullptr), Value(Value), Scope(Scope)
+HazeCompilerValue::HazeCompilerValue(HazeValue Value, HazeDataDesc Scope) : Module(nullptr), Value(Value), Scope(Scope)
 {
 }
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, InstructionScopeType Scope) 
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope) 
 	: Module(Module), Scope(Scope)
 {
 	Value.Type = DefineType.PrimaryType;

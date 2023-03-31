@@ -264,7 +264,7 @@ void BackendParse::ParseInstructionData(InstructionData& Data)
 	{
 		GetNextLexmeAssign_CustomType<uint>(Data.Variable.Type.PointerToType);
 
-		if (Data.Scope == InstructionScopeType::ConstantString)
+		if (Data.Scope == HazeDataDesc::ConstantString)
 		{
 			GetNextLexmeAssign_CustomType<int>(Data.Extra.Index);
 		}
@@ -331,7 +331,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::Void)
 		{
 			OperatorOne.Variable.Name = HAZE_TEXT("Void");
-			OperatorOne.Scope = InstructionScopeType::None;
+			OperatorOne.Scope = HazeDataDesc::None;
 		}
 		else
 		{
@@ -339,7 +339,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 			OperatorOne.Variable.Name = CurrLexeme;
 
 			GetNextLexeme();
-			OperatorOne.Scope = (InstructionScopeType)StringToStandardType<uint>(CurrLexeme);
+			OperatorOne.Scope = (HazeDataDesc)StringToStandardType<uint>(CurrLexeme);
 		}
 
 		Instruction.Operator = { OperatorOne };
@@ -358,7 +358,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		InstructionData OperatorOne;
 
 		GetNextLexeme();
-		OperatorOne.Scope = InstructionScopeType::None;
+		OperatorOne.Scope = HazeDataDesc::None;
 		OperatorOne.Variable.Name = CurrLexeme;
 
 		GetNextLexeme();
@@ -372,7 +372,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		InstructionData OperatorOne;
 
 		GetNextLexeme();
-		OperatorOne.Scope = InstructionScopeType::None;
+		OperatorOne.Scope = HazeDataDesc::None;
 		OperatorOne.Variable.Type.PrimaryType = (HazeValueType)StringToStandardType<int>(CurrLexeme);
 
 		GetNextLexeme();
@@ -531,11 +531,11 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 			for (auto& it : CurrFunction.Vector_Instruction[i].Operator)
 			{
 				auto& VariableName = it.Variable.Name;
-				if (it.Scope == InstructionScopeType::Global)
+				if (it.Scope == HazeDataDesc::Global)
 				{
 					it.Extra.Index = NewGlobalDataTable.GetIndex(VariableName);
 				}
-				else if (it.Scope == InstructionScopeType::ClassMember_Local)
+				else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)
 				{
 					int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
 
@@ -618,7 +618,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 						}
 					}
 				}
-				else if (it.Scope == InstructionScopeType::Local || it.Scope == InstructionScopeType::Temp)
+				else if (it.Scope == HazeDataDesc::Local || it.Scope == HazeDataDesc::Temp)
 				{
 					//需要先判断是不是函数参数，设置为负的索引
 					int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节

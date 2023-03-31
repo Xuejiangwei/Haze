@@ -111,7 +111,7 @@ void ASTFunctionDefine::CodeGen()
 	}
 }
 
-ASTClassFunctionSection::ASTClassFunctionSection(HazeVM* VM, std::vector<std::vector<std::unique_ptr<ASTFunction>>>& Functions)
+ASTClassFunctionSection::ASTClassFunctionSection(HazeVM* VM, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
 	: VM(VM), Functions(std::move(Functions))
 {
 
@@ -125,7 +125,7 @@ void ASTClassFunctionSection::CodeGen()
 {
 	for (auto& Iter : Functions)
 	{
-		for (auto& F : Iter)
+		for (auto& F : Iter.second)
 		{
 			F->CodeGen();
 		}

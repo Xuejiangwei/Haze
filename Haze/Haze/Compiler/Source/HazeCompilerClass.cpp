@@ -58,7 +58,7 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared
 
 void HazeCompilerClass::InitThisValue()
 {
-	ThisValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), HAZE_CLASS_THIS), InstructionScopeType::ClassThis));
+	ThisValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis));
 }
 
 size_t HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)

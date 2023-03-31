@@ -28,6 +28,17 @@
 
 #define HAZE_CONSTANT_STRING_NAME		HAZE_TEXT("³£×Ö·û´®Ö¸Õë")
 
+#define HEADER_STRING_GLOBAL_DATA		HAZE_TEXT("GlobalDataTable")
+#define HEADER_STRING_STRING_TABLE		HAZE_TEXT("StringTable")
+#define HEADER_STRING_CLASS_TABLE		HAZE_TEXT("ClassTable")
+#define HEADER_STRING_FUNCTION_TABLE	HAZE_TEXT("FunctionTable")
+
+#define CLASS_LABEL_HEADER				HAZE_TEXT("Class")
+#define FUNCTION_LABEL_HEADER			HAZE_TEXT("Function")
+#define FUNCTION_PARAM_HEADER			HAZE_TEXT("Param")
+#define FUNCTION_START_HEADER			HAZE_TEXT("Start")
+#define FUNCTION_END_HEADER				HAZE_TEXT("End")
+
 #define ADD_REGISTER					HAZE_TEXT("Add_R")
 #define SUB_REGISTER					HAZE_TEXT("Sub_R")
 #define MUL_REGISTER					HAZE_TEXT("Mul_R")
@@ -50,5 +61,6 @@
 
 #define HAZE_ADDRESS_SIZE (int)sizeof(int)
 
-
+using llong = long long;
 using uint = unsigned int;
+using ulong = unsigned long long;
