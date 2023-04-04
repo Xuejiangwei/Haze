@@ -34,9 +34,19 @@ public:
 
 	bool IsString() { return Scope == HazeDataDesc::ConstantString; }
 
-	bool IsClassMember() { return Scope == HazeDataDesc::ClassMember_Local_Public; }
+	bool IsClassMember() { return IsClassPublicMember() || IsClassPrivateMember() || IsClassProtectedMember(); }
 
-	bool IsPointer() { return Value.Type == HazeValueType::PointerBase || Value.Type == HazeValueType::PointerClass; }
+	bool IsClassPublicMember() { return  Scope == HazeDataDesc::ClassMember_Local_Public; }
+
+	bool IsClassPrivateMember() { return  Scope == HazeDataDesc::ClassMember_Local_Private; }
+
+	bool IsClassProtectedMember() { return  Scope == HazeDataDesc::ClassMember_Local_Protected; }
+
+	bool IsPointer() { return IsPointerBase() || IsPointerClass(); }
+	
+	bool IsPointerBase() { return Value.Type == HazeValueType::PointerBase; }
+
+	bool IsPointerClass() { return Value.Type == HazeValueType::PointerClass; }
 
 	bool IsClass() { return Value.Type == HazeValueType::Class; }
 

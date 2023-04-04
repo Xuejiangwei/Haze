@@ -27,6 +27,6 @@ public:
 private:
 	HazeCompilerClass* OwnerClass;
 	
-	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_Data;
+	std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> Vector_Data;
 };
 

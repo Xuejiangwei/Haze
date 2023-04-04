@@ -228,7 +228,6 @@ ASTBinaryExpression::~ASTBinaryExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 {
-	
 	std::shared_ptr<HazeCompilerValue> LeftValue = LeftAST->CodeGen();
 	std::shared_ptr<HazeCompilerValue> RightValue = RightAST->CodeGen();
 

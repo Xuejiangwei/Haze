@@ -12,7 +12,7 @@ class HazeCompilerClass
 public:
 	friend class HazeCompiler;
 
-	HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& Data);
+	HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>>& Data);
 
 	~HazeCompilerClass();
 
@@ -32,7 +32,7 @@ public:
 
 	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
-	const std::vector<HazeDefineVariable>& GetClassMemberData() const { return Vector_Data; }
+	const std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable>>>& GetClassMemberData() const { return Vector_Data; }
 
 	const HazeDefineVariable* GetClassMemberData(const HAZE_STRING& MemberName) const;
 
@@ -53,7 +53,7 @@ private:
 
 	std::shared_ptr<HazeCompilerClassValue> ThisValue; //所有同类对象只想此同一个this Value
 
-	std::vector<HazeDefineVariable> Vector_Data;
+	std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable>>> Vector_Data;
 
 	std::vector<std::shared_ptr<HazeCompilerFunction>> Vector_Function;
 	std::unordered_map<HAZE_STRING, unsigned int> HashMap_Function;

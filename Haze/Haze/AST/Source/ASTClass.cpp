@@ -18,13 +18,14 @@ ASTClass::~ASTClass()
 
 void ASTClass::CodeGen()
 {
-	std::vector<HazeDefineVariable*> Data;
+	std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>> Data;
 
 	for (size_t i = 0; i < Vector_ClassData.size(); i++)
 	{
+		Data.push_back({ Vector_ClassData[i].first, {} });
 		for (size_t j = 0; j < Vector_ClassData[i].second.size(); j++)
 		{
-			Data.push_back(&Vector_ClassData[i].second[j]->DefineVariable);
+			Data.back().second.push_back(&Vector_ClassData[i].second[j]->DefineVariable);
 		}
 	}
 

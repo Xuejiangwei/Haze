@@ -4,17 +4,22 @@
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerClassValue.h"
 
-HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& Data)
+HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>>& Data)
 	: Module(Module), Name(Name)
 {
 	DataSize = 0;
 	Vector_Data.resize(Data.size());
 	for (size_t i = 0; i < Data.size(); i++)
 	{
-		Vector_Data[i] = *Data[i];
+		Vector_Data[i].first = Data[i].first;
 
-
-		DataSize += GetSizeByType(Vector_Data[i].Type, Module);
+		Vector_Data[i].second.resize(Data[i].second.size());
+		for (size_t j = 0; j < Data[i].second.size(); j++)
+		{
+			Vector_Data[i].second[j] = *(Data[i].second[j]);
+			
+			DataSize += GetSizeByType(Vector_Data[i].second[j].Type, Module);
+		}
 
 		/*if (Vector_Data[i].Type.CustomName.empty())
 		{
@@ -63,12 +68,19 @@ void HazeCompilerClass::InitThisValue()
 
 size_t HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 {
+	size_t Index = 0;
 	for (size_t i = 0; i < Vector_Data.size(); i++)
 	{
-		if (Vector_Data[i].Name == MemberName)
+		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
-			return i;
+			if (Vector_Data[i].second[j].Name == MemberName)
+			{
+				return Index;
+			}
+
+			Index++;
 		}
+		
 	}
 
 	return 0;
@@ -78,11 +90,14 @@ void HazeCompilerClass::GetMemberName(const std::shared_ptr<HazeCompilerValue>& 
 {
 	for (size_t i = 0; i < ThisValue->Vector_Data.size(); i++)
 	{
-		if (Value == ThisValue->Vector_Data[i])
+		for (size_t j = 0; j < ThisValue->Vector_Data[i].second.size(); j++)
 		{
-			OutName += HAZE_CLASS_THIS;
-			OutName += HAZE_CLASS_POINTER_ATTR + Vector_Data[i].Name;
-			return;
+			if (Value == ThisValue->Vector_Data[i].second[j])
+			{
+				OutName += HAZE_CLASS_THIS;
+				OutName += HAZE_CLASS_POINTER_ATTR + Vector_Data[i].second[j].Name;
+				return;
+			}
 		}
 	}
 }
@@ -91,9 +106,12 @@ const HazeDefineVariable* HazeCompilerClass::GetClassMemberData(const HAZE_STRIN
 {
 	for (auto& Iter : Vector_Data)
 	{
-		if (Iter.Name == MemberName)
+		for (size_t i = 0; i < Iter.second.size(); i++)
 		{
-			return &Iter;
+			if (Iter.second[i].Name == MemberName)
+			{
+				return &Iter.second[i];
+			}
 		}
 	}
 
@@ -107,9 +125,12 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_OFSTREAM& OFStream)
 
 	for (size_t i = 0; i < Vector_Data.size(); ++i)
 	{
-		HAZE_STRING_STREAM HSS;
-		StreamDefineVariable(HSS, Vector_Data[i]);
-		OFStream << HSS.str();
+		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
+		{
+			HAZE_STRING_STREAM HSS;
+			StreamDefineVariable(HSS, Vector_Data[i].second[j]);
+			OFStream << HSS.str();
+		}
 	}
 #endif //HAZE_I_CODE_ENABLE
 }

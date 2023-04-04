@@ -21,7 +21,7 @@ public:
 	
 	void GenCodeFile();
 
-	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& ClassData);
+	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>>& ClassData);
 
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
@@ -32,6 +32,8 @@ public:
 	void FinishFunction();
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalStringVariable(const HAZE_STRING& String);
+
+	uint GetGlobalStringIndex(std::shared_ptr<HazeCompilerValue> Value);
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 

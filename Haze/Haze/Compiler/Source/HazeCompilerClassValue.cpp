@@ -11,7 +11,11 @@ HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const
 	const auto Members = OwnerClass->GetClassMemberData();
 	for (size_t i = 0; i < Members.size(); i++)
 	{
-		Vector_Data.push_back(CreateVariable(Module, Members[i], HazeDataDesc::ClassMember_Local_Public));
+		Vector_Data.push_back({ Members[i].first,{} });
+		for (size_t j = 0; j < Members[i].second.size(); j++)
+		{
+			Vector_Data.back().second.push_back(CreateVariable(Module, Members[i].second[j], Members[i].first));
+		}
 	}
 }
 
@@ -31,17 +35,32 @@ const HAZE_STRING& HazeCompilerClassValue::GetOwnerClassName()
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HAZE_STRING& Name)
 {
-	return Vector_Data[OwnerClass->GetMemberIndex(Name)];
+	auto Index = OwnerClass->GetMemberIndex(Name);
+	for (size_t i = 0; i < Vector_Data.size(); i++)
+	{
+		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
+		{
+			if (Index-- == 0)
+			{
+				return Vector_Data[i].second[j];
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 void HazeCompilerClassValue::GetMemberName(const std::shared_ptr<HazeCompilerValue>& MemberValue, HAZE_STRING& OutName)
 {
 	for (size_t i = 0; i < Vector_Data.size(); i++)
 	{
-		if (MemberValue == Vector_Data[i])
+		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
-			OutName = OwnerClass->GetClassMemberData()[i].Name;
-			return;
+			if (MemberValue == Vector_Data[i].second[j])
+			{
+				OutName = OwnerClass->GetClassMemberData()[i].second[j].Name;
+				return;
+			}
 		}
 	}
 }

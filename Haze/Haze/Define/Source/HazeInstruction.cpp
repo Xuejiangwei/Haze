@@ -115,6 +115,10 @@ public:
 
 				memcpy(GetAddressByOperator(Stack, Operator[0]) , &Register->Value, Size);
 			}
+			else if (Operator[1].Scope == HazeDataDesc::ConstantString)
+			{
+				memcpy(GetAddressByOperator(Stack, Operator[0]), &Operator[1].Extra.Index, GetSizeByType(Operator[1].Variable.Type, Stack->VM));
+			}
 		}
 	}
 

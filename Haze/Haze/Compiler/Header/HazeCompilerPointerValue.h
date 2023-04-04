@@ -13,10 +13,6 @@ public:
 
 	HazeCompilerValue* GetPointerValue() { return PointerValue; }
 
-	bool IsHazeTypePointer();
-
-	bool IsClassPointer();
-
 	const HazeDefineType& GetPointerType() { return PointerType; }
 
 private:

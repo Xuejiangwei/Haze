@@ -16,8 +16,6 @@ extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(H
 
 HazeVM::HazeVM()
 {
-	std::wcout.imbue(std::locale("chs"));
-
 	FunctionReturn.Type = HazeValueType::Void;
 	Compiler = std::make_unique<HazeCompiler>();
 	VMStack = std::make_unique<HazeStack>(this);
@@ -233,7 +231,6 @@ void HazeVM::LoadOpCodeFile()
 void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instruction)
 {
 	unsigned int UnsignedInt = 0;
-	int Int = 0;
 	HAZE_BINARY_STRING BinaryString;
 	B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
 	Instruction.Operator.resize(UnsignedInt);

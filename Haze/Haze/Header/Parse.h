@@ -94,9 +94,9 @@ private:
 private:
 	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* ClassName = nullptr);
 
-	bool ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo = nullptr);
+	bool ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
 
-	bool TokenIs(HazeToken Token, const wchar_t* ErrorInfo = nullptr);
+	bool TokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
 
 	bool IsHazeSignalToken(HAZE_CHAR Char, const HAZE_CHAR* OutChar = nullptr);
 
@@ -116,4 +116,5 @@ private:
 	std::shared_ptr<OpCodeGenerator> Generator;
 
 	HazeDefineVariable DefineVariable;
+	HAZE_STRING CurrParseClass;
 };

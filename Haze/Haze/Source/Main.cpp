@@ -16,6 +16,8 @@ void HazeNewHandler()
 void HazeInit()
 {
 	std::set_new_handler(HazeNewHandler);
+	setlocale(LC_ALL, "chs");
+	std::wcout.imbue(std::locale("chs"));
 };
 
 //解析文本  --->  生成字节码   --->  用虚拟机解析字节码，并执行

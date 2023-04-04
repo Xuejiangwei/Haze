@@ -53,7 +53,7 @@ void HazeCompilerModule::GenCodeFile()
 #endif
 }
 
-std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, std::vector<HazeDefineVariable*>& ClassData)
+std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>>& ClassData)
 {
 	std::shared_ptr<HazeCompilerClass> Class = FindClass(Name);
 	if (!Class)
@@ -158,7 +158,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 		if (NeedTemp && !Left->IsTemp())
 		{
 			HazeDefineVariable Var;
-			Var.Name = HAZE_TEXT("TempBinaryValue");
+			Var.Name = HAZE_TEMP_BINART_NAME;
 			Var.Type.PrimaryType = GetStrongerType(Left->GetValue().Type, Right->GetValue().Type);
 			Ret = Function->GetTopBaseBlock()->CreateTempAlloce(Var);
 
@@ -166,7 +166,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 
 			Ret->StoreValue(Left);
 		
-			SStream << GetInstructionString(IO_Code) << " " << Var.Name << " " << HAZE_CAST_VALUE_TYPE(Var.Type.PrimaryType) << " " << (unsigned int)HazeDataDesc::Temp;
+			SStream << GetInstructionString(IO_Code) << " " << HAZE_CAST_VALUE_TYPE(Var.Type.PrimaryType) << " " << Var.Name << " " << (unsigned int)HazeDataDesc::Temp;
 		}
 		else
 		{
@@ -263,6 +263,16 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 			SStream << HAZE_CONSTANT_STRING_NAME << " " << (uint)Param[i].second->GetScope() << " " << (uint)PointerValue->GetPointerType().PointerToType
 				<< " " << Param[i].second->GetValue().Value.Extra.StringTableIndex;
 		}
+		else if (Param[i].second->IsPointerBase())
+		{
+			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Param[i].second);
+			SStream << Param[i].first << " " << (uint)Param[i].second->GetScope() << " " << (uint)PointerValue->GetPointerType().PointerToType;
+		}
+		else if (Param[i].second->IsPointerClass())
+		{
+			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Param[i].second);
+			SStream << Param[i].first << " " << (uint)Param[i].second->GetScope() << " " << PointerValue->GetPointerType().CustomName;
+		}
 		else
 		{
 			SStream << Param[i].first << " " << (uint)Param[i].second->GetScope();
@@ -306,6 +316,25 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalStringVariable(c
 	return it->second;
 }
 
+uint HazeCompilerModule::GetGlobalStringIndex(std::shared_ptr<HazeCompilerValue> Value)
+{
+	for (auto& Iter : HashMap_StringTable)
+	{
+		if (Value == Iter.second)
+		{
+			for (auto& It : HashMap_StringMapping)
+			{
+				if (&Iter.first == It.second)
+				{
+					return It.first;
+				}
+			}
+		}
+	}
+
+	return 0;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const HAZE_STRING& Name)
 {
 	for (auto& it : Vector_Variable)
@@ -322,6 +351,15 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const H
 bool HazeCompilerModule::GetGlobalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {
 	for (auto& it : Vector_Variable)
+	{
+		if (it.second == Value)
+		{
+			OutName = it.first;
+			return true;
+		}
+	}
+
+	for (auto& it : HashMap_StringTable)
 	{
 		if (it.second == Value)
 		{
@@ -359,12 +397,23 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 	{
 		HSS << " ";
 		HazeCompilerStream(HSS, Value.get());
-		HSS << " " << (unsigned int)HazeDataDesc::Constant;
+		HSS << " " << (uint)HazeDataDesc::Constant;
+	}
+	else if (Value->IsString())
+	{
+		HSS << " " << HAZE_CONSTANT_STRING_NAME;			//¿ÕÃû×Ö
+		HSS << " " << (uint)Value->GetScope() << " " << (uint)HazeValueType::Char;
+		HSS << " " << Module->GetGlobalStringIndex(Value);
 	}
 	else if (Value->IsRegister())
 	{
 		HSS << " " << HazeCompiler::GetRegisterName(Value);
-		HSS << " " << (unsigned int)Value->GetScope();
+		HSS << " " << (uint)Value->GetScope();
+	}
+	else if (Value->IsTemp())
+	{
+		HSS << " " << HAZE_TEMP_BINART_NAME;
+		HSS << " " << (uint)Value->GetScope();
 	}
 	else
 	{
@@ -373,13 +422,24 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		if (bFind)
 		{
 			HSS << " " << VarName;
-			HSS << " " << (unsigned int)Value->GetScope();
+			HSS << " " << (uint)Value->GetScope();
 		}
 		else
 		{
 			Module->GetGlobalVariableName(Value, VarName);
-			HSS << " " <<VarName;
-			HSS << " " << (unsigned int)HazeDataDesc::Global;
+			HSS << " " << VarName;
+			HSS << " " << (uint)HazeDataDesc::Global;
+		}
+
+		if (Value->IsPointerBase())
+		{
+			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
+			HSS << " " << (uint)PointerValue->GetPointerType().PointerToType;
+		}
+		else if (Value->IsPointerClass())
+		{
+			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
+			HSS << " " << PointerValue->GetPointerType().CustomName;
 		}
 	}
 }

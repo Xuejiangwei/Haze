@@ -107,11 +107,11 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 		if (VectorParam[i].second->IsPointer())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(VectorParam[i].second);
-			if (PointerValue->IsHazeTypePointer())
+			if (PointerValue->IsPointerBase())
 			{
 				OFStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetPointerType().PrimaryType);
 			}
-			else
+			else if(PointerValue->IsPointerClass())
 			{
 				OFStream << " " << PointerValue->GetPointerType().CustomName;
 			}
@@ -167,7 +167,7 @@ bool HazeCompilerFunction::GetLocalVariableName(const std::shared_ptr<HazeCompil
 					Class->GetMemberName(Value, OutName);
 					if (!OutName.empty())
 					{
-						OutName = it.first + HAZE_CLASS_ATTR + OutName;
+						OutName = it.first + HAZE_CLASS_POINTER_ATTR + OutName;
 						return true;
 					}
 				}
@@ -179,6 +179,10 @@ bool HazeCompilerFunction::GetLocalVariableName(const std::shared_ptr<HazeCompil
 				if (!OutName.empty())
 				{
 					OutName = it.first + HAZE_CLASS_ATTR + OutName;
+					if (!Value->IsClassPublicMember())
+					{
+						HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("can not access non public member data %s\n"), OutName.c_str());
+					}
 					return true;
 				}
 			}

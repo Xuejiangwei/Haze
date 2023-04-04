@@ -88,7 +88,7 @@
 
 #define TOKEN_BREAK						HAZE_TEXT("打断")
 #define TOKEN_CONTINUE					HAZE_TEXT("继续")
-#define TOKEN_RETURN					HAZE_TEXT("返回")
+#define TOKEN_RETURN					HAZE_TEXT("返")
 
 #define TOKEN_WHILE						HAZE_TEXT("当")
 
@@ -398,7 +398,7 @@ HazeToken Parse::GetNextToken()
 	else if (IsPointer(CurrLexeme, CurrToken))
 	{
 	}
-	else if (VM->IsClass(CurrLexeme))
+	else if (VM->IsClass(CurrLexeme) || CurrParseClass == CurrLexeme)
 	{
 		CurrToken = HazeToken::CustomClass;
 	}
@@ -508,6 +508,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::UnsignedLong:
 	case HazeToken::String:
 	case HazeToken::CustomClass:
+	case HazeToken::PointerBase:
+	case HazeToken::PointerClass:
 		return ParseVariableDefine();
 	case HazeToken::Number:
 		return ParseNumberExpression();
@@ -525,7 +527,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	default:
 		break;
 	}
-	return std::unique_ptr<ASTBase>();
+
+	return nullptr;
 }
 
 std::unique_ptr<ASTBase> Parse::ParseIdentifer()
@@ -567,12 +570,23 @@ std::unique_ptr<ASTVariableDefine> Parse::ParseVariableDefine()
 	{
 		DefineVariable.Type.CustomName = CurrLexeme;
 	}
+	else if (CurrToken == HazeToken::PointerBase)
+	{
+		HazeToken Token = HashMap_Token.find(CurrLexeme.substr(0, CurrLexeme.length() - 1))->second;
+		DefineVariable.Type.PointerToType = GetValueTypeByToken(Token);
+		DefineVariable.Type.CustomName = HAZE_TEXT("");
+	}
+	else if (CurrToken == HazeToken::PointerClass)
+	{
+		DefineVariable.Type.PointerToType = HazeValueType::Class;
+		DefineVariable.Type.CustomName = CurrLexeme.substr(0, CurrLexeme.length() - 1);
+	}
 
 	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse bool expression name wrong\n")))
 	{
 		DefineVariable.Name = CurrLexeme;
 
-		if (ExpectNextTokenIs(HazeToken::Assign, HAZE_TEXT("Error: Parse bool expression expect = \n")))
+		if (ExpectNextTokenIs(HazeToken::Assign))
 		{
 			GetNextToken();		//吃掉赋值符号
 			std::unique_ptr<ASTBase> Expression = ParseExpression();
@@ -755,7 +769,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				}
 
 				Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
-				if (CurrToken == HazeToken::Identifier)
+				if (CurrToken == HazeToken::CustomClass)
 				{
 					Param.Type.PrimaryType = HazeValueType::Class;//此处有待优化
 					Param.Type.CustomName = CurrLexeme;
@@ -958,6 +972,8 @@ std::unique_ptr<ASTStandardLibrary> Parse::ParseStandardLibrary()
 
 std::unique_ptr<ASTClassDefine> Parse::ParseStandardLibrary_ClassDefine()
 {
+	CurrParseClass = CurrLexeme;
+	CurrParseClass.clear();
 	/*std::vector<std::vector<std::unique_ptr<ASTBase>>> Data;
 	std::vector<std::unique_ptr<ASTFunctionDefine>> Function;
 	return std::make_unique<ASTClassDefine>(VM, CurrLexeme, Data, Function);*/
@@ -1061,6 +1077,7 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 {
 	if (ExpectNextTokenIs(HazeToken::Identifier, (HAZE_TEXT("expect correct class name not ") + CurrLexeme).c_str()))
 	{
+		CurrParseClass = CurrLexeme;
 		HAZE_STRING Name = CurrLexeme;
 		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("expect { ")))
 		{
@@ -1092,6 +1109,8 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 			StackSectionSignal.pop();
 
 			GetNextToken();
+
+			CurrParseClass.clear();
 			return std::make_unique<ASTClass>(VM, Name, Vector_ClassData, ClassFunction);
 		}
 	}
@@ -1130,9 +1149,9 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTVariableDefin
 						std::move(std::vector<std::unique_ptr<ASTVariableDefine>>{} )})));
 
 					GetNextToken();
+					GetNextToken();
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						GetNextToken();
 						Vector_ClassData.back().second.push_back(ParseVariableDefine());
 					}
 
@@ -1284,7 +1303,7 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 	return nullptr;
 }
 
-bool Parse::ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo)
+bool Parse::ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo)
 {
 	HazeToken NextToken = GetNextToken();
 	if (Token != NextToken)
@@ -1299,7 +1318,7 @@ bool Parse::ExpectNextTokenIs(HazeToken Token, const wchar_t* ErrorInfo)
 	return true;
 }
 
-bool Parse::TokenIs(HazeToken Token, const wchar_t* ErrorInfo)
+bool Parse::TokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo)
 {
 	if (Token != CurrToken)
 	{

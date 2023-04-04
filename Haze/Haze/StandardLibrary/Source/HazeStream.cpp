@@ -117,7 +117,18 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 	{
 		if (*Start != PRE_SIGN)
 		{
-			HSS << *(Start++);
+			if (*Start == HAZE_CHAR('\\'))
+			{
+				if (*(++Start) == HAZE_CHAR('n'))
+				{
+					Start++;
+					HSS << std::endl;
+				}
+			}
+			else
+			{
+				HSS << *(Start++);
+			}
 		}
 		else if (*(++Start) == PRE_SIGN)
 		{
@@ -153,9 +164,21 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				HSS << TempV;
 				Start++;
 			}
+			else if (*Start == HAZE_CHAR('s'))
+			{
+				size_t TempAddress;
+
+				Offset -= sizeof(TempAddress);
+
+				char* Address = Stack->GetAddressByEBP(Offset);
+				memcpy(&TempAddress, Address, sizeof(TempAddress));
+
+				const HAZE_STRING& Str = Stack->GetVM()->GetHazeStringByIndex(TempAddress);
+				HSS << Str;
+				Start++;
+			}
 		}
 	}
-
 
 	HazePrintfCall(HSS.str().c_str());
 }
