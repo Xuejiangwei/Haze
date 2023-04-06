@@ -41,8 +41,8 @@ enum class HazeDataDesc : unsigned int
 	RegisterEnd,
 
 	Address,
-	Class,
 	ClassThis,
+	Class,
 	ClassMember_Local_Public,
 	ClassMember_Local_Private,
 	ClassMember_Local_Protected,
@@ -95,12 +95,20 @@ struct InstructionData
 	HazeDefineVariable Variable;
 	HazeDataDesc Scope;
 
+	struct AddressData
+	{
+		int BaseAddress;
+		int Offset = 0;
+	};
+
 	union Extra
 	{
 		int Index;
-		int Address;
-		int AddressOffset;
+		AddressData Address;
 		int FunctionCallParamNum;
+
+		Extra()
+		{}
 	} Extra;
 
 	InstructionData() : Scope(HazeDataDesc::None), Variable()

@@ -8,7 +8,7 @@
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
 
-HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class)
+HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class)
 	: Module(Module), Name(Name), Type(Type), OwnerClass(Class)
 {
 	for (auto& it : Param)
@@ -62,7 +62,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 
 	if (!Ret && OwnerClass)
 	{
-		Ret = OwnerClass->GetThisValue()->GetMember(VariableName);
+		Ret = GetObjectMember(GetModule(), VariableName);
 	}
 
 	/*if (MemberName)
@@ -119,7 +119,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 		else if (VectorParam[i].second->IsClass())
 		{
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(VectorParam[i].second);
-			OFStream << " " << ClassValue->GetOwnerClass()->GetName();
+			OFStream << " " << ClassValue->GetOwnerClassName();
 		}
 
 		OFStream << std::endl;

@@ -1,10 +1,15 @@
 #include "ASTBase.h"
 
 #include "HazeVM.h"
+#include "HazeCompilerHelper.h"
 #include "HazeCompiler.h"
 #include "HazeCompilerModule.h"
+#include "HazeCompilerClass.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerValue.h"
+#include "HazeCompilerPointerValue.h"
+#include "HazeCompilerClassValue.h"
+#include "HazeCompilerHelper.h"
 
 //Base
 ASTBase::ASTBase(HazeVM* VM) : VM(VM)
@@ -123,6 +128,12 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	if (Function)
 	{
 		std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Param;
+
+		if (Function->GetClass())
+		{
+			Param.push_back({ GetObjectName(Name), Function->GetClass()->GetThisPointerValue() });
+		}
+
 		for (auto& it : FunctionParam)
 		{
 			Param.push_back({ it->GetName(),  it->CodeGen() });

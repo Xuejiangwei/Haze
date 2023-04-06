@@ -25,9 +25,9 @@ public:
 
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
-	std::shared_ptr<HazeCompilerFunction> CreateFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
+	std::shared_ptr<HazeCompilerFunction> CreateFunction(const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 
-	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> Class, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
+	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> Class, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 
 	void FinishFunction();
 

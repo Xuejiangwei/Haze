@@ -569,15 +569,14 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 							if (IsPointer)
 							{
 								//需要存储一个指针指向地址的相对偏移
-								AddressOffset -= GetSizeByHazeType(CurrFunction.Vector_Param[j].Type.PrimaryType);
-								it.Extra.Address = AddressOffset + GetMemberOffset(*Class, MemberName); //错误，应该是加上偏移位置，需要存储两个值
+								it.Extra.Address.BaseAddress = AddressOffset;
+								it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
 								Find = true;
 								break;
 							}
 							else
 							{
-								AddressOffset -= GetMemberOffset(*Class, MemberName);
-								it.Extra.Address = AddressOffset - GetMemberOffset(*Class, MemberName);
+								it.Extra.Address.BaseAddress = AddressOffset += GetMemberOffset(*Class, MemberName);
 								Find = true;
 								break;
 							}
@@ -597,7 +596,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 							if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name == ObjName)
 							{
 								auto Class = GetClass(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type.CustomName);
-								it.Extra.Address = Offset + GetMemberOffset(*Class, MemberName);
+								it.Extra.Address.BaseAddress = Offset + GetMemberOffset(*Class, MemberName);
 								break;
 							}
 							else
@@ -611,6 +610,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 						}
 						else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::CALL)
 						{
+							Offset -= HAZE_ADDRESS_SIZE;
 							for (auto& Param : NewFunctionTable.Vector_Function[HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name]].Vector_Param)
 							{
 								Offset -= GetSizeByType(Param.Type, this);
@@ -618,7 +618,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 						}
 					}
 				}
-				else if (it.Scope == HazeDataDesc::Local || it.Scope == HazeDataDesc::Temp)
+				else if (it.Scope == HazeDataDesc::Local || it.Scope == HazeDataDesc::Temp || it.Scope == HazeDataDesc::ClassThis)
 				{
 					//需要先判断是不是函数参数，设置为负的索引
 					int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
@@ -628,7 +628,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 						AddressOffset -= GetSizeByHazeType(NewFunctionTable.Vector_Function[k].Vector_Param[j].Type.PrimaryType);
 						if (NewFunctionTable.Vector_Function[k].Vector_Param[j].Name == VariableName)
 						{
-							it.Extra.Address = AddressOffset;
+							it.Extra.Address.BaseAddress = AddressOffset;
 							Find = true;
 							break;
 						}
@@ -647,7 +647,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 						{
 							if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name == VariableName)
 							{
-								it.Extra.Address = Offset;
+								it.Extra.Address.BaseAddress = Offset;
 								break;
 							}
 							else
@@ -661,6 +661,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 						}
 						else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::CALL)
 						{
+							Offset -= HAZE_ADDRESS_SIZE;
 							for (auto& Param : NewFunctionTable.Vector_Function[HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name]].Vector_Param)
 							{
 								Offset -= GetSizeByType(Param.Type, this);
@@ -675,10 +676,9 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 			WSS << GetInstructionString(NewFunctionTable.Vector_Function[k].Vector_Instruction[i].InsCode) << " ";
 			for (auto& it : NewFunctionTable.Vector_Function[k].Vector_Instruction[i].Operator)
 			{
-				WSS << it.Variable.Name << " " << it.Extra.Address << " ";
+				WSS << it.Variable.Name << " " << it.Extra.Address.BaseAddress << " " << it.Extra.Address.Offset << " ";
 			}
-			WSS << std::endl;
-
+			WSS << "       Replace" << std::endl;
 			std::wcout << WSS.str();
 #endif // ENABLE_BACKEND_INSTRUCTION_LOG
 		}
@@ -713,7 +713,11 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		B_OFS.write(BinaryString.data(), UnsignedInt);								//操作数类型2
 
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Index));								//操作数索引
-		//B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.AddressOffset));						//操作数地址偏移
+		
+		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public)
+		{
+			B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移
+		}
 	}
 
 #if HAZE_INS_LOG

@@ -2,8 +2,15 @@
 
 #include <fstream>
 #include "HazeCompilerModule.h"
+#include "HazeCompilerClass.h"
+#include "HazeCompilerFunction.h"
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
+
+HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& ClassName, const HAZE_STRING& FunctionName)
+{
+	return ClassName + HAZE_TEXT("@") + FunctionName;
+}
 
 void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value)
 {
@@ -164,6 +171,113 @@ void StreamDefineVariable(HAZE_STRING_STREAM& HSS, const HazeDefineVariable& Def
 	}
 	
 	HSS << std::endl;
+}
+
+HAZE_STRING GetObjectName(const HAZE_STRING& InName)
+{
+	size_t Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
+	if (Pos != HAZE_STRING::npos)
+	{
+		return InName.substr(0, Pos);
+	}
+	else
+	{
+		Pos = InName.find(HAZE_CLASS_ATTR);
+		if (Pos != HAZE_STRING::npos)
+		{
+			return InName.substr(0, Pos);
+		}
+	}
+
+	return InName;
+}
+
+std::shared_ptr<HazeCompilerValue> GetObjectMember(HazeCompilerModule* Module, const HAZE_STRING& InName)
+{
+	bool IsPointer;
+	return GetObjectMember(Module, InName, IsPointer);
+}
+
+std::shared_ptr<HazeCompilerValue> GetObjectMember(HazeCompilerModule* Module, const HAZE_STRING& InName, bool& IsPointer)
+{
+	HAZE_STRING ObjectName;
+	HAZE_STRING MemberName;
+	return GetObjectNameAndMemberName(Module, InName, ObjectName, MemberName, IsPointer);
+}
+
+std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* Module, const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutMemberName, bool& IsPointer)
+{
+	size_t Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
+	if (Pos != HAZE_STRING::npos)
+	{
+		IsPointer = true;
+		OutObjectName = InName.substr(0, Pos);
+		OutMemberName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
+
+		auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
+		auto ClassValue = static_cast<HazeCompilerClassValue*>(PointerValue->GetPointerValue());
+		return ClassValue->GetMember(OutMemberName);
+	}
+	else
+	{
+		Pos = InName.find(HAZE_CLASS_ATTR);
+		if (Pos != HAZE_STRING::npos)
+		{
+			IsPointer = false;
+			OutObjectName = InName.substr(0, Pos);
+			OutMemberName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
+
+			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
+			return ClassValue->GetMember(OutMemberName);
+			
+		}
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<HazeCompilerFunction> GetObjectFunction(HazeCompilerModule* Module, const HAZE_STRING& InName)
+{
+	bool IsPointer;
+	return GetObjectFunction(Module, InName, IsPointer);
+}
+
+std::shared_ptr<HazeCompilerFunction> GetObjectFunction(HazeCompilerModule* Module, const HAZE_STRING& InName, bool& IsPointer)
+{
+	HAZE_STRING ObjectName;
+	HAZE_STRING FunctionName;
+	return GetObjectNameAndFunctionName(Module, InName, ObjectName, FunctionName, IsPointer);
+}
+
+std::shared_ptr<HazeCompilerFunction> GetObjectNameAndFunctionName(HazeCompilerModule* Module, const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutFunctionName, bool& IsPointer)
+{
+	size_t Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
+	if (Pos != HAZE_STRING::npos)
+	{
+		IsPointer = true;
+		OutObjectName = InName.substr(0, Pos);
+		OutFunctionName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
+
+		auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
+		auto ClassValue = static_cast<HazeCompilerClassValue*>(PointerValue->GetPointerValue());
+		return ClassValue->GetOwnerClass()->FindFunction(OutFunctionName);
+		
+	}
+	else
+	{
+		Pos = InName.find(HAZE_CLASS_ATTR);
+		if (Pos != HAZE_STRING::npos)
+		{
+			IsPointer = false;
+			OutObjectName = InName.substr(0, Pos);
+			OutFunctionName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
+
+			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
+			return ClassValue->GetOwnerClass()->FindFunction(OutFunctionName);
+		}
+	}
+
+	return nullptr;
 }
 
 

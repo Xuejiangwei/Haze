@@ -5,6 +5,7 @@
 class HazeCompilerModule;
 class HazeCompilerFunction;
 class HazeCompilerValue;
+class HazeCompilerPointerValue;
 class HazeCompilerClassValue;
 
 class HazeCompilerClass
@@ -24,7 +25,7 @@ public:
 
 	void InitThisValue();
 
-	std::shared_ptr<HazeCompilerClassValue> GetThisValue() { return ThisValue; }
+	std::shared_ptr<HazeCompilerPointerValue> GetThisPointerValue() { return ThisPointerValue; }
 
 	const HAZE_STRING& GetName() { return Name; }
 
@@ -51,7 +52,8 @@ private:
 
 	unsigned int DataSize;
 
-	std::shared_ptr<HazeCompilerClassValue> ThisValue; //所有同类对象只想此同一个this Value
+	std::shared_ptr<HazeCompilerPointerValue> ThisPointerValue;
+	std::shared_ptr<HazeCompilerClassValue> ThisClassValue;		//所有同类对象只想此同一个this Value
 
 	std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable>>> Vector_Data;
 

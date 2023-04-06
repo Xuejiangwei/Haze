@@ -235,24 +235,28 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 	B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
 	Instruction.Operator.resize(UnsignedInt);
 
-	for (auto& i : Instruction.Operator)
+	for (auto& Iter : Instruction.Operator)
 	{
-		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Variable.Type.PrimaryType));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Variable.Type.PrimaryType));
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
 		BinaryString.resize(UnsignedInt);
 		B_IFS.read(BinaryString.data(), UnsignedInt);
-		i.Variable.Name = String2WString(BinaryString);
+		Iter.Variable.Name = String2WString(BinaryString);
 
-		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Scope));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Scope));
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
 		BinaryString.resize(UnsignedInt);
 		B_IFS.read(BinaryString.data(), UnsignedInt);
-		i.Variable.Type.CustomName = String2WString(BinaryString);
+		Iter.Variable.Type.CustomName = String2WString(BinaryString);
 
-		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.Index));
-		//B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(i.Extra.AddressOffset));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Index));
+
+		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public)
+		{
+			B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型
+		}
 	}
 
 #if HAZE_INS_LOG

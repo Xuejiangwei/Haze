@@ -7,6 +7,7 @@
 #include "HazeCompilerModule.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerPointerValue.h"
+#include "HazeCompilerClassValue.h"
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
@@ -91,11 +92,14 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE
 	{
 		return It->second;
 	}
-
-	return nullptr;
+	else
+	{
+		bool IsPointer;
+		return GetObjectFunction(this, Name, IsPointer);
+	}
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
 {
 	auto It = HashMap_Function.find(Name);
 	if (It == HashMap_Function.end())
@@ -108,12 +112,12 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(HAZE_ST
 	return It->second;
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(std::shared_ptr<HazeCompilerClass> Class, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(std::shared_ptr<HazeCompilerClass> Class, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
 {
 	std::shared_ptr<HazeCompilerFunction> Function = Class->FindFunction(Name);
 	if (!Function)
 	{
-		Function = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param, Class.get());
+		Function = std::make_shared<HazeCompilerFunction>(this, GetHazeClassFunctionName(Class->GetName(), Name), Type, Param, Class.get());
 		Class->AddFunction(Function);
 
 		CurrFunction = Name;
@@ -272,6 +276,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Param[i].second);
 			SStream << Param[i].first << " " << (uint)Param[i].second->GetScope() << " " << PointerValue->GetPointerType().CustomName;
+		}
+		else if (Param[i].second->IsClass())
+		{
+			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Param[i].second);
+			SStream << Param[i].first << " " << (uint)Param[i].second->GetScope() << " " << ClassValue->GetOwnerClassName();
 		}
 		else
 		{
@@ -440,6 +449,11 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
 			HSS << " " << PointerValue->GetPointerType().CustomName;
+		}
+		else if (Value->IsClass())
+		{
+			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value);
+			HSS << " " << ClassValue->GetOwnerClassName();
 		}
 	}
 }
