@@ -32,17 +32,17 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("NEW"), InstructionOpCode::NEW },
 };
 
-std::unordered_map<HAZE_STRING, HazeValue>  HashMap_VirtualRegister =
+std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister =
 {
 	//{ADD_REGISTER, nullptr},
 	//{SUB_REGISTER, nullptr},
 	//{MUL_REGISTER, nullptr},
 	//{DIV_REGISTER, nullptr},
-	{RET_REGISTER, HazeValue()},
-	{NEW_REGISTER, HazeValue()},
+	{RET_REGISTER, HazeRegister()},
+	{NEW_REGISTER, HazeRegister()},
 };
 
-HazeValue* GetVirtualRegister(const HAZE_CHAR* Name)
+HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name)
 {
 	auto Iter = HashMap_VirtualRegister.find(Name);
 	if (Iter != HashMap_VirtualRegister.end())
@@ -97,28 +97,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			HazeValue Value;
-			Value.Type = Operator[1].Variable.Type.PrimaryType;
-			if (Operator[1].Scope == HazeDataDesc::Constant)
-			{
-				StringToHazeValueNumber(Operator[1].Variable.Name, Value);
-				memcpy(GetAddressByOperator(Stack, Operator[0]), &Value.Value, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
-			}
-			else if (Operator[1].Scope == HazeDataDesc::Local)
-			{
-				memcpy(GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]), GetSizeByType(Operator[0].Variable.Type, Stack->VM));
-			}
-			else if (IsRegisterScope(Operator[1].Scope))
-			{
-				HazeValue* Register = GetVirtualRegister(Operator[1].Variable.Name.c_str());
-				int Size = GetSizeByHazeType(Register->Type);
-
-				memcpy(GetAddressByOperator(Stack, Operator[0]) , &Register->Value, Size);
-			}
-			else if (Operator[1].Scope == HazeDataDesc::ConstantString)
-			{
-				memcpy(GetAddressByOperator(Stack, Operator[0]), &Operator[1].Extra.Index, GetSizeByType(Operator[1].Variable.Type, Stack->VM));
-			}
+			char* Dst = GetAddressByOperator(Stack, Operator[0]);
+			char* Src = GetAddressByOperator(Stack, Operator[1]);
+			memcpy(Dst, Src, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 		}
 	}
 
@@ -151,7 +132,7 @@ public:
 			}
 			else
 			{
-				uint TempEBP = Stack->EBP;
+				uint32 TempEBP = Stack->EBP;
 				Stack->EBP = Stack->ESP;
 
 				//±ê×¼¿â²éÕÒ
@@ -189,9 +170,14 @@ public:
 			{
 				memcpy(&Stack->Stack_Main[Stack->ESP], &Stack->PC, Size);
 			}
+			else if (Operator[0].Scope == HazeDataDesc::ClassThis)
+			{
+				uint64 Address = (uint64)GetAddressByOperator(Stack, Operator[0]);
+				memcpy(&Stack->Stack_Main[Stack->ESP], &Address,sizeof(uint64));
+			}
 			else/* if (Operator[0].Scope == InstructionScopeType::Local || Operator[0].Scope == InstructionScopeType::Global)*/
 			{
-				if (Operator[0].Extra.Address + (int)Stack->EBP >= 0)
+				if (Operator[0].Extra.Address.BaseAddress + (int)Stack->EBP >= 0)
 				{
 					memcpy(&Stack->Stack_Main[Stack->ESP], GetAddressByOperator(Stack, Operator[0]), 
 						Operator[0].Scope == HazeDataDesc::ConstantString ? Size = sizeof(Operator[0].Extra.Index) : Size);
@@ -225,7 +211,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			Stack->ESP -= GetSizeByHazeType(Operator[0].Variable.Type.PrimaryType);
+			Stack->ESP -= GetSizeByType(Operator[0].Variable.Type, Stack->VM);
 		}
 	}
 
@@ -442,25 +428,29 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			HazeValue* RetRegister = GetVirtualRegister(RET_REGISTER);
-			RetRegister->Type = (HazeValueType)Operator[0].Variable.Type.PrimaryType;
+			HazeRegister* RetRegister = GetVirtualRegister(RET_REGISTER);
+			RetRegister->Type = Operator[0].Variable.Type;
 
-			int Size = GetSizeByHazeType(RetRegister->Type);
+			int Size = GetSizeByType(RetRegister->Type, Stack->VM);
 
-			memcpy(&RetRegister->Value, GetAddressByOperator(Stack, Operator[0]), Size);
+			RetRegister->Data.resize(Size);
+			memcpy(RetRegister->Data.begin()._Unwrapped(), GetAddressByOperator(Stack, Operator[0]), Size);
 		}
 
+
 		int FunctionIndex = Stack->VM->GetFucntionIndexByName(Stack->Stack_Function.back());
+
+		Stack->Stack_Function.pop_back();
 
 		int Size = 0;
 		for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
 		{
-			Size += GetSizeByHazeType(Iter.Type.PrimaryType);
+			Size += GetSizeByType(Iter.Type, Stack->VM);
 		}
 
 		memcpy(&Stack->PC, &(Stack->Stack_Main[Stack->EBP - 4]), HAZE_ADDRESS_SIZE);
 
-		uint TempEBP = Stack->EBP;
+		uint32 TempEBP = Stack->EBP;
 		Stack->Stack_EBP.pop_back();
 		Stack->EBP = Stack->Stack_EBP.back();
 		Stack->ESP = TempEBP - (HAZE_ADDRESS_SIZE + Size);
@@ -471,19 +461,30 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			HazeValue* NewRegister = GetVirtualRegister(NEW_REGISTER);
-			NewRegister->Type = (HazeValueType)Operator[0].Variable.Type.PrimaryType;
+			HazeRegister* NewRegister = GetVirtualRegister(NEW_REGISTER);
+			NewRegister->Type = Operator[0].Variable.Type;
 
-			int Size = GetSizeByHazeType(NewRegister->Type);
+			int Size = GetSizeByType(NewRegister->Type, Stack->VM);
 
-			NewRegister->Value.Pointer = Stack->VM->Alloca(NewRegister->Type, Size);
+			uint64 Address = (uint64)Stack->VM->Alloca(NewRegister->Type.PrimaryType, Size);
+
+			NewRegister->Data.resize(Size);
+			memcpy(NewRegister->Data.begin()._Unwrapped(), &Address, Size);
 		}
 	}
 
 private:
 	static char* GetAddressByOperator(HazeStack* Stack, const InstructionData& Operator)
 	{
-		if (Operator.Scope == HazeDataDesc::Global)
+		static HazeValue ConstantValue;
+
+		if (Operator.Scope == HazeDataDesc::Constant)
+		{
+			ConstantValue.Type = Operator.Variable.Type.PrimaryType;
+			StringToHazeValueNumber(Operator.Variable.Name, ConstantValue);
+			return (char*)&ConstantValue.Value;
+		}
+		else if (Operator.Scope == HazeDataDesc::Global)
 		{
 			return (char*)&Stack->VM->GetGlobalValue(Operator.Variable.Name)->Value;
 		}
@@ -491,9 +492,21 @@ private:
 		{
 			return (char*)&Operator.Extra.Index;
 		}
+		else if (IsRegisterScope(Operator.Scope))
+		{
+			HazeRegister* Register = GetVirtualRegister(Operator.Variable.Name.c_str());
+			return Register->Data.begin()._Unwrapped();
+		}
+		else if (Operator.Scope == HazeDataDesc::ClassMember_Local_Public && Operator.AddressType == InstructionAddressType::Pointer_Offset)
+		{
+			uint64 Address;
+			memcpy(&Address, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
+
+			return (char*)Address + Operator.Extra.Address.Offset;
+		}
 		else /*if (Operator.Scope == InstructionScopeType::Local || Operator.Scope == InstructionScopeType::Temp)*/
 		{
-			return &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address];
+			return &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
 		}
 	}
 };

@@ -52,6 +52,7 @@ void HazeStack::PushMainFuntion()
 	ESP += HAZE_ADDRESS_SIZE;
 
 	Stack_EBP.push_back(EBP);
+	Stack_EBP.push_back(ESP);
 
 	EBP = ESP;
 

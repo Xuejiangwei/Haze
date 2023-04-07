@@ -84,10 +84,18 @@ enum class InstructionOpCode : unsigned int
 
 //函数及函数调用处理同Jmp处理
 
-enum class InstructionFunctionType : unsigned int
+enum class InstructionFunctionType : uint32
 {
 	HazeFunction,
 	StdLibFunction,
+};
+
+enum class InstructionAddressType : uint8
+{
+	Direct,
+	Index,
+	Address_Offset,
+	Pointer_Offset,
 };
 
 struct InstructionData
@@ -101,11 +109,13 @@ struct InstructionData
 		int Offset = 0;
 	};
 
+	InstructionAddressType AddressType;
 	union Extra
 	{
 		int Index;
 		AddressData Address;
 		int FunctionCallParamNum;
+		void* Pointer;
 
 		Extra()
 		{}
@@ -113,6 +123,7 @@ struct InstructionData
 
 	InstructionData() : Scope(HazeDataDesc::None), Variable()
 	{
+		AddressType = InstructionAddressType::Direct;
 		memset(&Extra, 0, sizeof(Extra));
 	}
 
@@ -153,6 +164,12 @@ struct FunctionData
 		FunctionDescData FunctionDescData;
 		StdLibFunctionCall StdLibFunction;
 	} Extra;
+};
+
+struct HazeRegister
+{
+	std::vector<char> Data;
+	HazeDefineType Type;
 };
 
 bool IsRegisterScope(HazeDataDesc Scope);

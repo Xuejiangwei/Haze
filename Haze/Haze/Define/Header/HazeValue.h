@@ -69,10 +69,10 @@ public:
 	}
 };
 
-enum class InstructionOpCode : uint;
-enum class HazeToken : uint;
+enum class InstructionOpCode : uint32;
+enum class HazeToken : uint32;
 
-uint GetSizeByHazeType(HazeValueType Type);
+uint32 GetSizeByHazeType(HazeValueType Type);
 
 HazeValueType GetValueTypeByToken(HazeToken Token);
 

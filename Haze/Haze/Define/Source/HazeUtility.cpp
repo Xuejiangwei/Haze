@@ -57,7 +57,7 @@ bool IsNumber(const HAZE_STRING& Str)
 
 HazeValueType GetNumberDefaultType(const HAZE_STRING& Str)
 {
-	std::wregex Pattern(HAZE_TEXT("^[0-9]+(.[0-9])+$"));
+	std::wregex Pattern(HAZE_TEXT("-?(([1-9]\\d*\\.\\d*)|(0\\.\\d*[1-9]\\d*))"));
 	bool IsFloat = std::regex_match(Str, Pattern);
 	if (IsFloat)
 	{

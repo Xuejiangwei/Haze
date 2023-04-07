@@ -33,7 +33,7 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalStringVariable(const HAZE_STRING& String);
 
-	uint GetGlobalStringIndex(std::shared_ptr<HazeCompilerValue> Value);
+	uint32 GetGlobalStringIndex(std::shared_ptr<HazeCompilerValue> Value);
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 
@@ -42,7 +42,7 @@ public:
 public:
 	std::shared_ptr<HazeCompilerClass> FindClass(const HAZE_STRING& ClassName);
 	
-	uint GetClassSize(const HAZE_STRING& ClassName);
+	uint32 GetClassSize(const HAZE_STRING& ClassName);
 
 public:
 	std::shared_ptr<HazeCompilerValue> CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);

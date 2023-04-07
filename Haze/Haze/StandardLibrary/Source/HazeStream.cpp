@@ -141,7 +141,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				return;
 			}
 			HAZE_CHAR Form[MAX_FORMAT];
-			Start._Ptr = GetFormat(Start._Ptr, Form);
+			Start._Seek_to(GetFormat(Start._Unwrapped(), Form));
 		
 			Start++;
 			if (*Start == HAZE_CHAR('d'))

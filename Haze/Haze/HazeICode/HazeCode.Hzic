@@ -4,12 +4,12 @@ GlobalDataTable
 StringTable
 2
 5 我的字符串
-26 测试%d 哈哈哈 %f \n快递费 %d %s \n
+26 测试%f 哈哈哈 %d \n快递费 %f %s \n
 ClassTable
 1
 Class 点 8 2
 横坐标 3
-纵坐标 3
+纵坐标 4
 FunctionTable
 3
 Function 点@加 0
@@ -21,11 +21,11 @@ MOV 3 TempBinaryValue 5 3 己指之横坐标 13
 ADD 3 TempBinaryValue 5 3 乙之横坐标 13
 MOV 3 己指之横坐标 13 3 TempBinaryValue 5
 POP 3 TempBinaryValue 5
-PUSH 3 TempBinaryValue 5
-MOV 3 TempBinaryValue 5 3 己指之纵坐标 13
-ADD 3 TempBinaryValue 5 3 乙之纵坐标 13
-MOV 3 己指之纵坐标 13 3 TempBinaryValue 5
-POP 3 TempBinaryValue 5
+PUSH 4 TempBinaryValue 5
+MOV 4 TempBinaryValue 5 4 己指之纵坐标 13
+ADD 4 TempBinaryValue 5 4 乙之纵坐标 13
+MOV 4 己指之纵坐标 13 4 TempBinaryValue 5
+POP 4 TempBinaryValue 5
 RET 0
 End
 Function 点@求加 11
@@ -39,21 +39,21 @@ MOV 3 TempBinaryValue 5 3 甲之横坐标 13
 ADD 3 TempBinaryValue 5 3 乙之横坐标 13
 MOV 3 值之横坐标 13 3 TempBinaryValue 5
 POP 3 TempBinaryValue 5
-PUSH 3 TempBinaryValue 5
-MOV 3 TempBinaryValue 5 3 甲之纵坐标 13
-ADD 3 TempBinaryValue 5 3 乙之纵坐标 13
-MOV 3 值之纵坐标 13 3 TempBinaryValue 5
-POP 3 TempBinaryValue 5
-RET 11 值 2
+PUSH 4 TempBinaryValue 5
+MOV 4 TempBinaryValue 5 4 甲之纵坐标 13
+ADD 4 TempBinaryValue 5 4 乙之纵坐标 13
+MOV 4 值之纵坐标 13 4 TempBinaryValue 5
+POP 4 TempBinaryValue 5
+RET 11 值 2 点
 End
 Function 主函数 3
 Start
 PUSH 11 测试甲 2 点
-MOV 3 测试甲之纵坐标 13 3 4 3
-MOV 3 测试甲之横坐标 13 4 699.213 3
+MOV 4 测试甲之纵坐标 13 4 4.2 3
+MOV 3 测试甲之横坐标 13 3 123 3
 PUSH 11 测试乙 2 点
-MOV 3 测试乙之纵坐标 13 3 8 3
-MOV 3 测试乙之横坐标 13 4 1.213 3
+MOV 4 测试乙之纵坐标 13 4 8.3 3
+MOV 3 测试乙之横坐标 13 3 123 3
 PUSH 11 测试甲 2 点
 PUSH 10 测试乙 11 点
 PUSH 3 Address 10
@@ -68,9 +68,9 @@ MOV 11 测试丙 2 点 0 Ret_R 7
 PUSH 9 我的字符 2 9
 MOV 9 我的字符 2 2 9 常字符串指针 4 2 0
 PUSH 9 我的字符 2 2
-PUSH 3 测试丙之纵坐标 13
+PUSH 4 测试丙之纵坐标 13
 PUSH 3 测试乙之横坐标 13
-PUSH 3 测试甲之纵坐标 13
+PUSH 4 测试甲之纵坐标 13
 PUSH 9 常字符串指针 4 2 1
 PUSH 3 Address 10
 CALL 打印 5

@@ -8,6 +8,27 @@
 
 static std::pair<bool, int> ParseStringCount = { false, 0 };
 
+static void FindObjectAndMemberName(const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutMemberName, bool& ObjectIsPointer)
+{
+	size_t Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
+	if (Pos != HAZE_STRING::npos)
+	{
+		OutObjectName = InName.substr(0, Pos);
+		OutMemberName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
+		ObjectIsPointer = true;
+	}
+	else
+	{
+		Pos = InName.find(HAZE_CLASS_ATTR);
+		if (Pos != HAZE_STRING::npos)
+		{
+			OutObjectName = InName.substr(0, Pos);
+			OutMemberName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
+			ObjectIsPointer = false;
+		}
+	}
+}
+
 BackendParse::BackendParse(HazeVM* VM) : VM(VM)
 {
 	CurrCode = nullptr;
@@ -81,7 +102,7 @@ void BackendParse::Parse_I_Code()
 {
 	//Standard lib
 	GetNextLexeme();
-	CurrParseModule->IsStdLib = StringToStandardType<uint>(CurrLexeme);
+	CurrParseModule->IsStdLib = StringToStandardType<uint32>(CurrLexeme);
 
 	//Global data
 	GetNextLexeme();
@@ -105,7 +126,7 @@ void BackendParse::Parse_I_Code_GlobalTable()
 	if (CurrLexeme == GetGlobalDataHeaderString())
 	{
 		GetNextLexeme();
-		uint Num = StringToStandardType<uint>(CurrLexeme);
+		uint32 Num = StringToStandardType<uint32>(CurrLexeme);
 
 		ModuleUnit::GlobalDataTable& Table = CurrParseModule->Table_GlobalData;
 		Table.Vector_Data.resize(Num);
@@ -115,7 +136,7 @@ void BackendParse::Parse_I_Code_GlobalTable()
 			GetNextLexmeAssign_HazeString(Table.Vector_Data[i].Name);
 
 
-			GetNextLexmeAssign_CustomType<uint>(Table.Vector_Data[i].Value.Type);
+			GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Data[i].Value.Type);
 
 			GetNextLexeme();
 			StringToHazeValueNumber(CurrLexeme, Table.Vector_Data[i].Value);
@@ -127,7 +148,7 @@ void BackendParse::Parse_I_Code_StringTable()
 {
 	if (CurrLexeme == GetStringTableHeaderString())
 	{
-		uint Num;
+		uint32 Num;
 		GetNextLexmeAssign_StandardType(Num);
 
 		ModuleUnit::StringTable& Table = CurrParseModule->Table_String;
@@ -147,7 +168,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 {
 	if (CurrLexeme == GetClassTableHeaderString())
 	{
-		uint Num;
+		uint32 Num;
 		GetNextLexmeAssign_StandardType(Num);
 
 		ModuleUnit::ClassTable& Table = CurrParseModule->Table_Class;
@@ -170,7 +191,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 				{
 					GetNextLexmeAssign_HazeString(Table.Vector_Class[i].Vector_Member[j].Name);
 
-					GetNextLexmeAssign_CustomType<uint>(Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType);
+					GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType);
 
 					if (Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType == HazeValueType::PointerClass 
 						|| Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType == HazeValueType::Class)
@@ -179,7 +200,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 					}
 					else if (Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType == HazeValueType::PointerBase)
 					{
-						GetNextLexmeAssign_CustomType<uint>(Table.Vector_Class[i].Vector_Member[j].Type.PointerToType);
+						GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Type.PointerToType);
 					}
 				}
 			}
@@ -191,7 +212,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 {
 	if (CurrLexeme == GetFucntionTableHeaderString())
 	{
-		uint Num;
+		uint32 Num;
 		GetNextLexmeAssign_StandardType(Num);
 
 		ModuleUnit::FunctionTable& Table = CurrParseModule->Table_Function;
@@ -207,7 +228,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 				GetNextLexmeAssign_HazeString(Table.Vector_Function[i].Name);
 
-				GetNextLexmeAssign_CustomType<uint>(Table.Vector_Function[i].Type);
+				GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Function[i].Type);
 
 				GetNextLexeme();
 				while (CurrLexeme == GetFunctionParamHeader())
@@ -215,7 +236,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					HazeDefineVariable Param;
 					GetNextLexmeAssign_HazeString(Param.Name);
 
-					GetNextLexmeAssign_CustomType<uint>(Param.Type.PrimaryType);
+					GetNextLexmeAssign_CustomType<uint32>(Param.Type.PrimaryType);
 
 					if (Param.Type.PrimaryType == HazeValueType::PointerClass || Param.Type.PrimaryType == HazeValueType::Class)
 					{
@@ -224,7 +245,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					}
 					else if (Param.Type.PrimaryType == HazeValueType::PointerBase)
 					{
-						GetNextLexmeAssign_CustomType<uint>(Param.Type.PointerToType);
+						GetNextLexmeAssign_CustomType<uint32>(Param.Type.PointerToType);
 					}
 
 					Table.Vector_Function[i].Vector_Param.push_back(std::move(Param));
@@ -252,17 +273,20 @@ void BackendParse::Parse_I_Code_FunctionTable()
 	}
 }
 
-void BackendParse::ParseInstructionData(InstructionData& Data)
+void BackendParse::ParseInstructionData(InstructionData& Data, bool ParsePrimaryType)
 {
-	GetNextLexmeAssign_CustomType<uint>(Data.Variable.Type.PrimaryType);
+	if (ParsePrimaryType)
+	{
+		GetNextLexmeAssign_CustomType<uint32>(Data.Variable.Type.PrimaryType);
+	}
 	
 	GetNextLexmeAssign_HazeString(Data.Variable.Name);
 
-	GetNextLexmeAssign_CustomType<uint>(Data.Scope);
+	GetNextLexmeAssign_CustomType<uint32>(Data.Scope);
 
 	if (Data.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 	{
-		GetNextLexmeAssign_CustomType<uint>(Data.Variable.Type.PointerToType);
+		GetNextLexmeAssign_CustomType<uint32>(Data.Variable.Type.PointerToType);
 
 		if (Data.Scope == HazeDataDesc::ConstantString)
 		{
@@ -326,7 +350,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		InstructionData OperatorOne;
 
 		GetNextLexeme();
-		OperatorOne.Variable.Type.PrimaryType = (HazeValueType)StringToStandardType<uint>(CurrLexeme);
+		OperatorOne.Variable.Type.PrimaryType = (HazeValueType)StringToStandardType<uint32>(CurrLexeme);
 
 		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::Void)
 		{
@@ -335,11 +359,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		}
 		else
 		{
-			GetNextLexeme();
-			OperatorOne.Variable.Name = CurrLexeme;
-
-			GetNextLexeme();
-			OperatorOne.Scope = (HazeDataDesc)StringToStandardType<uint>(CurrLexeme);
+			ParseInstructionData(OperatorOne, false);
 		}
 
 		Instruction.Operator = { OperatorOne };
@@ -404,14 +424,14 @@ void BackendParse::GenOpCodeFile()
 	ReplaceOffset(NewGlobalDataTable, NewStringTable, NewClassTable, NewFunctionTable);
 
 	//将全局数据写入
-	uint UnsignedInt = (uint)NewGlobalDataTable.Vector_Data.size();
+	uint32 UnsignedInt = (uint32)NewGlobalDataTable.Vector_Data.size();
 	HAZE_BINARY_STRING BinaryString;
 	
 	FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 	for (auto& i : NewGlobalDataTable.Vector_Data)
 	{
 		BinaryString = WString2String(i.Name);
-		UnsignedInt = (uint)BinaryString.size();
+		UnsignedInt = (uint32)BinaryString.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		
 		FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
@@ -420,82 +440,82 @@ void BackendParse::GenOpCodeFile()
 	}
 
 	//将字符串表写入
-	UnsignedInt = (uint)NewStringTable.Vector_String.size();
+	UnsignedInt = (uint32)NewStringTable.Vector_String.size();
 	FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 
 	for (auto& i : NewStringTable.Vector_String)
 	{
 		BinaryString = WString2String(i.String);
-		UnsignedInt = (uint)BinaryString.size();
+		UnsignedInt = (uint32)BinaryString.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		FS_OpCode.write(BinaryString.data(), UnsignedInt);
 	}
 
 	//将类表写入
-	UnsignedInt = (uint)NewClassTable.Vector_Class.size();
+	UnsignedInt = (uint32)NewClassTable.Vector_Class.size();
 	FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 
 	for (auto& Iter : NewClassTable.Vector_Class)
 	{
 		BinaryString = WString2String(Iter.Name);
-		UnsignedInt = (uint)BinaryString.size();
+		UnsignedInt = (uint32)BinaryString.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		FS_OpCode.write(BinaryString.data(), UnsignedInt);
 
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Size));
 
-		UnsignedInt = (uint)Iter.Vector_Member.size();
+		UnsignedInt = (uint32)Iter.Vector_Member.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 
 		for (size_t i = 0; i < Iter.Vector_Member.size(); i++)
 		{
 			BinaryString = WString2String(Iter.Vector_Member[i].Name);
-			UnsignedInt = (uint)BinaryString.size();
+			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.data(), UnsignedInt);
 
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Vector_Member[i].Type.PrimaryType));
 
 			BinaryString = WString2String(HAZE_STRING(Iter.Vector_Member[i].Type.CustomName));
-			UnsignedInt = (uint)BinaryString.size();
+			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.data(), UnsignedInt);
 		}
 	}
 
 	//将函数表写入
-	UnsignedInt = (uint)NewFunctionTable.Vector_Function.size();
+	UnsignedInt = (uint32)NewFunctionTable.Vector_Function.size();
 	FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 
-	uint InstructionStartAddr = 0;
+	uint32 InstructionStartAddr = 0;
 	for (auto& i : NewFunctionTable.Vector_Function)
 	{
 		BinaryString = WString2String(i.Name);
-		UnsignedInt = (uint)BinaryString.size();
+		UnsignedInt = (uint32)BinaryString.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		FS_OpCode.write(BinaryString.data(), UnsignedInt);
 
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Type));
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.DescType));
 
-		UnsignedInt = (uint)i.Vector_Param.size();
+		UnsignedInt = (uint32)i.Vector_Param.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		for (auto& iter : i.Vector_Param)
 		{
 			BinaryString = WString2String(iter.Name);
-			UnsignedInt = (uint)BinaryString.size();
+			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
 
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(iter.Type.PrimaryType));
 			BinaryString = WString2String(iter.Type.CustomName);
-			UnsignedInt = (uint)BinaryString.size();
+			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
 		}
 
 		//写入指令数与起始地址
-		UnsignedInt = (uint)i.Vector_Instruction.size();
+		UnsignedInt = (uint32)i.Vector_Instruction.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(InstructionStartAddr));
@@ -534,6 +554,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 				if (it.Scope == HazeDataDesc::Global)
 				{
 					it.Extra.Index = NewGlobalDataTable.GetIndex(VariableName);
+					it.AddressType = InstructionAddressType::Index;
 				}
 				else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)
 				{
@@ -541,23 +562,8 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 
 					HAZE_STRING ObjName;
 					HAZE_STRING MemberName;
-					size_t Pos = VariableName.find(HAZE_CLASS_POINTER_ATTR);
-					bool IsPointer = true;
-					if (Pos != HAZE_STRING::npos)
-					{
-						ObjName = VariableName.substr(0, Pos);
-						MemberName = VariableName.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
-					}
-					else
-					{
-						Pos = VariableName.find(HAZE_CLASS_ATTR);
-						if (Pos != HAZE_STRING::npos)
-						{
-							ObjName = VariableName.substr(0, Pos);
-							MemberName = VariableName.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
-							IsPointer = false;
-						}
-					}
+					bool IsPointer = false;
+					FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
 
 					bool Find = false;
 					for (int j = (int)CurrFunction.Vector_Param.size() - 1; j >= 0; --j)
@@ -571,6 +577,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 								//需要存储一个指针指向地址的相对偏移
 								it.Extra.Address.BaseAddress = AddressOffset;
 								it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+								it.AddressType = InstructionAddressType::Pointer_Offset;
 								Find = true;
 								break;
 							}
@@ -589,7 +596,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 					}
 
 					int Offset = 0;
-					for (uint j = 0; j < i; j++)
+					for (uint32 j = 0; j < i; j++)
 					{
 						if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::PUSH)
 						{
@@ -641,7 +648,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 
 
 					int Offset = 0;
-					for (uint j = 0; j < i; j++)
+					for (uint32 j = 0; j < i; j++)
 					{
 						if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::PUSH)
 						{
@@ -687,12 +694,12 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 
 void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction)
 {
-	uint UnsignedInt = 0;
+	uint32 UnsignedInt = 0;
 	HAZE_BINARY_STRING BinaryString;
 
 	B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Instruction.InsCode));				//字节码
 
-	UnsignedInt = (uint)Instruction.Operator.size();										
+	UnsignedInt = (uint32)Instruction.Operator.size();										
 	B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));						//操作数个数
 
 	//std::pair<InstructionDataType, std::pair<HAZE_STRING, uint>>;
@@ -701,18 +708,19 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Variable.Type.PrimaryType));		//操作数类型
 
 		BinaryString = WString2String(Iter.Variable.Name);
-		UnsignedInt = (uint)BinaryString.size();
+		UnsignedInt = (uint32)BinaryString.size();
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		B_OFS.write(BinaryString.data(), UnsignedInt);								//操作数名字
 
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Scope));						//操作数作用域
 
 		BinaryString = WString2String(Iter.Variable.Type.CustomName);
-		UnsignedInt = (uint)BinaryString.size();
+		UnsignedInt = (uint32)BinaryString.size();
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		B_OFS.write(BinaryString.data(), UnsignedInt);								//操作数类型2
 
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Index));								//操作数索引
+		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.AddressType));
 		
 		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public)
 		{
@@ -725,7 +733,7 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 	WSS << GetInstructionString(Instruction.InsCode) << " ";
 	for (auto& it : Instruction.Operator)
 	{
-		WSS << it.Variable.Name << " " << (uint)it.Variable.Type.PrimaryType << " " << (uint)it.Scope << " " << it.Extra.Index << " ";
+		WSS << it.Variable.Name << " " << (uint32)it.Variable.Type.PrimaryType << " " << (uint32)it.Scope << " " << it.Extra.Index << " ";
 	}
 	WSS << std::endl;
 
@@ -749,7 +757,7 @@ const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING
 	return nullptr;
 }
 
-uint const BackendParse::GetClassSize(const HAZE_STRING& ClassName)
+uint32 const BackendParse::GetClassSize(const HAZE_STRING& ClassName)
 {
 	auto Class = GetClass(ClassName);
 	if (Class)
@@ -760,9 +768,9 @@ uint const BackendParse::GetClassSize(const HAZE_STRING& ClassName)
 	return 0;
 }
 
-uint BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName)
+uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName)
 {
-	uint Offset = 0;
+	uint32 Offset = 0;
 	for (auto& Iter : Class.Vector_Member)
 	{
 		if (Iter.Name != MemberName)
@@ -775,5 +783,5 @@ uint BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& Class, cons
 		}
 	}
 
-	return (uint)-1;
+	return (uint32)-1;
 }

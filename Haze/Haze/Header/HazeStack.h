@@ -32,10 +32,10 @@ private:
 	HazeVM* VM;
 
 	std::vector<char> Stack_Main;
-	std::vector<uint> Stack_EBP;
+	std::vector<uint32> Stack_EBP;
 	std::vector<HAZE_STRING> Stack_Function; // ÔÝÊ±²»ÐèÒª¸¨ÖúÕ»
 
 	int PC;
-	uint EBP;		//Õ»µ×
-	uint ESP;		//Õ»¶¥
+	uint32 EBP;		//Õ»µ×
+	uint32 ESP;		//Õ»¶¥
 };

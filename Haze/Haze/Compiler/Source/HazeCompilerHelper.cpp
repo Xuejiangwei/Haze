@@ -138,12 +138,12 @@ void StreamClassValue(HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue
 
 void StreamCompilerValue(HAZE_STRING_STREAM& HSS, InstructionOpCode InsCode, std::shared_ptr<HazeCompilerValue> Value, const HAZE_CHAR* DefaultName)
 {
-	HSS << GetInstructionString(InsCode) << " " << (uint)Value->GetValue().Type;
+	HSS << GetInstructionString(InsCode) << " " << (uint32)Value->GetValue().Type;
 	if (DefaultName)
 	{
 		HSS << " " << DefaultName;
 	}
-	HSS << " " << (uint)Value->GetScope();
+	HSS << " " << (uint32)Value->GetScope();
 
 	if (Value->IsPointer())
 	{

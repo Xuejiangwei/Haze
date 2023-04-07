@@ -51,7 +51,7 @@ private:
 	
 	void Parse_I_Code_FunctionTable();
 
-	void ParseInstructionData(InstructionData& Data);
+	void ParseInstructionData(InstructionData& Data, bool ParsePrimaryType = true);
 	
 	void ParseInstruction(ModuleUnit::FunctionInstruction& Instruction);
 

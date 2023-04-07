@@ -252,6 +252,7 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 		Iter.Variable.Type.CustomName = String2WString(BinaryString);
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Index));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.AddressType));
 
 		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public)
 		{

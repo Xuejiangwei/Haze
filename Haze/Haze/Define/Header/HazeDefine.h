@@ -63,6 +63,7 @@
 
 #define HAZE_ADDRESS_SIZE (int)sizeof(int)
 
-using llong = long long;
-using uint = unsigned int;
-using ulong = unsigned long long;
+using int64 = long long;
+using uint8 = unsigned char;
+using uint32 = unsigned int;
+using uint64 = unsigned long long;

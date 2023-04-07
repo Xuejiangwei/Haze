@@ -3,7 +3,7 @@
 #include "HazeValue.h"
 #include "Haze.h"
 
-uint GetSizeByHazeType(HazeValueType Type)
+uint32 GetSizeByHazeType(HazeValueType Type)
 {
     switch (Type)
     {
@@ -177,9 +177,9 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
         break;
     case HazeValueType::Long:
     {
-        CALC_VARIABLE_DEFINE_INIT(llong, Source, Target);
-        CALC_VARIABLE_CALCULATE(llong, TypeCode);
-        CALC_ASSIGN(llong);
+        CALC_VARIABLE_DEFINE_INIT(int64, Source, Target);
+        CALC_VARIABLE_CALCULATE(int64, TypeCode);
+        CALC_ASSIGN(int64);
     }
         break;
     case HazeValueType::Double:
@@ -191,16 +191,16 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
         break;
     case HazeValueType::UnsignedInt:
     {
-        CALC_VARIABLE_DEFINE_INIT(uint, Source, Target);
-        CALC_VARIABLE_CALCULATE(uint, TypeCode);
-        CALC_ASSIGN(uint);
+        CALC_VARIABLE_DEFINE_INIT(uint32, Source, Target);
+        CALC_VARIABLE_CALCULATE(uint32, TypeCode);
+        CALC_ASSIGN(uint32);
     }
         break;
     case HazeValueType::UnsignedLong:
     {
-        CALC_VARIABLE_DEFINE_INIT(ulong, Source, Target);
-        CALC_VARIABLE_CALCULATE(ulong, TypeCode);
-        CALC_ASSIGN(ulong);
+        CALC_VARIABLE_DEFINE_INIT(uint64, Source, Target);
+        CALC_VARIABLE_CALCULATE(uint64, TypeCode);
+        CALC_ASSIGN(uint64);
     }
         break;
     default:
