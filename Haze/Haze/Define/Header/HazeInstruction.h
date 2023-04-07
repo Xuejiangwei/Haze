@@ -109,12 +109,18 @@ struct InstructionData
 		int Offset = 0;
 	};
 
+	struct FunctionCall
+	{
+		int ParamNum;
+		int ParamByteSize;
+	};
+
 	InstructionAddressType AddressType;
 	union Extra
 	{
 		int Index;
 		AddressData Address;
-		int FunctionCallParamNum;
+		FunctionCall Call;
 		void* Pointer;
 
 		Extra()

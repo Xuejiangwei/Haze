@@ -254,6 +254,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 
 	HAZE_STRING_STREAM SStream;
 	
+	uint32 Size = 0;
 	for (int i = (int)Param.size() -1; i >= 0; i--)
 	{
 		SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(Param[i].second->GetValue().Type) << " ";
@@ -292,12 +293,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		SStream << std::endl;
 		BB->PushIRCode(SStream.str());
 		SStream.str(HAZE_TEXT(""));
+
+		Size += Param[i].second->GetSize();
 	}
 
 	SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Int) << " " << HAZE_CALL_PUSH_ADDRESS_NAME
 		<< " " << (uint32)HazeDataDesc::Address << std::endl;
 
-	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << Param.size() << std::endl;
+	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << Param.size() << " " << Size << std::endl;
 	BB->PushIRCode(SStream.str());
 
 	return HazeCompiler::GetRegister(RET_REGISTER);

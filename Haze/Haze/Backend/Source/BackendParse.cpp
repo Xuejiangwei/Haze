@@ -2,6 +2,7 @@
 #include <fstream>
 
 #include "BackendParse.h"
+#include "HazeUtility.h"
 #include "HazeVM.h"
 
 #include "HazeLog.h"
@@ -85,13 +86,13 @@ void BackendParse::Parse()
 void BackendParse::GetNextLexeme()
 {
 	CurrLexeme.clear();
-	while (isspace(*CurrCode))
+	while (HazeIsSpace(*CurrCode))
 	{
 		CurrCode++;
 	}
 
 	CurrLexeme.clear();
-	while (!isspace(*CurrCode) || (ParseStringCount.first && ParseStringCount.second > 0))
+	while (!HazeIsSpace(*CurrCode) || (ParseStringCount.first && ParseStringCount.second > 0))
 	{
 		CurrLexeme += *(CurrCode++);
 		ParseStringCount.second--;
@@ -377,12 +378,12 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	{
 		InstructionData OperatorOne;
 
-		GetNextLexeme();
 		OperatorOne.Scope = HazeDataDesc::None;
-		OperatorOne.Variable.Name = CurrLexeme;
 
-		GetNextLexeme();
-		OperatorOne.Extra.FunctionCallParamNum = StringToStandardType<int>(CurrLexeme);
+		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
+
+		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamNum);
+		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamByteSize);
 
 		Instruction.Operator = { OperatorOne };
 	}
@@ -726,6 +727,11 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		{
 			B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Address.Offset));						//²Ù×÷ÊýµØÖ·Æ«ÒÆ
 		}
+	}
+
+	if (Instruction.InsCode == InstructionOpCode::CALL)
+	{
+		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Instruction.Operator[0].Extra.Call.ParamByteSize));
 	}
 
 #if HAZE_INS_LOG

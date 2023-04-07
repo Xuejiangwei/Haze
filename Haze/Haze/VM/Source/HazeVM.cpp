@@ -260,6 +260,11 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 		}
 	}
 
+	if (Instruction.InsCode == InstructionOpCode::CALL)
+	{
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Instruction.Operator[0].Extra.Call.ParamByteSize));
+	}
+
 #if HAZE_INS_LOG
 	HAZE_STRING_STREAM WSS;
 	WSS << GetInstructionString(Instruction.InsCode) << " ";

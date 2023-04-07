@@ -49,6 +49,11 @@ const HAZE_CHAR* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
+bool HazeIsSpace(HAZE_CHAR Char)
+{
+	return Char == HAZE_CHAR(' ') || Char == HAZE_CHAR('\n') || Char == HAZE_CHAR('\t') || Char == HAZE_CHAR('\v') || Char == HAZE_CHAR('\f') || Char == HAZE_CHAR('\r');
+}
+
 bool IsNumber(const HAZE_STRING& Str)
 {
 	std::wregex Pattern(HAZE_TEXT("-[0-9]+(.[0-9]+)?|[0-9]+(.[0-9]+)?"));

@@ -26,6 +26,8 @@ const HAZE_CHAR* GetFunctionStartHeader();
 
 const HAZE_CHAR* GetFunctionEndHeader();
 
+bool HazeIsSpace(HAZE_CHAR Char);
+
 bool IsNumber(const HAZE_STRING& Str);
 
 HazeValueType GetNumberDefaultType(const HAZE_STRING& Str);

@@ -136,18 +136,11 @@ public:
 				Stack->EBP = Stack->ESP;
 
 				//±ê×¼¿â²éÕÒ
-				Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.FunctionCallParamNum);
+				Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.Call.ParamNum);
 
-				int Size = 0;
-				for (auto& Iter : Function.Vector_Param)
-				{
-					Size += GetSizeByHazeType(Iter.Type.PrimaryType);
-				}
+				Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
 
-
-				Stack->ESP -= (Size + HAZE_ADDRESS_SIZE);
-
-				Stack->Stack_EBP.push_back(Stack->ESP);
+				//Stack->Stack_EBP.push_back(Stack->ESP);
 
 				Stack->EBP = TempEBP;
 			}

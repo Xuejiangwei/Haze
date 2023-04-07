@@ -331,7 +331,7 @@ HazeToken Parse::GetNextToken()
 		return HazeToken::None;
 	}
 
-	while (isspace(*CurrCode))
+	while (HazeIsSpace(*CurrCode))
 	{
 		CurrCode++;
 	}
@@ -344,7 +344,7 @@ HazeToken Parse::GetNextToken()
 	//Match Token
 	CurrLexeme.clear();
 	const HAZE_CHAR* Signal = nullptr;
-	while (!isspace(*CurrCode) || CurrToken == HazeToken::StringStart)
+	while (!HazeIsSpace(*CurrCode) || CurrToken == HazeToken::StringStart)
 	{
 		if (IsHazeSignalToken(*CurrCode, Signal))
 		{
@@ -524,6 +524,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseReturn();
 	case HazeToken::New:
 		return ParseNew();
+	case HazeToken::If:
+		return ParseIfExpression();
 	default:
 		break;
 	}
@@ -656,6 +658,11 @@ std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseIfExpression()
 {
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：若 表达式期望捕捉 (")))
+	{
+		auto ConditionExpression = ParseExpression();
+
+	}
 	return nullptr;
 }
 

@@ -33,11 +33,14 @@ int main()
 	VM.InitVM({ {Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode")} });
 	VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode")} });
 	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
+
+	std::cout << std::endl << std::endl;
+	std::cout << "Haze Start" << std::endl << std::endl;
 	VM.StartMainFunction();
 
 	//VM.ParseString(L"Haze 测试 \n");
 
-	std::cout << "Haze End!\n";
+	std::cout << std::endl << "Haze End!" << std::endl;
 	getchar();
 }
 

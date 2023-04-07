@@ -2,7 +2,9 @@
 GlobalDataTable
 0
 StringTable
-2
+4
+16 不cd需要改变纵坐标 %d \n
+16 需要改变纵坐标 %f %d \n
 5 我的字符串
 26 测试%f 哈哈哈 %d \n快递费 %f %s \n
 ClassTable
@@ -26,6 +28,10 @@ MOV 4 TempBinaryValue 5 4 己指之纵坐标 13
 ADD 4 TempBinaryValue 5 4 乙之纵坐标 13
 MOV 4 己指之纵坐标 13 4 TempBinaryValue 5
 POP 4 TempBinaryValue 5
+PUSH 3 己指之横坐标 13
+PUSH 9 常字符串指针 4 2 0
+PUSH 3 Address 10
+CALL 打印 2 12
 RET 0
 End
 Function 点@求加 11
@@ -44,6 +50,11 @@ MOV 4 TempBinaryValue 5 4 甲之纵坐标 13
 ADD 4 TempBinaryValue 5 4 乙之纵坐标 13
 MOV 4 值之纵坐标 13 4 TempBinaryValue 5
 POP 4 TempBinaryValue 5
+PUSH 3 值之横坐标 13
+PUSH 4 值之纵坐标 13
+PUSH 9 常字符串指针 4 2 1
+PUSH 3 Address 10
+CALL 打印 3 16
 RET 11 值 2 点
 End
 Function 主函数 3
@@ -52,27 +63,27 @@ PUSH 11 测试甲 2 点
 MOV 4 测试甲之纵坐标 13 4 4.2 3
 MOV 3 测试甲之横坐标 13 3 123 3
 PUSH 11 测试乙 2 点
-MOV 4 测试乙之纵坐标 13 4 8.3 3
+MOV 4 测试乙之纵坐标 13 4 8.1 3
 MOV 3 测试乙之横坐标 13 3 123 3
 PUSH 11 测试甲 2 点
 PUSH 10 测试乙 11 点
 PUSH 3 Address 10
-CALL 点@加 2
+CALL 点@加 2 16
 PUSH 11 测试丙 2 点
 PUSH 11 测试乙 2 点
 PUSH 11 测试甲 2 点
 PUSH 10 测试丙 11 点
 PUSH 3 Address 10
-CALL 点@求加 3
+CALL 点@求加 3 24
 MOV 11 测试丙 2 点 0 Ret_R 7
 PUSH 9 我的字符 2 9
-MOV 9 我的字符 2 2 9 常字符串指针 4 2 0
+MOV 9 我的字符 2 2 9 常字符串指针 4 2 2
 PUSH 9 我的字符 2 2
 PUSH 4 测试丙之纵坐标 13
 PUSH 3 测试乙之横坐标 13
 PUSH 4 测试甲之纵坐标 13
-PUSH 9 常字符串指针 4 2 1
+PUSH 9 常字符串指针 4 2 3
 PUSH 3 Address 10
-CALL 打印 5
+CALL 打印 5 28
 RET 0
 End
