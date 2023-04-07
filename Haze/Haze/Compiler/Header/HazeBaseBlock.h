@@ -20,7 +20,7 @@ public:
 	const std::vector<HAZE_STRING>& GetIRCode() const { return IRCode; }
 
 public:
-	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* Parent, std::shared_ptr<HazeBaseBlock> InsertBefore = nullptr);
+	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> InsertBefore = nullptr);
 
 	void PushIRCode(const HAZE_STRING& Code);
 

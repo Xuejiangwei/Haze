@@ -23,7 +23,7 @@ HazeCompilerFunction::~HazeCompilerFunction()
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable)
 {
-	auto BB = BBList.front();
+	auto BB = BBList.back();
 	return BB->CreateAlloce(Variable);
 }
 
@@ -31,7 +31,7 @@ void HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
 {
 	HAZE_STRING_STREAM SStream;
 	SStream << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)Data.PrimaryType << " " <<Data.CustomName << std::endl;
-	auto BB = BBList.front();
+	auto BB = BBList.back();
 	BB->PushIRCode(SStream.str());
 }
 

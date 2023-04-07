@@ -660,9 +660,27 @@ std::unique_ptr<ASTBase> Parse::ParseIfExpression()
 {
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：若 表达式期望捕捉 (")))
 	{
+		GetNextToken();
 		auto ConditionExpression = ParseExpression();
 
+		std::unique_ptr<ASTBase> IfMultiExpression = nullptr;
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：若 执行表达式期望捕捉 {")))
+		{
+			IfMultiExpression = ParseMultiExpression();
+		}
+		
+		std::unique_ptr<ASTBase> ElseMultiExpression = nullptr;
+
+		GetNextToken();
+		if (CurrToken == HazeToken::Else)
+		{
+			GetNextToken();
+			ElseMultiExpression = ParseMultiExpression();
+		}
+
+		return std::make_unique<ASTIfExpression>(VM, ConditionExpression, IfMultiExpression, ElseMultiExpression);
 	}
+
 	return nullptr;
 }
 
@@ -784,7 +802,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
-					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
+					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
 					Vector_Param.push_back(Param);
 
 					GetNextToken();
@@ -851,7 +869,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
-					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
+					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
 					Vector_Param.push_back(Param);
 
 					GetNextToken();
@@ -1039,7 +1057,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 
 						if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 						{
-							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function mutiply param right need ) \n"));
+							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
 							Vector_Param.push_back(Param);
 
 							GetNextToken();

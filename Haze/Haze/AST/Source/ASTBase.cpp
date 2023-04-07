@@ -5,6 +5,7 @@
 #include "HazeCompiler.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerClass.h"
+#include "HazeBaseBlock.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerPointerValue.h"
@@ -314,3 +315,32 @@ std::shared_ptr<HazeCompilerValue> ASTImportModule::CodeGen()
 	return nullptr;
 }
 
+ASTIfExpression::ASTIfExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& IfMultiExpression, std::unique_ptr<ASTBase>& ElseMultiExpression)
+	: ASTBase(VM), Condition(std::move(Condition)), IfMultiExpression(std::move(IfMultiExpression)), ElseMultiExpression(std::move(ElseMultiExpression))
+{
+}
+
+ASTIfExpression::~ASTIfExpression()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
+{
+	auto ConditionValue = Condition->CodeGen();
+
+	auto& Compiler = VM->GetCompiler();
+
+	auto Cond =	Compiler->CreateCompare(ConditionValue);
+
+	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
+
+	HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("if"), Function);
+
+	Function->GetBaseBlockList();
+	IfMultiExpression->CodeGen();
+
+	HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("else"), Function);
+	ElseMultiExpression->CodeGen();
+
+	return nullptr;
+}

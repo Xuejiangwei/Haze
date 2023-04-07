@@ -305,6 +305,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 	return GetRegister(NEW_REGISTER);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateCompare(std::shared_ptr<HazeCompilerValue> ConditionValue)
+{
+	return std::shared_ptr<HazeCompilerValue>();
+}
+
 void HazeCompiler::ClearFunctionTemp()
 {
 	std::shared_ptr<HazeCompilerFunction> Function = GetCurrModule()->GetCurrFunction();

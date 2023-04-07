@@ -178,3 +178,17 @@ public:
 private:
 	HAZE_STRING ModuleName;
 };
+
+class ASTIfExpression : public ASTBase
+{
+public:
+	ASTIfExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& IfMultiExpression, std::unique_ptr<ASTBase>& ElseMultiExpression);
+	virtual ~ASTIfExpression() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	std::unique_ptr<ASTBase> Condition;
+	std::unique_ptr<ASTBase> IfMultiExpression;
+	std::unique_ptr<ASTBase> ElseMultiExpression;
+};

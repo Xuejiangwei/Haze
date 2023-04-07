@@ -77,6 +77,9 @@ public:		//Éú³Éop code
 
 	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data);
 
+public:
+	std::shared_ptr<HazeCompilerValue> CreateCompare(std::shared_ptr<HazeCompilerValue> ConditionValue);
+
 private:
 	void ClearFunctionTemp();
 

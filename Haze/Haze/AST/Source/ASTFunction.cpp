@@ -40,7 +40,7 @@ HazeValue* ASTFunction::CodeGen()
 		CompilerFunction = Module->CreateFunction(Class, FunctionName, FunctionType, Vector_FunctionParam);
 	}
 
-	std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction.get());
+	std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction);
 	Compiler->SetInsertBlock(BB);
 
 	for (auto& iter : Vector_FunctionParam)
@@ -102,7 +102,7 @@ void ASTFunctionDefine::CodeGen()
 	auto& Module = Compiler->GetCurrModule();
 	std::shared_ptr<HazeCompilerFunction> CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
 
-	std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction.get());
+	std::shared_ptr<HazeBaseBlock> BB = HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("entry"), CompilerFunction);
 	Compiler->SetInsertBlock(BB);
 
 	for (auto& iter : Vector_FunctionParam)
