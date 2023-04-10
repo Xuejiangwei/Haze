@@ -39,6 +39,9 @@
 #define FUNCTION_START_HEADER			HAZE_TEXT("Start")
 #define FUNCTION_END_HEADER				HAZE_TEXT("End")
 
+#define BLOCK_FUNCTION_DEFAULT_NAME		HAZE_TEXT("Entry")
+#define BLOCK_START						HAZE_TEXT("Block")
+
 #define ADD_REGISTER					HAZE_TEXT("Add_R")
 #define SUB_REGISTER					HAZE_TEXT("Sub_R")
 #define MUL_REGISTER					HAZE_TEXT("Mul_R")
@@ -48,6 +51,8 @@
 
 #define NEW_REGISTER					HAZE_TEXT("New_R")
 
+#define CMP_REGISTER					HAZE_TEXT("Cmp_R")
+
 #define HAZE_TEMP_BINART_NAME			HAZE_TEXT("TempBinaryValue")
 
 #define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_STRING(HAZE_TEXT("Address"))
@@ -56,6 +61,7 @@
 
 #define HAZE_I_CODE_ENABLE			1
 #define HAZE_OP_CODE_ENABLE			1
+#define HAZE_BACKEND_PARSE_ENABLE	1
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 20
 

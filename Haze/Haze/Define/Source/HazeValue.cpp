@@ -2,6 +2,7 @@
 #include <set>
 #include "HazeValue.h"
 #include "Haze.h"
+#include "HazeInstruction.h"
 
 uint32 GetSizeByHazeType(HazeValueType Type)
 {
@@ -133,9 +134,13 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value)
     }
 }
 
-#define CALC_VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, Source, sizeof(TYPE)); memcpy(&T, Target, sizeof(TYPE))
-#define CALC_VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, S, T)
-#define CALC_ASSIGN(TYPE) memcpy((void*)Target, &T, sizeof(TYPE))
+#define VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, Source, sizeof(TYPE)); memcpy(&T, Target, sizeof(TYPE))
+
+#define VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, S, T)
+#define ASSIGN(TYPE) memcpy((void*)Target, &T, sizeof(TYPE))
+
+#define VARIABLE_COMPARE() bool CmpEqual = S == T; bool CmpGreater = S > T; bool CmpLess = S < T
+#define COMPARE_ASSIGN() Register->Data.resize(3); Register->Data[0] = CmpEqual; Register->Data[1] = CmpGreater; Register->Data[2] = CmpLess
 
 template<typename T>
 void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
@@ -163,46 +168,97 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
     {
     case HazeValueType::Int:
     {
-        CALC_VARIABLE_DEFINE_INIT(int, Source, Target);
-        CALC_VARIABLE_CALCULATE(int, TypeCode);
-        CALC_ASSIGN(int);
+        VARIABLE_DEFINE_INIT(int, Source, Target);
+        VARIABLE_CALCULATE(int, TypeCode);
+        ASSIGN(int);
     }
         break;
     case HazeValueType::Float:
     {
-        CALC_VARIABLE_DEFINE_INIT(float, Source, Target);
-        CALC_VARIABLE_CALCULATE(float, TypeCode);
-        CALC_ASSIGN(float);
+        VARIABLE_DEFINE_INIT(float, Source, Target);
+        VARIABLE_CALCULATE(float, TypeCode);
+        ASSIGN(float);
     }
         break;
     case HazeValueType::Long:
     {
-        CALC_VARIABLE_DEFINE_INIT(int64, Source, Target);
-        CALC_VARIABLE_CALCULATE(int64, TypeCode);
-        CALC_ASSIGN(int64);
+        VARIABLE_DEFINE_INIT(int64, Source, Target);
+        VARIABLE_CALCULATE(int64, TypeCode);
+        ASSIGN(int64);
     }
         break;
     case HazeValueType::Double:
     {
-        CALC_VARIABLE_DEFINE_INIT(double, Source, Target);
-        CALC_VARIABLE_CALCULATE(double, TypeCode);
-        CALC_ASSIGN(double);
+        VARIABLE_DEFINE_INIT(double, Source, Target);
+        VARIABLE_CALCULATE(double, TypeCode);
+        ASSIGN(double);
     }
         break;
     case HazeValueType::UnsignedInt:
     {
-        CALC_VARIABLE_DEFINE_INIT(uint32, Source, Target);
-        CALC_VARIABLE_CALCULATE(uint32, TypeCode);
-        CALC_ASSIGN(uint32);
+        VARIABLE_DEFINE_INIT(uint32, Source, Target);
+        VARIABLE_CALCULATE(uint32, TypeCode);
+        ASSIGN(uint32);
     }
         break;
     case HazeValueType::UnsignedLong:
     {
-        CALC_VARIABLE_DEFINE_INIT(uint64, Source, Target);
-        CALC_VARIABLE_CALCULATE(uint64, TypeCode);
-        CALC_ASSIGN(uint64);
+        VARIABLE_DEFINE_INIT(uint64, Source, Target);
+        VARIABLE_CALCULATE(uint64, TypeCode);
+        ASSIGN(uint64);
     }
         break;
+    default:
+        break;
+    }
+}
+
+void CompareValueByType(HazeValueType Type, HazeRegister* Register, const char* Source, const char* Target)
+{
+    switch (Type)
+    {
+    case HazeValueType::Int:
+    {
+        VARIABLE_DEFINE_INIT(int, Source, Target);
+        VARIABLE_COMPARE();
+        COMPARE_ASSIGN();
+    }
+    break;
+    case HazeValueType::Float:
+    {
+        VARIABLE_DEFINE_INIT(float, Source, Target);
+        VARIABLE_COMPARE();
+        COMPARE_ASSIGN();
+    }
+    break;
+    case HazeValueType::Long:
+    {
+        VARIABLE_DEFINE_INIT(int64, Source, Target);
+        VARIABLE_COMPARE();
+        COMPARE_ASSIGN();
+    }
+    break;
+    case HazeValueType::Double:
+    {
+        VARIABLE_DEFINE_INIT(double, Source, Target);
+        VARIABLE_COMPARE();
+        COMPARE_ASSIGN();
+    }
+    break;
+    case HazeValueType::UnsignedInt:
+    {
+        VARIABLE_DEFINE_INIT(uint32, Source, Target);
+        VARIABLE_COMPARE();
+        COMPARE_ASSIGN();
+    }
+    break;
+    case HazeValueType::UnsignedLong:
+    {
+        VARIABLE_DEFINE_INIT(uint64, Source, Target);
+        VARIABLE_COMPARE();
+        COMPARE_ASSIGN();
+    }
+    break;
     default:
         break;
     }

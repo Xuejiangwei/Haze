@@ -34,9 +34,15 @@ public:
 
 	void GenI_Code(HAZE_OFSTREAM& OFStream);
 
-	std::shared_ptr<HazeBaseBlock>& GetTopBaseBlock() { return BBList.back(); }
+	HAZE_STRING GenIfBlockName();
 
-	std::list<std::shared_ptr<HazeBaseBlock>>& GetBaseBlockList() { return BBList; }
+	HAZE_STRING GenElseBlockName();
+
+	std::shared_ptr<HazeBaseBlock> GetTopBaseBlock();
+
+	void RemoveTopBaseBlock() { return BBList.pop_back(); }
+	
+	const std::list<std::shared_ptr<HazeBaseBlock>>& GetBaseBlockList() { return BBList; }
 
 	bool GetLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
@@ -60,4 +66,5 @@ private:
 
 	std::list<std::shared_ptr<HazeBaseBlock>> BBList;
 
+	int CurrIfBlockCount;
 };

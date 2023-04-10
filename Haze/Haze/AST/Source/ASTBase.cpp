@@ -282,6 +282,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	case HazeToken::NotEqual:
 		break;
 	case HazeToken::Greater:
+		return Compiler->CreateIntCmp(LeftValue, RightValue);
 		break;
 	case HazeToken::GreaterEqual:
 		break;
@@ -315,8 +316,8 @@ std::shared_ptr<HazeCompilerValue> ASTImportModule::CodeGen()
 	return nullptr;
 }
 
-ASTIfExpression::ASTIfExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& IfMultiExpression, std::unique_ptr<ASTBase>& ElseMultiExpression)
-	: ASTBase(VM), Condition(std::move(Condition)), IfMultiExpression(std::move(IfMultiExpression)), ElseMultiExpression(std::move(ElseMultiExpression))
+ASTIfExpression::ASTIfExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& IfExpression, std::unique_ptr<ASTBase>& ElseExpression)
+	: ASTBase(VM), Condition(std::move(Condition)), IfExpression(std::move(IfExpression)), ElseExpression(std::move(ElseExpression))
 {
 }
 
@@ -327,20 +328,28 @@ ASTIfExpression::~ASTIfExpression()
 std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 {
 	auto ConditionValue = Condition->CodeGen();
+	auto ConditionExp = static_cast<ASTBinaryExpression*>(Condition.get());
 
 	auto& Compiler = VM->GetCompiler();
 
-	auto Cond =	Compiler->CreateCompare(ConditionValue);
-
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 
-	HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("if"), Function);
+	auto TopBlock = Function->GetTopBaseBlock();
 
-	Function->GetBaseBlockList();
-	IfMultiExpression->CodeGen();
+	auto ElseBlockName = Function->GenElseBlockName();
+	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), ElseBlockName);
 
-	HazeBaseBlock::CreateBaseBlock(HAZE_TEXT("else"), Function);
-	ElseMultiExpression->CodeGen();
+
+	auto IfBlock = HazeBaseBlock::CreateBaseBlock(Function->GenIfBlockName(), Function);
+	IfExpression->CodeGen();
+	IfBlock->FinishBlock(TopBlock);
+	TopBlock->MergeJmpIRCode(IfBlock);
+	TopBlock->CopyIRCode(IfBlock);
+	Function->RemoveTopBaseBlock();
+
+	auto ElseBlock = HazeBaseBlock::CreateBaseBlock(ElseBlockName, Function);
+	ElseExpression->CodeGen();
+	ElseBlock->FinishBlock(TopBlock);
 
 	return nullptr;
 }

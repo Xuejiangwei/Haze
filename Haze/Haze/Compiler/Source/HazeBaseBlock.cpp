@@ -6,12 +6,28 @@
 HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* Parent) : Name(Name)
 {
 	ParentFunction = Parent;
-
+	IsFinish = false;
 	IRCode.clear();
+	PushIRCode(HAZE_STRING(BLOCK_START) + HAZE_TEXT(" ") + Name + HAZE_TEXT("\n"));
 }
 
 HazeBaseBlock::~HazeBaseBlock()
 {
+}
+
+void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> TopBlock)
+{
+	for (int i = (int)BlockAllocaList.size() - 1; i >= 0; i--)
+	{
+		HAZE_STRING_STREAM SStream;
+		SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetValue().Type)
+			<< " " << BlockAllocaList[i].first << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetScope()) << std::endl;
+		PushIRCode(SStream.str());
+
+		BlockAllocaList.pop_back();
+	}
+
+	IsFinish = true;
 }
 
 std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> InsertBefore)
@@ -20,7 +36,7 @@ std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING&
 	
 	if (Parent)
 	{
-		auto& BBList = Parent->GetBaseBlockList();
+		auto& BBList = const_cast<std::list<std::shared_ptr<HazeBaseBlock>>&>(Parent->GetBaseBlockList());
 
 		if (InsertBefore)
 		{
@@ -47,15 +63,35 @@ void HazeBaseBlock::PushIRCode(const HAZE_STRING& Code)
 	IRCode.push_back(Code);
 }
 
+void HazeBaseBlock::MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB)
+{
+	auto& Code = BB->GetIRCode();
+	if (Code.size() > 1)
+	{
+		HAZE_STRING_STREAM HSS;
+		HSS << " " << Code.size() - 1 << std::endl;
+		IRCode.back() += HSS.str();
+	}
+}
+
+void HazeBaseBlock::CopyIRCode(std::shared_ptr<HazeBaseBlock> BB)
+{
+	auto& Code = BB->GetIRCode();
+	if (Code.size() > 1)
+	{
+		IRCode.insert(IRCode.end(), ++Code.begin(), Code.end());		//skip block name
+	}
+}
+
 void HazeBaseBlock::ClearTempIRCode()
 {
-	for (size_t i = BlockAllocaList.size() - 1; i >= 0; i--)
+	for (int i = (int)BlockAllocaList.size() - 1; i >= 0; i--)
 	{
 		if (BlockAllocaList[i].second->IsTemp())
 		{
 			HAZE_STRING_STREAM SStream;
 			SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetValue().Type)
-				<< " " << BlockAllocaList[i].first << " " << (unsigned int)HazeDataDesc::Temp << std::endl;
+				<< " " << BlockAllocaList[i].first << " " << (uint32)HazeDataDesc::Temp << std::endl;
 			PushIRCode(SStream.str());
 
 			BlockAllocaList.pop_back();

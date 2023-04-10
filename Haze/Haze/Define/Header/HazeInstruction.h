@@ -7,7 +7,7 @@
 	指令字节id	操作数个数	操作数类型	操作数值		(操作数类型	操作数值)	...(操作数类型	操作数值)
 */
 
-enum class InstructionOpCodeType : unsigned char
+enum class InstructionOpCodeType : uint8
 {
 	Memory,
 	Bool,
@@ -26,7 +26,7 @@ enum class InstructionOpCodeType : unsigned char
 	UnsignedLong,
 };
 
-enum class HazeDataDesc : unsigned int
+enum class HazeDataDesc : uint32
 {
 	None,
 	Global,
@@ -38,6 +38,7 @@ enum class HazeDataDesc : unsigned int
 	RegisterBegin,
 	RegisterRet,
 	RegisterNew,
+	RegisterCmp,
 	RegisterEnd,
 
 	Address,
@@ -51,7 +52,7 @@ enum class HazeDataDesc : unsigned int
 	ClassFunction_Local_Protected,
 };
 
-enum class InstructionOpCode : unsigned int
+enum class InstructionOpCode : uint32
 {
 	NONE,
 	MOV,
@@ -77,6 +78,14 @@ enum class InstructionOpCode : unsigned int
 	RET,
 
 	NEW,
+
+	CMP,
+	JNE,		//不等于
+	JNG,		//不大于
+	JNL,		//不小于
+	JE,			//等于
+	JG,			//大于
+	JL,			//小于
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，
@@ -115,12 +124,19 @@ struct InstructionData
 		int ParamByteSize;
 	};
 
+	struct BlockJmp
+	{
+		int StartAddress;
+		int InstructionNum;
+	};
+
 	InstructionAddressType AddressType;
 	union Extra
 	{
 		int Index;
 		AddressData Address;
 		FunctionCall Call;
+		BlockJmp Jmp;
 		void* Pointer;
 
 		Extra()
@@ -178,7 +194,16 @@ struct HazeRegister
 	HazeDefineType Type;
 };
 
+struct HazeJmpData
+{
+	int CachePC;					//执行完需要跳转回的pc
+	int BlockInstructionNum;		//跳转的block指令剩余数
+	int SkipNum;					//跳转回PC时，因为比较为true时，没有block，所以需要加上为true时的block的指令个数
+};
+
 bool IsRegisterScope(HazeDataDesc Scope);
+
+bool IsJmpOpCode(InstructionOpCode Code);
 
 const HAZE_CHAR* GetInstructionString(InstructionOpCode Code);
 

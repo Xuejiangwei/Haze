@@ -138,11 +138,13 @@ public:
 //二元表达式
 class ASTBinaryExpression : public ASTBase
 {
+	friend class ASTIfExpression;
 public:
 	ASTBinaryExpression(HazeVM* VM, HazeSectionSignal Section, HazeToken OperatorToken, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST);
 	virtual ~ASTBinaryExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
 
 private:
 	HazeSectionSignal SectionSignal;
@@ -150,6 +152,7 @@ private:
 
 	std::unique_ptr<ASTBase> LeftAST;
 	std::unique_ptr<ASTBase> RightAST;
+
 };
 
 //多行表达式
@@ -182,13 +185,13 @@ private:
 class ASTIfExpression : public ASTBase
 {
 public:
-	ASTIfExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& IfMultiExpression, std::unique_ptr<ASTBase>& ElseMultiExpression);
+	ASTIfExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& IfExpression, std::unique_ptr<ASTBase>& ElseExpression);
 	virtual ~ASTIfExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
 	std::unique_ptr<ASTBase> Condition;
-	std::unique_ptr<ASTBase> IfMultiExpression;
-	std::unique_ptr<ASTBase> ElseMultiExpression;
+	std::unique_ptr<ASTBase> IfExpression;
+	std::unique_ptr<ASTBase> ElseExpression;
 };

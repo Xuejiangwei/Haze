@@ -30,6 +30,15 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("RET"), InstructionOpCode::RET },
 
 	{HAZE_TEXT("NEW"), InstructionOpCode::NEW },
+
+	{HAZE_TEXT("CMP"), InstructionOpCode::CMP },
+	{HAZE_TEXT("JNE"), InstructionOpCode::JNE },
+	{HAZE_TEXT("JNG"), InstructionOpCode::JNG },
+	{HAZE_TEXT("JNL"), InstructionOpCode::JNL },
+	{HAZE_TEXT("JE"), InstructionOpCode::JE },
+	{HAZE_TEXT("JG"), InstructionOpCode::JG },
+	{HAZE_TEXT("JL"), InstructionOpCode::JL },
+
 };
 
 std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister =
@@ -40,6 +49,7 @@ std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister =
 	//{DIV_REGISTER, nullptr},
 	{RET_REGISTER, HazeRegister()},
 	{NEW_REGISTER, HazeRegister()},
+	{CMP_REGISTER, HazeRegister()},
 };
 
 HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name)
@@ -89,6 +99,11 @@ InstructionOpCode GetInstructionByString(const HAZE_STRING& String)
 	return InstructionOpCode::NONE;
 }
 
+bool IsJmpOpCode(InstructionOpCode Code)
+{
+	return Code >= InstructionOpCode::JNE && Code <= InstructionOpCode::JL;
+}
+
 class InstructionProcessor
 {
 public:
@@ -116,17 +131,10 @@ public:
 			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 			{
 				Stack->EBP = Stack->ESP;
-				Stack->Stack_Function.push_back(Operator[0].Variable.Name);
+				Stack->OnCall(Operator[0].Variable.Name);
 
-				int Size = 0;
-				for (auto& Iter : Function.Vector_Param)
-				{
-					Size += GetSizeByType(Iter.Type, Stack->VM);
-				}
+				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_ADDRESS_SIZE + Operator[0].Extra.Call.ParamByteSize));
 
-				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_ADDRESS_SIZE + Size));
-
-				//unsigned int Index = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
 				Stack->PC = Function.Extra.FunctionDescData.InstructionStartAddress;
 				--Stack->PC;
 			}
@@ -135,13 +143,9 @@ public:
 				uint32 TempEBP = Stack->EBP;
 				Stack->EBP = Stack->ESP;
 
-				//±ê×¼¿â²éÕÒ
 				Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.Call.ParamNum);
 
 				Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
-
-				//Stack->Stack_EBP.push_back(Stack->ESP);
-
 				Stack->EBP = TempEBP;
 			}
 		}
@@ -183,19 +187,6 @@ public:
 			}
 
 			Stack->ESP += Size;
-			/*if (Operator[0].Scope == InstructionScopeType::Global)
-			{
-
-			}
-			else if (Operator[0].Scope == InstructionScopeType::Local)
-			{
-				HazeValueType Type = (HazeValueType)Operator[0].Type;
-				int Size = GetSize(Type);
-
-				memset(&Stack_Main[ESP], 0, Size);
-
-				ESP += Size;
-			}*/
 		}
 	}
 
@@ -218,10 +209,6 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::ADD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
-		else
-		{
-
-		}
 	}
 
 	static void Sub(HazeStack* Stack)
@@ -233,10 +220,6 @@ public:
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SUB, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
-		}
-		else
-		{
-
 		}
 	}
 
@@ -250,10 +233,6 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MUL, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
-		else
-		{
-
-		}
 	}
 
 	static void Div(HazeStack* Stack)
@@ -265,10 +244,6 @@ public:
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DIV, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
-		}
-		else
-		{
-
 		}
 	}
 
@@ -282,10 +257,6 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MOD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
-		else
-		{
-
-		}
 	}
 
 	static void Inc(HazeStack* Stack)
@@ -297,10 +268,6 @@ public:
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::INC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
-		}
-		else
-		{
-
 		}
 	}
 
@@ -314,10 +281,6 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
-		else
-		{
-
-		}
 	}
 
 	static void And(HazeStack* Stack)
@@ -329,10 +292,6 @@ public:
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
-		}
-		else
-		{
-
 		}
 	}
 
@@ -346,10 +305,6 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
-		else
-		{
-
-		}
 	}
 
 	static void Not(HazeStack* Stack)
@@ -361,10 +316,6 @@ public:
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
-		}
-		else
-		{
-
 		}
 	}
 
@@ -378,10 +329,6 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
-		else
-		{
-
-		}
 	}
 
 	static void Shl(HazeStack* Stack)
@@ -394,10 +341,6 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
-		else
-		{
-
-		}
 	}
 
 	static void Shr(HazeStack* Stack)
@@ -409,10 +352,6 @@ public:
 			{ 
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
-		}
-		else
-		{
-
 		}
 	}
 
@@ -431,9 +370,8 @@ public:
 		}
 
 
-		int FunctionIndex = Stack->VM->GetFucntionIndexByName(Stack->Stack_Function.back());
-
-		Stack->Stack_Function.pop_back();
+		int FunctionIndex = Stack->VM->GetFucntionIndexByName(Stack->Stack_Frame.back().FunctionName);
+		Stack->OnRet();
 
 		int Size = 0;
 		for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
@@ -463,6 +401,122 @@ public:
 
 			NewRegister->Data.resize(Size);
 			memcpy(NewRegister->Data.begin()._Unwrapped(), &Address, Size);
+		}
+	}
+
+	static void Cmp(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+			CompareValueByType(Operator[0].Variable.Type.PrimaryType, CmpRegister, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]));
+		}
+	}
+
+	static void Jne(HazeStack* Stack)
+	{
+#define REGISTER_EQUAL(R) R->Data[0] == 1
+#define REGISTER_GREATER(R) R->Data[1] == 1
+#define REGISTER_LESS(R) R->Data[2] == 1
+
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+
+			if (!REGISTER_EQUAL(CmpRegister))
+			{
+				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
+
+				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
+				Stack->PC--;
+			}
+		}
+	}
+
+	static void Jng(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+
+			if (!REGISTER_GREATER(CmpRegister))
+			{
+				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
+
+				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
+				Stack->PC--;
+			}
+		}
+	}
+
+	static void Jnl(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+
+			if (!REGISTER_LESS(CmpRegister))
+			{
+				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
+
+				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
+				Stack->PC--;
+			}
+		}
+	}
+
+	static void Je(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+
+			if (REGISTER_EQUAL(CmpRegister))
+			{
+				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
+
+				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
+				Stack->PC--;
+			}
+		}
+	}
+
+	static void Jg(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+
+			if (REGISTER_GREATER(CmpRegister))
+			{
+				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
+
+				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
+				Stack->PC--;
+			}
+		}
+	}
+
+	static void Jl(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+
+			if (REGISTER_LESS(CmpRegister))
+			{
+				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
+
+				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
+				Stack->PC--;
+			}
 		}
 	}
 
@@ -530,4 +584,12 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::CALL, &InstructionProcessor::Call},
 	{InstructionOpCode::RET, &InstructionProcessor::Ret},
 	{InstructionOpCode::NEW, &InstructionProcessor::New},
+
+	{InstructionOpCode::CMP, &InstructionProcessor::Cmp},
+	{InstructionOpCode::JNE, &InstructionProcessor::Jne},
+	{InstructionOpCode::JNG, &InstructionProcessor::Jng},
+	{InstructionOpCode::JNL, &InstructionProcessor::Jnl},
+	{InstructionOpCode::JE, &InstructionProcessor::Je},
+	{InstructionOpCode::JG, &InstructionProcessor::Jg},
+	{InstructionOpCode::JL, &InstructionProcessor::Jl},
 };

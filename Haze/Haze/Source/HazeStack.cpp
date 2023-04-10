@@ -40,8 +40,34 @@ void HazeStack::Start(unsigned int Address)
 		HashMap_InstructionProcessor[Vector_Instruction[PC].InsCode](this);
 #endif // DEBUG
 
-		++PC;
+		PCStepInc();
 	}
+}
+
+void HazeStack::PushJmpStack(const HazeJmpData& Data)
+{
+	GetCurrFrame().Stack_Jmp.push_back(Data);
+}
+
+void HazeStack::PCStepInc()
+{
+	if (FrameIsValid())
+	{
+		if (GetCurrFrame().Stack_Jmp.size() > 0)
+		{
+			if (GetCurrFrame().Stack_Jmp.back().BlockInstructionNum > 0)
+			{
+				GetCurrFrame().Stack_Jmp.back().BlockInstructionNum--;
+			}
+			else
+			{
+				PC = GetCurrFrame().Stack_Jmp.back().CachePC + GetCurrFrame().Stack_Jmp.back().SkipNum;
+				GetCurrFrame().Stack_Jmp.pop_back();
+			}
+		}
+	}
+
+	++PC;
 }
 
 void HazeStack::PushMainFuntion()
@@ -56,7 +82,7 @@ void HazeStack::PushMainFuntion()
 
 	EBP = ESP;
 
-	Stack_Function.push_back(HAZE_MAIN_FUNCTION_TEXT);
+	OnCall(HAZE_MAIN_FUNCTION_TEXT);
 }
 
 void HazeStack::InitRegisterToStack()
@@ -70,4 +96,14 @@ void HazeStack::InitRegisterToStack()
 		ESP += sizeof(HazeValue);
 	}*/
 
+}
+
+void HazeStack::OnCall(const HAZE_STRING& Name)
+{
+	Stack_Frame.push_back({ Name, {} });
+}
+
+void HazeStack::OnRet()
+{
+	Stack_Frame.pop_back();
 }

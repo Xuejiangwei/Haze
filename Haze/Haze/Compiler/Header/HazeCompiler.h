@@ -78,7 +78,10 @@ public:		//Éú³Éop code
 	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data);
 
 public:
-	std::shared_ptr<HazeCompilerValue> CreateCompare(std::shared_ptr<HazeCompilerValue> ConditionValue);
+	std::shared_ptr<HazeCompilerValue> CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);
+
+public:
+	void CreateCompareJmp(HazeCmpType CmpType, const HAZE_STRING& BlockName);
 
 private:
 	void ClearFunctionTemp();

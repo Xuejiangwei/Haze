@@ -141,7 +141,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 {
 	static std::unordered_set<InstructionOpCode> HashSet_NoTemp =
 	{
-		InstructionOpCode::MOV
+		InstructionOpCode::MOV,
+		InstructionOpCode::CMP,
 	};
 
 
@@ -184,7 +185,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 
 		SStream << std::endl;
 
-		std::shared_ptr<HazeBaseBlock>& BB = Function->GetTopBaseBlock();
+		std::shared_ptr<HazeBaseBlock> BB = Function->GetTopBaseBlock();
 		BB->PushIRCode(SStream.str());
 	}
 
@@ -226,7 +227,17 @@ void HazeCompilerModule::GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value)
 
 	SStream << std::endl;
 
-	std::shared_ptr<HazeBaseBlock>& BB = Function->GetTopBaseBlock();
+	std::shared_ptr<HazeBaseBlock> BB = Function->GetTopBaseBlock();
+	BB->PushIRCode(SStream.str());
+}
+
+void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, const HAZE_STRING& BlockName)
+{
+	HAZE_STRING_STREAM SStream;
+
+	SStream << GetOppositeInstructionStringByCmpType(CmpType) << " " << BlockName;
+
+	std::shared_ptr<HazeBaseBlock> BB = GetCurrFunction()->GetTopBaseBlock();
 	BB->PushIRCode(SStream.str());
 }
 
@@ -250,7 +261,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& Param)
 {
-	std::shared_ptr<HazeBaseBlock>& BB = GetCurrFunction()->GetTopBaseBlock();
+	std::shared_ptr<HazeBaseBlock> BB = GetCurrFunction()->GetTopBaseBlock();
 
 	HAZE_STRING_STREAM SStream;
 	

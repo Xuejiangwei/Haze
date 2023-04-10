@@ -61,7 +61,7 @@ private:
 
 	std::unique_ptr<ASTBase> ParseNumberExpression();
 
-	std::unique_ptr<ASTBase> ParseIfExpression();
+	std::unique_ptr<ASTBase> ParseIfExpression(bool Recursion = false);
 
 	std::unique_ptr<ASTBase> ParseForExpression();
 

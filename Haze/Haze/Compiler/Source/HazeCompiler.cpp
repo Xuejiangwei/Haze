@@ -12,6 +12,7 @@
 static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalRegister = {
 	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterRet) },
 	{ NEW_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("New_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterNew) },
+	{ CMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Cmp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterCmp) },
 };
 
 HazeCompiler::HazeCompiler()
@@ -305,9 +306,15 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 	return GetRegister(NEW_REGISTER);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateCompare(std::shared_ptr<HazeCompilerValue> ConditionValue)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	return std::shared_ptr<HazeCompilerValue>();
+	GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::CMP);
+	return GetRegister(CMP_REGISTER);
+}
+
+void HazeCompiler::CreateCompareJmp(HazeCmpType CmpType, const HAZE_STRING& BlockName)
+{
+	GetCurrModule()->GenIRCode_Cmp(CmpType, BlockName);
 }
 
 void HazeCompiler::ClearFunctionTemp()

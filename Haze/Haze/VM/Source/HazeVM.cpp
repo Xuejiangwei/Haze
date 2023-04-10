@@ -36,11 +36,17 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 	}
 
 	{
+#if HAZE_BACKEND_PARSE_ENABLE
 		BackendParse BP(this);
 		BP.Parse();
+#endif // HAZE_BACKEND_PARSE_ENABLE
+
 	}
 
+#if HAZE_OP_CODE_ENABLE
 	LoadOpCodeFile();
+#endif // ENABLE_LOAD_OP_CODE
+
 }
 
 void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
@@ -254,7 +260,7 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Index));
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.AddressType));
 
-		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public)
+		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public || IsJmpOpCode(Instruction.InsCode))
 		{
 			B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型
 		}

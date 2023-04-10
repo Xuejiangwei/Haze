@@ -14,20 +14,8 @@ static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> HashMap_Fun
 
 static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &HashMap_Function);
 
-//void HazeStream::HazePrint(const HAZE_CHAR* Format, ...)
-//{
-//	HAZE_STRING WS;
-//	WS = Format;
-//	std::string S = WString2String(WS);
-//
-//	va_list st;
-//	va_start(st, Format);
-//	vfprintf(stdout, S.c_str(), st);
-//	va_end(st);
-//}
-
-static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form) {
-
+static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form) 
+{
 #define L_FMTFLAGSF	HAZE_TEXT("-+#0 123456789.")
 #define MAX_FORMAT 32
 
@@ -173,7 +161,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				char* Address = Stack->GetAddressByEBP(Offset);
 				memcpy(&TempAddress, Address, sizeof(TempAddress));
 
-				const HAZE_STRING& Str = Stack->GetVM()->GetHazeStringByIndex(TempAddress);
+				const HAZE_STRING& Str = Stack->GetVM()->GetHazeStringByIndex((int)TempAddress);
 				HSS << Str;
 				Start++;
 			}

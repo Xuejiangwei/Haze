@@ -86,6 +86,8 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value);
 
 void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const char* Source, const char* Target);
 
+void CompareValueByType(HazeValueType Type, struct HazeRegister* Register, const char* Source, const char* Target);
+
 size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
 
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value);

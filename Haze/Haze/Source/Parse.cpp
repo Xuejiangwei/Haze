@@ -656,7 +656,7 @@ std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 	return std::make_unique<ASTNumber>(VM, Value);
 }
 
-std::unique_ptr<ASTBase> Parse::ParseIfExpression()
+std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
 {
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：若 表达式期望捕捉 (")))
 	{
@@ -667,18 +667,33 @@ std::unique_ptr<ASTBase> Parse::ParseIfExpression()
 		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：若 执行表达式期望捕捉 {")))
 		{
 			IfMultiExpression = ParseMultiExpression();
+			GetNextToken();
 		}
 		
-		std::unique_ptr<ASTBase> ElseMultiExpression = nullptr;
+		std::unique_ptr<ASTBase> ElseExpression = nullptr;
 
-		GetNextToken();
+		
 		if (CurrToken == HazeToken::Else)
 		{
 			GetNextToken();
-			ElseMultiExpression = ParseMultiExpression();
+
+			bool NextNotIf = CurrToken != HazeToken::If;
+			if (NextNotIf)
+			{
+				ElseExpression = ParseMultiExpression();
+			}
+			else
+			{
+				ElseExpression = ParseIfExpression(true);
+			}
+
+			if (!Recursion)
+			{
+				GetNextToken();
+			}
 		}
 
-		return std::make_unique<ASTIfExpression>(VM, ConditionExpression, IfMultiExpression, ElseMultiExpression);
+		return std::make_unique<ASTIfExpression>(VM, ConditionExpression, IfMultiExpression, ElseExpression);
 	}
 
 	return nullptr;

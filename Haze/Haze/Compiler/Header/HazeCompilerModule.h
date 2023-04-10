@@ -51,6 +51,8 @@ public:
 
 	void GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value);
 
+	void GenIRCode_Cmp(HazeCmpType CmpType, const HAZE_STRING& BlockName);
+
 	static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue>& Value);
 
 private:

@@ -257,16 +257,31 @@ void BackendParse::Parse_I_Code_FunctionTable()
 				if (CurrLexeme == GetFunctionStartHeader())
 				{
 					GetNextLexeme();
-					while (CurrLexeme != GetFunctionEndHeader())
+					while (CurrLexeme == BLOCK_START)
 					{
-						ModuleUnit::FunctionInstruction Instruction;
-						Instruction.InsCode = GetInstructionByString(CurrLexeme);
-
-						ParseInstruction(Instruction);
-
-						Table.Vector_Function[i].Vector_Instruction.push_back(std::move(Instruction));
+						GetNextLexeme();
+						Table.Vector_Function[i].Vector_Block.push_back({ CurrLexeme, 0, (int)Table.Vector_Function[i].Vector_Instruction.size() });
+						auto& CurrBlock = Table.Vector_Function[i].Vector_Block.back();
 
 						GetNextLexeme();
+						while (CurrLexeme != BLOCK_START && CurrLexeme != GetFunctionEndHeader())
+						{
+							ModuleUnit::FunctionInstruction Instruction;
+							Instruction.InsCode = GetInstructionByString(CurrLexeme);
+
+							ParseInstruction(Instruction);
+
+							Table.Vector_Function[i].Vector_Instruction.push_back(Instruction);
+							
+							CurrBlock.InstructionNum++;
+
+							GetNextLexeme();
+						}
+
+						if (CurrLexeme == GetFunctionEndHeader())
+						{
+							break;
+						}
 					}
 				}
 			}
@@ -312,6 +327,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::MUL:
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::MOD:
+	case InstructionOpCode::CMP:
 	{
 		InstructionData OperatorOne;
 		InstructionData OperatorTwo;
@@ -350,8 +366,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	{
 		InstructionData OperatorOne;
 
-		GetNextLexeme();
-		OperatorOne.Variable.Type.PrimaryType = (HazeValueType)StringToStandardType<uint32>(CurrLexeme);
+		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
 
 		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::Void)
 		{
@@ -394,12 +409,28 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 
 		GetNextLexeme();
 		OperatorOne.Scope = HazeDataDesc::None;
-		OperatorOne.Variable.Type.PrimaryType = (HazeValueType)StringToStandardType<int>(CurrLexeme);
 
-		GetNextLexeme();
-		OperatorOne.Variable.Name = CurrLexeme;
+		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
+		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
 
 		Instruction.Operator = { OperatorOne };
+	}
+	break;
+	case InstructionOpCode::JNE:
+	case InstructionOpCode::JNG:
+	case InstructionOpCode::JNL:
+	case InstructionOpCode::JE:
+	case InstructionOpCode::JG:
+	case InstructionOpCode::JL:
+	{
+		InstructionData OperatorOne;
+		InstructionData OperatorTwo;
+
+		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
+
+		GetNextLexmeAssign_CustomType<int>(OperatorTwo.Extra.Jmp.InstructionNum);
+
+		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
 	break;
 	default:
@@ -549,130 +580,145 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 		auto& CurrFunction = NewFunctionTable.Vector_Function[k];
 		for (size_t i = 0; i < CurrFunction.Vector_Instruction.size(); ++i)
 		{
-			for (auto& it : CurrFunction.Vector_Instruction[i].Operator)
+			if (IsJmpOpCode(CurrFunction.Vector_Instruction[i].InsCode))
 			{
-				auto& VariableName = it.Variable.Name;
-				if (it.Scope == HazeDataDesc::Global)
+				for (size_t j = 0; j < CurrFunction.Vector_Block.size(); j++)
 				{
-					it.Extra.Index = NewGlobalDataTable.GetIndex(VariableName);
-					it.AddressType = InstructionAddressType::Index;
-				}
-				else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)
-				{
-					int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
-
-					HAZE_STRING ObjName;
-					HAZE_STRING MemberName;
-					bool IsPointer = false;
-					FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
-
-					bool Find = false;
-					for (int j = (int)CurrFunction.Vector_Param.size() - 1; j >= 0; --j)
+					if (CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name == CurrFunction.Vector_Block[j].BlockName)
 					{
-						AddressOffset -= GetSizeByType(CurrFunction.Vector_Param[j].Type, this);
-						if (CurrFunction.Vector_Param[j].Name == ObjName)
+						CurrFunction.Vector_Instruction[i].Operator[0].Extra.Jmp.StartAddress = CurrFunction.Vector_Block[j].StartAddress;
+						CurrFunction.Vector_Instruction[i].Operator[0].Extra.Jmp.InstructionNum = CurrFunction.Vector_Block[j].InstructionNum;
+						break;
+					}
+				}
+			}
+			else
+			{
+				for (auto& it : CurrFunction.Vector_Instruction[i].Operator)
+				{
+					auto& VariableName = it.Variable.Name;
+					if (it.Scope == HazeDataDesc::Global)
+					{
+						it.Extra.Index = NewGlobalDataTable.GetIndex(VariableName);
+						it.AddressType = InstructionAddressType::Index;
+					}
+					else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)
+					{
+						int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
+
+						HAZE_STRING ObjName;
+						HAZE_STRING MemberName;
+						bool IsPointer = false;
+						FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
+
+						bool Find = false;
+						for (int j = (int)CurrFunction.Vector_Param.size() - 1; j >= 0; --j)
 						{
-							auto Class = GetClass(CurrFunction.Vector_Param[j].Type.CustomName);
-							if (IsPointer)
+							AddressOffset -= GetSizeByType(CurrFunction.Vector_Param[j].Type, this);
+							if (CurrFunction.Vector_Param[j].Name == ObjName)
 							{
-								//需要存储一个指针指向地址的相对偏移
+								auto Class = GetClass(CurrFunction.Vector_Param[j].Type.CustomName);
+								if (IsPointer)
+								{
+									//需要存储一个指针指向地址的相对偏移
+									it.Extra.Address.BaseAddress = AddressOffset;
+									it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+									it.AddressType = InstructionAddressType::Pointer_Offset;
+									Find = true;
+									break;
+								}
+								else
+								{
+									it.Extra.Address.BaseAddress = AddressOffset += GetMemberOffset(*Class, MemberName);
+									Find = true;
+									break;
+								}
+							}
+						}
+
+						if (Find)
+						{
+							continue;
+						}
+
+						int Offset = 0;
+						for (uint32 j = 0; j < i; j++)
+						{
+							if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::PUSH)
+							{
+								if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name == ObjName)
+								{
+									auto Class = GetClass(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type.CustomName);
+									it.Extra.Address.BaseAddress = Offset + GetMemberOffset(*Class, MemberName);
+									break;
+								}
+								else
+								{
+									Offset += GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
+								}
+							}
+							else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::POP)
+							{
+								Offset -= GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
+							}
+							else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::CALL)
+							{
+								Offset -= HAZE_ADDRESS_SIZE;
+								for (auto& Param : NewFunctionTable.Vector_Function[HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name]].Vector_Param)
+								{
+									Offset -= GetSizeByType(Param.Type, this);
+								}
+							}
+						}
+					}
+					else if (it.Scope == HazeDataDesc::Local || it.Scope == HazeDataDesc::Temp || it.Scope == HazeDataDesc::ClassThis)
+					{
+						//需要先判断是不是函数参数，设置为负的索引
+						int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
+						bool Find = false;
+						for (int j = (int)NewFunctionTable.Vector_Function[k].Vector_Param.size() - 1; j >= 0; --j)
+						{
+							AddressOffset -= GetSizeByHazeType(NewFunctionTable.Vector_Function[k].Vector_Param[j].Type.PrimaryType);
+							if (NewFunctionTable.Vector_Function[k].Vector_Param[j].Name == VariableName)
+							{
 								it.Extra.Address.BaseAddress = AddressOffset;
-								it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
-								it.AddressType = InstructionAddressType::Pointer_Offset;
-								Find = true;
-								break;
-							}
-							else
-							{
-								it.Extra.Address.BaseAddress = AddressOffset += GetMemberOffset(*Class, MemberName);
 								Find = true;
 								break;
 							}
 						}
-					}
 
-					if (Find)
-					{
-						continue;
-					}
-
-					int Offset = 0;
-					for (uint32 j = 0; j < i; j++)
-					{
-						if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::PUSH)
+						if (Find)
 						{
-							if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name == ObjName)
-							{
-								auto Class = GetClass(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type.CustomName);
-								it.Extra.Address.BaseAddress = Offset + GetMemberOffset(*Class, MemberName);
-								break;
-							}
-							else
-							{
-								Offset += GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
-							}
+							continue;
 						}
-						else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::POP)
-						{
-							Offset -= GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
-						}
-						else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::CALL)
-						{
-							Offset -= HAZE_ADDRESS_SIZE;
-							for (auto& Param : NewFunctionTable.Vector_Function[HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name]].Vector_Param)
-							{
-								Offset -= GetSizeByType(Param.Type, this);
-							}
-						}
-					}
-				}
-				else if (it.Scope == HazeDataDesc::Local || it.Scope == HazeDataDesc::Temp || it.Scope == HazeDataDesc::ClassThis)
-				{
-					//需要先判断是不是函数参数，设置为负的索引
-					int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
-					bool Find = false;
-					for (int j = (int)NewFunctionTable.Vector_Function[k].Vector_Param.size() - 1; j >= 0; --j)
-					{
-						AddressOffset -= GetSizeByHazeType(NewFunctionTable.Vector_Function[k].Vector_Param[j].Type.PrimaryType);
-						if (NewFunctionTable.Vector_Function[k].Vector_Param[j].Name == VariableName)
-						{
-							it.Extra.Address.BaseAddress = AddressOffset;
-							Find = true;
-							break;
-						}
-					}
-
-					if (Find)
-					{
-						continue;
-					}
 
 
-					int Offset = 0;
-					for (uint32 j = 0; j < i; j++)
-					{
-						if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::PUSH)
+						int Offset = 0;
+						for (uint32 j = 0; j < i; j++)
 						{
-							if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name == VariableName)
+							if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::PUSH)
 							{
-								it.Extra.Address.BaseAddress = Offset;
-								break;
+								if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name == VariableName)
+								{
+									it.Extra.Address.BaseAddress = Offset;
+									break;
+								}
+								else
+								{
+									Offset += GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
+								}
 							}
-							else
+							else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::POP)
 							{
-								Offset += GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
+								Offset -= GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
 							}
-						}
-						else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::POP)
-						{
-							Offset -= GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
-						}
-						else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::CALL)
-						{
-							Offset -= HAZE_ADDRESS_SIZE;
-							for (auto& Param : NewFunctionTable.Vector_Function[HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name]].Vector_Param)
+							else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::CALL)
 							{
-								Offset -= GetSizeByType(Param.Type, this);
+								Offset -= HAZE_ADDRESS_SIZE;
+								for (auto& Param : NewFunctionTable.Vector_Function[HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name]].Vector_Param)
+								{
+									Offset -= GetSizeByType(Param.Type, this);
+								}
 							}
 						}
 					}
@@ -723,7 +769,7 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Index));								//操作数索引
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.AddressType));
 		
-		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public)
+		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public || IsJmpOpCode(Instruction.InsCode))
 		{
 			B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移
 		}

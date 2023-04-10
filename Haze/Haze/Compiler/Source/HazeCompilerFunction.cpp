@@ -15,6 +15,8 @@ HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, const HAZ
 	{
 		AddFunctionParam(it);
 	}
+
+	CurrIfBlockCount = 0;
 }
 
 HazeCompilerFunction::~HazeCompilerFunction()
@@ -130,9 +132,15 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 	size_t ParamCount = VectorParam.size();
 	for (auto& it : BBList)
 	{
+		bool WriteBlockName = false;
 		for (auto& code : it->GetIRCode()) 
 		{
-			if (ParamCount > 0)
+			if (!WriteBlockName)
+			{
+				WriteBlockName = true;
+				OFStream << code;
+			}
+			else if (ParamCount > 0)
 			{
 				ParamCount--;
 			}
@@ -145,6 +153,33 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 
 	OFStream << GetFunctionEndHeader() << std::endl;
 #endif // HAZE_ASS_ENABLE
+}
+
+HAZE_STRING HazeCompilerFunction::GenIfBlockName()
+{
+	HAZE_STRING_STREAM HSS;
+	HSS << HAZE_TEXT("IfBlock") << ++CurrIfBlockCount;
+	return HSS.str();
+}
+
+HAZE_STRING HazeCompilerFunction::GenElseBlockName()
+{
+	HAZE_STRING_STREAM HSS;
+	HSS << HAZE_TEXT("ElseBlock") << ++CurrIfBlockCount;
+	return HSS.str();
+}
+
+std::shared_ptr<HazeBaseBlock> HazeCompilerFunction::GetTopBaseBlock()
+{
+	for (auto Iter = BBList.rbegin(); Iter != BBList.rend(); Iter++)
+	{
+		if (!(*Iter)->BlockIsFinish())
+		{
+			return *Iter;
+		}
+	}
+
+	return nullptr;
 }
 
 bool HazeCompilerFunction::GetLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)

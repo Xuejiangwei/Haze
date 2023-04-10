@@ -83,11 +83,19 @@ public:
 		}
 	};
 
+	struct FunctionBlock
+	{
+		HAZE_STRING BlockName;
+		int InstructionNum;
+		int StartAddress;
+	};
+
 	struct FunctionTableData
 	{
 		HAZE_STRING Name;
 		HazeValueType Type;
 		std::vector<HazeDefineVariable> Vector_Param;
+		std::vector<FunctionBlock> Vector_Block;
 		std::vector<FunctionInstruction> Vector_Instruction;
 		InstructionFunctionType DescType;
 
@@ -95,6 +103,7 @@ public:
 		{
 			Type = HazeValueType::Void;
 			Vector_Param.clear();
+			Vector_Block.clear();
 			Vector_Instruction.clear();
 		}
 	};
