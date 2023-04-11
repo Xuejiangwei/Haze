@@ -105,6 +105,7 @@ public:
 			Vector_Param.clear();
 			Vector_Block.clear();
 			Vector_Instruction.clear();
+			DescType = InstructionFunctionType::HazeFunction;
 		}
 	};
 

@@ -44,29 +44,28 @@ void HazeStack::Start(unsigned int Address)
 	}
 }
 
-void HazeStack::PushJmpStack(const HazeJmpData& Data)
+void HazeStack::PushJmpStack(const InstructionData& Data, bool IsPush)
 {
-	GetCurrFrame().Stack_Jmp.push_back(Data);
+	if (IsPush)
+	{
+		GetCurrFrame().Stack_Jmp.push_back({ PC/*, Data.Extra.Jmp.InstructionNum, Data.Extra.Jmp.InstructionNum*/ });
+	}
+
+	auto& Function = VM->GetFunctionByName(Stack_Frame.back().FunctionName);
+	int Address = Function.Extra.FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
+	memcpy(&PC, &Address, sizeof(PC));
+
+	PC--;
+}
+
+void HazeStack::PopCurrJmpStack()
+{
+	PC = GetCurrFrame().Stack_Jmp.back().CachePC;
+	GetCurrFrame().Stack_Jmp.pop_back();
 }
 
 void HazeStack::PCStepInc()
 {
-	if (FrameIsValid())
-	{
-		if (GetCurrFrame().Stack_Jmp.size() > 0)
-		{
-			if (GetCurrFrame().Stack_Jmp.back().BlockInstructionNum > 0)
-			{
-				GetCurrFrame().Stack_Jmp.back().BlockInstructionNum--;
-			}
-			else
-			{
-				PC = GetCurrFrame().Stack_Jmp.back().CachePC + GetCurrFrame().Stack_Jmp.back().SkipNum;
-				GetCurrFrame().Stack_Jmp.pop_back();
-			}
-		}
-	}
-
 	++PC;
 }
 

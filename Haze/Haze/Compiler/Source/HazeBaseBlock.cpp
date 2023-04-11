@@ -7,7 +7,7 @@ HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* Pare
 {
 	ParentFunction = Parent;
 	IsFinish = false;
-	IRCode.clear();
+	Vector_IRCode.clear();
 	PushIRCode(HAZE_STRING(BLOCK_START) + HAZE_TEXT(" ") + Name + HAZE_TEXT("\n"));
 }
 
@@ -15,8 +15,20 @@ HazeBaseBlock::~HazeBaseBlock()
 {
 }
 
-void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> TopBlock)
+void HazeBaseBlock::SetJmpOut()
 {
+	HAZE_STRING_STREAM HSS;
+	HSS << GetInstructionString(InstructionOpCode::JMPOUT) << std::endl;
+	PushIRCode(HSS.str());
+}
+
+void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> TopBlock, bool JmpOut)
+{
+	if (IsFinish)
+	{
+		return;
+	}
+
 	for (int i = (int)BlockAllocaList.size() - 1; i >= 0; i--)
 	{
 		HAZE_STRING_STREAM SStream;
@@ -25,6 +37,11 @@ void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> TopBlock)
 		PushIRCode(SStream.str());
 
 		BlockAllocaList.pop_back();
+	}
+
+	if (JmpOut)
+	{
+		SetJmpOut();
 	}
 
 	IsFinish = true;
@@ -60,7 +77,7 @@ std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING&
 
 void HazeBaseBlock::PushIRCode(const HAZE_STRING& Code)
 {
-	IRCode.push_back(Code);
+	Vector_IRCode.push_back(Code);
 }
 
 void HazeBaseBlock::MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB)
@@ -70,7 +87,7 @@ void HazeBaseBlock::MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB)
 	{
 		HAZE_STRING_STREAM HSS;
 		HSS << " " << Code.size() - 1 << std::endl;
-		IRCode.back() += HSS.str();
+		Vector_IRCode.back() += HSS.str();
 	}
 }
 
@@ -79,7 +96,7 @@ void HazeBaseBlock::CopyIRCode(std::shared_ptr<HazeBaseBlock> BB)
 	auto& Code = BB->GetIRCode();
 	if (Code.size() > 1)
 	{
-		IRCode.insert(IRCode.end(), ++Code.begin(), Code.end());		//skip block name
+		Vector_IRCode.insert(Vector_IRCode.end(), ++Code.begin(), Code.end());		//skip block name
 	}
 }
 

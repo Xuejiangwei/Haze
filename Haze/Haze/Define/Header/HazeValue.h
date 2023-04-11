@@ -84,9 +84,9 @@ bool IsNumberType(HazeValueType Type);
 
 void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value);
 
-void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const char* Source, const char* Target);
+void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Source, const void* Target);
 
-void CompareValueByType(HazeValueType Type, struct HazeRegister* Register, const char* Source, const char* Target);
+void CompareValueByType(HazeValueType Type, struct HazeRegister* Register, const void* Source, const void* Target);
 
 size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
 

@@ -80,12 +80,16 @@ enum class InstructionOpCode : uint32
 	NEW,
 
 	CMP,
+	JMP,
+	JMPL,
 	JNE,		//不等于
 	JNG,		//不大于
 	JNL,		//不小于
 	JE,			//等于
 	JG,			//大于
 	JL,			//小于
+
+	JMPOUT,			//JmpOut 跳出block
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，
@@ -140,7 +144,8 @@ struct InstructionData
 		void* Pointer;
 
 		Extra()
-		{}
+		{
+		}
 	} Extra;
 
 	InstructionData() : Scope(HazeDataDesc::None), Variable()
@@ -197,8 +202,8 @@ struct HazeRegister
 struct HazeJmpData
 {
 	int CachePC;					//执行完需要跳转回的pc
-	int BlockInstructionNum;		//跳转的block指令剩余数
-	int SkipNum;					//跳转回PC时，因为比较为true时，没有block，所以需要加上为true时的block的指令个数
+	//int BlockInstructionNum;		//跳转的block指令剩余数
+	//int SkipNum;					//跳转回PC时，因为比较为true时，没有block，所以需要加上为true时的block的指令个数
 };
 
 bool IsRegisterScope(HazeDataDesc Scope);

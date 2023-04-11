@@ -18,4 +18,4 @@ enum class HazeCmpType : uint32
 
 HazeCmpType GetHazeCmpTypeByToken(HazeToken Token);
 
-const HAZE_CHAR* GetOppositeInstructionStringByCmpType(HazeCmpType Type);
+const HAZE_CHAR* GetInstructionStringByCmpType(HazeCmpType Type);

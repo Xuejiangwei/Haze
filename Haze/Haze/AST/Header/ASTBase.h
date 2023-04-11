@@ -139,6 +139,8 @@ public:
 class ASTBinaryExpression : public ASTBase
 {
 	friend class ASTIfExpression;
+	friend class ASTWhileExpression;
+	friend class ASTForExpression;
 public:
 	ASTBinaryExpression(HazeVM* VM, HazeSectionSignal Section, HazeToken OperatorToken, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST);
 	virtual ~ASTBinaryExpression() override;
@@ -182,6 +184,7 @@ private:
 	HAZE_STRING ModuleName;
 };
 
+//»Ù
 class ASTIfExpression : public ASTBase
 {
 public:
@@ -194,4 +197,18 @@ private:
 	std::unique_ptr<ASTBase> Condition;
 	std::unique_ptr<ASTBase> IfExpression;
 	std::unique_ptr<ASTBase> ElseExpression;
+};
+
+//µ±
+class ASTWhileExpression : public ASTBase
+{
+public:
+	ASTWhileExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& MultiExpression);
+	virtual ~ASTWhileExpression() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	std::unique_ptr<ASTBase> Condition;
+	std::unique_ptr<ASTBase> MultiExpression;
 };

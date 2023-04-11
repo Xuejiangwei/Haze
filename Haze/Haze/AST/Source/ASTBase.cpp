@@ -278,18 +278,12 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	}
 		break;
 	case HazeToken::Equal:
-		break;
 	case HazeToken::NotEqual:
-		break;
 	case HazeToken::Greater:
-		return Compiler->CreateIntCmp(LeftValue, RightValue);
-		break;
 	case HazeToken::GreaterEqual:
-		break;
 	case HazeToken::Less:
-		break;
 	case HazeToken::LessEqual:
-		break;
+		return Compiler->CreateIntCmp(LeftValue, RightValue);
 	case HazeToken::LeftParentheses:
 		break;
 	case HazeToken::RightParentheses:
@@ -327,29 +321,60 @@ ASTIfExpression::~ASTIfExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 {
-	auto ConditionValue = Condition->CodeGen();
+	
 	auto ConditionExp = static_cast<ASTBinaryExpression*>(Condition.get());
 
 	auto& Compiler = VM->GetCompiler();
-
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
-
 	auto TopBlock = Function->GetTopBaseBlock();
 
-	auto ElseBlockName = Function->GenElseBlockName();
-	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), ElseBlockName);
-
+	Condition->CodeGen();
 
 	auto IfBlock = HazeBaseBlock::CreateBaseBlock(Function->GenIfBlockName(), Function);
 	IfExpression->CodeGen();
 	IfBlock->FinishBlock(TopBlock);
-	TopBlock->MergeJmpIRCode(IfBlock);
-	TopBlock->CopyIRCode(IfBlock);
-	Function->RemoveTopBaseBlock();
 
-	auto ElseBlock = HazeBaseBlock::CreateBaseBlock(ElseBlockName, Function);
+	auto ElseBlock = HazeBaseBlock::CreateBaseBlock(Function->GenElseBlockName(), Function);
 	ElseExpression->CodeGen();
 	ElseBlock->FinishBlock(TopBlock);
+
+	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), IfBlock, ElseBlock);
+
+
+	return nullptr;
+}
+
+ASTWhileExpression::ASTWhileExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& MultiExpression)
+	:ASTBase(VM), Condition(std::move(Condition)), MultiExpression(std::move(MultiExpression))
+{
+}
+
+ASTWhileExpression::~ASTWhileExpression()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
+{
+	auto& Compiler = VM->GetCompiler();
+	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
+	auto TopBlock = Function->GetTopBaseBlock();
+	auto ConditionExp = static_cast<ASTBinaryExpression*>(Condition.get());
+
+	auto WhileBlockName = Function->GenWhileBlockName();
+	
+
+	auto WhileBlock = HazeBaseBlock::CreateBaseBlock(WhileBlockName, Function);
+	ConditionExp->CodeGen();
+
+	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
+
+	MultiExpression->CodeGen();
+
+	Compiler->CreateJmp(WhileBlock, true);
+
+	WhileBlock->FinishBlock(TopBlock, false);
+
+	Compiler->CreateJmp(WhileBlock);
 
 	return nullptr;
 }

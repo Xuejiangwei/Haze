@@ -6,6 +6,7 @@
 #include "Haze.h"
 
 class HazeCompilerValue;
+class HazeBaseBlock;
 class HazeCompilerFunction;
 class HazeCompilerClass;
 
@@ -51,7 +52,9 @@ public:
 
 	void GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value);
 
-	void GenIRCode_Cmp(HazeCmpType CmpType, const HAZE_STRING& BlockName);
+	void GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut = false, bool ElseNullJmpOut = false);
+
+	void GenIRCode_Jmp(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL);
 
 	static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue>& Value);
 

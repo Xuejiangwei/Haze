@@ -42,6 +42,8 @@ public:
 
 	int GetFucntionIndexByName(const HAZE_STRING& Name);
 
+	const FunctionData& GetFunctionByName(const HAZE_STRING& Name);
+
 	const HAZE_STRING& GetHazeStringByIndex(int Index) const { return Vector_StringTable[Index].second; }
 
 	HazeValue* GetGlobalValue(const HAZE_STRING& Name);

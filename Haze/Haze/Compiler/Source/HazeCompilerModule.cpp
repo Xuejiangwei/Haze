@@ -231,14 +231,67 @@ void HazeCompilerModule::GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value)
 	BB->PushIRCode(SStream.str());
 }
 
-void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, const HAZE_STRING& BlockName)
+void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut, bool ElseNullJmpOut)
 {
 	HAZE_STRING_STREAM SStream;
 
-	SStream << GetOppositeInstructionStringByCmpType(CmpType) << " " << BlockName;
+	SStream << GetInstructionStringByCmpType(CmpType) << " ";
+	
+	if (IfJmpBlock)
+	{
+		SStream << IfJmpBlock->GetName() << " ";
+	}
+	else
+	{
+		if (IfNullJmpOut)
+		{
+			SStream << HAZE_JMP_OUT << " ";
+		}
+		else
+		{
+			SStream << HAZE_JMP_NULL << " ";
+		}
+	}
+
+	if (ElseJmpBlock)
+	{
+		SStream << ElseJmpBlock->GetName();
+	}
+	else
+	{
+		if (ElseNullJmpOut)
+		{
+			SStream << HAZE_JMP_OUT << " ";
+		}
+		else
+		{
+			SStream << HAZE_JMP_NULL << " ";
+		}
+	}
+
+	SStream << std::endl;
 
 	std::shared_ptr<HazeBaseBlock> BB = GetCurrFunction()->GetTopBaseBlock();
 	BB->PushIRCode(SStream.str());
+}
+
+void HazeCompilerModule::GenIRCode_Jmp(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
+{
+	auto TopBlock = GetCurrFunction()->GetTopBaseBlock();
+	HAZE_STRING_STREAM HSS;
+
+	if (IsJmpL)
+	{
+		HSS << GetInstructionString(InstructionOpCode::JMPL);
+	}
+	else
+	{
+		HSS << GetInstructionString(InstructionOpCode::JMP);
+	}
+
+	HSS << " " << Block->GetName() << std::endl;
+	
+	TopBlock->PushIRCode(HSS.str());
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var)
@@ -310,6 +363,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 
 	SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Int) << " " << HAZE_CALL_PUSH_ADDRESS_NAME
 		<< " " << (uint32)HazeDataDesc::Address << std::endl;
+	BB->PushIRCode(SStream.str());
+	SStream.str(HAZE_TEXT(""));
 
 	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << Param.size() << " " << Size << std::endl;
 	BB->PushIRCode(SStream.str());

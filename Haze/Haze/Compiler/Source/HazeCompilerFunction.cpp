@@ -16,7 +16,7 @@ HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, const HAZ
 		AddFunctionParam(it);
 	}
 
-	CurrIfBlockCount = 0;
+	CurrBlockCount = 0;
 }
 
 HazeCompilerFunction::~HazeCompilerFunction()
@@ -158,14 +158,21 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 HAZE_STRING HazeCompilerFunction::GenIfBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("IfBlock") << ++CurrIfBlockCount;
+	HSS << HAZE_TEXT("IfBlock") << ++CurrBlockCount;
 	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenElseBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("ElseBlock") << ++CurrIfBlockCount;
+	HSS << HAZE_TEXT("ElseBlock") << ++CurrBlockCount;
+	return HSS.str();
+}
+
+HAZE_STRING HazeCompilerFunction::GenWhileBlockName()
+{
+	HAZE_STRING_STREAM HSS;
+	HSS << HAZE_TEXT("WhileBlock") << ++CurrBlockCount;
 	return HSS.str();
 }
 

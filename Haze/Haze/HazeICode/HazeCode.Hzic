@@ -3,7 +3,7 @@ GlobalDataTable
 0
 StringTable
 4
-14 不需要改变纵坐标 %f \n
+13 需要改变横坐标 %d \n
 13 需要改变纵坐标 %f \n
 5 我的字符串
 26 测试%f 哈哈哈 %d \n快递费 %f %s \n
@@ -29,15 +29,25 @@ MOV 4 TempBinaryValue 5 4 己指之纵坐标 14
 ADD 4 TempBinaryValue 5 4 乙之纵坐标 14
 MOV 4 己指之纵坐标 14 4 TempBinaryValue 5
 POP 4 TempBinaryValue 5
-CMP 4 己指之纵坐标 14 4 15.1 3
-JNG ElseBlock1 1
-MOV 4 己指之纵坐标 14 4 12.123 3
-RET 0
-Block ElseBlock1
-PUSH 4 己指之纵坐标 14
+JMP WhileBlock1
+PUSH 3 己指之横坐标 14
 PUSH 9 常字符串指针 4 2 0
 PUSH 3 Address 11
 CALL 打印 2 12
+RET 0
+Block WhileBlock1
+CMP 3 己指之横坐标 14 3 100 3
+JL JmpNull JmpOut 
+PUSH 3 TempBinaryValue 5
+MOV 3 TempBinaryValue 5 3 己指之横坐标 14
+ADD 3 TempBinaryValue 5 3 5 3
+MOV 3 己指之横坐标 14 3 TempBinaryValue 5
+POP 3 TempBinaryValue 5
+PUSH 3 己指之横坐标 14
+PUSH 9 常字符串指针 4 2 0
+PUSH 3 Address 11
+CALL 打印 2 12
+JMPL WhileBlock1
 End
 Function 点@求加 11
 Param 乙 11 点
@@ -57,15 +67,19 @@ ADD 4 TempBinaryValue 5 4 乙之纵坐标 14
 MOV 4 值之纵坐标 14 4 TempBinaryValue 5
 POP 4 TempBinaryValue 5
 CMP 4 值之纵坐标 14 3 10 3
-JNG ElseBlock1 4
-PUSH 4 测试值 2
-MOV 4 测试值 2 4 10.123 3
-MOV 4 己指之纵坐标 14 4 测试值 2
-POP 4 测试值 2
+JG IfBlock1 ElseBlock2
 RET 11 值 2 点
-Block ElseBlock1
+Block IfBlock1
+PUSH 4 己指之纵坐标 14
+PUSH 9 常字符串指针 4 2 1
+PUSH 3 Address 11
+CALL 打印 2 12
+JMPOUT
+Block ElseBlock2
 CMP 4 值之纵坐标 14 3 5 3
-JNG ElseBlock3 8
+JG IfBlock3 ElseBlock4
+JMPOUT
+Block IfBlock3
 PUSH 4 TempBinaryValue 5
 MOV 4 TempBinaryValue 5 4 值之纵坐标 14
 SUB 4 TempBinaryValue 5 3 1 3
@@ -75,21 +89,23 @@ PUSH 4 己指之纵坐标 14
 PUSH 9 常字符串指针 4 2 1
 PUSH 3 Address 11
 CALL 打印 2 12
-Block ElseBlock3
+JMPOUT
+Block ElseBlock4
 PUSH 4 己指之纵坐标 14
 PUSH 9 常字符串指针 4 2 1
 PUSH 3 Address 11
 CALL 打印 2 12
+JMPOUT
 End
 Function 主函数 3
 Start
 Block Entry
 PUSH 11 测试甲 2 点
 MOV 4 测试甲之纵坐标 14 4 4.2 3
-MOV 3 测试甲之横坐标 14 3 123 3
+MOV 3 测试甲之横坐标 14 3 1 3
 PUSH 11 测试乙 2 点
 MOV 4 测试乙之纵坐标 14 4 8.1 3
-MOV 3 测试乙之横坐标 14 3 123 3
+MOV 3 测试乙之横坐标 14 3 10 3
 PUSH 11 测试甲 2 点
 PUSH 10 测试乙 12 点
 PUSH 3 Address 11

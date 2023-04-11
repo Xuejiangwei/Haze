@@ -162,7 +162,7 @@ void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
     }
 }
 
-void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const char* Source, const char* Target)
+void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Source, const void* Target)
 {
     switch (Type)
     {
@@ -213,7 +213,7 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
     }
 }
 
-void CompareValueByType(HazeValueType Type, HazeRegister* Register, const char* Source, const char* Target)
+void CompareValueByType(HazeValueType Type, HazeRegister* Register, const void* Source, const void* Target)
 {
     switch (Type)
     {

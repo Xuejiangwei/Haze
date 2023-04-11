@@ -306,15 +306,20 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 	return GetRegister(NEW_REGISTER);
 }
 
+void HazeCompiler::CreateJmp(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
+{
+	GetCurrModule()->GenIRCode_Jmp(Block, IsJmpL);
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
 	GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::CMP);
 	return GetRegister(CMP_REGISTER);
 }
 
-void HazeCompiler::CreateCompareJmp(HazeCmpType CmpType, const HAZE_STRING& BlockName)
+void HazeCompiler::CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut, bool ElseNullJmpOut)
 {
-	GetCurrModule()->GenIRCode_Cmp(CmpType, BlockName);
+	GetCurrModule()->GenIRCode_Cmp(CmpType, IfJmpBlock, ElseJmpBlock, IfNullJmpOut, ElseNullJmpOut);
 }
 
 void HazeCompiler::ClearFunctionTemp()

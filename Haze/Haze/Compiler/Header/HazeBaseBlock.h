@@ -17,11 +17,17 @@ public:
 
 	const std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& GetAllocaList() const { return BlockAllocaList; }
 
-	const std::vector<HAZE_STRING>& GetIRCode() const { return IRCode; }
+	const HAZE_STRING& GetName() const { return Name; }
+
+	size_t GetIRCodeSize() { return Vector_IRCode.size() - 1; }
+
+	const std::vector<HAZE_STRING>& GetIRCode() const { return Vector_IRCode; }
 
 	const bool BlockIsFinish() const { return IsFinish; }
 
-	void FinishBlock(std::shared_ptr<HazeBaseBlock> TopBlock);
+	void SetJmpOut();
+
+	void FinishBlock(std::shared_ptr<HazeBaseBlock> TopBlock, bool JmpOut = true);
 
 public:
 	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> InsertBefore = nullptr);
@@ -47,7 +53,7 @@ private:
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> BlockAllocaList;
 
-	std::vector<HAZE_STRING> IRCode;
+	std::vector<HAZE_STRING> Vector_IRCode;
 
 	bool IsFinish;
 };

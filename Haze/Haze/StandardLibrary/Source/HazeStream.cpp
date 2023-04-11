@@ -90,7 +90,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 {
 #define PRE_SIGN HAZE_CHAR('%')
 	
-	decltype(InstructionData::Extra::Index) V = 0;
+	uint64 V = 0;
 
 	int Offset = -(int)sizeof(V) - HAZE_ADDRESS_SIZE;
 	memcpy(&V, Stack->GetAddressByEBP(Offset), sizeof(V));
@@ -99,9 +99,9 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 
 	int ArgNum = 1;
 
-	const HAZE_STRING& String = Stack->GetVM()->GetHazeStringByIndex(V);
-	auto Start = String.cbegin();
-	while (Start != String.cend())
+	const HAZE_STRING* String = (HAZE_STRING*)V;
+	auto Start = String->cbegin();
+	while (Start != String->cend())
 	{
 		if (*Start != PRE_SIGN)
 		{
@@ -154,15 +154,15 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 			}
 			else if (*Start == HAZE_CHAR('s'))
 			{
-				size_t TempAddress;
+				uint64 TempAddress;
 
 				Offset -= sizeof(TempAddress);
 
 				char* Address = Stack->GetAddressByEBP(Offset);
 				memcpy(&TempAddress, Address, sizeof(TempAddress));
 
-				const HAZE_STRING& Str = Stack->GetVM()->GetHazeStringByIndex((int)TempAddress);
-				HSS << Str;
+				const HAZE_STRING* Str = (HAZE_STRING*)TempAddress;
+				HSS << *Str;
 				Start++;
 			}
 		}

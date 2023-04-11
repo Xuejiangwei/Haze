@@ -34,7 +34,9 @@ public:
 
 	bool FrameIsValid() { return Stack_Frame.size(); }
 
-	void PushJmpStack(const HazeJmpData& Data);
+	void PushJmpStack(const InstructionData& Data, bool IsPush = true);
+
+	void PopCurrJmpStack();
 
 private:
 	void PCStepInc();

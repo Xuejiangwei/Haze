@@ -294,6 +294,12 @@ int HazeVM::GetFucntionIndexByName(const HAZE_STRING& Name)
 	return Iter->second;
 }
 
+const FunctionData& HazeVM::GetFunctionByName(const HAZE_STRING& Name)
+{
+	int Index = GetFucntionIndexByName(Name);
+	return Vector_FunctionTable[Index];
+}
+
 HazeValue* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 {
 	for (auto& Iter : Vector_GlobalData)

@@ -416,6 +416,15 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		Instruction.Operator = { OperatorOne };
 	}
 	break;
+	case InstructionOpCode::JMP:
+	case InstructionOpCode::JMPL:
+	{
+		InstructionData OperatorOne;
+		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
+
+		Instruction.Operator = { OperatorOne };
+	}
+	break;
 	case InstructionOpCode::JNE:
 	case InstructionOpCode::JNG:
 	case InstructionOpCode::JNL:
@@ -428,7 +437,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 
 		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
 
-		GetNextLexmeAssign_CustomType<int>(OperatorTwo.Extra.Jmp.InstructionNum);
+		GetNextLexmeAssign_HazeString(OperatorTwo.Variable.Name);
 
 		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
@@ -582,13 +591,20 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 		{
 			if (IsJmpOpCode(CurrFunction.Vector_Instruction[i].InsCode))
 			{
-				for (size_t j = 0; j < CurrFunction.Vector_Block.size(); j++)
+				for (auto& Operator : CurrFunction.Vector_Instruction[i].Operator)
 				{
-					if (CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name == CurrFunction.Vector_Block[j].BlockName)
+					if (Operator.Variable.Name != HAZE_JMP_NULL && Operator.Variable.Name != HAZE_JMP_OUT)
 					{
-						CurrFunction.Vector_Instruction[i].Operator[0].Extra.Jmp.StartAddress = CurrFunction.Vector_Block[j].StartAddress;
-						CurrFunction.Vector_Instruction[i].Operator[0].Extra.Jmp.InstructionNum = CurrFunction.Vector_Block[j].InstructionNum;
-						break;
+						for (size_t j = 0; j < CurrFunction.Vector_Block.size(); j++)
+						{
+							if (Operator.Variable.Name == CurrFunction.Vector_Block[j].BlockName)
+							{
+								Operator.Extra.Jmp.StartAddress = CurrFunction.Vector_Block[j].StartAddress;
+								Operator.Extra.Jmp.InstructionNum = CurrFunction.Vector_Block[j].InstructionNum;
+
+								break;
+							}
+						}
 					}
 				}
 			}

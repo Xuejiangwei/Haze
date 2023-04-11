@@ -79,7 +79,6 @@
 #define TOKEN_LEFT_BRACE				HAZE_TEXT("{")
 #define TOKEN_RIGHT_BRACE				HAZE_TEXT("}")
 
-//
 #define TOKEN_IF						HAZE_TEXT("若")
 #define TOKEN_ELSE						HAZE_TEXT("否则")
 
@@ -520,12 +519,17 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseBoolExpression();
 	case HazeToken::Identifier:
 		return ParseIdentifer();
+	case HazeToken::If:
+		return ParseIfExpression();
+	case HazeToken::While:
+		return ParseWhileExpression();
+	case HazeToken::For:
+		return ParseForExpression();
 	case HazeToken::Return:
 		return ParseReturn();
 	case HazeToken::New:
 		return ParseNew();
-	case HazeToken::If:
-		return ParseIfExpression();
+
 	default:
 		break;
 	}
@@ -706,6 +710,21 @@ std::unique_ptr<ASTBase> Parse::ParseForExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseWhileExpression()
 {
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：当 表达式期望捕捉 (")))
+	{
+		GetNextToken();
+		auto ConditionExpression = ParseExpression();
+
+		std::unique_ptr<ASTBase> MultiExpression = nullptr;
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：当 执行表达式期望捕捉 {")))
+		{
+			MultiExpression = ParseMultiExpression();
+			
+			GetNextToken();
+			return std::make_unique<ASTWhileExpression>(VM, ConditionExpression, MultiExpression);
+		}
+	}
+
 	return nullptr;
 }
 

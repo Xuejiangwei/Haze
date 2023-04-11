@@ -38,6 +38,8 @@ public:
 
 	HAZE_STRING GenElseBlockName();
 
+	HAZE_STRING GenWhileBlockName();
+
 	std::shared_ptr<HazeBaseBlock> GetTopBaseBlock();
 
 	void RemoveTopBaseBlock() { return BBList.pop_back(); }
@@ -66,5 +68,5 @@ private:
 
 	std::list<std::shared_ptr<HazeBaseBlock>> BBList;
 
-	int CurrIfBlockCount;
+	int CurrBlockCount;
 };

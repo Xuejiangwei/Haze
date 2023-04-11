@@ -23,16 +23,16 @@ HazeCmpType GetHazeCmpTypeByToken(HazeToken Token)
 	return HazeCmpType::None;
 }
 
-const HAZE_CHAR* GetOppositeInstructionStringByCmpType(HazeCmpType Type)
+const HAZE_CHAR* GetInstructionStringByCmpType(HazeCmpType Type)
 {
 	static std::unordered_map<HazeCmpType, InstructionOpCode> HashMap =
 	{
-		{HazeCmpType::Equal, InstructionOpCode::JNE},
-		{HazeCmpType::NotEqual, InstructionOpCode::JE},
-		{HazeCmpType::Greater, InstructionOpCode::JNG},
-		{HazeCmpType::GreaterEqual, InstructionOpCode::JL},
-		{HazeCmpType::Less, InstructionOpCode::JNL},
-		{HazeCmpType::LessEqual, InstructionOpCode::JG},
+		{HazeCmpType::Equal, InstructionOpCode::JE},
+		{HazeCmpType::NotEqual, InstructionOpCode::JNE},
+		{HazeCmpType::Greater, InstructionOpCode::JG},
+		{HazeCmpType::GreaterEqual, InstructionOpCode::JNL},
+		{HazeCmpType::Less, InstructionOpCode::JL},
+		{HazeCmpType::LessEqual, InstructionOpCode::JNG},
 	};
 
 	auto Iter = HashMap.find(Type);

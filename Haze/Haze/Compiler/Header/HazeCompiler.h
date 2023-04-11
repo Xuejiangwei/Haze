@@ -78,10 +78,12 @@ public:		//Éú³Éop code
 	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data);
 
 public:
+	void CreateJmp(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL = false);
+
 	std::shared_ptr<HazeCompilerValue> CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);
 
 public:
-	void CreateCompareJmp(HazeCmpType CmpType, const HAZE_STRING& BlockName);
+	void CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut = false, bool ElseNullJmpOut = false);
 
 private:
 	void ClearFunctionTemp();

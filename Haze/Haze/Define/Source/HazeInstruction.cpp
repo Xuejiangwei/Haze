@@ -1,4 +1,5 @@
 #include "Haze.h"
+#include "HazeLog.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
 
@@ -32,6 +33,8 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("NEW"), InstructionOpCode::NEW },
 
 	{HAZE_TEXT("CMP"), InstructionOpCode::CMP },
+	{HAZE_TEXT("JMP"), InstructionOpCode::JMP },
+	{HAZE_TEXT("JMPL"), InstructionOpCode::JMPL },
 	{HAZE_TEXT("JNE"), InstructionOpCode::JNE },
 	{HAZE_TEXT("JNG"), InstructionOpCode::JNG },
 	{HAZE_TEXT("JNL"), InstructionOpCode::JNL },
@@ -39,6 +42,7 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("JG"), InstructionOpCode::JG },
 	{HAZE_TEXT("JL"), InstructionOpCode::JL },
 
+	{HAZE_TEXT("JMPOUT"), InstructionOpCode::JMPOUT },
 };
 
 std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister =
@@ -101,7 +105,7 @@ InstructionOpCode GetInstructionByString(const HAZE_STRING& String)
 
 bool IsJmpOpCode(InstructionOpCode Code)
 {
-	return Code >= InstructionOpCode::JNE && Code <= InstructionOpCode::JL;
+	return Code >= InstructionOpCode::JMP && Code <= InstructionOpCode::JL;
 }
 
 class InstructionProcessor
@@ -112,8 +116,8 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			char* Dst = GetAddressByOperator(Stack, Operator[0]);
-			char* Src = GetAddressByOperator(Stack, Operator[1]);
+			void* Dst = GetAddressByOperator(Stack, Operator[0]);
+			const void* Src = GetAddressByOperator(Stack, Operator[1]);
 			memcpy(Dst, Src, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 		}
 	}
@@ -176,8 +180,8 @@ public:
 			{
 				if (Operator[0].Extra.Address.BaseAddress + (int)Stack->EBP >= 0)
 				{
-					memcpy(&Stack->Stack_Main[Stack->ESP], GetAddressByOperator(Stack, Operator[0]), 
-						Operator[0].Scope == HazeDataDesc::ConstantString ? Size = sizeof(Operator[0].Extra.Index) : Size);
+					//Size = Operator[0].Scope == HazeDataDesc::ConstantString ? Size = sizeof(Operator[0].Extra.Index) : Size;
+					memcpy(&Stack->Stack_Main[Stack->ESP], GetAddressByOperator(Stack, Operator[0]), Size);
 				}
 				else
 				{
@@ -414,6 +418,24 @@ public:
 		}
 	}
 
+	static void Jmp(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			JmpToOperator(Stack, Operator[0]);
+		}
+	}
+
+	static void JmpL(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			JmpToOperator(Stack, Operator[0], false);
+		}
+	}
+
 	static void Jne(HazeStack* Stack)
 	{
 #define REGISTER_EQUAL(R) R->Data[0] == 1
@@ -421,16 +443,17 @@ public:
 #define REGISTER_LESS(R) R->Data[2] == 1
 
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 1)
+		if (Operator.size() == 2)
 		{
 			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
 
 			if (!REGISTER_EQUAL(CmpRegister))
 			{
-				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
-
-				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
-				Stack->PC--;
+				JmpToOperator(Stack, Operator[0]);
+			}
+			else
+			{
+				JmpToOperator(Stack, Operator[1]);
 			}
 		}
 	}
@@ -444,10 +467,11 @@ public:
 
 			if (!REGISTER_GREATER(CmpRegister))
 			{
-				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
-
-				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
-				Stack->PC--;
+				JmpToOperator(Stack, Operator[0]);
+			}
+			else
+			{
+				JmpToOperator(Stack, Operator[1]);
 			}
 		}
 	}
@@ -461,10 +485,11 @@ public:
 
 			if (!REGISTER_LESS(CmpRegister))
 			{
-				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
-
-				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
-				Stack->PC--;
+				JmpToOperator(Stack, Operator[0]);
+			}
+			else
+			{
+				JmpToOperator(Stack, Operator[1]);
 			}
 		}
 	}
@@ -478,10 +503,11 @@ public:
 
 			if (REGISTER_EQUAL(CmpRegister))
 			{
-				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
-
-				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
-				Stack->PC--;
+				JmpToOperator(Stack, Operator[0]);
+			}
+			else
+			{
+				JmpToOperator(Stack, Operator[1]);
 			}
 		}
 	}
@@ -495,10 +521,11 @@ public:
 
 			if (REGISTER_GREATER(CmpRegister))
 			{
-				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
-
-				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
-				Stack->PC--;
+				JmpToOperator(Stack, Operator[0]);
+			}
+			else
+			{
+				JmpToOperator(Stack, Operator[1]);
 			}
 		}
 	}
@@ -512,48 +539,90 @@ public:
 
 			if (REGISTER_LESS(CmpRegister))
 			{
-				Stack->PushJmpStack({ Stack->PC, Operator[0].Extra.Jmp.InstructionNum, Operator[1].Extra.Jmp.InstructionNum });
-
-				memcpy(&Stack->PC, &(Operator[0].Extra.Jmp.StartAddress), sizeof(Stack->PC));
-				Stack->PC--;
+				JmpToOperator(Stack, Operator[0]);
+			}
+			else
+			{
+				JmpToOperator(Stack, Operator[1]);
 			}
 		}
 	}
 
-private:
-	static char* GetAddressByOperator(HazeStack* Stack, const InstructionData& Operator)
+	static void JmpOut(HazeStack* Stack)
 	{
+		Stack->PopCurrJmpStack();
+	}
+
+private:
+	static void* const GetAddressByOperator(HazeStack* Stack, const InstructionData& Operator)
+	{
+#define HAZE_VM_GET_ADDRESS_LOG 0
+
+#if HAZE_VM_GET_ADDRESS_LOG
+		HAZE_STRING_STREAM HSS;
+		HSS << "Address " << Operator.Variable.Name << " ";
+#endif
+
+		void* Ret = nullptr;
 		static HazeValue ConstantValue;
+		static uint64 TempAddress;
 
 		if (Operator.Scope == HazeDataDesc::Constant)
 		{
 			ConstantValue.Type = Operator.Variable.Type.PrimaryType;
 			StringToHazeValueNumber(Operator.Variable.Name, ConstantValue);
-			return (char*)&ConstantValue.Value;
+			Ret = (void*)&ConstantValue.Value;
 		}
 		else if (Operator.Scope == HazeDataDesc::Global)
 		{
-			return (char*)&Stack->VM->GetGlobalValue(Operator.Variable.Name)->Value;
+			Ret = (void*)&Stack->VM->GetGlobalValue(Operator.Variable.Name)->Value;
 		}
 		else if (Operator.Scope == HazeDataDesc::ConstantString)
 		{
-			return (char*)&Operator.Extra.Index;
+			TempAddress = (uint64)&Stack->GetVM()->GetHazeStringByIndex(Operator.Extra.Index);
+			Ret = &TempAddress;
 		}
 		else if (IsRegisterScope(Operator.Scope))
 		{
 			HazeRegister* Register = GetVirtualRegister(Operator.Variable.Name.c_str());
-			return Register->Data.begin()._Unwrapped();
+			Ret = Register->Data.begin()._Unwrapped();
 		}
 		else if (Operator.Scope == HazeDataDesc::ClassMember_Local_Public && Operator.AddressType == InstructionAddressType::Pointer_Offset)
 		{
 			uint64 Address;
 			memcpy(&Address, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
 
-			return (char*)Address + Operator.Extra.Address.Offset;
+			Ret = (char*)Address + Operator.Extra.Address.Offset;
+
+#if HAZE_VM_GET_ADDRESS_LOG
+			HSS << Stack->EBP << " " << Stack->ESP << " " << Operator.Extra.Address.BaseAddress << " " << Address << " ";
+#endif
 		}
 		else /*if (Operator.Scope == InstructionScopeType::Local || Operator.Scope == InstructionScopeType::Temp)*/
 		{
-			return &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
+			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
+		}
+
+#if HAZE_VM_GET_ADDRESS_LOG
+		HSS << Ret << std::endl;
+		HazeLog::LogInfo(HazeLog::Warning, HSS.str().c_str());
+#endif // HAZE_VM_GET_ADDRESS_LOG
+
+		return Ret;
+	}
+
+	static void JmpToOperator(HazeStack* Stack, const InstructionData& Operator, bool PushStack = true)
+	{
+		if (Operator.Variable.Name == HAZE_JMP_NULL)
+		{
+		}
+		else if (Operator.Variable.Name == HAZE_JMP_OUT)
+		{
+			JmpOut(Stack);
+		}
+		else
+		{
+			Stack->PushJmpStack(Operator, PushStack);
 		}
 	}
 };
@@ -586,10 +655,14 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::NEW, &InstructionProcessor::New},
 
 	{InstructionOpCode::CMP, &InstructionProcessor::Cmp},
+	{InstructionOpCode::JMP, &InstructionProcessor::Jmp},
+	{InstructionOpCode::JMPL, &InstructionProcessor::JmpL},
 	{InstructionOpCode::JNE, &InstructionProcessor::Jne},
 	{InstructionOpCode::JNG, &InstructionProcessor::Jng},
 	{InstructionOpCode::JNL, &InstructionProcessor::Jnl},
 	{InstructionOpCode::JE, &InstructionProcessor::Je},
 	{InstructionOpCode::JG, &InstructionProcessor::Jg},
 	{InstructionOpCode::JL, &InstructionProcessor::Jl},
+	
+	{InstructionOpCode::JMPOUT, &InstructionProcessor::JmpOut},
 };
