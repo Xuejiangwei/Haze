@@ -176,6 +176,13 @@ HAZE_STRING HazeCompilerFunction::GenWhileBlockName()
 	return HSS.str();
 }
 
+HAZE_STRING HazeCompilerFunction::GenForBlockName()
+{
+	HAZE_STRING_STREAM HSS;
+	HSS << HAZE_TEXT("ForBlock") << ++CurrBlockCount;
+	return HSS.str();
+}
+
 std::shared_ptr<HazeBaseBlock> HazeCompilerFunction::GetTopBaseBlock()
 {
 	for (auto Iter = BBList.rbegin(); Iter != BBList.rend(); Iter++)

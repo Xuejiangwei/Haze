@@ -82,7 +82,7 @@
 #define TOKEN_IF						HAZE_TEXT("若")
 #define TOKEN_ELSE						HAZE_TEXT("否则")
 
-#define TOKEN_FOR						HAZE_TEXT("遍历")
+#define TOKEN_FOR						HAZE_TEXT("循环")
 #define TOKEN_FOR_STEP					HAZE_TEXT("步进")
 
 #define TOKEN_BREAK						HAZE_TEXT("打断")
@@ -705,6 +705,26 @@ std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
 
 std::unique_ptr<ASTBase> Parse::ParseForExpression()
 {
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：循环 表达式期望捕捉 (")))
+	{
+		GetNextToken();
+		auto InitExpression = ParseExpression();
+
+		GetNextToken();
+		auto ConditionExpression = ParseExpression();
+
+		GetNextToken();
+		auto StepExpression = ParseExpression();
+
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：循环 表达式块期望捕捉 {")))
+		{
+			auto MultiExpression = ParseMultiExpression();
+
+			GetNextToken();
+			return std::make_unique<ASTForExpression>(VM, InitExpression, ConditionExpression, MultiExpression);
+		}
+	}
+	
 	return nullptr;
 }
 

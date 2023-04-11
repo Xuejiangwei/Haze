@@ -40,6 +40,8 @@ public:
 
 	HAZE_STRING GenWhileBlockName();
 
+	HAZE_STRING GenForBlockName();
+
 	std::shared_ptr<HazeBaseBlock> GetTopBaseBlock();
 
 	void RemoveTopBaseBlock() { return BBList.pop_back(); }

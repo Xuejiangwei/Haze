@@ -378,3 +378,39 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 
 	return nullptr;
 }
+
+ASTForExpression::ASTForExpression(HazeVM* VM, std::unique_ptr<ASTBase>& InitExpression, std::unique_ptr<ASTBase>& ConditionExpression, std::unique_ptr<ASTBase>& MultiExpression)
+	:ASTBase(VM), InitExpression(std::move(InitExpression)), ConditionExpression(std::move(ConditionExpression)), MultiExpression(std::move(MultiExpression))
+{
+}
+
+ASTForExpression::~ASTForExpression()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
+{
+	auto& Compiler = VM->GetCompiler();
+	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
+	auto TopBlock = Function->GetTopBaseBlock();
+	auto ConditionExp = static_cast<ASTBinaryExpression*>(ConditionExpression.get());
+
+	auto WhileBlockName = Function->GenForBlockName();
+
+
+	auto ForBlock = HazeBaseBlock::CreateBaseBlock(WhileBlockName, Function);
+
+	InitExpression->CodeGen();
+
+	ConditionExpression->CodeGen();
+
+	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
+
+	MultiExpression->CodeGen();
+
+	Compiler->CreateJmp(ForBlock, true);
+
+	ForBlock->FinishBlock(TopBlock, false);
+
+	return std::shared_ptr<HazeCompilerValue>();
+}
