@@ -27,7 +27,7 @@ public:
 
 	void SetJmpOut();
 
-	void FinishBlock(std::shared_ptr<HazeBaseBlock> TopBlock, bool JmpOut = true);
+	void FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBlock = nullptr, bool JmpOut = true);
 
 public:
 	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> InsertBefore = nullptr);

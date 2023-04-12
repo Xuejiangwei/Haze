@@ -27,12 +27,17 @@ public:
 	struct HazeStackFrame
 	{
 		HAZE_STRING FunctionName;
+		HazFrameFunctionData FunctionData;
 		std::vector<HazeJmpData> Stack_Jmp;
 	};
 
 	HazeStackFrame& GetCurrFrame() { return Stack_Frame.back(); }
 
 	bool FrameIsValid() { return Stack_Frame.size(); }
+
+	void PushVariableStack(HazeDefineVariable* Variable);
+
+	void PopVariableStack(int Num = 1);
 
 	void PushJmpStack(const InstructionData& Data, bool IsPush = true);
 

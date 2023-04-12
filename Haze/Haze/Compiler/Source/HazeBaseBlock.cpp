@@ -22,21 +22,23 @@ void HazeBaseBlock::SetJmpOut()
 	PushIRCode(HSS.str());
 }
 
-void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> TopBlock, bool JmpOut)
+void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBlock, bool JmpOut)
 {
 	if (IsFinish)
 	{
 		return;
 	}
 
+	auto BB = MoveFinishPopBlock ? MoveFinishPopBlock.get() : this;
 	for (int i = (int)BlockAllocaList.size() - 1; i >= 0; i--)
 	{
 		HAZE_STRING_STREAM SStream;
 		SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetValue().Type)
 			<< " " << BlockAllocaList[i].first << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetScope()) << std::endl;
-		PushIRCode(SStream.str());
 
 		BlockAllocaList.pop_back();
+
+		BB->PushIRCode(SStream.str());
 	}
 
 	if (JmpOut)

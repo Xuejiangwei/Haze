@@ -5,6 +5,7 @@
 
 #include "Haze.h"
 
+class HazeCompiler;
 class HazeCompilerValue;
 class HazeBaseBlock;
 class HazeCompilerFunction;
@@ -15,7 +16,7 @@ class HazeCompilerModule
 public:
 	friend class HazeCompiler;
 
-	HazeCompilerModule(const HAZE_STRING& ModuleName);
+	HazeCompilerModule(HazeCompiler* Compiler, const HAZE_STRING& ModuleName);
 	~HazeCompilerModule();
 
 	void MarkStandardLibrary();
@@ -54,9 +55,14 @@ public:
 
 	void GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut = false, bool ElseNullJmpOut = false);
 
-	void GenIRCode_Jmp(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL);
+	void GenIRCode_JmpFrom(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL);
+
+	void GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL);
 
 	static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue>& Value);
+
+public:
+	HazeCompiler* GetCompiler() { return Compiler; }
 
 private:
 	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var);
@@ -71,6 +77,8 @@ private:
 	void GenICode();
 
 private:
+	HazeCompiler* Compiler;
+
 	bool IsStdLib;
 
 	HAZE_OFSTREAM FS_I_Code;

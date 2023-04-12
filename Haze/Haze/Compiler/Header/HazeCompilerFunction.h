@@ -42,9 +42,13 @@ public:
 
 	HAZE_STRING GenForBlockName();
 
-	std::shared_ptr<HazeBaseBlock> GetTopBaseBlock();
+	HAZE_STRING GenForConditionBlockName();
 
-	void RemoveTopBaseBlock() { return BBList.pop_back(); }
+	HAZE_STRING GenForEndBlockName();
+
+	//std::shared_ptr<HazeBaseBlock> GetTopBaseBlock();
+
+	//void RemoveTopBaseBlock() { return BBList.pop_back(); }
 	
 	const std::list<std::shared_ptr<HazeBaseBlock>>& GetBaseBlockList() { return BBList; }
 
@@ -71,4 +75,5 @@ private:
 	std::list<std::shared_ptr<HazeBaseBlock>> BBList;
 
 	int CurrBlockCount;
+	int CurrVariableCount;
 };

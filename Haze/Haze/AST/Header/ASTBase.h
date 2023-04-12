@@ -217,7 +217,8 @@ private:
 class ASTForExpression : public ASTBase
 {
 public:
-	ASTForExpression(HazeVM* VM, std::unique_ptr<ASTBase>& InitExpression, std::unique_ptr<ASTBase>& ConditionExpression, std::unique_ptr<ASTBase>& MultiExpression);
+	ASTForExpression(HazeVM* VM, std::unique_ptr<ASTBase>& InitExpression, std::unique_ptr<ASTBase>& ConditionExpression, std::unique_ptr<ASTBase>& StepExpression,
+		std::unique_ptr<ASTBase>& MultiExpression);
 	virtual	~ASTForExpression()	override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -225,6 +226,7 @@ public:
 private:
 	std::unique_ptr<ASTBase> InitExpression;
 	std::unique_ptr<ASTBase> ConditionExpression;
+	std::unique_ptr<ASTBase> StepExpression;
 	std::unique_ptr<ASTBase> MultiExpression;
 };
 

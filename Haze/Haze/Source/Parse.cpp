@@ -721,7 +721,7 @@ std::unique_ptr<ASTBase> Parse::ParseForExpression()
 			auto MultiExpression = ParseMultiExpression();
 
 			GetNextToken();
-			return std::make_unique<ASTForExpression>(VM, InitExpression, ConditionExpression, MultiExpression);
+			return std::make_unique<ASTForExpression>(VM, InitExpression, ConditionExpression, StepExpression, MultiExpression);
 		}
 	}
 	

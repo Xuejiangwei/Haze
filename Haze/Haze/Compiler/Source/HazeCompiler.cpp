@@ -33,7 +33,7 @@ bool HazeCompiler::InitializeCompiler(const HAZE_STRING& ModuleName)
 	}
 
 	Vector_ModuleNameStack.push_back(ModuleName);
-	HashMap_CompilerModule[GetCurrModuleName()] = std::make_unique<HazeCompilerModule>(ModuleName);
+	HashMap_CompilerModule[GetCurrModuleName()] = std::make_unique<HazeCompilerModule>(this, ModuleName);
 	return true;
 }
 
@@ -306,9 +306,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 	return GetRegister(NEW_REGISTER);
 }
 
-void HazeCompiler::CreateJmp(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
+void HazeCompiler::CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL)
 {
-	GetCurrModule()->GenIRCode_Jmp(Block, IsJmpL);
+	GetCurrModule()->GenIRCode_JmpFrom(FromBlock, ToBlock, IsJmpL);
+}
+
+void HazeCompiler::CreateJmpToBlock(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
+{
+	GetCurrModule()->GenIRCode_JmpTo(Block, IsJmpL);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
@@ -324,9 +329,5 @@ void HazeCompiler::CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBas
 
 void HazeCompiler::ClearFunctionTemp()
 {
-	std::shared_ptr<HazeCompilerFunction> Function = GetCurrModule()->GetCurrFunction();
-	if (Function)
-	{
-		Function->GetTopBaseBlock()->ClearTempIRCode();
-	}
+	InsertBaseBlock->ClearTempIRCode();
 }

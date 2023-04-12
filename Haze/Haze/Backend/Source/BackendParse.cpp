@@ -687,7 +687,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 							}
 						}
 					}
-					else if (it.Scope == HazeDataDesc::Local || it.Scope == HazeDataDesc::Temp || it.Scope == HazeDataDesc::ClassThis)
+					else if (it.Scope == HazeDataDesc::Local /*|| it.Scope == HazeDataDesc::Temp*/ || it.Scope == HazeDataDesc::ClassThis)
 					{
 						//需要先判断是不是函数参数，设置为负的索引
 						int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
@@ -746,7 +746,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 			WSS << GetInstructionString(NewFunctionTable.Vector_Function[k].Vector_Instruction[i].InsCode) << " ";
 			for (auto& it : NewFunctionTable.Vector_Function[k].Vector_Instruction[i].Operator)
 			{
-				WSS << it.Variable.Name << " " << it.Extra.Address.BaseAddress << " " << it.Extra.Address.Offset << " ";
+				WSS << it.Variable.Name << " Base " << it.Extra.Address.BaseAddress << " Offset " << it.Extra.Address.Offset << " ";
 			}
 			WSS << "       Replace" << std::endl;
 			std::wcout << WSS.str();

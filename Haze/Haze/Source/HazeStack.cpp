@@ -44,6 +44,17 @@ void HazeStack::Start(unsigned int Address)
 	}
 }
 
+void HazeStack::PushVariableStack(HazeDefineVariable* Variable)
+{
+	Stack_Frame.back().FunctionData.Vector_LocalParam.push_back(Variable);
+}
+
+void HazeStack::PopVariableStack(int Num)
+{
+	uint64 NewSize = Stack_Frame.back().FunctionData.Vector_LocalParam.size() - Num;
+	Stack_Frame.back().FunctionData.Vector_LocalParam.resize(NewSize);
+}
+
 void HazeStack::PushJmpStack(const InstructionData& Data, bool IsPush)
 {
 	if (IsPush)

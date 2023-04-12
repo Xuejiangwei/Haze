@@ -51,8 +51,9 @@ public:
 	const HAZE_CHAR* GetClassName(const HAZE_STRING& Name);
 
 public:
-	//Base block : IP
 	void SetInsertBlock(std::shared_ptr<HazeBaseBlock> BB);
+
+	std::shared_ptr<HazeBaseBlock> GetInsertBlock() { return InsertBaseBlock; }
 
 	void ClearBlockPoint();
  
@@ -78,7 +79,9 @@ public:		//Éú³Éop code
 	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data);
 
 public:
-	void CreateJmp(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL = false);
+	void CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL = false);
+
+	void CreateJmpToBlock(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL = false);
 
 	std::shared_ptr<HazeCompilerValue> CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);
 

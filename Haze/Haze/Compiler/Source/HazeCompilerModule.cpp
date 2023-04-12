@@ -12,8 +12,8 @@
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
 
-HazeCompilerModule::HazeCompilerModule(const HAZE_STRING& ModuleName)
-	: IsStdLib(false)
+HazeCompilerModule::HazeCompilerModule(HazeCompiler* Compiler, const HAZE_STRING& ModuleName)
+	: Compiler(Compiler), IsStdLib(false)
 {
 
 	HAZE_STRING Path = std::filesystem::current_path();
@@ -165,7 +165,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 			HazeDefineVariable Var;
 			Var.Name = HAZE_TEMP_BINART_NAME;
 			Var.Type.PrimaryType = GetStrongerType(Left->GetValue().Type, Right->GetValue().Type);
-			Ret = Function->GetTopBaseBlock()->CreateTempAlloce(Var);
+			Ret = Compiler->GetInsertBlock()->CreateTempAlloce(Var);
 
 			GenIRCode_BinaryOperater(Ret, Left, InstructionOpCode::MOV);
 
@@ -185,7 +185,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 
 		SStream << std::endl;
 
-		std::shared_ptr<HazeBaseBlock> BB = Function->GetTopBaseBlock();
+		std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
 		BB->PushIRCode(SStream.str());
 	}
 
@@ -227,7 +227,7 @@ void HazeCompilerModule::GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value)
 
 	SStream << std::endl;
 
-	std::shared_ptr<HazeBaseBlock> BB = Function->GetTopBaseBlock();
+	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
 	BB->PushIRCode(SStream.str());
 }
 
@@ -271,13 +271,31 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 
 	SStream << std::endl;
 
-	std::shared_ptr<HazeBaseBlock> BB = GetCurrFunction()->GetTopBaseBlock();
+	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
 	BB->PushIRCode(SStream.str());
 }
 
-void HazeCompilerModule::GenIRCode_Jmp(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
+void HazeCompilerModule::GenIRCode_JmpFrom(std::shared_ptr<HazeBaseBlock> FormBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL)
 {
-	auto TopBlock = GetCurrFunction()->GetTopBaseBlock();
+	HAZE_STRING_STREAM HSS;
+
+	if (IsJmpL)
+	{
+		HSS << GetInstructionString(InstructionOpCode::JMPL);
+	}
+	else
+	{
+		HSS << GetInstructionString(InstructionOpCode::JMP);
+	}
+
+	HSS << " " << ToBlock->GetName() << std::endl;
+
+	FormBlock->PushIRCode(HSS.str());
+}
+
+void HazeCompilerModule::GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
+{
+	auto TopBlock = Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM HSS;
 
 	if (IsJmpL)
@@ -314,7 +332,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& Param)
 {
-	std::shared_ptr<HazeBaseBlock> BB = GetCurrFunction()->GetTopBaseBlock();
+	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
 
 	HAZE_STRING_STREAM SStream;
 	

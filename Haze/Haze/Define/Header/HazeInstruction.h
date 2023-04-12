@@ -206,6 +206,11 @@ struct HazeJmpData
 	//int SkipNum;					//跳转回PC时，因为比较为true时，没有block，所以需要加上为true时的block的指令个数
 };
 
+struct HazFrameFunctionData
+{
+	std::vector<HazeDefineVariable*> Vector_LocalParam;
+};
+
 bool IsRegisterScope(HazeDataDesc Scope);
 
 bool IsJmpOpCode(InstructionOpCode Code);

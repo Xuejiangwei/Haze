@@ -1,5 +1,6 @@
 #include "HazeLog.h"
 
+#include "HazeCompiler.h"
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerClassValue.h"
@@ -17,6 +18,7 @@ HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, const HAZ
 	}
 
 	CurrBlockCount = 0;
+	CurrVariableCount = 0;
 }
 
 HazeCompilerFunction::~HazeCompilerFunction()
@@ -25,7 +27,14 @@ HazeCompilerFunction::~HazeCompilerFunction()
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable)
 {
-	auto BB = BBList.back();
+	auto BB = Module->GetCompiler()->GetInsertBlock();
+
+	HAZE_STRING_STREAM HSS;
+
+	HSS << HAZE_TEXT("$") << ++CurrVariableCount;
+
+	const_cast<HazeDefineVariable&>(Variable).Name += HSS.str();
+
 	return BB->CreateAlloce(Variable);
 }
 
@@ -33,7 +42,7 @@ void HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
 {
 	HAZE_STRING_STREAM SStream;
 	SStream << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)Data.PrimaryType << " " <<Data.CustomName << std::endl;
-	auto BB = BBList.back();
+	auto BB = Module->GetCompiler()->GetInsertBlock();
 	BB->PushIRCode(SStream.str());
 }
 
@@ -183,18 +192,32 @@ HAZE_STRING HazeCompilerFunction::GenForBlockName()
 	return HSS.str();
 }
 
-std::shared_ptr<HazeBaseBlock> HazeCompilerFunction::GetTopBaseBlock()
+HAZE_STRING HazeCompilerFunction::GenForConditionBlockName()
 {
-	for (auto Iter = BBList.rbegin(); Iter != BBList.rend(); Iter++)
-	{
-		if (!(*Iter)->BlockIsFinish())
-		{
-			return *Iter;
-		}
-	}
-
-	return nullptr;
+	HAZE_STRING_STREAM HSS;
+	HSS << HAZE_TEXT("ForConditionBlock") << ++CurrBlockCount;
+	return HSS.str();
 }
+
+HAZE_STRING HazeCompilerFunction::GenForEndBlockName()
+{
+	HAZE_STRING_STREAM HSS;
+	HSS << HAZE_TEXT("ForBlockEnd") << ++CurrBlockCount;
+	return HSS.str();
+}
+
+//std::shared_ptr<HazeBaseBlock> HazeCompilerFunction::GetTopBaseBlock()
+//{
+//	for (auto Iter = BBList.rbegin(); Iter != BBList.rend(); Iter++)
+//	{
+//		if (!(*Iter)->BlockIsFinish())
+//		{
+//			return *Iter;
+//		}
+//	}
+//
+//	return nullptr;
+//}
 
 bool HazeCompilerFunction::GetLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {

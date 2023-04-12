@@ -598,7 +598,12 @@ private:
 			HSS << Stack->EBP << " " << Stack->ESP << " " << Operator.Extra.Address.BaseAddress << " " << Address << " ";
 #endif
 		}
-		else /*if (Operator.Scope == InstructionScopeType::Local || Operator.Scope == InstructionScopeType::Temp)*/
+		else if (Operator.Scope == HazeDataDesc::Temp)
+		{
+			int Size = GetSizeByType(Operator.Variable.Type, Stack->VM);
+			Ret = &Stack->Stack_Main[Stack->ESP - Size];
+		}
+		else /*if (Operator.Scope == InstructionScopeType::Local)*/
 		{
 			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
 		}
