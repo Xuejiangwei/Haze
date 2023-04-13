@@ -184,6 +184,7 @@ struct FunctionData
 
 	HazeValueType Type;
 	std::vector<HazeDefineVariable> Vector_Param;
+	std::vector<HazeLocalVariable> Vector_Variable;
 	unsigned int InstructionNum;
 
 	union

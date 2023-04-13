@@ -31,7 +31,7 @@ public:
 
 	size_t GetMemberIndex(const HAZE_STRING& MemberName);
 
-	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	bool GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
 	const std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable>>>& GetClassMemberData() const { return Vector_Data; }
 

@@ -22,6 +22,8 @@ const HAZE_CHAR* GetFunctionLabelHeader();
 
 const HAZE_CHAR* GetFunctionParamHeader();
 
+const HAZE_CHAR* GetFunctionVariableHeader();
+
 const HAZE_CHAR* GetFunctionStartHeader();
 
 const HAZE_CHAR* GetFunctionEndHeader();

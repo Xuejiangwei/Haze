@@ -47,6 +47,12 @@ struct HazeDefineVariable
 	HazeDefineVariable(const HazeDefineType& Type, const HAZE_STRING& Name) : Type(Type), Name(Name) {}
 };
 
+struct HazeLocalVariable
+{
+	HazeDefineVariable Variable;
+	int Offset;
+};
+
 struct HazeClassData
 {
 	std::vector<HazeDefineVariable> Vector_Data;

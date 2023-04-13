@@ -39,6 +39,11 @@ const HAZE_CHAR* GetFunctionParamHeader()
 	return FUNCTION_PARAM_HEADER;
 }
 
+const HAZE_CHAR* GetFunctionVariableHeader()
+{
+	return HAZE_LOCAL_VARIABLE_HEADER;
+}
+
 const HAZE_CHAR* GetFunctionStartHeader()
 {
 	return FUNCTION_START_HEADER;

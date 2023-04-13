@@ -12,7 +12,7 @@ public:
 
 	HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count);
 
 	virtual ~HazeCompilerValue();
 
@@ -21,6 +21,8 @@ public:
 	HazeValue& GetValue() { return Value; }
 
 	HazeDataDesc GetScope() { return Scope; }
+
+	int GetCount() const { return Count; }
 
 	bool IsRegister() { return IsRegisterScope(Scope); }
 
@@ -51,10 +53,12 @@ public:
 	bool IsClass() { return Value.Type == HazeValueType::Class; }
 
 public:
-	virtual unsigned int GetSize();
+	virtual uint32 GetSize();
 
 protected:
 	HazeValue Value;
 	HazeCompilerModule* Module;
 	HazeDataDesc Scope;
+
+	int Count;			//ÃüÃû¼ÆÊý
 };

@@ -44,36 +44,36 @@ void HazeStack::Start(unsigned int Address)
 	}
 }
 
-void HazeStack::PushVariableStack(HazeDefineVariable* Variable)
-{
-	Stack_Frame.back().FunctionData.Vector_LocalParam.push_back(Variable);
-}
+//void HazeStack::PushVariableStack(HazeDefineVariable* Variable)
+//{
+//	Stack_Frame.back().FunctionData.Vector_LocalParam.push_back(Variable);
+//}
+//
+//void HazeStack::PopVariableStack(int Num)
+//{
+//	uint64 NewSize = Stack_Frame.back().FunctionData.Vector_LocalParam.size() - Num;
+//	Stack_Frame.back().FunctionData.Vector_LocalParam.resize(NewSize);
+//}
 
-void HazeStack::PopVariableStack(int Num)
-{
-	uint64 NewSize = Stack_Frame.back().FunctionData.Vector_LocalParam.size() - Num;
-	Stack_Frame.back().FunctionData.Vector_LocalParam.resize(NewSize);
-}
+//void HazeStack::PushJmpStack(const InstructionData& Data, bool IsPush)
+//{
+//	if (IsPush)
+//	{
+//		GetCurrFrame().Stack_Jmp.push_back({ PC/*, Data.Extra.Jmp.InstructionNum, Data.Extra.Jmp.InstructionNum*/ });
+//	}
+//
+//	auto& Function = VM->GetFunctionByName(Stack_Frame.back().FunctionName);
+//	int Address = Function.Extra.FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
+//	memcpy(&PC, &Address, sizeof(PC));
+//
+//	PC--;
+//}
 
-void HazeStack::PushJmpStack(const InstructionData& Data, bool IsPush)
-{
-	if (IsPush)
-	{
-		GetCurrFrame().Stack_Jmp.push_back({ PC/*, Data.Extra.Jmp.InstructionNum, Data.Extra.Jmp.InstructionNum*/ });
-	}
-
-	auto& Function = VM->GetFunctionByName(Stack_Frame.back().FunctionName);
-	int Address = Function.Extra.FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
-	memcpy(&PC, &Address, sizeof(PC));
-
-	PC--;
-}
-
-void HazeStack::PopCurrJmpStack()
-{
-	PC = GetCurrFrame().Stack_Jmp.back().CachePC;
-	GetCurrFrame().Stack_Jmp.pop_back();
-}
+//void HazeStack::PopCurrJmpStack()
+//{
+//	PC = GetCurrFrame().Stack_Jmp.back().CachePC;
+//	GetCurrFrame().Stack_Jmp.pop_back();
+//}
 
 void HazeStack::PCStepInc()
 {
@@ -92,7 +92,8 @@ void HazeStack::PushMainFuntion()
 
 	EBP = ESP;
 
-	OnCall(HAZE_MAIN_FUNCTION_TEXT);
+	auto MainFunction = VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
+	OnCall(&MainFunction);
 }
 
 void HazeStack::InitRegisterToStack()
@@ -108,9 +109,9 @@ void HazeStack::InitRegisterToStack()
 
 }
 
-void HazeStack::OnCall(const HAZE_STRING& Name)
+void HazeStack::OnCall(FunctionData* Info)
 {
-	Stack_Frame.push_back({ Name, {} });
+	Stack_Frame.push_back({ Info });
 }
 
 void HazeStack::OnRet()

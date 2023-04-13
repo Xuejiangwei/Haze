@@ -1,18 +1,93 @@
+#include "HazeLog.h"
+
 #include "HazeBaseBlock.h"
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerValue.h"
+#include "HazeCompilerPointerValue.h"
+#include "HazeCompilerClassValue.h"
 #include "HazeCompilerFunction.h"
 
-HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* Parent) : Name(Name)
+
+static HAZE_STRING GetLocalVariableName(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerValue> Value)
 {
-	ParentFunction = Parent;
+	static HAZE_STRING_STREAM HSS;
+	
+	HSS.str(HAZE_TEXT(""));
+	HSS << Name;
+	if (Value->GetCount() > 0)
+	{
+		HSS << HAZE_LOCAL_VARIABLE_CONBINE << Value->GetCount();
+	}
+
+	return HSS.str();
+}
+
+HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock) 
+	: enable_shared_from_this(*this), Name(Name), ParentFunction(ParentFunction), ParentBlock(ParentBlock)
+{
 	IsFinish = false;
 	Vector_IRCode.clear();
+	Vector_Alloca.clear();
 	PushIRCode(HAZE_STRING(BLOCK_START) + HAZE_TEXT(" ") + Name + HAZE_TEXT("\n"));
 }
 
 HazeBaseBlock::~HazeBaseBlock()
 {
+}
+
+bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
+{
+	for (auto& it : Vector_Alloca)
+	{
+		if (it.second == Value)
+		{
+			OutName = GetLocalVariableName(it.first, it.second);
+			return true;
+		}
+		else if (it.second->GetValue().Type == HazeValueType::PointerClass && Value->IsClassMember())
+		{
+			auto Pointer = std::dynamic_pointer_cast<HazeCompilerPointerValue>(it.second);
+			if ((void*)Pointer->GetPointerValue() != ParentFunction->GetClass())
+			{
+				auto Class = dynamic_cast<HazeCompilerClassValue*>(Pointer->GetPointerValue());
+				Class->GetMemberName(Value, OutName);
+				if (!OutName.empty())
+				{
+					OutName = GetLocalVariableName(it.first, it.second) + HAZE_CLASS_POINTER_ATTR + OutName;
+					return true;
+				}
+			}
+		}
+		else if (it.second->GetValue().Type == HazeValueType::Class && Value->IsClassMember())
+		{
+			auto Class = std::dynamic_pointer_cast<HazeCompilerClassValue>(it.second);
+			Class->GetMemberName(Value, OutName);
+			if (!OutName.empty())
+			{
+				OutName = GetLocalVariableName(it.first, it.second) + HAZE_CLASS_ATTR + OutName;
+				if (!Value->IsClassPublicMember())
+				{
+					HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("can not access non public member data %s\n"), OutName.c_str());
+				}
+				return true;
+			}
+		}
+	}
+
+	for (auto& Iter : List_ChildBlock)
+	{
+		if (Iter->FindLocalVariableName(Value, OutName))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+void HazeBaseBlock::AddChildBlock(std::shared_ptr<HazeBaseBlock> Block)
+{
+	List_ChildBlock.push_back(Block);
 }
 
 void HazeBaseBlock::SetJmpOut()
@@ -30,13 +105,13 @@ void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBloc
 	}
 
 	auto BB = MoveFinishPopBlock ? MoveFinishPopBlock.get() : this;
-	for (int i = (int)BlockAllocaList.size() - 1; i >= 0; i--)
+	for (int i = (int)Vector_Alloca.size() - 1; i >= 0; i--)
 	{
 		HAZE_STRING_STREAM SStream;
-		SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetValue().Type)
-			<< " " << BlockAllocaList[i].first << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetScope()) << std::endl;
+		SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetValue().Type)
+			<< " " << GetLocalVariableName(Vector_Alloca[i].first, Vector_Alloca[i].second) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetScope()) << std::endl;
 
-		BlockAllocaList.pop_back();
+		//Vector_Alloca.pop_back();
 
 		BB->PushIRCode(SStream.str());
 	}
@@ -49,29 +124,30 @@ void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBloc
 	IsFinish = true;
 }
 
-std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> InsertBefore)
+void HazeBaseBlock::GenI_Code_Alloca(HAZE_OFSTREAM& OFStream)
 {
-	std::shared_ptr<HazeBaseBlock> BB = std::make_shared<HazeBaseBlock>(Name, Parent.get());
-	
-	if (Parent)
-	{
-		auto& BBList = const_cast<std::list<std::shared_ptr<HazeBaseBlock>>&>(Parent->GetBaseBlockList());
+}
 
-		if (InsertBefore)
-		{
-			for (auto iter = BBList.begin(); iter != BBList.end(); ++iter)
-			{
-				if (*iter == InsertBefore)
-				{
-					BBList.insert(iter, BB);
-					break;
-				}
-			}
-		}
-		else
-		{
-			BBList.push_back(BB);
-		}
+void HazeBaseBlock::GenI_Code(HAZE_OFSTREAM& OFStream)
+{
+	for (auto& Iter : Vector_IRCode)
+	{
+		OFStream << Iter;
+	}
+
+	for (auto& Iter : List_ChildBlock)
+	{
+		Iter->GenI_Code(OFStream);
+	}
+}
+
+std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock)
+{
+	auto BB = std::make_shared<HazeBaseBlock>(Name, Parent.get(), ParentBlock.get());
+	
+	if (ParentBlock)
+	{
+		ParentBlock->AddChildBlock(BB);
 	}
 
 	return BB;
@@ -93,42 +169,46 @@ void HazeBaseBlock::MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB)
 	}
 }
 
-void HazeBaseBlock::CopyIRCode(std::shared_ptr<HazeBaseBlock> BB)
-{
-	auto& Code = BB->GetIRCode();
-	if (Code.size() > 1)
-	{
-		Vector_IRCode.insert(Vector_IRCode.end(), ++Code.begin(), Code.end());		//skip block name
-	}
-}
+//void HazeBaseBlock::CopyIRCode(std::shared_ptr<HazeBaseBlock> BB)
+//{
+//	auto& Code = BB->GetIRCode();
+//	if (Code.size() > 1)
+//	{
+//		Vector_IRCode.insert(Vector_IRCode.end(), ++Code.begin(), Code.end());		//skip block name
+//	}
+//}
 
 void HazeBaseBlock::ClearTempIRCode()
 {
-	for (int i = (int)BlockAllocaList.size() - 1; i >= 0; i--)
+	for (int i = (int)Vector_Alloca.size() - 1; i >= 0; i--)
 	{
-		if (BlockAllocaList[i].second->IsTemp())
+		if (Vector_Alloca[i].second->IsTemp())
 		{
 			HAZE_STRING_STREAM SStream;
-			SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(BlockAllocaList[i].second->GetValue().Type)
-				<< " " << BlockAllocaList[i].first << " " << (uint32)HazeDataDesc::Temp << std::endl;
+			SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetValue().Type)
+				<< " " << GetLocalVariableName(Vector_Alloca[i].first, Vector_Alloca[i].second) << " " << (uint32)HazeDataDesc::Temp << std::endl;
 			PushIRCode(SStream.str());
 
-			BlockAllocaList.pop_back();
+			Vector_Alloca.pop_back();
 		}
-		else if (!BlockAllocaList[i].second->IsTemp())
+		else if (!Vector_Alloca[i].second->IsTemp())
 		{
 			return;
 		}
 	}
 }
 
-std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define)
+std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Count)
 {
-	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local);
-	BlockAllocaList.push_back({ Define.Name, Alloce });
+	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local, Count);
+	Vector_Alloca.push_back({ Define.Name, Alloce });
 
 	HAZE_STRING_STREAM SStream;
-	StreamCompilerValue(SStream, InstructionOpCode::PUSH, Alloce, Define.Name.c_str());
+	HAZE_STRING Name = GetLocalVariableName(Define.Name, Alloce);
+
+	StreamCompilerValue(SStream, InstructionOpCode::PUSH, Alloce, Name.c_str());
+
+	ParentFunction->AddLocalVariable(Alloce);
 
 	PushIRCode(SStream.str());
 
@@ -137,8 +217,8 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 
 std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateTempAlloce(const HazeDefineVariable& Define)
 {
-	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Temp);
-	BlockAllocaList.push_back({ Define.Name, Alloce });
+	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Temp, 0);
+	Vector_Alloca.push_back({ Define.Name, Alloce });
 
 	HAZE_STRING_STREAM SStream;
 	StreamCompilerValue(SStream, InstructionOpCode::PUSH, Alloce, Define.Name.c_str());

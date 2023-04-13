@@ -203,6 +203,26 @@ void HazeVM::LoadOpCodeFile()
 			Vector_FunctionTable[i].Vector_Param[j].Type.CustomName = String2WString(B_String);
 		}
 
+		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+		Vector_FunctionTable[i].Vector_Variable.resize(Num);
+
+		for (size_t j = 0; j < Vector_FunctionTable[i].Vector_Variable.size(); j++)
+		{
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+			B_String.resize(Num);
+			FS.read(B_String.data(), Num);
+			Vector_FunctionTable[i].Vector_Variable[j].Variable.Name = String2WString(B_String);
+
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Variable[j].Variable.Type.PrimaryType));
+
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
+			B_String.resize(Num);
+			FS.read(B_String.data(), Num);
+			Vector_FunctionTable[i].Vector_Variable[j].Variable.Type.CustomName = String2WString(B_String);
+
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Variable[j].Offset));
+		}
+
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].InstructionNum));
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Extra.FunctionDescData.InstructionStartAddress));
 	}

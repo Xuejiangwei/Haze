@@ -254,6 +254,30 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					GetNextLexeme();
 				}
 
+				while (CurrLexeme == GetFunctionVariableHeader())
+				{
+					HazeLocalVariable Var;
+					GetNextLexmeAssign_HazeString(Var.Variable.Name);
+
+					GetNextLexmeAssign_CustomType<uint32>(Var.Variable.Type.PrimaryType);
+
+					if (Var.Variable.Type.PrimaryType == HazeValueType::PointerClass || Var.Variable.Type.PrimaryType == HazeValueType::Class)
+					{
+						GetNextLexmeAssign_HazeString(Var.Variable.Type.CustomName);
+
+					}
+					else if (Var.Variable.Type.PrimaryType == HazeValueType::PointerBase)
+					{
+						GetNextLexmeAssign_CustomType<uint32>(Var.Variable.Type.PointerToType);
+					}
+
+					GetNextLexmeAssign_CustomType<int>(Var.Offset);
+
+					Table.Vector_Function[i].Vector_Variable.push_back(std::move(Var));
+
+					GetNextLexeme();
+				}
+
 				if (CurrLexeme == GetFunctionStartHeader())
 				{
 					GetNextLexeme();
@@ -529,34 +553,53 @@ void BackendParse::GenOpCodeFile()
 	FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 
 	uint32 InstructionStartAddr = 0;
-	for (auto& i : NewFunctionTable.Vector_Function)
+	for (auto& Function : NewFunctionTable.Vector_Function)
 	{
-		BinaryString = WString2String(i.Name);
+		BinaryString = WString2String(Function.Name);
 		UnsignedInt = (uint32)BinaryString.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		FS_OpCode.write(BinaryString.data(), UnsignedInt);
 
-		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Type));
-		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.DescType));
+		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Function.Type));
+		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Function.DescType));
 
-		UnsignedInt = (uint32)i.Vector_Param.size();
+		UnsignedInt = (uint32)Function.Vector_Param.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
-		for (auto& iter : i.Vector_Param)
+		for (auto& Iter : Function.Vector_Param)
 		{
-			BinaryString = WString2String(iter.Name);
+			BinaryString = WString2String(Iter.Name);
 			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
 
-			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(iter.Type.PrimaryType));
-			BinaryString = WString2String(iter.Type.CustomName);
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Type.PrimaryType));
+			BinaryString = WString2String(Iter.Type.CustomName);
 			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
 		}
 
+		UnsignedInt = (uint32)Function.Vector_Variable.size();
+		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
+		for (auto& Iter : Function.Vector_Variable)
+		{
+			BinaryString = WString2String(Iter.Variable.Name);
+			UnsignedInt = (uint32)BinaryString.size();
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
+			FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
+
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Variable.Type.PrimaryType));
+			BinaryString = WString2String(Iter.Variable.Type.CustomName);
+			UnsignedInt = (uint32)BinaryString.size();
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
+			FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
+
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Offset));
+		}
+
+
 		//写入指令数与起始地址
-		UnsignedInt = (uint32)i.Vector_Instruction.size();
+		UnsignedInt = (uint32)Function.Vector_Instruction.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(InstructionStartAddr));

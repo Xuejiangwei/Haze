@@ -128,16 +128,16 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	auto Function = Compiler->GetFunction(Name);
 	if (Function)
 	{
-		std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Param;
+		std::vector<std::shared_ptr<HazeCompilerValue>> Param;
 
 		if (Function->GetClass())
 		{
-			Param.push_back({ GetObjectName(Name), Function->GetClass()->GetThisPointerValue() });
+			Param.push_back(Function->GetClass()->GetThisPointerValue());
 		}
 
 		for (auto& it : FunctionParam)
 		{
-			Param.push_back({ it->GetName(),  it->CodeGen() });
+			Param.push_back(it->CodeGen());
 		}
 
 		return Compiler->CreateFunctionCall(Function, Param);
@@ -329,11 +329,13 @@ std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 
 	Condition->CodeGen();
 
-	auto IfBlock = HazeBaseBlock::CreateBaseBlock(Function->GenIfBlockName(), Function);
+	auto ParentBlock = Compiler->GetInsertBlock();
+
+	auto IfBlock = HazeBaseBlock::CreateBaseBlock(Function->GenIfBlockName(), Function, ParentBlock);
 	IfExpression->CodeGen();
 	IfBlock->FinishBlock();
 
-	auto ElseBlock = HazeBaseBlock::CreateBaseBlock(Function->GenElseBlockName(), Function);
+	auto ElseBlock = HazeBaseBlock::CreateBaseBlock(Function->GenElseBlockName(), Function, ParentBlock);
 	ElseExpression->CodeGen();
 	ElseBlock->FinishBlock();
 
@@ -359,9 +361,10 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 	auto ConditionExp = static_cast<ASTBinaryExpression*>(Condition.get());
 
 	auto WhileBlockName = Function->GenWhileBlockName();
-	
 
-	auto WhileBlock = HazeBaseBlock::CreateBaseBlock(WhileBlockName, Function);
+	auto ParentBlock = Compiler->GetInsertBlock();
+
+	auto WhileBlock = HazeBaseBlock::CreateBaseBlock(WhileBlockName, Function, ParentBlock);
 	ConditionExp->CodeGen();
 
 	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
@@ -395,9 +398,11 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 	//auto TopBlock = Function->GetTopBaseBlock();
 	auto ConditionExp = static_cast<ASTBinaryExpression*>(ConditionExpression.get());
 
-	auto ForBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForBlockName(), Function);
-	auto ForConditionBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForConditionBlockName(), Function);
-	auto ForEndBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForEndBlockName(), Function);
+	auto ParentBlock = Compiler->GetInsertBlock();
+
+	auto ForBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForBlockName(), Function, ParentBlock);
+	auto ForConditionBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForConditionBlockName(), Function, ForBlock);
+	auto ForEndBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForEndBlockName(), Function, ParentBlock);
 
 	Compiler->CreateJmpFromBlock(Compiler->GetInsertBlock(), ForBlock, true);
 

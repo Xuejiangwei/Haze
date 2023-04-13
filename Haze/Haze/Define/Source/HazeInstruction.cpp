@@ -135,7 +135,7 @@ public:
 			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 			{
 				Stack->EBP = Stack->ESP;
-				Stack->OnCall(Operator[0].Variable.Name);
+				Stack->OnCall(&Function);
 
 				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_ADDRESS_SIZE + Operator[0].Extra.Call.ParamByteSize));
 
@@ -373,17 +373,15 @@ public:
 			memcpy(RetRegister->Data.begin()._Unwrapped(), GetAddressByOperator(Stack, Operator[0]), Size);
 		}
 
-
-		int FunctionIndex = Stack->VM->GetFucntionIndexByName(Stack->Stack_Frame.back().FunctionName);
-		Stack->OnRet();
-
 		int Size = 0;
-		for (auto& Iter : Stack->VM->Vector_FunctionTable[FunctionIndex].Vector_Param)
+		for (auto& Iter : Stack->Stack_Frame.back().FunctionInfo->Vector_Param)
 		{
 			Size += GetSizeByType(Iter.Type, Stack->VM);
 		}
 
 		memcpy(&Stack->PC, &(Stack->Stack_Main[Stack->EBP - 4]), HAZE_ADDRESS_SIZE);
+
+		Stack->OnRet();
 
 		uint32 TempEBP = Stack->EBP;
 		Stack->Stack_EBP.pop_back();
@@ -550,7 +548,7 @@ public:
 
 	static void JmpOut(HazeStack* Stack)
 	{
-		Stack->PopCurrJmpStack();
+		//Stack->PopCurrJmpStack();
 	}
 
 private:
@@ -627,7 +625,7 @@ private:
 		}
 		else
 		{
-			Stack->PushJmpStack(Operator, PushStack);
+			//Stack->PushJmpStack(Operator, PushStack);
 		}
 	}
 };

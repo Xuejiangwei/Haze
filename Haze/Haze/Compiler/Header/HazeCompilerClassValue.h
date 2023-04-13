@@ -10,11 +10,11 @@ class HazeCompilerClassValue : public HazeCompilerValue
 public:
 	friend class HazeCompilerClass;
 
-	HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope);
+	explicit HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count);
 
 	virtual ~HazeCompilerClassValue() override;
 
-	virtual unsigned int GetSize() override;
+	virtual uint32 GetSize() override;
 
 	HazeCompilerClass* GetOwnerClass() { return OwnerClass; };
 

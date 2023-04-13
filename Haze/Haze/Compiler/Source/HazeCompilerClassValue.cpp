@@ -3,8 +3,8 @@
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerClass.h"
 
-HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope)
-	: HazeCompilerValue(Module, DefineType, Scope)
+HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count)
+	: HazeCompilerValue(Module, DefineType, Scope, Count)
 {
 	OwnerClass = Module->FindClass(DefineType.CustomName).get();
 
@@ -14,7 +14,7 @@ HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const
 		Vector_Data.push_back({ Members[i].first,{} });
 		for (size_t j = 0; j < Members[i].second.size(); j++)
 		{
-			Vector_Data.back().second.push_back(CreateVariable(Module, Members[i].second[j], Members[i].first));
+			Vector_Data.back().second.push_back(CreateVariable(Module, Members[i].second[j], Members[i].first, 0));
 		}
 	}
 }

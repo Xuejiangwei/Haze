@@ -5,7 +5,7 @@
 class HazeCompilerPointerValue : public HazeCompilerValue
 {
 public:
-	HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope);
+	explicit HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count);
 
 	virtual ~HazeCompilerPointerValue() override;
 

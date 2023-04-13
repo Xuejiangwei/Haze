@@ -12,9 +12,9 @@
 HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class)
 	: Module(Module), Name(Name), Type(Type), OwnerClass(Class)
 {
-	for (auto& it : Param)
+	for (int i = (int)Param.size() - 1; i >= 0; i--)
 	{
-		AddFunctionParam(it);
+		AddFunctionParam(Param[i]);
 	}
 
 	CurrBlockCount = 0;
@@ -28,14 +28,7 @@ HazeCompilerFunction::~HazeCompilerFunction()
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable)
 {
 	auto BB = Module->GetCompiler()->GetInsertBlock();
-
-	HAZE_STRING_STREAM HSS;
-
-	HSS << HAZE_TEXT("$") << ++CurrVariableCount;
-
-	const_cast<HazeDefineVariable&>(Variable).Name += HSS.str();
-
-	return BB->CreateAlloce(Variable);
+	return BB->CreateAlloce(Variable, ++CurrVariableCount);
 }
 
 void HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
@@ -49,13 +42,16 @@ void HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& VariableName)
 {
 	std::shared_ptr<HazeCompilerValue> Ret = nullptr;
-	for (auto& iter : BBList)
+
+	auto CurrBlock = Module->GetCompiler()->GetInsertBlock().get();
+	while (CurrBlock)
 	{
-		for (auto& Value : iter->GetAllocaList())
+		for (auto& Value : CurrBlock->GetAllocaList())
 		{
 			if (Value.first == VariableName)
 			{
 				Ret = Value.second;
+				break;
 			}
 			else if (Value.second->GetValue().Type == HazeValueType::Class)
 			{
@@ -66,10 +62,15 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 
 					auto ClassVlaue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value.second);
 					Ret = ClassVlaue->GetMember(MemberName);
+
+					break;
 				}
 			}
 		}
+
+		CurrBlock = CurrBlock->GetParentBlock();
 	}
+
 
 	if (!Ret && OwnerClass)
 	{
@@ -91,7 +92,7 @@ void HazeCompilerFunction::FunctionFinish()
 	{
 		HAZE_STRING_STREAM SStream;
 		SStream << GetInstructionString(InstructionOpCode::RET) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Void) << std::endl;
-		GetBaseBlockList().front()->PushIRCode(SStream.str());
+		EntryBlock->PushIRCode(SStream.str());
 	}
 }
 
@@ -138,7 +139,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 
 	OFStream << GetFunctionStartHeader() << std::endl;
 
-	size_t ParamCount = VectorParam.size();
+	/*size_t ParamCount = VectorParam.size();
 	for (auto& it : BBList)
 	{
 		bool WriteBlockName = false;
@@ -158,7 +159,33 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 				OFStream << code;
 			}
 		}
+	}*/
+
+	HAZE_STRING LocalVariableName;
+	uint32 Size = 0;
+
+	for (size_t i = 0; i < VectorParam.size(); i++)
+	{
+		FindLocalVariableName(Vector_LocalVariable[i], LocalVariableName);
+		OFStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
+		HazeCompilerOFStream(OFStream, Vector_LocalVariable[i]);
+		OFStream << " " << Size << std::endl;
+		Size += Vector_LocalVariable[i]->GetSize();
 	}
+
+	Size += HAZE_ADDRESS_SIZE;
+
+	for (size_t i = VectorParam.size(); i < Vector_LocalVariable.size(); i++)
+	{
+		FindLocalVariableName(Vector_LocalVariable[i], LocalVariableName);
+		OFStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
+		HazeCompilerOFStream(OFStream, Vector_LocalVariable[i]);
+		OFStream << " " << Size << std::endl;
+		Size += Vector_LocalVariable[i]->GetSize();
+	}
+
+
+	EntryBlock->GenI_Code(OFStream);
 
 	OFStream << GetFunctionEndHeader() << std::endl;
 #endif // HAZE_ASS_ENABLE
@@ -219,72 +246,36 @@ HAZE_STRING HazeCompilerFunction::GenForEndBlockName()
 //	return nullptr;
 //}
 
-bool HazeCompilerFunction::GetLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
+bool HazeCompilerFunction::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {
-	for (auto& iter : BBList)
+	if (!EntryBlock->FindLocalVariableName(Value, OutName) && OwnerClass)
 	{
-		for (auto& it : iter->GetAllocaList())
-		{
-			if (it.second == Value)
-			{
-				OutName = it.first;
-				return true;
-			}
-			else if (it.second->GetValue().Type == HazeValueType::PointerClass && Value->IsClassMember())
-			{
-				auto Pointer = std::dynamic_pointer_cast<HazeCompilerPointerValue>(it.second);
-				if ((void*)Pointer->GetPointerValue() != OwnerClass)
-				{
-					auto Class = dynamic_cast<HazeCompilerClassValue*>(Pointer->GetPointerValue());
-					Class->GetMemberName(Value, OutName);
-					if (!OutName.empty())
-					{
-						OutName = it.first + HAZE_CLASS_POINTER_ATTR + OutName;
-						return true;
-					}
-				}
-			}
-			else if (it.second->GetValue().Type == HazeValueType::Class && Value->IsClassMember())
-			{
-				auto Class = std::dynamic_pointer_cast<HazeCompilerClassValue>(it.second);
-				Class->GetMemberName(Value, OutName);
-				if (!OutName.empty())
-				{
-					OutName = it.first + HAZE_CLASS_ATTR + OutName;
-					if (!Value->IsClassPublicMember())
-					{
-						HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("can not access non public member data %s\n"), OutName.c_str());
-					}
-					return true;
-				}
-			}
-		}
-	}
-
-	if (OwnerClass)
-	{
-		OwnerClass->GetMemberName(Value, OutName);
-		return true;
+		return OwnerClass->GetMemberName(Value, OutName);
 	}
 
 	return false;
 }
 
-bool HazeCompilerFunction::GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName)
-{
-	if (BBList.size() > 0)
-	{
-		if (BBList.front()->GetAllocaList().size() > Index)
-		{
-			OutName = BBList.front()->GetAllocaList()[Index].first;
-			return true;
-		}
-	}
+//bool HazeCompilerFunction::GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName)
+//{
+//	if (BBList.size() > 0)
+//	{
+//		if (BBList.front()->GetAllocaList().size() > Index)
+//		{
+//			OutName = BBList.front()->GetAllocaList()[Index].first;
+//			return true;
+//		}
+//	}
+//
+//	return false;
+//}
 
-	return false;
+void HazeCompilerFunction::AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value)
+{
+	Vector_LocalVariable.push_back(Value);
 }
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& Variable)
 {
-	VectorParam.push_back({ Variable.Name, CreateVariable(Module, Variable, HazeDataDesc::Local) });
+	VectorParam.push_back({ Variable.Name, CreateVariable(Module, Variable, HazeDataDesc::Local, 0) });
 }

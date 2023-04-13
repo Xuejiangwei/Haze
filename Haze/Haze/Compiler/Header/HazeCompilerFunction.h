@@ -30,6 +30,8 @@ public:
 
 	HazeCompilerClass* GetClass() const { return OwnerClass; }
 
+	std::shared_ptr<HazeBaseBlock> GetEntryBlock() { return EntryBlock; }
+
 	void FunctionFinish();
 
 	void GenI_Code(HAZE_OFSTREAM& OFStream);
@@ -50,11 +52,13 @@ public:
 
 	//void RemoveTopBaseBlock() { return BBList.pop_back(); }
 	
-	const std::list<std::shared_ptr<HazeBaseBlock>>& GetBaseBlockList() { return BBList; }
+	//const std::list<std::shared_ptr<HazeBaseBlock>>& GetBaseBlockList() { return BBList; }
 
-	bool GetLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
-	bool GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName);
+	//bool GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName);
+
+	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value);
 
 private:
 	void AddFunctionParam(const HazeDefineVariable& Variable);
@@ -62,6 +66,8 @@ private:
 	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable);
 
 	void CreateNew(const HazeDefineType& Data);
+
+	void InitEntryBlock(std::shared_ptr<HazeBaseBlock> Block) { EntryBlock = Block; }
 
 private:
 	HazeCompilerModule* Module;
@@ -72,7 +78,10 @@ private:
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> VectorParam; //从右到左加入参数
 
-	std::list<std::shared_ptr<HazeBaseBlock>> BBList;
+	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_LocalVariable;
+
+	//std::list<std::shared_ptr<HazeBaseBlock>> BBList;
+	std::shared_ptr<HazeBaseBlock> EntryBlock;
 
 	int CurrBlockCount;
 	int CurrVariableCount;

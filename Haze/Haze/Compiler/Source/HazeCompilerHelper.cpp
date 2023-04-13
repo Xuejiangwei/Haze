@@ -48,41 +48,60 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value)
 	}
 }
 
-void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, HazeCompilerValue* Value)
+void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerValue> Value)
 {
 	const auto& V = Value->GetValue();
 	switch (V.Type)
 	{
 	case HazeValueType::Bool:
-		OFStream << V.Value.Bool;
+		OFStream << " " << V.Value.Bool;
 		break;
 	case HazeValueType::Char:
-		OFStream << V.Value.Char;
+		OFStream << " " << V.Value.Char;
 		break;
 	case HazeValueType::Int:
-		OFStream << V.Value.Int;
+		OFStream << " " << V.Value.Int;
 		break;
 	case HazeValueType::Float:
-		OFStream << V.Value.Float;
+		OFStream << " " << V.Value.Float;
 		break;
 	case HazeValueType::UnsignedInt:
 		OFStream << V.Value.UnsignedInt;
 		break;
 	case HazeValueType::Long:
-		OFStream << V.Value.Long;
+		OFStream << " " << V.Value.Long;
 		break;
 	case HazeValueType::Double:
-		OFStream << V.Value.Double;
+		OFStream << " " << V.Value.Double;
 		break;
 	case HazeValueType::UnsignedLong:
-		OFStream << V.Value.UnsignedLong;
+		OFStream << " " << V.Value.UnsignedLong;
 		break;
 	default:
+	{
+		if (Value->IsPointer())
+		{
+			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
+			if (PointerValue->IsPointerBase())
+			{
+				OFStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetPointerType().PrimaryType);
+			}
+			else if (PointerValue->IsPointerClass())
+			{
+				OFStream << " " << PointerValue->GetPointerType().CustomName;
+			}
+		}
+		else if (Value->IsClass())
+		{
+			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value);
+			OFStream << " " << ClassValue->GetOwnerClassName();
+		}
+	}
 		break;
 	}
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope)
+std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count)
 {
 	switch (Var.Type.PrimaryType)
 	{
@@ -96,14 +115,14 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 	case HazeValueType::UnsignedInt:
 	case HazeValueType::UnsignedLong:
 	case HazeValueType::MultiVariable:
-		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope);
+		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope, Count);
 		break;
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
-		return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope);
+		return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope, Count);
 		break;
 	case HazeValueType::Class:
-		return std::make_shared<HazeCompilerClassValue>(Module, Var.Type, Scope);
+		return std::make_shared<HazeCompilerClassValue>(Module, Var.Type, Scope, Count);
 		break;
 	default:
 		break;
