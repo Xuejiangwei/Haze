@@ -558,7 +558,7 @@ void HazeCompilerModule::GenICode()
 	for (auto& iter : Vector_Variable)
 	{
 		FS_I_Code << iter.first << " " << HAZE_CAST_VALUE_TYPE(iter.second->GetValue().Type);
-		HazeCompilerOFStream(FS_I_Code, iter.second);
+		HazeCompilerOFStream(FS_I_Code, iter.second, true);
 		FS_I_Code << std::endl;
 	}
 

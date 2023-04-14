@@ -57,7 +57,7 @@ private:
 
 	void GenOpCodeFile();
 
-	void ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable,
+	void FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable,
 		ModuleUnit::ClassTable& NewClassTable, ModuleUnit::FunctionTable& NewFunctionTable);
 
 	void WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction);

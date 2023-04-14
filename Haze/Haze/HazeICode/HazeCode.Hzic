@@ -14,10 +14,10 @@ FunctionTable
 Function 点@加 0
 Param 己 10 点
 Param 乙 11 点
+Variable 己$2 10 点 -12
+Variable 乙$1 11 点 -20
+Variable 甲$3 3 0
 Start
-Variable 乙$1 点 0
-Variable 己$2 点 8
-Variable 甲$3 0 20
 Block Entry
 PUSH 11 乙$1 2 点
 PUSH 10 己$2 2 点
@@ -45,9 +45,9 @@ POP 3 甲$3 2
 JMPOUT
 End
 Function 主函数 3
+Variable 测试甲$1 11 点 0
+Variable 测试乙$2 11 点 8
 Start
-Variable 测试甲$1 点 4
-Variable 测试乙$2 点 12
 Block Entry
 PUSH 11 测试甲$1 2 点
 MOV 4 测试甲$1之纵坐标 1 4 4.2 3

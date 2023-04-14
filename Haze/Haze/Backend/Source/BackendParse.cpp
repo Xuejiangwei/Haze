@@ -486,7 +486,7 @@ void BackendParse::GenOpCodeFile()
 		NewFunctionTable.Vector_Function.insert(NewFunctionTable.Vector_Function.end(), iter.second->Table_Function.Vector_Function.begin(), iter.second->Table_Function.Vector_Function.end());
 	}
 	
-	ReplaceOffset(NewGlobalDataTable, NewStringTable, NewClassTable, NewFunctionTable);
+	FindAddress(NewGlobalDataTable, NewStringTable, NewClassTable, NewFunctionTable);
 
 	//将全局数据写入
 	uint32 UnsignedInt = (uint32)NewGlobalDataTable.Vector_Data.size();
@@ -617,7 +617,7 @@ void BackendParse::GenOpCodeFile()
 	}
 }
 
-void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable,
+void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable,
 	ModuleUnit::ClassTable& NewClassTable, ModuleUnit::FunctionTable& NewFunctionTable)
 {
 	std::unordered_map<HAZE_STRING, size_t> HashMap_FunctionIndexAndAddress;
@@ -630,10 +630,18 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 	for (size_t k = 0; k < NewFunctionTable.Vector_Function.size(); ++k)
 	{
 		auto& CurrFunction = NewFunctionTable.Vector_Function[k];
+
+		std::unordered_map<HAZE_STRING, int> HashMap_Variable;
+		for (size_t i = 0; i < CurrFunction.Vector_Variable.size(); i++)
+		{
+			HashMap_Variable[CurrFunction.Vector_Variable[i].Variable.Name] = (int)i;
+		}
+
 		for (size_t i = 0; i < CurrFunction.Vector_Instruction.size(); ++i)
 		{
 			if (IsJmpOpCode(CurrFunction.Vector_Instruction[i].InsCode))
 			{
+				//设置 Block块 偏移值
 				for (auto& Operator : CurrFunction.Vector_Instruction[i].Operator)
 				{
 					if (Operator.Variable.Name != HAZE_JMP_NULL && Operator.Variable.Name != HAZE_JMP_OUT)
@@ -659,7 +667,11 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 					if (it.Scope == HazeDataDesc::Global)
 					{
 						it.Extra.Index = NewGlobalDataTable.GetIndex(VariableName);
-						it.AddressType = InstructionAddressType::Index;
+						it.AddressType = InstructionAddressType::GlobalDataIndex;
+					}
+					else if (it.Scope == HazeDataDesc::ConstantString)
+					{
+						//已在Compiler里输出了Index
 					}
 					else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)
 					{
@@ -732,8 +744,21 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 					}
 					else if (it.Scope == HazeDataDesc::Local /*|| it.Scope == HazeDataDesc::Temp*/ || it.Scope == HazeDataDesc::ClassThis)
 					{
+						it.AddressType = InstructionAddressType::Address_Offset;
+
+						auto Iter_Index = HashMap_Variable.find(it.Variable.Name);
+						if (Iter_Index != HashMap_Variable.end())
+						{
+							it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[Iter_Index->second].Offset;
+						}
+						else
+						{
+							HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("find Offset error %s\n  in function %s"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
+						}
+
+
 						//需要先判断是不是函数参数，设置为负的索引
-						int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
+						/*int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
 						bool Find = false;
 						for (int j = (int)NewFunctionTable.Vector_Function[k].Vector_Param.size() - 1; j >= 0; --j)
 						{
@@ -779,7 +804,7 @@ void BackendParse::ReplaceOffset(ModuleUnit::GlobalDataTable& NewGlobalDataTable
 									Offset -= GetSizeByType(Param.Type, this);
 								}
 							}
-						}
+						}*/
 					}
 				}
 			}

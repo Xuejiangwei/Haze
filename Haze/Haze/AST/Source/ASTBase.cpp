@@ -176,7 +176,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	{
 		ExprValue = Expression->CodeGen();
 
-		Compiler->StoreValue(RetValue, ExprValue);
+		Compiler->CreateMov(RetValue, ExprValue);
 	}
 
 	return RetValue;
@@ -273,7 +273,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		break;
 	case HazeToken::Assign:
 	{
-		Compiler->StoreValue(LeftValue, RightValue);
+		Compiler->CreateMov(LeftValue, RightValue);
 		return LeftValue;
 	}
 		break;

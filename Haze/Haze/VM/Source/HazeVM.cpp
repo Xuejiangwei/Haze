@@ -43,7 +43,7 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 
 	}
 
-#if HAZE_OP_CODE_ENABLE
+#if HAZE_LOAD_OP_CODE_ENABLE
 	LoadOpCodeFile();
 #endif // ENABLE_LOAD_OP_CODE
 

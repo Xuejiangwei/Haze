@@ -248,13 +248,15 @@ void HazeCompiler::ClearBlockPoint()
 	InsertBaseBlock = nullptr;
 }
 
-void HazeCompiler::StoreValue(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
 {
 	GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOV);
 
 	Alloca->StoreValue(Value);
 
 	ClearFunctionTemp();
+
+	return Alloca;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable)

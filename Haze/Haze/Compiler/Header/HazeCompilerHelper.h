@@ -10,7 +10,7 @@ HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& ClassName, const HAZE_ST
 
 void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value);
 
-void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerValue> Value);
+void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerValue> Value, bool StreamValue = false);
 
 std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count);
 

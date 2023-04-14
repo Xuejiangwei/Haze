@@ -1,6 +1,7 @@
 #include "HazeCompilerHelper.h"
 
 #include <fstream>
+#include "HazeLog.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerClass.h"
 #include "HazeCompilerFunction.h"
@@ -48,37 +49,45 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value)
 	}
 }
 
-void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerValue> Value)
+void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerValue> Value, bool StreamValue)
 {
 	const auto& V = Value->GetValue();
-	switch (V.Type)
+	
+	if (StreamValue)
 	{
-	case HazeValueType::Bool:
-		OFStream << " " << V.Value.Bool;
-		break;
-	case HazeValueType::Char:
-		OFStream << " " << V.Value.Char;
-		break;
-	case HazeValueType::Int:
-		OFStream << " " << V.Value.Int;
-		break;
-	case HazeValueType::Float:
-		OFStream << " " << V.Value.Float;
-		break;
-	case HazeValueType::UnsignedInt:
-		OFStream << V.Value.UnsignedInt;
-		break;
-	case HazeValueType::Long:
-		OFStream << " " << V.Value.Long;
-		break;
-	case HazeValueType::Double:
-		OFStream << " " << V.Value.Double;
-		break;
-	case HazeValueType::UnsignedLong:
-		OFStream << " " << V.Value.UnsignedLong;
-		break;
-	default:
+		switch (V.Type)
+		{
+		case HazeValueType::Bool:
+			OFStream << " " << V.Value.Bool;
+			break;
+		case HazeValueType::Char:
+			OFStream << " " << V.Value.Char;
+			break;
+		case HazeValueType::Int:
+			OFStream << " " << V.Value.Int;
+			break;
+		case HazeValueType::Float:
+			OFStream << " " << V.Value.Float;
+			break;
+		case HazeValueType::UnsignedInt:
+			OFStream << V.Value.UnsignedInt;
+			break;
+		case HazeValueType::Long:
+			OFStream << " " << V.Value.Long;
+			break;
+		case HazeValueType::Double:
+			OFStream << " " << V.Value.Double;
+			break;
+		case HazeValueType::UnsignedLong:
+			OFStream << " " << V.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+	}
+	else
 	{
+		OFStream << " " << HAZE_CAST_VALUE_TYPE(V.Type);
 		if (Value->IsPointer())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
@@ -96,8 +105,10 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerV
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value);
 			OFStream << " " << ClassValue->GetOwnerClassName();
 		}
-	}
-		break;
+		else if (V.Type == HazeValueType::MultiVariable)
+		{
+			HAZE_TO_DO(HazeCompilerOFStream Function MultiVariable);
+		}
 	}
 }
 

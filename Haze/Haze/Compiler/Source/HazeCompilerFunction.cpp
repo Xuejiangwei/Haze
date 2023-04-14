@@ -137,7 +137,6 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 		OFStream << std::endl;
 	}
 
-	OFStream << GetFunctionStartHeader() << std::endl;
 
 	/*size_t ParamCount = VectorParam.size();
 	for (auto& it : BBList)
@@ -162,18 +161,19 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 	}*/
 
 	HAZE_STRING LocalVariableName;
-	uint32 Size = 0;
+	int Size = -HAZE_ADDRESS_SIZE;
 
-	for (size_t i = 0; i < VectorParam.size(); i++)
+	for (int i = (int)VectorParam.size() - 1; i >= 0; i--)
 	{
 		FindLocalVariableName(Vector_LocalVariable[i], LocalVariableName);
 		OFStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
 		HazeCompilerOFStream(OFStream, Vector_LocalVariable[i]);
+
+		Size -= Vector_LocalVariable[i]->GetSize();
 		OFStream << " " << Size << std::endl;
-		Size += Vector_LocalVariable[i]->GetSize();
 	}
 
-	Size += HAZE_ADDRESS_SIZE;
+	Size = 0;
 
 	for (size_t i = VectorParam.size(); i < Vector_LocalVariable.size(); i++)
 	{
@@ -184,6 +184,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 		Size += Vector_LocalVariable[i]->GetSize();
 	}
 
+	OFStream << GetFunctionStartHeader() << std::endl;
 
 	EntryBlock->GenI_Code(OFStream);
 

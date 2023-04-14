@@ -106,7 +106,7 @@ enum class InstructionFunctionType : uint32
 enum class InstructionAddressType : uint8
 {
 	Direct,
-	Index,
+	GlobalDataIndex,
 	Address_Offset,
 	Pointer_Offset,
 };
