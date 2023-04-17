@@ -36,12 +36,16 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 	}
 
 	{
+#define HAZE_BACKEND_PARSE_ENABLE	1
+
 #if HAZE_BACKEND_PARSE_ENABLE
 		BackendParse BP(this);
 		BP.Parse();
 #endif // HAZE_BACKEND_PARSE_ENABLE
 
 	}
+
+#define HAZE_LOAD_OP_CODE_ENABLE	1
 
 #if HAZE_LOAD_OP_CODE_ENABLE
 	LoadOpCodeFile();

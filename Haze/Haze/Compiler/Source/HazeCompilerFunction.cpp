@@ -249,7 +249,11 @@ HAZE_STRING HazeCompilerFunction::GenForEndBlockName()
 
 bool HazeCompilerFunction::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {
-	if (!EntryBlock->FindLocalVariableName(Value, OutName) && OwnerClass)
+	if (EntryBlock->FindLocalVariableName(Value, OutName))
+	{
+		return true;
+	}
+	else if (OwnerClass)
 	{
 		return OwnerClass->GetMemberName(Value, OutName);
 	}

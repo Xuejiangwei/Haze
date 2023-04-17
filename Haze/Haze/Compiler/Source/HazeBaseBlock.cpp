@@ -44,32 +44,35 @@ bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValu
 			OutName = GetLocalVariableName(it.first, it.second);
 			return true;
 		}
-		else if (it.second->GetValue().Type == HazeValueType::PointerClass && Value->IsClassMember())
+		if (Value->IsClassMember())
 		{
-			auto Pointer = std::dynamic_pointer_cast<HazeCompilerPointerValue>(it.second);
-			if ((void*)Pointer->GetPointerValue() != ParentFunction->GetClass())
+			if (it.second->GetValue().Type == HazeValueType::PointerClass)
 			{
-				auto Class = dynamic_cast<HazeCompilerClassValue*>(Pointer->GetPointerValue());
+				auto Pointer = std::dynamic_pointer_cast<HazeCompilerPointerValue>(it.second);
+				if ((void*)Pointer->GetPointerValue() != ParentFunction->GetClass())
+				{
+					auto Class = dynamic_cast<HazeCompilerClassValue*>(Pointer->GetPointerValue());
+					Class->GetMemberName(Value, OutName);
+					if (!OutName.empty())
+					{
+						OutName = GetLocalVariableName(it.first, it.second) + HAZE_CLASS_POINTER_ATTR + OutName;
+						return true;
+					}
+				}
+			}
+			else
+			{
+				auto Class = std::dynamic_pointer_cast<HazeCompilerClassValue>(it.second);
 				Class->GetMemberName(Value, OutName);
 				if (!OutName.empty())
 				{
-					OutName = GetLocalVariableName(it.first, it.second) + HAZE_CLASS_POINTER_ATTR + OutName;
+					OutName = GetLocalVariableName(it.first, it.second) + HAZE_CLASS_ATTR + OutName;
+					if (!Value->IsClassPublicMember())
+					{
+						HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("can not access non public member data %s\n"), OutName.c_str());
+					}
 					return true;
 				}
-			}
-		}
-		else if (it.second->GetValue().Type == HazeValueType::Class && Value->IsClassMember())
-		{
-			auto Class = std::dynamic_pointer_cast<HazeCompilerClassValue>(it.second);
-			Class->GetMemberName(Value, OutName);
-			if (!OutName.empty())
-			{
-				OutName = GetLocalVariableName(it.first, it.second) + HAZE_CLASS_ATTR + OutName;
-				if (!Value->IsClassPublicMember())
-				{
-					HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("can not access non public member data %s\n"), OutName.c_str());
-				}
-				return true;
 			}
 		}
 	}
@@ -104,17 +107,17 @@ void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBloc
 		return;
 	}
 
-	auto BB = MoveFinishPopBlock ? MoveFinishPopBlock.get() : this;
-	for (int i = (int)Vector_Alloca.size() - 1; i >= 0; i--)
-	{
-		HAZE_STRING_STREAM SStream;
-		SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetValue().Type)
-			<< " " << GetLocalVariableName(Vector_Alloca[i].first, Vector_Alloca[i].second) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetScope()) << std::endl;
+	//auto BB = MoveFinishPopBlock ? MoveFinishPopBlock.get() : this;
+	//for (int i = (int)Vector_Alloca.size() - 1; i >= 0; i--)
+	//{
+	//	HAZE_STRING_STREAM SStream;
+	//	SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetValue().Type)
+	//		<< " " << GetLocalVariableName(Vector_Alloca[i].first, Vector_Alloca[i].second) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetScope()) << std::endl;
 
-		//Vector_Alloca.pop_back();
+	//	//Vector_Alloca.pop_back();
 
-		BB->PushIRCode(SStream.str());
-	}
+	//	BB->PushIRCode(SStream.str());
+	//}
 
 	if (JmpOut)
 	{

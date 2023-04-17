@@ -25,23 +25,22 @@ JMPL ForBlock1
 RET 0
 Block ForBlock1
 PUSH 3 甲$3 2
-MOV 3 甲$3 1 3 0 3
+MOV 3 甲$3 2 3 0 3
 JMPL ForConditionBlock2
 Block ForConditionBlock2
-CMP 3 甲$3 1 3 10 3
+CMP 3 甲$3 2 3 10 3
 JL JmpNull ForBlockEnd3
 PUSH 3 甲$3 2
 PUSH 9 常字符串指针 4 2 0
 PUSH 3 Address 11
 CALL 打印 2 12
 PUSH 3 TempBinaryValue 5
-MOV 3 TempBinaryValue 5 3 甲$3 1
+MOV 3 TempBinaryValue 5 3 甲$3 2
 ADD 3 TempBinaryValue 5 3 1 3
-MOV 3 甲$3 1 3 TempBinaryValue 5
+MOV 3 甲$3 2 3 TempBinaryValue 5
 POP 3 TempBinaryValue 5
 JMPL ForConditionBlock2
 Block ForBlockEnd3
-POP 3 甲$3 2
 JMPOUT
 End
 Function 主函数 3
@@ -50,11 +49,11 @@ Variable 测试乙$2 11 点 8
 Start
 Block Entry
 PUSH 11 测试甲$1 2 点
-MOV 4 测试甲$1之纵坐标 1 4 4.2 3
-MOV 3 测试甲$1之横坐标 1 3 1 3
+MOV 4 测试甲$1之纵坐标 14 4 4.2 3
+MOV 3 测试甲$1之横坐标 14 3 1 3
 PUSH 11 测试乙$2 2 点
-MOV 4 测试乙$2之纵坐标 1 4 8.1 3
-MOV 3 测试乙$2之横坐标 1 3 10 3
+MOV 4 测试乙$2之纵坐标 14 4 8.1 3
+MOV 3 测试乙$2之横坐标 14 3 10 3
 PUSH 11 测试甲$1 2 点
 PUSH 10 测试甲$1 12 点
 PUSH 3 Address 11
