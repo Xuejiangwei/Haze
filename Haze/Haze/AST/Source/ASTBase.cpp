@@ -129,10 +129,10 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	if (Function)
 	{
 		std::vector<std::shared_ptr<HazeCompilerValue>> Param;
-
+		std::shared_ptr<HazeCompilerValue> ThisPointerValue = nullptr;
 		if (Function->GetClass())
 		{
-			Param.push_back(Function->GetClass()->GetThisPointerValue());
+			ThisPointerValue = Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(GetObjectName(Name));
 		}
 
 		for (auto& it : FunctionParam)
@@ -140,7 +140,7 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 			Param.push_back(it->CodeGen());
 		}
 
-		return Compiler->CreateFunctionCall(Function, Param);
+		return Compiler->CreateFunctionCall(Function, Param, ThisPointerValue);
 	}
 
 	return nullptr;
@@ -410,7 +410,7 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 
 	InitExpression->CodeGen();
 
-	Compiler->CreateJmpToBlock(ForConditionBlock, true);
+	Compiler->CreateJmpToBlock(ForConditionBlock);
 
 	Compiler->SetInsertBlock(ForConditionBlock);
 
@@ -422,7 +422,7 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 
 	StepExpression->CodeGen();
 
-	Compiler->CreateJmpToBlock(ForConditionBlock, true);
+	Compiler->CreateJmpToBlock(ForConditionBlock);
 
 	
 	ForBlock->FinishBlock(ForEndBlock, false);

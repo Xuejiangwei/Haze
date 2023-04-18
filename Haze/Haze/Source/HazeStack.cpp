@@ -55,25 +55,26 @@ void HazeStack::Start(unsigned int Address)
 //	Stack_Frame.back().FunctionData.Vector_LocalParam.resize(NewSize);
 //}
 
-//void HazeStack::PushJmpStack(const InstructionData& Data, bool IsPush)
-//{
-//	if (IsPush)
-//	{
-//		GetCurrFrame().Stack_Jmp.push_back({ PC/*, Data.Extra.Jmp.InstructionNum, Data.Extra.Jmp.InstructionNum*/ });
-//	}
-//
-//	auto& Function = VM->GetFunctionByName(Stack_Frame.back().FunctionName);
-//	int Address = Function.Extra.FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
-//	memcpy(&PC, &Address, sizeof(PC));
-//
-//	PC--;
-//}
+void HazeStack::JmpTo(const InstructionData& Data)
+{
+	auto& Function = Stack_Frame.back().FunctionInfo;
+	int Address = Function->Extra.FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
+	memcpy(&PC, &Address, sizeof(PC));
 
-//void HazeStack::PopCurrJmpStack()
-//{
-//	PC = GetCurrFrame().Stack_Jmp.back().CachePC;
-//	GetCurrFrame().Stack_Jmp.pop_back();
-//}
+	PC--;
+}
+
+void HazeStack::PushLoopStack()
+{
+	Stack_Frame.back().Vector_LoopStack.push_back(PC);
+}
+
+void HazeStack::PopLoopStack()
+{
+	auto& Stack = Stack_Frame.back().Vector_LoopStack;
+	PC = Stack.back();
+	Stack.pop_back();
+}
 
 void HazeStack::PCStepInc()
 {
@@ -92,7 +93,7 @@ void HazeStack::PushMainFuntion()
 
 	EBP = ESP;
 
-	auto MainFunction = VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
+	auto& MainFunction = VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
 	OnCall(&MainFunction);
 }
 
@@ -109,9 +110,9 @@ void HazeStack::InitRegisterToStack()
 
 }
 
-void HazeStack::OnCall(FunctionData* Info)
+void HazeStack::OnCall(const FunctionData* Info)
 {
-	Stack_Frame.push_back({ Info });
+	Stack_Frame.push_back(HazeStackFrame(Info));
 }
 
 void HazeStack::OnRet()

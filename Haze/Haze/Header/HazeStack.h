@@ -26,20 +26,25 @@ public:
 public:
 	struct HazeStackFrame
 	{
-		FunctionData* FunctionInfo;
+		const FunctionData* FunctionInfo;
+		std::vector<int> Vector_LoopStack;
+
+		HazeStackFrame(const FunctionData* Info)
+		{
+			FunctionInfo = Info;
+			Vector_LoopStack.clear();
+		}
 	};
 
-	HazeStackFrame& GetCurrFrame() { return Stack_Frame.back(); }
+	const HazeStackFrame& GetCurrFrame() const { return Stack_Frame.back(); }
 
 	bool FrameIsValid() { return Stack_Frame.size(); }
 
-	/*void PushVariableStack(HazeDefineVariable* Variable);
+	void JmpTo(const InstructionData& Data);
 
-	void PopVariableStack(int Num = 1);
+	void PushLoopStack();
 
-	void PushJmpStack(const InstructionData& Data, bool IsPush = true);
-
-	void PopCurrJmpStack();*/
+	void PopLoopStack();
 
 private:
 	void PCStepInc();
@@ -48,7 +53,7 @@ private:
 
 	void InitRegisterToStack();
 
-	void OnCall(FunctionData* Info);
+	void OnCall(const FunctionData* Info);
 
 	void OnRet();
 

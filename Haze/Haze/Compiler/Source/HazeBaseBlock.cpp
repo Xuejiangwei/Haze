@@ -75,6 +75,18 @@ bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValu
 				}
 			}
 		}
+		else if (Value->IsCalssThis())
+		{
+			if (it.second->GetValue().Type == HazeValueType::Class)
+			{
+				auto PointerThis = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
+				if(PointerThis->GetPointerValue() == it.second.get())
+				{
+					OutName = GetLocalVariableName(it.first, it.second);
+					return true;
+				}
+			}
+		}
 	}
 
 	for (auto& Iter : List_ChildBlock)
@@ -131,11 +143,15 @@ void HazeBaseBlock::GenI_Code_Alloca(HAZE_OFSTREAM& OFStream)
 {
 }
 
-void HazeBaseBlock::GenI_Code(HAZE_OFSTREAM& OFStream)
+void HazeBaseBlock::GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount)
 {
-	for (auto& Iter : Vector_IRCode)
+	for (size_t i = 0; i < Vector_IRCode.size(); i++)
 	{
-		OFStream << Iter;
+		if (i != 0 && SkipCount-- > 0)
+		{
+			continue;
+		}
+		OFStream << Vector_IRCode[i];
 	}
 
 	for (auto& Iter : List_ChildBlock)

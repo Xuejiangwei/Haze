@@ -14,6 +14,4 @@ Variable $2 13 -4
 Variable ¼×$1 9 9 -12
 Start
 Block Entry
-PUSH 9 ¼×$1 2 9
-PUSH 13 $2 2
 End

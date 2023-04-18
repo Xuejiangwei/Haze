@@ -44,6 +44,8 @@ public:
 
 	bool IsClassProtectedMember() { return  Scope == HazeDataDesc::ClassMember_Local_Protected; }
 
+	bool IsCalssThis() { return Scope == HazeDataDesc::ClassThis; }
+
 	bool IsPointer() { return IsPointerBase() || IsPointerClass(); }
 	
 	bool IsPointerBase() { return Value.Type == HazeValueType::PointerBase; }

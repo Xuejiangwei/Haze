@@ -37,7 +37,7 @@ public:
 
 	void GenI_Code_Alloca(HAZE_OFSTREAM& OFStream);
 
-	void GenI_Code(HAZE_OFSTREAM& OFStream);
+	void GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount = 0);
 
 public:
 	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock);

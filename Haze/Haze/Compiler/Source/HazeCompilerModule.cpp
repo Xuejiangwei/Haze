@@ -308,7 +308,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 	return CompilerValue;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
 {
 	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
 
@@ -322,13 +322,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	{
 		SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(Param[i]->GetValue().Type) << " ";
 	
-		if (Param[i]->IsLocal())
+		if (!GetCurrFunction()->FindLocalVariableName(Param[i], Name))
 		{
-			GetCurrFunction()->FindLocalVariableName(Param[i], Name);
-		}
-		else if (Param[i]->IsGlobal())
-		{
-			GetGlobalVariableName(Param[i], Name);
+			if (!GetGlobalVariableName(Param[i], Name))
+			{
+				HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Haze parse function call not find variable name\n"));
+			}
 		}
 
 		if (Param[i]->IsConstant())
@@ -367,6 +366,35 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		SStream.str(HAZE_TEXT(""));
 
 		Size += Param[i]->GetSize();
+	}
+
+	if (ThisPointerTo)
+	{
+		if (!GetCurrFunction()->FindLocalVariableName(ThisPointerTo, Name))
+		{
+			if (!GetGlobalVariableName(ThisPointerTo, Name))
+			{
+				HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Haze parse function call not find variable name\n"));
+			}
+		}
+
+		SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::PointerClass) << " ";
+		if (ThisPointerTo->IsPointerClass())
+		{
+			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(ThisPointerTo);
+			SStream << Name << " " << HAZE_CAST_SCOPE_TYPE(HazeDataDesc::ClassThis) << " " << PointerValue->GetPointerType().CustomName;
+		}
+		else if (ThisPointerTo->IsClass())
+		{
+			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(ThisPointerTo);
+			SStream << Name << " " << HAZE_CAST_SCOPE_TYPE(HazeDataDesc::ClassThis) << " " << ClassValue->GetOwnerClassName();
+		}
+
+		SStream << std::endl;
+		BB->PushIRCode(SStream.str());
+		SStream.str(HAZE_TEXT(""));
+
+		Size += ThisPointerTo->GetSize();
 	}
 
 	SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Int) << " " << HAZE_CALL_PUSH_ADDRESS_NAME

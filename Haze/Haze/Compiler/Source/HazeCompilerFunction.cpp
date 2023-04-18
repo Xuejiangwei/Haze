@@ -186,7 +186,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 
 	OFStream << GetFunctionStartHeader() << std::endl;
 
-	EntryBlock->GenI_Code(OFStream);
+	EntryBlock->GenI_Code(OFStream, (int)VectorParam.size());
 
 	OFStream << GetFunctionEndHeader() << std::endl;
 #endif // HAZE_ASS_ENABLE

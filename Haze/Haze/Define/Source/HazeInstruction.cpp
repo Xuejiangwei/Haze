@@ -132,12 +132,18 @@ public:
 
 			int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
 			auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
+
 			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 			{
 				Stack->EBP = Stack->ESP;
 				Stack->OnCall(&Function);
 
 				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_ADDRESS_SIZE + Operator[0].Extra.Call.ParamByteSize));
+				
+				if (Function.Vector_Variable.size() > 0)
+				{
+					Stack->ESP = Function.Vector_Variable.back().Offset + GetSizeByType(Function.Vector_Variable.back().Variable.Type, Stack->VM);
+				}
 
 				Stack->PC = Function.Extra.FunctionDescData.InstructionStartAddress;
 				--Stack->PC;
@@ -174,7 +180,7 @@ public:
 			else if (Operator[0].Scope == HazeDataDesc::ClassThis)
 			{
 				uint64 Address = (uint64)GetAddressByOperator(Stack, Operator[0]);
-				memcpy(&Stack->Stack_Main[Stack->ESP], &Address,sizeof(uint64));
+				memcpy(&Stack->Stack_Main[Stack->ESP], &Address, sizeof(uint64));
 			}
 			else/* if (Operator[0].Scope == InstructionScopeType::Local || Operator[0].Scope == InstructionScopeType::Global)*/
 			{
@@ -430,7 +436,8 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			JmpToOperator(Stack, Operator[0], false);
+			Stack->PushLoopStack();
+			JmpToOperator(Stack, Operator[0]);
 		}
 	}
 
@@ -548,7 +555,7 @@ public:
 
 	static void JmpOut(HazeStack* Stack)
 	{
-		//Stack->PopCurrJmpStack();
+		Stack->PopLoopStack();
 	}
 
 private:
@@ -614,7 +621,7 @@ private:
 		return Ret;
 	}
 
-	static void JmpToOperator(HazeStack* Stack, const InstructionData& Operator, bool PushStack = true)
+	static void JmpToOperator(HazeStack* Stack, const InstructionData& Operator)
 	{
 		if (Operator.Variable.Name == HAZE_JMP_NULL)
 		{
@@ -625,7 +632,7 @@ private:
 		}
 		else
 		{
-			//Stack->PushJmpStack(Operator, PushStack);
+			Stack->JmpTo(Operator);
 		}
 	}
 };

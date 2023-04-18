@@ -20,6 +20,8 @@
 
 #define HAZE_CAST_VALUE_TYPE(X) (uint32)(X)
 
+#define HAZE_CAST_SCOPE_TYPE(X) (uint32)(X)
+
 #define HAZE_CLASS_THIS					HAZE_TEXT("己")
 #define HAZE_CLASS_POINTER_ATTR			HAZE_TEXT("指之")
 #define HAZE_CLASS_ATTR					HAZE_TEXT("之")

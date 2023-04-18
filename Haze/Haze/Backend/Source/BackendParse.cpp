@@ -683,12 +683,12 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 						FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
 
 						bool Find = false;
-						for (int j = (int)CurrFunction.Vector_Param.size() - 1; j >= 0; --j)
+						for (int j = (int)CurrFunction.Vector_Variable.size() - 1; j >= 0; --j)
 						{
-							AddressOffset -= GetSizeByType(CurrFunction.Vector_Param[j].Type, this);
-							if (CurrFunction.Vector_Param[j].Name == ObjName)
+							AddressOffset -= GetSizeByType(CurrFunction.Vector_Variable[j].Variable.Type, this);
+							if (CurrFunction.Vector_Variable[j].Variable.Name == ObjName)
 							{
-								auto Class = GetClass(CurrFunction.Vector_Param[j].Type.CustomName);
+								auto Class = GetClass(CurrFunction.Vector_Variable[j].Variable.Type.CustomName);
 								if (IsPointer)
 								{
 									//需要存储一个指针指向地址的相对偏移
