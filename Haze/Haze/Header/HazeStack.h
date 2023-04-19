@@ -28,11 +28,13 @@ public:
 	{
 		const FunctionData* FunctionInfo;
 		std::vector<int> Vector_LoopStack;
+		uint32 FunctionParamSize;
 
-		HazeStackFrame(const FunctionData* Info)
+		HazeStackFrame(const FunctionData* Info, uint32 ParamSize)
 		{
 			FunctionInfo = Info;
 			Vector_LoopStack.clear();
+			FunctionParamSize = ParamSize;
 		}
 	};
 
@@ -49,11 +51,13 @@ public:
 private:
 	void PCStepInc();
 
+	void PreMainFunction();
+
 	void PushMainFuntion();
 
 	void InitRegisterToStack();
 
-	void OnCall(const FunctionData* Info);
+	void OnCall(const FunctionData* Info, int ParamSize);
 
 	void OnRet();
 

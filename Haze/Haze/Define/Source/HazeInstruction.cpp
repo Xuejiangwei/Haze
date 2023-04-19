@@ -135,18 +135,7 @@ public:
 
 			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 			{
-				Stack->EBP = Stack->ESP;
-				Stack->OnCall(&Function);
-
-				Stack->Stack_EBP.push_back(Stack->ESP - (HAZE_ADDRESS_SIZE + Operator[0].Extra.Call.ParamByteSize));
-				
-				if (Function.Vector_Variable.size() > 0)
-				{
-					Stack->ESP = Function.Vector_Variable.back().Offset + GetSizeByType(Function.Vector_Variable.back().Variable.Type, Stack->VM);
-				}
-
-				Stack->PC = Function.Extra.FunctionDescData.InstructionStartAddress;
-				--Stack->PC;
+				Stack->OnCall(&Function, Operator[0].Extra.Call.ParamByteSize);
 			}
 			else
 			{
@@ -378,21 +367,8 @@ public:
 			RetRegister->Data.resize(Size);
 			memcpy(RetRegister->Data.begin()._Unwrapped(), GetAddressByOperator(Stack, Operator[0]), Size);
 		}
-
-		int Size = 0;
-		for (auto& Iter : Stack->Stack_Frame.back().FunctionInfo->Vector_Param)
-		{
-			Size += GetSizeByType(Iter.Type, Stack->VM);
-		}
-
-		memcpy(&Stack->PC, &(Stack->Stack_Main[Stack->EBP - 4]), HAZE_ADDRESS_SIZE);
-
+		
 		Stack->OnRet();
-
-		uint32 TempEBP = Stack->EBP;
-		Stack->Stack_EBP.pop_back();
-		Stack->EBP = Stack->Stack_EBP.back();
-		Stack->ESP = TempEBP - (HAZE_ADDRESS_SIZE + Size);
 	}
 
 	static void New(HazeStack* Stack)

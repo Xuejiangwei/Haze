@@ -222,14 +222,13 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local, Count);
 	Vector_Alloca.push_back({ Define.Name, Alloce });
 
-	HAZE_STRING_STREAM SStream;
+	/*HAZE_STRING_STREAM SStream;
 	HAZE_STRING Name = GetLocalVariableName(Define.Name, Alloce);
 
 	StreamCompilerValue(SStream, InstructionOpCode::PUSH, Alloce, Name.c_str());
+	PushIRCode(SStream.str());*/
 
 	ParentFunction->AddLocalVariable(Alloce);
-
-	PushIRCode(SStream.str());
 
 	return Alloce;
 }

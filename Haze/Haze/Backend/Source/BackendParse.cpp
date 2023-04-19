@@ -675,71 +675,73 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 					}
 					else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)
 					{
-						int AddressOffset = 0 - HAZE_ADDRESS_SIZE;	 	//入栈的返回地址数据占用空间为4个字节
-
 						HAZE_STRING ObjName;
 						HAZE_STRING MemberName;
 						bool IsPointer = false;
-						FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
-
 						bool Find = false;
-						for (int j = (int)CurrFunction.Vector_Variable.size() - 1; j >= 0; --j)
 						{
-							AddressOffset -= GetSizeByType(CurrFunction.Vector_Variable[j].Variable.Type, this);
-							if (CurrFunction.Vector_Variable[j].Variable.Name == ObjName)
+							FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
+
+							for (uint32 j = 0; j < CurrFunction.Vector_Variable.size(); j++)
 							{
-								auto Class = GetClass(CurrFunction.Vector_Variable[j].Variable.Type.CustomName);
-								if (IsPointer)
+								if (CurrFunction.Vector_Variable[j].Variable.Name == ObjName)
 								{
-									//需要存储一个指针指向地址的相对偏移
-									it.Extra.Address.BaseAddress = AddressOffset;
-									it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
-									it.AddressType = InstructionAddressType::Pointer_Offset;
-									Find = true;
-									break;
+									auto Class = GetClass(CurrFunction.Vector_Variable[j].Variable.Type.CustomName);
+									if (IsPointer)
+									{
+										//需要存储一个指针指向地址的相对偏移
+										it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset;
+										it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+										it.AddressType = InstructionAddressType::Pointer_Offset;
+										Find = true;
+										break;
+									}
+									else
+									{
+										it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset + GetMemberOffset(*Class, MemberName);
+										Find = true;
+										break;
+									}
 								}
-								else
-								{
-									it.Extra.Address.BaseAddress = AddressOffset += GetMemberOffset(*Class, MemberName);
-									Find = true;
-									break;
-								}
+							}
+
+							if (Find)
+							{
+								continue;
 							}
 						}
 
-						if (Find)
 						{
-							continue;
-						}
+							//再在临时变量里去查找
+							//FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
 
-						int Offset = 0;
-						for (uint32 j = 0; j < i; j++)
-						{
-							if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::PUSH)
-							{
-								if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name == ObjName)
-								{
-									auto Class = GetClass(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type.CustomName);
-									it.Extra.Address.BaseAddress = Offset + GetMemberOffset(*Class, MemberName);
-									break;
-								}
-								else
-								{
-									Offset += GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
-								}
-							}
-							else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::POP)
-							{
-								Offset -= GetSizeByType(NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Type, this);
-							}
-							else if (NewFunctionTable.Vector_Function[k].Vector_Instruction[j].InsCode == InstructionOpCode::CALL)
-							{
-								Offset -= HAZE_ADDRESS_SIZE;
-								for (auto& Param : NewFunctionTable.Vector_Function[HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Function[k].Vector_Instruction[j].Operator[0].Variable.Name]].Vector_Param)
-								{
-									Offset -= GetSizeByType(Param.Type, this);
-								}
-							}
+							//for (uint32 j = CurrFunction.Vector_Param.size(); j < CurrFunction.Vector_Variable.size(); j++)
+							//{
+							//	if (CurrFunction.Vector_Variable[j].Variable.Name == ObjName)
+							//	{
+							//		auto Class = GetClass(CurrFunction.Vector_Variable[j].Variable.Type.CustomName);
+							//		if (IsPointer)
+							//		{
+							//			//需要存储一个指针指向地址的相对偏移
+							//			it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset;
+							//			it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+							//			it.AddressType = InstructionAddressType::Pointer_Offset;
+							//			Find = true;
+							//			break;
+							//		}
+							//		else
+							//		{
+							//			it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset + GetMemberOffset(*Class, MemberName);
+							//			Find = true;
+							//			break;
+							//		}
+							//	}
+							//}
+
+							//if (Find)
+							//{
+							//	continue;
+							//}
 						}
 					}
 					else if (it.Scope == HazeDataDesc::Local /*|| it.Scope == HazeDataDesc::Temp*/ || it.Scope == HazeDataDesc::ClassThis)
