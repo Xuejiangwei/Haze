@@ -1,4 +1,3 @@
-#include "ASTBase.h"
 
 #include "HazeVM.h"
 #include "HazeCompilerHelper.h"
@@ -11,6 +10,8 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerHelper.h"
+
+#include "ASTBase.h"
 
 //Base
 ASTBase::ASTBase(HazeVM* VM) : VM(VM)
@@ -83,8 +84,9 @@ std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 
 
 ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName)
-	: ASTBase(VM), SectionSignal(Section), Name(std::move(Name))
+	: ASTBase(VM), SectionSignal(Section)
 {
+	DefineVariable.Name = std::move(Name);
 	if (MemberName)
 	{
 		ClassMemberName = std::move(*MemberName);
@@ -103,10 +105,10 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	}
 	else if (SectionSignal == HazeSectionSignal::Function)
 	{
-		RetValue = VM->GetCompiler()->GetLocalVariable(Name);
+		RetValue = VM->GetCompiler()->GetLocalVariable(DefineVariable.Name);
 		if (!RetValue)
 		{
-			RetValue = VM->GetCompiler()->GetGlobalVariable(Name);
+			RetValue = VM->GetCompiler()->GetGlobalVariable(DefineVariable.Name);
 		}
 	}
 
@@ -210,6 +212,45 @@ std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 	return VM->GetCompiler()->CreateNew(VM->GetCompiler()->GetCurrModule()->GetCurrFunction(), DefineVariable.Type);
 }
 
+ASTInc::ASTInc(HazeVM* VM, HAZE_STRING& Name, bool IsPreInc) : ASTBase(VM), IsPreInc(IsPreInc)
+{
+	DefineVariable.Name = std::move(Name);
+}
+
+ASTInc::~ASTInc()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTInc::CodeGen()
+{
+	auto IncValue = VM->GetCompiler()->GetLocalVariable(DefineVariable.Name);
+	if (!IncValue)
+	{
+		IncValue = VM->GetCompiler()->GetGlobalVariable(DefineVariable.Name);
+	}
+
+	return VM->GetCompiler()->CreateInc(IncValue, IsPreInc);
+}
+
+ASTDec::ASTDec(HazeVM* VM, HAZE_STRING& Name, bool IsPreDec) : ASTBase(VM), IsPreDec(IsPreDec)
+{
+	DefineVariable.Name = std::move(Name);
+}
+
+ASTDec::~ASTDec()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTDec::CodeGen()
+{
+	auto IncValue = VM->GetCompiler()->GetLocalVariable(DefineVariable.Name);
+	if (!IncValue)
+	{
+		IncValue = VM->GetCompiler()->GetGlobalVariable(DefineVariable.Name);
+	}
+
+	return VM->GetCompiler()->CreateDec(IncValue, IsPreDec);
+}
 
 ASTMultiExpression::ASTMultiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression)
 	: ASTBase(VM), SectionSignal(Section), VectorExpression(std::move(VectorExpression))
@@ -260,16 +301,22 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		return Compiler->CreateDiv(LeftValue, RightValue);
 		break;
 	case HazeToken::Mod:
+		return Compiler->CreateMod(LeftValue, RightValue);
 		break;
 	case HazeToken::And:
+		return Compiler->CreateAnd(LeftValue, RightValue);
 		break;
 	case HazeToken::Or:
+		return Compiler->CreateOr(LeftValue, RightValue);
 		break;
 	case HazeToken::Not:
+		return Compiler->CreateNot(LeftValue, RightValue);
 		break;
-	case HazeToken::LeftMove:
+	case HazeToken::Shl:
+		return Compiler->CreateShl(LeftValue, RightValue);
 		break;
-	case HazeToken::RightMove:
+	case HazeToken::Shr:
+		return Compiler->CreateShr(LeftValue, RightValue);
 		break;
 	case HazeToken::Assign:
 	{
@@ -321,26 +368,31 @@ ASTIfExpression::~ASTIfExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 {
-	
 	auto ConditionExp = static_cast<ASTBinaryExpression*>(Condition.get());
 
 	auto& Compiler = VM->GetCompiler();
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 
+	auto ParentBlock = Compiler->GetInsertBlock();
+	auto IfBlock = HazeBaseBlock::CreateBaseBlock(Function->GenIfBlockName(), Function, ParentBlock);
+	auto ElseBlock = HazeBaseBlock::CreateBaseBlock(Function->GenElseBlockName(), Function, ParentBlock);
+
+	Compiler->CreateJmpFromBlock(ParentBlock, IfBlock, true);
+
+	Compiler->SetInsertBlock(IfBlock);
+
 	Condition->CodeGen();
 
-	auto ParentBlock = Compiler->GetInsertBlock();
+	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, ElseBlock, false);
 
-	auto IfBlock = HazeBaseBlock::CreateBaseBlock(Function->GenIfBlockName(), Function, ParentBlock);
 	IfExpression->CodeGen();
-	IfBlock->FinishBlock();
+	IfBlock->FinishBlock(nullptr);
 
-	auto ElseBlock = HazeBaseBlock::CreateBaseBlock(Function->GenElseBlockName(), Function, ParentBlock);
+	Compiler->SetInsertBlock(ElseBlock);
 	ElseExpression->CodeGen();
-	ElseBlock->FinishBlock();
+	ElseBlock->FinishBlock(nullptr);
 
-	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), IfBlock, ElseBlock);
-
+	Compiler->SetInsertBlock(ParentBlock);
 
 	return nullptr;
 }
@@ -360,22 +412,23 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 	auto ConditionExp = static_cast<ASTBinaryExpression*>(Condition.get());
 
-	auto WhileBlockName = Function->GenWhileBlockName();
-
 	auto ParentBlock = Compiler->GetInsertBlock();
+	auto WhileBlock = HazeBaseBlock::CreateBaseBlock(Function->GenWhileBlockName(), Function, ParentBlock);
 
-	auto WhileBlock = HazeBaseBlock::CreateBaseBlock(WhileBlockName, Function, ParentBlock);
+	Compiler->CreateJmpFromBlock(ParentBlock, WhileBlock, true);
+
+	Compiler->SetInsertBlock(WhileBlock);
 	ConditionExp->CodeGen();
 
 	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
 
 	MultiExpression->CodeGen();
 
-	Compiler->CreateJmpToBlock(WhileBlock, true);
+	Compiler->CreateJmpToBlock(WhileBlock);
 
 	WhileBlock->FinishBlock(nullptr, false);
 
-	Compiler->CreateJmpToBlock(WhileBlock);
+	Compiler->SetInsertBlock(ParentBlock);
 
 	return nullptr;
 }
@@ -404,7 +457,7 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 	auto ForConditionBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForConditionBlockName(), Function, ForBlock);
 	auto ForEndBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForEndBlockName(), Function, ParentBlock);
 
-	Compiler->CreateJmpFromBlock(Compiler->GetInsertBlock(), ForBlock, true);
+	Compiler->CreateJmpFromBlock(ParentBlock, ForBlock, true);
 
 	Compiler->SetInsertBlock(ForBlock);
 
@@ -428,6 +481,7 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 	ForBlock->FinishBlock(ForEndBlock, false);
 	ForEndBlock->FinishBlock();
 
+	Compiler->SetInsertBlock(ParentBlock);
 
 	return std::shared_ptr<HazeCompilerValue>();
 }

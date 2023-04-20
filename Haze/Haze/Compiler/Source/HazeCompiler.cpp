@@ -13,6 +13,7 @@ static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> 
 	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterRet, 0) },
 	{ NEW_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("New_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterNew, 0) },
 	{ CMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Cmp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterCmp, 0) },
+	{ TEMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
 };
 
 HazeCompiler::HazeCompiler()
@@ -238,6 +239,18 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STR
 	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetConstantValueInt_1()
+{
+	static HazeValue Value;
+	if (Value.Type != HazeValueType::Int || Value.Value.Int != 1)
+	{
+		Value.Type = HazeValueType::Int; 
+		Value.Value.Int = 1;
+	}
+
+	return GenConstantValue(Value);
+}
+
 void HazeCompiler::SetInsertBlock(std::shared_ptr<HazeBaseBlock> BB)
 {
 	InsertBaseBlock = BB;
@@ -250,11 +263,8 @@ void HazeCompiler::ClearBlockPoint()
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
 {
-	GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOV);
-
 	Alloca->StoreValue(Value);
-
-	ClearFunctionTemp();
+	GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOV);
 
 	return Alloca;
 }
@@ -282,17 +292,52 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SUB);
+	return GetCurrModule()->CreateSub(Left, Right);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MUL);
+	return GetCurrModule()->CreateMul(Left, Right);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	return GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::DIV);
+	return GetCurrModule()->CreateDiv(Left, Right);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMod(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateMod(Left, Right);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateMod(Left, Right);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateOr(Left, Right);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNot(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateNot(Left, Right);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateXor(Left, Right);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateShl(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateShl(Left, Right);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateShr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateShr(Left, Right);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
@@ -306,6 +351,16 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 {
 	Function->CreateNew(Data);
 	return GetRegister(NEW_REGISTER);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
+{
+	return  GetCurrModule()->CreateInc(Value, IsPreInc);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDec(std::shared_ptr<HazeCompilerValue> Value, bool IsPreDec)
+{
+	return GetCurrModule()->CreateDec(Value, IsPreDec);
 }
 
 void HazeCompiler::CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL)
@@ -327,9 +382,4 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateIntCmp(std::shared_ptr<Ha
 void HazeCompiler::CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut, bool ElseNullJmpOut)
 {
 	GetCurrModule()->GenIRCode_Cmp(CmpType, IfJmpBlock, ElseJmpBlock, IfNullJmpOut, ElseNullJmpOut);
-}
-
-void HazeCompiler::ClearFunctionTemp()
-{
-	InsertBaseBlock->ClearTempIRCode();
 }

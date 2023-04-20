@@ -53,10 +53,9 @@
 #define DIV_REGISTER					HAZE_TEXT("Div_R")
 
 #define RET_REGISTER					HAZE_TEXT("Ret_R")
-
 #define NEW_REGISTER					HAZE_TEXT("New_R")
-
 #define CMP_REGISTER					HAZE_TEXT("Cmp_R")
+#define TEMP_REGISTER					HAZE_TEXT("Temp_R")
 
 #define HAZE_TEMP_BINART_NAME			HAZE_TEXT("TempBinaryValue")
 

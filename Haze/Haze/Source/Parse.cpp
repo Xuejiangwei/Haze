@@ -53,9 +53,9 @@
 #define TOKEN_DIV						HAZE_TEXT("/")
 #define TOKEN_MOD						HAZE_TEXT("%")
 
-#define TOKEN_AND						HAZE_TEXT("与")
-#define TOKEN_OR						HAZE_TEXT("或")
-#define TOKEN_NOT						HAZE_TEXT("非")
+#define TOKEN_AND						HAZE_TEXT("且")		//&&
+#define TOKEN_OR						HAZE_TEXT("或")		//||
+#define TOKEN_NOT						HAZE_TEXT("非")		//!
 
 #define TOKEN_LEFT_MOVE					HAZE_TEXT("<<")
 #define TOKEN_RIGHT_MOVE				HAZE_TEXT(">>")
@@ -70,6 +70,12 @@
 
 #define TOKEN_INC						HAZE_TEXT("++")
 #define TOKEN_DEC						HAZE_TEXT("--")
+
+#define TOKEN_ADD_ASSIGN				HAZE_TEXT("+=")
+#define TOKEN_SUB_ASSIGN				HAZE_TEXT("-=")
+#define TOKEN_MUL_ASSIGN				HAZE_TEXT("*=")
+#define TOKEN_DIV_ASSIGN				HAZE_TEXT("/=")
+#define TOKEN_MUL_ASSIGN				HAZE_TEXT("*=")
 
 #define TOKEN_LEFT_PARENTHESES			HAZE_TEXT("(")
 #define TOKEN_RIGHT_PARENTHESES			HAZE_TEXT(")")
@@ -143,8 +149,8 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_OR, HazeToken::Or},
 	{TOKEN_NOT, HazeToken::Not},
 
-	{TOKEN_LEFT_MOVE, HazeToken::LeftMove},
-	{TOKEN_NOT, HazeToken::RightMove},
+	{TOKEN_LEFT_MOVE, HazeToken::Shl},
+	{TOKEN_RIGHT_MOVE, HazeToken::Shr},
 
 	{TOKEN_ASSIGN, HazeToken::Assign},
 	{TOKEN_EQUAL, HazeToken::Equal},
@@ -156,6 +162,8 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 
 	{TOKEN_INC, HazeToken::Inc},
 	{TOKEN_DEC, HazeToken::Dec},
+	{TOKEN_ADD_ASSIGN, HazeToken::AddAssign},
+	{TOKEN_SUB_ASSIGN, HazeToken::SubAssign},
 
 	{TOKEN_LEFT_PARENTHESES, HazeToken::LeftParentheses},
 	{TOKEN_RIGHT_PARENTHESES, HazeToken::RightParentheses},
@@ -205,8 +213,8 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 	{ HazeToken::Less, 21 },
 	{ HazeToken::LessEqual, 21 },
 
-	{ HazeToken::LeftMove, 30 },
-	{ HazeToken::RightMove, 30 },
+	{ HazeToken::Shl, 30 },
+	{ HazeToken::Shr, 30 },
 
 
 	{ HazeToken::Add, 40 },
@@ -216,8 +224,8 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 	{ HazeToken::Div, 50 },
 	{ HazeToken::Mod, 50 },
 
-	{ HazeToken::Not, 60 },
-	{ HazeToken::Inc, 60 },
+	//{ HazeToken::Not, 60 },
+	//{ HazeToken::Inc, 60 },
 };
 
 //static std::unordered_map<HazeToken, HazeValueType> MapValueType =
@@ -342,10 +350,10 @@ HazeToken Parse::GetNextToken()
 
 	//Match Token
 	CurrLexeme.clear();
-	const HAZE_CHAR* Signal = nullptr;
+	const HAZE_CHAR* Signal;
 	while (!HazeIsSpace(*CurrCode) || CurrToken == HazeToken::StringStart)
 	{
-		if (IsHazeSignalToken(*CurrCode, Signal))
+		if (IsHazeSignalToken(CurrCode, Signal))
 		{
 			if (CurrToken == HazeToken::StringStart)
 			{
@@ -362,6 +370,12 @@ HazeToken Parse::GetNextToken()
 					CurrLexeme += TempString;
 				}
 				continue;
+			}
+			else if (IsHazeSignalToken(CurrCode, Signal, 2))
+			{
+				CurrPreLexeme = CurrLexeme;
+				CurrLexeme = Signal;
+				CurrCode += 2;
 			}
 			else if (CurrLexeme.length() == 0 || IsPointer(CurrLexeme + *CurrCode, CurrToken))
 			{
@@ -438,58 +452,53 @@ std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::unique_ptr<ASTBase> Left)
 {
-	// highest.
-
-	auto it = MapBinOp.find(CurrToken);
-	if (it == MapBinOp.end())
+	while (true)
 	{
-		return Left;
-	}
-	else
-	{
-		while (true)
+		auto it = MapBinOp.find(CurrToken);
+		if (it == MapBinOp.end())
 		{
-			if (it->second < Prec)
-			{
-				return Left;
-			}
+			return Left;
+		}
 
-			HazeToken OpToken = CurrToken;
+		if (it->second < Prec)
+		{
+			return Left;
+		}
 
-			GetNextToken();
+		HazeToken OpToken = CurrToken;
 
-			std::unique_ptr<ASTBase> Right = ParseUnaryExpression();
+		GetNextToken();
+
+		std::unique_ptr<ASTBase> Right = ParseUnaryExpression();
+		if (!Right)
+		{
+			return nullptr;
+		}
+
+		auto NextPrec = MapBinOp.find(CurrToken);
+		if (NextPrec == MapBinOp.end())
+		{
+			return std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
+		}
+
+		if (it->second < NextPrec->second)
+		{
+			Right = ParseBinaryOperateExpression(it->second + 1, std::move(Right));
 			if (!Right)
 			{
 				return nullptr;
 			}
 
-			auto NextPrec = MapBinOp.find(CurrToken);
-			if (NextPrec != MapBinOp.end() && it->second < NextPrec->second)
-			{
-				Right = ParseBinaryOperateExpression(it->second, std::move(Right));
-				if (!Right)
-				{
-					return nullptr;
-				}
-
-				NextPrec = MapBinOp.find(CurrToken);
-				if (NextPrec == MapBinOp.end())
-				{
-					return std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
-				}
-			}
-			else
+			/*NextPrec = MapBinOp.find(CurrToken);
+			if (NextPrec == MapBinOp.end())
 			{
 				return std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
-			}
-
-			// Merge LHS/RHS.
-			Left = std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
+			}*/
 		}
-	}
 
-	return nullptr;
+		// Merge LHS/RHS.
+		Left = std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
+	}
 }
 
 std::unique_ptr<ASTBase> Parse::ParsePrimary()
@@ -529,7 +538,10 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseReturn();
 	case HazeToken::New:
 		return ParseNew();
-
+	case HazeToken::Inc:
+		return ParseInc();
+	case HazeToken::Dec:
+		return ParseDec();
 	default:
 		break;
 	}
@@ -771,6 +783,46 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	return std::make_unique<ASTNew>(VM, Define);
 }
 
+std::unique_ptr<ASTBase> Parse::ParseInc()
+{
+	HAZE_STRING Name;
+	bool IsPreInc = !CurrPreLexeme.empty();
+	
+	if (IsPreInc)
+	{
+		Name = CurrPreLexeme;
+		CurrPreLexeme.clear();
+	}
+	else
+	{
+		GetNextToken();
+		Name = CurrLexeme;
+	}
+
+	GetNextToken();
+	return std::make_unique<ASTInc>(VM, Name, IsPreInc);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseDec()
+{
+	HAZE_STRING Name;
+	bool IsPreInc = !CurrPreLexeme.empty();
+
+	if (IsPreInc)
+	{
+		Name = CurrPreLexeme;
+		CurrPreLexeme.clear();
+	}
+	else
+	{
+		GetNextToken();
+		Name = CurrLexeme;
+	}
+
+	GetNextToken();
+	return std::make_unique<ASTDec>(VM, Name, IsPreInc);
+}
+
 std::unique_ptr<ASTBase> Parse::ParseMultiExpression()
 {
 	std::vector<std::unique_ptr<ASTBase>> VectorExpr;
@@ -923,7 +975,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
-					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
+					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse class construction function expression expect function multiply param right need ) \n"));
 					Vector_Param.push_back(Param);
 
 					GetNextToken();
@@ -941,7 +993,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				}
 			}
 
-			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function body expect { \n")))
+			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse class construction function body expect { \n")))
 			{
 				std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
@@ -997,7 +1049,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 		{
 			std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
-			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse function expression expect function body expect } \n")))
+			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse main function expression expect function body expect } \n")))
 			{
 				StackSectionSignal.pop();
 
@@ -1411,18 +1463,27 @@ bool Parse::TokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo)
 	return true;
 }
 
-bool Parse::IsHazeSignalToken(HAZE_CHAR Char, const HAZE_CHAR* OutChar)
+bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, uint32 CharSize)
 {
 	static std::unordered_set<HAZE_STRING> HashSet_TokenText =
 	{
-		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
-		TOKEN_ASSIGN, TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
-		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, TOKEN_COMMA, TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, HAZE_SINGLE_COMMENT, 
-		TOKEN_MULTI_VARIABLE, TOKEN_STRING_START, TOKEN_STRING_END
+		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, 
+		TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
+		TOKEN_ASSIGN, 
+		TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
+		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, 
+		TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, 
+		HAZE_SINGLE_COMMENT, 
+		TOKEN_COMMA, 
+		TOKEN_MULTI_VARIABLE, 
+		TOKEN_STRING_START, TOKEN_STRING_END, 
+		TOKEN_INC, TOKEN_DEC, TOKEN_ADD_ASSIGN, TOKEN_SUB_ASSIGN
 	};
 
 	HAZE_STRING WS;
-	WS = Char;
+	WS.resize(CharSize);
+	memcpy(WS.data(), Char, sizeof(HAZE_CHAR) * CharSize);
+	//WS = Char;
 
 	auto Iter = HashSet_TokenText.find(WS);
 	if (Iter != HashSet_TokenText.end())

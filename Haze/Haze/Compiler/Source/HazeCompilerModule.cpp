@@ -141,6 +141,94 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateAdd(std::shared_ptr
 	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::ADD);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SUB);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MUL);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::DIV);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateMod(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MOD);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::AND);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::OR);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateNot(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::NOT);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::XOR);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateShl(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SHL);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateShr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SHR);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
+{
+	std::shared_ptr<HazeCompilerValue> Ret = Value;
+	if (IsHazeDefaultType(Value->GetValue().Type))
+	{
+		if (IsPreInc)
+		{
+			Ret = Compiler->GetRegister(TEMP_REGISTER);
+			Compiler->CreateMov(Ret, Value);
+		}
+		Compiler->CreateMov(Value, CreateAdd(Value, Compiler->GetConstantValueInt_1()));
+	}
+	else
+	{
+		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Inc Error\n"));
+	}
+	return Ret;
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateDec(std::shared_ptr<HazeCompilerValue> Value, bool IsPreDec)
+{
+	std::shared_ptr<HazeCompilerValue> Ret = Value;
+	if (IsHazeDefaultType(Value->GetValue().Type))
+	{
+		if (IsPreDec)
+		{
+			Ret = Compiler->GetRegister(TEMP_REGISTER);
+			Compiler->CreateMov(Ret, Value);
+		}
+		Compiler->CreateMov(Value, CreateSub(Value, Compiler->GetConstantValueInt_1()));
+	}
+	else
+	{
+		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Inc Error\n"));
+	}
+	return Ret;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code)
 {
 	static std::unordered_set<InstructionOpCode> HashSet_NoTemp =
@@ -149,8 +237,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 		InstructionOpCode::CMP,
 	};
 
-
-	std::shared_ptr<HazeCompilerValue> Ret = nullptr;
+	std::shared_ptr<HazeCompilerValue> Ret = Left;
 	auto Function = GetCurrFunction();
 
 	bool NeedTemp = HashSet_NoTemp.find(IO_Code) == HashSet_NoTemp.end();
@@ -166,23 +253,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 
 		if (NeedTemp && !Left->IsTemp())
 		{
-			HazeDefineVariable Var;
-			Var.Name = HAZE_TEMP_BINART_NAME;
-			Var.Type.PrimaryType = GetStrongerType(Left->GetValue().Type, Right->GetValue().Type);
-			Ret = Compiler->GetInsertBlock()->CreateTempAlloce(Var);
-
-			GenIRCode_BinaryOperater(Ret, Left, InstructionOpCode::MOV);
-
-			Ret->StoreValue(Left);
-		
-			SStream << GetInstructionString(IO_Code) << " " << HAZE_CAST_VALUE_TYPE(Var.Type.PrimaryType) << " " << Var.Name << " " << (unsigned int)HazeDataDesc::Temp;
+			Ret = Compiler->CreateMov(Compiler->GetRegister(TEMP_REGISTER), Left);
 		}
-		else
-		{
-			SStream << GetInstructionString(IO_Code) << " ";
 
-			GenValueHzicText(this, SStream, Left);
-		}
+		SStream << GetInstructionString(IO_Code) << " ";
+		GenValueHzicText(this, SStream, Ret);
 
 		SStream << " ";
 		GenValueHzicText(this, SStream, Right);
@@ -366,6 +441,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		SStream.str(HAZE_TEXT(""));
 
 		Size += Param[i]->GetSize();
+		Name.clear();
 	}
 
 	if (ThisPointerTo)
@@ -505,6 +581,7 @@ uint32 HazeCompilerModule::GetClassSize(const HAZE_STRING& ClassName)
 
 void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue>& Value)
 {
+	bool StreamExtra = false;
 	HAZE_STRING VarName;
 
 	HSS << (uint32)Value->GetValue().Type;
@@ -525,6 +602,8 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 	{
 		HSS << " " << HazeCompiler::GetRegisterName(Value);
 		HSS << " " << (uint32)Value->GetScope();
+
+		StreamExtra = true;
 	}
 	else if (Value->IsTemp())
 	{
@@ -547,6 +626,11 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 			HSS << " " << (uint32)HazeDataDesc::Global;
 		}
 
+		StreamExtra = true;
+	}
+
+	if (StreamExtra)
+	{
 		if (Value->IsPointerBase())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);

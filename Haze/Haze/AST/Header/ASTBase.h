@@ -70,11 +70,10 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
-	virtual const HAZE_CHAR* GetName() { return Name.c_str(); }
+	virtual const HAZE_CHAR* GetName() { return DefineVariable.Name.c_str(); }
 
 private:
 	HazeSectionSignal SectionSignal;
-	HAZE_STRING Name;
 	HAZE_STRING ClassMemberName;
 };
 
@@ -133,6 +132,32 @@ public:
 	virtual ~ASTNew() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+};
+
+//Inc
+class ASTInc : public ASTBase
+{
+public:
+	ASTInc(HazeVM* VM, HAZE_STRING& Name, bool IsPreInc);
+	virtual ~ASTInc() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	bool IsPreInc;
+};
+
+//Dec
+class ASTDec : public ASTBase
+{
+public:
+	ASTDec(HazeVM* VM, HAZE_STRING& Name, bool IsPreDec);
+	virtual ~ASTDec() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	bool IsPreDec;
 };
 
 //二元表达式

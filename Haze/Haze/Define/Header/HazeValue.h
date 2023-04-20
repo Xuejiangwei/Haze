@@ -80,6 +80,8 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2);
 
 bool IsHazeDefaultType(HazeValueType Type);
 
+bool IsIntegerType(HazeValueType Type);
+
 bool IsNumberType(HazeValueType Type);
 
 void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value);

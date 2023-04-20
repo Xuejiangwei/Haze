@@ -1,5 +1,6 @@
 #include <unordered_set>
 #include <set>
+#include <type_traits>
 #include "HazeValue.h"
 #include "Haze.h"
 #include "HazeInstruction.h"
@@ -93,6 +94,11 @@ bool IsHazeDefaultType(HazeValueType Type)
     return HazeValueType::Void <= Type && Type <= HazeValueType::UnsignedLong;
 }
 
+bool IsIntegerType(HazeValueType Type)
+{
+    return Type == HazeValueType::Int || Type == HazeValueType::Long || Type == HazeValueType::UnsignedInt || Type == HazeValueType::UnsignedLong;
+}
+
 bool IsNumberType(HazeValueType Type)
 {
     static std::unordered_set<HazeValueType> HashSet_Table =
@@ -158,6 +164,177 @@ void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
         break;
     case InstructionOpCode::DIV:
         Target /= Source;
+        break;
+    case InstructionOpCode::OR:
+        Target /= Source;
+        break;
+    case InstructionOpCode::NOT:
+        Target /= Source;
+        break;
+    case InstructionOpCode::XOR:
+        Target /= Source;
+        break;
+    default:
+        break;
+    }
+}
+
+template<>
+void CalculateValue(InstructionOpCode TypeCode, int& Source, int& Target)
+{
+    switch (TypeCode)
+    {
+    case InstructionOpCode::ADD:
+        Target += Source;
+        break;
+    case InstructionOpCode::SUB:
+        Target -= Source;
+        break;
+    case InstructionOpCode::MUL:
+        Target *= Source;
+        break;
+    case InstructionOpCode::DIV:
+        Target /= Source;
+        break;
+    case InstructionOpCode::MOD:
+        Target %= Source;
+        break;
+    case InstructionOpCode::OR:
+        Target = Source;
+        break;
+    case InstructionOpCode::NOT:
+        Target /= Source;
+        break;
+    case InstructionOpCode::XOR:
+        Target /= Source;
+        break;
+    case InstructionOpCode::SHL:
+        Target <<= Source;
+        break;
+    case InstructionOpCode::SHR:
+        Target >>= Source;
+        break;
+    default:
+        break;
+    }
+}
+
+template<>
+void CalculateValue(InstructionOpCode TypeCode, uint32& Source, uint32& Target)
+{
+    switch (TypeCode)
+    {
+    case InstructionOpCode::ADD:
+        Target += Source;
+        break;
+    case InstructionOpCode::SUB:
+        Target -= Source;
+        break;
+    case InstructionOpCode::MUL:
+        Target *= Source;
+        break;
+    case InstructionOpCode::DIV:
+        Target /= Source;
+        break;
+    case InstructionOpCode::MOD:
+        Target %= Source;
+        break;
+    case InstructionOpCode::OR:
+        Target /= Source;
+        break;
+    case InstructionOpCode::NOT:
+        Target /= Source;
+        break;
+    case InstructionOpCode::XOR:
+        Target /= Source;
+        break;
+    case InstructionOpCode::SHL:
+        Target <<= Source;
+        break;
+    case InstructionOpCode::SHR:
+        Target >>= Source;
+        break;
+    default:
+        break;
+    }
+}
+
+template<>
+void CalculateValue(InstructionOpCode TypeCode, int64& Source, int64& Target)
+{
+    switch (TypeCode)
+    {
+    case InstructionOpCode::ADD:
+        Target += Source;
+        break;
+    case InstructionOpCode::SUB:
+        Target -= Source;
+        break;
+    case InstructionOpCode::MUL:
+        Target *= Source;
+        break;
+    case InstructionOpCode::DIV:
+        Target /= Source;
+        break;
+    case InstructionOpCode::MOD:
+        Target %= Source;
+        break;
+    case InstructionOpCode::OR:
+        Target /= Source;
+        break;
+    case InstructionOpCode::NOT:
+        Target /= Source;
+        break;
+    case InstructionOpCode::XOR:
+        Target /= Source;
+        break;
+    case InstructionOpCode::SHL:
+        Target <<= Source;
+        break;
+    case InstructionOpCode::SHR:
+        Target >>= Source;
+        break;
+    default:
+        break;
+    }
+}
+
+template<>
+void CalculateValue(InstructionOpCode TypeCode, uint64& Source, uint64& Target)
+{
+    switch (TypeCode)
+    {
+    case InstructionOpCode::ADD:
+        Target += Source;
+        break;
+    case InstructionOpCode::SUB:
+        Target -= Source;
+        break;
+    case InstructionOpCode::MUL:
+        Target *= Source;
+        break;
+    case InstructionOpCode::DIV:
+        Target /= Source;
+        break;
+    case InstructionOpCode::MOD:
+        Target %= Source;
+        break;
+    case InstructionOpCode::OR:
+        Target /= Source;
+        break;
+    case InstructionOpCode::NOT:
+        Target /= Source;
+        break;
+    case InstructionOpCode::XOR:
+        Target /= Source;
+        break;
+    case InstructionOpCode::SHL:
+        Target <<= Source;
+        break;
+    case InstructionOpCode::SHR:
+        Target >>= Source;
+        break;
+    default:
         break;
     }
 }

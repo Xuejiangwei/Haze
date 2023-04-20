@@ -71,6 +71,10 @@ private:
 
 	std::unique_ptr<ASTBase> ParseNew();
 
+	std::unique_ptr<ASTBase> ParseInc();
+
+	std::unique_ptr<ASTBase> ParseDec();
+
 	std::unique_ptr<ASTBase> ParseMultiExpression();
 
 	std::unique_ptr<ASTFunctionSection> ParseFunctionSection();
@@ -98,7 +102,7 @@ private:
 
 	bool TokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
 
-	bool IsHazeSignalToken(HAZE_CHAR Char, const HAZE_CHAR* OutChar = nullptr);
+	bool IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, uint32 CharSize = 1);
 
 	bool IsPointer(const HAZE_STRING& Str, HazeToken& OutToken);
 
@@ -110,6 +114,7 @@ private:
 	HazeToken CurrToken;
 	const HAZE_CHAR* CurrCode;
 	HAZE_STRING CurrLexeme;
+	HAZE_STRING CurrPreLexeme;
 
 	std::stack<HazeSectionSignal> StackSectionSignal;
 

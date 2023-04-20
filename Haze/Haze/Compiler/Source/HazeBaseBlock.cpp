@@ -139,12 +139,10 @@ void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBloc
 	IsFinish = true;
 }
 
-void HazeBaseBlock::GenI_Code_Alloca(HAZE_OFSTREAM& OFStream)
-{
-}
-
 void HazeBaseBlock::GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount)
 {
+	OFStream << std::endl;
+
 	for (size_t i = 0; i < Vector_IRCode.size(); i++)
 	{
 		if (i != 0 && SkipCount-- > 0)
@@ -188,35 +186,6 @@ void HazeBaseBlock::MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB)
 	}
 }
 
-//void HazeBaseBlock::CopyIRCode(std::shared_ptr<HazeBaseBlock> BB)
-//{
-//	auto& Code = BB->GetIRCode();
-//	if (Code.size() > 1)
-//	{
-//		Vector_IRCode.insert(Vector_IRCode.end(), ++Code.begin(), Code.end());		//skip block name
-//	}
-//}
-
-void HazeBaseBlock::ClearTempIRCode()
-{
-	for (int i = (int)Vector_Alloca.size() - 1; i >= 0; i--)
-	{
-		if (Vector_Alloca[i].second->IsTemp())
-		{
-			HAZE_STRING_STREAM SStream;
-			SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetValue().Type)
-				<< " " << GetLocalVariableName(Vector_Alloca[i].first, Vector_Alloca[i].second) << " " << (uint32)HazeDataDesc::Temp << std::endl;
-			PushIRCode(SStream.str());
-
-			Vector_Alloca.pop_back();
-		}
-		else if (!Vector_Alloca[i].second->IsTemp())
-		{
-			return;
-		}
-	}
-}
-
 std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Count)
 {
 	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local, Count);
@@ -229,19 +198,6 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 	PushIRCode(SStream.str());*/
 
 	ParentFunction->AddLocalVariable(Alloce);
-
-	return Alloce;
-}
-
-std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateTempAlloce(const HazeDefineVariable& Define)
-{
-	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Temp, 0);
-	Vector_Alloca.push_back({ Define.Name, Alloce });
-
-	HAZE_STRING_STREAM SStream;
-	StreamCompilerValue(SStream, InstructionOpCode::PUSH, Alloce, Define.Name.c_str());
-
-	PushIRCode(SStream.str());
 
 	return Alloce;
 }

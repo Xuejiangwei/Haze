@@ -55,14 +55,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 			}
 			else if (Value.second->GetValue().Type == HazeValueType::Class)
 			{
-				HAZE_STRING ClassObjectName = VariableName.substr(0, Value.first.size());
-				if (Value.first == ClassObjectName)
+				auto MemberValue = GetObjectMember(Module, VariableName);
+				if (MemberValue)
 				{
-					HAZE_STRING MemberName = VariableName.substr(Value.first.size() + 1);
-
-					auto ClassVlaue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value.second);
-					Ret = ClassVlaue->GetMember(MemberName);
-
+					Ret = MemberValue;
 					break;
 				}
 			}

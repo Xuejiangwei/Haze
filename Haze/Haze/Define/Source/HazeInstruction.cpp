@@ -14,8 +14,6 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("MUL"), InstructionOpCode::MUL },
 	{HAZE_TEXT("DIV"), InstructionOpCode::DIV },
 	{HAZE_TEXT("MOD"), InstructionOpCode::MOD },
-	{HAZE_TEXT("INC"), InstructionOpCode::INC },
-	{HAZE_TEXT("DEC"), InstructionOpCode::DEC },
 
 	{HAZE_TEXT("AND"), InstructionOpCode::AND },
 	{HAZE_TEXT("OR"), InstructionOpCode::OR },
@@ -54,6 +52,7 @@ std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister =
 	{RET_REGISTER, HazeRegister()},
 	{NEW_REGISTER, HazeRegister()},
 	{CMP_REGISTER, HazeRegister()},
+	{TEMP_REGISTER, HazeRegister()},
 };
 
 HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name)
@@ -119,34 +118,6 @@ public:
 			void* Dst = GetAddressByOperator(Stack, Operator[0]);
 			const void* Src = GetAddressByOperator(Stack, Operator[1]);
 			memcpy(Dst, Src, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
-		}
-	}
-
-	static void Call(HazeStack* Stack)
-	{
-		//EBP = PC;
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 1)
-		{
-			memcpy(&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], &Stack->PC, HAZE_ADDRESS_SIZE);
-
-			int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
-			auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
-
-			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
-			{
-				Stack->OnCall(&Function, Operator[0].Extra.Call.ParamByteSize);
-			}
-			else
-			{
-				uint32 TempEBP = Stack->EBP;
-				Stack->EBP = Stack->ESP;
-
-				Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.Call.ParamNum);
-
-				Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
-				Stack->EBP = TempEBP;
-			}
 		}
 	}
 
@@ -258,30 +229,6 @@ public:
 		}
 	}
 
-	static void Inc(HazeStack* Stack)
-	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 2)
-		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::INC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
-			}
-		}
-	}
-
-	static void Dec(HazeStack* Stack)
-	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 2)
-		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
-			}
-		}
-	}
-
 	static void And(HazeStack* Stack)
 	{
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
@@ -289,7 +236,7 @@ public:
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::AND, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -301,7 +248,7 @@ public:
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::OR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -313,7 +260,7 @@ public:
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::NOT, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -325,7 +272,7 @@ public:
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::XOR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -335,9 +282,9 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType) && IsIntegerType(Operator[1].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHL, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -349,7 +296,35 @@ public:
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{ 
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Call(HazeStack* Stack)
+	{
+		//EBP = PC;
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			memcpy(&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], &Stack->PC, HAZE_ADDRESS_SIZE);
+
+			int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
+			auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
+
+			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
+			{
+				Stack->OnCall(&Function, Operator[0].Extra.Call.ParamByteSize);
+			}
+			else
+			{
+				uint32 TempEBP = Stack->EBP;
+				Stack->EBP = Stack->ESP;
+
+				Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.Call.ParamNum);
+
+				Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
+				Stack->EBP = TempEBP;
 			}
 		}
 	}
@@ -566,6 +541,13 @@ private:
 		else if (IsRegisterScope(Operator.Scope))
 		{
 			HazeRegister* Register = GetVirtualRegister(Operator.Variable.Name.c_str());
+
+			if (Register->Type != Operator.Variable.Type)
+			{
+				Register->Type = Operator.Variable.Type;
+				Register->Data.resize(GetSizeByType(Operator.Variable.Type, Stack->VM));
+			}
+
 			Ret = Register->Data.begin()._Unwrapped();
 		}
 		else if (Operator.Scope == HazeDataDesc::ClassMember_Local_Public && Operator.AddressType == InstructionAddressType::Pointer_Offset)
@@ -622,8 +604,6 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::MUL, &InstructionProcessor::Mul},
 	{InstructionOpCode::DIV, &InstructionProcessor::Div},
 	{InstructionOpCode::MOD, &InstructionProcessor::Mod},
-	{InstructionOpCode::INC, &InstructionProcessor::Inc},
-	{InstructionOpCode::DEC, &InstructionProcessor::Dec},
 
 	{InstructionOpCode::AND, &InstructionProcessor::And},
 	{InstructionOpCode::OR, &InstructionProcessor::Or},

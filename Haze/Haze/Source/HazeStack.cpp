@@ -103,6 +103,7 @@ void HazeStack::PushMainFuntion()
 	PCStepInc();
 
 	ESP -= HAZE_ADDRESS_SIZE;
+	EBP -= HAZE_ADDRESS_SIZE;
 }
 
 void HazeStack::InitRegisterToStack()

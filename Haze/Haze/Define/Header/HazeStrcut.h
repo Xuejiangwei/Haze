@@ -36,6 +36,16 @@ struct HazeDefineType
 	HazeDefineType(HazeValueType Type, const HAZE_CHAR* CustomName) : PrimaryType(Type), CustomName(CustomName)
 	{
 	}
+
+	bool operator==(const HazeDefineType& InType)
+	{
+		return PrimaryType == InType.PrimaryType && PointerToType == InType.PointerToType && CustomName == InType.CustomName;
+	}
+
+	bool operator!=(const HazeDefineType& InType)
+	{
+		return PrimaryType != InType.PrimaryType || PointerToType != InType.PointerToType || CustomName != InType.CustomName;
+	}
 };
 
 struct HazeDefineVariable

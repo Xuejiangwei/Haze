@@ -13,8 +13,6 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define, int Count);
 
-	std::shared_ptr<HazeCompilerValue> CreateTempAlloce(const HazeDefineVariable& Define);
-
 	const std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& GetAllocaList() const { return Vector_Alloca; }
 
 	HazeBaseBlock* GetParentBlock() const { return ParentBlock; }
@@ -35,8 +33,6 @@ public:
 
 	void FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBlock = nullptr, bool JmpOut = true);
 
-	void GenI_Code_Alloca(HAZE_OFSTREAM& OFStream);
-
 	void GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount = 0);
 
 public:
@@ -45,10 +41,6 @@ public:
 	void PushIRCode(const HAZE_STRING& Code);
 
 	void MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB);
-
-	//void CopyIRCode(std::shared_ptr<HazeBaseBlock> BB);
-
-	void ClearTempIRCode();
 
 public:
 	HazeBaseBlock(const HazeBaseBlock&) = delete;

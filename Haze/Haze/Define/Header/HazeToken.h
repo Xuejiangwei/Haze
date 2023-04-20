@@ -46,8 +46,8 @@ enum class HazeToken : unsigned int
 	Or,
 	Not,
 
-	LeftMove,
-	RightMove,
+	Shl,
+	Shr,
 
 	Assign,
 	Equal,
@@ -59,6 +59,8 @@ enum class HazeToken : unsigned int
 
 	Inc,
 	Dec,
+	AddAssign,
+	SubAssign,
 
 	LeftParentheses,
 	RightParentheses,

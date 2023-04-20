@@ -39,6 +39,7 @@ enum class HazeDataDesc : uint32
 	RegisterRet,
 	RegisterNew,
 	RegisterCmp,
+	RegisterTemp,
 	RegisterEnd,
 
 	Address,
@@ -61,8 +62,6 @@ enum class InstructionOpCode : uint32
 	MUL,
 	DIV,
 	MOD,
-	INC,
-	DEC,
 
 	AND,
 	OR,
