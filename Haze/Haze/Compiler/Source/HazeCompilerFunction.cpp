@@ -34,7 +34,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 void HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
 {
 	HAZE_STRING_STREAM SStream;
-	SStream << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)Data.PrimaryType << " " <<Data.CustomName << std::endl;
+	SStream << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)Data.PrimaryType << " " << Data.CustomName << std::endl;
 	auto BB = Module->GetCompiler()->GetInsertBlock();
 	BB->PushIRCode(SStream.str());
 }

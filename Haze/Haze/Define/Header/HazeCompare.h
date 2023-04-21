@@ -16,6 +16,27 @@ enum class HazeCmpType : uint32
 	LessEqual,
 };
 
+enum class HazeOperatorAssign : uint32
+{
+	None,
+	AddAssign,
+	SubAssign,
+	MulAssign,
+	DivAssign,
+	ModAssign,
+
+	BitAndAssign,
+	BitOrAssign,
+	BitXorAssign,
+
+	ShlAssign,
+	ShrAssign
+};
+
 HazeCmpType GetHazeCmpTypeByToken(HazeToken Token);
 
-const HAZE_CHAR* GetInstructionStringByCmpType(HazeCmpType Type);
+InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType Type);
+
+HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken Token);
+
+InstructionOpCode GetInstructionOpCodeByOperatorAssignType(HazeCmpType Type);

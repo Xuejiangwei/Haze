@@ -1,9 +1,9 @@
 #include <unordered_set>
 #include <set>
-#include <type_traits>
 #include "HazeValue.h"
 #include "Haze.h"
 #include "HazeInstruction.h"
+#include "HazeLog.h"
 
 uint32 GetSizeByHazeType(HazeValueType Type)
 {
@@ -31,7 +31,7 @@ uint32 GetSizeByHazeType(HazeValueType Type)
 
 HazeValueType GetValueTypeByToken(HazeToken Token)
 {
-    static std::unordered_map<HazeToken, HazeValueType> MapHashTable =
+    static std::unordered_map<HazeToken, HazeValueType> HashMap =
     {
         { HazeToken::Void, HazeValueType::Void },
         { HazeToken::Bool, HazeValueType::Bool },
@@ -48,8 +48,8 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
         { HazeToken::MultiVariable, HazeValueType::MultiVariable},
     };
 
-    auto it = MapHashTable.find(Token);
-    if (it != MapHashTable.end())
+    auto it = HashMap.find(Token);
+    if (it != HashMap.end())
     {
         return it->second;
     }
@@ -154,27 +154,23 @@ void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
     switch (TypeCode)
     {
     case InstructionOpCode::ADD:
+    case InstructionOpCode::ADD_ASSIGN:
         Target += Source;
         break;
     case InstructionOpCode::SUB:
+    case InstructionOpCode::SUB_ASSIGN:
         Target -= Source;
         break;
     case InstructionOpCode::MUL:
+    case InstructionOpCode::MUL_ASSIGN:
         Target *= Source;
         break;
     case InstructionOpCode::DIV:
-        Target /= Source;
-        break;
-    case InstructionOpCode::OR:
-        Target /= Source;
-        break;
-    case InstructionOpCode::NOT:
-        Target /= Source;
-        break;
-    case InstructionOpCode::XOR:
+    case InstructionOpCode::DIV_ASSIGN:
         Target /= Source;
         break;
     default:
+        HazeLog::LogInfo(HazeLog::Error, "Calculate error: operator %s  type %s\n", WString2String(GetInstructionString(TypeCode)).c_str(), typeid(T).name());
         break;
     }
 }
@@ -185,33 +181,43 @@ void CalculateValue(InstructionOpCode TypeCode, int& Source, int& Target)
     switch (TypeCode)
     {
     case InstructionOpCode::ADD:
+    case InstructionOpCode::ADD_ASSIGN:
         Target += Source;
         break;
     case InstructionOpCode::SUB:
+    case InstructionOpCode::SUB_ASSIGN:
         Target -= Source;
         break;
     case InstructionOpCode::MUL:
+    case InstructionOpCode::MUL_ASSIGN:
         Target *= Source;
         break;
     case InstructionOpCode::DIV:
+    case InstructionOpCode::DIV_ASSIGN:
         Target /= Source;
         break;
     case InstructionOpCode::MOD:
+    case InstructionOpCode::MOD_ASSIGN:
         Target %= Source;
         break;
-    case InstructionOpCode::OR:
-        Target = Source;
+    case InstructionOpCode::BIT_AND:
+    case InstructionOpCode::BIT_AND_ASSIGN:
+        Target &= Source;
         break;
-    case InstructionOpCode::NOT:
-        Target /= Source;
+    case InstructionOpCode::BIT_OR:
+    case InstructionOpCode::BIT_OR_ASSIGN:
+        Target |= Source;
         break;
-    case InstructionOpCode::XOR:
-        Target /= Source;
+    case InstructionOpCode::BIT_XOR:
+    case InstructionOpCode::BIT_XOR_ASSIGN:
+        Target ^= Source;
         break;
     case InstructionOpCode::SHL:
+    case InstructionOpCode::SHL_ASSIGN:
         Target <<= Source;
         break;
     case InstructionOpCode::SHR:
+    case InstructionOpCode::SHR_ASSIGN:
         Target >>= Source;
         break;
     default:
@@ -225,33 +231,43 @@ void CalculateValue(InstructionOpCode TypeCode, uint32& Source, uint32& Target)
     switch (TypeCode)
     {
     case InstructionOpCode::ADD:
+    case InstructionOpCode::ADD_ASSIGN:
         Target += Source;
         break;
     case InstructionOpCode::SUB:
+    case InstructionOpCode::SUB_ASSIGN:
         Target -= Source;
         break;
     case InstructionOpCode::MUL:
+    case InstructionOpCode::MUL_ASSIGN:
         Target *= Source;
         break;
     case InstructionOpCode::DIV:
+    case InstructionOpCode::DIV_ASSIGN:
         Target /= Source;
         break;
     case InstructionOpCode::MOD:
+    case InstructionOpCode::MOD_ASSIGN:
         Target %= Source;
         break;
-    case InstructionOpCode::OR:
-        Target /= Source;
+    case InstructionOpCode::BIT_AND:
+    case InstructionOpCode::BIT_AND_ASSIGN:
+        Target &= Source;
         break;
-    case InstructionOpCode::NOT:
-        Target /= Source;
+    case InstructionOpCode::BIT_OR:
+    case InstructionOpCode::BIT_OR_ASSIGN:
+        Target |= Source;
         break;
-    case InstructionOpCode::XOR:
-        Target /= Source;
+    case InstructionOpCode::BIT_XOR:
+    case InstructionOpCode::BIT_XOR_ASSIGN:
+        Target ^= Source;
         break;
     case InstructionOpCode::SHL:
+    case InstructionOpCode::SHL_ASSIGN:
         Target <<= Source;
         break;
     case InstructionOpCode::SHR:
+    case InstructionOpCode::SHR_ASSIGN:
         Target >>= Source;
         break;
     default:
@@ -265,33 +281,43 @@ void CalculateValue(InstructionOpCode TypeCode, int64& Source, int64& Target)
     switch (TypeCode)
     {
     case InstructionOpCode::ADD:
+    case InstructionOpCode::ADD_ASSIGN:
         Target += Source;
         break;
     case InstructionOpCode::SUB:
+    case InstructionOpCode::SUB_ASSIGN:
         Target -= Source;
         break;
     case InstructionOpCode::MUL:
+    case InstructionOpCode::MUL_ASSIGN:
         Target *= Source;
         break;
     case InstructionOpCode::DIV:
+    case InstructionOpCode::DIV_ASSIGN:
         Target /= Source;
         break;
     case InstructionOpCode::MOD:
+    case InstructionOpCode::MOD_ASSIGN:
         Target %= Source;
         break;
-    case InstructionOpCode::OR:
-        Target /= Source;
+    case InstructionOpCode::BIT_AND:
+    case InstructionOpCode::BIT_AND_ASSIGN:
+        Target &= Source;
         break;
-    case InstructionOpCode::NOT:
-        Target /= Source;
+    case InstructionOpCode::BIT_OR:
+    case InstructionOpCode::BIT_OR_ASSIGN:
+        Target |= Source;
         break;
-    case InstructionOpCode::XOR:
-        Target /= Source;
+    case InstructionOpCode::BIT_XOR:
+    case InstructionOpCode::BIT_XOR_ASSIGN:
+        Target ^= Source;
         break;
     case InstructionOpCode::SHL:
+    case InstructionOpCode::SHL_ASSIGN:
         Target <<= Source;
         break;
     case InstructionOpCode::SHR:
+    case InstructionOpCode::SHR_ASSIGN:
         Target >>= Source;
         break;
     default:
@@ -319,14 +345,14 @@ void CalculateValue(InstructionOpCode TypeCode, uint64& Source, uint64& Target)
     case InstructionOpCode::MOD:
         Target %= Source;
         break;
-    case InstructionOpCode::OR:
-        Target /= Source;
+    case InstructionOpCode::BIT_AND:
+        Target &= Source;
         break;
-    case InstructionOpCode::NOT:
-        Target /= Source;
+    case InstructionOpCode::BIT_OR:
+        Target |= Source;
         break;
-    case InstructionOpCode::XOR:
-        Target /= Source;
+    case InstructionOpCode::BIT_XOR:
+        Target ^= Source;
         break;
     case InstructionOpCode::SHL:
         Target <<= Source;

@@ -46,6 +46,10 @@ enum class HazeToken : unsigned int
 	Or,
 	Not,
 
+	BitAnd,
+	BitOr,
+	BitXor,
+
 	Shl,
 	Shr,
 
@@ -59,8 +63,19 @@ enum class HazeToken : unsigned int
 
 	Inc,
 	Dec,
+
 	AddAssign,
 	SubAssign,
+	MulAssign,
+	DivAssign,
+	ModAssign,
+	
+	BitAndAssign,
+	BitOrAssign,
+	BitXorAssign,
+	
+	ShlAssign,
+	ShrAssign,
 
 	LeftParentheses,
 	RightParentheses,

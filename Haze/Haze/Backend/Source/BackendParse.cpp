@@ -354,10 +354,21 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::CMP:
 	case InstructionOpCode::AND:
 	case InstructionOpCode::OR:
-	case InstructionOpCode::NOT:
-	case InstructionOpCode::XOR:
+	case InstructionOpCode::BIT_AND:
+	case InstructionOpCode::BIT_OR:
+	case InstructionOpCode::BIT_XOR:
 	case InstructionOpCode::SHL:
 	case InstructionOpCode::SHR:
+	case InstructionOpCode::ADD_ASSIGN:
+	case InstructionOpCode::SUB_ASSIGN:
+	case InstructionOpCode::MUL_ASSIGN:
+	case InstructionOpCode::DIV_ASSIGN:
+	case InstructionOpCode::MOD_ASSIGN:
+	case InstructionOpCode::BIT_AND_ASSIGN:
+	case InstructionOpCode::BIT_OR_ASSIGN:
+	case InstructionOpCode::BIT_XOR_ASSIGN:
+	case InstructionOpCode::SHL_ASSIGN:
+	case InstructionOpCode::SHR_ASSIGN:
 	{
 		InstructionData OperatorOne;
 		InstructionData OperatorTwo;
@@ -368,6 +379,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
 	break;
+	case InstructionOpCode::NOT:
 	case InstructionOpCode::PUSH:
 	{
 		InstructionData OperatorOne;

@@ -136,29 +136,54 @@ void HazeCompilerModule::FinishFunction()
 	CurrFunction = HAZE_TEXT("");
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::ADD);
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::ADD_ASSIGN : InstructionOpCode::ADD);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SUB);
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::SUB_ASSIGN : InstructionOpCode::SUB);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MUL);
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::MUL_ASSIGN : InstructionOpCode::MUL);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::DIV);
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::DIV_ASSIGN : InstructionOpCode::DIV);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateMod(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateMod(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::MOD);
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::MOD_ASSIGN : InstructionOpCode::MOD);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateBitAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::BIT_AND_ASSIGN : InstructionOpCode::BIT_AND);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateBitOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::BIT_OR_ASSIGN : InstructionOpCode::BIT_OR);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateBitXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::BIT_XOR_ASSIGN : InstructionOpCode::BIT_XOR);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateShl(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::SHL_ASSIGN : InstructionOpCode::SHL);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateShr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::SHR_ASSIGN : InstructionOpCode::SHR);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
@@ -174,21 +199,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateOr(std::shared_ptr<
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateNot(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
 	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::NOT);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::XOR);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateShl(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SHL);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateShr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::SHR);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
@@ -229,12 +239,64 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateDec(std::shared_ptr
 	return Ret;
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateOpAssign(HazeOperatorAssign Type, std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	if (IsHazeDefaultType(Left->GetValue().Type))
+	{
+		switch (Type)
+		{
+		case HazeOperatorAssign::None:
+			HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("OpAssign Type None Error\n"));
+			break;
+		case HazeOperatorAssign::AddAssign:
+			CreateAdd(Left, Right);
+			break;
+		case HazeOperatorAssign::SubAssign:
+			break;
+		case HazeOperatorAssign::MulAssign:
+			break;
+		case HazeOperatorAssign::DivAssign:
+			break;
+		case HazeOperatorAssign::ModAssign:
+			break;
+		case HazeOperatorAssign::BitAndAssign:
+			break;
+		case HazeOperatorAssign::BitOrAssign:
+			break;
+		case HazeOperatorAssign::BitXorAssign:
+			break;
+		case HazeOperatorAssign::ShlAssign:
+			break;
+		case HazeOperatorAssign::ShrAssign:
+			break;
+		default:
+			break;
+		}
+	}
+	else
+	{
+		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("OpAssign Error\n"));
+	}
+
+	return Left;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code)
 {
 	static std::unordered_set<InstructionOpCode> HashSet_NoTemp =
 	{
 		InstructionOpCode::MOV,
 		InstructionOpCode::CMP,
+		InstructionOpCode::ADD_ASSIGN,
+		InstructionOpCode::SUB_ASSIGN,
+		InstructionOpCode::MUL_ASSIGN,
+		InstructionOpCode::DIV_ASSIGN,
+		InstructionOpCode::MOD_ASSIGN,
+		InstructionOpCode::BIT_AND_ASSIGN,
+		InstructionOpCode::BIT_OR_ASSIGN,
+		InstructionOpCode::BIT_XOR_ASSIGN,
+		InstructionOpCode::SHL_ASSIGN,
+		InstructionOpCode::SHR_ASSIGN,
 	};
 
 	std::shared_ptr<HazeCompilerValue> Ret = Left;
@@ -288,7 +350,12 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 {
 	HAZE_STRING_STREAM SStream;
 
-	SStream << GetInstructionStringByCmpType(CmpType) << " ";
+	if (CmpType == HazeCmpType::None)
+	{
+		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("cmp type is none %s\n"));
+	}
+
+	SStream << GetInstructionString(GetInstructionOpCodeByCmpType(CmpType)) << " ";
 	
 	if (IfJmpBlock)
 	{

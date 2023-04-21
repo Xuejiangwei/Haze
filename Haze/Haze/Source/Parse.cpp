@@ -75,7 +75,9 @@
 #define TOKEN_SUB_ASSIGN				HAZE_TEXT("-=")
 #define TOKEN_MUL_ASSIGN				HAZE_TEXT("*=")
 #define TOKEN_DIV_ASSIGN				HAZE_TEXT("/=")
-#define TOKEN_MUL_ASSIGN				HAZE_TEXT("*=")
+#define TOKEN_MOD_ASSIGN				HAZE_TEXT("%=")
+#define TOKEN_SHL_ASSIGN				HAZE_TEXT("<<=")
+#define TOKEN_SHR_ASSIGN				HAZE_TEXT(">>=")
 
 #define TOKEN_LEFT_PARENTHESES			HAZE_TEXT("(")
 #define TOKEN_RIGHT_PARENTHESES			HAZE_TEXT(")")
@@ -108,7 +110,7 @@
 
 #define TOKEN_MULTI_VARIABLE			HAZE_TEXT("...")
 
-#define TOKEN_NEW						HAZE_TEXT("得")
+#define TOKEN_NEW						HAZE_TEXT("生成")
 
 static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 {
@@ -164,6 +166,11 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_DEC, HazeToken::Dec},
 	{TOKEN_ADD_ASSIGN, HazeToken::AddAssign},
 	{TOKEN_SUB_ASSIGN, HazeToken::SubAssign},
+	{TOKEN_MUL_ASSIGN, HazeToken::MulAssign},
+	{TOKEN_DIV_ASSIGN, HazeToken::DivAssign},
+	{TOKEN_MOD_ASSIGN, HazeToken::ModAssign},
+	{TOKEN_SHL_ASSIGN, HazeToken::ShlAssign},
+	{TOKEN_SHR_ASSIGN, HazeToken::ShrAssign},
 
 	{TOKEN_LEFT_PARENTHESES, HazeToken::LeftParentheses},
 	{TOKEN_RIGHT_PARENTHESES, HazeToken::RightParentheses},
@@ -201,28 +208,40 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 
 static std::unordered_map<HazeToken, int> MapBinOp =
 {
-	{ HazeToken::Assign, 10 },
-	{ HazeToken::Or, 14 },
-	{ HazeToken::And, 15 },
-
-	{ HazeToken::Equal, 20 },
-	{ HazeToken::NotEqual, 20 },
-
-	{ HazeToken::Greater, 21 },
-	{ HazeToken::GreaterEqual, 21 },
-	{ HazeToken::Less, 21 },
-	{ HazeToken::LessEqual, 21 },
-
-	{ HazeToken::Shl, 30 },
-	{ HazeToken::Shr, 30 },
+	{ HazeToken::Assign, 100 },
+	{ HazeToken::AddAssign, 100 },
+	{ HazeToken::SubAssign, 100 },
+	{ HazeToken::MulAssign, 100 },
+	{ HazeToken::DivAssign, 100 },
+	{ HazeToken::ModAssign, 100 },
+	{ HazeToken::BitAndAssign, 100 },
+	{ HazeToken::BitOrAssign, 100 },
+	{ HazeToken::BitXorAssign, 100 },
+	{ HazeToken::ShlAssign, 100 },
+	{ HazeToken::ShrAssign, 100 },
 
 
-	{ HazeToken::Add, 40 },
-	{ HazeToken::Sub, 40 },
+	{ HazeToken::Or, 140 },
+	{ HazeToken::And, 150 },
 
-	{ HazeToken::Mul, 50 },
-	{ HazeToken::Div, 50 },
-	{ HazeToken::Mod, 50 },
+	{ HazeToken::Equal, 200 },
+	{ HazeToken::NotEqual, 200 },
+
+	{ HazeToken::Greater, 250 },
+	{ HazeToken::GreaterEqual, 250 },
+	{ HazeToken::Less, 250 },
+	{ HazeToken::LessEqual, 250 },
+
+	{ HazeToken::Shl, 300 },
+	{ HazeToken::Shr, 300 },
+
+
+	{ HazeToken::Add, 400 },
+	{ HazeToken::Sub, 400 },
+
+	{ HazeToken::Mul, 500 },
+	{ HazeToken::Div, 500 },
+	{ HazeToken::Mod, 500 },
 
 	//{ HazeToken::Not, 60 },
 	//{ HazeToken::Inc, 60 },
@@ -370,6 +389,12 @@ HazeToken Parse::GetNextToken()
 					CurrLexeme += TempString;
 				}
 				continue;
+			}
+			else if (IsHazeSignalToken(CurrCode, Signal, 3))
+			{
+				CurrPreLexeme = CurrLexeme;
+				CurrLexeme = Signal;
+				CurrCode += 3;
 			}
 			else if (IsHazeSignalToken(CurrCode, Signal, 2))
 			{
@@ -542,6 +567,17 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseInc();
 	case HazeToken::Dec:
 		return ParseDec();
+	case HazeToken::AddAssign:
+	case HazeToken::SubAssign:
+	case HazeToken::MulAssign:
+	case HazeToken::DivAssign:
+	case HazeToken::ModAssign:
+	case HazeToken::BitAndAssign:
+	case HazeToken::BitOrAssign:
+	case HazeToken::BitXorAssign:
+	case HazeToken::ShlAssign:
+	case HazeToken::ShrAssign:
+		return ParseOperatorAssign();
 	default:
 		break;
 	}
@@ -779,8 +815,16 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 		Define.Type.CustomName = CurrLexeme;
 	}
 
-	GetNextToken();
-	return std::make_unique<ASTNew>(VM, Define);
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("New expression expect (\n")))
+	{
+		if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("New expression expect )\n"))) 
+		{
+			GetNextToken();
+			return std::make_unique<ASTNew>(VM, Define);
+		}
+	}
+
+	return nullptr;
 }
 
 std::unique_ptr<ASTBase> Parse::ParseInc()
@@ -821,6 +865,16 @@ std::unique_ptr<ASTBase> Parse::ParseDec()
 
 	GetNextToken();
 	return std::make_unique<ASTDec>(VM, Name, IsPreInc);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseOperatorAssign()
+{
+	HazeToken Token = CurrToken;
+
+	auto Value = ParseExpression();
+
+	GetNextToken();
+	return std::make_unique<ASTOperetorAssign>(VM, Token, Value);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseMultiExpression()
@@ -997,7 +1051,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 			{
 				std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
-				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse function expression expect function body expect } \n")))
+				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse class construction function expression expect function body expect } \n")))
 				{
 					StackSectionSignal.pop();
 
@@ -1477,13 +1531,13 @@ bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, 
 		TOKEN_COMMA, 
 		TOKEN_MULTI_VARIABLE, 
 		TOKEN_STRING_START, TOKEN_STRING_END, 
-		TOKEN_INC, TOKEN_DEC, TOKEN_ADD_ASSIGN, TOKEN_SUB_ASSIGN
+		TOKEN_INC, TOKEN_DEC, TOKEN_ADD_ASSIGN, TOKEN_SUB_ASSIGN, TOKEN_MUL_ASSIGN, TOKEN_DIV_ASSIGN, TOKEN_MOD_ASSIGN, TOKEN_SHL_ASSIGN, TOKEN_SHR_ASSIGN
 	};
 
-	HAZE_STRING WS;
+	static HAZE_STRING WS;
+	
 	WS.resize(CharSize);
 	memcpy(WS.data(), Char, sizeof(HAZE_CHAR) * CharSize);
-	//WS = Char;
 
 	auto Iter = HashSet_TokenText.find(WS);
 	if (Iter != HashSet_TokenText.end())

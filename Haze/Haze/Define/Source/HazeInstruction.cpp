@@ -18,9 +18,22 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("AND"), InstructionOpCode::AND },
 	{HAZE_TEXT("OR"), InstructionOpCode::OR },
 	{HAZE_TEXT("NOT"), InstructionOpCode::NOT },
-	{HAZE_TEXT("XOR"), InstructionOpCode::XOR },
+	{HAZE_TEXT("BIT_AND"), InstructionOpCode::BIT_AND },
+	{HAZE_TEXT("BIT_OR"), InstructionOpCode::BIT_OR },
+	{HAZE_TEXT("BIT_XOR"), InstructionOpCode::BIT_XOR },
 	{HAZE_TEXT("SHL"), InstructionOpCode::SHL },
 	{HAZE_TEXT("SHR"), InstructionOpCode::SHR },
+
+	{HAZE_TEXT("ADD_ASSIGN"), InstructionOpCode::ADD_ASSIGN },
+	{HAZE_TEXT("SUB_ASSIGN"), InstructionOpCode::SUB_ASSIGN },
+	{HAZE_TEXT("MUL_ASSIGN"), InstructionOpCode::MUL_ASSIGN },
+	{HAZE_TEXT("DIV_ASSIGN"), InstructionOpCode::DIV_ASSIGN },
+	{HAZE_TEXT("MOD_ASSIGN"), InstructionOpCode::MOD_ASSIGN },
+	{HAZE_TEXT("BIT_AND_ASSIGN"), InstructionOpCode::BIT_AND_ASSIGN },
+	{HAZE_TEXT("BIT_OR_ASSIGN"), InstructionOpCode::BIT_OR_ASSIGN },
+	{HAZE_TEXT("BIT_XOR_ASSIGN"), InstructionOpCode::BIT_XOR_ASSIGN },
+	{HAZE_TEXT("SHL_ASSIGN"), InstructionOpCode::SHL_ASSIGN },
+	{HAZE_TEXT("SHR_ASSIGN"), InstructionOpCode::SHR_ASSIGN },
 
 	{HAZE_TEXT("PUSH"), InstructionOpCode::PUSH },
 	{HAZE_TEXT("POP"), InstructionOpCode::POP },
@@ -265,14 +278,158 @@ public:
 		}
 	}
 
-	static void Xor(HazeStack* Stack)
+	static void Bit_And(HazeStack* Stack)
 	{
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::XOR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_AND, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Bit_Or(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_OR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Bit_Xor(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_XOR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Add_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::ADD_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Sub_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SUB_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Mul_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MUL_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Div_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DIV_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Mod_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MOD_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Bit_And_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_AND_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Bit_Or_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_OR_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Bit_Xor_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_XOR_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Shl_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHL_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Shr_Assign(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHR_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -608,7 +765,21 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::AND, &InstructionProcessor::And},
 	{InstructionOpCode::OR, &InstructionProcessor::Or},
 	{InstructionOpCode::NOT, &InstructionProcessor::Not},
-	{InstructionOpCode::XOR, &InstructionProcessor::Xor},
+
+	{InstructionOpCode::BIT_AND, &InstructionProcessor::Bit_And},
+	{InstructionOpCode::BIT_XOR, &InstructionProcessor::Bit_Or},
+	{InstructionOpCode::BIT_XOR, &InstructionProcessor::Bit_Xor},
+
+	{InstructionOpCode::ADD_ASSIGN, &InstructionProcessor::Add_Assign},
+	{InstructionOpCode::SUB_ASSIGN, &InstructionProcessor::Sub_Assign},
+	{InstructionOpCode::MUL_ASSIGN, &InstructionProcessor::Mul_Assign},
+	{InstructionOpCode::DIV_ASSIGN, &InstructionProcessor::Div_Assign},
+	{InstructionOpCode::MOD_ASSIGN, &InstructionProcessor::Mod_Assign},
+	{InstructionOpCode::BIT_AND_ASSIGN, &InstructionProcessor::Bit_And_Assign},
+	{InstructionOpCode::BIT_OR_ASSIGN, &InstructionProcessor::Bit_Or_Assign},
+	{InstructionOpCode::BIT_XOR_ASSIGN, &InstructionProcessor::Bit_Xor_Assign},
+	{InstructionOpCode::SHL_ASSIGN, &InstructionProcessor::Shl_Assign },
+	{InstructionOpCode::SHR_ASSIGN, &InstructionProcessor::Shr_Assign},
 
 	{InstructionOpCode::SHL, &InstructionProcessor::Shl},
 	{InstructionOpCode::SHR, &InstructionProcessor::Shr},

@@ -160,6 +160,20 @@ private:
 	bool IsPreDec;
 };
 
+//Operator
+class ASTOperetorAssign : public ASTBase
+{
+public:
+	ASTOperetorAssign(HazeVM* VM, HazeToken Token, std::unique_ptr<ASTBase>& Expression);
+	virtual ~ASTOperetorAssign() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	HazeToken Token;
+	std::unique_ptr<ASTBase> Expression;
+};
+
 //二元表达式
 class ASTBinaryExpression : public ASTBase
 {

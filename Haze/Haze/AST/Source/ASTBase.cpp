@@ -252,6 +252,19 @@ std::shared_ptr<HazeCompilerValue> ASTDec::CodeGen()
 	return VM->GetCompiler()->CreateDec(IncValue, IsPreDec);
 }
 
+ASTOperetorAssign::ASTOperetorAssign(HazeVM* VM, HazeToken Token, std::unique_ptr<ASTBase>& Expression) : ASTBase(VM), Token(Token), Expression(std::move(Expression))
+{
+}
+
+ASTOperetorAssign::~ASTOperetorAssign()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTOperetorAssign::CodeGen()
+{
+	return Expression->CodeGen();
+}
+
 ASTMultiExpression::ASTMultiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression)
 	: ASTBase(VM), SectionSignal(Section), VectorExpression(std::move(VectorExpression))
 {
@@ -331,6 +344,36 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	case HazeToken::Less:
 	case HazeToken::LessEqual:
 		return Compiler->CreateIntCmp(LeftValue, RightValue);
+	case HazeToken::AddAssign:
+		Compiler->CreateAdd(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::SubAssign:
+		Compiler->CreateSub(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::MulAssign:
+		Compiler->CreateMul(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::DivAssign:
+		Compiler->CreateDiv(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::ModAssign:
+		Compiler->CreateMod(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::BitAndAssign:
+		Compiler->CreateBitAnd(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::BitOrAssign:
+		Compiler->CreateBitOr(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::BitXorAssign:
+		Compiler->CreateBitXor(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::ShlAssign:
+		Compiler->CreateShl(LeftValue, RightValue, true);
+		return LeftValue;
+	case HazeToken::ShrAssign:
+		Compiler->CreateShr(LeftValue, RightValue, true);
+		return LeftValue;
 	case HazeToken::LeftParentheses:
 		break;
 	case HazeToken::RightParentheses:

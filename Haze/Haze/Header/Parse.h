@@ -75,6 +75,8 @@ private:
 
 	std::unique_ptr<ASTBase> ParseDec();
 
+	std::unique_ptr<ASTBase> ParseOperatorAssign();
+
 	std::unique_ptr<ASTBase> ParseMultiExpression();
 
 	std::unique_ptr<ASTFunctionSection> ParseFunctionSection();

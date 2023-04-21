@@ -285,29 +285,59 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeC
 	return Value;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GetCurrModule()->CreateAdd(Left, Right);
+	return GetCurrModule()->CreateAdd(Left, Right, IsAssign);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GetCurrModule()->CreateSub(Left, Right);
+	return GetCurrModule()->CreateSub(Left, Right, IsAssign);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GetCurrModule()->CreateMul(Left, Right);
+	return GetCurrModule()->CreateMul(Left, Right, IsAssign);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GetCurrModule()->CreateDiv(Left, Right);
+	return GetCurrModule()->CreateDiv(Left, Right, IsAssign);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMod(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMod(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
-	return GetCurrModule()->CreateMod(Left, Right);
+	return GetCurrModule()->CreateMod(Left, Right, IsAssign);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBitAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GetCurrModule()->CreateBitAnd(Left, Right, IsAssign);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBitOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GetCurrModule()->CreateBitOr(Left, Right, IsAssign);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBitXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GetCurrModule()->CreateBitXor(Left, Right, IsAssign);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateShl(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GetCurrModule()->CreateShl(Left, Right, IsAssign);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateShr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
+{
+	return GetCurrModule()->CreateShr(Left, Right, IsAssign);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNot(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateNot(Left, Right);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
@@ -318,26 +348,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAnd(std::shared_ptr<HazeC
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
 	return GetCurrModule()->CreateOr(Left, Right);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNot(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GetCurrModule()->CreateNot(Left, Right);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GetCurrModule()->CreateXor(Left, Right);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateShl(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GetCurrModule()->CreateShl(Left, Right);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateShr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GetCurrModule()->CreateShr(Left, Right);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
@@ -361,6 +371,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateInc(std::shared_ptr<HazeC
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDec(std::shared_ptr<HazeCompilerValue> Value, bool IsPreDec)
 {
 	return GetCurrModule()->CreateDec(Value, IsPreDec);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateOperatorAssign(HazeOperatorAssign Type, std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
+{
+	return GetCurrModule()->CreateOpAssign(Type, Left, Right);
 }
 
 void HazeCompiler::CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL)
