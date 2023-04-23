@@ -65,7 +65,7 @@ private:
 
 	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable);
 
-	void CreateNew(const HazeDefineType& Data);
+	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& Data);
 
 	void InitEntryBlock(std::shared_ptr<HazeBaseBlock> Block) { EntryBlock = Block; }
 

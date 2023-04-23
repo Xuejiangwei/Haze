@@ -433,11 +433,16 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	{
 		InstructionData OperatorOne;
 
-		GetNextLexeme();
-		OperatorOne.Scope = HazeDataDesc::None;
-
 		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
-		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
+
+		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::PointerClass)
+		{
+			GetNextLexmeAssign_HazeString(OperatorOne.Variable.Type.CustomName);
+		}
+		else
+		{
+			GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PointerToType);
+		}
 
 		Instruction.Operator = { OperatorOne };
 	}

@@ -71,9 +71,15 @@ private:
 
 	std::unique_ptr<ASTBase> ParseNew();
 
+	std::unique_ptr<ASTBase> ParseLeftBrackets();
+
 	std::unique_ptr<ASTBase> ParseInc();
 
 	std::unique_ptr<ASTBase> ParseDec();
+
+	std::unique_ptr<ASTBase> ParseLeftParentheses();
+
+	std::unique_ptr<ASTBase> ParseLeftBrace();
 
 	std::unique_ptr<ASTBase> ParseOperatorAssign();
 

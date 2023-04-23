@@ -4,7 +4,7 @@
 
 #include "Haze.h"
 
-
+class MemoryPool;
 class HazeVM;
 
 class HazeStack
@@ -61,6 +61,10 @@ private:
 
 	void OnRet();
 
+	void* Alloca(unsigned int Size);
+
+	void GarbageCollection(bool Force = false, bool CollectionAll = false);
+
 private:
 	HazeVM* VM;
 
@@ -71,4 +75,6 @@ private:
 	int PC;
 	uint32 EBP;		//Õ»µ×
 	uint32 ESP;		//Õ»¶¥
+
+	std::vector<std::unique_ptr<MemoryPool>> Vector_MemoryPool;
 };

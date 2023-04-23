@@ -85,6 +85,9 @@ enum class HazeToken : unsigned int
 	LeftBrace,
 	RightBrace,
 
+	LeftBrackets,
+	RigthBrackets,
+
 	If,
 	Else,
 

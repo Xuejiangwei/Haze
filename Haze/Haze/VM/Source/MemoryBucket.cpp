@@ -40,3 +40,8 @@ void* MemoryBucket::Alloca(int Size)
 	}
 	return Ret;
 }
+
+void MemoryBucket::Release()
+{
+
+}

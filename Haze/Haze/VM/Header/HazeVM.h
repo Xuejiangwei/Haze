@@ -10,7 +10,6 @@
 
 class HazeCompiler;
 
-class MemoryPool;
 class HazeStack;
 
 class HazeVM
@@ -55,10 +54,7 @@ public:
 public:
 	//[[deprecated("will remove")]]
 	bool IsClass(const HAZE_STRING& Name);
-
-public:
-	void* Alloca(HazeValueType Type, unsigned int Size);
-
+	
 private:
 	void LoadOpCodeFile();
 
@@ -70,9 +66,6 @@ private:
 private:
 	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;
 	std::unordered_set<HAZE_STRING> MapString;
-
-
-	std::vector<std::unique_ptr<MemoryPool>> Vector_MemoryPool;
 
 	std::unique_ptr<HazeStack> VMStack;
 

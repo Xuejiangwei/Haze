@@ -44,6 +44,8 @@ public:
 	std::shared_ptr<HazeCompilerValue> GetConstantValueInt_1();
 
 public:
+	static std::shared_ptr<HazeCompilerValue> GetNewRegister(HazeCompilerModule* Module, const HazeDefineType& Data);
+
 	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* Name);
 
 	static const HAZE_CHAR* GetRegisterName(std::shared_ptr<HazeCompilerValue>& Value);

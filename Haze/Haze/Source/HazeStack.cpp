@@ -1,5 +1,6 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
+#include "MemoryPool.h"
 
 extern std::unordered_map<HAZE_STRING, HazeValue*> HashMap_VirtualRegister;
 extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor;
@@ -11,6 +12,9 @@ HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 
 	Stack_Main.resize(HAZE_VM_STACK_SIZE);
 	InitRegisterToStack();
+
+	Vector_MemoryPool.clear();
+	Vector_MemoryPool.push_back(std::make_unique<MemoryPool>());
 }
 
 HazeStack::~HazeStack()
@@ -44,6 +48,8 @@ void HazeStack::Start(unsigned int Address)
 
 		PCStepInc();
 	}
+
+
 }
 
 //void HazeStack::PushVariableStack(HazeDefineVariable* Variable)
@@ -137,11 +143,40 @@ void HazeStack::OnRet()
 {
 	memcpy(&PC, &(Stack_Main[EBP - HAZE_ADDRESS_SIZE]), HAZE_ADDRESS_SIZE);
 
-	uint32 TempEBP = EBP;
+	//uint32 TempEBP = EBP;
 	ESP = Stack_EBP.back();
 	Stack_EBP.pop_back();
 	EBP = Stack_EBP.back();
 	//ESP = TempEBP - (HAZE_ADDRESS_SIZE + Stack_Frame.back().FunctionParamSize);
 
 	Stack_Frame.pop_back();
+}
+
+void* HazeStack::Alloca(unsigned int Size)
+{
+	void* Ret = nullptr;
+	for (auto& Iter : Vector_MemoryPool)
+	{
+		Ret = Iter->Alloca(Size);
+		if (Ret)
+		{
+			return Ret;
+		}
+	}
+	Vector_MemoryPool.push_back(std::make_unique<MemoryPool>());
+	Ret = Vector_MemoryPool.back()->Alloca(Size);
+
+	return Ret;
+}
+
+
+void HazeStack::GarbageCollection(bool Force, bool CollectionAll)
+{
+	if (Force && CollectionAll)
+	{
+		for (auto& It : Vector_MemoryPool)
+		{
+			It->ReleaseAll();
+		}
+	}
 }

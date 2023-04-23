@@ -13,6 +13,8 @@ public:
 private:
 	void* Alloca(int Size = 0);
 
+	void Release();
+
 private:
 	std::queue<unsigned int> Queue_Recycle;
 	std::vector<char> Pool;

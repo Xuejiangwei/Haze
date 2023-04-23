@@ -4,19 +4,18 @@
 
 #include "Haze.h"
 
-class HazeVM;
 class MemoryBucket;
 
 class MemoryPool
 {
 public:
-	friend class HazeVM;
+	friend class HazeStack;
 
-	MemoryPool(HazeVM* VM);
+	MemoryPool();
 	~MemoryPool();
 
 private:
-	void* Alloca(HazeValueType Type, unsigned int Size = 0);
+	void* Alloca(uint32 Size = 0);
 
 	void* Alloca_4_Byte();
 	void* Alloca_8_Byte();
@@ -26,10 +25,9 @@ private:
 	void* Alloca_128_Byte();
 	void* Alloca_Any_Byte();
 
+	void ReleaseAll();
 
 private:
-	HazeVM* VM;
-
 	std::unique_ptr<MemoryBucket> Bucket_4Byte;
 	std::unique_ptr<MemoryBucket> Bucket_8Byte;
 	std::unique_ptr<MemoryBucket> Bucket_16Byte;

@@ -4,7 +4,6 @@
 #include <filesystem>
 
 #include "HazeVM.h"
-#include "MemoryPool.h"
 #include "HazeStack.h"
 #include "HazeCompiler.h"
 #include "Parse.h"
@@ -19,9 +18,6 @@ HazeVM::HazeVM()
 	FunctionReturn.Type = HazeValueType::Void;
 	Compiler = std::make_unique<HazeCompiler>();
 	VMStack = std::make_unique<HazeStack>(this);
-
-	Vector_MemoryPool.clear();
-	Vector_MemoryPool.push_back(std::make_unique<MemoryPool>(this));
 }
 
 HazeVM::~HazeVM()
@@ -359,21 +355,4 @@ unsigned int HazeVM::GetClassSize(const HAZE_STRING& ClassName)
 bool HazeVM::IsClass(const HAZE_STRING& Name)
 {
 	return Compiler->IsClass(Name);
-}
-
-void* HazeVM::Alloca(HazeValueType Type, unsigned int Size)
-{
-	void* Ret = nullptr;
-	for (auto& Iter : Vector_MemoryPool)
-	{
-		Ret = Iter->Alloca(Type, Size);
-		if (Ret)
-		{
-			return Ret;
-		}
-	}
-	Vector_MemoryPool.push_back(std::make_unique<MemoryPool>(this));
-	Ret = Vector_MemoryPool.back()->Alloca(Type, Size);
-
-	return Ret;
 }

@@ -31,12 +31,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 	return BB->CreateAlloce(Variable, ++CurrVariableCount);
 }
 
-void HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
 {
 	HAZE_STRING_STREAM SStream;
 	SStream << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)Data.PrimaryType << " " << Data.CustomName << std::endl;
 	auto BB = Module->GetCompiler()->GetInsertBlock();
 	BB->PushIRCode(SStream.str());
+
+	return Module->GetCompiler()->GetNewRegister(Module, Data);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& VariableName)

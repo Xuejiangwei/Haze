@@ -3,7 +3,7 @@
 #include "MemoryPool.h"
 #include "MemoryBucket.h"
 
-MemoryPool::MemoryPool(HazeVM* VM) : VM(VM)
+MemoryPool::MemoryPool()
 {
 	Bucket_4Byte = std::make_unique<MemoryBucket>(4, 128);
 	Bucket_8Byte = std::make_unique<MemoryBucket>(8, 128);
@@ -18,47 +18,26 @@ MemoryPool::~MemoryPool()
 {
 }
 
-void* MemoryPool::Alloca(HazeValueType Type, unsigned int Size)
+void* MemoryPool::Alloca(uint32 Size)
 {
-	switch (Type)
+	//Size = new align size;
+	static std::unordered_map<uint32, void* (MemoryPool::*)()> HashMap_Alloca =
 	{
-	case HazeValueType::Bool:
-	case HazeValueType::Int:
-	case HazeValueType::UnsignedInt:
-	case HazeValueType::Float:
-		return Alloca_4_Byte();
-		break;
-	case HazeValueType::Long:
-	case HazeValueType::UnsignedLong:
-	case HazeValueType::Double:
-		return Alloca_8_Byte();
-		break;
-	case HazeValueType::Class:
+		{4, &MemoryPool::Alloca_4_Byte},
+		{8, &MemoryPool::Alloca_8_Byte},
+		{16, &MemoryPool::Alloca_16_Byte},
+		{32, &MemoryPool::Alloca_32_Byte},
+		{64, &MemoryPool::Alloca_64_Byte},
+		{128, &MemoryPool::Alloca_128_Byte},
+	};
+
+	auto Iter = HashMap_Alloca.find(Size);
+	if (Iter != HashMap_Alloca.end())
 	{
-		if (Size < 16)
-		{
-			return Alloca_16_Byte();
-		}
-		else if (Size < 32)
-		{
-			return Alloca_32_Byte();
-		}
-		else if (Size < 64)
-		{
-			return Alloca_64_Byte();
-		}
-		else if (Size < 128)
-		{
-			return Alloca_128_Byte();
-		}
-		return Alloca_Any_Byte();
-	}
-		break;
-	default:
-		break;
+		return (this->*Iter->second)();
 	}
 
-	return nullptr;
+	return Alloca_Any_Byte();
 }
 
 void* MemoryPool::Alloca_4_Byte()
@@ -130,4 +109,15 @@ void* MemoryPool::Alloca_128_Byte()
 void* MemoryPool::Alloca_Any_Byte()
 {
 	return Bucket_AnyByte->Alloca();
+}
+
+void MemoryPool::ReleaseAll()
+{
+	Bucket_4Byte = nullptr;
+	Bucket_8Byte = nullptr;
+	Bucket_16Byte = nullptr;
+	Bucket_32Byte = nullptr;
+	Bucket_64Byte = nullptr;
+	Bucket_128Byte = nullptr;
+	Bucket_AnyByte = nullptr;
 }

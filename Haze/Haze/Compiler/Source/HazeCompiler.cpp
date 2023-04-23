@@ -11,7 +11,7 @@
 
 static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalRegister = {
 	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterRet, 0) },
-	{ NEW_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("New_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterNew, 0) },
+	{ NEW_REGISTER, nullptr },
 	{ CMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Cmp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterCmp, 0) },
 	{ TEMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
 };
@@ -77,6 +77,18 @@ HAZE_STRING HazeCompiler::GetCurrModuleOpFile() const
 {
 	HAZE_STRING Path = std::filesystem::current_path();
 	return Path + HAZE_TEXT("\\HazeOpCode\\") + GetCurrModuleName() + HAZE_TEXT(".Hzb");
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModule* Module, const HazeDefineType& Data)
+{
+	auto Iter = HashMap_GlobalRegister.find(NEW_REGISTER);
+	if (Iter != HashMap_GlobalRegister.end())
+	{
+		Iter->second = CreateVariable(Module, HazeDefineVariable(Data, HAZE_TEXT("")), HazeDataDesc::RegisterNew, 0);
+		return Iter->second;
+	}
+
+	return nullptr;
 }
 
 //const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue> Register)
@@ -359,8 +371,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data)
 {
-	Function->CreateNew(Data);
-	return GetRegister(NEW_REGISTER);
+	return Function->CreateNew(Data);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)

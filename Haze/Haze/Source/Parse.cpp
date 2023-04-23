@@ -561,8 +561,6 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseForExpression();
 	case HazeToken::Return:
 		return ParseReturn();
-	case HazeToken::New:
-		return ParseNew();
 	case HazeToken::Inc:
 		return ParseInc();
 	case HazeToken::Dec:
@@ -578,6 +576,14 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::ShlAssign:
 	case HazeToken::ShrAssign:
 		return ParseOperatorAssign();
+	case HazeToken::New:
+		return ParseNew();
+	case HazeToken::LeftBrackets:
+		return ParseLeftBrackets();
+	case HazeToken::LeftParentheses:
+		return ParseLeftParentheses();
+	case HazeToken::LeftBrace:
+		return ParseLeftBrace();
 	default:
 		break;
 	}
@@ -808,11 +814,17 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	GetNextToken();
 
 	HazeDefineVariable Define;
+	
 	Define.Type.PrimaryType = GetValueTypeByToken(CurrToken);
-
 	if (Define.Type.PrimaryType == HazeValueType::Class)
 	{
+		Define.Type.PrimaryType = HazeValueType::PointerClass;
 		Define.Type.CustomName = CurrLexeme;
+	}
+	else
+	{
+		Define.Type.PointerToType = Define.Type.PrimaryType;
+		Define.Type.PrimaryType = HazeValueType::PointerBase;
 	}
 
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("New expression expect (\n")))
@@ -825,6 +837,11 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	}
 
 	return nullptr;
+}
+
+std::unique_ptr<ASTBase> Parse::ParseLeftBrackets()
+{
+	return std::unique_ptr<ASTBase>();
 }
 
 std::unique_ptr<ASTBase> Parse::ParseInc()
@@ -865,6 +882,16 @@ std::unique_ptr<ASTBase> Parse::ParseDec()
 
 	GetNextToken();
 	return std::make_unique<ASTDec>(VM, Name, IsPreInc);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
+{
+	return std::unique_ptr<ASTBase>();
+}
+
+std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
+{
+	return std::unique_ptr<ASTBase>();
 }
 
 std::unique_ptr<ASTBase> Parse::ParseOperatorAssign()

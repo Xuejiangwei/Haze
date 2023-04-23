@@ -513,7 +513,7 @@ public:
 
 			int Size = GetSizeByType(NewRegister->Type, Stack->VM);
 
-			uint64 Address = (uint64)Stack->VM->Alloca(NewRegister->Type.PrimaryType, Size);
+			uint64 Address = (uint64)Stack->Alloca(Size);
 
 			NewRegister->Data.resize(Size);
 			memcpy(NewRegister->Data.begin()._Unwrapped(), &Address, Size);
