@@ -114,6 +114,12 @@
     <ClCompile Include="MetaData\Source\HazeVariable.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerArrayValue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\Header\HazeCompilerInitListValue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -228,6 +234,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="MetaData\Header\HazeVariable.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerArrayValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerInitListValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -16,43 +16,47 @@ public:
 
 	virtual ~HazeCompilerValue();
 
-	void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
+	virtual void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
 
 	HazeValue& GetValue() { return Value; }
 
-	HazeDataDesc GetScope() { return Scope; }
+	HazeDataDesc GetScope() const { return Scope; }
 
 	int GetCount() const { return Count; }
 
-	bool IsRegister() { return IsRegisterScope(Scope); }
+	bool IsRegister() const { return IsRegisterScope(Scope); }
 
-	bool IsConstant() { return Scope == HazeDataDesc::Constant; }
+	bool IsConstant() const { return Scope == HazeDataDesc::Constant; }
 
-	bool IsGlobal() { return Scope == HazeDataDesc::Global; }
+	bool IsGlobal() const { return Scope == HazeDataDesc::Global; }
 
-	bool IsLocal() { return Scope == HazeDataDesc::Local; }
+	bool IsLocal() const { return Scope == HazeDataDesc::Local; }
 
-	bool IsTemp() { return Scope == HazeDataDesc::Temp; }
+	bool IsTemp() const { return Scope == HazeDataDesc::Temp; }
 
-	bool IsString() { return Scope == HazeDataDesc::ConstantString; }
+	bool IsString() const { return Scope == HazeDataDesc::ConstantString; }
 
-	bool IsClassMember() { return IsClassPublicMember() || IsClassPrivateMember() || IsClassProtectedMember(); }
+	bool IsClassMember() const { return IsClassPublicMember() || IsClassPrivateMember() || IsClassProtectedMember(); }
 
-	bool IsClassPublicMember() { return  Scope == HazeDataDesc::ClassMember_Local_Public; }
+	bool IsClassPublicMember() const { return  Scope == HazeDataDesc::ClassMember_Local_Public; }
 
-	bool IsClassPrivateMember() { return  Scope == HazeDataDesc::ClassMember_Local_Private; }
+	bool IsClassPrivateMember() const { return  Scope == HazeDataDesc::ClassMember_Local_Private; }
 
-	bool IsClassProtectedMember() { return  Scope == HazeDataDesc::ClassMember_Local_Protected; }
+	bool IsClassProtectedMember() const { return  Scope == HazeDataDesc::ClassMember_Local_Protected; }
 
-	bool IsCalssThis() { return Scope == HazeDataDesc::ClassThis; }
+	bool IsArrayElement() const { return Scope == HazeDataDesc::ArrayElement; }
 
-	bool IsPointer() { return IsPointerBase() || IsPointerClass(); }
+	bool IsCalssThis() const { return Scope == HazeDataDesc::ClassThis; }
+
+	bool IsPointer() const { return IsPointerBase() || IsPointerClass(); }
 	
-	bool IsPointerBase() { return Value.Type == HazeValueType::PointerBase; }
+	bool IsPointerBase() const { return Value.Type == HazeValueType::PointerBase; }
 
-	bool IsPointerClass() { return Value.Type == HazeValueType::PointerClass; }
+	bool IsPointerClass() const { return Value.Type == HazeValueType::PointerClass; }
 
-	bool IsClass() { return Value.Type == HazeValueType::Class; }
+	bool IsArray() const { return Value.Type == HazeValueType::Array; }
+
+	bool IsClass() const { return Value.Type == HazeValueType::Class; }
 
 public:
 	virtual uint32 GetSize();

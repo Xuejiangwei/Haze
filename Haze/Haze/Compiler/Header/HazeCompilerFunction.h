@@ -55,6 +55,8 @@ public:
 	//const std::list<std::shared_ptr<HazeBaseBlock>>& GetBaseBlockList() { return BBList; }
 
 	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	
+	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
 
 	//bool GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName);
 
@@ -63,7 +65,7 @@ public:
 private:
 	void AddFunctionParam(const HazeDefineVariable& Variable);
 
-	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable);
+	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySize = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& Data);
 

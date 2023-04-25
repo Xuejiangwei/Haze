@@ -684,7 +684,7 @@ private:
 		{
 			ConstantValue.Type = Operator.Variable.Type.PrimaryType;
 			StringToHazeValueNumber(Operator.Variable.Name, ConstantValue);
-			Ret = (void*)&ConstantValue.Value;
+			Ret = GetBinaryPointer(ConstantValue);
 		}
 		else if (Operator.Scope == HazeDataDesc::Global)
 		{
@@ -723,6 +723,10 @@ private:
 			int Size = GetSizeByType(Operator.Variable.Type, Stack->VM);
 			Ret = &Stack->Stack_Main[Stack->ESP - Size];
 		}
+		else if (Operator.Scope == HazeDataDesc::ArrayElement)
+		{
+			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress + Operator.Extra.Address.Offset];
+		}
 		else /*if (Operator.Scope == InstructionScopeType::Local)*/
 		{
 			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
@@ -730,7 +734,7 @@ private:
 
 #if HAZE_VM_GET_ADDRESS_LOG
 		HSS << Ret << std::endl;
-		HazeLog::LogInfo(HazeLog::Warning, HSS.str().c_str());
+		HAZE_LOG_ERR(HSS.str().c_str());
 #endif // HAZE_VM_GET_ADDRESS_LOG
 
 		return Ret;

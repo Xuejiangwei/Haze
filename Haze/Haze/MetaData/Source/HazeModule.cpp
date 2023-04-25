@@ -33,7 +33,7 @@ HazeValue* HazeModule::AddGlobalVariable()
 	/*auto It = MapGlobalVariables.find(HAZE_TEXT(""));
 	if (It != MapGlobalVariables.end())
 	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("添加全局变量重复，"));
+		HAZE_LOG_ERR(HAZE_TEXT("添加全局变量重复，"));
 		return nullptr;
 	}
 

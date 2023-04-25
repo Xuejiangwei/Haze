@@ -6,7 +6,7 @@
 #include "HazeCompiler.h"
 #include "HazeCompilerModule.h"
 
-ASTClass::ASTClass(HazeVM* VM, HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTVariableDefine>>>>& Data, 
+ASTClass::ASTClass(HazeVM* VM, HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& Data,
 	std::unique_ptr<ASTClassFunctionSection>& FunctionSection)
 	: VM(VM), ClassName(std::move(Name)), Vector_ClassData(std::move(Data)), ClassFunctionSection(std::move(FunctionSection))
 {

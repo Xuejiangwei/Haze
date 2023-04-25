@@ -13,38 +13,44 @@ enum class HazeSectionSignal : unsigned __int8
 
 struct HazeDefineType
 {
-	HazeValueType PrimaryType;								//Type类型
+	HazeValueType PrimaryType;				//Type类型
 	
+	HazeValueType SecondaryType;			//指针指向类型,自定义类指针值为void
 
-	//待优化
-	HazeValueType PointerToType;				//指针指向类型
 	HAZE_STRING CustomName;				//自定义类型名
+	bool IsArray;			
+	
 
 	HazeDefineType() : PrimaryType(HazeValueType::Void)
 	{
-		PointerToType = HazeValueType::Void;
+		SecondaryType = HazeValueType::Void;
+		IsArray = false;
 	}
 
 	~HazeDefineType()
 	{
 	}
 
-	HazeDefineType(HazeValueType Type, const HAZE_STRING& CustomName) : PrimaryType(Type), CustomName(CustomName.c_str())
+	HazeDefineType(HazeValueType Type, const HAZE_STRING& CustomName) : PrimaryType(Type), SecondaryType(HazeValueType::Void), IsArray(false)
 	{
+		this->CustomName = CustomName;
 	}
 
-	HazeDefineType(HazeValueType Type, const HAZE_CHAR* CustomName) : PrimaryType(Type), CustomName(CustomName)
+	HazeDefineType(HazeValueType Type, const HAZE_CHAR* CustomName) : PrimaryType(Type), SecondaryType(HazeValueType::Void), IsArray(false)
 	{
+		this->CustomName = CustomName;
 	}
 
 	bool operator==(const HazeDefineType& InType)
 	{
-		return PrimaryType == InType.PrimaryType && PointerToType == InType.PointerToType && CustomName == InType.CustomName;
+		return PrimaryType == InType.PrimaryType && SecondaryType == InType.SecondaryType 
+			&& CustomName == InType.CustomName && IsArray == InType.IsArray;
 	}
 
 	bool operator!=(const HazeDefineType& InType)
 	{
-		return PrimaryType != InType.PrimaryType || PointerToType != InType.PointerToType || CustomName != InType.CustomName;
+		return PrimaryType != InType.PrimaryType || SecondaryType != InType.SecondaryType
+			|| CustomName != InType.CustomName || IsArray != InType.IsArray;
 	}
 };
 
@@ -61,6 +67,7 @@ struct HazeLocalVariable
 {
 	HazeDefineVariable Variable;
 	int Offset;
+	uint32 Size;
 };
 
 struct HazeClassData

@@ -8,6 +8,8 @@
 #include "HazeCompilerValue.h"
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
+#include "HazeCompilerArrayValue.h"
+#include "HazeCompilerInitlistValue.h"
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
@@ -215,7 +217,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr
 	}
 	else
 	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Inc Error\n"));
+		HAZE_LOG_ERR(HAZE_TEXT("Create inc compiler error\n"));
 	}
 	return Ret;
 }
@@ -234,7 +236,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateDec(std::shared_ptr
 	}
 	else
 	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Inc Error\n"));
+		HAZE_LOG_ERR(HAZE_TEXT("Create dec compiler error\n"));
 	}
 	return Ret;
 }
@@ -246,7 +248,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateOpAssign(HazeOperat
 		switch (Type)
 		{
 		case HazeOperatorAssign::None:
-			HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("OpAssign Type None Error\n"));
+			HAZE_LOG_ERR(HAZE_TEXT("Create OpAssign type none error\n"));
 			break;
 		case HazeOperatorAssign::AddAssign:
 			CreateAdd(Left, Right);
@@ -275,10 +277,44 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateOpAssign(HazeOperat
 	}
 	else
 	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("OpAssign Error\n"));
+		HAZE_LOG_ERR(HAZE_TEXT("Create OpAssign is not haze default type error\n"));
 	}
 
 	return Left;
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> InitList)
+{
+	auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(Array);
+	auto InitListValue = std::dynamic_pointer_cast<HazeCompilerInitListValue>(InitList);
+
+	HAZE_STRING_STREAM SStream;
+	HAZE_STRING VarName;
+
+	if (IsHazeDefaultType(ArrayValue->GetArrayType().SecondaryType))
+	{
+		for (size_t i = 0; i < ArrayValue->GetArrayLength(); i++)
+		{
+			SStream << GetInstructionString(InstructionOpCode::MOV) << " ";
+
+			GenValueHzicText(this, SStream, Array, (int)i);
+
+			SStream << " ";
+			GenValueHzicText(this, SStream, InitListValue->GetList()[i]);
+
+			SStream << std::endl;
+
+			std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
+			BB->PushIRCode(SStream.str());
+			SStream.str(HAZE_TEXT(""));
+		}
+	}
+	else
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("Array only haze default type!\n"));
+	}
+
+	return Array;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code)
@@ -311,7 +347,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 	else
 	{
 		HAZE_STRING_STREAM SStream;
-		HAZE_STRING VarName;
 
 		if (NeedTemp && !Left->IsTemp())
 		{
@@ -352,7 +387,7 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 
 	if (CmpType == HazeCmpType::None)
 	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("cmp type is none %s\n"));
+		HAZE_LOG_ERR(HAZE_TEXT("cmp type is none %s\n"));
 	}
 
 	SStream << GetInstructionString(GetInstructionOpCodeByCmpType(CmpType)) << " ";
@@ -432,18 +467,18 @@ void HazeCompilerModule::GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block, b
 	TopBlock->PushIRCode(HSS.str());
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySize)
 {
 	for (auto& it : Vector_Variable)
 	{
 		if (it.first == Var.Name)
 		{
-			HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("编译器错误 添加全局变量重复"));
+			HAZE_LOG_ERR(HAZE_TEXT("编译器错误 添加全局变量重复\n"));
 			return nullptr;
 		}
 	}
 
-	Vector_Variable.push_back({ Var.Name, CreateVariable(this, Var, HazeDataDesc::Global, 0) });
+	Vector_Variable.push_back({ Var.Name, CreateVariable(this, Var, HazeDataDesc::Global, 0, ArraySize) });
 
 	auto& CompilerValue = Vector_Variable.back().second;
 
@@ -468,7 +503,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		{
 			if (!GetGlobalVariableName(Param[i], Name))
 			{
-				HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Haze parse function call not find variable name\n"));
+				HAZE_LOG_ERR(HAZE_TEXT("Haze parse function call not find variable name\n"));
 			}
 		}
 
@@ -480,13 +515,13 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		else if (Param[i]->IsString())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Param[i]);
-			SStream << HAZE_CONSTANT_STRING_NAME << " " << (uint32)Param[i]->GetScope() << " " << (uint32)PointerValue->GetPointerType().PointerToType
+			SStream << HAZE_CONSTANT_STRING_NAME << " " << (uint32)Param[i]->GetScope() << " " << (uint32)PointerValue->GetPointerType().SecondaryType
 				<< " " << Param[i]->GetValue().Value.Extra.StringTableIndex;
 		}
 		else if (Param[i]->IsPointerBase())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Param[i]);
-			SStream << Name << " " << (uint32)Param[i]->GetScope() << " " << (uint32)PointerValue->GetPointerType().PointerToType;
+			SStream << Name << " " << (uint32)Param[i]->GetScope() << " " << (uint32)PointerValue->GetPointerType().SecondaryType;
 		}
 		else if (Param[i]->IsPointerClass())
 		{
@@ -497,6 +532,35 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		{
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Param[i]);
 			SStream << Name << " " << (uint32)Param[i]->GetScope() << " " << ClassValue->GetOwnerClassName();
+		}
+		else if (Param[i]->IsArrayElement())
+		{
+			auto ArrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(Param[i]);
+			SStream << Name << " " << (uint32)Param[i]->GetScope() << " ";
+			if (ArrayElementValue->GetIndex()->IsConstant())
+			{
+				HazeCompilerStream(SStream, ArrayElementValue->GetIndex());
+			}
+			else
+			{
+				HAZE_STRING VarName;
+				if (GetCurrFunction())
+				{
+					if (GetCurrFunction()->FindLocalVariableName(ArrayElementValue->GetIndex(), VarName))
+					{
+						SStream << VarName;
+					}
+					else if (GetGlobalVariableName(ArrayElementValue->GetIndex(), Name))
+					{
+						SStream << VarName;
+					}
+					else
+					{
+						HAZE_LOG_ERR(HAZE_TEXT("Function call param array element not find\n"));
+					}
+				}
+
+			}
 		}
 		else
 		{
@@ -517,7 +581,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		{
 			if (!GetGlobalVariableName(ThisPointerTo, Name))
 			{
-				HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Haze parse function call not find variable name\n"));
+				HAZE_LOG_ERR(HAZE_TEXT("Haze parse function call not find variable name\n"));
 			}
 		}
 
@@ -566,7 +630,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalStringVariable(c
 
 	HazeDefineVariable Define;
 	Define.Type.PrimaryType = HazeValueType::PointerBase;
-	Define.Type.PointerToType = HazeValueType::Char;
+	Define.Type.SecondaryType = HazeValueType::Char;
 
 	it->second = CreateVariable(this, Define, HazeDataDesc::ConstantString, 0);
 
@@ -607,9 +671,17 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const H
 	return nullptr;
 }
 
-bool HazeCompilerModule::GetGlobalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
+bool HazeCompilerModule::GetGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {
 	for (auto& it : Vector_Variable)
+	{
+		if (TrtGetVariableName(nullptr, it, Value, OutName))
+		{
+			return true;
+		}
+	}
+
+	for (auto& it : HashMap_StringTable)
 	{
 		if (it.second == Value)
 		{
@@ -618,9 +690,22 @@ bool HazeCompilerModule::GetGlobalVariableName(std::shared_ptr<HazeCompilerValue
 		}
 	}
 
+	return false;
+}
+
+bool HazeCompilerModule::GetGlobalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName)
+{
+	for (auto& it : Vector_Variable)
+	{
+		if (TrtGetVariableName(nullptr, it, Value, OutName))
+		{
+			return true;
+		}
+	}
+
 	for (auto& it : HashMap_StringTable)
 	{
-		if (it.second == Value)
+		if (it.second.get() == Value)
 		{
 			OutName = it.first;
 			return true;
@@ -646,12 +731,21 @@ uint32 HazeCompilerModule::GetClassSize(const HAZE_STRING& ClassName)
 	return FindClass(ClassName)->GetDataSize();
 }
 
-void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue>& Value)
+void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const std::shared_ptr<HazeCompilerValue>& Value, int Index)
 {
 	bool StreamExtra = false;
 	HAZE_STRING VarName;
 
-	HSS << (uint32)Value->GetValue().Type;
+	std::shared_ptr<HazeCompilerArrayValue> ArrayValue = nullptr;
+	if (Value->IsArray() && Index >= 0)
+	{
+		ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(Value);
+		HSS << (uint32)ArrayValue->GetArrayType().SecondaryType;
+	}
+	else
+	{
+		HSS << (uint32)Value->GetValue().Type;
+	}
 
 	if (Value->IsConstant())
 	{
@@ -684,13 +778,13 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		if (bFind)
 		{
 			HSS << " " << VarName;
-			HSS << " " << (uint32)Value->GetScope();
+			ArrayValue ? HSS << " " << (uint32)HazeDataDesc::ArrayElement : HSS << " " << (uint32)Value->GetScope();
 		}
 		else
 		{
 			Module->GetGlobalVariableName(Value, VarName);
 			HSS << " " << VarName;
-			HSS << " " << (uint32)HazeDataDesc::Global;
+			ArrayValue ? HSS << " " << (uint32)HazeDataDesc::ArrayElement : HSS << " " << (uint32)HazeDataDesc::Global;
 		}
 
 		StreamExtra = true;
@@ -701,7 +795,7 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		if (Value->IsPointerBase())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
-			HSS << " " << (uint32)PointerValue->GetPointerType().PointerToType;
+			HSS << " " << (uint32)PointerValue->GetPointerType().SecondaryType;
 		}
 		else if (Value->IsPointerClass())
 		{
@@ -712,6 +806,56 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		{
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value);
 			HSS << " " << ClassValue->GetOwnerClassName();
+		}
+		else if (Value->IsArray() && Index >= 0)
+		{
+			/*if (Value->GetArrayType())
+			{
+				auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
+				HSS << " " << (uint32)PointerValue->GetPointerType().SecondaryType;
+			}
+			else if (Value->IsPointerClass())
+			{
+				auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
+				HSS << " " << PointerValue->GetPointerType().CustomName;
+			}
+			else if (Value->IsClass())
+			{
+				auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value);
+				HSS << " " << ClassValue->GetOwnerClassName();
+			}*/
+
+			HSS << " " << Index;
+		}
+		else if (Value->IsArrayElement())
+		{
+			auto ArrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(Value);
+
+			HSS << " ";
+			if (ArrayElementValue->GetIndex()->IsConstant())
+			{
+				HazeCompilerStream(HSS, ArrayElementValue->GetIndex());
+			}
+			else
+			{
+				HAZE_STRING Name;
+				if (Module->GetCurrFunction())
+				{
+					if (Module->GetCurrFunction()->FindLocalVariableName(ArrayElementValue->GetIndex(), Name))
+					{
+						HSS << Name;
+					}
+					else if (Module->GetGlobalVariableName(ArrayElementValue->GetIndex(), Name))
+					{
+						HSS << Name;
+					}
+					else
+					{
+						HAZE_LOG_ERR(HAZE_TEXT("GenValueHzicText variable not find\n"));
+					}
+				}
+				
+			}
 		}
 	}
 }
@@ -747,7 +891,7 @@ void HazeCompilerModule::GenICode()
 	*/
 	if (HashMap_StringMapping.size() != HashMap_StringTable.size())
 	{
-		HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Parse header file string table size error : mapping size %d, table size %d"),
+		HAZE_LOG_ERR(HAZE_TEXT("Parse header file string table size error : mapping size %d, table size %d"),
 			HashMap_StringMapping.size(), HashMap_StringTable.size());
 		return;
 	}

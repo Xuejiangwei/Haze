@@ -5,22 +5,8 @@
 #include "HazeCompilerValue.h"
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
+#include "HazeCompilerArrayValue.h"
 #include "HazeCompilerFunction.h"
-
-
-static HAZE_STRING GetLocalVariableName(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerValue> Value)
-{
-	static HAZE_STRING_STREAM HSS;
-	
-	HSS.str(HAZE_TEXT(""));
-	HSS << Name;
-	if (Value->GetCount() > 0)
-	{
-		HSS << HAZE_LOCAL_VARIABLE_CONBINE << Value->GetCount();
-	}
-
-	return HSS.str();
-}
 
 HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock) 
 	: enable_shared_from_this(*this), Name(Name), ParentFunction(ParentFunction), ParentBlock(ParentBlock)
@@ -39,53 +25,30 @@ bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValu
 {
 	for (auto& it : Vector_Alloca)
 	{
-		if (it.second == Value)
+		if (TrtGetVariableName(ParentFunction, it, Value, OutName))
 		{
-			OutName = GetLocalVariableName(it.first, it.second);
 			return true;
 		}
-		if (Value->IsClassMember())
+	}
+
+	for (auto& Iter : List_ChildBlock)
+	{
+		if (Iter->FindLocalVariableName(Value, OutName))
 		{
-			if (it.second->GetValue().Type == HazeValueType::PointerClass)
-			{
-				auto Pointer = std::dynamic_pointer_cast<HazeCompilerPointerValue>(it.second);
-				if ((void*)Pointer->GetPointerValue() != ParentFunction->GetClass())
-				{
-					auto Class = dynamic_cast<HazeCompilerClassValue*>(Pointer->GetPointerValue());
-					Class->GetMemberName(Value, OutName);
-					if (!OutName.empty())
-					{
-						OutName = GetLocalVariableName(it.first, it.second) + HAZE_CLASS_POINTER_ATTR + OutName;
-						return true;
-					}
-				}
-			}
-			else
-			{
-				auto Class = std::dynamic_pointer_cast<HazeCompilerClassValue>(it.second);
-				Class->GetMemberName(Value, OutName);
-				if (!OutName.empty())
-				{
-					OutName = GetLocalVariableName(it.first, it.second) + HAZE_CLASS_ATTR + OutName;
-					if (!Value->IsClassPublicMember())
-					{
-						HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("can not access non public member data %s\n"), OutName.c_str());
-					}
-					return true;
-				}
-			}
+			return true;
 		}
-		else if (Value->IsCalssThis())
+	}
+
+	return false;
+}
+
+bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName)
+{
+	for (auto& it : Vector_Alloca)
+	{
+		if (TrtGetVariableName(ParentFunction, it, Value, OutName))
 		{
-			if (it.second->GetValue().Type == HazeValueType::Class)
-			{
-				auto PointerThis = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
-				if(PointerThis->GetPointerValue() == it.second.get())
-				{
-					OutName = GetLocalVariableName(it.first, it.second);
-					return true;
-				}
-			}
+			return true;
 		}
 	}
 
@@ -186,9 +149,9 @@ void HazeBaseBlock::MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB)
 	}
 }
 
-std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Count)
+std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> ArraySize)
 {
-	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local, Count);
+	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local, Count, ArraySize);
 	Vector_Alloca.push_back({ Define.Name, Alloce });
 
 	/*HAZE_STRING_STREAM SStream;

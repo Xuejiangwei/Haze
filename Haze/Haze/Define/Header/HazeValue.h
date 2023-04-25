@@ -18,6 +18,8 @@ enum class HazeValueType : unsigned int
 	UnsignedInt,
 	UnsignedLong,
 
+	Array,
+
 	PointerBase,
 	PointerClass,
 

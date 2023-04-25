@@ -25,10 +25,10 @@ HazeCompilerFunction::~HazeCompilerFunction()
 {
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySize)
 {
 	auto BB = Module->GetCompiler()->GetInsertBlock();
-	return BB->CreateAlloce(Variable, ++CurrVariableCount);
+	return BB->CreateAlloce(Variable, ++CurrVariableCount, ArraySize);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
@@ -56,6 +56,15 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 				break;
 			}
 			else if (Value.second->GetValue().Type == HazeValueType::Class)
+			{
+				auto MemberValue = GetObjectMember(Module, VariableName);
+				if (MemberValue)
+				{
+					Ret = MemberValue;
+					break;
+				}
+			}
+			else if (Value.second->GetValue().Type == HazeValueType::PointerClass)
 			{
 				auto MemberValue = GetObjectMember(Module, VariableName);
 				if (MemberValue)
@@ -168,7 +177,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 		HazeCompilerOFStream(OFStream, Vector_LocalVariable[i]);
 
 		Size -= Vector_LocalVariable[i]->GetSize();
-		OFStream << " " << Size << std::endl;
+		OFStream << " " << Size << " " << Vector_LocalVariable[i]->GetSize() << std::endl;
 	}
 
 	Size = 0;
@@ -178,7 +187,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 		FindLocalVariableName(Vector_LocalVariable[i], LocalVariableName);
 		OFStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
 		HazeCompilerOFStream(OFStream, Vector_LocalVariable[i]);
-		OFStream << " " << Size << std::endl;
+		OFStream << " " << Size << " " << Vector_LocalVariable[i]->GetSize() << std::endl;
 		Size += Vector_LocalVariable[i]->GetSize();
 	}
 
@@ -246,6 +255,20 @@ HAZE_STRING HazeCompilerFunction::GenForEndBlockName()
 //}
 
 bool HazeCompilerFunction::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
+{
+	if (EntryBlock->FindLocalVariableName(Value, OutName))
+	{
+		return true;
+	}
+	else if (OwnerClass)
+	{
+		return OwnerClass->GetMemberName(Value, OutName);
+	}
+
+	return false;
+}
+
+bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName)
 {
 	if (EntryBlock->FindLocalVariableName(Value, OutName))
 	{

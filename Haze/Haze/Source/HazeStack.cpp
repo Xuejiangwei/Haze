@@ -110,6 +110,11 @@ void HazeStack::PushMainFuntion()
 
 	ESP -= HAZE_ADDRESS_SIZE;
 	EBP -= HAZE_ADDRESS_SIZE;
+
+	if (MainFunction.Vector_Variable.size() > 0)
+	{
+		ESP += MainFunction.Vector_Variable.back().Offset + MainFunction.Vector_Variable.back().Size;
+	}
 }
 
 void HazeStack::InitRegisterToStack()

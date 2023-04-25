@@ -53,7 +53,7 @@ private:
 
 	std::unique_ptr<ASTBase> ParseIdentifer();
 
-	std::unique_ptr<ASTVariableDefine> ParseVariableDefine();
+	std::unique_ptr<ASTBase> ParseVariableDefine();
 
 	std::unique_ptr<ASTBase> ParseStringText();
 
@@ -70,16 +70,14 @@ private:
 	std::unique_ptr<ASTBase> ParseReturn();
 
 	std::unique_ptr<ASTBase> ParseNew();
+	
+	std::unique_ptr<ASTBase> ParseLeftBrace();
 
-	std::unique_ptr<ASTBase> ParseLeftBrackets();
+	std::unique_ptr<ASTBase> ParseLeftParentheses();
 
 	std::unique_ptr<ASTBase> ParseInc();
 
 	std::unique_ptr<ASTBase> ParseDec();
-
-	std::unique_ptr<ASTBase> ParseLeftParentheses();
-
-	std::unique_ptr<ASTBase> ParseLeftBrace();
 
 	std::unique_ptr<ASTBase> ParseOperatorAssign();
 
@@ -99,7 +97,7 @@ private:
 
 	std::unique_ptr<ASTClass> ParseClass();
 
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTVariableDefine>>>> ParseClassData();
+	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> ParseClassData();
 
 	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& ClassName);
 

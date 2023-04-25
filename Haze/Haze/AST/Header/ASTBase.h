@@ -11,6 +11,8 @@ class HazeCompilerValue;
 //Base
 class ASTBase
 {
+	friend class ASTClass;
+
 public:
 	ASTBase(HazeVM* VM);
 	ASTBase(HazeVM* VM, const HazeDefineVariable& DefVar);
@@ -60,12 +62,11 @@ private:
 	HAZE_STRING Text;
 };
 
-
 //变量
 class ASTIdentifier : public ASTBase
 {
 public:
-	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName = nullptr);
+	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName = nullptr, std::unique_ptr<ASTBase> ArrayIndexExpression = nullptr);
 	virtual ~ASTIdentifier() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -75,6 +76,7 @@ public:
 private:
 	HazeSectionSignal SectionSignal;
 	HAZE_STRING ClassMemberName;
+	std::unique_ptr<ASTBase> ArrayIndexExpression;
 };
 
 //函数调用
@@ -99,9 +101,8 @@ private:
 class ASTVariableDefine : public ASTBase
 {
 public:
-	friend class ASTClass;
 
-	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression);
+	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::unique_ptr<ASTBase> ArraySize = nullptr);
 	virtual ~ASTVariableDefine() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -109,6 +110,7 @@ public:
 private:
 	HazeSectionSignal SectionSignal;
 	std::unique_ptr<ASTBase> Expression;
+	std::unique_ptr<ASTBase> ArraySize;
 };
 
 //返回
@@ -269,3 +271,15 @@ private:
 	std::unique_ptr<ASTBase> MultiExpression;
 };
 
+//初始话列表
+class ASTInitializeList : public ASTBase
+{
+public:
+	ASTInitializeList(HazeVM* VM, std::vector<std::unique_ptr<ASTBase>>& InitializeListExpression);
+	virtual	~ASTInitializeList() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	std::vector<std::unique_ptr<ASTBase>> InitializeListExpression;
+};

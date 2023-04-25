@@ -27,11 +27,15 @@ public:
 
 	std::shared_ptr<HazeCompilerPointerValue> GetThisPointerValue() { return ThisPointerValue; }
 
+	std::shared_ptr<HazeCompilerClassValue> GetNewPointerToValue() { return NewPointerToValue; }
+
 	const HAZE_STRING& GetName() { return Name; }
 
 	size_t GetMemberIndex(const HAZE_STRING& MemberName);
 
 	bool GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+
+	bool GetMemberName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
 
 	const std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable>>>& GetClassMemberData() const { return Vector_Data; }
 
@@ -53,7 +57,9 @@ private:
 	unsigned int DataSize;
 
 	std::shared_ptr<HazeCompilerPointerValue> ThisPointerValue;
-	std::shared_ptr<HazeCompilerClassValue> ThisClassValue;		//所有同类对象只想此同一个this Value
+	std::shared_ptr<HazeCompilerClassValue> ThisClassValue;		//所有同类对象指向此同一个this Value
+
+	std::shared_ptr<HazeCompilerClassValue> NewPointerToValue;		//所有New出来的对象指向此Value
 
 	std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable>>> Vector_Data;
 

@@ -1,6 +1,10 @@
 #include <filesystem>
 
 #include "HazeCompiler.h"
+#include "HazeCompilerPointerValue.h"
+#include "HazeCompilerClassValue.h"
+#include "HazeCompilerArrayValue.h"
+#include "HazeCompilerInitListValue.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerClass.h"
@@ -15,6 +19,9 @@ static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> 
 	{ CMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Cmp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterCmp, 0) },
 	{ TEMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
 };
+
+static std::shared_ptr<HazeCompilerInitListValue> InitializeListValue = 
+	std::make_shared<HazeCompilerInitListValue>(nullptr, HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HazeDataDesc::Initlist, 0);
 
 HazeCompiler::HazeCompiler()
 {
@@ -85,6 +92,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModu
 	if (Iter != HashMap_GlobalRegister.end())
 	{
 		Iter->second = CreateVariable(Module, HazeDefineVariable(Data, HAZE_TEXT("")), HazeDataDesc::RegisterNew, 0);
+
+		auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Iter->second);
+		
+		if (!Data.CustomName.empty())
+		{
+			PointerValue->InitPointerTo(Module->FindClass(Data.CustomName)->GetNewPointerToValue().get());
+		}
+		
 		return Iter->second;
 	}
 
@@ -115,7 +130,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetRegister(const HAZE_CHAR* Na
 	return nullptr;
 }
 
-const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue>& Value)
+const HAZE_CHAR* HazeCompiler::GetRegisterName(const std::shared_ptr<HazeCompilerValue>& Value)
 {
 	for (auto& Iter : HashMap_GlobalRegister)
 	{
@@ -126,6 +141,11 @@ const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue
 	}
 
 	return nullptr;
+}
+
+std::shared_ptr<HazeCompilerInitListValue> HazeCompiler::GetInitializeListValue()
+{
+	return InitializeListValue;
 }
 
 bool HazeCompiler::IsClass(const HAZE_STRING& Name)
@@ -281,14 +301,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 	return Alloca;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySize)
 {
-	return Function->CreateLocalVariable(Variable);
+	return Function->CreateLocalVariable(Variable, ArraySize);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySize)
 {
-	return Module->CreateGlobalVariable(Var);
+	return Module->CreateGlobalVariable(Var, ArraySize);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeCompilerValue> Value)
@@ -364,9 +384,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateOr(std::shared_ptr<HazeCo
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
 {
-	auto& Module = GetCurrModule();
-	
-	return Module->CreateFunctionCall(Function, Param, ThisPointerTo);
+	return GetCurrModule()->CreateFunctionCall(Function, Param, ThisPointerTo);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayInit(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> InitList)
+{
+	return GetCurrModule()->CreateArrayInit(Array, InitList);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> Index)
+{
+	auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(Array);
+	return std::make_shared<HazeCompilerArrayElementValue>(GetCurrModule().get(), HazeDefineType(ArrayValue->GetArrayType().SecondaryType,
+		ArrayValue->GetArrayType().CustomName), HazeDataDesc::ArrayElement, 0, Array.get(), Index.get());
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data)
@@ -376,7 +406,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
 {
-	return  GetCurrModule()->CreateInc(Value, IsPreInc);
+	return GetCurrModule()->CreateInc(Value, IsPreInc);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDec(std::shared_ptr<HazeCompilerValue> Value, bool IsPreDec)

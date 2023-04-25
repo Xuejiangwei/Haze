@@ -170,7 +170,7 @@ void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
         Target /= Source;
         break;
     default:
-        HazeLog::LogInfo(HazeLog::Error, "Calculate error: operator %s  type %s\n", WString2String(GetInstructionString(TypeCode)).c_str(), typeid(T).name());
+        HAZE_LOG_ERR("Calculate error: operator %s  type %s\n", WString2String(GetInstructionString(TypeCode)).c_str(), typeid(T).name());
         break;
     }
 }

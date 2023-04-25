@@ -20,8 +20,9 @@ enum class HazeToken : unsigned int
 	UnsignedInt,
 	UnsignedLong,
 
-	StringStart,
-	StringEnd,
+	Array,
+
+	StringMatch,
 
 	Function,
 

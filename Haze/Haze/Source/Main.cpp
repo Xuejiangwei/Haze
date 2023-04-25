@@ -10,7 +10,7 @@
 
 void HazeNewHandler()
 {
-	HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("Haze no memory!!!!\n"));
+	HAZE_LOG_ERR(HAZE_TEXT("Haze no memory!!!!\n"));
 }
 
 void HazeInit()

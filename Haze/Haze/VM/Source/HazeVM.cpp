@@ -221,6 +221,7 @@ void HazeVM::LoadOpCodeFile()
 			Vector_FunctionTable[i].Vector_Variable[j].Variable.Type.CustomName = String2WString(B_String);
 
 			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Variable[j].Offset));
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].Vector_Variable[j].Size));
 		}
 
 		FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_FunctionTable[i].InstructionNum));
@@ -280,7 +281,7 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Index));
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.AddressType));
 
-		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public || IsJmpOpCode(Instruction.InsCode))
+		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement)
 		{
 			B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型
 		}
@@ -293,10 +294,11 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 
 #if HAZE_INS_LOG
 	HAZE_STRING_STREAM WSS;
-	WSS << GetInstructionString(Instruction.InsCode) << " ";
+	WSS << "Read: " << GetInstructionString(Instruction.InsCode);
 	for (auto& it : Instruction.Operator)
 	{
-		WSS << it.Variable.Name << " " << (unsigned int)it.Variable.Type.PrimaryType << " " << (unsigned int)it.Scope << " " << it.Extra.Index << " ";
+		WSS << " ----" << it.Variable.Name << " Type: " << (unsigned int)it.Variable.Type.PrimaryType << " Scope: " << (unsigned int)it.Scope << " Base: " << it.Extra.Index
+			<< " Offset: " << it.Extra.Address.Offset;
 	}
 	WSS << std::endl;
 

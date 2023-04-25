@@ -8,10 +8,10 @@ ClassTable
 FunctionTable
 1
 Function ´òÓ¡ 0
-Param ¼× 9 9
-Param  13
-Variable $2 13 -4
-Variable ¼×$1 9 9 -12
+Param ¼× 10 10
+Param  14
+Variable $2 14 -4 0
+Variable ¼×$1 10 10 -12 8
 Start
 
 Block Entry

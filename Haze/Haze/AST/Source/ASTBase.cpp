@@ -9,9 +9,12 @@
 #include "HazeCompilerValue.h"
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
+#include "HazeCompilerInitListValue.h"
 #include "HazeCompilerHelper.h"
 
 #include "ASTBase.h"
+
+#include "HazeLog.h"
 
 //Base
 ASTBase::ASTBase(HazeVM* VM) : VM(VM)
@@ -83,8 +86,8 @@ std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 }
 
 
-ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName)
-	: ASTBase(VM), SectionSignal(Section)
+ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::unique_ptr<ASTBase> ArrayIndexExpression)
+	: ASTBase(VM), SectionSignal(Section), ArrayIndexExpression(std::move(ArrayIndexExpression))
 {
 	DefineVariable.Name = std::move(Name);
 	if (MemberName)
@@ -110,6 +113,12 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 		{
 			RetValue = VM->GetCompiler()->GetGlobalVariable(DefineVariable.Name);
 		}
+	}
+
+	if (ArrayIndexExpression)
+	{
+		auto IndexValue = ArrayIndexExpression->CodeGen();
+		RetValue = VM->GetCompiler()->CreateArrayElement(RetValue, IndexValue);
 	}
 
 	return RetValue;
@@ -148,8 +157,8 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	return nullptr;
 }
 
-ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression)
-	: ASTBase(VM, DefineVariable), SectionSignal(Section), Expression(std::move(Expression))
+ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::unique_ptr<ASTBase> ArraySize)
+	: ASTBase(VM, DefineVariable), SectionSignal(Section), Expression(std::move(Expression)), ArraySize(std::move(ArraySize))
 {
 }
 
@@ -162,15 +171,28 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	std::shared_ptr<HazeCompilerValue> RetValue = nullptr;
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
 	std::unique_ptr<HazeCompilerModule>& Module = VM->GetCompiler()->GetCurrModule();
+
+	std::shared_ptr<HazeCompilerValue> SizeValue = nullptr;
+	if (ArraySize)
+	{
+		SizeValue = ArraySize->CodeGen();
+		if (!SizeValue->IsConstant())
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("code gen array variable, must be a constant number\n"));
+			return nullptr;
+		}
+	}
+
+
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
 		//生成全局变量字节码
-		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable);
+		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable, SizeValue);
 	}
 	else if (SectionSignal == HazeSectionSignal::Function)
 	{
 		//生成局部变量字节码
-		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable);
+		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, SizeValue);
 	}
 
 	std::shared_ptr<HazeCompilerValue> ExprValue = nullptr;
@@ -178,7 +200,14 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	{
 		ExprValue = Expression->CodeGen();
 
-		Compiler->CreateMov(RetValue, ExprValue);
+		if (ArraySize)
+		{
+			Compiler->CreateArrayInit(RetValue, ExprValue);
+		}
+		else
+		{
+			Compiler->CreateMov(RetValue, ExprValue);
+		}
 	}
 
 	return RetValue;
@@ -527,4 +556,27 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 	Compiler->SetInsertBlock(ParentBlock);
 
 	return std::shared_ptr<HazeCompilerValue>();
+}
+
+ASTInitializeList::ASTInitializeList(HazeVM* VM, std::vector<std::unique_ptr<ASTBase>>& InitializeListExpression)
+	: ASTBase(VM), InitializeListExpression(std::move(InitializeListExpression))
+{
+}
+
+ASTInitializeList::~ASTInitializeList()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTInitializeList::CodeGen()
+{
+	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_Value;
+	for (size_t i = 0; i < InitializeListExpression.size(); i++)
+	{
+		Vector_Value.push_back(InitializeListExpression[i]->CodeGen());
+	}
+
+	auto InitilaizeListValue = VM->GetCompiler()->GetInitializeListValue();
+	InitilaizeListValue->ResetInitializeList(Vector_Value);
+	
+	return InitilaizeListValue;
 }

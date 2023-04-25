@@ -4,14 +4,13 @@
 
 class HazeVM;
 class ASTBase;
-class ASTVariableDefine;
 class ASTClassFunctionSection;
 class ASTFunctionDefine;
 
 class ASTClass
 {
 public:
-	ASTClass(HazeVM* VM, HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTVariableDefine>>>>& Data,
+	ASTClass(HazeVM* VM, HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& Data,
 		std::unique_ptr<ASTClassFunctionSection>& FunctionSection);
 	~ASTClass();
 
@@ -20,7 +19,7 @@ private:
 	HazeVM* VM;
 
 	HAZE_STRING ClassName;
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTVariableDefine>>>> Vector_ClassData;
+	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Vector_ClassData;
 	std::unique_ptr<ASTClassFunctionSection> ClassFunctionSection;
 };
 

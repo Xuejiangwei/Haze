@@ -24,6 +24,8 @@ public:
 
 	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& MemberValue, HAZE_STRING& OutName);
 
+	void GetMemberName(const HazeCompilerValue* MemberValue, HAZE_STRING& OutName);
+
 private:
 	HazeCompilerClass* OwnerClass;
 	

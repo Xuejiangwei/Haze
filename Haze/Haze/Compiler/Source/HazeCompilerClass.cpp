@@ -64,6 +64,7 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared
 
 void HazeCompilerClass::InitThisValue()
 {
+	NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), HAZE_TEXT("")), HazeDataDesc::ClassThis, 0));
 	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
 	
 	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
@@ -96,10 +97,26 @@ bool HazeCompilerClass::GetMemberName(const std::shared_ptr<HazeCompilerValue>& 
 	{
 		for (size_t j = 0; j < ThisClassValue->Vector_Data[i].second.size(); j++)
 		{
-			if (Value == ThisClassValue->Vector_Data[i].second[j])
+			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].Name, ThisClassValue->Vector_Data[i].second[j] }, Value, OutName))
 			{
-				OutName += HAZE_CLASS_THIS;
-				OutName += HAZE_CLASS_POINTER_ATTR + Vector_Data[i].second[j].Name;
+				OutName = HAZE_CLASS_THIS + OutName;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRING& OutName)
+{
+	for (size_t i = 0; i < ThisClassValue->Vector_Data.size(); i++)
+	{
+		for (size_t j = 0; j < ThisClassValue->Vector_Data[i].second.size(); j++)
+		{
+			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].Name, ThisClassValue->Vector_Data[i].second[j] }, Value, OutName))
+			{
+				OutName = HAZE_CLASS_THIS + OutName;
 				return true;
 			}
 		}

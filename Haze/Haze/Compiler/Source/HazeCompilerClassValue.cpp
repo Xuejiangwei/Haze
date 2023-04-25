@@ -64,3 +64,18 @@ void HazeCompilerClassValue::GetMemberName(const std::shared_ptr<HazeCompilerVal
 		}
 	}
 }
+
+void HazeCompilerClassValue::GetMemberName(const HazeCompilerValue* MemberValue, HAZE_STRING& OutName)
+{
+	for (size_t i = 0; i < Vector_Data.size(); i++)
+	{
+		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
+		{
+			if (MemberValue == Vector_Data[i].second[j].get())
+			{
+				OutName = OwnerClass->GetClassMemberData()[i].second[j].Name;
+				return;
+			}
+		}
+	}
+}

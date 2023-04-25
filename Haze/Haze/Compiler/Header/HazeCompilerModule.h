@@ -39,7 +39,9 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 
-	bool GetGlobalVariableName(std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	bool GetGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+
+	bool GetGlobalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
 
 public:
 	std::shared_ptr<HazeCompilerClass> FindClass(const HAZE_STRING& ClassName);
@@ -79,6 +81,8 @@ private:
 
 	std::shared_ptr<HazeCompilerValue> CreateOpAssign(HazeOperatorAssign Type, std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);
 
+	std::shared_ptr<HazeCompilerValue> CreateArrayInit(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> InitList);
+
 	std::shared_ptr<HazeCompilerValue> GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code);
 
 	void GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value);
@@ -89,13 +93,13 @@ private:
 
 	void GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL);
 
-	static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue>& Value);
+	static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const std::shared_ptr<HazeCompilerValue>& Value, int Index = -1);
 
 public:
 	HazeCompiler* GetCompiler() { return Compiler; }
 
 private:
-	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var);
+	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySize = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
 

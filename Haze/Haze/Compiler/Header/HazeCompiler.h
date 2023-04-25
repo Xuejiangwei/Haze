@@ -6,6 +6,7 @@
 #include "Haze.h"
 
 class HazeCompilerValue;
+class HazeCompilerInitListValue;
 class HazeCompilerFunction;
 class HazeCompilerModule;
 
@@ -48,7 +49,9 @@ public:
 
 	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* Name);
 
-	static const HAZE_CHAR* GetRegisterName(std::shared_ptr<HazeCompilerValue>& Value);
+	static const HAZE_CHAR* GetRegisterName(const std::shared_ptr<HazeCompilerValue>& Value);
+
+	static std::shared_ptr<HazeCompilerInitListValue> GetInitializeListValue();
 
 	bool IsClass(const HAZE_STRING& Name);
 
@@ -62,9 +65,9 @@ public:
 	void ClearBlockPoint();
  
 public:		//生成op code
-	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable);
+	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySize = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var);
+	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySize = nullptr);
 	
 	std::shared_ptr<HazeCompilerValue> CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value);
 
@@ -105,6 +108,11 @@ public:		//生成op code
 	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data);
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
+
+public:
+	std::shared_ptr<HazeCompilerValue> CreateArrayInit(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> InitList);
+
+	std::shared_ptr<HazeCompilerValue> CreateArrayElement(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> Index);
 
 public:
 	void CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL = false);

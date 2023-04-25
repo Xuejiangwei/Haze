@@ -51,6 +51,9 @@ enum class HazeDataDesc : uint32
 	ClassFunction_Local_Public,
 	ClassFunction_Local_Private,
 	ClassFunction_Local_Protected,
+
+	Initlist,
+	ArrayElement,
 };
 
 enum class InstructionOpCode : uint32
