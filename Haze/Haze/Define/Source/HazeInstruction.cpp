@@ -65,7 +65,12 @@ std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister =
 	{RET_REGISTER, HazeRegister()},
 	{NEW_REGISTER, HazeRegister()},
 	{CMP_REGISTER, HazeRegister()},
-	{TEMP_REGISTER, HazeRegister()},
+
+	{TEMP_REGISTER_1, HazeRegister()},
+	{TEMP_REGISTER_2, HazeRegister()},
+	{TEMP_REGISTER_3, HazeRegister()},
+	{TEMP_REGISTER_4, HazeRegister()},
+	{TEMP_REGISTER_5, HazeRegister()},
 };
 
 HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name)
@@ -717,11 +722,6 @@ private:
 #if HAZE_VM_GET_ADDRESS_LOG
 			HSS << Stack->EBP << " " << Stack->ESP << " " << Operator.Extra.Address.BaseAddress << " " << Address << " ";
 #endif
-		}
-		else if (Operator.Scope == HazeDataDesc::Temp)
-		{
-			int Size = GetSizeByType(Operator.Variable.Type, Stack->VM);
-			Ret = &Stack->Stack_Main[Stack->ESP - Size];
 		}
 		else if (Operator.Scope == HazeDataDesc::ArrayElement)
 		{

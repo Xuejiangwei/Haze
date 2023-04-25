@@ -1,5 +1,6 @@
 #include <filesystem>
 
+#include "HazeLog.h"
 #include "HazeCompiler.h"
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
@@ -17,11 +18,19 @@ static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> 
 	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterRet, 0) },
 	{ NEW_REGISTER, nullptr },
 	{ CMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Cmp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterCmp, 0) },
-	{ TEMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
+
+	};
+
+static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalTempRegister = {
+	{ TEMP_REGISTER_1, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register1")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_2, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register2")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_3, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register3")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_4, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register4")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_5, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register5")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
 };
 
 static std::shared_ptr<HazeCompilerInitListValue> InitializeListValue = 
-	std::make_shared<HazeCompilerInitListValue>(nullptr, HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HazeDataDesc::Initlist, 0);
+std::make_shared<HazeCompilerInitListValue>(nullptr, HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HazeDataDesc::Initlist, 0);
 
 HazeCompiler::HazeCompiler()
 {
@@ -106,6 +115,20 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModu
 	return nullptr;
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetTempRegister()
+{
+	for (auto& Iter : HashMap_GlobalTempRegister)
+	{
+		if (Iter.second.use_count() == 1)
+		{
+			return Iter.second;
+		}
+	}
+
+	HAZE_LOG_ERR(HAZE_TEXT("Get temp register error\n"));
+	return nullptr;
+}
+
 //const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue> Register)
 //{
 //	for (auto& iter : Map_GlobalRegister)
@@ -140,6 +163,15 @@ const HAZE_CHAR* HazeCompiler::GetRegisterName(const std::shared_ptr<HazeCompile
 		}
 	}
 
+	for (auto& Iter : HashMap_GlobalTempRegister)
+	{
+		if (Iter.second == Value)
+		{
+			return Iter.first;
+		}
+	}
+
+	HAZE_LOG_ERR(HAZE_TEXT("find register name error\n"));
 	return nullptr;
 }
 

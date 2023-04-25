@@ -47,6 +47,8 @@ public:
 public:
 	static std::shared_ptr<HazeCompilerValue> GetNewRegister(HazeCompilerModule* Module, const HazeDefineType& Data);
 
+	static std::shared_ptr<HazeCompilerValue> GetTempRegister();
+
 	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* Name);
 
 	static const HAZE_CHAR* GetRegisterName(const std::shared_ptr<HazeCompilerValue>& Value);

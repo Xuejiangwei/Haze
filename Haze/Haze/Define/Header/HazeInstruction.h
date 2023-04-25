@@ -33,7 +33,6 @@ enum class HazeDataDesc : uint32
 	Local,
 	Constant,
 	ConstantString,
-	Temp,
 
 	RegisterBegin,
 	RegisterRet,

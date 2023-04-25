@@ -26,13 +26,13 @@ public:
 
 	bool IsRegister() const { return IsRegisterScope(Scope); }
 
+	bool IsRegister(HazeDataDesc Type) const { return IsRegisterScope(Scope) && Scope == Type; }
+
 	bool IsConstant() const { return Scope == HazeDataDesc::Constant; }
 
 	bool IsGlobal() const { return Scope == HazeDataDesc::Global; }
 
 	bool IsLocal() const { return Scope == HazeDataDesc::Local; }
-
-	bool IsTemp() const { return Scope == HazeDataDesc::Temp; }
 
 	bool IsString() const { return Scope == HazeDataDesc::ConstantString; }
 

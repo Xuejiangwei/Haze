@@ -210,7 +210,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr
 	{
 		if (IsPreInc)
 		{
-			Ret = Compiler->GetRegister(TEMP_REGISTER);
+			Ret = Compiler->GetTempRegister();
 			Compiler->CreateMov(Ret, Value);
 		}
 		Compiler->CreateMov(Value, CreateAdd(Value, Compiler->GetConstantValueInt_1()));
@@ -229,7 +229,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateDec(std::shared_ptr
 	{
 		if (IsPreDec)
 		{
-			Ret = Compiler->GetRegister(TEMP_REGISTER);
+			Ret = Compiler->GetTempRegister();
 			Compiler->CreateMov(Ret, Value);
 		}
 		Compiler->CreateMov(Value, CreateSub(Value, Compiler->GetConstantValueInt_1()));
@@ -348,9 +348,20 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 	{
 		HAZE_STRING_STREAM SStream;
 
-		if (NeedTemp && !Left->IsTemp())
+		if (NeedTemp)
 		{
-			Ret = Compiler->CreateMov(Compiler->GetRegister(TEMP_REGISTER), Left);
+			if (!Left->IsRegister(HazeDataDesc::RegisterTemp) && !Right->IsRegister(HazeDataDesc::RegisterTemp))
+			{
+				Ret = Compiler->CreateMov(Compiler->GetTempRegister(), Left);
+			}
+			else
+			{
+				if (Right->IsRegister(HazeDataDesc::RegisterTemp))
+				{
+					Ret = Right;
+					Right = Left;
+				}
+			}
 		}
 
 		SStream << GetInstructionString(IO_Code) << " ";
@@ -765,11 +776,6 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		HSS << " " << (uint32)Value->GetScope();
 
 		StreamExtra = true;
-	}
-	else if (Value->IsTemp())
-	{
-		HSS << " " << HAZE_TEMP_BINART_NAME;
-		HSS << " " << (uint32)Value->GetScope();
 	}
 	else
 	{

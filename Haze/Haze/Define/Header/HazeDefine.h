@@ -55,7 +55,12 @@
 #define RET_REGISTER					HAZE_TEXT("Ret_R")
 #define NEW_REGISTER					HAZE_TEXT("New_R")
 #define CMP_REGISTER					HAZE_TEXT("Cmp_R")
-#define TEMP_REGISTER					HAZE_TEXT("Temp_R")
+
+#define TEMP_REGISTER_1					HAZE_TEXT("Temp_R1")
+#define TEMP_REGISTER_2					HAZE_TEXT("Temp_R2")
+#define TEMP_REGISTER_3					HAZE_TEXT("Temp_R3")
+#define TEMP_REGISTER_4					HAZE_TEXT("Temp_R4")
+#define TEMP_REGISTER_5					HAZE_TEXT("Temp_R5")
 
 #define HAZE_TEMP_BINART_NAME			HAZE_TEXT("TempBinaryValue")
 

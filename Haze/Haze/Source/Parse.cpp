@@ -249,6 +249,8 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 
 	//{ HazeToken::Not, 60 },
 	//{ HazeToken::Inc, 60 },
+	// 
+	//{ HazeToken::LeftParentheses, 1000 },
 };
 
 //static std::unordered_map<HazeToken, HazeValueType> MapValueType =
@@ -914,7 +916,19 @@ std::unique_ptr<ASTBase> Parse::ParseDec()
 
 std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 {
-	return std::unique_ptr<ASTBase>();
+	GetNextToken();
+	auto Expression = ParseExpression();
+	if (CurrToken == HazeToken::RightParentheses)
+	{
+		GetNextToken();
+		return Expression;
+	}
+	else
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("Parse left parentheses error, expect right parentheses\n"));
+	}
+
+	return nullptr;
 }
 
 std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
