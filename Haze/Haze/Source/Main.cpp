@@ -8,6 +8,12 @@
 #include "HazeLog.h"
 #include "HazeVM.h"
 
+#ifdef _DEBUG
+	#include "HazeDebug.h"
+#endif // _DEBUG
+
+
+
 void HazeNewHandler()
 {
 	HAZE_LOG_ERR(HAZE_TEXT("Haze no memory!!!!\n"));
@@ -21,7 +27,7 @@ void HazeInit()
 };
 
 //解析文本  --->  生成字节码   --->  用虚拟机解析字节码，并执行
-int main()
+int main(int ArgCount, char* ArgValue[])
 {
 	HazeInit();
 
@@ -30,17 +36,31 @@ int main()
 	std::filesystem::create_directory(Path + HAZE_TEXT("\\HazeOpCode"));
 
 	HazeVM VM;
-	VM.InitVM({ {Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode")} });
-	VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode")} });
+
+#ifdef _DEBUG
+	
+	VM.InitVM({ {Path + HAZE_TEST_FOLDER + HAZE_TEST_FILE_PATH, HAZE_TEST_FILE } });
+
+#else
+
+	if (ArgCount == 1)
+	{
+		HAZE_STRING FilePath = String2WString(ArgValue[1]);
+		HAZE_STRING ModuleName = FilePath.substr(0, FilePath.length() - 3);
+
+		VM.InitVM({ {Path + HAZE_TEXT("\\") + FilePath,  ModuleName} });
+	}
+
+#endif
+	//VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Code\\HazeCode.hz"), HAZE_TEST_FILE} });
 	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
 
-	std::cout << std::endl << std::endl;
-	std::cout << "Haze Start" << std::endl << std::endl;
+	std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
+	
 	VM.StartMainFunction();
-
-	//VM.ParseString(L"Haze 测试 \n");
-
+	
 	std::cout << std::endl << "Haze End!" << std::endl;
+	
 	getchar();
 }
 

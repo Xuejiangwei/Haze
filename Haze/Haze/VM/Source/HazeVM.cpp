@@ -91,7 +91,7 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 void HazeVM::ParseModule(const HAZE_STRING& ModuleName)
 {
 	HAZE_STRING FilePath = std::filesystem::current_path();
-	FilePath += (HAZE_TEXT("\\Other\\") + ModuleName + HAZE_TEXT(".hz"));
+	FilePath += (HAZE_TEXT("\\Code\\") + ModuleName + HAZE_TEXT(".hz"));
 
 	ParseFile(FilePath, ModuleName);
 }
