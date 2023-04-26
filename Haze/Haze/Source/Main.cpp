@@ -12,8 +12,6 @@
 	#include "HazeDebug.h"
 #endif // _DEBUG
 
-
-
 void HazeNewHandler()
 {
 	HAZE_LOG_ERR(HAZE_TEXT("Haze no memory!!!!\n"));
@@ -61,7 +59,7 @@ int main(int ArgCount, char* ArgValue[])
 	
 	std::cout << std::endl << "Haze End!" << std::endl;
 	
-	getchar();
+	return getchar();
 }
 
 // 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单

@@ -13,7 +13,7 @@
 
 #include "HazeLog.h"
 
-#define HAZE_SINGLE_COMMENT				HAZE_TEXT("#")
+#define HAZE_SINGLE_COMMENT				HAZE_TEXT("//")
 #define HAZE_MULTI_COMMENT_START		HAZE_TEXT("/*")
 #define HAZE_MULTI_COMMENT_END			HAZE_TEXT("*/")
 
@@ -427,15 +427,27 @@ HazeToken Parse::GetNextToken()
 		CurrLexeme += *(CurrCode++);
 	}
 
-	if (CurrLexeme == HAZE_STRING(HAZE_SINGLE_COMMENT))
+	static HAZE_STRING Comment_Str;
+	Comment_Str = *CurrCode;
+	if (CurrLexeme == HAZE_SINGLE_COMMENT)
 	{
-		HAZE_STRING WS;
-		WS = *CurrCode;
-		while (WS != HAZE_TEXT("\n"))
+		while (Comment_Str != HAZE_TEXT("\n"))
 		{
 			CurrCode++;
-			WS = *CurrCode;
+			Comment_Str = *CurrCode;
 		}
+		return GetNextToken();
+	}
+	else if (CurrLexeme == HAZE_MULTI_COMMENT_START)
+	{
+		Comment_Str.resize(2);
+		while (Comment_Str != HAZE_MULTI_COMMENT_END)
+		{
+			CurrCode++;
+			memcpy(Comment_Str.data(), CurrCode, sizeof(HAZE_CHAR) * 2);
+		}
+
+		CurrCode += 2;
 		return GetNextToken();
 	}
 
@@ -1614,7 +1626,7 @@ bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, 
 		TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
 		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, 
 		TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, 
-		HAZE_SINGLE_COMMENT, 
+		HAZE_SINGLE_COMMENT, HAZE_MULTI_COMMENT_START, HAZE_MULTI_COMMENT_END,
 		TOKEN_COMMA, 
 		TOKEN_MULTI_VARIABLE, 
 		TOKEN_STRING_MATCH,
