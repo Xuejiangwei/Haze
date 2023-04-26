@@ -22,6 +22,8 @@ public:
 
 	void FinishModule();
 
+	HazeCompilerModule* GetModule(const HAZE_STRING& Name);
+
 	std::unique_ptr<HazeCompilerModule>& GetCurrModule();
 
 	bool CurrModuleIsStdLib();
@@ -66,6 +68,8 @@ public:
 
 	void ClearBlockPoint();
  
+	void AddImportModuleToCurrModule(HazeCompilerModule* Module);
+
 public:		//Éú³Éop code
 	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySize = nullptr);
 

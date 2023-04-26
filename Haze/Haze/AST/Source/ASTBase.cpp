@@ -305,10 +305,11 @@ ASTMultiExpression::~ASTMultiExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTMultiExpression::CodeGen()
 {
-	for (auto& it : VectorExpression)
+	for (size_t i = 0; i < VectorExpression.size(); i++)
 	{
-		it->CodeGen();
+		VectorExpression[i]->CodeGen();
 	}
+
 	return nullptr;
 }
 
@@ -425,7 +426,7 @@ ASTImportModule::~ASTImportModule()
 
 std::shared_ptr<HazeCompilerValue> ASTImportModule::CodeGen()
 {
-	VM->ParseModule(ModuleName);
+	VM->GetCompiler()->AddImportModuleToCurrModule(VM->ParseModule(ModuleName));
 	return nullptr;
 }
 

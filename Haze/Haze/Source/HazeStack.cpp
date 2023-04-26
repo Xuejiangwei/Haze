@@ -21,7 +21,6 @@ HazeStack::~HazeStack()
 {
 }
 
-
 void HazeStack::Start(unsigned int Address)
 {
 	PC = Address;
@@ -111,10 +110,10 @@ void HazeStack::PushMainFuntion()
 	ESP -= HAZE_ADDRESS_SIZE;
 	EBP -= HAZE_ADDRESS_SIZE;
 
-	if (MainFunction.Vector_Variable.size() > 0)
+	/*if (MainFunction.Vector_Variable.size() > 0)
 	{
 		ESP += MainFunction.Vector_Variable.back().Offset + MainFunction.Vector_Variable.back().Size;
-	}
+	}*/
 }
 
 void HazeStack::InitRegisterToStack()
@@ -135,7 +134,7 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize));
 	Stack_EBP.push_back(ESP - (HAZE_ADDRESS_SIZE + ParamSize));
 
-	if (Info->Vector_Variable.size() > 0)
+	if (Info->Vector_Variable.size() > Info->Vector_Param.size())
 	{
 		ESP += Info->Vector_Variable.back().Offset + GetSizeByType(Info->Vector_Variable.back().Variable.Type, VM);
 	}

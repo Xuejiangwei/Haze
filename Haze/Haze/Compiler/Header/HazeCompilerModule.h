@@ -127,4 +127,6 @@ private:
 
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> HashMap_StringTable;
 	std::unordered_map<int, const HAZE_STRING*> HashMap_StringMapping;
+
+	std::vector<HazeCompilerModule*> Vector_ImportModule;
 };

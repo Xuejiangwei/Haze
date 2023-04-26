@@ -57,8 +57,9 @@ private:
 
 	void GenOpCodeFile();
 
-	void FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable,
-		ModuleUnit::ClassTable& NewClassTable, ModuleUnit::FunctionTable& NewFunctionTable);
+	void ReplaceIndex(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable, ModuleUnit::FunctionTable& NewFunctionTable, size_t& FunctionCount);
+
+	void FindAddress(/*ModuleUnit::ClassTable& NewClassTable, */ModuleUnit::FunctionTable& NewFunctionTable);
 
 	void WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction);
 

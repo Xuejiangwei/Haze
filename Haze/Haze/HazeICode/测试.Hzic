@@ -1,0 +1,28 @@
+0
+GlobalDataTable
+0
+StringTable
+1
+27 三维点 横坐标 %d 纵坐标 %d 前坐标 %d \n
+ClassTable
+1
+Class 三维点 12 3
+横坐标 3
+纵坐标 3
+前坐标 3
+FunctionTable
+1
+Function 三维点@输出点 0
+Param 己 11 三维点
+Variable 己$1 11 三维点 -12 8
+Start
+
+Block Entry
+PUSH 3 己$1指之前坐标 14
+PUSH 3 己$1指之纵坐标 14
+PUSH 3 己$1指之横坐标 14
+PUSH 10 常字符串指针 4 2 0
+PUSH 3 Address 11
+CALL 打印 4 20
+RET 0
+End

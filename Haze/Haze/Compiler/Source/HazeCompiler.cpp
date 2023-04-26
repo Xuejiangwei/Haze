@@ -59,6 +59,17 @@ void HazeCompiler::FinishModule()
 	GenModuleCodeFile();
 }
 
+HazeCompilerModule* HazeCompiler::GetModule(const HAZE_STRING& Name)
+{
+	auto Iter = HashMap_CompilerModule.find(Name);
+	if (Iter != HashMap_CompilerModule.end())
+	{
+		return Iter->second.get();
+	}
+
+	return nullptr;
+}
+
 void HazeCompiler::GenModuleCodeFile()
 {
 	HashMap_CompilerModule[GetCurrModuleName()]->GenCodeFile();
@@ -182,11 +193,19 @@ std::shared_ptr<HazeCompilerInitListValue> HazeCompiler::GetInitializeListValue(
 
 bool HazeCompiler::IsClass(const HAZE_STRING& Name)
 {
-	for (auto& Iter : HashMap_CompilerModule)
+	auto& Module = GetCurrModule();
+	if (Module->FindClass(Name))
 	{
-		if (Iter.second->FindClass(Name))
+		return true;
+	}
+	else
+	{
+		for (auto& Iter : Module->Vector_ImportModule)
 		{
-			return true;
+			if (Iter->FindClass(Name))
+			{
+				return true;
+			}
 		}
 	}
 
@@ -323,6 +342,27 @@ void HazeCompiler::SetInsertBlock(std::shared_ptr<HazeBaseBlock> BB)
 void HazeCompiler::ClearBlockPoint()
 {
 	InsertBaseBlock = nullptr;
+}
+
+void HazeCompiler::AddImportModuleToCurrModule(HazeCompilerModule* Module)
+{
+	/*for (auto& i : HashMap_CompilerModule)
+	{
+		if (i.second.get() == Module)
+		{
+			std::wcout << GetCurrModuleName()<< " add module " << i.first << std::endl;
+		}
+	}*/
+
+	for (auto& Iter : GetCurrModule()->Vector_ImportModule)
+	{
+		if (Iter == Module)
+		{
+			return;
+		}
+	}
+
+	GetCurrModule()->Vector_ImportModule.push_back(Module);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)

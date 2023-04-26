@@ -321,7 +321,7 @@ void Parse::ParseContent()
 			auto AST = ParseClass();
 			AST->CodeGen();
 		}
-			break;
+		break;
 		case HazeToken::Function:
 		{
 			auto AST = ParseFunctionSection();
@@ -356,12 +356,12 @@ void Parse::ParseContent()
 
 HazeToken Parse::GetNextToken()
 {
-	if (!*CurrCode)
+	/*if (!*CurrCode)
 	{
 		CurrToken = HazeToken::None;
 		CurrLexeme = HAZE_TEXT("");
 		return HazeToken::None;
-	}
+	}*/
 
 	while (HazeIsSpace(*CurrCode))
 	{
@@ -370,6 +370,8 @@ HazeToken Parse::GetNextToken()
 
 	if (HAZE_STRING(CurrCode) == HAZE_TEXT(""))
 	{
+		CurrToken = HazeToken::None;
+		CurrLexeme = HAZE_TEXT("");
 		return HazeToken::None;
 	}
 
@@ -705,22 +707,29 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			//函数调用
 			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
 		}
-		else if (DefineVariable.Type.PrimaryType == HazeValueType::Class && CurrToken == HazeToken::LeftParentheses)
+		else if (DefineVariable.Type.PrimaryType == HazeValueType::Class )
 		{
-			//类对象定义
-			GetNextToken();
-			if (CurrToken == HazeToken::RightParentheses)
+			if (CurrToken == HazeToken::LeftParentheses)
 			{
+				//类对象定义
 				GetNextToken();
-				return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
+				if (CurrToken == HazeToken::RightParentheses)
+				{
+					GetNextToken();
+					return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
+				}
+				else
+				{
+					//自定义构造函数
+					/*while (CurrToken != HazeToken::RightParentheses)
+					{
+
+					}*/
+				}
 			}
 			else
 			{
-				//自定义构造函数
-				/*while (CurrToken != HazeToken::RightParentheses)
-				{
-
-				}*/
+				HAZE_LOG_ERR(HAZE_TEXT("Class object define need left parentheses!\n"));
 			}
 		}
 		else
@@ -1353,8 +1362,14 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 
 std::unique_ptr<ASTBase> Parse::ParseImportModule()
 {
-	GetNextToken();
-	return std::make_unique<ASTImportModule>(VM, CurrLexeme);
+	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Parse import module name is error\n")))
+	{
+		HAZE_STRING Name = CurrLexeme;
+		GetNextToken();
+		return std::make_unique<ASTImportModule>(VM, Name);
+	}
+	
+	return nullptr;
 }
 
 std::unique_ptr<ASTClass> Parse::ParseClass()
@@ -1492,6 +1507,11 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 			}
 		}
 
+		if (CurrToken != HazeToken::RightBrace)
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("Parse class data section end error \n"));
+		}
+
 		GetNextToken();
 	}
 
@@ -1578,6 +1598,11 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 				}
 			}
 
+		}
+
+		if (CurrToken != HazeToken::RightBrace)
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("Parse class function section end error \n"));
 		}
 
 		GetNextToken();

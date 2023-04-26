@@ -491,15 +491,18 @@ void BackendParse::GenOpCodeFile()
 	ModuleUnit::ClassTable NewClassTable;
 	ModuleUnit::FunctionTable NewFunctionTable;
 
-	for (auto& iter : HashMap_Modules)
+	size_t FunctionCount = 0;
+	for (auto& Module : HashMap_Modules)
 	{
-		NewGlobalDataTable.Vector_Data.insert(NewGlobalDataTable.Vector_Data.end(), iter.second->Table_GlobalData.Vector_Data.begin(), iter.second->Table_GlobalData.Vector_Data.end());
-		NewStringTable.Vector_String.insert(NewStringTable.Vector_String.end(), iter.second->Table_String.Vector_String.begin(), iter.second->Table_String.Vector_String.end());
-		NewClassTable.Vector_Class.insert(NewClassTable.Vector_Class.end(), iter.second->Table_Class.Vector_Class.begin(), iter.second->Table_Class.Vector_Class.end());
-		NewFunctionTable.Vector_Function.insert(NewFunctionTable.Vector_Function.end(), iter.second->Table_Function.Vector_Function.begin(), iter.second->Table_Function.Vector_Function.end());
+		NewFunctionTable.Vector_Function.insert(NewFunctionTable.Vector_Function.end(), Module.second->Table_Function.Vector_Function.begin(), Module.second->Table_Function.Vector_Function.end());
+		ReplaceIndex(NewGlobalDataTable, NewStringTable, NewFunctionTable, FunctionCount);
+
+		NewGlobalDataTable.Vector_Data.insert(NewGlobalDataTable.Vector_Data.end(), Module.second->Table_GlobalData.Vector_Data.begin(), Module.second->Table_GlobalData.Vector_Data.end());
+		NewStringTable.Vector_String.insert(NewStringTable.Vector_String.end(), Module.second->Table_String.Vector_String.begin(), Module.second->Table_String.Vector_String.end());
+		NewClassTable.Vector_Class.insert(NewClassTable.Vector_Class.end(), Module.second->Table_Class.Vector_Class.begin(), Module.second->Table_Class.Vector_Class.end());
 	}
 	
-	FindAddress(NewGlobalDataTable, NewStringTable, NewClassTable, NewFunctionTable);
+	FindAddress(/*NewClassTable, */NewFunctionTable);
 
 	//将全局数据写入
 	uint32 UnsignedInt = (uint32)NewGlobalDataTable.Vector_Data.size();
@@ -631,8 +634,30 @@ void BackendParse::GenOpCodeFile()
 	}
 }
 
-void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable,
-	ModuleUnit::ClassTable& NewClassTable, ModuleUnit::FunctionTable& NewFunctionTable)
+void BackendParse::ReplaceIndex(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable, ModuleUnit::FunctionTable& NewFunctionTable, size_t& FunctionCount)
+{
+	for (; FunctionCount < NewFunctionTable.Vector_Function.size(); FunctionCount++)
+	{
+		for (auto& Iter : NewFunctionTable.Vector_Function[FunctionCount].Vector_Instruction)
+		{
+			for (auto& Operator : Iter.Operator)
+			{
+				if (Operator.Scope == HazeDataDesc::ConstantString)
+				{
+					Operator.Extra.Index += (uint32)NewStringTable.Vector_String.size();
+				}
+				else if (Operator.Scope == HazeDataDesc::Global)
+				{
+					//Operator.Extra.Index = NewGlobalDataTable.GetIndex(Operator.Variable.Name);
+					//Operator.AddressType = InstructionAddressType::GlobalDataIndex;
+					Operator.Extra.Index += (uint32)NewGlobalDataTable.Vector_Data.size();
+				}
+			}
+		}
+	}
+}
+
+void BackendParse::FindAddress(/*ModuleUnit::ClassTable& NewClassTable, */ModuleUnit::FunctionTable& NewFunctionTable)
 {
 	std::unordered_map<HAZE_STRING, size_t> HashMap_FunctionIndexAndAddress;
 	for (size_t i = 0; i < NewFunctionTable.Vector_Function.size(); i++)
@@ -678,16 +703,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 				for (auto& it : CurrFunction.Vector_Instruction[i].Operator)
 				{
 					auto& VariableName = it.Variable.Name;
-					if (it.Scope == HazeDataDesc::Global)
-					{
-						it.Extra.Index = NewGlobalDataTable.GetIndex(VariableName);
-						it.AddressType = InstructionAddressType::GlobalDataIndex;
-					}
-					else if (it.Scope == HazeDataDesc::ConstantString)
-					{
-						//已在Compiler里输出了Index
-					}
-					else if (it.Scope == HazeDataDesc::ArrayElement)
+					if (it.Scope == HazeDataDesc::ArrayElement)
 					{
 						auto Iter_Index = HashMap_Variable.find(it.Variable.Name);
 						if (Iter_Index != HashMap_Variable.end())

@@ -612,7 +612,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		BB->PushIRCode(SStream.str());
 		SStream.str(HAZE_TEXT(""));
 
-		Size += ThisPointerTo->GetSize();
+		Size += GetSizeByHazeType(HazeValueType::PointerClass);
 	}
 
 	SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Int) << " " << HAZE_CALL_PUSH_ADDRESS_NAME
@@ -732,6 +732,15 @@ std::shared_ptr<HazeCompilerClass> HazeCompilerModule::FindClass(const HAZE_STRI
 	if (Iter != HashMap_Class.end())
 	{
 		return Iter->second;
+	}
+
+	for (auto& It : Vector_ImportModule)
+	{
+		auto Ret = It->FindClass(ClassName);
+		if (Ret)
+		{
+			return Ret;
+		}
 	}
 	
 	return nullptr;

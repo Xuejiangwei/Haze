@@ -71,29 +71,37 @@ void HazeVM::ParseString(const HAZE_STRING& String)
 
 void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName)
 {
+	bool PopCurrModule = false;
 	if (Compiler->InitializeCompiler(ModuleName))
 	{
+		PopCurrModule = true;
 		Parse P(this);
 		P.InitializeFile(FilePath);
 		P.ParseContent();
 		Compiler->FinishModule();
 	}
 
+
 	auto Module = HashMap_Module.find(ModuleName);
 	if (Module == HashMap_Module.end())
 	{
 		HashMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
 	}
-	
-	Compiler->PopCurrModule();
+
+	if (PopCurrModule)
+	{
+		Compiler->PopCurrModule();
+	}
 }
 
-void HazeVM::ParseModule(const HAZE_STRING& ModuleName)
+HazeCompilerModule* HazeVM::ParseModule(const HAZE_STRING& ModuleName)
 {
 	HAZE_STRING FilePath = std::filesystem::current_path();
 	FilePath += (HAZE_TEXT("\\Code\\") + ModuleName + HAZE_TEXT(".hz"));
 
 	ParseFile(FilePath, ModuleName);
+
+	return Compiler->GetModule(ModuleName);
 }
 
 void HazeVM::LoadOpCodeFile()

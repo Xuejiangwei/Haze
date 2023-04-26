@@ -9,6 +9,7 @@
 #include "HazeModule.h"
 
 class HazeCompiler;
+class HazeCompilerModule;
 
 class HazeStack;
 
@@ -33,7 +34,7 @@ public:
 
 	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName);
 
-	void ParseModule(const HAZE_STRING& ModuleName);
+	HazeCompilerModule* ParseModule(const HAZE_STRING& ModuleName);
 
 	std::unique_ptr<HazeCompiler>& GetCompiler() { return Compiler; }
 
