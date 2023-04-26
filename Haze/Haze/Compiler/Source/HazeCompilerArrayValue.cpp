@@ -19,7 +19,7 @@ HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* Module, const
 	: HazeCompilerValue(Module, DefineType, Scope, Count), ArrayType(DefineType)
 {
 	ArrayLength = ArraySize->GetValue().Type == HazeValueType::UnsignedLong || ArraySize->GetValue().Type == HazeValueType::Long ?
-		ArraySize->GetValue().Value.UnsignedLong : ArraySize->GetValue().Value.UnsignedInt;
+		(uint32)ArraySize->GetValue().Value.UnsignedLong : ArraySize->GetValue().Value.UnsignedInt;
 
 	Size = ArrayLength * GetSizeByType(DefineType, Module);
 }

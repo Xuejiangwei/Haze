@@ -241,6 +241,48 @@ std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 	return VM->GetCompiler()->CreateNew(VM->GetCompiler()->GetCurrModule()->GetCurrFunction(), DefineVariable.Type);
 }
 
+ASTPointerValue::ASTPointerValue(HazeVM* VM, HAZE_STRING& Name) : ASTBase(VM)
+{
+	DefineVariable.Name = std::move(Name);
+}
+
+ASTPointerValue::~ASTPointerValue()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
+{
+	auto& Compiler = VM->GetCompiler();
+	auto& Module = Compiler->GetCurrModule();
+	auto PointerValue = Module->GetCurrFunction()->GetLocalVariable(DefineVariable.Name);
+	if (!PointerValue)
+	{
+		PointerValue = Module->GetGlobalVariable(DefineVariable.Name);
+	}
+
+	if (PointerValue)
+	{
+		auto Pointer = std::dynamic_pointer_cast<HazeCompilerPointerValue>(PointerValue);
+		auto PointerToValue = Pointer->GetPointerValue();
+
+		if (PointerToValue->IsArray())
+		{
+			HazeValue IndexValue;
+			IndexValue.Type = HazeValueType::Int;
+			IndexValue.Value.Int = 0;
+			Compiler->CreateArrayElement(PointerToValue->GetShared(), Compiler->GenConstantValue(IndexValue));
+		}
+
+		return PointerToValue->GetShared();
+	}
+	else
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("Parse pointer value not get pointer value %s"), DefineVariable.Name.c_str());
+	}
+	
+	return PointerValue;
+}
+
 ASTInc::ASTInc(HazeVM* VM, HAZE_STRING& Name, bool IsPreInc) : ASTBase(VM), IsPreInc(IsPreInc)
 {
 	DefineVariable.Name = std::move(Name);

@@ -68,7 +68,7 @@ void HazeCompilerClass::InitThisValue()
 	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
 	
 	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
-	ThisPointerValue->InitPointerTo(ThisClassValue.get());
+	ThisPointerValue->InitPointerTo(ThisClassValue);
 }
 
 size_t HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)

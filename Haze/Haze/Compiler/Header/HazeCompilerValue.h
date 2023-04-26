@@ -5,7 +5,7 @@
 
 class HazeCompilerModule;
 
-class HazeCompilerValue
+class HazeCompilerValue : public std::enable_shared_from_this<HazeCompilerValue>
 {
 public:
 	HazeCompilerValue();
@@ -15,6 +15,8 @@ public:
 	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count);
 
 	virtual ~HazeCompilerValue();
+
+	std::shared_ptr<HazeCompilerValue> GetShared() { return shared_from_this(); }
 
 	virtual void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
 

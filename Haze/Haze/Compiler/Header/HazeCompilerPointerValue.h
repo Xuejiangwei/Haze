@@ -13,6 +13,8 @@ public:
 
 	void InitPointerTo(HazeCompilerValue* PointerToValue);
 
+	void InitPointerTo(std::shared_ptr<HazeCompilerValue> PointerToValue);
+
 	HazeCompilerValue* GetPointerValue() const { return PointerValue; }
 
 	const HazeDefineType& GetPointerType() const { return PointerType; }

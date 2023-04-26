@@ -117,7 +117,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModu
 		
 		if (!Data.CustomName.empty())
 		{
-			PointerValue->InitPointerTo(Module->FindClass(Data.CustomName)->GetNewPointerToValue().get());
+			PointerValue->InitPointerTo(Module->FindClass(Data.CustomName)->GetNewPointerToValue());
 		}
 		
 		return Iter->second;

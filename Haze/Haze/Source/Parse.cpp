@@ -494,10 +494,10 @@ std::unique_ptr<ASTBase> Parse::ParseExpression()
 	return nullptr;
 }
 
-std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
+std::unique_ptr<ASTBase> Parse::ParseUnaryExpression(bool HasLeft)
 {
 	auto it = MapBinOp.find(CurrToken);
-	if (it == MapBinOp.end())
+	if (it == MapBinOp.end() || !HasLeft)
 	{
 		return ParsePrimary();
 	}
@@ -523,7 +523,7 @@ std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::uniq
 
 		GetNextToken();
 
-		std::unique_ptr<ASTBase> Right = ParseUnaryExpression();
+		std::unique_ptr<ASTBase> Right = ParseUnaryExpression(true);
 		if (!Right)
 		{
 			return nullptr;
@@ -611,6 +611,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseLeftParentheses();
 	case HazeToken::LeftBrace:
 		return ParseLeftBrace();
+	case HazeToken::Mul:					//pointer value
+		return ParsePointerValue();
 	default:
 		break;
 	}
@@ -950,6 +952,15 @@ std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 	}
 
 	return nullptr;
+}
+
+std::unique_ptr<ASTBase> Parse::ParsePointerValue()
+{
+	GetNextToken();
+	HAZE_STRING Name = CurrLexeme;
+
+	GetNextToken();
+	return std::make_unique<ASTPointerValue>(VM, Name);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseLeftBrace()

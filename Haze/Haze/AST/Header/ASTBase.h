@@ -136,6 +136,17 @@ public:
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 };
 
+//Parse pointer value
+class ASTPointerValue : public ASTBase
+{
+public:
+	ASTPointerValue(HazeVM* VM, HAZE_STRING& Name);
+	virtual ~ASTPointerValue() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+};
+
+
 //Inc
 class ASTInc : public ASTBase
 {

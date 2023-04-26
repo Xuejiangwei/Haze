@@ -45,7 +45,7 @@ private:
 
 	std::unique_ptr<ASTBase> ParseExpression();
 
-	std::unique_ptr<ASTBase> ParseUnaryExpression();
+	std::unique_ptr<ASTBase> ParseUnaryExpression(bool HasLeft = false);
 
 	std::unique_ptr<ASTBase> ParseBinaryOperateExpression(int Prec, std::unique_ptr<ASTBase> Left);
 
@@ -74,6 +74,8 @@ private:
 	std::unique_ptr<ASTBase> ParseLeftBrace();
 
 	std::unique_ptr<ASTBase> ParseLeftParentheses();
+
+	std::unique_ptr<ASTBase> ParsePointerValue();
 
 	std::unique_ptr<ASTBase> ParseInc();
 
