@@ -220,38 +220,17 @@ public:
 
 	static void Sub(HazeStack* Stack)
 	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 2)
-		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SUB, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
-			}
-		}
+		BinaryOperator(Stack);
 	}
 
 	static void Mul(HazeStack* Stack)
 	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 2)
-		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MUL, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
-			}
-		}
+		BinaryOperator(Stack);
 	}
 
 	static void Div(HazeStack* Stack)
 	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 2)
-		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DIV, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
-			}
-		}
+		BinaryOperator(Stack);
 	}
 
 	static void Mod(HazeStack* Stack)
@@ -749,6 +728,10 @@ private:
 		{
 			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress + Operator.Extra.Address.Offset];
 		}
+		else if (Operator.Variable.Type.PrimaryType == HazeValueType::Array)
+		{
+			HAZE_TO_DO(to do parse array pointer);
+		}
 		else /*if (Operator.Scope == InstructionScopeType::Local)*/
 		{
 			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
@@ -779,29 +762,41 @@ private:
 
 	static void BinaryOperator(HazeStack* Stack)
 	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		const auto& Instruction = Stack->VM->Vector_Instruction[Stack->PC];
+		const auto& Operator = Instruction.Operator;
 		if (Operator.size() == 2)
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, Stack->VM->Vector_Instruction[Stack->PC].InsCode, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, Instruction.InsCode, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 			else if (IsRegisterScope(Operator[0].Scope) && IsIntegerType(Operator[1].Variable.Type.PrimaryType))
 			{
-				auto Dst = GetAddressByOperator(Stack, Operator[0]);
-				auto Src = GetAddressByOperator(Stack, Operator[1]);
-				uint64 Address = 0;
-				uint64 Size = GetSizeByType(Operator[1].Variable.Type, Stack->VM);
-				uint64 Num = 0;
-				memcpy(&Address, Dst, sizeof(Address));
-				memcpy(&Num, Src, Size);
-				char* NewAddress = (char*)Address + Size * Num;
-				Address = (uint64)NewAddress;
-				memcpy(Dst, &Address, sizeof(NewAddress));
+				if (Instruction.InsCode == InstructionOpCode::ADD || Instruction.InsCode == InstructionOpCode::SUB
+					|| Instruction.InsCode == InstructionOpCode::ADD_ASSIGN || Instruction.InsCode == InstructionOpCode::SUB_ASSIGN)
+				{
+					auto Dst = GetAddressByOperator(Stack, Operator[0]);
+					auto Src = GetAddressByOperator(Stack, Operator[1]);
+					uint64 Address = 0;
+					uint64 Size = GetSizeByType(Operator[1].Variable.Type, Stack->VM);
+					uint64 Num = 0;
+					memcpy(&Address, Dst, sizeof(Address));
+					memcpy(&Num, Src, Size);
+
+					char* NewAddress = (char*)Address + Size * Num *
+						(Instruction.InsCode == InstructionOpCode::ADD || Instruction.InsCode == InstructionOpCode::ADD_ASSIGN ? 1 : -1);
+
+					Address = (uint64)NewAddress;
+					memcpy(Dst, &Address, sizeof(NewAddress));
+				}
+				else
+				{
+					HAZE_LOG_ERR(HAZE_TEXT("Pointer binary operator error, %s %s operator %s do not support!\n"), Operator[0].Variable.Name.c_str(), Operator[1].Variable.Name.c_str(), GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
+				}
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("Binary operator error, %s %s operator %s"), Operator[0].Variable.Name, Operator[1].Variable.Name, GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
+				HAZE_LOG_ERR(HAZE_TEXT("Binary operator error, %s %s operator %s!\n"), Operator[0].Variable.Name.c_str(), Operator[1].Variable.Name.c_str(), GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
 			}
 		}
 	}

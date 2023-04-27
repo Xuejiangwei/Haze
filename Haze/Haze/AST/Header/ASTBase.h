@@ -139,10 +139,13 @@ public:
 class ASTPointerValue : public ASTBase
 {
 public:
-	ASTPointerValue(HazeVM* VM, HAZE_STRING& Name);
+	ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression);
 	virtual ~ASTPointerValue() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	std::unique_ptr<ASTBase> Expression;
 };
 
 

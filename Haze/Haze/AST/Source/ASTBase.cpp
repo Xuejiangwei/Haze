@@ -241,9 +241,8 @@ std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 	return VM->GetCompiler()->CreateNew(VM->GetCompiler()->GetCurrModule()->GetCurrFunction(), DefineVariable.Type);
 }
 
-ASTPointerValue::ASTPointerValue(HazeVM* VM, HAZE_STRING& Name) : ASTBase(VM)
+ASTPointerValue::ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression) : ASTBase(VM), Expression(std::move(Expression))
 {
-	DefineVariable.Name = std::move(Name);
 }
 
 ASTPointerValue::~ASTPointerValue()
@@ -253,12 +252,7 @@ ASTPointerValue::~ASTPointerValue()
 std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 {
 	auto& Compiler = VM->GetCompiler();
-	auto& Module = Compiler->GetCurrModule();
-	auto PointerValue = Module->GetCurrFunction()->GetLocalVariable(DefineVariable.Name);
-	if (!PointerValue)
-	{
-		PointerValue = Module->GetGlobalVariable(DefineVariable.Name);
-	}
+	auto PointerValue = Expression->CodeGen();
 
 	if (PointerValue)
 	{

@@ -956,10 +956,8 @@ std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 {
 	GetNextToken();
-	HAZE_STRING Name = CurrLexeme;
-
-	GetNextToken();
-	return std::make_unique<ASTPointerValue>(VM, Name);
+	auto Expression = ParseExpression();
+	return std::make_unique<ASTPointerValue>(VM, Expression);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseLeftBrace()

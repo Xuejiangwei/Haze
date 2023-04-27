@@ -206,7 +206,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateNot(std::shared_ptr
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
 {
 	std::shared_ptr<HazeCompilerValue> Ret = Value;
-	if (IsHazeDefaultType(Value->GetValueType().PrimaryType))
+	if (IsHazeDefaultType(Value->GetValueType().PrimaryType) || Value->IsPointer())
 	{
 		if (IsPreInc)
 		{
