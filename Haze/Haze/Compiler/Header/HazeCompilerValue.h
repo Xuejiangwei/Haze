@@ -12,15 +12,17 @@ public:
 
 	HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, HazeValue* DefaultValue = nullptr);
 
 	virtual ~HazeCompilerValue();
 
 	std::shared_ptr<HazeCompilerValue> GetShared() { return shared_from_this(); }
 
-	virtual void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
+	void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
 
-	HazeValue& GetValue() { return Value; }
+	const HazeDefineType& GetValueType() const { return ValueType; }
+
+	const HazeValue& GetValue() const { return Value; }
 
 	HazeDataDesc GetScope() const { return Scope; }
 
@@ -52,19 +54,20 @@ public:
 
 	bool IsPointer() const { return IsPointerBase() || IsPointerClass(); }
 	
-	bool IsPointerBase() const { return Value.Type == HazeValueType::PointerBase; }
+	bool IsPointerBase() const { return ValueType.PrimaryType == HazeValueType::PointerBase; }
 
-	bool IsPointerClass() const { return Value.Type == HazeValueType::PointerClass; }
+	bool IsPointerClass() const { return ValueType.PrimaryType == HazeValueType::PointerClass; }
 
-	bool IsArray() const { return Value.Type == HazeValueType::Array; }
+	bool IsArray() const { return ValueType.PrimaryType == HazeValueType::Array; }
 
-	bool IsClass() const { return Value.Type == HazeValueType::Class; }
+	bool IsClass() const { return ValueType.PrimaryType == HazeValueType::Class; }
 
 public:
 	virtual uint32 GetSize();
 
 protected:
-	HazeValue Value;
+	HazeDefineType ValueType;
+	HazeValue Value;					//VlaueÖÐµÄTypeÆúÓÃ
 	HazeCompilerModule* Module;
 	HazeDataDesc Scope;
 

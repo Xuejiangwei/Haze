@@ -9,18 +9,12 @@ public:
 
 	virtual ~HazeCompilerPointerValue() override;
 
-	virtual void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue) override;
+	//virtual void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue) override;
 
-	void InitPointerTo(HazeCompilerValue* PointerToValue);
+	//void InitPointerTo(HazeCompilerValue* PointerToValue);
 
-	void InitPointerTo(std::shared_ptr<HazeCompilerValue> PointerToValue);
+	//void InitPointerTo(std::shared_ptr<HazeCompilerValue> PointerToValue);
 
-	HazeCompilerValue* GetPointerValue() const { return PointerValue; }
+	//std::shared_ptr<HazeCompilerValue> GetPointerValue() const;
 
-	const HazeDefineType& GetPointerType() const { return PointerType; }
-
-private:
-	HazeDefineType PointerType;
-	
-	HazeCompilerValue* PointerValue;
 };

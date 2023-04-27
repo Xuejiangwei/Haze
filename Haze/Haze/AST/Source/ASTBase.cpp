@@ -25,20 +25,17 @@ ASTBase::ASTBase(HazeVM* VM) : VM(VM)
 
 ASTBase::ASTBase(HazeVM* VM, const HazeDefineVariable& Var) : VM(VM), DefineVariable(Var)
 {
-	Value.Type = HazeValueType::Void;
 	memset(&Value.Value, 0, sizeof(Value.Value));
-}
-
-ASTBase::ASTBase(HazeVM* VM, const HazeValue& Value) : VM(VM), Value(Value)
-{
 }
 
 ASTBase::~ASTBase()
 {
 }
 
-ASTBool::ASTBool(HazeVM* VM, const HazeValue& Value) : ASTBase(VM, Value)
+ASTBool::ASTBool(HazeVM* VM, const HazeValue& InValue) : ASTBase(VM)
 {
+	DefineVariable.Type.PrimaryType = HazeValueType::Bool;
+	Value = InValue;
 }
 
 ASTBool::~ASTBool()
@@ -48,13 +45,15 @@ ASTBool::~ASTBool()
 std::shared_ptr<HazeCompilerValue> ASTBool::CodeGen()
 {
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
-	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenConstantValue(Value);
+	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenConstantValue(DefineVariable.Type.PrimaryType, Value);
 
 	return RetValue;
 }
 
-ASTNumber::ASTNumber(HazeVM* VM, const HazeValue& Value) : ASTBase(VM, Value)
+ASTNumber::ASTNumber(HazeVM* VM, HazeValueType Type, const HazeValue& InValue) : ASTBase(VM)
 {
+	DefineVariable.Type.PrimaryType = Type;
+	Value = InValue;
 }
 
 ASTNumber::~ASTNumber()
@@ -64,7 +63,7 @@ ASTNumber::~ASTNumber()
 std::shared_ptr<HazeCompilerValue> ASTNumber::CodeGen()
 {
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
-	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenConstantValue(Value);
+	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenConstantValue(DefineVariable.Type.PrimaryType, Value);
 
 	return RetValue;
 }
@@ -206,6 +205,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		}
 		else
 		{
+
 			Compiler->CreateMov(RetValue, ExprValue);
 		}
 	}
@@ -262,25 +262,14 @@ std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 
 	if (PointerValue)
 	{
-		auto Pointer = std::dynamic_pointer_cast<HazeCompilerPointerValue>(PointerValue);
-		auto PointerToValue = Pointer->GetPointerValue();
-
-		if (PointerToValue->IsArray())
-		{
-			HazeValue IndexValue;
-			IndexValue.Type = HazeValueType::Int;
-			IndexValue.Value.Int = 0;
-			Compiler->CreateArrayElement(PointerToValue->GetShared(), Compiler->GenConstantValue(IndexValue));
-		}
-
-		return PointerToValue->GetShared();
+		return Compiler->CreateMovPV(Compiler->GetTempRegister(), PointerValue);
 	}
 	else
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("Parse pointer value not get pointer value %s"), DefineVariable.Name.c_str());
 	}
 	
-	return PointerValue;
+	return nullptr;
 }
 
 ASTInc::ASTInc(HazeVM* VM, HAZE_STRING& Name, bool IsPreInc) : ASTBase(VM), IsPreInc(IsPreInc)
@@ -375,40 +364,26 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	{
 	case HazeToken::Add:
 		return Compiler->CreateAdd(LeftValue, RightValue);
-		break;
 	case HazeToken::Sub:
 		return Compiler->CreateSub(LeftValue, RightValue);
-		break;
 	case HazeToken::Mul:
 		return Compiler->CreateMul(LeftValue, RightValue);
-		break;
 	case HazeToken::Div:
 		return Compiler->CreateDiv(LeftValue, RightValue);
-		break;
 	case HazeToken::Mod:
 		return Compiler->CreateMod(LeftValue, RightValue);
-		break;
 	case HazeToken::And:
 		return Compiler->CreateAnd(LeftValue, RightValue);
-		break;
 	case HazeToken::Or:
 		return Compiler->CreateOr(LeftValue, RightValue);
-		break;
 	case HazeToken::Not:
 		return Compiler->CreateNot(LeftValue, RightValue);
-		break;
 	case HazeToken::Shl:
 		return Compiler->CreateShl(LeftValue, RightValue);
-		break;
 	case HazeToken::Shr:
 		return Compiler->CreateShr(LeftValue, RightValue);
-		break;
 	case HazeToken::Assign:
-	{
-		Compiler->CreateMov(LeftValue, RightValue);
-		return LeftValue;
-	}
-		break;
+		return Compiler->CreateMov(LeftValue, RightValue);
 	case HazeToken::Equal:
 	case HazeToken::NotEqual:
 	case HazeToken::Greater:

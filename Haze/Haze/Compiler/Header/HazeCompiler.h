@@ -36,7 +36,7 @@ public:
 
 	HAZE_STRING GetCurrModuleOpFile() const;
 
-	std::shared_ptr<HazeCompilerValue> GenConstantValue(const HazeValue& Var);
+	std::shared_ptr<HazeCompilerValue> GenConstantValue(HazeValueType Type, const HazeValue& Var);
 
 	std::shared_ptr<HazeCompilerValue> GenStringVariable(HAZE_STRING& String);
 
@@ -76,6 +76,8 @@ public:		//生成op code
 	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySize = nullptr);
 	
 	std::shared_ptr<HazeCompilerValue> CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value);
+
+	std::shared_ptr<HazeCompilerValue> CreateMovPV(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value);
 
 	std::shared_ptr<HazeCompilerValue> CreateRet(std::shared_ptr<HazeCompilerValue> Value);
 
@@ -118,7 +120,9 @@ public:		//生成op code
 public:
 	std::shared_ptr<HazeCompilerValue> CreateArrayInit(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> InitList);
 
-	std::shared_ptr<HazeCompilerValue> CreateArrayElement(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> Index);
+	std::shared_ptr<HazeCompilerValue> CreateArrayElement(std::shared_ptr<HazeCompilerValue> Value, uint32 Index);
+
+	std::shared_ptr<HazeCompilerValue> CreateArrayElement(std::shared_ptr<HazeCompilerValue> Value, std::shared_ptr<HazeCompilerValue> Index);
 
 public:
 	void CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL = false);

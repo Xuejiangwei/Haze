@@ -3,7 +3,7 @@
 #include "HazeDefine.h"
 #include <iostream>
 
-enum class HazeValueType : unsigned int
+enum class HazeValueType : uint32
 {
 	Void,
 	Bool,
@@ -31,7 +31,7 @@ enum class HazeValueType : unsigned int
 
 struct HazeValue
 {
-	HazeValueType Type;
+	//HazeValueType Type;
 
 	union
 	{
@@ -86,7 +86,7 @@ bool IsIntegerType(HazeValueType Type);
 
 bool IsNumberType(HazeValueType Type);
 
-void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value);
+void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& Value);
 
 void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Source, const void* Target);
 
@@ -94,4 +94,4 @@ void CompareValueByType(HazeValueType Type, struct HazeRegister* Register, const
 
 size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value);
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, HazeValue& Value);

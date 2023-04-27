@@ -59,6 +59,8 @@ enum class InstructionOpCode : uint32
 {
 	NONE,
 	MOV,
+	MOVPV,
+	LEA,
 	ADD,
 	SUB,
 	MUL,

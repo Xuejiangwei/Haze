@@ -16,7 +16,6 @@ class ASTBase
 public:
 	ASTBase(HazeVM* VM);
 	ASTBase(HazeVM* VM, const HazeDefineVariable& DefVar);
-	ASTBase(HazeVM* VM, const HazeValue& Value);
 	virtual ~ASTBase();
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() { return  nullptr; }
@@ -33,7 +32,7 @@ protected:
 class ASTBool : public ASTBase
 {
 public:
-	ASTBool(HazeVM* VM, const HazeValue& Value);
+	ASTBool(HazeVM* VM, const HazeValue& InValue);
 	virtual ~ASTBool() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -43,7 +42,7 @@ public:
 class ASTNumber : public ASTBase
 {
 public:
-	ASTNumber(HazeVM* VM, const HazeValue& Value);
+	ASTNumber(HazeVM* VM, HazeValueType Type, const HazeValue& InValue);
 	virtual ~ASTNumber() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;

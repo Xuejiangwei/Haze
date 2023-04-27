@@ -23,15 +23,11 @@ public:
 	explicit HazeCompilerArrayValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, HazeCompilerValue* ArraySize);
 	~HazeCompilerArrayValue();
 
-	const HazeDefineType& GetArrayType() const { return ArrayType; }
-
 	virtual uint32 GetSize() override { return Size; }
 
 	uint32 GetArrayLength() { return ArrayLength; }
 
 private:
-	HazeDefineType ArrayType;
-
 	uint32 ArrayLength;
 	uint32 Size;
 };

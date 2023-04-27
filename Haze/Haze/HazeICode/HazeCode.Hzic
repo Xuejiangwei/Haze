@@ -1,0 +1,198 @@
+0
+GlobalDataTable
+0
+StringTable
+9
+19 循环 一 %d %d %f %d \n
+16 循环 二 %d %d %f \n
+16 循环 三 %d %d %f \n
+7 当 %d \n
+8 乙二 %d \n
+20 测试%f 哈哈哈 %d \n快递费 \n
+10 我的字符串12345
+23 测试%f 哈哈哈 %d \n快递费 %s \n
+28 测试%d 哈哈哈 %d %d \n快递费 %d %d\n
+ClassTable
+1
+Class 点 8 2
+横坐标 3
+纵坐标 4
+FunctionTable
+2
+Function 点@加 0
+Param 己 11 点
+Param 乙 12 点
+Variable 己$2 11 点 -12 8
+Variable 乙$1 12 点 -20 8
+Variable 甲$3 3 0 4
+Variable 甲一$4 3 4 4
+Variable 乙二$5 3 8 4
+Start
+
+Block Entry
+JMPL ForBlock1
+JMPL WhileBlock8
+MOV 3 乙二$5 2 3 16 3
+MOV 3 Temp_R3 9 3 乙二$5 2
+SHR 3 Temp_R3 9 3 1 3
+MOV 3 乙二$5 2 3 Temp_R3 9
+SHR_ASSIGN 3 乙二$5 2 3 1 3
+PUSH 3 乙二$5 2
+PUSH 10 常字符串指针 4 2 4
+PUSH 3 Address 11
+CALL 打印 2 12
+RET 0
+
+Block ForBlock1
+MOV 3 甲$3 2 3 0 3
+JMP ForConditionBlock2
+
+Block ForConditionBlock2
+CMP 3 甲$3 2 3 10 3
+JL JmpNull ForBlockEnd3
+JMPL IfBlock4
+MOV 3 Temp_R3 9 3 甲$3 2
+ADD 3 Temp_R3 9 3 1 3
+MOV 3 甲$3 2 3 Temp_R3 9
+JMP ForConditionBlock2
+
+Block IfBlock4
+CMP 3 甲$3 2 3 3 3
+JE JmpNull ElseBlock5
+MOV 3 Temp_R3 9 3 甲$3 2
+ADD 3 Temp_R3 9 3 1 3
+ADD 3 Temp_R3 9 3 1 3
+ADD 3 Temp_R3 9 3 5 3
+MOV 3 甲一$4 2 3 Temp_R3 9
+PUSH 3 甲一$4 2
+PUSH 4 乙$1之纵坐标 14
+PUSH 3 乙$1之横坐标 14
+PUSH 3 甲$3 2
+PUSH 10 常字符串指针 4 2 0
+PUSH 3 Address 11
+CALL 打印 5 24
+JMPOUT
+
+Block ElseBlock5
+JMPL IfBlock6
+JMPOUT
+
+Block IfBlock6
+CMP 3 甲$3 2 3 6 3
+JL JmpNull ElseBlock7
+MOV 3 Temp_R3 9 3 乙$1之横坐标 14
+SUB 3 Temp_R3 9 3 1 3
+MOV 3 乙$1之横坐标 14 3 Temp_R3 9
+PUSH 4 乙$1之纵坐标 14
+PUSH 3 乙$1之横坐标 14
+PUSH 3 甲$3 2
+PUSH 10 常字符串指针 4 2 1
+PUSH 3 Address 11
+CALL 打印 4 20
+JMPOUT
+
+Block ElseBlock7
+PUSH 4 乙$1之纵坐标 14
+PUSH 3 乙$1之横坐标 14
+PUSH 3 甲$3 2
+PUSH 10 常字符串指针 4 2 2
+PUSH 3 Address 11
+CALL 打印 4 20
+JMPOUT
+
+Block ForBlockEnd3
+JMPOUT
+
+Block WhileBlock8
+CMP 3 己$2指之横坐标 14 3 0 3
+JNL JmpNull JmpOut 
+MOV 3 Temp_R3 9 3 己$2指之横坐标 14
+SUB 3 Temp_R3 9 3 2 3
+MOV 3 己$2指之横坐标 14 3 Temp_R3 9
+PUSH 3 己$2指之横坐标 14
+PUSH 10 常字符串指针 4 2 3
+PUSH 3 Address 11
+CALL 打印 2 12
+JMP WhileBlock8
+End
+Function 主函数 3
+Variable 测试点$1 12 三维点 0 12
+Variable 测试点1$2 12 三维点 12 12
+Variable 甲甲$3 11 点 24 8
+Variable 测试甲$4 12 点 32 8
+Variable 测试乙$5 12 点 40 8
+Variable 我的字符$6 10 10 48 8
+Variable 甲$7 9 56 16
+Variable 乙$8 10 10 72 8
+Variable 丙$9 3 80 4
+Start
+
+Block Entry
+MOV 3 测试点$1之横坐标 14 3 123 3
+MOV 3 测试点$1之纵坐标 14 3 1234 3
+MOV 3 测试点$1之前坐标 14 3 12345 3
+PUSH 11 测试点$1 12 三维点
+PUSH 3 Address 11
+CALL 三维点@输出点 0 8
+MOV 3 测试点1$2之横坐标 14 3 1 3
+MOV 3 测试点1$2之纵坐标 14 3 123 3
+MOV 3 测试点1$2之前坐标 14 3 15 3
+PUSH 11 测试点1$2 12 三维点
+PUSH 3 Address 11
+CALL 三维点@输出点 0 8
+NEW 11 点
+MOV 11 甲甲$3 2 点 11 New_R 7 点
+MOV 3 甲甲$3指之横坐标 14 3 13428 3
+MOV 4 甲甲$3指之纵坐标 14 4 15.601 3
+PUSH 3 甲甲$3指之横坐标 14
+PUSH 4 甲甲$3指之纵坐标 14
+PUSH 10 常字符串指针 4 2 5
+PUSH 3 Address 11
+CALL 打印 3 16
+MOV 4 测试甲$4之纵坐标 14 4 4.2 3
+MOV 3 测试甲$4之横坐标 14 3 11 3
+MOV 4 测试乙$5之纵坐标 14 4 8.1 3
+MOV 3 测试乙$5之横坐标 14 3 10 3
+PUSH 12 测试甲$4 2 点
+PUSH 11 测试乙$5 12 点
+PUSH 3 Address 11
+CALL 点@加 1 16
+MOV 10 我的字符$6 2 2 10 常字符串指针 4 2 6
+PUSH 10 我的字符$6 2 2
+PUSH 3 测试乙$5之横坐标 14
+PUSH 4 测试乙$5之纵坐标 14
+PUSH 10 常字符串指针 4 2 7
+PUSH 3 Address 11
+CALL 打印 4 24
+MOV 3 甲$7 21 0 3 10 3
+MOV 3 甲$7 21 1 3 252 3
+MOV 3 甲$7 21 2 3 3 3
+MOV 3 甲$7 21 3 3 4 3
+MOV 3 Temp_R3 9 3 1001 3
+ADD 3 Temp_R3 9 3 1 3
+MOV 3 甲$7 21 0 3 Temp_R3 9
+MOV 3 Temp_R3 9 3 1079 3
+ADD 3 Temp_R3 9 3 1 3
+MOV 3 甲$7 21 3 3 Temp_R3 9
+MOV 3 Temp_R3 9 3 10 3
+ADD 3 Temp_R3 9 3 10 3
+MOV 3 Temp_R2 9 3 2 3
+ADD 3 Temp_R2 9 3 1 3
+MUL 3 Temp_R2 9 3 Temp_R3 9
+MOV 3 甲$7 21 2 3 Temp_R2 9
+LEA 10 乙$8 2 3 9 甲$7 2
+MOV 3 丙$9 2 3 1250 3
+MOV 10 Temp_R3 9 3 10 乙$8 2 3
+ADD 10 Temp_R3 9 3 3 3 3
+MOVPV 3 Temp_R2 9 10 Temp_R3 9 3
+MOVPV 3 Temp_R3 9 10 乙$8 2 3
+PUSH 3 Temp_R3 9
+PUSH 3 Temp_R2 9
+PUSH 3 甲$7 21 0
+PUSH 3 丙$9 2
+PUSH 3 甲$7 21 2
+PUSH 10 常字符串指针 4 2 8
+PUSH 3 Address 11
+CALL 打印 6 28
+RET 0
+End

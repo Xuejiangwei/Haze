@@ -755,7 +755,6 @@ std::unique_ptr<ASTBase> Parse::ParseStringText()
 std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 {
 	HazeValue Value;
-	Value.Type = HazeValueType::Bool;
 	Value.Value.Bool = CurrLexeme == TOKEN_TRUE;
 
 	return std::make_unique<ASTBool>(VM, Value);
@@ -764,12 +763,12 @@ std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
 	HazeValue Value;
-	Value.Type = GetNumberDefaultType(CurrLexeme);
+	HazeValueType Type = GetNumberDefaultType(CurrLexeme);
 
-	StringToHazeValueNumber(CurrLexeme, Value);
+	StringToHazeValueNumber(CurrLexeme, Type, Value);
 
 	GetNextToken();
-	return std::make_unique<ASTNumber>(VM, Value);
+	return std::make_unique<ASTNumber>(VM, Type, Value);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)

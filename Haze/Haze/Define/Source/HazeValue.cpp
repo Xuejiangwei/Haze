@@ -110,12 +110,12 @@ bool IsNumberType(HazeValueType Type)
     return HashSet_Table.find(Type) != HashSet_Table.end();
 }
 
-void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValue& Value)
+void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& Value)
 {
     HAZE_STRING_STREAM WSS;
     WSS << Str;
 
-    switch (Value.Type)
+    switch (Type)
     {
     case HazeValueType::Float:
         WSS >> Value.Value.Float;
@@ -472,9 +472,9 @@ size_t GetHazeCharPointerLength(const HAZE_CHAR* Char)
     return wcslen(Char);
 }
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValue& Value)
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, HazeValue& Value)
 {
-    switch (Value.Type)
+    switch (Type)
     {
     case HazeValueType::Bool:
         return (HAZE_BINARY_CHAR*)&Value.Value.Bool;

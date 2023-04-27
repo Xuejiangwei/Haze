@@ -9,6 +9,8 @@ extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(H
 static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 {
 	{HAZE_TEXT("MOV"), InstructionOpCode::MOV },
+	{HAZE_TEXT("MOVPV"), InstructionOpCode::MOVPV },
+	{HAZE_TEXT("LEA"), InstructionOpCode::LEA },
 	{HAZE_TEXT("ADD"), InstructionOpCode::ADD },
 	{HAZE_TEXT("SUB"), InstructionOpCode::SUB },
 	{HAZE_TEXT("MUL"), InstructionOpCode::MUL },
@@ -139,6 +141,30 @@ public:
 		}
 	}
 
+	static void MovPV(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			void* Dst = GetAddressByOperator(Stack, Operator[0]);
+			const void* Src = GetAddressByOperator(Stack, Operator[1]);
+			uint64 Address = 0;
+			memcpy(&Address, Src, sizeof(Address));
+			memcpy(Dst, (void*)Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
+		}
+	}
+
+	static void Lea(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			void* Dst = GetAddressByOperator(Stack, Operator[0]);
+			uint64 Address = (uint64)GetAddressByOperator(Stack, Operator[1]);
+			memcpy(Dst, &Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
+		}
+	}
+
 	static void Push(HazeStack* Stack)
 	{
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
@@ -189,14 +215,7 @@ public:
 
 	static void Add(HazeStack* Stack)
 	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 2)
-		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::ADD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
-			}
-		}
+		BinaryOperator(Stack);
 	}
 
 	static void Sub(HazeStack* Stack)
@@ -682,14 +701,17 @@ private:
 #endif
 
 		void* Ret = nullptr;
-		static HazeValue ConstantValue;
+		static HazeVariable ConstantValue;
 		static uint64 TempAddress;
 
 		if (Operator.Scope == HazeDataDesc::Constant)
 		{
-			ConstantValue.Type = Operator.Variable.Type.PrimaryType;
-			StringToHazeValueNumber(Operator.Variable.Name, ConstantValue);
-			Ret = GetBinaryPointer(ConstantValue);
+			auto& Type = const_cast<HazeDefineType&>(ConstantValue.GetType());
+			auto& Value = const_cast<HazeValue&>(ConstantValue.GetValue());
+
+			Type.PrimaryType = Operator.Variable.Type.PrimaryType;
+			StringToHazeValueNumber(Operator.Variable.Name, Type.PrimaryType, Value);
+			Ret = GetBinaryPointer(Type.PrimaryType, Value);
 		}
 		else if (Operator.Scope == HazeDataDesc::Global)
 		{
@@ -754,11 +776,42 @@ private:
 			Stack->JmpTo(Operator);
 		}
 	}
+
+	static void BinaryOperator(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, Stack->VM->Vector_Instruction[Stack->PC].InsCode, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+			else if (IsRegisterScope(Operator[0].Scope) && IsIntegerType(Operator[1].Variable.Type.PrimaryType))
+			{
+				auto Dst = GetAddressByOperator(Stack, Operator[0]);
+				auto Src = GetAddressByOperator(Stack, Operator[1]);
+				uint64 Address = 0;
+				uint64 Size = GetSizeByType(Operator[1].Variable.Type, Stack->VM);
+				uint64 Num = 0;
+				memcpy(&Address, Dst, sizeof(Address));
+				memcpy(&Num, Src, Size);
+				char* NewAddress = (char*)Address + Size * Num;
+				Address = (uint64)NewAddress;
+				memcpy(Dst, &Address, sizeof(NewAddress));
+			}
+			else
+			{
+				HAZE_LOG_ERR(HAZE_TEXT("Binary operator error, %s %s operator %s"), Operator[0].Variable.Name, Operator[1].Variable.Name, GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
+			}
+		}
+	}
 };
 
 std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor =
 {
 	{InstructionOpCode::MOV, &InstructionProcessor::Mov},
+	{InstructionOpCode::MOVPV, &InstructionProcessor::MovPV},
+	{InstructionOpCode::LEA, &InstructionProcessor::Lea},
 
 	{InstructionOpCode::ADD, &InstructionProcessor::Add},
 	{InstructionOpCode::SUB, &InstructionProcessor::Sub},

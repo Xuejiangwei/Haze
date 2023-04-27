@@ -18,8 +18,7 @@ static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> 
 	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterRet, 0) },
 	{ NEW_REGISTER, nullptr },
 	{ CMP_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Cmp_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterCmp, 0) },
-
-	};
+};
 
 static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalTempRegister = {
 	{ TEMP_REGISTER_1, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register1")), HAZE_TEXT("")), HazeDataDesc::RegisterTemp, 0) },
@@ -30,7 +29,7 @@ static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> 
 };
 
 static std::shared_ptr<HazeCompilerInitListValue> InitializeListValue = 
-std::make_shared<HazeCompilerInitListValue>(nullptr, HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HazeDataDesc::Initlist, 0);
+	std::make_shared<HazeCompilerInitListValue>(nullptr, HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HazeDataDesc::Initlist, 0);
 
 HazeCompiler::HazeCompiler()
 {
@@ -113,12 +112,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModu
 	{
 		Iter->second = CreateVariable(Module, HazeDefineVariable(Data, HAZE_TEXT("")), HazeDataDesc::RegisterNew, 0);
 
-		auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Iter->second);
+		/*auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Iter->second);
 		
 		if (!Data.CustomName.empty())
 		{
 			PointerValue->InitPointerTo(Module->FindClass(Data.CustomName)->GetNewPointerToValue());
-		}
+		}*/
 		
 		return Iter->second;
 	}
@@ -226,9 +225,13 @@ const HAZE_CHAR* HazeCompiler::GetClassName(const HAZE_STRING& Name)
 	return nullptr;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValue& Var)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType Type, const HazeValue& Var)
 {
-	switch (Var.Type)
+	HazeValue& V = const_cast<HazeValue&>(Var);
+	static HazeDefineVariable DefineVariable;
+	DefineVariable.Type.PrimaryType = Type;
+
+	switch (Type)
 	{
 	case HazeValueType::Bool:
 	{
@@ -237,7 +240,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_BoolConstantValue[Var.Value.Bool] = CreateVariable(Var, HazeDataDesc::Constant);
+		HashMap_BoolConstantValue[Var.Value.Bool] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, &V);
 		return HashMap_BoolConstantValue[Var.Value.Bool];
 	}
 	case HazeValueType::Int:
@@ -247,7 +250,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_IntConstantValue[Var.Value.Int] = CreateVariable(Var, HazeDataDesc::Constant);
+		HashMap_IntConstantValue[Var.Value.Int] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, &V);
 		return HashMap_IntConstantValue[Var.Value.Int];
 	}
 	case HazeValueType::Long:
@@ -257,7 +260,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_LongConstantValue[Var.Value.Long] = CreateVariable(Var, HazeDataDesc::Constant);
+		HashMap_LongConstantValue[Var.Value.Long] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, &V);
 		return HashMap_LongConstantValue[Var.Value.Long];
 	}
 	case HazeValueType::UnsignedInt:
@@ -267,7 +270,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_UnsignedIntConstantValue[Var.Value.UnsignedInt] = CreateVariable(Var, HazeDataDesc::Constant);
+		HashMap_UnsignedIntConstantValue[Var.Value.UnsignedInt] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, &V);
 		return HashMap_UnsignedIntConstantValue[Var.Value.UnsignedInt];
 	}
 	case HazeValueType::UnsignedLong:
@@ -277,7 +280,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_UnsignedLongConstantValue[Var.Value.UnsignedLong] = CreateVariable(Var, HazeDataDesc::Constant);
+		HashMap_UnsignedLongConstantValue[Var.Value.UnsignedLong] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, &V);
 		return HashMap_UnsignedLongConstantValue[Var.Value.UnsignedLong];
 	}
 	case HazeValueType::Float:
@@ -287,7 +290,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_FloatConstantValue[Var.Value.Float] = CreateVariable(Var, HazeDataDesc::Constant);
+		HashMap_FloatConstantValue[Var.Value.Float] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, &V);
 		return HashMap_FloatConstantValue[Var.Value.Float];
 	}
 	case HazeValueType::Double:
@@ -297,7 +300,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(const HazeValu
 		{
 			return it->second;
 		}
-		HashMap_DobuleConstantValue[Var.Value.Double] = CreateVariable(Var, HazeDataDesc::Constant);
+		HashMap_DobuleConstantValue[Var.Value.Double] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, &V);
 		return HashMap_DobuleConstantValue[Var.Value.Double];
 	}
 	default:
@@ -324,14 +327,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STR
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetConstantValueInt_1()
 {
-	static HazeValue Value;
-	if (Value.Type != HazeValueType::Int || Value.Value.Int != 1)
-	{
-		Value.Type = HazeValueType::Int; 
-		Value.Value.Int = 1;
-	}
+	HazeValue Value;
+	Value.Value.Int = 1;
 
-	return GenConstantValue(Value);
+	return GenConstantValue(HazeValueType::Int, Value);
 }
 
 void HazeCompiler::SetInsertBlock(std::shared_ptr<HazeBaseBlock> BB)
@@ -368,7 +367,31 @@ void HazeCompiler::AddImportModuleToCurrModule(HazeCompilerModule* Module)
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
 {
 	Alloca->StoreValue(Value);
-	GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOV);
+
+	if (Alloca->IsPointer() && !Value->IsPointer())
+	{
+		GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::LEA);
+	}
+	else
+	{
+		GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOV);
+	}
+
+	return Alloca;
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovPV(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
+{
+	if (Value->IsPointer())
+	{
+		Alloca->StoreValue(Value);
+
+		HazeDefineType& ValueType = const_cast<HazeDefineType&>(Alloca->GetValueType());
+		ValueType.PrimaryType = ValueType.SecondaryType;
+		ValueType.SecondaryType = HazeValueType::Void;
+
+		return GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOVPV);
+	}
 
 	return Alloca;
 }
@@ -464,11 +487,32 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayInit(std::shared_ptr
 	return GetCurrModule()->CreateArrayInit(Array, InitList);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> Index)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_ptr<HazeCompilerValue> Value, uint32 Index)
 {
-	auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(Array);
-	return std::make_shared<HazeCompilerArrayElementValue>(GetCurrModule().get(), HazeDefineType(ArrayValue->GetArrayType().SecondaryType,
-		ArrayValue->GetArrayType().CustomName), HazeDataDesc::ArrayElement, 0, Array.get(), Index.get());
+	HazeValue IndexValue;
+	IndexValue.Value.Int = Index;
+
+	return CreateArrayElement(Value, GenConstantValue(HazeValueType::Int, IndexValue));
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_ptr<HazeCompilerValue> Value, std::shared_ptr<HazeCompilerValue> Index)
+{
+	if (Value->IsArray())
+	{
+		auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(Value);
+		return std::make_shared<HazeCompilerArrayElementValue>(GetCurrModule().get(), HazeDefineType(ArrayValue->GetValueType().SecondaryType,
+			ArrayValue->GetValueType().CustomName), HazeDataDesc::ArrayElement, 0, Value.get(), Index.get());
+	}
+	else if (Value->IsPointer())
+	{
+		auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
+		if (PointerValue)
+		{
+			return CreateMovPV(GetTempRegister(), CreateAdd(CreateMov(GetTempRegister(), Value), Index));
+		}
+	}
+
+	return nullptr;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data)

@@ -15,7 +15,7 @@ extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(H
 
 HazeVM::HazeVM()
 {
-	FunctionReturn.Type = HazeValueType::Void;
+	FunctionReturn.first.PrimaryType = HazeValueType::Void;
 	Compiler = std::make_unique<HazeCompiler>();
 	VMStack = std::make_unique<HazeStack>(this);
 }
@@ -130,10 +130,10 @@ void HazeVM::LoadOpCodeFile()
 
 		B_String.resize(Num);
 		FS.read(B_String.data(), Num);
-		Vector_GlobalData[i].first = String2WString(B_String);
+		Vector_GlobalData[i].Name = String2WString(B_String);
 
-		FS.read((char*)&Vector_GlobalData[i].second.Type, sizeof(HazeValue::Type));
-		FS.read(GetBinaryPointer(Vector_GlobalData[i].second), GetSizeByHazeType(Vector_GlobalData[i].second.Type));
+		FS.read((char*)&Vector_GlobalData[i].Type.PrimaryType, sizeof(HazeValueType));
+		FS.read(GetBinaryPointer(Vector_GlobalData[i].Type.PrimaryType, Vector_GlobalData[i].Value), GetSizeByHazeType(Vector_GlobalData[i].Type.PrimaryType));
 	}
 
 	FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
@@ -280,6 +280,7 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 		Iter.Variable.Name = String2WString(BinaryString);
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Scope));
+		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Variable.Type.SecondaryType));
 
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(UnsignedInt));
 		BinaryString.resize(UnsignedInt);
@@ -334,9 +335,9 @@ HazeValue* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 {
 	for (auto& Iter : Vector_GlobalData)
 	{
-		if (Iter.first == Name)
+		if (Iter.Name == Name)
 		{
-			return &Iter.second;
+			return &Iter.Value;
 		}
 	}
 

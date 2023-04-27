@@ -55,7 +55,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 				Ret = Value.second;
 				break;
 			}
-			else if (Value.second->GetValue().Type == HazeValueType::Class)
+			else if (Value.second->GetValueType().PrimaryType == HazeValueType::Class)
 			{
 				auto MemberValue = GetObjectMember(Module, VariableName);
 				if (MemberValue)
@@ -64,7 +64,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 					break;
 				}
 			}
-			else if (Value.second->GetValue().Type == HazeValueType::PointerClass)
+			else if (Value.second->GetValueType().PrimaryType == HazeValueType::PointerClass)
 			{
 				auto MemberValue = GetObjectMember(Module, VariableName);
 				if (MemberValue)
@@ -121,18 +121,18 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 	//Push所有参数，从右到左, push 参数与返回地址的事由call去做
 	for (int i = (int)VectorParam.size() - 1; i >= 0; i--)
 	{
-		OFStream << GetFunctionParamHeader() << " " << VectorParam[i].first << " " << HAZE_CAST_VALUE_TYPE(VectorParam[i].second->GetValue().Type);
+		OFStream << GetFunctionParamHeader() << " " << VectorParam[i].first << " " << HAZE_CAST_VALUE_TYPE(VectorParam[i].second->GetValueType().PrimaryType);
 
 		if (VectorParam[i].second->IsPointer())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(VectorParam[i].second);
 			if (PointerValue->IsPointerBase())
 			{
-				OFStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetPointerType().PrimaryType);
+				OFStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetValueType().PrimaryType);
 			}
 			else if(PointerValue->IsPointerClass())
 			{
-				OFStream << " " << PointerValue->GetPointerType().CustomName;
+				OFStream << " " << PointerValue->GetValueType().CustomName;
 			}
 		}
 		else if (VectorParam[i].second->IsClass())

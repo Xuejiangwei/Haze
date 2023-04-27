@@ -15,6 +15,7 @@ public:
 	struct GlobalData
 	{
 		HAZE_STRING Name;
+		HazeDefineType Type;
 		HazeValue Value;
 	};
 
@@ -27,13 +28,13 @@ public:
 			Vector_Data.clear();
 		}
 
-		unsigned int GetIndex(const HAZE_STRING& Name)
+		uint32 GetIndex(const HAZE_STRING& Name)
 		{
-			for (size_t i = 0; i < Vector_Data.size(); i++)
+			for (uint64 i = 0; i < Vector_Data.size(); i++)
 			{
 				if (Vector_Data[i].Name == Name)
 				{
-					return (unsigned int)i;
+					return (uint32)i;
 				}
 			}
 

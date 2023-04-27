@@ -137,10 +137,10 @@ void BackendParse::Parse_I_Code_GlobalTable()
 			GetNextLexmeAssign_HazeString(Table.Vector_Data[i].Name);
 
 
-			GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Data[i].Value.Type);
+			GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Data[i].Type.PrimaryType);
 
 			GetNextLexeme();
-			StringToHazeValueNumber(CurrLexeme, Table.Vector_Data[i].Value);
+			StringToHazeValueNumber(CurrLexeme, Table.Vector_Data[i].Type.PrimaryType, Table.Vector_Data[i].Value);
 		}
 	}
 }
@@ -352,6 +352,8 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::NONE:
 		break;
 	case InstructionOpCode::MOV:
+	case InstructionOpCode::MOVPV:
+	case InstructionOpCode::LEA:
 	case InstructionOpCode::ADD:
 	case InstructionOpCode::SUB:
 	case InstructionOpCode::MUL:
@@ -516,8 +518,8 @@ void BackendParse::GenOpCodeFile()
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		
 		FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
-		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Value.Type));
-		FS_OpCode.write(GetBinaryPointer(i.Value), GetSizeByHazeType(i.Value.Type));
+		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Type.PrimaryType));
+		FS_OpCode.write(GetBinaryPointer(i.Type.PrimaryType, i.Value), GetSizeByHazeType(i.Type.PrimaryType));
 	}
 
 	//将字符串表写入
@@ -805,7 +807,8 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		B_OFS.write(BinaryString.data(), UnsignedInt);								//操作数名字
 
-		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Scope));						//操作数作用域
+		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Scope));								//操作数作用域
+		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Variable.Type.SecondaryType));		//子类型
 
 		BinaryString = WString2String(Iter.Variable.Type.CustomName);
 		UnsignedInt = (uint32)BinaryString.size();

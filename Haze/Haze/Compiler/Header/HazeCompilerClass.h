@@ -27,6 +27,8 @@ public:
 
 	std::shared_ptr<HazeCompilerPointerValue> GetThisPointerValue() { return ThisPointerValue; }
 
+	std::shared_ptr<HazeCompilerClassValue> GetThisPointerToValue() { return ThisClassValue; }
+
 	std::shared_ptr<HazeCompilerClassValue> GetNewPointerToValue() { return NewPointerToValue; }
 
 	const HAZE_STRING& GetName() { return Name; }

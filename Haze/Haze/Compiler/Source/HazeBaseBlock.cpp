@@ -82,18 +82,6 @@ void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBloc
 		return;
 	}
 
-	//auto BB = MoveFinishPopBlock ? MoveFinishPopBlock.get() : this;
-	//for (int i = (int)Vector_Alloca.size() - 1; i >= 0; i--)
-	//{
-	//	HAZE_STRING_STREAM SStream;
-	//	SStream << GetInstructionString(InstructionOpCode::POP) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetValue().Type)
-	//		<< " " << GetLocalVariableName(Vector_Alloca[i].first, Vector_Alloca[i].second) << " " << HAZE_CAST_VALUE_TYPE(Vector_Alloca[i].second->GetScope()) << std::endl;
-
-	//	//Vector_Alloca.pop_back();
-
-	//	BB->PushIRCode(SStream.str());
-	//}
-
 	if (JmpOut)
 	{
 		SetJmpOut();

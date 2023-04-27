@@ -8,6 +8,8 @@
 #include "Haze.h"
 #include "HazeModule.h"
 
+#include "HazeVariable.h"
+
 class HazeCompiler;
 class HazeCompilerModule;
 
@@ -70,11 +72,11 @@ private:
 
 	std::unique_ptr<HazeStack> VMStack;
 
-	HazeValue FunctionReturn;
+	std::pair<HazeDefineType, HazeValue> FunctionReturn;
 
 	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>> HashMap_Module;
 
-	std::vector<std::pair<HAZE_STRING, HazeValue>> Vector_GlobalData;
+	std::vector<HazeVariable> Vector_GlobalData;
 
 	std::vector<std::pair<HAZE_STRING, HAZE_STRING>> Vector_StringTable;
 

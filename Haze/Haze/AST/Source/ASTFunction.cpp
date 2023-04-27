@@ -47,11 +47,11 @@ HazeValue* ASTFunction::CodeGen()
 		Compiler->CreateLocalVariable(CompilerFunction, Vector_FunctionParam[i]);
 	}
 
-	if (Class)
+	/*if (Class)
 	{
 		std::shared_ptr<HazeCompilerPointerValue> PointerThis = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CompilerFunction->GetLocalVariable(HAZE_CLASS_THIS));
 		PointerThis->InitPointerTo(Class->GetThisPointerValue()->GetPointerValue());
-	}
+	}*/
 
 	if (Body)
 	{
