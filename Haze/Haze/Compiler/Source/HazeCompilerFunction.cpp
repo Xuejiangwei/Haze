@@ -25,10 +25,10 @@ HazeCompilerFunction::~HazeCompilerFunction()
 {
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySize)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef)
 {
 	auto BB = Module->GetCompiler()->GetInsertBlock();
-	return BB->CreateAlloce(Variable, ++CurrVariableCount, ArraySize);
+	return BB->CreateAlloce(Variable, ++CurrVariableCount, ArraySizeOrRef);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& Data)

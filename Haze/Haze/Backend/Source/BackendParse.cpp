@@ -330,7 +330,7 @@ void BackendParse::ParseInstructionData(InstructionData& Data, bool ParsePrimary
 		GetNextLexmeAssign_CustomType<uint32>(Data.Extra.Index);
 	}
 
-	if (Data.Variable.Type.PrimaryType == HazeValueType::PointerBase)
+	if (Data.Variable.Type.PrimaryType == HazeValueType::PointerBase || Data.Variable.Type.PrimaryType == HazeValueType::ReferenceBase)
 	{
 		GetNextLexmeAssign_CustomType<uint32>(Data.Variable.Type.SecondaryType);
 
@@ -339,7 +339,8 @@ void BackendParse::ParseInstructionData(InstructionData& Data, bool ParsePrimary
 			GetNextLexmeAssign_CustomType<int>(Data.Extra.Index);
 		}
 	}
-	else if (Data.Variable.Type.PrimaryType == HazeValueType::PointerClass || Data.Variable.Type.PrimaryType == HazeValueType::Class)
+	else if (Data.Variable.Type.PrimaryType == HazeValueType::PointerClass || Data.Variable.Type.PrimaryType == HazeValueType::ReferenceClass
+		|| Data.Variable.Type.PrimaryType == HazeValueType::Class)
 	{
 		GetNextLexmeAssign_HazeString(Data.Variable.Type.CustomName);
 	}
@@ -353,6 +354,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		break;
 	case InstructionOpCode::MOV:
 	case InstructionOpCode::MOVPV:
+	case InstructionOpCode::MOVTOPV:
 	case InstructionOpCode::LEA:
 	case InstructionOpCode::ADD:
 	case InstructionOpCode::SUB:
@@ -388,7 +390,9 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	}
 	break;
 	case InstructionOpCode::NOT:
+	case InstructionOpCode::BIT_NEG:
 	case InstructionOpCode::PUSH:
+	case InstructionOpCode::POP:
 	{
 		InstructionData OperatorOne;
 		ParseInstructionData(OperatorOne);
@@ -415,14 +419,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		Instruction.Operator = { OperatorOne };
 	}
 	break;
-	case InstructionOpCode::POP:
-	{
-		InstructionData OperatorOne;
-		ParseInstructionData(OperatorOne);
-
-		Instruction.Operator = { OperatorOne };
-	}
-		break;
 	case InstructionOpCode::CALL:
 	{
 		InstructionData OperatorOne;

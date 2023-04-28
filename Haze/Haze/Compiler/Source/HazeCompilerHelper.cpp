@@ -2,11 +2,13 @@
 
 #include <fstream>
 #include "HazeLog.h"
+#include "HazeCompiler.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerClass.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerPointerValue.h"
+#include "HazeCompilerRefValue.h"
 #include "HazeCompilerClassValue.h"
 
 HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& ClassName, const HAZE_STRING& FunctionName)
@@ -127,7 +129,7 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerV
 	}
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count, std::shared_ptr<HazeCompilerValue> ArraySize, HazeValue* DefaultValue)
+std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, HazeValue* DefaultValue)
 {
 	switch (Var.Type.PrimaryType)
 	{
@@ -143,10 +145,22 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 	case HazeValueType::MultiVariable:
 		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope, Count, DefaultValue);
 	case HazeValueType::Array:
-		return std::make_shared<HazeCompilerArrayValue>(Module, Var.Type, Scope, Count, ArraySize.get());
+		return std::make_shared<HazeCompilerArrayValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef.get());
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 		return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope, Count);
+	case HazeValueType::ReferenceBase:
+	case HazeValueType::ReferenceClass:
+		if (ArraySizeOrRef)
+		{
+			return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef);
+			//return std::make_shared<HazeCompilerRefValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef);
+		}
+		else
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("create reference variable error, must assign value!\n"));
+			return nullptr;
+		}
 	case HazeValueType::Class:
 		return std::make_shared<HazeCompilerClassValue>(Module, Var.Type, Scope, Count);
 	default:

@@ -10,6 +10,7 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 {
 	{HAZE_TEXT("MOV"), InstructionOpCode::MOV },
 	{HAZE_TEXT("MOVPV"), InstructionOpCode::MOVPV },
+	{HAZE_TEXT("MOVTOPV"), InstructionOpCode::MOVTOPV },
 	{HAZE_TEXT("LEA"), InstructionOpCode::LEA },
 	{HAZE_TEXT("ADD"), InstructionOpCode::ADD },
 	{HAZE_TEXT("SUB"), InstructionOpCode::SUB },
@@ -22,6 +23,7 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("NOT"), InstructionOpCode::NOT },
 	{HAZE_TEXT("BIT_AND"), InstructionOpCode::BIT_AND },
 	{HAZE_TEXT("BIT_OR"), InstructionOpCode::BIT_OR },
+	{HAZE_TEXT("BIT_NEG"), InstructionOpCode::BIT_NEG },
 	{HAZE_TEXT("BIT_XOR"), InstructionOpCode::BIT_XOR },
 	{HAZE_TEXT("SHL"), InstructionOpCode::SHL },
 	{HAZE_TEXT("SHR"), InstructionOpCode::SHR },
@@ -157,6 +159,20 @@ public:
 			uint64 Address = 0;
 			memcpy(&Address, Src, sizeof(Address));
 			memcpy(Dst, (void*)Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
+		}
+	}
+
+	static void MovToPV(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 2)
+		{
+			void* Dst = GetAddressByOperator(Stack, Operator[0]);
+			const void* Src = GetAddressByOperator(Stack, Operator[1]);
+
+			uint64 Address = 0;
+			memcpy(&Address, Dst, sizeof(Address));
+			memcpy((void*)Address, Src, GetSizeByType(Operator[1].Variable.Type, Stack->VM));
 		}
 	}
 
@@ -404,6 +420,22 @@ public:
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_OR_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
+		}
+	}
+
+	static void Bit_Neg(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			if (IsIntegerType(Operator[0].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_NEG, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("bir neg operator error!\n"));
 		}
 	}
 
@@ -808,6 +840,7 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 {
 	{InstructionOpCode::MOV, &InstructionProcessor::Mov},
 	{InstructionOpCode::MOVPV, &InstructionProcessor::MovPV},
+	{InstructionOpCode::MOVTOPV, &InstructionProcessor::MovToPV},
 	{InstructionOpCode::LEA, &InstructionProcessor::Lea},
 
 	{InstructionOpCode::ADD, &InstructionProcessor::Add},
@@ -821,7 +854,8 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::NOT, &InstructionProcessor::Not},
 
 	{InstructionOpCode::BIT_AND, &InstructionProcessor::Bit_And},
-	{InstructionOpCode::BIT_XOR, &InstructionProcessor::Bit_Or},
+	{InstructionOpCode::BIT_OR, &InstructionProcessor::Bit_Or},
+	{InstructionOpCode::BIT_NEG, &InstructionProcessor::Bit_Neg},
 	{InstructionOpCode::BIT_XOR, &InstructionProcessor::Bit_Xor},
 
 	{InstructionOpCode::ADD_ASSIGN, &InstructionProcessor::Add_Assign},

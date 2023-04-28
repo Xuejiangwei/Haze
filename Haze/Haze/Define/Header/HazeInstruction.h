@@ -60,6 +60,7 @@ enum class InstructionOpCode : uint32
 	NONE,
 	MOV,
 	MOVPV,
+	MOVTOPV,
 	LEA,
 	ADD,
 	SUB,
@@ -73,6 +74,7 @@ enum class InstructionOpCode : uint32
 
 	BIT_AND,
 	BIT_OR,
+	BIT_NEG,
 	BIT_XOR,
 	SHL,
 	SHR,

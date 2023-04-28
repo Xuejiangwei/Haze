@@ -49,6 +49,7 @@ enum class HazeToken : unsigned int
 
 	BitAnd,
 	BitOr,
+	BitNeg,
 	BitXor,
 
 	Shl,
@@ -103,7 +104,8 @@ enum class HazeToken : unsigned int
 
 	Cast,
 
-	Reference,
+	ReferenceBase,
+	ReferenceClass,
 
 	Define,
 

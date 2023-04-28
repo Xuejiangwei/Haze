@@ -60,6 +60,11 @@
 #define TOKEN_OR						HAZE_TEXT("或")		//||
 #define TOKEN_NOT						HAZE_TEXT("非")		//!
 
+#define TOKEN_BIT_AND					HAZE_TEXT("&")
+#define TOKEN_BIT_OR					HAZE_TEXT("|")
+#define TOKEN_BIT_NEG					HAZE_TEXT("~")
+#define TOKEN_BIT_XOR					HAZE_TEXT("^")
+
 #define TOKEN_LEFT_MOVE					HAZE_TEXT("<<")
 #define TOKEN_RIGHT_MOVE				HAZE_TEXT(">>")
 
@@ -81,6 +86,9 @@
 #define TOKEN_MOD_ASSIGN				HAZE_TEXT("%=")
 #define TOKEN_SHL_ASSIGN				HAZE_TEXT("<<=")
 #define TOKEN_SHR_ASSIGN				HAZE_TEXT(">>=")
+#define	TOKEN_BIT_AND_ASSIGN			HAZE_TEXT("&=")
+#define	TOKEN_BIT_OR_ASSIGN				HAZE_TEXT("|=")
+#define	TOKEN_BIT_XOR_ASSIGN			HAZE_TEXT("^=")
 
 #define TOKEN_LEFT_PARENTHESES			HAZE_TEXT("(")
 #define TOKEN_RIGHT_PARENTHESES			HAZE_TEXT(")")
@@ -103,8 +111,6 @@
 #define TOKEN_WHILE						HAZE_TEXT("当")
 
 #define TOKEN_CAST						HAZE_TEXT("转")
-
-#define TOKEN_REFERENCE					HAZE_TEXT("引用")
 
 #define TOKEN_DEFINE					HAZE_TEXT("定义")
 
@@ -156,6 +162,11 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_OR, HazeToken::Or},
 	{TOKEN_NOT, HazeToken::Not},
 
+	{TOKEN_BIT_AND, HazeToken::BitAnd},
+	{TOKEN_BIT_OR, HazeToken::BitOr},
+	{TOKEN_BIT_NEG, HazeToken::BitNeg},
+	{TOKEN_BIT_XOR, HazeToken::BitXor},
+
 	{TOKEN_LEFT_MOVE, HazeToken::Shl},
 	{TOKEN_RIGHT_MOVE, HazeToken::Shr},
 
@@ -176,6 +187,9 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_MOD_ASSIGN, HazeToken::ModAssign},
 	{TOKEN_SHL_ASSIGN, HazeToken::ShlAssign},
 	{TOKEN_SHR_ASSIGN, HazeToken::ShrAssign},
+	{TOKEN_BIT_AND_ASSIGN, HazeToken::BitAndAssign},
+	{TOKEN_BIT_OR_ASSIGN, HazeToken::BitOrAssign},
+	{TOKEN_BIT_XOR_ASSIGN, HazeToken::BitXorAssign},
 
 	{TOKEN_LEFT_PARENTHESES, HazeToken::LeftParentheses},
 	{TOKEN_RIGHT_PARENTHESES, HazeToken::RightParentheses},
@@ -198,8 +212,6 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_WHILE, HazeToken::While},
 
 	{TOKEN_CAST, HazeToken::Cast},
-
-	{TOKEN_REFERENCE, HazeToken::Reference},
 
 	{TOKEN_DEFINE, HazeToken::Define},
 
@@ -234,6 +246,10 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 	{ HazeToken::Or, 140 },
 	{ HazeToken::And, 150 },
 
+	{ HazeToken::BitOr, 170 },
+	{ HazeToken::BitXor, 180 },
+	{ HazeToken::BitAnd, 190 },
+
 	{ HazeToken::Equal, 200 },
 	{ HazeToken::NotEqual, 200 },
 
@@ -252,6 +268,8 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 	{ HazeToken::Mul, 500 },
 	{ HazeToken::Div, 500 },
 	{ HazeToken::Mod, 500 },
+
+	//{ HazeToken::BitNeg, 600 }
 
 	//{ HazeToken::Not, 60 },
 	//{ HazeToken::Inc, 900 },				//后置++
@@ -408,17 +426,25 @@ HazeToken Parse::GetNextToken()
 			}
 			else if (IsHazeSignalToken(CurrCode, Signal, 3))
 			{
-				CurrPreLexeme = CurrLexeme;
-				CurrLexeme = Signal;
-				CurrCode += 3;
+				if (CurrPreLexeme.first.empty())
+				{
+					CurrPreLexeme.first = CurrLexeme;
+					CurrPreLexeme.second = 3;
+					CurrLexeme = Signal;
+					CurrCode += 3;
+				}
 			}
 			else if (IsHazeSignalToken(CurrCode, Signal, 2))
 			{
-				CurrPreLexeme = CurrLexeme;
-				CurrLexeme = Signal;
-				CurrCode += 2;
+				if (CurrPreLexeme.first.empty())
+				{
+					CurrPreLexeme.first = CurrLexeme;
+					CurrPreLexeme.second = 2;
+					CurrLexeme = Signal;
+					CurrCode += 2;
+				}
 			}
-			else if (CurrLexeme.length() == 0 || IsPointer(CurrLexeme + *CurrCode, CurrToken))
+			else if (CurrLexeme.length() == 0 || IsPointerOrRef(CurrLexeme + *CurrCode, CurrToken))
 			{
 				CurrLexeme += *(CurrCode++);
 			}
@@ -461,7 +487,7 @@ HazeToken Parse::GetNextToken()
 	{
 		CurrToken = HazeToken::Number;
 	}
-	else if (IsPointer(CurrLexeme, CurrToken))
+	else if (IsPointerOrRef(CurrLexeme, CurrToken))
 	{
 	}
 	else if (VM->IsClass(CurrLexeme) || CurrParseClass == CurrLexeme)
@@ -571,6 +597,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::CustomClass:
 	case HazeToken::PointerBase:
 	case HazeToken::PointerClass:
+	case HazeToken::ReferenceBase:
+	case HazeToken::ReferenceClass:
 	case HazeToken::PointerPointer:
 		return ParseVariableDefine();
 	case HazeToken::Number:
@@ -594,17 +622,6 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseInc();
 	case HazeToken::Dec:
 		return ParseDec();
-	//case HazeToken::AddAssign:
-	//case HazeToken::SubAssign:
-	//case HazeToken::MulAssign:
-	//case HazeToken::DivAssign:
-	//case HazeToken::ModAssign:
-	//case HazeToken::BitAndAssign:
-	//case HazeToken::BitOrAssign:
-	//case HazeToken::BitXorAssign:
-	//case HazeToken::ShlAssign:
-	//case HazeToken::ShrAssign:
-	//	return ParseOperatorAssign();
 	case HazeToken::New:
 		return ParseNew();
 	case HazeToken::LeftParentheses:
@@ -615,6 +632,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParsePointerValue();
 	case HazeToken::BitAnd:
 		return ParseGetAddress();
+	case HazeToken::BitNeg:
+		return ParseNeg();
 	default:
 		break;
 	}
@@ -662,15 +681,6 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName);
 	}
 
-	if (CurrToken == HazeToken::Inc)
-	{
-		Ret = ParseInc(std::move(Ret));
-	}
-	else if (CurrToken == HazeToken::Dec)
-	{
-		Ret = ParseDec(std::move(Ret));
-	}
-
 	return Ret;
 }
 
@@ -683,13 +693,13 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 	{
 		DefineVariable.Type.CustomName = CurrLexeme;
 	}
-	else if (CurrToken == HazeToken::PointerBase)
+	else if (CurrToken == HazeToken::PointerBase || CurrToken == HazeToken::ReferenceBase)
 	{
 		HazeToken Token = HashMap_Token.find(CurrLexeme.substr(0, CurrLexeme.length() - 1))->second;
 		DefineVariable.Type.SecondaryType = GetValueTypeByToken(Token);
 		DefineVariable.Type.CustomName = HAZE_TEXT("");
 	}
-	else if (CurrToken == HazeToken::PointerClass)
+	else if (CurrToken == HazeToken::PointerClass || CurrToken == HazeToken::ReferenceClass)
 	{
 		DefineVariable.Type.SecondaryType = HazeValueType::Class;
 		DefineVariable.Type.CustomName = CurrLexeme.substr(0, CurrLexeme.length() - 1);
@@ -702,7 +712,10 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			PointerLevel += 1;
 		}
 
-		HAZE_TO_DO(Parse pointer pointer !);
+		if (PointerLevel > 1)
+		{
+			HAZE_TO_DO(Parse pointer pointer !);
+		}
 	}
 	else
 	{
@@ -925,40 +938,42 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	return nullptr;
 }
 
-std::unique_ptr<ASTBase> Parse::ParseInc(std::unique_ptr<ASTBase> Expression)
+std::unique_ptr<ASTBase> Parse::ParseInc()
 {
-	bool IsPreInc = Expression == nullptr;
-	
-	if (Expression)
-	{
-		CurrPreLexeme.clear();
-		GetNextToken();
-	}
-	else
+	bool IsPre = CurrPreLexeme.first.empty();
+	std::unique_ptr<ASTBase> Expression;
+	if (IsPre)
 	{
 		GetNextToken();
 		Expression = ParseExpression();
 	}
+	else
+	{
+		BackToPreLexemeAndNext();
+		Expression = ParseExpression();
+		GetNextToken();
+	}
 
-	return std::make_unique<ASTInc>(VM, Expression, IsPreInc);
+	return std::make_unique<ASTInc>(VM, Expression, IsPre);
 }
 
-std::unique_ptr<ASTBase> Parse::ParseDec(std::unique_ptr<ASTBase> Expression)
+std::unique_ptr<ASTBase> Parse::ParseDec()
 {
-	bool IsPreInc = Expression == nullptr;
-
-	if (Expression)
-	{
-		CurrPreLexeme.clear();
-		GetNextToken();
-	}
-	else
+	bool IsPre = CurrPreLexeme.first.empty();
+	std::unique_ptr<ASTBase> Expression;
+	if (IsPre)
 	{
 		GetNextToken();
 		Expression = ParseExpression();
 	}
+	else
+	{
+		BackToPreLexemeAndNext();
+		Expression = ParseExpression();
+		GetNextToken();
+	}
 
-	return std::make_unique<ASTDec>(VM, Expression, IsPreInc);
+	return std::make_unique<ASTDec>(VM, Expression, IsPre);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
@@ -986,6 +1001,14 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 	
 	auto Expression = ParseExpression();
 	return std::make_unique<ASTPointerValue>(VM, Expression, Level);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseNeg()
+{
+	GetNextToken();
+	auto Expression = ParseExpression();
+	
+	return std::make_unique<ASTNeg>(VM, Expression);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseGetAddress()
@@ -1689,6 +1712,7 @@ bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, 
 		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, 
 		TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
 		TOKEN_ASSIGN, 
+		TOKEN_BIT_AND, TOKEN_BIT_OR, TOKEN_BIT_NEG, TOKEN_BIT_XOR,
 		TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
 		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, 
 		TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, 
@@ -1697,7 +1721,8 @@ bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, 
 		TOKEN_MULTI_VARIABLE, 
 		TOKEN_STRING_MATCH,
 		TOKEN_ARRAY_START, TOKEN_ARRAY_END,
-		TOKEN_INC, TOKEN_DEC, TOKEN_ADD_ASSIGN, TOKEN_SUB_ASSIGN, TOKEN_MUL_ASSIGN, TOKEN_DIV_ASSIGN, TOKEN_MOD_ASSIGN, TOKEN_SHL_ASSIGN, TOKEN_SHR_ASSIGN
+		TOKEN_INC, TOKEN_DEC, TOKEN_ADD_ASSIGN, TOKEN_SUB_ASSIGN, TOKEN_MUL_ASSIGN, TOKEN_DIV_ASSIGN, TOKEN_MOD_ASSIGN, TOKEN_SHL_ASSIGN, TOKEN_SHR_ASSIGN,
+		TOKEN_BIT_AND_ASSIGN, TOKEN_BIT_OR_ASSIGN, TOKEN_BIT_XOR_ASSIGN,
 	};
 
 	static HAZE_STRING WS;
@@ -1714,7 +1739,7 @@ bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, 
 	return Iter != HashSet_TokenText.end();
 }
 
-bool Parse::IsPointer(const HAZE_STRING& Str, HazeToken& OutToken)
+bool Parse::IsPointerOrRef(const HAZE_STRING& Str, HazeToken& OutToken)
 {
 	HAZE_STRING TypeName = Str.substr(0, Str.length() - 1);
 	HAZE_STRING PointerChar = Str.substr(Str.length() - 1, 1);
@@ -1756,6 +1781,37 @@ bool Parse::IsPointer(const HAZE_STRING& Str, HazeToken& OutToken)
 			return true;
 		}
 	}
+	else if (PointerChar == TOKEN_BIT_AND)
+	{
+		auto It = HashMap_Token.find(TypeName);
+		if (It != HashMap_Token.end())
+		{
+			if (IsHazeDefaultTypeAndVoid(GetValueTypeByToken(It->second)))
+			{
+				OutToken = HazeToken::ReferenceBase;
+				return true;
+			}
+		}
+		else
+		{
+			if (VM->GetCompiler()->IsClass(TypeName))
+			{
+				OutToken = HazeToken::ReferenceClass;
+				return true;
+			}
+		}
+	}
 
 	return false;
+}
+
+void Parse::BackToPreLexemeAndNext()
+{
+	if (!CurrPreLexeme.first.empty())
+	{
+		CurrCode -= CurrPreLexeme.second + CurrPreLexeme.first.length();
+		GetNextToken();
+		CurrPreLexeme.first.clear();
+		CurrPreLexeme.second = 0;
+	}
 }

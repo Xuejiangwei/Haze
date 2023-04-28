@@ -153,9 +153,9 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 			ThisPointerValue = Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(GetObjectName(Name));
 		}
 
-		for (auto& it : FunctionParam)
+		for (int i = (int)FunctionParam.size() - 1; i >= 0; i--)
 		{
-			Param.push_back(it->CodeGen());
+			Param.push_back(FunctionParam[i]->CodeGen());
 		}
 
 		return Compiler->CreateFunctionCall(Function, Param, ThisPointerValue);
@@ -191,32 +191,35 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		}
 	}
 
-
-	if (SectionSignal == HazeSectionSignal::Global)
-	{
-		//生成全局变量字节码
-		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable, SizeValue);
-	}
-	else if (SectionSignal == HazeSectionSignal::Function)
-	{
-		//生成局部变量字节码
-		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, SizeValue);
-	}
-
 	std::shared_ptr<HazeCompilerValue> ExprValue = nullptr;
 	if (Expression)
 	{
 		ExprValue = Expression->CodeGen();
+	}
 
-		if (ArraySize)
-		{
-			Compiler->CreateArrayInit(RetValue, ExprValue);
-		}
-		else
-		{
+	bool IsRef = DefineVariable.Type.PrimaryType == HazeValueType::ReferenceBase || DefineVariable.Type.PrimaryType == HazeValueType::ReferenceClass;
 
-			Compiler->CreateMov(RetValue, ExprValue);
-		}
+	if (SectionSignal == HazeSectionSignal::Global)
+	{
+		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable, SizeValue);
+	}
+	else if (SectionSignal == HazeSectionSignal::Function)
+	{
+		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, IsRef ? ExprValue : SizeValue);
+	}
+
+	if (ArraySize)
+	{
+		Compiler->CreateArrayInit(RetValue, ExprValue);
+	}
+	else if (IsRef)
+	{
+		Compiler->CreateLea(RetValue, ExprValue);
+	}
+	else
+	{
+
+		Compiler->CreateMov(RetValue, ExprValue);
 	}
 
 	return RetValue;
@@ -273,6 +276,19 @@ std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 	}
 	
 	return nullptr;
+}
+
+ASTNeg::ASTNeg(HazeVM* VM, std::unique_ptr<ASTBase>& Expression) : ASTBase(VM), Expression(std::move(Expression))
+{
+}
+
+ASTNeg::~ASTNeg()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTNeg::CodeGen()
+{
+	return VM->GetCompiler()->CreateBitNeg(Expression->CodeGen());
 }
 
 ASTInc::ASTInc(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, bool IsPreInc) : ASTBase(VM), IsPreInc(IsPreInc), Expression(std::move(Expression))
@@ -373,6 +389,12 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		return Compiler->CreateShr(LeftValue, RightValue);
 	case HazeToken::Assign:
 		return Compiler->CreateMov(LeftValue, RightValue);
+	case HazeToken::BitAnd:
+		return Compiler->CreateBitAnd(LeftValue, RightValue);
+	case HazeToken::BitOr:
+		return Compiler->CreateBitOr(LeftValue, RightValue);
+	case HazeToken::BitXor:
+		return Compiler->CreateBitXor(LeftValue, RightValue);
 	case HazeToken::Equal:
 	case HazeToken::NotEqual:
 	case HazeToken::Greater:

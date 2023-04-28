@@ -24,6 +24,9 @@ enum class HazeValueType : uint32
 	PointerClass,
 	PointerPointer,
 
+	ReferenceBase,
+	ReferenceClass,
+
 	Class,
 	Function,
 

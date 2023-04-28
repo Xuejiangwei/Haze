@@ -77,13 +77,13 @@ private:
 
 	std::unique_ptr<ASTBase> ParsePointerValue();
 
+	std::unique_ptr<ASTBase> ParseNeg();
+
 	std::unique_ptr<ASTBase> ParseGetAddress();
 
-	std::unique_ptr<ASTBase> ParseInc(std::unique_ptr<ASTBase> Expression = nullptr);
+	std::unique_ptr<ASTBase> ParseInc();
 
-	std::unique_ptr<ASTBase> ParseDec(std::unique_ptr<ASTBase> Expression = nullptr);
-
-	//std::unique_ptr<ASTBase> ParseOperatorAssign();
+	std::unique_ptr<ASTBase> ParseDec();
 
 	std::unique_ptr<ASTBase> ParseMultiExpression();
 
@@ -114,7 +114,9 @@ private:
 
 	bool IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, uint32 CharSize = 1);
 
-	bool IsPointer(const HAZE_STRING& Str, HazeToken& OutToken);
+	bool IsPointerOrRef(const HAZE_STRING& Str, HazeToken& OutToken);
+
+	void BackToPreLexemeAndNext();
 
 private:
 	class HazeVM* VM;
@@ -124,7 +126,7 @@ private:
 	HazeToken CurrToken;
 	const HAZE_CHAR* CurrCode;
 	HAZE_STRING CurrLexeme;
-	HAZE_STRING CurrPreLexeme;
+	std::pair<HAZE_STRING, int> CurrPreLexeme;		//LexemeString, skip char count
 
 	std::stack<HazeSectionSignal> StackSectionSignal;
 

@@ -369,13 +369,22 @@ void HazeCompiler::AddImportModuleToCurrModule(HazeCompilerModule* Module)
 	GetCurrModule()->Vector_ImportModule.push_back(Module);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLea(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
+{
+	return GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::LEA);;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
 {
 	Alloca->StoreValue(Value);
 
 	if ((Alloca->IsPointer() && !Value->IsPointer()) || (Alloca->IsPointerPointer() && Value->IsPointer()))
 	{
-		GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::LEA);
+		CreateLea(Alloca, Value);
+	}
+	else if (Alloca->IsRef())
+	{
+		CreateMovToPV(Alloca, Value->IsRef() ? CreateMovPV(GetTempRegister(), Value) : Value);
 	}
 	else
 	{
@@ -385,9 +394,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 	return Alloca;
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovToPV(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
+{
+	if (Alloca->IsRef() || Alloca->IsPointerPointer())
+	{
+		return GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOVTOPV);
+	}
+
+	return Alloca;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovPV(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
 {
-	if (Value->IsPointer())
+	if (Value->IsPointer() || Value->IsRef())
 	{
 		Alloca->StoreValue(Value);
 
@@ -405,14 +424,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovPV(std::shared_ptr<Haz
 	return Alloca;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySize)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef)
 {
-	return Function->CreateLocalVariable(Variable, ArraySize);
+	return Function->CreateLocalVariable(Variable, ArraySizeOrRef);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySize)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef)
 {
-	return Module->CreateGlobalVariable(Var, ArraySize);
+	return Module->CreateGlobalVariable(Var, ArraySizeOrRef);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeCompilerValue> Value)
@@ -454,6 +473,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBitAnd(std::shared_ptr<Ha
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBitOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)
 {
 	return GetCurrModule()->CreateBitOr(Left, Right, IsAssign);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBitNeg(std::shared_ptr<HazeCompilerValue> Value)
+{
+	return GetCurrModule()->CreateBitNeg(Value);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBitXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign)

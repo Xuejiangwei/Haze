@@ -24,6 +24,8 @@ uint32 GetSizeByHazeType(HazeValueType Type)
     case HazeValueType::UnsignedLong:
     case HazeValueType::PointerBase:
     case HazeValueType::PointerClass:
+    case HazeValueType::ReferenceBase:
+    case HazeValueType::ReferenceClass:
         return 8;
     default:
         break;
@@ -45,6 +47,8 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
         { HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
         { HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
         { HazeToken::CustomClass, HazeValueType::Class},
+        { HazeToken::ReferenceBase, HazeValueType::ReferenceBase},
+        { HazeToken::ReferenceClass, HazeValueType::ReferenceClass},
         { HazeToken::PointerBase, HazeValueType::PointerBase},
         { HazeToken::PointerClass, HazeValueType::PointerClass},
         { HazeToken::PointerPointer, HazeValueType::PointerPointer},
@@ -215,6 +219,9 @@ void CalculateValue(InstructionOpCode TypeCode, int& Source, int& Target)
     case InstructionOpCode::BIT_OR:
     case InstructionOpCode::BIT_OR_ASSIGN:
         Target |= Source;
+        break;
+    case InstructionOpCode::BIT_NEG:
+        Target = ~Source;
         break;
     case InstructionOpCode::BIT_XOR:
     case InstructionOpCode::BIT_XOR_ASSIGN:

@@ -123,6 +123,9 @@
     <ClCompile Include="Compiler\Source\HazeCompilerPointerPointerValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerRefValue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -246,6 +249,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerPointerPointerValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerRefValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

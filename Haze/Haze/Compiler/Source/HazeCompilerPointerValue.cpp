@@ -4,10 +4,9 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeLog.h"
 
-HazeCompilerPointerValue::HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count)
-	: HazeCompilerValue(Module, DefineType, Scope, Count)
+HazeCompilerPointerValue::HazeCompilerPointerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, 
+	std::shared_ptr<HazeCompilerValue> RefValue) : HazeCompilerValue(Module, DefineType, Scope, Count), RefValue(RefValue)
 {
-
 }
 
 HazeCompilerPointerValue::~HazeCompilerPointerValue()
@@ -16,6 +15,11 @@ HazeCompilerPointerValue::~HazeCompilerPointerValue()
 
 //void HazeCompilerPointerValue::StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue)
 //{
+//	if (IsRef())
+//	{
+//		HAZE_LOG_ERR(HAZE_TEXT("Reference value can not "))
+//	}
+//
 //	HazeCompilerValue::StoreValue(SrcValue);
 //
 //	if (SrcValue->IsArray())

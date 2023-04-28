@@ -18,7 +18,7 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetShared() { return shared_from_this(); }
 
-	void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
+	virtual void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
 
 	const HazeDefineType& GetValueType() const { return ValueType; }
 
@@ -59,6 +59,12 @@ public:
 	bool IsPointerClass() const { return ValueType.PrimaryType == HazeValueType::PointerClass; }
 
 	bool IsPointerPointer() const { return ValueType.PrimaryType == HazeValueType::PointerPointer; }
+
+	bool IsRefBase() const { return ValueType.PrimaryType == HazeValueType::ReferenceBase; }
+
+	bool IsRefClass() const { return ValueType.PrimaryType == HazeValueType::ReferenceClass; }
+
+	bool IsRef() const { return IsRefBase() || IsRefClass(); }
 
 	bool IsArray() const { return ValueType.PrimaryType == HazeValueType::Array; }
 

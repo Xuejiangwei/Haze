@@ -150,6 +150,18 @@ private:
 	int Level;
 };
 
+//Parse pointer value
+class ASTNeg : public ASTBase
+{
+public:
+	ASTNeg(HazeVM* VM, std::unique_ptr<ASTBase>& Expression);
+	virtual ~ASTNeg() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	std::unique_ptr<ASTBase> Expression;
+};
 
 //Inc
 class ASTInc : public ASTBase
