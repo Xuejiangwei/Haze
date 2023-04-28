@@ -77,11 +77,13 @@ private:
 
 	std::unique_ptr<ASTBase> ParsePointerValue();
 
-	std::unique_ptr<ASTBase> ParseInc();
+	std::unique_ptr<ASTBase> ParseGetAddress();
 
-	std::unique_ptr<ASTBase> ParseDec();
+	std::unique_ptr<ASTBase> ParseInc(std::unique_ptr<ASTBase> Expression = nullptr);
 
-	std::unique_ptr<ASTBase> ParseOperatorAssign();
+	std::unique_ptr<ASTBase> ParseDec(std::unique_ptr<ASTBase> Expression = nullptr);
+
+	//std::unique_ptr<ASTBase> ParseOperatorAssign();
 
 	std::unique_ptr<ASTBase> ParseMultiExpression();
 

@@ -18,25 +18,22 @@ struct HazeDefineType
 	HazeValueType SecondaryType;			//指针指向类型,自定义类指针值为void
 
 	HAZE_STRING CustomName;				//自定义类型名
-	bool IsArray;			
-	
 
 	HazeDefineType() : PrimaryType(HazeValueType::Void)
 	{
 		SecondaryType = HazeValueType::Void;
-		IsArray = false;
 	}
 
 	~HazeDefineType()
 	{
 	}
 
-	HazeDefineType(HazeValueType Type, const HAZE_STRING& CustomName) : PrimaryType(Type), SecondaryType(HazeValueType::Void), IsArray(false)
+	HazeDefineType(HazeValueType Type, const HAZE_STRING& CustomName) : PrimaryType(Type), SecondaryType(HazeValueType::Void)
 	{
 		this->CustomName = CustomName;
 	}
 
-	HazeDefineType(HazeValueType Type, const HAZE_CHAR* CustomName) : PrimaryType(Type), SecondaryType(HazeValueType::Void), IsArray(false)
+	HazeDefineType(HazeValueType Type, const HAZE_CHAR* CustomName) : PrimaryType(Type), SecondaryType(HazeValueType::Void)
 	{
 		this->CustomName = CustomName;
 	}
@@ -44,13 +41,13 @@ struct HazeDefineType
 	bool operator==(const HazeDefineType& InType)
 	{
 		return PrimaryType == InType.PrimaryType && SecondaryType == InType.SecondaryType 
-			&& CustomName == InType.CustomName && IsArray == InType.IsArray;
+			&& CustomName == InType.CustomName;
 	}
 
 	bool operator!=(const HazeDefineType& InType)
 	{
 		return PrimaryType != InType.PrimaryType || SecondaryType != InType.SecondaryType
-			|| CustomName != InType.CustomName || IsArray != InType.IsArray;
+			|| CustomName != InType.CustomName;
 	}
 };
 

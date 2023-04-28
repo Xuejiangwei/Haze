@@ -68,11 +68,16 @@ std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister =
 	{NEW_REGISTER, HazeRegister()},
 	{CMP_REGISTER, HazeRegister()},
 
+	{TEMP_REGISTER_0, HazeRegister()},
 	{TEMP_REGISTER_1, HazeRegister()},
 	{TEMP_REGISTER_2, HazeRegister()},
 	{TEMP_REGISTER_3, HazeRegister()},
 	{TEMP_REGISTER_4, HazeRegister()},
 	{TEMP_REGISTER_5, HazeRegister()},
+	{TEMP_REGISTER_6, HazeRegister()},
+	{TEMP_REGISTER_7, HazeRegister()},
+	{TEMP_REGISTER_8, HazeRegister()},
+	{TEMP_REGISTER_9, HazeRegister()},
 };
 
 HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name)
@@ -148,6 +153,7 @@ public:
 		{
 			void* Dst = GetAddressByOperator(Stack, Operator[0]);
 			const void* Src = GetAddressByOperator(Stack, Operator[1]);
+
 			uint64 Address = 0;
 			memcpy(&Address, Src, sizeof(Address));
 			memcpy(Dst, (void*)Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
@@ -727,10 +733,6 @@ private:
 		else if (Operator.Scope == HazeDataDesc::ArrayElement)
 		{
 			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress + Operator.Extra.Address.Offset];
-		}
-		else if (Operator.Variable.Type.PrimaryType == HazeValueType::Array)
-		{
-			HAZE_TO_DO(to do parse array pointer);
 		}
 		else /*if (Operator.Scope == InstructionScopeType::Local)*/
 		{

@@ -44,7 +44,13 @@ void HazeCompilerValue::StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue)
 {
 	if (IsRegister())
 	{
+		bool bPointer = IsPointer();
 		ValueType = SrcValue->GetValueType();
+		
+		if (SrcValue->IsArray() && bPointer)
+		{
+			ValueType.PrimaryType = ValueType.CustomName.empty() ? HazeValueType::PointerBase : HazeValueType::PointerClass;
+		}
 	}
 
 	memcpy(&this->Value.Value, &SrcValue->Value.Value, sizeof(this->Value.Value));

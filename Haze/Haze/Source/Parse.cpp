@@ -115,6 +115,7 @@
 
 #define TOKEN_NEW						HAZE_TEXT("生成")
 
+
 static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 {
 	{TOKEN_VOID, HazeToken::Void},
@@ -210,6 +211,11 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_NEW, HazeToken::New},
 };
 
+const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token()
+{
+	return HashMap_Token;
+}
+
 static std::unordered_map<HazeToken, int> MapBinOp =
 {
 	{ HazeToken::Assign, 100 },
@@ -248,8 +254,8 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 	{ HazeToken::Mod, 500 },
 
 	//{ HazeToken::Not, 60 },
-	//{ HazeToken::Inc, 60 },
-	// 
+	//{ HazeToken::Inc, 900 },				//后置++
+	
 	//{ HazeToken::LeftParentheses, 1000 },
 };
 
@@ -356,13 +362,6 @@ void Parse::ParseContent()
 
 HazeToken Parse::GetNextToken()
 {
-	/*if (!*CurrCode)
-	{
-		CurrToken = HazeToken::None;
-		CurrLexeme = HAZE_TEXT("");
-		return HazeToken::None;
-	}*/
-
 	while (HazeIsSpace(*CurrCode))
 	{
 		CurrCode++;
@@ -572,6 +571,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::CustomClass:
 	case HazeToken::PointerBase:
 	case HazeToken::PointerClass:
+	case HazeToken::PointerPointer:
 		return ParseVariableDefine();
 	case HazeToken::Number:
 		return ParseNumberExpression();
@@ -594,17 +594,17 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseInc();
 	case HazeToken::Dec:
 		return ParseDec();
-	case HazeToken::AddAssign:
-	case HazeToken::SubAssign:
-	case HazeToken::MulAssign:
-	case HazeToken::DivAssign:
-	case HazeToken::ModAssign:
-	case HazeToken::BitAndAssign:
-	case HazeToken::BitOrAssign:
-	case HazeToken::BitXorAssign:
-	case HazeToken::ShlAssign:
-	case HazeToken::ShrAssign:
-		return ParseOperatorAssign();
+	//case HazeToken::AddAssign:
+	//case HazeToken::SubAssign:
+	//case HazeToken::MulAssign:
+	//case HazeToken::DivAssign:
+	//case HazeToken::ModAssign:
+	//case HazeToken::BitAndAssign:
+	//case HazeToken::BitOrAssign:
+	//case HazeToken::BitXorAssign:
+	//case HazeToken::ShlAssign:
+	//case HazeToken::ShrAssign:
+	//	return ParseOperatorAssign();
 	case HazeToken::New:
 		return ParseNew();
 	case HazeToken::LeftParentheses:
@@ -613,6 +613,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseLeftBrace();
 	case HazeToken::Mul:					//pointer value
 		return ParsePointerValue();
+	case HazeToken::BitAnd:
+		return ParseGetAddress();
 	default:
 		break;
 	}
@@ -622,6 +624,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 
 std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 {
+	std::unique_ptr<ASTBase> Ret = nullptr;
 	HAZE_STRING IdentiferName = CurrLexeme;
 	if (GetNextToken() == HazeToken::LeftParentheses)
 	{
@@ -652,17 +655,30 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 		auto IndexExpression = ParseExpression();
 		GetNextToken();
 
-		return std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, nullptr, std::move(IndexExpression));
+		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, nullptr, std::move(IndexExpression));
 	}
 	else
 	{
-		return std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName);
+		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName);
 	}
+
+	if (CurrToken == HazeToken::Inc)
+	{
+		Ret = ParseInc(std::move(Ret));
+	}
+	else if (CurrToken == HazeToken::Dec)
+	{
+		Ret = ParseDec(std::move(Ret));
+	}
+
+	return Ret;
 }
 
 std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 {
 	DefineVariable.Type.PrimaryType = GetValueTypeByToken(CurrToken);
+
+	int PointerLevel = 1;
 	if (CurrToken == HazeToken::CustomClass)
 	{
 		DefineVariable.Type.CustomName = CurrLexeme;
@@ -679,15 +695,28 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		DefineVariable.Type.CustomName = CurrLexeme.substr(0, CurrLexeme.length() - 1);
 	}
 
+	if (CurrToken == HazeToken::PointerBase || CurrToken == HazeToken::PointerClass)
+	{
+		while (GetNextToken() == HazeToken::Mul)
+		{
+			PointerLevel += 1;
+		}
+
+		HAZE_TO_DO(Parse pointer pointer !);
+	}
+	else
+	{
+		GetNextToken();
+	}
+
 	std::unique_ptr<ASTBase> ArraySize = nullptr;
-	if (ExpectNextTokenIs(HazeToken::Identifier))
+	if (CurrToken == HazeToken::Identifier)
 	{
 		DefineVariable.Name = CurrLexeme;
 
 		GetNextToken();
 
-		DefineVariable.Type.IsArray = CurrToken == HazeToken::Array;
-		if (DefineVariable.Type.IsArray)
+		if (CurrToken == HazeToken::Array)
 		{
 			DefineVariable.Type.SecondaryType = DefineVariable.Type.PrimaryType;
 			DefineVariable.Type.PrimaryType = HazeValueType::Array;
@@ -702,7 +731,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			GetNextToken();		//吃掉赋值符号
 			std::unique_ptr<ASTBase> Expression = ParseExpression();
 
-			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, std::move(Expression), std::move(ArraySize));
+			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, std::move(Expression), std::move(ArraySize), PointerLevel);
 		}
 		else if ((CurrToken == HazeToken::RightParentheses || CurrToken == HazeToken::Comma) && StackSectionSignal.top() == HazeSectionSignal::Function)
 		{
@@ -718,7 +747,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 				if (CurrToken == HazeToken::RightParentheses)
 				{
 					GetNextToken();
-					return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
+					return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr, nullptr, PointerLevel);
 				}
 				else
 				{
@@ -736,7 +765,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		}
 		else
 		{
-			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr);
+			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr, nullptr, PointerLevel);
 		}
 	}
 
@@ -896,44 +925,40 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	return nullptr;
 }
 
-std::unique_ptr<ASTBase> Parse::ParseInc()
+std::unique_ptr<ASTBase> Parse::ParseInc(std::unique_ptr<ASTBase> Expression)
 {
-	HAZE_STRING Name;
-	bool IsPreInc = !CurrPreLexeme.empty();
+	bool IsPreInc = Expression == nullptr;
 	
-	if (IsPreInc)
+	if (Expression)
 	{
-		Name = CurrPreLexeme;
 		CurrPreLexeme.clear();
+		GetNextToken();
 	}
 	else
 	{
 		GetNextToken();
-		Name = CurrLexeme;
+		Expression = ParseExpression();
 	}
 
-	GetNextToken();
-	return std::make_unique<ASTInc>(VM, Name, IsPreInc);
+	return std::make_unique<ASTInc>(VM, Expression, IsPreInc);
 }
 
-std::unique_ptr<ASTBase> Parse::ParseDec()
+std::unique_ptr<ASTBase> Parse::ParseDec(std::unique_ptr<ASTBase> Expression)
 {
-	HAZE_STRING Name;
-	bool IsPreInc = !CurrPreLexeme.empty();
+	bool IsPreInc = Expression == nullptr;
 
-	if (IsPreInc)
+	if (Expression)
 	{
-		Name = CurrPreLexeme;
 		CurrPreLexeme.clear();
+		GetNextToken();
 	}
 	else
 	{
 		GetNextToken();
-		Name = CurrLexeme;
+		Expression = ParseExpression();
 	}
 
-	GetNextToken();
-	return std::make_unique<ASTDec>(VM, Name, IsPreInc);
+	return std::make_unique<ASTDec>(VM, Expression, IsPreInc);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
@@ -955,9 +980,17 @@ std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 
 std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 {
+	int Level = (int)CurrLexeme.length();
+
 	GetNextToken();
+	
 	auto Expression = ParseExpression();
-	return std::make_unique<ASTPointerValue>(VM, Expression);
+	return std::make_unique<ASTPointerValue>(VM, Expression, Level);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseGetAddress()
+{
+	return std::unique_ptr<ASTBase>();
 }
 
 std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
@@ -983,15 +1016,15 @@ std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
 	return std::make_unique<ASTInitializeList>(VM, Vector_Element);
 }
 
-std::unique_ptr<ASTBase> Parse::ParseOperatorAssign()
-{
-	HazeToken Token = CurrToken;
-
-	auto Value = ParseExpression();
-
-	GetNextToken();
-	return std::make_unique<ASTOperetorAssign>(VM, Token, Value);
-}
+//std::unique_ptr<ASTBase> Parse::ParseOperatorAssign()
+//{
+//	HazeToken Token = CurrToken;
+//
+//	auto Value = ParseExpression();
+//
+//	GetNextToken();
+//	return std::make_unique<ASTOperetorAssign>(VM, Token, Value);
+//}
 
 std::unique_ptr<ASTBase> Parse::ParseMultiExpression()
 {
@@ -1691,7 +1724,7 @@ bool Parse::IsPointer(const HAZE_STRING& Str, HazeToken& OutToken)
 		auto It = HashMap_Token.find(TypeName);
 		if (It != HashMap_Token.end())
 		{
-			if (IsHazeDefaultType(GetValueTypeByToken(It->second)))
+			if (IsHazeDefaultTypeAndVoid(GetValueTypeByToken(It->second)))
 			{
 				OutToken = HazeToken::PointerBase;
 				return true;
@@ -1704,8 +1737,25 @@ bool Parse::IsPointer(const HAZE_STRING& Str, HazeToken& OutToken)
 				OutToken = HazeToken::PointerClass;
 				return true;
 			}
+
+			for (size_t i = 0; i < Str.length() - 1; i++)
+			{
+				if (Str.substr(i, 1) != TOKEN_MUL) 
+				{
+					return false;
+				}
+			}
+
+			if (Str.length() > 3)
+			{
+				HAZE_LOG_ERR(HAZE_TEXT("Haze max 3 level pointer pointer !\n"));
+				return false;
+			}
+
+			OutToken = HazeToken::PointerPointer;
+			return true;
 		}
-		
 	}
+
 	return false;
 }

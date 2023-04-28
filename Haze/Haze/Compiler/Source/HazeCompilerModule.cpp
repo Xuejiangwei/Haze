@@ -208,16 +208,16 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr
 	std::shared_ptr<HazeCompilerValue> Ret = Value;
 	if (IsHazeDefaultType(Value->GetValueType().PrimaryType) || Value->IsPointer())
 	{
-		if (IsPreInc)
+		if (!IsPreInc)
 		{
 			Ret = Compiler->GetTempRegister();
 			Compiler->CreateMov(Ret, Value);
 		}
-		Compiler->CreateMov(Value, CreateAdd(Value, Compiler->GetConstantValueInt_1()));
+		Compiler->CreateMov(Value, CreateAdd(Value, Compiler->GetConstantValueInt(1)));
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("Create inc compiler error\n"));
+		HAZE_LOG_ERR(HAZE_TEXT("Create dec compiler error type %s\n"), GetHazeValueTypeString(Value->GetValueType().PrimaryType));
 	}
 	return Ret;
 }
@@ -225,62 +225,20 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateDec(std::shared_ptr<HazeCompilerValue> Value, bool IsPreDec)
 {
 	std::shared_ptr<HazeCompilerValue> Ret = Value;
-	if (IsHazeDefaultType(Value->GetValueType().PrimaryType))
+	if (IsHazeDefaultType(Value->GetValueType().PrimaryType) || Value->IsPointer())
 	{
-		if (IsPreDec)
+		if (!IsPreDec)
 		{
 			Ret = Compiler->GetTempRegister();
 			Compiler->CreateMov(Ret, Value);
 		}
-		Compiler->CreateMov(Value, CreateSub(Value, Compiler->GetConstantValueInt_1()));
+		Compiler->CreateMov(Value, CreateSub(Value, Compiler->GetConstantValueInt(1)));
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("Create dec compiler error\n"));
+		HAZE_LOG_ERR(HAZE_TEXT("Create dec compiler error type %s\n"), GetHazeValueTypeString(Value->GetValueType().PrimaryType));
 	}
 	return Ret;
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateOpAssign(HazeOperatorAssign Type, std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	if (IsHazeDefaultType(Left->GetValueType().PrimaryType))
-	{
-		switch (Type)
-		{
-		case HazeOperatorAssign::None:
-			HAZE_LOG_ERR(HAZE_TEXT("Create OpAssign type none error\n"));
-			break;
-		case HazeOperatorAssign::AddAssign:
-			CreateAdd(Left, Right);
-			break;
-		case HazeOperatorAssign::SubAssign:
-			break;
-		case HazeOperatorAssign::MulAssign:
-			break;
-		case HazeOperatorAssign::DivAssign:
-			break;
-		case HazeOperatorAssign::ModAssign:
-			break;
-		case HazeOperatorAssign::BitAndAssign:
-			break;
-		case HazeOperatorAssign::BitOrAssign:
-			break;
-		case HazeOperatorAssign::BitXorAssign:
-			break;
-		case HazeOperatorAssign::ShlAssign:
-			break;
-		case HazeOperatorAssign::ShrAssign:
-			break;
-		default:
-			break;
-		}
-	}
-	else
-	{
-		HAZE_LOG_ERR(HAZE_TEXT("Create OpAssign is not haze default type error\n"));
-	}
-
-	return Left;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> InitList)

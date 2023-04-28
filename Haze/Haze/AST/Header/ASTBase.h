@@ -101,7 +101,7 @@ class ASTVariableDefine : public ASTBase
 {
 public:
 
-	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::unique_ptr<ASTBase> ArraySize = nullptr);
+	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::unique_ptr<ASTBase> ArraySize = nullptr, int PointerLevel = 0);
 	virtual ~ASTVariableDefine() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -110,6 +110,7 @@ private:
 	HazeSectionSignal SectionSignal;
 	std::unique_ptr<ASTBase> Expression;
 	std::unique_ptr<ASTBase> ArraySize;
+	int PointerLevel;
 };
 
 //·µ»Ø
@@ -139,13 +140,14 @@ public:
 class ASTPointerValue : public ASTBase
 {
 public:
-	ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression);
+	ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, int Level);
 	virtual ~ASTPointerValue() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
 	std::unique_ptr<ASTBase> Expression;
+	int Level;
 };
 
 
@@ -153,12 +155,13 @@ private:
 class ASTInc : public ASTBase
 {
 public:
-	ASTInc(HazeVM* VM, HAZE_STRING& Name, bool IsPreInc);
+	ASTInc(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, bool IsPreInc);
 	virtual ~ASTInc() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
+	std::unique_ptr<ASTBase> Expression;
 	bool IsPreInc;
 };
 
@@ -166,12 +169,13 @@ private:
 class ASTDec : public ASTBase
 {
 public:
-	ASTDec(HazeVM* VM, HAZE_STRING& Name, bool IsPreDec);
+	ASTDec(HazeVM* VMM, std::unique_ptr<ASTBase>& Expression, bool IsPreDec);
 	virtual ~ASTDec() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
+	std::unique_ptr<ASTBase> Expression;
 	bool IsPreDec;
 };
 

@@ -22,6 +22,7 @@ enum class HazeValueType : uint32
 
 	PointerBase,
 	PointerClass,
+	PointerPointer,
 
 	Class,
 	Function,
@@ -80,6 +81,8 @@ HazeValueType GetValueTypeByToken(HazeToken Token);
 
 HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2);
 
+bool IsHazeDefaultTypeAndVoid(HazeValueType Type);
+
 bool IsHazeDefaultType(HazeValueType Type);
 
 bool IsIntegerType(HazeValueType Type);
@@ -93,5 +96,7 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
 void CompareValueByType(HazeValueType Type, struct HazeRegister* Register, const void* Source, const void* Target);
 
 size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
+
+const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type);
 
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, HazeValue& Value);
