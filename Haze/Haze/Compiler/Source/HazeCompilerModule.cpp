@@ -17,7 +17,6 @@
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* Compiler, const HAZE_STRING& ModuleName)
 	: Compiler(Compiler), IsStdLib(false)
 {
-
 	HAZE_STRING Path = std::filesystem::current_path();
 
 #if HAZE_I_CODE_ENABLE
@@ -308,7 +307,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 
 	if (CurrFunction.empty())
 	{
-
 	}
 	else
 	{
@@ -338,7 +336,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 		{
 			SStream << " ";
 			GenValueHzicText(this, SStream, Right);
-
 		}
 
 		SStream << std::endl;
@@ -373,7 +370,7 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 	}
 
 	SStream << GetInstructionString(GetInstructionOpCodeByCmpType(CmpType)) << " ";
-	
+
 	if (IfJmpBlock)
 	{
 		SStream << IfJmpBlock->GetName() << " ";
@@ -445,7 +442,7 @@ void HazeCompilerModule::GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block, b
 	}
 
 	HSS << " " << Block->GetName() << std::endl;
-	
+
 	TopBlock->PushIRCode(HSS.str());
 }
 
@@ -472,7 +469,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
 
 	HAZE_STRING_STREAM SStream;
-	
+
 	uint32 Size = 0;
 
 	HAZE_STRING Name;
@@ -482,12 +479,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		auto Variable = Param[i];
 		if (Param[i]->IsRef())
 		{
-			HAZE_TO_DO(Parse reference !);
-			//Variable = Compiler->CreateMovPV(Compiler->GetTempRegister(), Compiler->CreateMovPV(Compiler->GetTempRegister(), Variable));
+			Variable = Compiler->CreateMovPV(Compiler->GetTempRegister(), Param[i]);
 		}
 
 		SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(Variable->GetValueType().PrimaryType) << " ";
-	
+
 		if (!GetCurrFunction()->FindLocalVariableName(Variable, Name))
 		{
 			if (!GetGlobalVariableName(Variable, Name))
@@ -552,7 +548,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 						HAZE_LOG_ERR(HAZE_TEXT("Function call param array element not find\n"));
 					}
 				}
-
 			}
 		}
 		else
@@ -725,7 +720,7 @@ std::shared_ptr<HazeCompilerClass> HazeCompilerModule::FindClass(const HAZE_STRI
 			return Ret;
 		}
 	}
-	
+
 	return nullptr;
 }
 
@@ -809,7 +804,7 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 			{
 				HSS << " " << Index;
 			}
-				
+
 			/*if (Value->GetArrayType())
 			{
 				auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
@@ -853,7 +848,6 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 						HAZE_LOG_ERR(HAZE_TEXT("GenValueHzicText variable not find\n"));
 					}
 				}
-				
 			}
 		}
 	}
@@ -871,8 +865,8 @@ void HazeCompilerModule::GenICode()
 	FS_I_Code << IsStdLib << std::endl;
 
 	/*
-	*	全局数据 ：	个数 
-	*				数据名 数据类型 数据			
+	*	全局数据 ：	个数
+	*				数据名 数据类型 数据
 	*/
 	FS_I_Code << GetGlobalDataHeaderString() << std::endl;
 	FS_I_Code << Vector_Variable.size() << std::endl;
@@ -908,7 +902,7 @@ void HazeCompilerModule::GenICode()
 	*
 	*/
 	size_t FunctionSize = 0;
-	
+
 	FS_I_Code << GetClassTableHeaderString() << std::endl;
 	FS_I_Code << HashMap_Class.size() << std::endl;
 
@@ -921,7 +915,7 @@ void HazeCompilerModule::GenICode()
 	/*
 	*	函数表 ：	个数
 	*				名称 指令流
-	* 
+	*
 	*/
 	FS_I_Code << GetFucntionTableHeaderString() << std::endl;
 	FS_I_Code << HashMap_Function.size() + FunctionSize << std::endl;

@@ -1,0 +1,28 @@
+0
+GlobalDataTable
+0
+StringTable
+1
+5 %d %d
+ClassTable
+0
+FunctionTable
+1
+Function Ö÷º¯Êý 3
+Variable ±û$1 3 0 4
+Variable ¶¡$2 13 4 8
+Start
+
+Block Entry
+MOV 3 ±û$1 2 3 24 3
+LEA 13 ¶¡$2 2 3 3 ±û$1 2
+MOVTOPV 13 ¶¡$2 2 3 3 20 3
+MOVTOPV 13 ¶¡$2 2 3 3 1200 3
+MOVPV 3 Temp_R0 9 13 ¶¡$2 2 3
+PUSH 3 Temp_R0 9
+PUSH 3 ±û$1 2
+PUSH 10 ³£×Ö·û´®Ö¸Õë 4 2 0
+PUSH 3 Address 11
+CALL ´òÓ¡ 3 16
+RET 0
+End

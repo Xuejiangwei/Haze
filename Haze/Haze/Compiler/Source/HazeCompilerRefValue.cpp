@@ -8,3 +8,8 @@ HazeCompilerRefValue::HazeCompilerRefValue(HazeCompilerModule* Module, const Haz
 HazeCompilerRefValue::~HazeCompilerRefValue()
 {
 }
+
+void HazeCompilerRefValue::StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue)
+{
+	HazeCompilerValue::StoreValue(SrcValue);
+}

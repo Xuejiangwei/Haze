@@ -69,7 +69,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value)
 void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerValue> Value, bool StreamValue)
 {
 	const auto& V = Value->GetValue();
-	
+
 	if (StreamValue)
 	{
 		switch (Value->GetValueType().PrimaryType)
@@ -153,8 +153,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 	case HazeValueType::ReferenceClass:
 		if (ArraySizeOrRef)
 		{
-			return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef);
-			//return std::make_shared<HazeCompilerRefValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef);
+			return std::make_shared<HazeCompilerRefValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef);
 		}
 		else
 		{
@@ -222,12 +221,12 @@ void StreamDefineVariable(HAZE_STRING_STREAM& HSS, const HazeDefineVariable& Def
 	{
 		HSS << " " << HAZE_CAST_VALUE_TYPE(DefineVariable.Type.SecondaryType);
 	}
-	else if (DefineVariable.Type.PrimaryType == HazeValueType::PointerClass || 
+	else if (DefineVariable.Type.PrimaryType == HazeValueType::PointerClass ||
 		DefineVariable.Type.PrimaryType == HazeValueType::Class)
 	{
 		HSS << " " << DefineVariable.Type.CustomName;
 	}
-	
+
 	HSS << std::endl;
 }
 
@@ -298,7 +297,6 @@ std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule
 
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
 			return ClassValue->GetMember(OutMemberName);
-			
 		}
 	}
 
@@ -376,7 +374,7 @@ bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STR
 				}
 			}
 		}
-		else if(Data.second->IsClass())
+		else if (Data.second->IsClass())
 		{
 			auto Class = std::dynamic_pointer_cast<HazeCompilerClassValue>(Data.second);
 			Class->GetMemberName(Value, OutName);
@@ -418,5 +416,3 @@ bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STR
 
 	return false;
 }
-
-

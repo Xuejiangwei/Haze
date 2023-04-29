@@ -1,4 +1,3 @@
-
 #include "HazeVM.h"
 #include "HazeCompilerHelper.h"
 #include "HazeCompiler.h"
@@ -84,7 +83,6 @@ std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 	return RetValue;
 }
 
-
 ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::unique_ptr<ASTBase> ArrayIndexExpression)
 	: ASTBase(VM), SectionSignal(Section), ArrayIndexExpression(std::move(ArrayIndexExpression))
 {
@@ -102,16 +100,18 @@ ASTIdentifier::~ASTIdentifier()
 std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 {
 	std::shared_ptr<HazeCompilerValue> RetValue = nullptr;
+	auto& Compiler = VM->GetCompiler();
+
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
-		RetValue = VM->GetCompiler()->GetGlobalVariable(DefineVariable.Name);
+		RetValue = Compiler->GetGlobalVariable(DefineVariable.Name);
 	}
 	else if (SectionSignal == HazeSectionSignal::Function)
 	{
-		RetValue = VM->GetCompiler()->GetLocalVariable(DefineVariable.Name);
+		RetValue = Compiler->GetLocalVariable(DefineVariable.Name);
 		if (!RetValue)
 		{
-			RetValue = VM->GetCompiler()->GetGlobalVariable(DefineVariable.Name);
+			RetValue = Compiler->GetGlobalVariable(DefineVariable.Name);
 		}
 	}
 
@@ -120,11 +120,11 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 		if (ArrayIndexExpression)
 		{
 			auto IndexValue = ArrayIndexExpression->CodeGen();
-			RetValue = VM->GetCompiler()->CreateArrayElement(RetValue, IndexValue);
+			RetValue = Compiler->CreateArrayElement(RetValue, IndexValue);
 		}
 		else
 		{
-			RetValue = VM->GetCompiler()->CreatePointerToArray(RetValue);
+			RetValue = Compiler->CreatePointerToArray(RetValue);
 		}
 	}
 
@@ -164,7 +164,7 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	return nullptr;
 }
 
-ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, 
+ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression,
 	std::unique_ptr<ASTBase> ArraySize, int PointerLevel)
 	: ASTBase(VM, DefineVariable), SectionSignal(Section), Expression(std::move(Expression)), ArraySize(std::move(ArraySize)), PointerLevel(PointerLevel)
 {
@@ -218,7 +218,6 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	}
 	else
 	{
-
 		Compiler->CreateMov(RetValue, ExprValue);
 	}
 
@@ -274,7 +273,7 @@ std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("Parse pointer value not get pointer value %s"), DefineVariable.Name.c_str());
 	}
-	
+
 	return nullptr;
 }
 
@@ -436,7 +435,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		break;
 	case HazeToken::RightParentheses:
 		break;
-	
+
 	default:
 		break;
 	}
@@ -578,7 +577,6 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 
 	Compiler->CreateJmpToBlock(ForConditionBlock);
 
-	
 	ForBlock->FinishBlock(ForEndBlock, false);
 	ForEndBlock->FinishBlock();
 
@@ -606,6 +604,6 @@ std::shared_ptr<HazeCompilerValue> ASTInitializeList::CodeGen()
 
 	auto InitilaizeListValue = VM->GetCompiler()->GetInitializeListValue();
 	InitilaizeListValue->ResetInitializeList(Vector_Value);
-	
+
 	return InitilaizeListValue;
 }
