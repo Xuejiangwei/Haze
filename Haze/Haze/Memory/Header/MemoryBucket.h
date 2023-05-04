@@ -1,24 +1,31 @@
 #pragma once
 
+#include "Haze.h"
 #include <queue>
+
+class MemoryFreeList;
 
 class MemoryBucket
 {
 public:
 	friend class MemoryPool;
 
-	MemoryBucket(unsigned int ByteSize, unsigned int Size);
+	MemoryBucket(int ByteSize, uint32 InitSize);
 	~MemoryBucket();
 
 private:
 	void* Alloca(int Size = 0);
 
+	void Dealloca(void* Alloc);
+
 	void Release();
 
 private:
-	std::queue<unsigned int> Queue_Recycle;
+	std::queue<uint32> Queue_Recycle;
 	std::vector<char> Pool;
 
 	std::vector<char>::iterator CurrIndex;
-	unsigned int ByteSize;
+	int ByteSize;
+
+	std::unique_ptr<MemoryFreeList> FreeList;
 };

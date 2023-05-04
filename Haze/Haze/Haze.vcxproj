@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\AST\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Compiler\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\Log\Header;$(SolutionDir)Haze\Backend\Header;$(SolutionDir)Haze\Define\Header;$(SolutionDir)Haze\StandardLibrary\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\AST\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Compiler\Header;$(SolutionDir)Haze\Memory\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\HazeLog\Header;$(SolutionDir)Haze\Backend\Header;$(SolutionDir)Haze\Define\Header;$(SolutionDir)Haze\StandardLibrary\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -160,15 +160,17 @@
     <ClCompile Include="MetaData\Source\HazeModule.cpp" />
     <ClCompile Include="MetaData\Source\HazeVariable.cpp" />
     <ClCompile Include="Source\Haze.cpp" />
-    <ClCompile Include="Log\Source\HazeLog.cpp" />
+    <ClCompile Include="HazeLog\Source\HazeLog.cpp" />
     <ClCompile Include="Source\HazeStack.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Parse.cpp" />
     <ClCompile Include="StandardLibrary\Source\HazeStandardLibraryBase.cpp" />
     <ClCompile Include="StandardLibrary\Source\HazeStream.cpp" />
+    <ClCompile Include="Memory\Source\GarbageCollection.cpp" />
     <ClCompile Include="VM\Source\HazeVM.cpp" />
-    <ClCompile Include="VM\Source\MemoryBucket.cpp" />
-    <ClCompile Include="VM\Source\MemoryPool.cpp" />
+    <ClCompile Include="Memory\Source\MemoryBucket.cpp" />
+    <ClCompile Include="Memory\Source\MemoryFreeList.cpp" />
+    <ClCompile Include="Memory\Source\MemoryPool.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AST\Header\ASTBase.h" />
@@ -200,7 +202,7 @@
     <ClInclude Include="Header\Haze.h" />
     <ClInclude Include="Define\Header\HazeDefine.h" />
     <ClInclude Include="Header\HazeHeaderDefine.h" />
-    <ClInclude Include="Log\Header\HazeLog.h" />
+    <ClInclude Include="HazeLog\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeStack.h" />
     <ClInclude Include="Header\Parse.h" />
     <ClInclude Include="Define\Header\HazeStrcut.h" />
@@ -210,9 +212,11 @@
     <ClInclude Include="MetaData\Header\HazeVariable.h" />
     <ClInclude Include="StandardLibrary\Header\HazeStandardLibraryBase.h" />
     <ClInclude Include="StandardLibrary\Header\HazeStream.h" />
+    <ClInclude Include="Memory\Header\GarbageCollection.h" />
     <ClInclude Include="VM\Header\HazeVM.h" />
-    <ClInclude Include="VM\Header\MemoryBucket.h" />
-    <ClInclude Include="VM\Header\MemoryPool.h" />
+    <ClInclude Include="Memory\Header\MemoryBucket.h" />
+    <ClInclude Include="Memory\Header\MemoryFreeList.h" />
+    <ClInclude Include="Memory\Header\MemoryPool.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Define\Header\HazeTemplate.inl" />

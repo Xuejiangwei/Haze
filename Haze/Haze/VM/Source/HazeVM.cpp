@@ -5,6 +5,7 @@
 
 #include "HazeVM.h"
 #include "HazeStack.h"
+#include "GarbageCollection.h"
 #include "HazeCompiler.h"
 #include "Parse.h"
 #include "HazeLog.h"
@@ -18,6 +19,7 @@ HazeVM::HazeVM()
 	FunctionReturn.first.PrimaryType = HazeValueType::Void;
 	Compiler = std::make_unique<HazeCompiler>();
 	VMStack = std::make_unique<HazeStack>(this);
+	GC = std::make_unique<GarbageCollection>(this);
 }
 
 HazeVM::~HazeVM()

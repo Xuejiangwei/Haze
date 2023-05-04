@@ -11,6 +11,7 @@ class HazeStack
 {
 public:
 	friend class InstructionProcessor;
+	friend class GarbageCollection;
 
 	HazeStack(HazeVM* VM);
 
@@ -76,5 +77,4 @@ private:
 	uint32 EBP;		//Õ»µ×
 	uint32 ESP;		//Õ»¶¥
 
-	std::vector<std::unique_ptr<MemoryPool>> Vector_MemoryPool;
 };

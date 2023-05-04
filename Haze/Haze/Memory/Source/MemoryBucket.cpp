@@ -1,9 +1,10 @@
 #include "MemoryBucket.h"
+#include "MemoryFreeList.h"
 
-
-MemoryBucket::MemoryBucket(unsigned int ByteSize, unsigned int Size) : ByteSize(ByteSize)
+MemoryBucket::MemoryBucket(int ByteSize, uint32 InitSize) : ByteSize(ByteSize)
 {
-	Pool.resize(Size);
+	FreeList = std::make_unique<MemoryFreeList>();
+	Pool.resize(InitSize);
 	CurrIndex = Pool.begin();
 }
 
@@ -13,6 +14,11 @@ MemoryBucket::~MemoryBucket()
 
 void* MemoryBucket::Alloca(int Size)
 {
+	if (!FreeList->Empty())
+	{
+		return FreeList->Pop();
+	}
+
 	if (ByteSize > 0)
 	{
 		Size = ByteSize;
@@ -32,16 +38,18 @@ void* MemoryBucket::Alloca(int Size)
 			Ret = (CurrIndex)._Ptr + Size;
 			CurrIndex += Size;
 		}
-		else
-		{
-			Ret = &Pool.back();
-			Pool.resize(Pool.size() + Size);
-		}
 	}
+
 	return Ret;
+}
+
+void MemoryBucket::Dealloca(void* Alloc)
+{
+	FreeList->Push(Alloc);
 }
 
 void MemoryBucket::Release()
 {
-
+	
+	FreeList->Clear();
 }

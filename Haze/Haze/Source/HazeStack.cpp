@@ -1,9 +1,13 @@
 #include "HazeVM.h"
+#include "HazeLog.h"
 #include "HazeStack.h"
 #include "MemoryPool.h"
+#include "MemoryBucket.h"
 
 extern std::unordered_map<HAZE_STRING, HazeValue*> HashMap_VirtualRegister;
 extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor;
+
+thread_local static std::unique_ptr<MemoryPool> Pool = std::make_unique<MemoryPool>();
 
 HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 {
@@ -13,8 +17,23 @@ HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 	Stack_Main.resize(HAZE_VM_STACK_SIZE);
 	InitRegisterToStack();
 
-	Vector_MemoryPool.clear();
-	Vector_MemoryPool.push_back(std::make_unique<MemoryPool>());
+	/*std::cout << MemoryPool::RoundUp(1) << std::endl;
+	std::cout << MemoryPool::RoundUp(8) << std::endl;
+	std::cout << MemoryPool::RoundUp(16) << std::endl;
+	std::cout << MemoryPool::RoundUp(32) << std::endl;
+	std::cout << MemoryPool::RoundUp(64) << std::endl;
+	std::cout << MemoryPool::RoundUp(128) << std::endl;
+	std::cout << MemoryPool::RoundUp(256) << std::endl;
+	std::cout << MemoryPool::RoundUp(512) << std::endl;*/
+
+	std::cout << MemoryPool::Index(4) << std::endl;
+	std::cout << MemoryPool::Index(8) << std::endl;
+	std::cout << MemoryPool::Index(16) << std::endl;
+	std::cout << MemoryPool::Index(32) << std::endl;
+	std::cout << MemoryPool::Index(64) << std::endl;
+	std::cout << MemoryPool::Index(128) << std::endl;
+	std::cout << MemoryPool::Index(256) << std::endl;
+	std::cout << MemoryPool::Index(512) << std::endl;
 }
 
 HazeStack::~HazeStack()
@@ -158,17 +177,11 @@ void HazeStack::OnRet()
 
 void* HazeStack::Alloca(unsigned int Size)
 {
-	void* Ret = nullptr;
-	for (auto& Iter : Vector_MemoryPool)
+	void* Ret = Pool->Alloca(Size);
+	if (Ret == nullptr)
 	{
-		Ret = Iter->Alloca(Size);
-		if (Ret)
-		{
-			return Ret;
-		}
+		HAZE_LOG_ERR(HAZE_TEXT("Memory pool alloca failed!\n"));
 	}
-	Vector_MemoryPool.push_back(std::make_unique<MemoryPool>());
-	Ret = Vector_MemoryPool.back()->Alloca(Size);
 
 	return Ret;
 }
@@ -178,9 +191,6 @@ void HazeStack::GarbageCollection(bool Force, bool CollectionAll)
 {
 	if (Force && CollectionAll)
 	{
-		for (auto& It : Vector_MemoryPool)
-		{
-			It->ReleaseAll();
-		}
+		Pool->ReleaseAll();
 	}
 }

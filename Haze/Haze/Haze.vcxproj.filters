@@ -30,7 +30,7 @@
     <ClCompile Include="AST\Source\ASTFunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Log\Source\HazeLog.cpp">
+    <ClCompile Include="HazeLog\Source\HazeLog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Source\HazeStack.cpp">
@@ -84,10 +84,10 @@
     <ClCompile Include="StandardLibrary\Source\HazeStandardLibraryBase.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="VM\Source\MemoryPool.cpp">
+    <ClCompile Include="Memory\Source\MemoryPool.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="VM\Source\MemoryBucket.cpp">
+    <ClCompile Include="Memory\Source\MemoryBucket.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Compiler\Source\HazeCompilerClassValue.cpp">
@@ -126,6 +126,12 @@
     <ClCompile Include="Compiler\Source\HazeCompilerRefValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Memory\Source\MemoryFreeList.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\Source\GarbageCollection.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -143,7 +149,7 @@
     <ClInclude Include="Header\Haze.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Log\Header\HazeLog.h">
+    <ClInclude Include="HazeLog\Header\HazeLog.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Header\HazeStack.h">
@@ -209,10 +215,10 @@
     <ClInclude Include="StandardLibrary\Header\HazeStandardLibraryBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="VM\Header\MemoryPool.h">
+    <ClInclude Include="Memory\Header\MemoryPool.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="VM\Header\MemoryBucket.h">
+    <ClInclude Include="Memory\Header\MemoryBucket.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerClassValue.h">
@@ -252,6 +258,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerRefValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Header\MemoryFreeList.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Header\GarbageCollection.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

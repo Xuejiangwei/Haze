@@ -14,11 +14,13 @@ class HazeCompiler;
 class HazeCompilerModule;
 
 class HazeStack;
+class GarbageCollection;
 
 class HazeVM
 {
 public:
 	friend class InstructionProcessor;
+	friend class GarbageCollection;
 	friend class HazeStack;
 
 	HazeVM();
@@ -71,6 +73,8 @@ private:
 	std::unordered_set<HAZE_STRING> MapString;
 
 	std::unique_ptr<HazeStack> VMStack;
+	
+	std::unique_ptr<GarbageCollection> GC;
 
 	std::pair<HazeDefineType, HazeValue> FunctionReturn;
 
