@@ -19,7 +19,7 @@ HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 	Stack_Main.resize(HAZE_VM_STACK_SIZE);
 	InitStackRegister();
 
-	std::cout << MemoryPool::RoundUp(1) << std::endl;
+	/*std::cout << MemoryPool::RoundUp(1) << std::endl;
 	std::cout << MemoryPool::RoundUp(8) << std::endl;
 	std::cout << MemoryPool::RoundUp(16) << std::endl;
 	std::cout << MemoryPool::RoundUp(32) << std::endl;
@@ -31,7 +31,7 @@ HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 	std::cout << MemoryPool::RoundUp(1035) << std::endl;
 
 	HazeMemory::Alloca(8);
-	HazeMemory::Alloca(8);
+	HazeMemory::Alloca(8);*/
 
 	/*std::cout << MemoryPool::Index(4) << std::endl;
 	std::cout << MemoryPool::Index(8) << std::endl;

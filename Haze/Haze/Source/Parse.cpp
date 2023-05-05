@@ -121,6 +121,12 @@
 
 #define TOKEN_NEW						HAZE_TEXT("生成")
 
+void test(int)
+{
+}
+
+void(* p)(int) = &test;
+
 
 static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 {
@@ -599,6 +605,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::PointerClass:
 	case HazeToken::ReferenceBase:
 	case HazeToken::ReferenceClass:
+	case HazeToken::PointerFunction:
 	case HazeToken::PointerPointer:
 		return ParseVariableDefine();
 	case HazeToken::Number:
@@ -776,9 +783,29 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 				HAZE_LOG_ERR(HAZE_TEXT("Class object define need left parentheses!\n"));
 			}
 		}
+		
 		else
 		{
 			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr, nullptr, PointerLevel);
+		}
+	}
+	else if (CurrToken == HazeToken::LeftParentheses)
+	{
+		//函数指针
+		if (ExpectNextTokenIs(HazeToken::Mul) && ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Parse function pointer need a correct name!\n")))
+		{
+			DefineVariable.Name = CurrLexeme;
+			if (ExpectNextTokenIs(HazeToken::RightParentheses))
+			{
+				if (ExpectNextTokenIs(HazeToken::Assign))
+				{
+					GetNextToken();
+
+					std::unique_ptr<ASTBase> Expression = ParseExpression();
+
+					return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, std::move(Expression), std::move(ArraySize), PointerLevel);
+				}
+			}
 		}
 	}
 
@@ -1013,7 +1040,13 @@ std::unique_ptr<ASTBase> Parse::ParseNeg()
 
 std::unique_ptr<ASTBase> Parse::ParseGetAddress()
 {
-	return std::unique_ptr<ASTBase>();
+	if (ExpectNextTokenIs(HazeToken::Identifier))
+	{
+		return std::unique_ptr<ASTBase>();
+
+	}
+
+	return nullptr;
 }
 
 std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
@@ -1073,7 +1106,7 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunctionSection()
 	{
 		std::vector<std::unique_ptr<ASTFunction>> Functions;
 
-		GetNextToken();
+		//GetNextToken();
 		while (CurrToken != HazeToken::RightBrace)
 		{
 			GetNextToken();

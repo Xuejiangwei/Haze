@@ -124,6 +124,6 @@ enum class HazeToken : unsigned int
 
 	PointerBase,
 	PointerClass,
-
+	PointerFunction,
 	PointerPointer,
 };

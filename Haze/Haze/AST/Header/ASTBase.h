@@ -136,6 +136,18 @@ public:
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 };
 
+class ASTGetAddress : public ASTBase
+{
+public:
+	ASTGetAddress(HazeVM* VM, std::unique_ptr<ASTBase> Expression, HAZE_STRING& Name);
+	virtual ~ASTGetAddress() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	std::unique_ptr<ASTBase> Expression;
+};
+
 //Parse pointer value
 class ASTPointerValue : public ASTBase
 {
