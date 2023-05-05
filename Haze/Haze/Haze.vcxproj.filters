@@ -33,7 +33,7 @@
     <ClCompile Include="HazeLog\Source\HazeLog.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Source\HazeStack.cpp">
+    <ClCompile Include="VM\Source\HazeStack.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="VM\Source\HazeVM.cpp">
@@ -132,6 +132,18 @@
     <ClCompile Include="Memory\Source\GarbageCollection.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Memory\Source\MemoryPage.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\Source\MemoryBlock.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\Source\HazeMemory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\Source\MemoryHelper.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -152,7 +164,7 @@
     <ClInclude Include="HazeLog\Header\HazeLog.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Header\HazeStack.h">
+    <ClInclude Include="VM\Header\HazeStack.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="VM\Header\HazeVM.h">
@@ -264,6 +276,21 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Memory\Header\GarbageCollection.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Header\MemoryPage.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Header\MemoryBlock.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Header\HazeMemory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Header\Memory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Header\MemoryHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

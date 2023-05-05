@@ -1,5 +1,13 @@
 #include "MemoryFreeList.h"
 
+MemoryFreeList::MemoryFreeList() : List(nullptr), Length(0)
+{
+}
+
+MemoryFreeList::~MemoryFreeList()
+{
+}
+
 void MemoryFreeList::Push(void* Obj)
 {
 	NextObj(Obj) = List;
@@ -7,7 +15,7 @@ void MemoryFreeList::Push(void* Obj)
 	++Length;
 }
 
-void MemoryFreeList::PushRange(void* Start, void* End, size_t Size)
+void MemoryFreeList::PushRange(void* Start, void* End, uint64 Size)
 {
 	NextObj(End) = List;
 	List = Start;
@@ -22,7 +30,7 @@ void* MemoryFreeList::Pop()
 	return obj;
 }
 
-void MemoryFreeList::PopRange(void*& Start, void*& End, size_t Num)
+void MemoryFreeList::PopRange(void*& Start, void*& End, uint64 Num)
 {
 	Start = List;
 	End = Start;

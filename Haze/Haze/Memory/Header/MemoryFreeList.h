@@ -10,13 +10,19 @@ static inline void*& NextObj(void* obj)
 class MemoryFreeList
 {
 public:
+	friend class MemoryBlock;
+
+	MemoryFreeList();
+
+	~MemoryFreeList();
+
 	void Push(void* Obj);
 	
-	void PushRange(void* Start, void* End, size_t size);
-	
+	void PushRange(void* Start, void* End, uint64 Size);
+
 	void* Pop();
 
-	void PopRange(void*& Start, void*& End, size_t n);
+	void PopRange(void*& Start, void*& End, uint64 Num);
 
 	bool Empty() const { return List == nullptr; }
 

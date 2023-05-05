@@ -60,38 +60,6 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("JMPOUT"), InstructionOpCode::JMPOUT },
 };
 
-std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister =
-{
-	//{ADD_REGISTER, nullptr},
-	//{SUB_REGISTER, nullptr},
-	//{MUL_REGISTER, nullptr},
-	//{DIV_REGISTER, nullptr},
-	{RET_REGISTER, HazeRegister()},
-	{NEW_REGISTER, HazeRegister()},
-	{CMP_REGISTER, HazeRegister()},
-
-	{TEMP_REGISTER_0, HazeRegister()},
-	{TEMP_REGISTER_1, HazeRegister()},
-	{TEMP_REGISTER_2, HazeRegister()},
-	{TEMP_REGISTER_3, HazeRegister()},
-	{TEMP_REGISTER_4, HazeRegister()},
-	{TEMP_REGISTER_5, HazeRegister()},
-	{TEMP_REGISTER_6, HazeRegister()},
-	{TEMP_REGISTER_7, HazeRegister()},
-	{TEMP_REGISTER_8, HazeRegister()},
-	{TEMP_REGISTER_9, HazeRegister()},
-};
-
-HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name)
-{
-	auto Iter = HashMap_VirtualRegister.find(Name);
-	if (Iter != HashMap_VirtualRegister.end())
-	{
-		return &Iter->second;
-	}
-	return nullptr;
-}
-
 bool IsRegisterScope(HazeDataDesc Scope)
 {
 	return HazeDataDesc::RegisterBegin < Scope && Scope < HazeDataDesc::RegisterEnd;
@@ -532,7 +500,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			HazeRegister* RetRegister = GetVirtualRegister(RET_REGISTER);
+			HazeRegister* RetRegister = Stack->GetVirtualRegister(RET_REGISTER);
 			RetRegister->Type = Operator[0].Variable.Type;
 
 			int Size = GetSizeByType(RetRegister->Type, Stack->VM);
@@ -549,7 +517,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
-			HazeRegister* NewRegister = GetVirtualRegister(NEW_REGISTER);
+			HazeRegister* NewRegister = Stack->GetVirtualRegister(NEW_REGISTER);
 			NewRegister->Type = Operator[0].Variable.Type;
 
 			int Size = GetSizeByType(NewRegister->Type, Stack->VM);
@@ -566,7 +534,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* CmpRegister = Stack->GetVirtualRegister(CMP_REGISTER);
 			CompareValueByType(Operator[0].Variable.Type.PrimaryType, CmpRegister, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]));
 		}
 	}
@@ -599,7 +567,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* CmpRegister = Stack->GetVirtualRegister(CMP_REGISTER);
 
 			if (!REGISTER_EQUAL(CmpRegister))
 			{
@@ -617,7 +585,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* CmpRegister = Stack->GetVirtualRegister(CMP_REGISTER);
 
 			if (!REGISTER_GREATER(CmpRegister))
 			{
@@ -635,7 +603,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* CmpRegister = Stack->GetVirtualRegister(CMP_REGISTER);
 
 			if (!REGISTER_LESS(CmpRegister))
 			{
@@ -653,7 +621,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* CmpRegister = Stack->GetVirtualRegister(CMP_REGISTER);
 
 			if (REGISTER_EQUAL(CmpRegister))
 			{
@@ -671,7 +639,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* CmpRegister = Stack->GetVirtualRegister(CMP_REGISTER);
 
 			if (REGISTER_GREATER(CmpRegister))
 			{
@@ -689,7 +657,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			HazeRegister* CmpRegister = GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* CmpRegister = Stack->GetVirtualRegister(CMP_REGISTER);
 
 			if (REGISTER_LESS(CmpRegister))
 			{
@@ -741,7 +709,7 @@ private:
 		}
 		else if (IsRegisterScope(Operator.Scope))
 		{
-			HazeRegister* Register = GetVirtualRegister(Operator.Variable.Name.c_str());
+			HazeRegister* Register = Stack->GetVirtualRegister(Operator.Variable.Name.c_str());
 
 			if (Register->Type != Operator.Variable.Type)
 			{

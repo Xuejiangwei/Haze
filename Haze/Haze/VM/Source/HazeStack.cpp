@@ -1,10 +1,12 @@
 #include "HazeVM.h"
 #include "HazeLog.h"
 #include "HazeStack.h"
+#include "HazeInstruction.h"
+#include "HazeMemory.h"
 #include "MemoryPool.h"
 #include "MemoryBucket.h"
+#include "GarbageCollection.h"
 
-extern std::unordered_map<HAZE_STRING, HazeValue*> HashMap_VirtualRegister;
 extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor;
 
 thread_local static std::unique_ptr<MemoryPool> Pool = std::make_unique<MemoryPool>();
@@ -15,25 +17,30 @@ HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 	EBP = 0;
 
 	Stack_Main.resize(HAZE_VM_STACK_SIZE);
-	InitRegisterToStack();
+	InitStackRegister();
 
-	/*std::cout << MemoryPool::RoundUp(1) << std::endl;
+	std::cout << MemoryPool::RoundUp(1) << std::endl;
 	std::cout << MemoryPool::RoundUp(8) << std::endl;
 	std::cout << MemoryPool::RoundUp(16) << std::endl;
 	std::cout << MemoryPool::RoundUp(32) << std::endl;
 	std::cout << MemoryPool::RoundUp(64) << std::endl;
 	std::cout << MemoryPool::RoundUp(128) << std::endl;
-	std::cout << MemoryPool::RoundUp(256) << std::endl;
-	std::cout << MemoryPool::RoundUp(512) << std::endl;*/
+	std::cout << MemoryPool::RoundUp(226) << std::endl;
+	std::cout << MemoryPool::RoundUp(510) << std::endl;
+	std::cout << MemoryPool::RoundUp(556) << std::endl;
+	std::cout << MemoryPool::RoundUp(1035) << std::endl;
 
-	std::cout << MemoryPool::Index(4) << std::endl;
+	HazeMemory::Alloca(8);
+	HazeMemory::Alloca(8);
+
+	/*std::cout << MemoryPool::Index(4) << std::endl;
 	std::cout << MemoryPool::Index(8) << std::endl;
 	std::cout << MemoryPool::Index(16) << std::endl;
 	std::cout << MemoryPool::Index(32) << std::endl;
 	std::cout << MemoryPool::Index(64) << std::endl;
 	std::cout << MemoryPool::Index(128) << std::endl;
 	std::cout << MemoryPool::Index(256) << std::endl;
-	std::cout << MemoryPool::Index(512) << std::endl;
+	std::cout << MemoryPool::Index(512) << std::endl;*/
 }
 
 HazeStack::~HazeStack()
@@ -67,7 +74,7 @@ void HazeStack::Start(unsigned int Address)
 		PCStepInc();
 	}
 
-
+	GarbageCollection(true, true);
 }
 
 //void HazeStack::PushVariableStack(HazeDefineVariable* Variable)
@@ -135,16 +142,39 @@ void HazeStack::PushMainFuntion()
 	}*/
 }
 
-void HazeStack::InitRegisterToStack()
+HazeRegister* HazeStack::GetVirtualRegister(const HAZE_CHAR* Name)
 {
-	/*for (auto& i : HashMap_VirtualRegister)
+	auto Iter = HashMap_VirtualRegister.find(Name);
+	if (Iter != HashMap_VirtualRegister.end())
 	{
-		memset(&Stack_Main[ESP], 0, sizeof(HazeValue));
+		return &Iter->second;
+	}
+	return nullptr;
+}
 
-		i.second = (HazeValue*)&Stack_Main[ESP];
+void HazeStack::InitStackRegister()
+{
+	HashMap_VirtualRegister =
+	{
+		//{ADD_REGISTER, nullptr},
+		//{SUB_REGISTER, nullptr},
+		//{MUL_REGISTER, nullptr},
+		//{DIV_REGISTER, nullptr},
+		{RET_REGISTER, HazeRegister()},
+		{NEW_REGISTER, HazeRegister()},
+		{CMP_REGISTER, HazeRegister()},
 
-		ESP += sizeof(HazeValue);
-	}*/
+		{TEMP_REGISTER_0, HazeRegister()},
+		{TEMP_REGISTER_1, HazeRegister()},
+		{TEMP_REGISTER_2, HazeRegister()},
+		{TEMP_REGISTER_3, HazeRegister()},
+		{TEMP_REGISTER_4, HazeRegister()},
+		{TEMP_REGISTER_5, HazeRegister()},
+		{TEMP_REGISTER_6, HazeRegister()},
+		{TEMP_REGISTER_7, HazeRegister()},
+		{TEMP_REGISTER_8, HazeRegister()},
+		{TEMP_REGISTER_9, HazeRegister()},
+	};
 }
 
 void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
@@ -175,9 +205,9 @@ void HazeStack::OnRet()
 	Stack_Frame.pop_back();
 }
 
-void* HazeStack::Alloca(unsigned int Size)
+void* HazeStack::Alloca(uint32 Size)
 {
-	void* Ret = Pool->Alloca(Size);
+	void* Ret = HazeMemory::Alloca(Size); //Pool->Alloca(Size);
 	if (Ret == nullptr)
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("Memory pool alloca failed!\n"));
@@ -191,6 +221,6 @@ void HazeStack::GarbageCollection(bool Force, bool CollectionAll)
 {
 	if (Force && CollectionAll)
 	{
-		Pool->ReleaseAll();
+		VM->GC->ForceGC();
 	}
 }

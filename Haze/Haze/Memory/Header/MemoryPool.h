@@ -27,11 +27,11 @@ public:
 
 	static int64 RoundUp(int64 ByteSize)
 	{
-		if (ByteSize <= 4)
+		/*if (ByteSize <= 4)
 		{
 			return _RoundUp(ByteSize, 4);
 		}
-		else if (ByteSize <= 128)
+		else*/ if (ByteSize <= 128)
 		{
 			return _RoundUp(ByteSize, 8);
 		}

@@ -4,6 +4,8 @@
 
 #include "Haze.h"
 
+struct HazeRegister;
+
 class MemoryPool;
 class HazeVM;
 
@@ -20,7 +22,7 @@ public:
 	void Start(unsigned int Address);
 
 public:
-	char* GetAddressByEBP(int Offset) { return &Stack_Main[EBP + Offset]; }
+	char* GetAddressByEBP(int Offset) { return &Stack_Main[(uint64)EBP + Offset]; }
 
 	const HazeVM* GetVM() const { return VM; }
 
@@ -49,6 +51,8 @@ public:
 
 	void PopLoopStack();
 
+	HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name);
+
 private:
 	void PCStepInc();
 
@@ -56,13 +60,13 @@ private:
 
 	void PushMainFuntion();
 
-	void InitRegisterToStack();
+	void InitStackRegister();
 
 	void OnCall(const FunctionData* Info, int ParamSize);
 
 	void OnRet();
 
-	void* Alloca(unsigned int Size);
+	void* Alloca(uint32 Size);
 
 	void GarbageCollection(bool Force = false, bool CollectionAll = false);
 
@@ -77,4 +81,5 @@ private:
 	uint32 EBP;		//Õ»µ×
 	uint32 ESP;		//Õ»¶¥
 
+	std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister;
 };

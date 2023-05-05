@@ -6,6 +6,7 @@ class HazeVariable
 {
 public:
 	friend class HazeVM;
+	friend class GarbageCollection;
 
 	HazeVariable();
 	~HazeVariable();
