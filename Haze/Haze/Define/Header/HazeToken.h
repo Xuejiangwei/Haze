@@ -126,4 +126,7 @@ enum class HazeToken : unsigned int
 	PointerClass,
 	PointerFunction,
 	PointerPointer,
+
+	PointerValue,		//占位, 解指针
+	GetAddress,			//占位, 获得地址
 };

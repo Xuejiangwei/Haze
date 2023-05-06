@@ -43,7 +43,7 @@ public:
 private:
 	std::unique_ptr<ASTBase> HandleParseExpression();
 
-	std::unique_ptr<ASTBase> ParseExpression();
+	std::unique_ptr<ASTBase> ParseExpression(int Prec = 0);
 
 	std::unique_ptr<ASTBase> ParseUnaryExpression(bool HasLeft = false);
 

@@ -101,7 +101,7 @@ class ASTVariableDefine : public ASTBase
 {
 public:
 
-	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::unique_ptr<ASTBase> ArraySize = nullptr, int PointerLevel = 0);
+	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::unique_ptr<ASTBase> ArraySize = nullptr, int PointerLevel = 0, std::vector<HazeDefineType>* Vector_ParamType = nullptr);
 	virtual ~ASTVariableDefine() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -111,6 +111,8 @@ private:
 	std::unique_ptr<ASTBase> Expression;
 	std::unique_ptr<ASTBase> ArraySize;
 	int PointerLevel;
+
+	std::vector<HazeDefineType> Vector_PointerFunctionParamType;
 };
 
 //返回
@@ -136,10 +138,11 @@ public:
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 };
 
+//获得地址
 class ASTGetAddress : public ASTBase
 {
 public:
-	ASTGetAddress(HazeVM* VM, std::unique_ptr<ASTBase> Expression, HAZE_STRING& Name);
+	ASTGetAddress(HazeVM* VM, std::unique_ptr<ASTBase>& Expression);
 	virtual ~ASTGetAddress() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;

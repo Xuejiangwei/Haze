@@ -427,6 +427,8 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 
 		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
 
+		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
+
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamNum);
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamByteSize);
 
@@ -638,17 +640,24 @@ void BackendParse::ReplaceIndex(ModuleUnit::GlobalDataTable& NewGlobalDataTable,
 	{
 		for (auto& Iter : NewFunctionTable.Vector_Function[FunctionCount].Vector_Instruction)
 		{
-			for (auto& Operator : Iter.Operator)
+			if (Iter.InsCode == InstructionOpCode::CALL && Iter.Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
 			{
-				if (Operator.Scope == HazeDataDesc::ConstantString)
+
+			}
+			else
+			{
+				for (auto& Operator : Iter.Operator)
 				{
-					Operator.Extra.Index += (uint32)NewStringTable.Vector_String.size();
-				}
-				else if (Operator.Scope == HazeDataDesc::Global)
-				{
-					//Operator.Extra.Index = NewGlobalDataTable.GetIndex(Operator.Variable.Name);
-					//Operator.AddressType = InstructionAddressType::GlobalDataIndex;
-					Operator.Extra.Index += (uint32)NewGlobalDataTable.Vector_Data.size();
+					if (Operator.Scope == HazeDataDesc::ConstantString)
+					{
+						Operator.Extra.Index += (uint32)NewStringTable.Vector_String.size();
+					}
+					else if (Operator.Scope == HazeDataDesc::Global)
+					{
+						//Operator.Extra.Index = NewGlobalDataTable.GetIndex(Operator.Variable.Name);
+						//Operator.AddressType = InstructionAddressType::GlobalDataIndex;
+						Operator.Extra.Index += (uint32)NewGlobalDataTable.Vector_Data.size();
+					}
 				}
 			}
 		}
@@ -696,6 +705,22 @@ void BackendParse::FindAddress(/*ModuleUnit::ClassTable& NewClassTable, */Module
 					}
 				}
 			}
+			else if (CurrFunction.Vector_Instruction[i].InsCode == InstructionOpCode::CALL 
+				&& CurrFunction.Vector_Instruction[i].Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
+			{
+				auto Iter_Index = HashMap_Variable.find(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name);
+				if (Iter_Index != HashMap_Variable.end())
+				{
+					CurrFunction.Vector_Instruction[i].Operator[0].Extra.Address.Offset = 
+						CurrFunction.Vector_Instruction[i].Operator[0].Extra.Index * GetSizeByType(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Type, this);
+					CurrFunction.Vector_Instruction[i].Operator[0].Extra.Address.BaseAddress = CurrFunction.Vector_Variable[Iter_Index->second].Offset;
+				}
+				else
+				{
+					//还需要查找global variable
+					HAZE_LOG_ERR(HAZE_TEXT("Find pointer function call Offset error %s in function %s\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str(), CurrFunction.Name.c_str());
+				}
+			}
 			else
 			{
 				for (auto& it : CurrFunction.Vector_Instruction[i].Operator)
@@ -711,7 +736,7 @@ void BackendParse::FindAddress(/*ModuleUnit::ClassTable& NewClassTable, */Module
 						}
 						else
 						{
-							HAZE_LOG_ERR(HAZE_TEXT("find Offset error %s\n  in function %s"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
+							HAZE_LOG_ERR(HAZE_TEXT("find Offset error %s in function %s\n"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
 						}
 					}
 					else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)

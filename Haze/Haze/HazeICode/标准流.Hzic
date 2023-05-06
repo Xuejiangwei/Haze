@@ -9,10 +9,11 @@ FunctionTable
 1
 Function ´òÓ¡ 0
 Param ¼× 10 10
-Param  17
-Variable $2 17 -4 0
+Param  18
+Variable $2 18 -4 0
 Variable ¼×$1 10 10 -12 8
 Start
 
 Block Entry
 End
+

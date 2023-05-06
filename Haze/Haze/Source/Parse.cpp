@@ -277,8 +277,12 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 
 	//{ HazeToken::BitNeg, 600 }
 
+	{ HazeToken::PointerValue, 700 },
+	{ HazeToken::GetAddress, 700 },
+
 	//{ HazeToken::Not, 60 },
 	//{ HazeToken::Inc, 900 },				//后置++
+
 	
 	//{ HazeToken::LeftParentheses, 1000 },
 };
@@ -299,7 +303,34 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 //	{HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
 //};
 
-Parse::Parse(HazeVM* VM) :VM(VM)
+static HazeValueType GetPointerBaseType(const HAZE_STRING& Str)
+{
+	HazeToken Token = HashMap_Token.find(Str.substr(0, Str.length() - 1))->second;
+	return GetValueTypeByToken(Token);
+}
+
+static HAZE_STRING GetPointerClassType(const HAZE_STRING& Str)
+{
+	return Str.substr(0, Str.length() - 1);
+}
+
+static void GetType(HazeDefineType& Type, const HAZE_STRING& Str)
+{
+	if (Type.PrimaryType == HazeValueType::PointerBase)
+	{
+		Type.SecondaryType = GetPointerBaseType(Str);
+	}
+	else if (Type.PrimaryType == HazeValueType::PointerClass)
+	{
+		Type.CustomName = GetPointerClassType(Str);
+	}
+	else if (Type.PrimaryType == HazeValueType::Class)
+	{
+		Type.CustomName = Str;
+	}
+}
+
+Parse::Parse(HazeVM* VM) :VM(VM), CurrCode(nullptr), CurrToken(HazeToken::None)
 {
 }
 
@@ -513,13 +544,13 @@ std::unique_ptr<ASTBase> Parse::HandleParseExpression()
 	return ParseExpression();
 }
 
-std::unique_ptr<ASTBase> Parse::ParseExpression()
+std::unique_ptr<ASTBase> Parse::ParseExpression(int Prec)
 {
 	std::unique_ptr<ASTBase> Left = ParseUnaryExpression();
 
 	if (Left)
 	{
-		return ParseBinaryOperateExpression(0, std::move(Left));
+		return ParseBinaryOperateExpression(Prec, std::move(Left));
 	}
 
 	return nullptr;
@@ -702,14 +733,13 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 	}
 	else if (CurrToken == HazeToken::PointerBase || CurrToken == HazeToken::ReferenceBase)
 	{
-		HazeToken Token = HashMap_Token.find(CurrLexeme.substr(0, CurrLexeme.length() - 1))->second;
-		DefineVariable.Type.SecondaryType = GetValueTypeByToken(Token);
+		DefineVariable.Type.SecondaryType = GetPointerBaseType(CurrLexeme);
 		DefineVariable.Type.CustomName = HAZE_TEXT("");
 	}
 	else if (CurrToken == HazeToken::PointerClass || CurrToken == HazeToken::ReferenceClass)
 	{
 		DefineVariable.Type.SecondaryType = HazeValueType::Class;
-		DefineVariable.Type.CustomName = CurrLexeme.substr(0, CurrLexeme.length() - 1);
+		DefineVariable.Type.CustomName = GetPointerClassType(CurrLexeme);
 	}
 
 	if (CurrToken == HazeToken::PointerBase || CurrToken == HazeToken::PointerClass)
@@ -794,9 +824,44 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		//函数指针
 		if (ExpectNextTokenIs(HazeToken::Mul) && ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Parse function pointer need a correct name!\n")))
 		{
+			std::vector<HazeDefineType> Vector_ParamType;
+			Vector_ParamType.push_back(DefineVariable.Type);
+
+			DefineVariable.Type.PrimaryType = HazeValueType::PointerFunction;
 			DefineVariable.Name = CurrLexeme;
-			if (ExpectNextTokenIs(HazeToken::RightParentheses))
+			
+			if (ExpectNextTokenIs(HazeToken::RightParentheses) && ExpectNextTokenIs(HazeToken::LeftParentheses))
 			{
+				GetNextToken();
+				while (true)
+				{
+					HazeDefineType Type;
+					Type.PrimaryType = GetValueTypeByToken(CurrToken);
+					if (CurrToken == HazeToken::PointerBase)
+					{
+						Type.SecondaryType = GetPointerBaseType(CurrLexeme);
+					}
+					else if (CurrToken == HazeToken::PointerClass)
+					{
+						Type.CustomName = GetPointerClassType(CurrLexeme);
+					}
+					else if (CurrToken == HazeToken::Class)
+					{
+						Type.CustomName = CurrLexeme;
+					}
+
+					Vector_ParamType.push_back(Type);
+				
+					if (ExpectNextTokenIs(HazeToken::RightParentheses))
+					{
+						break;
+					}
+					else if (CurrToken == HazeToken::Comma)
+					{
+						GetNextToken();
+					}
+				}
+
 				if (ExpectNextTokenIs(HazeToken::Assign))
 				{
 					GetNextToken();
@@ -1026,7 +1091,7 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 
 	GetNextToken();
 	
-	auto Expression = ParseExpression();
+	auto Expression = ParseExpression(MapBinOp.find(HazeToken::PointerValue)->second);
 	return std::make_unique<ASTPointerValue>(VM, Expression, Level);
 }
 
@@ -1040,13 +1105,10 @@ std::unique_ptr<ASTBase> Parse::ParseNeg()
 
 std::unique_ptr<ASTBase> Parse::ParseGetAddress()
 {
-	if (ExpectNextTokenIs(HazeToken::Identifier))
-	{
-		return std::unique_ptr<ASTBase>();
+	GetNextToken();
+	auto Expression = ParseExpression(MapBinOp.find(HazeToken::GetAddress)->second);
 
-	}
-
-	return nullptr;
+	return std::make_unique<ASTGetAddress>(VM, Expression);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
@@ -1159,11 +1221,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				}
 
 				Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
-				if (CurrToken == HazeToken::CustomClass)
-				{
-					Param.Type.PrimaryType = HazeValueType::Class;//此处有待优化
-					Param.Type.CustomName = CurrLexeme;
-				}
+				GetType(Param.Type, CurrLexeme);
 
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
@@ -1413,11 +1471,11 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 						}
 						else if (CurrToken == HazeToken::PointerBase)
 						{
-							Param.Type.SecondaryType = GetValueTypeByToken(HashMap_Token.find(CurrLexeme.substr(0, CurrLexeme.length() - 1))->second);
+							Param.Type.SecondaryType = GetPointerBaseType(CurrLexeme);
 						}
 						else if (CurrToken == HazeToken::PointerClass)
 						{
-							Param.Type.CustomName = CurrLexeme.substr(0, CurrLexeme.length() - 1);
+							Param.Type.CustomName = GetPointerClassType(CurrLexeme);
 						}
 
 						if (Param.Type.PrimaryType == HazeValueType::MultiVariable)

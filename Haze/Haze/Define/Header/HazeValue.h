@@ -22,6 +22,7 @@ enum class HazeValueType : uint32
 
 	PointerBase,
 	PointerClass,
+	PointerFunction,
 	PointerPointer,
 
 	ReferenceBase,
@@ -89,6 +90,8 @@ bool IsHazeDefaultTypeAndVoid(HazeValueType Type);
 bool IsHazeDefaultType(HazeValueType Type);
 
 bool IsIntegerType(HazeValueType Type);
+
+bool IsPointerType(HazeValueType Type);
 
 bool IsNumberType(HazeValueType Type);
 

@@ -111,6 +111,11 @@ bool IsIntegerType(HazeValueType Type)
     return Type == HazeValueType::Int || Type == HazeValueType::Long || Type == HazeValueType::UnsignedInt || Type == HazeValueType::UnsignedLong;
 }
 
+bool IsPointerType(HazeValueType Type)
+{
+    return Type >= HazeValueType::PointerBase && Type <= HazeValueType::PointerPointer;
+}
+
 bool IsNumberType(HazeValueType Type)
 {
     static std::unordered_set<HazeValueType> HashSet_Table =

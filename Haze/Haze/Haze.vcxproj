@@ -147,6 +147,7 @@
     <ClCompile Include="Compiler\Source\HazeCompilerClass.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerHelper.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerModule.cpp" />
+    <ClCompile Include="Compiler\Source\HazeCompilerPointerFunction.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerPointerPointerValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerPointerValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerRefValue.cpp" />
@@ -192,6 +193,7 @@
     <ClInclude Include="Compiler\Header\HazeCompilerHelper.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerInitListValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerModule.h" />
+    <ClInclude Include="Compiler\Header\HazeCompilerPointerFunction.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerPointerPointerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerPointerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerRefValue.h" />

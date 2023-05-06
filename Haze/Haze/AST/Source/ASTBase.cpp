@@ -115,17 +115,24 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 		}
 	}
 
-	if (RetValue->IsArray())
+	if (RetValue)
 	{
-		if (ArrayIndexExpression)
+		if (RetValue->IsArray())
 		{
-			auto IndexValue = ArrayIndexExpression->CodeGen();
-			RetValue = Compiler->CreateArrayElement(RetValue, IndexValue);
+			if (ArrayIndexExpression)
+			{
+				auto IndexValue = ArrayIndexExpression->CodeGen();
+				RetValue = Compiler->CreateArrayElement(RetValue, IndexValue);
+			}
+			else
+			{
+				RetValue = Compiler->CreatePointerToArray(RetValue);
+			}
 		}
-		else
-		{
-			RetValue = Compiler->CreatePointerToArray(RetValue);
-		}
+	}
+	else
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("Can not find %s variable!\n"), DefineVariable.Name.c_str());
 	}
 
 	return RetValue;
@@ -144,30 +151,42 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 {
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
 	auto Function = Compiler->GetFunction(Name);
+
+	std::vector<std::shared_ptr<HazeCompilerValue>> Param;
+
+	for (int i = (int)FunctionParam.size() - 1; i >= 0; i--)
+	{
+		Param.push_back(FunctionParam[i]->CodeGen());
+	}
+
 	if (Function)
 	{
-		std::vector<std::shared_ptr<HazeCompilerValue>> Param;
 		std::shared_ptr<HazeCompilerValue> ThisPointerValue = nullptr;
 		if (Function->GetClass())
 		{
 			ThisPointerValue = Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(GetObjectName(Name));
 		}
 
-		for (int i = (int)FunctionParam.size() - 1; i >= 0; i--)
-		{
-			Param.push_back(FunctionParam[i]->CodeGen());
-		}
-
 		return Compiler->CreateFunctionCall(Function, Param, ThisPointerValue);
+	}
+	else
+	{
+		//函数指针
+		auto FunctionPointer = Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name);
+		return Compiler->CreateFunctionCall(FunctionPointer, Param);
 	}
 
 	return nullptr;
 }
 
 ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression,
-	std::unique_ptr<ASTBase> ArraySize, int PointerLevel)
+	std::unique_ptr<ASTBase> ArraySize, int PointerLevel, std::vector<HazeDefineType>* Vector_ParamType)
 	: ASTBase(VM, DefineVariable), SectionSignal(Section), Expression(std::move(Expression)), ArraySize(std::move(ArraySize)), PointerLevel(PointerLevel)
 {
+	if (Vector_ParamType)
+	{
+		Vector_PointerFunctionParamType = std::move(*Vector_ParamType);
+	}
 }
 
 ASTVariableDefine::~ASTVariableDefine()
@@ -201,11 +220,11 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
-		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable, SizeValue);
+		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable, SizeValue, &Vector_PointerFunctionParamType);
 	}
 	else if (SectionSignal == HazeSectionSignal::Function)
 	{
-		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, IsRef ? ExprValue : SizeValue);
+		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, IsRef ? ExprValue : SizeValue, &Vector_PointerFunctionParamType);
 	}
 
 	if (ArraySize)
@@ -252,9 +271,8 @@ std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 	return VM->GetCompiler()->CreateNew(VM->GetCompiler()->GetCurrModule()->GetCurrFunction(), DefineVariable.Type);
 }
 
-ASTGetAddress::ASTGetAddress(HazeVM* VM, std::unique_ptr<ASTBase> Expression, HAZE_STRING& Name) : ASTBase(VM), Expression(std::move(Expression))
+ASTGetAddress::ASTGetAddress(HazeVM* VM, std::unique_ptr<ASTBase>& Expression) : ASTBase(VM), Expression(std::move(Expression))
 {
-	DefineVariable.Name = std::move(Name);
 }
 
 ASTGetAddress::~ASTGetAddress()
@@ -263,24 +281,23 @@ ASTGetAddress::~ASTGetAddress()
 
 std::shared_ptr<HazeCompilerValue> ASTGetAddress::CodeGen()
 {
+	std::shared_ptr<HazeCompilerValue> Ret = nullptr;
 	if (Expression)
 	{
-		auto V = Expression->CodeGen();
+		Ret = Expression->CodeGen();
+	}
+	
+	if (!Ret)
+	{
+		//获得函数地址
+		Ret = VM->GetCompiler()->CreatePointerToFunction(VM->GetCompiler()->GetCurrModule()->GetFunction(Expression->GetName()));
 	}
 	else
 	{
-		auto V = VM->GetCompiler()->GetCurrModule()->GetGlobalVariable(DefineVariable.Name);
-		if (!V)
-		{
-			V = VM->GetCompiler()->GetCurrModule()->GetCurrFunction()->GetLocalVariable(DefineVariable.Name);
-		}
-
-		if (!V)
-		{
-			V = VM->GetCompiler()->GetCurrModule()->GetFunction(DefineVariable.Name);
-		}
+		Ret = VM->GetCompiler()->CreatePointerToValue(Ret);
 	}
-	return std::shared_ptr<HazeCompilerValue>();
+
+	return Ret;
 }
 
 ASTPointerValue::ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, int Level) : ASTBase(VM), Expression(std::move(Expression)), Level(Level)

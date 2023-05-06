@@ -25,10 +25,10 @@ HazeCompilerFunction::~HazeCompilerFunction()
 {
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, std::vector<HazeDefineType>* Vector_Param)
 {
 	auto BB = Module->GetCompiler()->GetInsertBlock();
-	return BB->CreateAlloce(Variable, ++CurrVariableCount, ArraySizeOrRef);
+	return BB->CreateAlloce(Variable, ++CurrVariableCount, ArraySizeOrRef, Vector_Param);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
@@ -195,7 +195,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 
 	EntryBlock->GenI_Code(OFStream);
 
-	OFStream << GetFunctionEndHeader() << std::endl;
+	OFStream << GetFunctionEndHeader() << std::endl << std::endl;
 #endif // HAZE_ASS_ENABLE
 }
 

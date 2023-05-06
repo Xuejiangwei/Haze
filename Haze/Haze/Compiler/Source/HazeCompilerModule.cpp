@@ -446,7 +446,7 @@ void HazeCompilerModule::GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block, b
 	TopBlock->PushIRCode(HSS.str());
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, std::vector<HazeDefineType>* Vector_Param)
 {
 	for (auto& it : Vector_Variable)
 	{
@@ -457,21 +457,16 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 		}
 	}
 
-	Vector_Variable.push_back({ Var.Name, CreateVariable(this, Var, HazeDataDesc::Global, 0, ArraySizeOrRef) });
+	Vector_Variable.push_back({ Var.Name, CreateVariable(this, Var, HazeDataDesc::Global, 0, ArraySizeOrRef,nullptr, Vector_Param) });
 
 	auto& CompilerValue = Vector_Variable.back().second;
 
 	return CompilerValue;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
+void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, uint32& Size, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
 {
 	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
-
-	HAZE_STRING_STREAM SStream;
-
-	uint32 Size = 0;
-
 	HAZE_STRING Name;
 
 	for (size_t i = 0; i < Param.size(); i++)
@@ -596,8 +591,42 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 		<< " " << (uint32)HazeDataDesc::Address << std::endl;
 	BB->PushIRCode(SStream.str());
 	SStream.str(HAZE_TEXT(""));
+}
 
-	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << Param.size() << " " << Size << std::endl;
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
+{
+	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
+	HAZE_STRING_STREAM SStream;
+	uint32 Size = 0;
+
+	FunctionCall(SStream, Size, Param, ThisPointerTo);
+
+	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Function) << " " << Param.size() << " " << Size << std::endl;
+	BB->PushIRCode(SStream.str());
+
+	return HazeCompiler::GetRegister(RET_REGISTER);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerValue> PointerFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
+{
+	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
+	HAZE_STRING_STREAM SStream;
+	uint32 Size = 0;
+
+	FunctionCall(SStream, Size, Param, ThisPointerTo);
+
+	HAZE_STRING VarName;
+	GetGlobalVariableName(PointerFunction, VarName);
+	if (VarName.empty())
+	{
+		GetCurrFunction()->FindLocalVariableName(PointerFunction, VarName);
+		if (VarName.empty())
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("Create pointer function call failed, can not find variable!\n"));
+		}
+	}
+
+	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << VarName << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::PointerFunction) << " " << Param.size() << " " << Size << std::endl;
 	BB->PushIRCode(SStream.str());
 
 	return HazeCompiler::GetRegister(RET_REGISTER);

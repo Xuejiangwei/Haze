@@ -11,7 +11,7 @@ class HazeBaseBlock : public std::enable_shared_from_this<HazeBaseBlock>
 public:
 	explicit HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock);
 
-	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef = nullptr);
+	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef = nullptr, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	const std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& GetAllocaList() const { return Vector_Alloca; }
 

@@ -8,6 +8,7 @@
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerPointerValue.h"
+#include "HazeCompilerPointerFunction.h"
 #include "HazeCompilerRefValue.h"
 #include "HazeCompilerClassValue.h"
 
@@ -129,7 +130,8 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerV
 	}
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, HazeValue* DefaultValue)
+std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count, 
+	std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param)
 {
 	switch (Var.Type.PrimaryType)
 	{
@@ -148,7 +150,10 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 		return std::make_shared<HazeCompilerArrayValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef.get());
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
+	case HazeValueType::PointerPointer:
 		return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope, Count);
+	case HazeValueType::PointerFunction:
+		return std::make_shared<HazeCompilerPointerFunction>(Module, Var.Type, Scope, Count, Vector_Param ? *Vector_Param : std::vector<HazeDefineType>{});
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
 		if (ArraySizeOrRef)

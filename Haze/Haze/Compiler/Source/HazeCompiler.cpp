@@ -371,7 +371,7 @@ void HazeCompiler::AddImportModuleToCurrModule(HazeCompilerModule* Module)
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLea(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
 {
-	return GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::LEA);;
+	return GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::LEA);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
@@ -424,14 +424,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovPV(std::shared_ptr<Haz
 	return Alloca;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, std::vector<HazeDefineType>* Vector_Param)
 {
-	return Function->CreateLocalVariable(Variable, ArraySizeOrRef);
+	return Function->CreateLocalVariable(Variable, ArraySizeOrRef, Vector_Param);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, std::vector<HazeDefineType>* Vector_Param)
 {
-	return Module->CreateGlobalVariable(Var, ArraySizeOrRef);
+	return Module->CreateGlobalVariable(Var, ArraySizeOrRef, Vector_Param);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeCompilerValue> Value)
@@ -515,6 +515,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_
 	return GetCurrModule()->CreateFunctionCall(Function, Param, ThisPointerTo);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_ptr<HazeCompilerValue> PointerFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
+{
+	return GetCurrModule()->CreateFunctionCall(PointerFunction, Param, ThisPointerTo);
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayInit(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> InitList)
 {
 	return GetCurrModule()->CreateArrayInit(Array, InitList);
@@ -548,6 +553,26 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_
 	return nullptr;
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToValue(std::shared_ptr<HazeCompilerValue> Value)
+{
+	auto TempReg = GetTempRegister();
+	TempReg->StoreValue(Value);
+
+	auto& Type = const_cast<HazeDefineType&>(TempReg->GetValueType());
+	Type.SecondaryType = Type.PrimaryType;
+
+	if (IsHazeDefaultType(Type.SecondaryType))
+	{
+		Type.PrimaryType = HazeValueType::PointerBase;
+	}
+	else if (Type.SecondaryType == HazeValueType::Class)
+	{
+		Type.PrimaryType = HazeValueType::PointerClass;
+	}
+
+	return CreateLea(TempReg, Value);
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArray(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> Index)
 {
 	auto Pointer = GetTempRegister();
@@ -562,6 +587,25 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArray(std::share
 	}
 
 	return Ret;
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(std::shared_ptr<HazeCompilerFunction> Function)
+{
+	/*HAZE_STRING_STREAM SStream;
+
+	auto TempReg = GetTempRegister();
+	auto& ValueType = const_cast<HazeDefineType&>(TempReg->GetValueType());
+
+	ValueType.PrimaryType = HazeValueType::PointerFunction;
+	ValueType.CustomName = Function->GetName();
+
+	SStream << GetInstructionString(InstructionOpCode::LEA) << " ";
+	HazeCompilerModule::GenValueHzicText(, SStream, TempReg);
+	
+	SStream << " ";
+	HazeCompilerModule::GenValueHzicText(this, SStream, Right);*/
+
+	return CreateVariable(GetCurrModule().get(), HazeDefineVariable({ HazeValueType::PointerFunction, Function->GetName() }, HAZE_TEXT("")), HazeDataDesc::None, 0);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data)

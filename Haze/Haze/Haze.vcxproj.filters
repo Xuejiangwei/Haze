@@ -144,6 +144,9 @@
     <ClCompile Include="Memory\Source\MemoryHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerPointerFunction.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -291,6 +294,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Memory\Header\MemoryHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerPointerFunction.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
