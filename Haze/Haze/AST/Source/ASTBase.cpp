@@ -178,8 +178,6 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		auto FunctionPointer = Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name);
 		return Compiler->CreateFunctionCall(FunctionPointer, Param);
 	}
-
-	return nullptr;
 }
 
 ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression,
@@ -230,17 +228,20 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, IsRef ? ExprValue : SizeValue, &Vector_PointerFunctionParamType);
 	}
 
-	if (ArraySize)
+	if (RetValue && ExprValue)
 	{
-		Compiler->CreateArrayInit(RetValue, ExprValue);
-	}
-	else if (IsRef)
-	{
-		Compiler->CreateLea(RetValue, ExprValue);
-	}
-	else
-	{
-		Compiler->CreateMov(RetValue, ExprValue);
+		if (ArraySize)
+		{
+			Compiler->CreateArrayInit(RetValue, ExprValue);
+		}
+		else if (IsRef)
+		{
+			Compiler->CreateLea(RetValue, ExprValue);
+		}
+		else
+		{
+			Compiler->CreateMov(RetValue, ExprValue);
+		}
 	}
 
 	return RetValue;

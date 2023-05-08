@@ -12,6 +12,7 @@
 
 #include "BackendParse.h"
 
+extern std::wstring CodePath;
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 HazeVM::HazeVM()
@@ -98,7 +99,7 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 
 HazeCompilerModule* HazeVM::ParseModule(const HAZE_STRING& ModuleName)
 {
-	HAZE_STRING FilePath = std::filesystem::current_path();
+	HAZE_STRING FilePath = CodePath;
 	FilePath += (HAZE_TEXT("\\Code\\") + ModuleName + HAZE_TEXT(".hz"));
 
 	ParseFile(FilePath, ModuleName);
@@ -108,7 +109,7 @@ HazeCompilerModule* HazeVM::ParseModule(const HAZE_STRING& ModuleName)
 
 void HazeVM::LoadOpCodeFile()
 {
-	HAZE_STRING Path = std::filesystem::current_path();
+	HAZE_STRING Path = CodePath;
 	HAZE_STRING OpCodePath = Path + HAZE_TEXT("\\HazeOpCode\\");
 	OpCodePath += HAZE_TEXT("Main.Hzb");
 

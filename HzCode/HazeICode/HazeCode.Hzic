@@ -3,7 +3,7 @@ GlobalDataTable
 0
 StringTable
 1
-12 甲 %d ,乙 %d\n
+19 甲 %d ,乙 %d , 丙 %d\n
 ClassTable
 0
 FunctionTable
@@ -11,23 +11,28 @@ FunctionTable
 Function 主函数 3
 Variable 乙$1 3 0 4
 Variable 函数指针$2 12 4 8
-Variable 甲$3 3 12 4
+Variable 丙$3 10 10 12 8
+Variable 甲$4 3 20 4
 Start
 
 Block Entry
 MOV 3 乙$1 2 3 101 3
 MOV 12 函数指针$2 2 12 获得相加值 12
 LEA 10 Temp_R0 9 3 3 乙$1 2
+MOV 10 丙$3 2 3 10 Temp_R0 9 3
+LEA 10 Temp_R0 9 3 3 乙$1 2
 PUSH 3 2 3
 PUSH 10 Temp_R0 9 3
 PUSH 3 Address 11
 CALL 函数指针$2 12 2 12
-MOV 3 甲$3 2 0 Ret_R 6
+MOV 3 甲$4 2 0 Ret_R 6
+MOVPV 3 Temp_R0 9 10 丙$3 2 3
+PUSH 3 Temp_R0 9
 PUSH 3 乙$1 2
-PUSH 3 甲$3 2
+PUSH 3 甲$4 2
 PUSH 10 常字符串指针 4 2 0
 PUSH 3 Address 11
-CALL 打印 17 3 16
+CALL 打印 17 4 20
 RET 0
 End
 

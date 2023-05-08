@@ -12,6 +12,8 @@
 	#include "HazeDebug.h"
 #endif // _DEBUG
 
+std::wstring CodePath;
+
 void HazeNewHandler()
 {
 	HAZE_LOG_ERR(HAZE_TEXT("Haze no memory!!!!\n"));
@@ -29,15 +31,21 @@ int main(int ArgCount, char* ArgValue[])
 {
 	HazeInit();
 
-	std::wstring Path = std::filesystem::current_path();
+	std::filesystem::path ExeFile(ArgValue[0]);
+	std::wstring Path = ExeFile.parent_path().parent_path().parent_path().parent_path();
+	//std::wstring Path = std::filesystem::current_path();
 
-	std::filesystem::create_directory(Path + HAZE_TEXT("\\HazeOpCode"));
+	if (ArgCount >= 2)
+	{
+		CodePath = Path + String2WString(ArgValue[1]);
+	}
+	std::filesystem::create_directory(CodePath + HAZE_TEXT("\\HazeOpCode"));
 
 	HazeVM VM;
 
 #ifdef _DEBUG
 	
-	VM.InitVM({ {Path + HAZE_TEST_FOLDER + HAZE_TEST_FILE_PATH, HAZE_TEST_FILE } });
+	VM.InitVM({ {CodePath + HAZE_TEST_FOLDER + HAZE_TEST_FILE_PATH, HAZE_TEST_FILE } });
 
 #else
 

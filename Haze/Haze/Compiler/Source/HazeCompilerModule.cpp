@@ -14,14 +14,14 @@
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
 
+extern std::wstring CodePath;
+
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* Compiler, const HAZE_STRING& ModuleName)
 	: Compiler(Compiler), IsStdLib(false)
 {
-	HAZE_STRING Path = std::filesystem::current_path();
-
 #if HAZE_I_CODE_ENABLE
 
-	HAZE_STRING I_CodePath = Path + HAZE_TEXT("\\HazeICode\\");
+	HAZE_STRING I_CodePath = CodePath + HAZE_TEXT("\\HazeICode\\");
 	I_CodePath += ModuleName + HAZE_TEXT(".Hzic");
 
 	FS_I_Code.imbue(std::locale("chs"));

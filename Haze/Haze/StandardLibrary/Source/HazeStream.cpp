@@ -32,6 +32,11 @@ static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form)
 	return strfrmt + len - 1;
 }
 
+void HazeStream::InitializeLib()
+{
+	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &HashMap_Function);
+}
+
 void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)
 {
 	int V = 0;

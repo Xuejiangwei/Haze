@@ -11,7 +11,6 @@ MemoryBlock::MemoryBlock(void* HeadAddress, uint64 BlockSize, uint64 UnitSize)
 	BlockInfo.MemoryKeepSignal.resize(Length);
 
 	char* Address = (char*)HeadAddress;
-	void* TailAddress = GetTailAddress();
 	while (Length-- > 0)
 	{
 		BlockInfo.List.Push(Address);

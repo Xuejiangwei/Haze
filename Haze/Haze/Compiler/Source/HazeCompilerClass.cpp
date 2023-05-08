@@ -21,15 +21,6 @@ HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRI
 			
 			DataSize += GetSizeByType(Vector_Data[i].second[j].Type, Module);
 		}
-
-		/*if (Vector_Data[i].Type.CustomName.empty())
-		{
-			DataSize += GetSizeByHazeType(Vector_Data[i].Type.Type);
-		}
-		else
-		{
-			DataSize += Module->FindClass(Vector_Data[i].Type.CustomName)->GetDataSize();
-		}*/
 	}
 }
 

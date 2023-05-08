@@ -810,7 +810,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("Class object define need left parentheses!\n"));
+				HAZE_LOG_ERR(HAZE_TEXT("类对象定义需要括号\"(\" !\n"));
 			}
 		}
 		

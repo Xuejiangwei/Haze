@@ -139,6 +139,15 @@ void HazeBaseBlock::MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB)
 
 std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, std::vector<HazeDefineType>* Vector_Param)
 {
+	for (auto& Iter : Vector_Alloca)
+	{
+		if (Iter.first == Define.Name)
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("重复添加临时变量 %s !\n"), Define.Name.c_str());
+			return nullptr;
+		}
+	}
+
 	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local, Count, ArraySizeOrRef, nullptr, Vector_Param);
 	Vector_Alloca.push_back({ Define.Name, Alloce });
 

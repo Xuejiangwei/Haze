@@ -6,6 +6,8 @@
 	static TYPE NAME(HAZE_STD_CALL_PARAM); \
 	static TYPE NAME##Call(__VA_ARGS__);
 
+#define HAZE_INIT_STANDARD_LIB() static void InitializeLib()
+
 class HazeStandardLibraryBase
 {
 public:

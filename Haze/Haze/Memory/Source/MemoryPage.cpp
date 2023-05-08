@@ -3,7 +3,7 @@
 
 #define DEFAULT_UNIT_NUM 32
 
-MemoryPage::MemoryPage(uint32 PageByteSize, uint32 BlockUnitSize)
+MemoryPage::MemoryPage(uint64 PageByteSize, uint64 BlockUnitSize)
 {
 	PageInfo.PageByteSize = PageByteSize;
 	PageInfo.UnitSize = BlockUnitSize;
