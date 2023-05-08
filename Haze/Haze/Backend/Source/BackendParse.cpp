@@ -423,16 +423,22 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	{
 		InstructionData OperatorOne;
 
-		OperatorOne.Scope = HazeDataDesc::None;
 
 		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
 
 		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
-
+		
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamNum);
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamByteSize);
 
-		Instruction.Operator = { OperatorOne };
+		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::PointerFunction)
+		{
+			Instruction.Operator = { OperatorOne, InstructionData() };
+		}
+		else
+		{
+			Instruction.Operator = { OperatorOne };
+		}
 	}
 	break;
 	case InstructionOpCode::NEW:
@@ -495,14 +501,14 @@ void BackendParse::GenOpCodeFile()
 	for (auto& Module : HashMap_Modules)
 	{
 		NewFunctionTable.Vector_Function.insert(NewFunctionTable.Vector_Function.end(), Module.second->Table_Function.Vector_Function.begin(), Module.second->Table_Function.Vector_Function.end());
-		ReplaceIndex(NewGlobalDataTable, NewStringTable, NewFunctionTable, FunctionCount);
+		ReplaceStringIndex(NewStringTable, NewFunctionTable, FunctionCount);
 
 		NewGlobalDataTable.Vector_Data.insert(NewGlobalDataTable.Vector_Data.end(), Module.second->Table_GlobalData.Vector_Data.begin(), Module.second->Table_GlobalData.Vector_Data.end());
 		NewStringTable.Vector_String.insert(NewStringTable.Vector_String.end(), Module.second->Table_String.Vector_String.begin(), Module.second->Table_String.Vector_String.end());
 		NewClassTable.Vector_Class.insert(NewClassTable.Vector_Class.end(), Module.second->Table_Class.Vector_Class.begin(), Module.second->Table_Class.Vector_Class.end());
 	}
 	
-	FindAddress(/*NewClassTable, */NewFunctionTable);
+	FindAddress(NewGlobalDataTable, NewFunctionTable);
 
 	//将全局数据写入
 	uint32 UnsignedInt = (uint32)NewGlobalDataTable.Vector_Data.size();
@@ -634,37 +640,24 @@ void BackendParse::GenOpCodeFile()
 	}
 }
 
-void BackendParse::ReplaceIndex(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::StringTable& NewStringTable, ModuleUnit::FunctionTable& NewFunctionTable, size_t& FunctionCount)
+void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& NewStringTable, ModuleUnit::FunctionTable& NewFunctionTable, size_t& FunctionCount)
 {
 	for (; FunctionCount < NewFunctionTable.Vector_Function.size(); FunctionCount++)
 	{
 		for (auto& Iter : NewFunctionTable.Vector_Function[FunctionCount].Vector_Instruction)
 		{
-			if (Iter.InsCode == InstructionOpCode::CALL && Iter.Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
+			for (auto& Operator : Iter.Operator)
 			{
-
-			}
-			else
-			{
-				for (auto& Operator : Iter.Operator)
+				if (Operator.Scope == HazeDataDesc::ConstantString)
 				{
-					if (Operator.Scope == HazeDataDesc::ConstantString)
-					{
-						Operator.Extra.Index += (uint32)NewStringTable.Vector_String.size();
-					}
-					else if (Operator.Scope == HazeDataDesc::Global)
-					{
-						//Operator.Extra.Index = NewGlobalDataTable.GetIndex(Operator.Variable.Name);
-						//Operator.AddressType = InstructionAddressType::GlobalDataIndex;
-						Operator.Extra.Index += (uint32)NewGlobalDataTable.Vector_Data.size();
-					}
+					Operator.Extra.Index += (uint32)NewStringTable.Vector_String.size();
 				}
 			}
 		}
 	}
 }
 
-void BackendParse::FindAddress(/*ModuleUnit::ClassTable& NewClassTable, */ModuleUnit::FunctionTable& NewFunctionTable)
+void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::FunctionTable& NewFunctionTable)
 {
 	std::unordered_map<HAZE_STRING, size_t> HashMap_FunctionIndexAndAddress;
 	for (size_t i = 0; i < NewFunctionTable.Vector_Function.size(); i++)
@@ -711,14 +704,20 @@ void BackendParse::FindAddress(/*ModuleUnit::ClassTable& NewClassTable, */Module
 				auto Iter_Index = HashMap_Variable.find(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name);
 				if (Iter_Index != HashMap_Variable.end())
 				{
-					CurrFunction.Vector_Instruction[i].Operator[0].Extra.Address.Offset = 
-						CurrFunction.Vector_Instruction[i].Operator[0].Extra.Index * GetSizeByType(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Type, this);
-					CurrFunction.Vector_Instruction[i].Operator[0].Extra.Address.BaseAddress = CurrFunction.Vector_Variable[Iter_Index->second].Offset;
+					CurrFunction.Vector_Instruction[i].Operator[1].Extra.Address.BaseAddress = CurrFunction.Vector_Variable[Iter_Index->second].Offset;
 				}
 				else
 				{
-					//还需要查找global variable
-					HAZE_LOG_ERR(HAZE_TEXT("Find pointer function call Offset error %s in function %s\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str(), CurrFunction.Name.c_str());
+					uint64 Index = NewGlobalDataTable.GetIndex(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name);
+					if (Index != (uint64)-1)
+					{
+
+						CurrFunction.Vector_Instruction[i].Operator[1].Extra.Index = (int)Index;
+					}
+					else
+					{
+						HAZE_LOG_ERR(HAZE_TEXT("Find call pointer function address failed!\n"));
+					}
 				}
 			}
 			else
@@ -791,6 +790,10 @@ void BackendParse::FindAddress(/*ModuleUnit::ClassTable& NewClassTable, */Module
 							HAZE_LOG_ERR(HAZE_TEXT("find Offset error %s\n  in function %s"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
 						}
 					}
+					else if (it.Scope == HazeDataDesc::Global)
+					{
+						it.Extra.Index = (int)NewGlobalDataTable.GetIndex(it.Variable.Name);
+					}
 				}
 			}
 
@@ -839,15 +842,11 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Index));								//操作数索引
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.AddressType));
 		
-		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement)
+		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement
+			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
 		{
 			B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移
 		}
-	}
-
-	if (Instruction.InsCode == InstructionOpCode::CALL)
-	{
-		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Instruction.Operator[0].Extra.Call.ParamByteSize));
 	}
 
 #if HAZE_INS_LOG

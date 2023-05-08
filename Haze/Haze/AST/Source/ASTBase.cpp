@@ -132,7 +132,10 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("Can not find %s variable!\n"), DefineVariable.Name.c_str());
+		if (!VM->GetCompiler()->GetCurrModule()->GetFunction(DefineVariable.Name))
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("Can not find variable %s !\n"), DefineVariable.Name.c_str());
+		}
 	}
 
 	return RetValue;

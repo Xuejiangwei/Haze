@@ -24,6 +24,8 @@ uint32 GetSizeByHazeType(HazeValueType Type)
     case HazeValueType::UnsignedLong:
     case HazeValueType::PointerBase:
     case HazeValueType::PointerClass:
+    case HazeValueType::PointerFunction:
+    case HazeValueType::PointerPointer:
     case HazeValueType::ReferenceBase:
     case HazeValueType::ReferenceClass:
         return 8;

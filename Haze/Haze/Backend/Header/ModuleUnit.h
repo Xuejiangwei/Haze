@@ -28,17 +28,17 @@ public:
 			Vector_Data.clear();
 		}
 
-		uint32 GetIndex(const HAZE_STRING& Name)
+		uint64 GetIndex(const HAZE_STRING& Name)
 		{
 			for (uint64 i = 0; i < Vector_Data.size(); i++)
 			{
 				if (Vector_Data[i].Name == Name)
 				{
-					return (uint32)i;
+					return i;
 				}
 			}
 
-			return 0;
+			return (uint64)-1;
 		}
 	};
 

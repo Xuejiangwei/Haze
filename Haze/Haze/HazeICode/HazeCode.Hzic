@@ -9,21 +9,21 @@ ClassTable
 FunctionTable
 2
 Function 主函数 3
-Variable 函数指针$1 12 0 0
-Variable 乙$2 3 0 4
-Variable 甲$3 3 4 4
+Variable 乙$1 3 0 4
+Variable 函数指针$2 12 4 8
+Variable 甲$3 3 12 4
 Start
 
 Block Entry
-MOV 12 函数指针$1 2 12  1
-MOV 3 乙$2 2 3 101 3
-LEA 10 Temp_R0 9 3 3 乙$2 2
+MOV 3 乙$1 2 3 101 3
+MOV 12 函数指针$2 2 12 获得相加值 12
+LEA 10 Temp_R0 9 3 3 乙$1 2
 PUSH 3 2 3
 PUSH 10 Temp_R0 9 3
 PUSH 3 Address 11
-CALL 函数指针$1 12 2 12
+CALL 函数指针$2 12 2 12
 MOV 3 甲$3 2 0 Ret_R 6
-PUSH 3 乙$2 2
+PUSH 3 乙$1 2
 PUSH 3 甲$3 2
 PUSH 10 常字符串指针 4 2 0
 PUSH 3 Address 11

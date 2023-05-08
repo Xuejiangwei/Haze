@@ -487,7 +487,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, uint32& Size,
 				{
 					Name = Compiler->GetRegisterName(Variable);
 				}
-				else
+				else if (Variable->IsLocal() || Variable->IsGlobal() || Variable->IsRegister())
 				{
 					HAZE_LOG_ERR(HAZE_TEXT("Haze parse function call not find variable name\n"));
 				}
@@ -804,9 +804,20 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		}
 		else
 		{
-			Module->GetGlobalVariableName(Value, VarName);
-			HSS << " " << VarName;
-			ArrayValue ? HSS << " " << (uint32)HazeDataDesc::ArrayElement : HSS << " " << (uint32)HazeDataDesc::Global;
+			bFind = Module->GetGlobalVariableName(Value, VarName);
+			if (bFind)
+			{
+				HSS << " " << VarName;
+				ArrayValue ? HSS << " " << (uint32)HazeDataDesc::ArrayElement : HSS << " " << (uint32)HazeDataDesc::Global;
+			}
+			else if (Value->IsPointerFunction())
+			{
+				HSS << " " << Value->GetValueType().CustomName << " " << (uint32)HazeDataDesc::FunctionAddress;		//表示需要运行中查找函数地址
+			}
+			else
+			{
+				HAZE_LOG_ERR(HAZE_TEXT("GenValueHzicText can not find variable!\n"));
+			}
 		}
 
 		StreamExtra = true;

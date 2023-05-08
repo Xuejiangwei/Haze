@@ -471,26 +471,36 @@ public:
 	{
 		//EBP = PC;
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 1)
+		if (Operator.size() >= 1)
 		{
 			memcpy(&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], &Stack->PC, HAZE_ADDRESS_SIZE);
 
-			int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
-			auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
-
-			if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
+			if (Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
 			{
-				Stack->OnCall(&Function, Operator[0].Extra.Call.ParamByteSize);
+				void* Value = GetAddressByOperator(Stack, Operator[1]);
+				uint64 FunctionAddress;
+				memcpy(&FunctionAddress, Value, sizeof(FunctionAddress));
+				Stack->OnCall((FunctionData*)FunctionAddress, Operator[0].Extra.Call.ParamByteSize);
 			}
 			else
 			{
-				uint32 TempEBP = Stack->EBP;
-				Stack->EBP = Stack->ESP;
+				int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
+				auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
 
-				Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.Call.ParamNum);
+				if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
+				{
+					Stack->OnCall(&Function, Operator[0].Extra.Call.ParamByteSize);
+				}
+				else
+				{
+					uint32 TempEBP = Stack->EBP;
+					Stack->EBP = Stack->ESP;
 
-				Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
-				Stack->EBP = TempEBP;
+					Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.Call.ParamNum);
+
+					Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
+					Stack->EBP = TempEBP;
+				}
 			}
 		}
 	}
@@ -721,10 +731,9 @@ private:
 		}
 		else if (Operator.Scope == HazeDataDesc::ClassMember_Local_Public && Operator.AddressType == InstructionAddressType::Pointer_Offset)
 		{
-			uint64 Address;
-			memcpy(&Address, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
+			memcpy(&TempAddress, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
 
-			Ret = (char*)Address + Operator.Extra.Address.Offset;
+			Ret = (char*)TempAddress + Operator.Extra.Address.Offset;
 
 #if HAZE_VM_GET_ADDRESS_LOG
 			HSS << Stack->EBP << " " << Stack->ESP << " " << Operator.Extra.Address.BaseAddress << " " << Address << " ";
@@ -733,6 +742,11 @@ private:
 		else if (Operator.Scope == HazeDataDesc::ArrayElement)
 		{
 			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress + Operator.Extra.Address.Offset];
+		}
+		else if (Operator.Scope == HazeDataDesc::FunctionAddress)
+		{
+			TempAddress = (uint64)((void*)&Stack->VM->GetFunctionByName(Operator.Variable.Name));
+			Ret = &TempAddress;
 		}
 		else /*if (Operator.Scope == InstructionScopeType::Local)*/
 		{
