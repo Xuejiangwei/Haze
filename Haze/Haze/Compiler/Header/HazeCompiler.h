@@ -34,8 +34,6 @@ public:
 
 	void PopCurrModule() { return Vector_ModuleNameStack.pop_back(); }
 
-	HAZE_STRING GetCurrModuleOpFile() const;
-
 	std::shared_ptr<HazeCompilerValue> GenConstantValue(HazeValueType Type, const HazeValue& Var);
 
 	std::shared_ptr<HazeCompilerValue> GenStringVariable(HAZE_STRING& String);

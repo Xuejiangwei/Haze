@@ -12,7 +12,7 @@
 	#include "HazeDebug.h"
 #endif // _DEBUG
 
-std::wstring CodePath;
+std::wstring RootCodePath;
 
 void HazeNewHandler()
 {
@@ -32,20 +32,26 @@ int main(int ArgCount, char* ArgValue[])
 	HazeInit();
 
 	std::filesystem::path ExeFile(ArgValue[0]);
-	std::wstring Path = ExeFile.parent_path().parent_path().parent_path().parent_path();
+	RootCodePath = ExeFile.parent_path();
 	//std::wstring Path = std::filesystem::current_path();
 
-	if (ArgCount >= 2)
+	if (ArgCount < 2)
 	{
-		CodePath = Path + String2WString(ArgValue[1]);
+		return 0;
 	}
-	std::filesystem::create_directory(CodePath + HAZE_TEXT("\\HazeOpCode"));
+
+	std::filesystem::path MainFile(ArgValue[1]);
+	RootCodePath = MainFile.parent_path().wstring() + HAZE_TEXT("\\");
+
+	std::filesystem::create_directory(RootCodePath + HAZE_FILE_INTER);
+	std::filesystem::create_directory(RootCodePath + HAZE_FILE_PATH_BIN);
 
 	HazeVM VM;
 
+
 #ifdef _DEBUG
 	
-	VM.InitVM({ {CodePath + HAZE_TEST_FOLDER + HAZE_TEST_FILE_PATH, HAZE_TEST_FILE } });
+	VM.InitVM({ {/*RootCodePath + HAZE_TEST_FOLDER + HAZE_TEST_FILE_PATH*/ MainFile , MainFile.filename().wstring().substr(0, MainFile.filename().wstring().length() - 3) /*HAZE_TEST_FILE*/ } });
 
 #else
 

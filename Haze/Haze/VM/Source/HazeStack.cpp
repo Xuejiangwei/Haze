@@ -18,29 +18,6 @@ HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 
 	Stack_Main.resize(HAZE_VM_STACK_SIZE);
 	InitStackRegister();
-
-	/*std::cout << MemoryPool::RoundUp(1) << std::endl;
-	std::cout << MemoryPool::RoundUp(8) << std::endl;
-	std::cout << MemoryPool::RoundUp(16) << std::endl;
-	std::cout << MemoryPool::RoundUp(32) << std::endl;
-	std::cout << MemoryPool::RoundUp(64) << std::endl;
-	std::cout << MemoryPool::RoundUp(128) << std::endl;
-	std::cout << MemoryPool::RoundUp(226) << std::endl;
-	std::cout << MemoryPool::RoundUp(510) << std::endl;
-	std::cout << MemoryPool::RoundUp(556) << std::endl;
-	std::cout << MemoryPool::RoundUp(1035) << std::endl;
-
-	HazeMemory::Alloca(8);
-	HazeMemory::Alloca(8);*/
-
-	/*std::cout << MemoryPool::Index(4) << std::endl;
-	std::cout << MemoryPool::Index(8) << std::endl;
-	std::cout << MemoryPool::Index(16) << std::endl;
-	std::cout << MemoryPool::Index(32) << std::endl;
-	std::cout << MemoryPool::Index(64) << std::endl;
-	std::cout << MemoryPool::Index(128) << std::endl;
-	std::cout << MemoryPool::Index(256) << std::endl;
-	std::cout << MemoryPool::Index(512) << std::endl;*/
 }
 
 HazeStack::~HazeStack()
@@ -136,10 +113,10 @@ void HazeStack::PushMainFuntion()
 	ESP -= HAZE_ADDRESS_SIZE;
 	EBP -= HAZE_ADDRESS_SIZE;
 
-	/*if (MainFunction.Vector_Variable.size() > 0)
+	if (MainFunction.Vector_Variable.size() > 0)
 	{
 		ESP += MainFunction.Vector_Variable.back().Offset + MainFunction.Vector_Variable.back().Size;
-	}*/
+	}
 }
 
 HazeRegister* HazeStack::GetVirtualRegister(const HAZE_CHAR* Name)

@@ -134,7 +134,7 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	{
 		if (!VM->GetCompiler()->GetCurrModule()->GetFunction(DefineVariable.Name))
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("Can not find variable %s !\n"), DefineVariable.Name.c_str());
+			HAZE_LOG_ERR(HAZE_TEXT("未能找到变量<%s>!\n"), DefineVariable.Name.c_str());
 		}
 	}
 
@@ -294,7 +294,15 @@ std::shared_ptr<HazeCompilerValue> ASTGetAddress::CodeGen()
 	if (!Ret)
 	{
 		//获得函数地址
-		Ret = VM->GetCompiler()->CreatePointerToFunction(VM->GetCompiler()->GetCurrModule()->GetFunction(Expression->GetName()));
+		auto Function = VM->GetCompiler()->GetCurrModule()->GetFunction(Expression->GetName());
+		if (Function)
+		{
+			Ret = VM->GetCompiler()->CreatePointerToFunction(Function);
+		}
+		else
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("未能找到函数<%s>并获得函数地址!\n"), Expression->GetName());
+		}
 	}
 	else
 	{

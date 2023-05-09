@@ -22,6 +22,12 @@
 
 #define HAZE_CAST_SCOPE_TYPE(X) (uint32)(X)
 
+#define HAZE_FILE_SUFFIX				HAZE_TEXT(".hz")
+#define HAZE_FILE_INTER_SUFFIX			HAZE_TEXT(".Hzic")
+#define HAZE_FILE_INTER					HAZE_TEXT("\\Intermediate\\")
+#define HAZE_FILE_PATH_BIN				HAZE_TEXT("\\Bin\\")
+#define HAZE_FILE_MAIN_BIN				HAZE_TEXT("Main.Hzb")
+
 #define HAZE_CLASS_THIS					HAZE_TEXT("己")
 #define HAZE_CLASS_POINTER_ATTR			HAZE_TEXT("指之")
 #define HAZE_CLASS_ATTR					HAZE_TEXT("之")

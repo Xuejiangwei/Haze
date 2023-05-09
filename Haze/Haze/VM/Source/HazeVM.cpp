@@ -9,10 +9,10 @@
 #include "HazeCompiler.h"
 #include "Parse.h"
 #include "HazeLog.h"
+#include "HazeFilePathHelper.h"
 
 #include "BackendParse.h"
 
-extern std::wstring CodePath;
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 HazeVM::HazeVM()
@@ -84,12 +84,7 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 		Compiler->FinishModule();
 	}
 
-
-	auto Module = HashMap_Module.find(ModuleName);
-	if (Module == HashMap_Module.end())
-	{
-		HashMap_Module[ModuleName] = std::make_unique<HazeModule>(Compiler->GetCurrModuleOpFile());
-	}
+	HashSet_RefModule.insert(ModuleName);
 
 	if (PopCurrModule)
 	{
@@ -99,21 +94,13 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 
 HazeCompilerModule* HazeVM::ParseModule(const HAZE_STRING& ModuleName)
 {
-	HAZE_STRING FilePath = CodePath;
-	FilePath += (HAZE_TEXT("\\Code\\") + ModuleName + HAZE_TEXT(".hz"));
-
-	ParseFile(FilePath, ModuleName);
-
+	ParseFile(GetModuleFilePath(ModuleName), ModuleName);
 	return Compiler->GetModule(ModuleName);
 }
 
 void HazeVM::LoadOpCodeFile()
 {
-	HAZE_STRING Path = CodePath;
-	HAZE_STRING OpCodePath = Path + HAZE_TEXT("\\HazeOpCode\\");
-	OpCodePath += HAZE_TEXT("Main.Hzb");
-
-	HAZE_BINARY_IFSTREAM FS(OpCodePath, std::ios::in | std::ios::binary);
+	HAZE_BINARY_IFSTREAM FS(GetMainBinaryFilePath(), std::ios::in | std::ios::binary);
 	FS.imbue(std::locale("chs"));
 
 	//HAZE_BINARY_STRING Content(std::istreambuf_iterator<HAZE_BINARY_CHAR>(FS), {});

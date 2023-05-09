@@ -14,8 +14,6 @@
 
 #include "HazeBaseBlock.h"
 
-extern std::wstring CodePath;
-
 static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalRegister = {
 	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterRet, 0) },
 	{ NEW_REGISTER, nullptr },
@@ -104,11 +102,6 @@ std::shared_ptr<HazeCompilerFunction> HazeCompiler::GetFunction(const HAZE_STRIN
 	}
 
 	return Function;
-}
-
-HAZE_STRING HazeCompiler::GetCurrModuleOpFile() const
-{
-	return CodePath + HAZE_TEXT("\\HazeOpCode\\") + GetCurrModuleName() + HAZE_TEXT(".Hzb");
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModule* Module, const HazeDefineType& Data)

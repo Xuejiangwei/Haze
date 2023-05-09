@@ -4,10 +4,10 @@
 #include "BackendParse.h"
 #include "HazeUtility.h"
 #include "HazeVM.h"
+#include "HazeFilePathHelper.h"
 
 #include "HazeLog.h"
 
-extern std::wstring CodePath;
 
 static std::pair<bool, int> ParseStringCount = { false, 0 };
 
@@ -35,11 +35,7 @@ static void FindObjectAndMemberName(const HAZE_STRING& InName, HAZE_STRING& OutO
 BackendParse::BackendParse(HazeVM* VM) : VM(VM)
 {
 	CurrCode = nullptr;
-
-	HAZE_STRING OpCodePath = CodePath + HAZE_TEXT("\\HazeOpCode\\");
-	OpCodePath += HAZE_TEXT("Main.Hzb");
-
-	FS_OpCode.open(OpCodePath, std::ios::out | std::ios::binary); //不用二进制的话，写入10，会当成换行特殊处理，写入两个字符 0x0d 0x0a，即回车换行符
+	FS_OpCode.open(GetMainBinaryFilePath(), std::ios::out | std::ios::binary); //不用二进制的话，写入10，会当成换行特殊处理，写入两个字符 0x0d 0x0a，即回车换行符
 }
 
 BackendParse::~BackendParse()
@@ -54,19 +50,16 @@ void BackendParse::Parse()
 {
 	HAZE_STRING I_CodePath;
 
-	auto& Modules = VM->GetModules();
+	auto& Modules = VM->GetReferenceModules();
 
 	HAZE_STRING CodeText;
 
-	for (auto& iter : Modules)
+	for (auto& Module : Modules)
 	{
 		CurrParseModule = std::make_shared<ModuleUnit>();
-		HashMap_Modules[iter.first] = CurrParseModule;
+		HashMap_Modules[Module] = CurrParseModule;
 
-		I_CodePath = CodePath + HAZE_TEXT("\\HazeICode\\");
-		I_CodePath += iter.first + HAZE_TEXT(".Hzic");
-
-		HAZE_IFSTREAM FS(I_CodePath);
+		HAZE_IFSTREAM FS(GetIntermediateModuleFile(Module));
 		FS.imbue(std::locale("chs"));
 
 		HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(FS), {});

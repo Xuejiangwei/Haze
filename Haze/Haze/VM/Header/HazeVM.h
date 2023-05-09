@@ -42,7 +42,7 @@ public:
 
 	std::unique_ptr<HazeCompiler>& GetCompiler() { return Compiler; }
 
-	const std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>>& GetModules() const { return HashMap_Module; }
+	const std::unordered_set<HAZE_STRING>& GetReferenceModules() const { return HashSet_RefModule; }
 
 	int GetFucntionIndexByName(const HAZE_STRING& Name);
 
@@ -78,7 +78,7 @@ private:
 
 	std::pair<HazeDefineType, HazeValue> FunctionReturn;
 
-	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeModule>> HashMap_Module;
+	std::unordered_set<HAZE_STRING> HashSet_RefModule;
 
 	std::vector<HazeVariable> Vector_GlobalData;
 

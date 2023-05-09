@@ -2,6 +2,8 @@
 #include <unordered_set>
 
 #include "HazeLog.h"
+#include "HazeFilePathHelper.h"
+
 #include "HazeCompiler.h"
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"
@@ -14,18 +16,14 @@
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
 
-extern std::wstring CodePath;
 
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* Compiler, const HAZE_STRING& ModuleName)
 	: Compiler(Compiler), IsStdLib(false)
 {
 #if HAZE_I_CODE_ENABLE
 
-	HAZE_STRING I_CodePath = CodePath + HAZE_TEXT("\\HazeICode\\");
-	I_CodePath += ModuleName + HAZE_TEXT(".Hzic");
-
 	FS_I_Code.imbue(std::locale("chs"));
-	FS_I_Code.open(I_CodePath);
+	FS_I_Code.open(GetIntermediateModuleFile(ModuleName));
 
 #endif
 }
@@ -221,7 +219,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("Create dec compiler error type %s\n"), GetHazeValueTypeString(Value->GetValueType().PrimaryType));
+		HAZE_LOG_ERR(HAZE_TEXT("Create inc compiler error type %s\n"), GetHazeValueTypeString(Value->GetValueType().PrimaryType));
 	}
 	return Ret;
 }
@@ -366,7 +364,7 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 
 	if (CmpType == HazeCmpType::None)
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("cmp type is none %s\n"));
+		HAZE_LOG_ERR(HAZE_TEXT("Compare error, type is none!\n"));
 	}
 
 	SStream << GetInstructionString(GetInstructionOpCodeByCmpType(CmpType)) << " ";
@@ -489,7 +487,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, uint32& Size,
 				}
 				else if (Variable->IsLocal() || Variable->IsGlobal() || Variable->IsRegister())
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("Haze parse function call not find variable name\n"));
+					HAZE_LOG_ERR(HAZE_TEXT("Haze parse function call not find variable name!\n"));
 				}
 			}
 		}
