@@ -101,7 +101,8 @@ public:
 	HazeCompiler* GetCompiler() { return Compiler; }
 
 private:
-	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef = nullptr, std::vector<HazeDefineType>* Vector_Param = nullptr);
+	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> RefValue = nullptr, 
+		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
 	

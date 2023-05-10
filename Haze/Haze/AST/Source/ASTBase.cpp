@@ -83,7 +83,7 @@ std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 	return RetValue;
 }
 
-ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::unique_ptr<ASTBase> ArrayIndexExpression)
+ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::vector<std::unique_ptr<ASTBase>> ArrayIndexExpression)
 	: ASTBase(VM), SectionSignal(Section), ArrayIndexExpression(std::move(ArrayIndexExpression))
 {
 	DefineVariable.Name = std::move(Name);
@@ -119,9 +119,14 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	{
 		if (RetValue->IsArray())
 		{
-			if (ArrayIndexExpression)
+			if (ArrayIndexExpression.size() > 0)
 			{
-				auto IndexValue = ArrayIndexExpression->CodeGen();
+				std::vector<std::shared_ptr<HazeCompilerValue>> IndexValue;
+				for (size_t i = 0; i < ArrayIndexExpression.size(); i++)
+				{
+					IndexValue.push_back(ArrayIndexExpression[i]->CodeGen());
+				}
+
 				RetValue = Compiler->CreateArrayElement(RetValue, IndexValue);
 			}
 			else
@@ -181,7 +186,7 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 }
 
 ASTVariableDefine::ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression,
-	std::unique_ptr<ASTBase> ArraySize, int PointerLevel, std::vector<HazeDefineType>* Vector_ParamType)
+	std::vector<std::unique_ptr<ASTBase>> ArraySize, int PointerLevel, std::vector<HazeDefineType>* Vector_ParamType)
 	: ASTBase(VM, DefineVariable), SectionSignal(Section), Expression(std::move(Expression)), ArraySize(std::move(ArraySize)), PointerLevel(PointerLevel)
 {
 	if (Vector_ParamType)
@@ -200,13 +205,17 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
 	std::unique_ptr<HazeCompilerModule>& Module = VM->GetCompiler()->GetCurrModule();
 
-	std::shared_ptr<HazeCompilerValue> SizeValue = nullptr;
-	if (ArraySize)
+	std::vector<std::shared_ptr<HazeCompilerValue>> SizeValue;
+	for (auto& Iter : ArraySize)
 	{
-		SizeValue = ArraySize->CodeGen();
-		if (!SizeValue->IsConstant())
+		auto V = Iter->CodeGen();
+		if (V->IsConstant())
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("code gen array variable, must be a constant number\n"));
+			SizeValue.push_back(V);
+		}
+		else
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("变量定义失败，定义数组长度必须是常量！\n"));
 			return nullptr;
 		}
 	}
@@ -221,16 +230,16 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
-		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable, SizeValue, &Vector_PointerFunctionParamType);
+		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
 	}
 	else if (SectionSignal == HazeSectionSignal::Function)
 	{
-		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, IsRef ? ExprValue : SizeValue, &Vector_PointerFunctionParamType);
+		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
 	}
 
 	if (RetValue && ExprValue)
 	{
-		if (ArraySize)
+		if (ArraySize.size() > 0)
 		{
 			Compiler->CreateArrayInit(RetValue, ExprValue);
 		}

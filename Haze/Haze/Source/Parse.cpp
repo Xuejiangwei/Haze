@@ -759,7 +759,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		GetNextToken();
 	}
 
-	std::unique_ptr<ASTBase> ArraySize = nullptr;
+	std::vector<std::unique_ptr<ASTBase>> ArraySize;
 	if (CurrToken == HazeToken::Identifier)
 	{
 		DefineVariable.Name = CurrLexeme;
@@ -771,9 +771,12 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			DefineVariable.Type.SecondaryType = DefineVariable.Type.PrimaryType;
 			DefineVariable.Type.PrimaryType = HazeValueType::Array;
 
-			GetNextToken();
-			ArraySize= std::move(ParseExpression());
-			GetNextToken();
+			while (CurrToken == HazeToken::Array)
+			{
+				GetNextToken();
+				ArraySize.push_back(ParseExpression());
+				GetNextToken();
+			}
 		}
 
 		if (CurrToken == HazeToken::Assign)
@@ -797,7 +800,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 				if (CurrToken == HazeToken::RightParentheses)
 				{
 					GetNextToken();
-					return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr, nullptr, PointerLevel);
+					return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr, std::move(ArraySize), PointerLevel);
 				}
 				else
 				{
@@ -816,7 +819,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		
 		else
 		{
-			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr, nullptr, PointerLevel);
+			return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr, std::move(ArraySize), PointerLevel);
 		}
 	}
 	else if (CurrToken == HazeToken::LeftParentheses)

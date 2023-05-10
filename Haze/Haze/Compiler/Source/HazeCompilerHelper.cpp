@@ -131,7 +131,7 @@ void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerV
 }
 
 std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count, 
-	std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param)
+	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param)
 {
 	switch (Var.Type.PrimaryType)
 	{
@@ -147,7 +147,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 	case HazeValueType::MultiVariable:
 		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope, Count, DefaultValue);
 	case HazeValueType::Array:
-		return std::make_shared<HazeCompilerArrayValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef.get());
+		return std::make_shared<HazeCompilerArrayValue>(Module, Var.Type, Scope, Count, ArraySize);
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerPointer:
@@ -156,13 +156,13 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 		return std::make_shared<HazeCompilerPointerFunction>(Module, Var.Type, Scope, Count, Vector_Param ? *Vector_Param : std::vector<HazeDefineType>{});
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
-		if (ArraySizeOrRef)
+		if (RefValue)
 		{
-			return std::make_shared<HazeCompilerRefValue>(Module, Var.Type, Scope, Count, ArraySizeOrRef);
+			return std::make_shared<HazeCompilerRefValue>(Module, Var.Type, Scope, Count, RefValue);
 		}
 		else
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("create reference variable error, must assign value!\n"));
+			HAZE_LOG_ERR(HAZE_TEXT("创建引用变量失败，必须赋予初始化值!\n"));
 			return nullptr;
 		}
 	case HazeValueType::Class:

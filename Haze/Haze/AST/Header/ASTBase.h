@@ -65,7 +65,7 @@ private:
 class ASTIdentifier : public ASTBase
 {
 public:
-	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName = nullptr, std::unique_ptr<ASTBase> ArrayIndexExpression = nullptr);
+	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName = nullptr, std::vector<std::unique_ptr<ASTBase>> ArrayIndexExpression = {});
 	virtual ~ASTIdentifier() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -75,7 +75,7 @@ public:
 private:
 	HazeSectionSignal SectionSignal;
 	HAZE_STRING ClassMemberName;
-	std::unique_ptr<ASTBase> ArrayIndexExpression;
+	std::vector<std::unique_ptr<ASTBase>> ArrayIndexExpression;
 };
 
 //º¯Êýµ÷ÓÃ
@@ -101,7 +101,7 @@ class ASTVariableDefine : public ASTBase
 {
 public:
 
-	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::unique_ptr<ASTBase> ArraySize = nullptr, int PointerLevel = 0, std::vector<HazeDefineType>* Vector_ParamType = nullptr);
+	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::vector<std::unique_ptr<ASTBase>> ArraySize = {}, int PointerLevel = 0, std::vector<HazeDefineType>* Vector_ParamType = nullptr);
 	virtual ~ASTVariableDefine() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -109,7 +109,7 @@ public:
 private:
 	HazeSectionSignal SectionSignal;
 	std::unique_ptr<ASTBase> Expression;
-	std::unique_ptr<ASTBase> ArraySize;
+	std::vector<std::unique_ptr<ASTBase>> ArraySize;
 	int PointerLevel;
 
 	std::vector<HazeDefineType> Vector_PointerFunctionParamType;

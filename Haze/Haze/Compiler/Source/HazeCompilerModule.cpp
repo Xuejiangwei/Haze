@@ -444,7 +444,8 @@ void HazeCompilerModule::GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block, b
 	TopBlock->PushIRCode(HSS.str());
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, std::vector<HazeDefineType>* Vector_Param)
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> RefValue,
+	std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
 	for (auto& it : Vector_Variable)
 	{
@@ -455,7 +456,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 		}
 	}
 
-	Vector_Variable.push_back({ Var.Name, CreateVariable(this, Var, HazeDataDesc::Global, 0, ArraySizeOrRef,nullptr, Vector_Param) });
+	Vector_Variable.push_back({ Var.Name, CreateVariable(this, Var, HazeDataDesc::Global, 0, RefValue, ArraySize, nullptr, Vector_Param) });
 
 	auto& CompilerValue = Vector_Variable.back().second;
 
@@ -518,7 +519,45 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, uint32& Size,
 		else if (Variable->IsArrayElement())
 		{
 			auto ArrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(Variable);
-			SStream << Name << " " << (uint32)Variable->GetScope() << " ";
+			auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(ArrayElementValue->GetArray()->GetShared());
+			if (ArrayValue)
+			{
+				for (size_t Index = 0; i < ArrayElementValue->GetIndex().size(); i++)
+				{
+					if (ArrayElementValue->GetIndex()[i]->IsConstant())
+					{
+
+						Compiler->CreateMul(ArrayValue->GetSizeValue()[Index]->GetShared(), ArrayElementValue->GetIndex()[i]->GetShared());
+						HazeCompilerStream(SStream, ArrayElementValue->GetIndex());
+					}
+					else
+					{
+						HAZE_STRING VarName;
+						if (GetCurrFunction())
+						{
+							if (GetCurrFunction()->FindLocalVariableName(ArrayElementValue->GetIndex(), VarName))
+							{
+								SStream << VarName;
+							}
+							else if (GetGlobalVariableName(ArrayElementValue->GetIndex(), Name))
+							{
+								SStream << VarName;
+							}
+							else
+							{
+								HAZE_LOG_ERR(HAZE_TEXT("Function call param array element not find\n"));
+							}
+						}
+					}
+				}
+			}
+			else
+			{
+				HAZE_TO_DO(waiting to parse pointer arrat element);
+			}
+
+
+			/*SStream << Name << " " << (uint32)Variable->GetScope() << " ";
 			if (ArrayElementValue->GetIndex()->IsConstant())
 			{
 				HazeCompilerStream(SStream, ArrayElementValue->GetIndex());
@@ -541,7 +580,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, uint32& Size,
 						HAZE_LOG_ERR(HAZE_TEXT("Function call param array element not find\n"));
 					}
 				}
-			}
+			}*/
 		}
 		else
 		{

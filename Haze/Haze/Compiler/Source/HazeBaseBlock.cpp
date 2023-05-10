@@ -137,7 +137,8 @@ void HazeBaseBlock::MergeJmpIRCode(std::shared_ptr<HazeBaseBlock> BB)
 	}
 }
 
-std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> ArraySizeOrRef, std::vector<HazeDefineType>* Vector_Param)
+std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> RefValue,
+	std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
 	for (auto& Iter : Vector_Alloca)
 	{
@@ -148,14 +149,8 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 		}
 	}
 
-	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local, Count, ArraySizeOrRef, nullptr, Vector_Param);
+	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeDataDesc::Local, Count, RefValue, ArraySize, nullptr, Vector_Param);
 	Vector_Alloca.push_back({ Define.Name, Alloce });
-
-	/*HAZE_STRING_STREAM SStream;
-	HAZE_STRING Name = GetLocalVariableName(Define.Name, Alloce);
-
-	StreamCompilerValue(SStream, InstructionOpCode::PUSH, Alloce, Name.c_str());
-	PushIRCode(SStream.str());*/
 
 	ParentFunction->AddLocalVariable(Alloce);
 
