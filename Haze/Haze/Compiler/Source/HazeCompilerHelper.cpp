@@ -421,3 +421,47 @@ bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STR
 
 	return false;
 }
+
+std::shared_ptr<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* Module, std::shared_ptr<HazeCompilerValue> ElementValue, std::shared_ptr<HazeCompilerValue> MovToValue)
+{
+	auto Compiler = Module->GetCompiler();
+	auto ArrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(ElementValue);
+	auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(ArrayElementValue->GetArray()->GetShared());
+	
+	if (ArrayValue)
+	{
+		auto TempRegister = Compiler->GetTempRegister();
+		auto ArrayPointer = Compiler->CreatePointerToArray(ArrayValue);
+		for (size_t i = 0; i < ArrayElementValue->GetIndex().size(); i++)
+		{
+			uint32 Size = i == ArrayElementValue->GetIndex().size() - 1 ? ArrayElementValue->GetIndex()[i]->GetValue().Value.Int : ArrayValue->GetSizeByLevel((uint32)i);
+			std::shared_ptr<HazeCompilerValue> SizeValue = nullptr;
+
+			if (ArrayElementValue->GetIndex()[i]->IsConstant())
+			{
+				SizeValue = Compiler->GetConstantValueInt(Size);
+			}
+			else
+			{
+				SizeValue = i == ArrayElementValue->GetIndex().size() - 1 ? ArrayElementValue->GetIndex()[i]->GetShared() : Compiler->GetConstantValueInt(Size);
+			}
+
+			Compiler->CreateMov(TempRegister, SizeValue);
+			if (i != ArrayElementValue->GetIndex().size() - 1)
+			{
+				Compiler->CreateMul(TempRegister, ArrayElementValue->GetIndex()[i]->GetShared());
+			}
+			Compiler->CreateAdd(ArrayPointer, TempRegister);
+		}
+
+		Compiler->CreateMovPV(MovToValue ? MovToValue : TempRegister, ArrayPointer);
+
+		return MovToValue ? MovToValue : TempRegister;
+	}
+	else
+	{
+		HAZE_TO_DO(waiting to parse pointer arrat element);
+	}
+
+	return MovToValue;
+}

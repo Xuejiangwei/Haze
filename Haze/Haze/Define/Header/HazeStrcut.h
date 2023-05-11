@@ -38,7 +38,7 @@ struct HazeDefineType
 		this->CustomName = CustomName;
 	}
 
-	bool operator==(const HazeDefineType& InType)
+	bool operator==(const HazeDefineType& InType) const
 	{
 		return PrimaryType == InType.PrimaryType && SecondaryType == InType.SecondaryType 
 			&& CustomName == InType.CustomName;

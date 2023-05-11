@@ -65,7 +65,7 @@ private:
 class ASTIdentifier : public ASTBase
 {
 public:
-	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName = nullptr, std::vector<std::unique_ptr<ASTBase>> ArrayIndexExpression = {});
+	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression);
 	virtual ~ASTIdentifier() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;

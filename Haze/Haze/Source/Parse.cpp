@@ -683,6 +683,7 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 {
 	std::unique_ptr<ASTBase> Ret = nullptr;
 	HAZE_STRING IdentiferName = CurrLexeme;
+	std::vector<std::unique_ptr<ASTBase>> IndexExpression;
 	if (GetNextToken() == HazeToken::LeftParentheses)
 	{
 		//函数调用
@@ -708,15 +709,18 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 	}
 	else if (CurrToken == HazeToken::Array)
 	{
-		GetNextToken();
-		auto IndexExpression = ParseExpression();
-		GetNextToken();
+		while (CurrToken == HazeToken::Array)
+		{
+			GetNextToken();
+			IndexExpression.push_back(ParseExpression());
+			GetNextToken();
+		}
 
-		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, nullptr, std::move(IndexExpression));
+		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, nullptr, IndexExpression);
 	}
 	else
 	{
-		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName);
+		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, nullptr, IndexExpression);
 	}
 
 	return Ret;

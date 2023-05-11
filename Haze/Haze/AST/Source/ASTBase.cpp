@@ -83,7 +83,7 @@ std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 	return RetValue;
 }
 
-ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::vector<std::unique_ptr<ASTBase>> ArrayIndexExpression)
+ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression)
 	: ASTBase(VM), SectionSignal(Section), ArrayIndexExpression(std::move(ArrayIndexExpression))
 {
 	DefineVariable.Name = std::move(Name);

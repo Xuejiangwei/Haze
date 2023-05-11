@@ -319,7 +319,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 			}
 			else
 			{
-				if (Right->IsRegister(HazeDataDesc::RegisterTemp))
+				if (Right->IsRegister(HazeDataDesc::RegisterTemp) && Right->GetValueType() == Left->GetValueType())
 				{
 					Ret = Right;
 					Right = Left;
@@ -518,47 +518,25 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, uint32& Size,
 		}
 		else if (Variable->IsArrayElement())
 		{
-			auto ArrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(Variable);
-			auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(ArrayElementValue->GetArray()->GetShared());
-			if (ArrayValue)
-			{
-				for (size_t Index = 0; i < ArrayElementValue->GetIndex().size(); i++)
-				{
-					if (ArrayElementValue->GetIndex()[i]->IsConstant())
-					{
+			Variable = GetArrayElementToValue(this, Variable);
 
-						Compiler->CreateMul(ArrayValue->GetSizeValue()[Index]->GetShared(), ArrayElementValue->GetIndex()[i]->GetShared());
-						HazeCompilerStream(SStream, ArrayElementValue->GetIndex());
-					}
-					else
+			if (!GetCurrFunction()->FindLocalVariableName(Variable, Name))
+			{
+				if (!GetGlobalVariableName(Variable, Name))
+				{
+					if (Variable->IsRegister())
 					{
-						HAZE_STRING VarName;
-						if (GetCurrFunction())
-						{
-							if (GetCurrFunction()->FindLocalVariableName(ArrayElementValue->GetIndex(), VarName))
-							{
-								SStream << VarName;
-							}
-							else if (GetGlobalVariableName(ArrayElementValue->GetIndex(), Name))
-							{
-								SStream << VarName;
-							}
-							else
-							{
-								HAZE_LOG_ERR(HAZE_TEXT("Function call param array element not find\n"));
-							}
-						}
+						Name = Compiler->GetRegisterName(Variable);
+					}
+					else if (Variable->IsLocal() || Variable->IsGlobal() || Variable->IsRegister())
+					{
+						HAZE_LOG_ERR(HAZE_TEXT("Haze parse function call not find variable name!\n"));
 					}
 				}
 			}
-			else
-			{
-				HAZE_TO_DO(waiting to parse pointer arrat element);
-			}
 
-
-			/*SStream << Name << " " << (uint32)Variable->GetScope() << " ";
-			if (ArrayElementValue->GetIndex()->IsConstant())
+			SStream << Name << " " << (uint32)Variable->GetScope() << " ";
+			/*if (ArrayElementValue->GetIndex()->IsConstant())
 			{
 				HazeCompilerStream(SStream, ArrayElementValue->GetIndex());
 			}
@@ -903,20 +881,20 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 			auto ArrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(Value);
 
 			HSS << " ";
-			if (ArrayElementValue->GetIndex()->IsConstant())
+			if (ArrayElementValue->GetIndex()[0]->IsConstant())
 			{
-				HazeCompilerStream(HSS, ArrayElementValue->GetIndex());
+				HazeCompilerStream(HSS, ArrayElementValue->GetIndex()[0]);
 			}
 			else
 			{
 				HAZE_STRING Name;
 				if (Module->GetCurrFunction())
 				{
-					if (Module->GetCurrFunction()->FindLocalVariableName(ArrayElementValue->GetIndex(), Name))
+					if (Module->GetCurrFunction()->FindLocalVariableName(ArrayElementValue->GetIndex()[0], Name))
 					{
 						HSS << Name;
 					}
-					else if (Module->GetGlobalVariableName(ArrayElementValue->GetIndex(), Name))
+					else if (Module->GetGlobalVariableName(ArrayElementValue->GetIndex()[0], Name))
 					{
 						HSS << Name;
 					}

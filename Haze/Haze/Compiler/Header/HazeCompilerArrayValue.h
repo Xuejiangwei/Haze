@@ -32,6 +32,8 @@ public:
 
 	const std::vector<HazeCompilerValue*>& GetSizeValue() const { return Vector_Size; }
 
+	uint32 GetSizeByLevel(uint32 Level);
+
 private:
 	uint32 ArrayLength;
 	uint32 Size;

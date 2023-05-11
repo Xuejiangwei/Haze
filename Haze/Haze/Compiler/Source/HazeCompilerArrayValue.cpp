@@ -36,3 +36,19 @@ HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* Module, const
 HazeCompilerArrayValue::~HazeCompilerArrayValue()
 {
 }
+
+uint32 HazeCompilerArrayValue::GetSizeByLevel(uint32 Level)
+{
+	uint32 Ret = 0;
+	if (Level + 1 < Vector_Size.size())
+	{
+		Ret = 1;
+		for (size_t i = Level + 1; i < Vector_Size.size(); i++)
+		{
+			Ret *= Vector_Size[i]->GetValueType().PrimaryType == HazeValueType::UnsignedLong || Vector_Size[i]->GetValueType().PrimaryType == HazeValueType::Long ?
+				(uint32)Vector_Size[i]->GetValue().Value.UnsignedLong : Vector_Size[i]->GetValue().Value.UnsignedInt;
+		}
+	}
+	
+	return Ret;
+}
