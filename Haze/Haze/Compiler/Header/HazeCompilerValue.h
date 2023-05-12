@@ -59,6 +59,8 @@ public:
 	bool IsPointerClass() const { return ValueType.PrimaryType == HazeValueType::PointerClass; }
 
 	bool IsPointerFunction() const { return ValueType.PrimaryType == HazeValueType::PointerFunction; }
+	
+	bool IsPointerArray() const { return ValueType.PrimaryType == HazeValueType::PointerArray; }
 
 	bool IsPointerPointer() const { return ValueType.PrimaryType == HazeValueType::PointerPointer; }
 

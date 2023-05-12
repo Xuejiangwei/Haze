@@ -67,6 +67,10 @@ private:
 
 	std::unique_ptr<ASTBase> ParseWhileExpression();
 
+	std::unique_ptr<ASTBase> ParseBreakExpression();
+	
+	std::unique_ptr<ASTBase> ParseContinueExpression();
+
 	std::unique_ptr<ASTBase> ParseReturn();
 
 	std::unique_ptr<ASTBase> ParseNew();

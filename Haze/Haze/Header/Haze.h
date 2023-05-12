@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <unordered_map>
+#include <assert.h>
 
 #include "HazeToken.h"
 #include "HazeUtility.h"

@@ -14,6 +14,8 @@ public:
 	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> RefValue = nullptr, 
 		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>*Vector_Param = nullptr);
 
+	std::shared_ptr<HazeBaseBlock> GetShared() { return shared_from_this(); }
+
 	const std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& GetAllocaList() const { return Vector_Alloca; }
 
 	HazeBaseBlock* GetParentBlock() const { return ParentBlock; }
@@ -28,13 +30,25 @@ public:
 
 	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
 
-	const bool BlockIsFinish() const { return IsFinish; }
+	void SetLoopEnd(HazeBaseBlock* Block) { LoopEndBlock = Block; }
+
+	HazeBaseBlock* GetLoopEnd() const { return LoopEndBlock; }
+
+	HazeBaseBlock* GetInsertToBlock();
+
+	HazeBaseBlock* FindLoopBlock();
+
+	bool IsLoopBlock() const;
+
+	bool IsIfOrElseBlock() const;
+
+	//const bool BlockIsFinish() const { return IsFinish; }
 
 	void AddChildBlock(std::shared_ptr<HazeBaseBlock> Block);
 
 	void SetJmpOut();
 
-	void FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBlock = nullptr, bool JmpOut = true);
+	//void FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBlock = nullptr, bool JmpOut = true);
 
 	void GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount = 0);
 
@@ -57,11 +71,12 @@ private:
 	HazeCompilerFunction* ParentFunction;
 
 	HazeBaseBlock* ParentBlock;
+	HazeBaseBlock* LoopEndBlock;
 	std::list<std::shared_ptr<HazeBaseBlock>> List_ChildBlock;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Vector_Alloca;
 
 	std::vector<HAZE_STRING> Vector_IRCode;
 
-	bool IsFinish;
+	//bool IsFinish;
 };

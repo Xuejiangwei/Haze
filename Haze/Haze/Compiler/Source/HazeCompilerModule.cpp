@@ -478,7 +478,24 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, uint32& Size,
 
 		SStream << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CAST_VALUE_TYPE(Variable->GetValueType().PrimaryType) << " ";
 
-		if (!GetCurrFunction()->FindLocalVariableName(Variable, Name))
+		if (GetCurrFunction())
+		{
+			if (!GetCurrFunction()->FindLocalVariableName(Variable, Name))
+			{
+				if (!GetGlobalVariableName(Variable, Name))
+				{
+					if (Variable->IsRegister())
+					{
+						Name = Compiler->GetRegisterName(Variable);
+					}
+					else if (Variable->IsLocal() || Variable->IsGlobal() || Variable->IsRegister())
+					{
+						HAZE_LOG_ERR(HAZE_TEXT("Haze parse function call not find variable name!\n"));
+					}
+				}
+			}
+		}
+		else
 		{
 			if (!GetGlobalVariableName(Variable, Name))
 			{
@@ -619,7 +636,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Function) << " " << Param.size() << " " << Size << std::endl;
 	BB->PushIRCode(SStream.str());
 
-	return HazeCompiler::GetRegister(RET_REGISTER);
+	auto RetRegister = HazeCompiler::GetRegister(RET_REGISTER);
+	
+	auto& RetRegisterType = const_cast<HazeDefineType&>(RetRegister->GetValueType());
+	RetRegisterType = CallFunction->GetFunctionType();
+	return RetRegister;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::shared_ptr<HazeCompilerValue> PointerFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)

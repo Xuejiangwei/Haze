@@ -9,9 +9,9 @@
 #include "HazeCompilerFunction.h"
 
 HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock) 
-	: enable_shared_from_this(*this), Name(Name), ParentFunction(ParentFunction), ParentBlock(ParentBlock)
+	: enable_shared_from_this(*this), Name(Name), ParentFunction(ParentFunction), ParentBlock(ParentBlock), LoopEndBlock(nullptr)
 {
-	IsFinish = false;
+	//IsFinish = false;
 	Vector_IRCode.clear();
 	Vector_Alloca.clear();
 	PushIRCode(HAZE_STRING(BLOCK_START) + HAZE_TEXT(" ") + Name + HAZE_TEXT("\n"));
@@ -63,6 +63,72 @@ bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* Value, HAZE_S
 	return false;
 }
 
+HazeBaseBlock* HazeBaseBlock::GetInsertToBlock()
+{
+	if (IsLoopBlock())
+	{
+		return LoopEndBlock;
+	}
+	else if (IsIfOrElseBlock())
+	{
+		return ParentBlock->GetInsertToBlock();
+	}
+
+	return LoopEndBlock ? LoopEndBlock : this;
+}
+
+HazeBaseBlock* HazeBaseBlock::FindLoopBlock()
+{
+	auto Block = this;
+	while (Block)
+	{
+		if (Block->IsLoopBlock())
+		{
+			return Block;
+		}
+
+		Block = Block->GetParentBlock();
+	}
+
+	return nullptr;
+}
+
+bool HazeBaseBlock::IsLoopBlock() const
+{
+	static HAZE_STRING WhileBlockName = HAZE_TEXT("WhileBlock");
+	static HAZE_STRING ForBlockName = HAZE_TEXT("ForBlock");
+
+	if (Name.length() >= WhileBlockName.length() && Name.substr(0, WhileBlockName.length()) == WhileBlockName)
+	{
+		return true;
+	}
+
+	if (Name.length() >= ForBlockName.length() && Name.substr(0, ForBlockName.length()) == ForBlockName)
+	{
+		return true;
+	}
+
+	return false;
+}
+
+bool HazeBaseBlock::IsIfOrElseBlock() const
+{
+	static HAZE_STRING IfBlockName = HAZE_TEXT("IfBlock");
+	static HAZE_STRING ElseBlockName = HAZE_TEXT("ElseBlock");
+
+	if (Name.length() >= IfBlockName.length() && Name.substr(0, IfBlockName.length()) == IfBlockName)
+	{
+		return true;
+	}
+
+	if (Name.length() >= ElseBlockName.length() && Name.substr(0, ElseBlockName.length()) == ElseBlockName)
+	{
+		return true;
+	}
+
+	return false;
+}
+
 void HazeBaseBlock::AddChildBlock(std::shared_ptr<HazeBaseBlock> Block)
 {
 	List_ChildBlock.push_back(Block);
@@ -75,20 +141,20 @@ void HazeBaseBlock::SetJmpOut()
 	PushIRCode(HSS.str());
 }
 
-void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBlock, bool JmpOut)
-{
-	if (IsFinish)
-	{
-		return;
-	}
-
-	if (JmpOut)
-	{
-		SetJmpOut();
-	}
-
-	IsFinish = true;
-}
+//void HazeBaseBlock::FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBlock, bool JmpOut)
+//{
+//	if (IsFinish)
+//	{
+//		return;
+//	}
+//
+//	if (JmpOut)
+//	{
+//		SetJmpOut();
+//	}
+//
+//	IsFinish = true;
+//}
 
 void HazeBaseBlock::GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount)
 {

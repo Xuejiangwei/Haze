@@ -1,3 +1,5 @@
+#include "HazeLog.h"
+
 #include "HazeCompilerClass.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerFunction.h"
@@ -62,7 +64,7 @@ void HazeCompilerClass::InitThisValue()
 	//ThisPointerValue->InitPointerTo(ThisClassValue);
 }
 
-size_t HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
+uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 {
 	size_t Index = 0;
 	for (size_t i = 0; i < Vector_Data.size(); i++)
@@ -79,7 +81,9 @@ size_t HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 		
 	}
 
-	return 0;
+	HAZE_LOG_ERR(HAZE_TEXT("查找成员变量失败<%s>"), MemberName.c_str());
+
+	return uint64(-1);
 }
 
 bool HazeCompilerClass::GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)

@@ -269,6 +269,26 @@ private:
 	HAZE_STRING ModuleName;
 };
 
+//Break
+class ASTBreakExpression : public ASTBase
+{
+public:
+	ASTBreakExpression(HazeVM* VM);
+	virtual ~ASTBreakExpression() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+};
+
+//Continue
+class ASTContinueExpression : public ASTBase
+{
+public:
+	ASTContinueExpression(HazeVM* VM);
+	virtual ~ASTContinueExpression() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+};
+
 //»Ù
 class ASTIfExpression : public ASTBase
 {

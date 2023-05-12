@@ -82,7 +82,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 
 	if (!Ret && OwnerClass)
 	{
-		Ret = GetObjectMember(GetModule(), VariableName);
+		//Ret = GetObjectMember(GetModule(), VariableName);
+		Ret = std::dynamic_pointer_cast<HazeCompilerClassValue>(OwnerClass->GetThisPointerToValue())->GetMember(VariableName);
 	}
 
 	/*if (MemberName)
@@ -238,7 +239,7 @@ HAZE_STRING HazeCompilerFunction::GenForConditionBlockName()
 HAZE_STRING HazeCompilerFunction::GenForEndBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("ForBlockEnd") << ++CurrBlockCount;
+	HSS << HAZE_TEXT("ForEndBlock") << ++CurrBlockCount;
 	return HSS.str();
 }
 

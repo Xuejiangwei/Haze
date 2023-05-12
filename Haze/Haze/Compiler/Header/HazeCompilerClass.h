@@ -21,7 +21,7 @@ public:
 
 	std::shared_ptr<HazeCompilerFunction> AddFunction(std::shared_ptr<HazeCompilerFunction>& Function);
 
-	size_t GetFunctionSize() { return Vector_Function.size(); }
+	uint64 GetFunctionSize() { return Vector_Function.size(); }
 
 	void InitThisValue();
 
@@ -33,7 +33,7 @@ public:
 
 	const HAZE_STRING& GetName() { return Name; }
 
-	size_t GetMemberIndex(const HAZE_STRING& MemberName);
+	uint64 GetMemberIndex(const HAZE_STRING& MemberName);
 
 	bool GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 

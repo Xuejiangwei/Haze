@@ -134,12 +134,16 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> CreatePointerToArray(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> Index = nullptr);
 
+	std::shared_ptr<HazeCompilerValue> CreatePointerToPointerArray(std::shared_ptr<HazeCompilerValue> PointerArray, std::shared_ptr<HazeCompilerValue> Index = nullptr);
+
 	std::shared_ptr<HazeCompilerValue> CreatePointerToFunction(std::shared_ptr<HazeCompilerFunction> Function);
 
 public:
 	void CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL = false);
 
 	void CreateJmpToBlock(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL = false);
+
+	void CreateJmpOut(std::shared_ptr<HazeBaseBlock> Block);
 
 	void CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut = false, bool ElseNullJmpOut = false);
 	

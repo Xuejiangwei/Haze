@@ -8,6 +8,7 @@
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerPointerValue.h"
+#include "HazeCompilerPointerArray.h"
 #include "HazeCompilerPointerFunction.h"
 #include "HazeCompilerRefValue.h"
 #include "HazeCompilerClassValue.h"
@@ -154,6 +155,8 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 		return std::make_shared<HazeCompilerPointerValue>(Module, Var.Type, Scope, Count);
 	case HazeValueType::PointerFunction:
 		return std::make_shared<HazeCompilerPointerFunction>(Module, Var.Type, Scope, Count, Vector_Param ? *Vector_Param : std::vector<HazeDefineType>{});
+	case HazeValueType::PointerArray:
+		return std::make_shared<HazeCompilerPointerArray>(Module, Var.Type, Scope, Count, ArraySize);
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
 		if (RefValue)
@@ -427,14 +430,25 @@ std::shared_ptr<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* Mo
 	auto Compiler = Module->GetCompiler();
 	auto ArrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(ElementValue);
 	auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(ArrayElementValue->GetArray()->GetShared());
-	
-	if (ArrayValue)
+	auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerArray>(ArrayElementValue->GetArray()->GetShared());
+
+	if (ArrayValue || PointerValue)
 	{
 		auto TempRegister = Compiler->GetTempRegister();
-		auto ArrayPointer = Compiler->CreatePointerToArray(ArrayValue);
+		std::shared_ptr<HazeCompilerValue> ArrayPointer;
+		if (ArrayValue)
+		{
+			ArrayPointer = Compiler->CreatePointerToArray(ArrayValue);
+		}
+		else
+		{
+			ArrayPointer = Compiler->CreatePointerToPointerArray(PointerValue);
+		}
+
 		for (size_t i = 0; i < ArrayElementValue->GetIndex().size(); i++)
 		{
-			uint32 Size = i == ArrayElementValue->GetIndex().size() - 1 ? ArrayElementValue->GetIndex()[i]->GetValue().Value.Int : ArrayValue->GetSizeByLevel((uint32)i);
+			uint32 Size = i == ArrayElementValue->GetIndex().size() - 1 ? ArrayElementValue->GetIndex()[i]->GetValue().Value.Int :
+				(ArrayValue ? ArrayValue->GetSizeByLevel((uint32)i) : PointerValue->GetSizeByLevel((uint32)i));
 			std::shared_ptr<HazeCompilerValue> SizeValue = nullptr;
 
 			if (ArrayElementValue->GetIndex()[i]->IsConstant())

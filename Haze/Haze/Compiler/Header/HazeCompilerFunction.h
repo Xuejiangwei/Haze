@@ -26,6 +26,8 @@ public:
 
 	const HAZE_STRING& GetName() const { return Name; }
 	
+	const HazeDefineType& GetFunctionType() const { return Type; }
+
 	HazeCompilerModule* GetModule() const { return Module; }
 
 	HazeCompilerClass* GetClass() const { return OwnerClass; }

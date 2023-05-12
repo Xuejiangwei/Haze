@@ -380,6 +380,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 	{
 		CreateMovToPV(Alloca, Value->IsRef() ? CreateMovPV(GetTempRegister(), Value) : Value);
 	}
+	else if (Value->IsArrayElement())
+	{
+		GetArrayElementToValue(GetCurrModule().get(), Value, Alloca);
+	}
 	else
 	{
 		GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOV);
@@ -600,6 +604,22 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArray(std::share
 	return Ret;
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToPointerArray(std::shared_ptr<HazeCompilerValue> PointerArray, std::shared_ptr<HazeCompilerValue> Index)
+{
+	auto Pointer = GetTempRegister();
+
+	auto& Type = const_cast<HazeDefineType&>(Pointer->GetValueType());
+	Type.PrimaryType = HazeValueType::PointerBase;
+
+	auto Ret = CreateMov(Pointer, PointerArray);
+	if (Index)
+	{
+		CreateAdd(Ret, Index);
+	}
+
+	return Ret;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(std::shared_ptr<HazeCompilerFunction> Function)
 {
 	/*HAZE_STRING_STREAM SStream;
@@ -642,6 +662,11 @@ void HazeCompiler::CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, 
 void HazeCompiler::CreateJmpToBlock(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
 {
 	GetCurrModule()->GenIRCode_JmpTo(Block, IsJmpL);
+}
+
+void HazeCompiler::CreateJmpOut(std::shared_ptr<HazeBaseBlock> Block)
+{
+	Block->SetJmpOut();
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)

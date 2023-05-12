@@ -104,8 +104,8 @@
 #define TOKEN_FOR						HAZE_TEXT("循环")
 #define TOKEN_FOR_STEP					HAZE_TEXT("步进")
 
-#define TOKEN_BREAK						HAZE_TEXT("打断")
-#define TOKEN_CONTINUE					HAZE_TEXT("继续")
+#define TOKEN_BREAK						HAZE_TEXT("跳出")
+#define TOKEN_CONTINUE					HAZE_TEXT("跳过")
 #define TOKEN_RETURN					HAZE_TEXT("返")
 
 #define TOKEN_WHILE						HAZE_TEXT("当")
@@ -654,6 +654,10 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseWhileExpression();
 	case HazeToken::For:
 		return ParseForExpression();
+	case HazeToken::Break:
+		return ParseBreakExpression();
+	case HazeToken::Continue:
+		return ParseContinueExpression();
 	case HazeToken::Return:
 		return ParseReturn();
 	case HazeToken::Inc:
@@ -828,60 +832,87 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 	}
 	else if (CurrToken == HazeToken::LeftParentheses)
 	{
-		//函数指针
-		if (ExpectNextTokenIs(HazeToken::Mul) && ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Parse function pointer need a correct name!\n")))
+		//函数指针或数组指针
+		if (ExpectNextTokenIs(HazeToken::Mul) && ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("解析错误：函数指针或者数组指针需要一个正确的名称!\n")))
 		{
 			std::vector<HazeDefineType> Vector_ParamType;
 			Vector_ParamType.push_back(DefineVariable.Type);
 
-			DefineVariable.Type.PrimaryType = HazeValueType::PointerFunction;
 			DefineVariable.Name = CurrLexeme;
 			
-			if (ExpectNextTokenIs(HazeToken::RightParentheses) && ExpectNextTokenIs(HazeToken::LeftParentheses))
+			if (ExpectNextTokenIs(HazeToken::RightParentheses))
 			{
-				GetNextToken();
-				while (true)
+				if (ExpectNextTokenIs(HazeToken::LeftParentheses))
 				{
-					HazeDefineType Type;
-					Type.PrimaryType = GetValueTypeByToken(CurrToken);
-					if (CurrToken == HazeToken::PointerBase)
+					DefineVariable.Type.PrimaryType = HazeValueType::PointerFunction;
+					GetNextToken();
+					while (true)
 					{
-						Type.SecondaryType = GetPointerBaseType(CurrLexeme);
-					}
-					else if (CurrToken == HazeToken::PointerClass)
-					{
-						Type.CustomName = GetPointerClassType(CurrLexeme);
-					}
-					else if (CurrToken == HazeToken::Class)
-					{
-						Type.CustomName = CurrLexeme;
+						HazeDefineType Type;
+						Type.PrimaryType = GetValueTypeByToken(CurrToken);
+						if (CurrToken == HazeToken::PointerBase)
+						{
+							Type.SecondaryType = GetPointerBaseType(CurrLexeme);
+						}
+						else if (CurrToken == HazeToken::PointerClass)
+						{
+							Type.CustomName = GetPointerClassType(CurrLexeme);
+						}
+						else if (CurrToken == HazeToken::Class)
+						{
+							Type.CustomName = CurrLexeme;
+						}
+
+						Vector_ParamType.push_back(Type);
+
+						if (ExpectNextTokenIs(HazeToken::RightParentheses))
+						{
+							break;
+						}
+						else if (CurrToken == HazeToken::Comma)
+						{
+							GetNextToken();
+						}
 					}
 
-					Vector_ParamType.push_back(Type);
-				
-					if (ExpectNextTokenIs(HazeToken::RightParentheses))
-					{
-						break;
-					}
-					else if (CurrToken == HazeToken::Comma)
+					if (ExpectNextTokenIs(HazeToken::Assign))
 					{
 						GetNextToken();
+
+						std::unique_ptr<ASTBase> Expression = ParseExpression();
+
+						return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, std::move(Expression), std::move(ArraySize), PointerLevel);
 					}
 				}
-
-				if (ExpectNextTokenIs(HazeToken::Assign))
+				else if (CurrToken == HazeToken::Array)
 				{
+					DefineVariable.Type.PrimaryType = HazeValueType::PointerArray;
+
 					GetNextToken();
+					while (true)
+					{
+						ArraySize.push_back(ParseExpression());
+						
+						if (!ExpectNextTokenIs(HazeToken::Array))
+						{
+							break;
+						}
+					}
 
-					std::unique_ptr<ASTBase> Expression = ParseExpression();
+					if (CurrToken == HazeToken::Assign)
+					{
+						GetNextToken();
 
-					return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, std::move(Expression), std::move(ArraySize), PointerLevel);
+						std::unique_ptr<ASTBase> Expression = ParseExpression();
+
+						return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, std::move(Expression), std::move(ArraySize), PointerLevel);
+					}
 				}
 			}
 		}
 	}
 
-	return nullptr;
+	return std::make_unique<ASTVariableDefine>(VM, StackSectionSignal.top(), DefineVariable, nullptr, std::move(ArraySize), PointerLevel);;
 }
 
 std::unique_ptr<ASTBase> Parse::ParseStringText()
@@ -998,6 +1029,18 @@ std::unique_ptr<ASTBase> Parse::ParseWhileExpression()
 	}
 
 	return nullptr;
+}
+
+std::unique_ptr<ASTBase> Parse::ParseBreakExpression()
+{
+	GetNextToken();
+	return std::make_unique<ASTBreakExpression>(VM);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseContinueExpression()
+{
+	GetNextToken();
+	return std::make_unique<ASTContinueExpression>(VM);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseReturn()
@@ -1175,10 +1218,9 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunctionSection()
 	{
 		std::vector<std::unique_ptr<ASTFunction>> Functions;
 
-		//GetNextToken();
+		GetNextToken();
 		while (CurrToken != HazeToken::RightBrace)
 		{
-			GetNextToken();
 			Functions.push_back(ParseFunction());
 		}
 
@@ -1455,7 +1497,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 			}
 
 			//获得函数名
-			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse function expression expect correct function name \n")))
+			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("解析错误: \n")))
 			{
 				HAZE_STRING FunctionName = CurrLexeme;
 				if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
