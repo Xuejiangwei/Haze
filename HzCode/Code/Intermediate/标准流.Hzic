@@ -6,11 +6,21 @@ StringTable
 ClassTable
 0
 FunctionTable
-1
+2
 Function 打印 0
 Param 甲 10 10
-Param  19
-Variable $2 19 -4 0
+Param 多参数 19
+Variable 多参数$2 19 -4 0
+Variable 甲$1 10 10 -12 8
+Start
+
+Block Entry
+End
+
+Function 输入 0
+Param 甲 10 10
+Param 多参数 19
+Variable 多参数$2 19 -4 0
 Variable 甲$1 10 10 -12 8
 Start
 

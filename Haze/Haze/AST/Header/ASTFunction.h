@@ -15,6 +15,8 @@ public:
 
 	HazeValue* CodeGen();
 
+	void RegisterFunction();
+
 private:
 	HazeVM* VM;
 	HazeSectionSignal Section;

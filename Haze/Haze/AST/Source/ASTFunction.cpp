@@ -69,6 +69,24 @@ HazeValue* ASTFunction::CodeGen()
 	return nullptr;
 }
 
+void ASTFunction::RegisterFunction()
+{
+	auto& Compiler = VM->GetCompiler();
+	auto& Module = Compiler->GetCurrModule();
+
+	std::shared_ptr<HazeCompilerClass> Class = nullptr;
+
+	if (Section == HazeSectionSignal::Global)
+	{
+		Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
+	}
+	else if (Section == HazeSectionSignal::Class)
+	{
+		Class = Module->FindClass(Vector_FunctionParam[0].Type.CustomName);
+		Module->CreateFunction(Class, FunctionName, FunctionType, Vector_FunctionParam);
+	}
+}
+
 ASTFunctionSection::ASTFunctionSection(HazeVM* VM,std::vector<std::unique_ptr<ASTFunction>>& Functions)
 	: VM(VM), Functions(std::move(Functions))
 {
@@ -80,6 +98,11 @@ ASTFunctionSection::~ASTFunctionSection()
 
 void ASTFunctionSection::CodeGen()
 {
+	for (auto& it : Functions)
+	{
+		it->RegisterFunction();
+	}
+
 	for (auto& it : Functions)
 	{
 		it->CodeGen();

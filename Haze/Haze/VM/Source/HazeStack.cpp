@@ -97,8 +97,6 @@ void HazeStack::PreMainFunction()
 	memcpy(&Stack_Main[ESP], &FaultPC, HAZE_ADDRESS_SIZE);
 	ESP += HAZE_ADDRESS_SIZE;
 	EBP = ESP;
-
-	Stack_EBP.push_back(ESP - HAZE_ADDRESS_SIZE);
 }
 
 void HazeStack::PushMainFuntion()
@@ -156,10 +154,9 @@ void HazeStack::InitStackRegister()
 
 void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 {
+	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize)));
+	
 	EBP = ESP;
-	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize));
-	Stack_EBP.push_back(ESP - (HAZE_ADDRESS_SIZE + ParamSize));
-
 	if (Info->Vector_Variable.size() > Info->Vector_Param.size())
 	{
 		ESP += Info->Vector_Variable.back().Offset + GetSizeByType(Info->Vector_Variable.back().Variable.Type, VM);
@@ -172,13 +169,8 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 void HazeStack::OnRet()
 {
 	memcpy(&PC, &(Stack_Main[EBP - HAZE_ADDRESS_SIZE]), HAZE_ADDRESS_SIZE);
-
-	//uint32 TempEBP = EBP;
-	ESP = Stack_EBP.back();
-	Stack_EBP.pop_back();
-	EBP = Stack_EBP.back();
-	//ESP = TempEBP - (HAZE_ADDRESS_SIZE + Stack_Frame.back().FunctionParamSize);
-
+	EBP = Stack_Frame.back().EBP;
+	ESP = Stack_Frame.back().ESP;
 	Stack_Frame.pop_back();
 }
 

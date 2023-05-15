@@ -44,6 +44,10 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetConstantValueInt(int V);
 
+	std::shared_ptr<HazeCompilerValue> GenConstantValueBool(bool IsTrue);
+
+	bool IsConstantValueBoolTrue(std::shared_ptr<HazeCompilerValue> V);
+
 public:
 	static std::shared_ptr<HazeCompilerValue> GetNewRegister(HazeCompilerModule* Module, const HazeDefineType& Data);
 

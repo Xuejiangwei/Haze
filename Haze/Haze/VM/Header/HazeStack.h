@@ -32,12 +32,13 @@ public:
 		const FunctionData* FunctionInfo;
 		std::vector<int> Vector_LoopStack;
 		uint32 FunctionParamSize;
+		uint32 EBP;
+		uint32 ESP;
 
-		HazeStackFrame(const FunctionData* Info, uint32 ParamSize)
+		HazeStackFrame(const FunctionData* Info, uint32 ParamSize, uint32 EBP, uint32 ESP) : FunctionParamSize(ParamSize), EBP(EBP), ESP(ESP)
 		{
 			FunctionInfo = Info;
 			Vector_LoopStack.clear();
-			FunctionParamSize = ParamSize;
 		}
 	};
 
@@ -74,7 +75,6 @@ private:
 	HazeVM* VM;
 
 	std::vector<char> Stack_Main;
-	std::vector<uint32> Stack_EBP;
 	std::vector<HazeStackFrame> Stack_Frame;
 
 	int PC;

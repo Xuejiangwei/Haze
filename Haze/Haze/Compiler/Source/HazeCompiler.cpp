@@ -332,6 +332,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetConstantValueInt(int V)
 	return GenConstantValue(HazeValueType::Int, Value);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValueBool(bool IsTrue)
+{
+	HazeValue Value;
+	Value.Value.Bool = IsTrue;
+
+	return GenConstantValue(HazeValueType::Bool, Value);
+}
+
+bool HazeCompiler::IsConstantValueBoolTrue(std::shared_ptr<HazeCompilerValue> V)
+{
+	return V == GenConstantValueBool(true);
+}
+
 void HazeCompiler::SetInsertBlock(std::shared_ptr<HazeBaseBlock> BB)
 {
 	InsertBaseBlock = BB;
@@ -394,7 +407,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovToPV(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value)
 {
-	if (Alloca->IsRef() || Alloca->IsPointerPointer())
+	if (Alloca->IsRef() || Alloca->IsPointer())
 	{
 		return GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOVTOPV);
 	}

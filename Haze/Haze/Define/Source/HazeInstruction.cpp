@@ -545,7 +545,8 @@ public:
 		if (Operator.size() == 2)
 		{
 			HazeRegister* CmpRegister = Stack->GetVirtualRegister(CMP_REGISTER);
-			CompareValueByType(Operator[0].Variable.Type.PrimaryType, CmpRegister, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]));
+			CompareValueByType(GetStrongerType(Operator[0].Variable.Type.PrimaryType, Operator[1].Variable.Type.PrimaryType),
+				CmpRegister, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]));
 		}
 	}
 
@@ -696,8 +697,8 @@ private:
 #endif
 
 		void* Ret = nullptr;
-		static HazeVariable ConstantValue;
-		static uint64 TempAddress;
+		thread_local static HazeVariable ConstantValue;
+		thread_local static uint64 TempAddress;
 
 		if (Operator.Scope == HazeDataDesc::Constant)
 		{

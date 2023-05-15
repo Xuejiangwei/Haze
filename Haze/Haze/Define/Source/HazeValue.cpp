@@ -25,6 +25,7 @@ uint32 GetSizeByHazeType(HazeValueType Type)
     case HazeValueType::PointerBase:
     case HazeValueType::PointerClass:
     case HazeValueType::PointerFunction:
+    case HazeValueType::PointerArray:
     case HazeValueType::PointerPointer:
     case HazeValueType::ReferenceBase:
     case HazeValueType::ReferenceClass:
@@ -72,7 +73,9 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
     {
         { HazeValueType::Int, { HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
         { HazeValueType::UnsignedInt, { HazeValueType::UnsignedLong } },
-        { HazeValueType::Float, { HazeValueType::Double} }
+        { HazeValueType::Float, { HazeValueType::Double} },
+        { HazeValueType::Bool, { HazeValueType::Char, HazeValueType::Int, HazeValueType::UnsignedInt, HazeValueType::Long, HazeValueType::UnsignedLong } },
+        { HazeValueType::Char, { HazeValueType::Int, HazeValueType::UnsignedInt, HazeValueType::Long, HazeValueType::UnsignedLong } }
     };
 
     if (Type1 == Type2)
@@ -142,6 +145,7 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeVal
     case HazeValueType::Double:
         WSS >> Value.Value.Double;
         break;
+    case HazeValueType::Bool:
     case HazeValueType::Int:
         WSS >> Value.Value.Int;
         break;

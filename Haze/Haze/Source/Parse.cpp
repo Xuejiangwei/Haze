@@ -929,6 +929,7 @@ std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 	HazeValue Value;
 	Value.Value.Bool = CurrLexeme == TOKEN_TRUE;
 
+	GetNextToken();
 	return std::make_unique<ASTBool>(VM, Value);
 }
 
@@ -1142,6 +1143,14 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 	GetNextToken();
 	
 	auto Expression = ParseExpression(MapBinOp.find(HazeToken::PointerValue)->second);
+
+	if (CurrToken == HazeToken::Assign)
+	{
+		GetNextToken();
+		auto AssignExpression = ParseExpression();
+		return std::make_unique<ASTPointerValue>(VM, Expression, Level, std::move(AssignExpression));
+	}
+
 	return std::make_unique<ASTPointerValue>(VM, Expression, Level);
 }
 

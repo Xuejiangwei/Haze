@@ -145,8 +145,13 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, co
 	case HazeValueType::Double:
 	case HazeValueType::UnsignedInt:
 	case HazeValueType::UnsignedLong:
-	case HazeValueType::MultiVariable:
 		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope, Count, DefaultValue);
+	case HazeValueType::MultiVariable:
+	{
+		HazeDefineVariable& MultiVar = const_cast<HazeDefineVariable&>(Var);
+		MultiVar.Name = HAZE_TEXT("¶à²ÎÊý");
+		return std::make_shared<HazeCompilerValue>(Module, Var.Type, Scope, Count, DefaultValue);
+	}
 	case HazeValueType::Array:
 		return std::make_shared<HazeCompilerArrayValue>(Module, Var.Type, Scope, Count, ArraySize);
 	case HazeValueType::PointerBase:

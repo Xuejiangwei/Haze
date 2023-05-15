@@ -155,13 +155,14 @@ private:
 class ASTPointerValue : public ASTBase
 {
 public:
-	ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, int Level);
+	ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, int Level, std::unique_ptr<ASTBase> AssignExpression = nullptr);
 	virtual ~ASTPointerValue() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
 	std::unique_ptr<ASTBase> Expression;
+	std::unique_ptr<ASTBase> AssignExpression;
 	int Level;
 };
 

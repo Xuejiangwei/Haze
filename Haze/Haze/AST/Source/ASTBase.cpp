@@ -325,7 +325,8 @@ std::shared_ptr<HazeCompilerValue> ASTGetAddress::CodeGen()
 	return Ret;
 }
 
-ASTPointerValue::ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, int Level) : ASTBase(VM), Expression(std::move(Expression)), Level(Level)
+ASTPointerValue::ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, int Level, std::unique_ptr<ASTBase> AssignExpression) 
+	: ASTBase(VM), Expression(std::move(Expression)), Level(Level), AssignExpression(std::move(AssignExpression))
 {
 }
 
@@ -340,6 +341,11 @@ std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 
 	if (PointerValue)
 	{
+		if (AssignExpression)
+		{
+			return Compiler->CreateMovToPV(PointerValue, AssignExpression->CodeGen());
+		}
+
 		return Compiler->CreateMovPV(Compiler->GetTempRegister(), PointerValue);
 	}
 	else
@@ -618,7 +624,6 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 {
 	auto& Compiler = VM->GetCompiler();
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
-	auto ConditionExp = static_cast<ASTBinaryExpression*>(Condition.get());
 
 	auto ParentBlock = Compiler->GetInsertBlock()->GetInsertToBlock()->GetShared();
 	auto WhileBlock = HazeBaseBlock::CreateBaseBlock(Function->GenWhileBlockName(), Function, ParentBlock);
@@ -627,9 +632,19 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 	Compiler->CreateJmpFromBlock(ParentBlock, WhileBlock, true);
 
 	Compiler->SetInsertBlock(WhileBlock);
-	ConditionExp->CodeGen();
 
-	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
+	auto ConditionExp = static_cast<ASTBinaryExpression*>(Condition.get());
+	if (ConditionExp->OperatorToken != HazeToken::None)
+	{
+		Condition->CodeGen();
+		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
+	}
+	else
+	{
+		Compiler->CreateIntCmp(Compiler->CreateBitXor(Compiler->CreateMov(Compiler->GetTempRegister(), Compiler->GetConstantValueInt(1)), Compiler->GetConstantValueInt(0)),
+			Compiler->GetConstantValueInt(1));
+		Compiler->CreateCompareJmp(Compiler->IsConstantValueBoolTrue(Condition->CodeGen()) ? HazeCmpType::GreaterEqual : HazeCmpType::Less, nullptr, nullptr, false, true);
+	}
 
 	MultiExpression->CodeGen();
 

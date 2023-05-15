@@ -110,6 +110,8 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(const H
 
 		return HashMap_Function[Name];
 	}
+
+	CurrFunction = Name;
 	return It->second;
 }
 
