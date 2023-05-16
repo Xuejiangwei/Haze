@@ -38,6 +38,8 @@ public:
 
 	void GenI_Code(HAZE_OFSTREAM& OFStream);
 
+	HAZE_STRING GenDafaultBlockName();
+	
 	HAZE_STRING GenIfBlockName();
 
 	HAZE_STRING GenElseBlockName();

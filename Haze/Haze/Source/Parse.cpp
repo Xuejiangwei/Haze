@@ -12,6 +12,7 @@
 #include "HazeCompiler.h"
 
 #include "HazeLog.h"
+#include <cstdarg>
 
 #define HAZE_SINGLE_COMMENT				HAZE_TEXT("//")
 #define HAZE_MULTI_COMMENT_START		HAZE_TEXT("/*")
@@ -97,6 +98,9 @@
 
 #define TOKEN_LEFT_BRACE				HAZE_TEXT("{")
 #define TOKEN_RIGHT_BRACE				HAZE_TEXT("}")
+
+#define TOKEN_QUESTION_MARK				HAZE_TEXT("?")
+#define TOKEN_QUESTIOB_COLON			HAZE_TEXT(":")
 
 #define TOKEN_IF						HAZE_TEXT("若")
 #define TOKEN_ELSE						HAZE_TEXT("否则")
@@ -227,6 +231,9 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_MULTI_VARIABLE, HazeToken::MultiVariable},
 
 	{TOKEN_NEW, HazeToken::New},
+
+	{TOKEN_QUESTION_MARK, HazeToken::ThreeOperatorStart},
+	{TOKEN_QUESTIOB_COLON, HazeToken::ThreeOperatorBranch},
 };
 
 const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token()
@@ -234,7 +241,7 @@ const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token()
 	return HashMap_Token;
 }
 
-static std::unordered_map<HazeToken, int> MapBinOp =
+static std::unordered_map<HazeToken, int> HashMap_OperatorPriority =
 {
 	{ HazeToken::Assign, 100 },
 	{ HazeToken::AddAssign, 100 },
@@ -248,6 +255,7 @@ static std::unordered_map<HazeToken, int> MapBinOp =
 	{ HazeToken::ShlAssign, 100 },
 	{ HazeToken::ShrAssign, 100 },
 
+	{ HazeToken::ThreeOperatorStart, 120 },
 
 	{ HazeToken::Or, 140 },
 	{ HazeToken::And, 150 },
@@ -558,8 +566,8 @@ std::unique_ptr<ASTBase> Parse::ParseExpression(int Prec)
 
 std::unique_ptr<ASTBase> Parse::ParseUnaryExpression(bool HasLeft)
 {
-	auto it = MapBinOp.find(CurrToken);
-	if (it == MapBinOp.end() || !HasLeft)
+	auto it = HashMap_OperatorPriority.find(CurrToken);
+	if (it == HashMap_OperatorPriority.end() || !HasLeft)
 	{
 		return ParsePrimary();
 	}
@@ -570,8 +578,8 @@ std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::uniq
 {
 	while (true)
 	{
-		auto it = MapBinOp.find(CurrToken);
-		if (it == MapBinOp.end())
+		auto it = HashMap_OperatorPriority.find(CurrToken);
+		if (it == HashMap_OperatorPriority.end())
 		{
 			return Left;
 		}
@@ -582,17 +590,22 @@ std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::uniq
 		}
 
 		HazeToken OpToken = CurrToken;
-
-		GetNextToken();
-
-		std::unique_ptr<ASTBase> Right = ParseUnaryExpression(true);
-		if (!Right)
+		std::unique_ptr<ASTBase> Right = nullptr;
+		if (CurrToken == HazeToken::ThreeOperatorStart)
 		{
-			return nullptr;
+		}
+		else
+		{
+			GetNextToken();
+			Right = ParseUnaryExpression(true);
+			if (!Right)
+			{
+				return nullptr;
+			}
 		}
 
-		auto NextPrec = MapBinOp.find(CurrToken);
-		if (NextPrec == MapBinOp.end())
+		auto NextPrec = HashMap_OperatorPriority.find(CurrToken);
+		if (NextPrec == HashMap_OperatorPriority.end())
 		{
 			return std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
 		}
@@ -611,9 +624,15 @@ std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::uniq
 				return std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
 			}*/
 		}
-
-		// Merge LHS/RHS.
-		Left = std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
+		else if (NextPrec == HashMap_OperatorPriority.find(HazeToken::ThreeOperatorStart))
+		{
+			Left = ParseThreeOperator(Right ? std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right) : std::move(Left));
+		}
+		else
+		{
+			// Merge LHS/RHS.
+			Left = std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
+		}
 	}
 }
 
@@ -670,7 +689,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseLeftParentheses();
 	case HazeToken::LeftBrace:
 		return ParseLeftBrace();
-	case HazeToken::Mul:					//pointer value
+	case HazeToken::Mul:	//pointer value
 		return ParsePointerValue();
 	case HazeToken::BitAnd:
 		return ParseGetAddress();
@@ -946,13 +965,13 @@ std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
 {
-	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：若 表达式期望捕捉 (")))
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：若 表达式期望捕捉 (\n")))
 	{
 		GetNextToken();
 		auto ConditionExpression = ParseExpression();
 
 		std::unique_ptr<ASTBase> IfMultiExpression = nullptr;
-		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：若 执行表达式期望捕捉 {")))
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：若 执行表达式期望捕捉 { %s\n")))
 		{
 			IfMultiExpression = ParseMultiExpression();
 			GetNextToken();
@@ -1119,6 +1138,31 @@ std::unique_ptr<ASTBase> Parse::ParseDec()
 	return std::make_unique<ASTDec>(VM, Expression, IsPre);
 }
 
+std::unique_ptr<ASTBase> Parse::ParseThreeOperator(std::unique_ptr<ASTBase> Condition)
+{
+	auto Iter = HashMap_OperatorPriority.find(HazeToken::ThreeOperatorStart);
+	if (Iter != HashMap_OperatorPriority.end())
+	{
+		auto ConditionExpression = std::move(Condition);
+
+		GetNextToken();
+		auto LeftExpression = ParseExpression(Iter->second);
+
+		if (CurrToken != HazeToken::ThreeOperatorBranch)
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("三目表达式 需要 : 符号!\n"));
+			return nullptr;
+		}
+
+		GetNextToken();
+		auto RightExpression = ParseExpression(Iter->second);
+	
+		return std::make_unique<ASTThreeExpression>(VM, ConditionExpression, LeftExpression, RightExpression);
+	}
+
+	return nullptr;
+}
+
 std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 {
 	GetNextToken();
@@ -1142,7 +1186,7 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 
 	GetNextToken();
 	
-	auto Expression = ParseExpression(MapBinOp.find(HazeToken::PointerValue)->second);
+	auto Expression = ParseExpression(HashMap_OperatorPriority.find(HazeToken::PointerValue)->second);
 
 	if (CurrToken == HazeToken::Assign)
 	{
@@ -1165,7 +1209,7 @@ std::unique_ptr<ASTBase> Parse::ParseNeg()
 std::unique_ptr<ASTBase> Parse::ParseGetAddress()
 {
 	GetNextToken();
-	auto Expression = ParseExpression(MapBinOp.find(HazeToken::GetAddress)->second);
+	auto Expression = ParseExpression(HashMap_OperatorPriority.find(HazeToken::GetAddress)->second);
 
 	return std::make_unique<ASTGetAddress>(VM, Expression);
 }
@@ -1825,14 +1869,17 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 	return nullptr;
 }
 
-bool Parse::ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo)
+bool Parse::ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo, ...)
 {
 	HazeToken NextToken = GetNextToken();
 	if (Token != NextToken)
 	{
 		if (ErrorInfo)
 		{
-			HAZE_LOG_ERR(ErrorInfo);
+			va_list args;
+			va_start(args, ErrorInfo);
+			HAZE_LOG_ERR(ErrorInfo, args);
+			va_end(args);
 		}
 		return false;
 	}

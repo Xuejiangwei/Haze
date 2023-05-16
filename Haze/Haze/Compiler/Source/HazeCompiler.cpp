@@ -345,6 +345,11 @@ bool HazeCompiler::IsConstantValueBoolTrue(std::shared_ptr<HazeCompilerValue> V)
 	return V == GenConstantValueBool(true);
 }
 
+bool HazeCompiler::IsConstantValueBoolFalse(std::shared_ptr<HazeCompilerValue> V)
+{
+	return V == GenConstantValueBool(false);
+}
+
 void HazeCompiler::SetInsertBlock(std::shared_ptr<HazeBaseBlock> BB)
 {
 	InsertBaseBlock = BB;
@@ -688,7 +693,26 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateIntCmp(std::shared_ptr<Ha
 	return GetRegister(CMP_REGISTER);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBoolCmp(std::shared_ptr<HazeCompilerValue> Value)
+{
+	if (IsConstantValueBoolTrue(Value))
+	{
+		CreateIntCmp(CreateBitXor(CreateMov(GetTempRegister(), GenConstantValueBool(true)), GenConstantValueBool(false)), GenConstantValueBool(true));
+		return GenConstantValueBool(true);
+	}
+	else if (IsConstantValueBoolFalse(Value))
+	{
+		CreateIntCmp(CreateBitXor(CreateMov(GetTempRegister(), GenConstantValueBool(true)), GenConstantValueBool(false)), GenConstantValueBool(false));
+		return GenConstantValueBool(false);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 void HazeCompiler::CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut, bool ElseNullJmpOut)
 {
 	GetCurrModule()->GenIRCode_Cmp(CmpType, IfJmpBlock, ElseJmpBlock, IfNullJmpOut, ElseNullJmpOut);
 }
+

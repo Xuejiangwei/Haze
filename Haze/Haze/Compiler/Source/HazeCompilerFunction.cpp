@@ -101,7 +101,7 @@ void HazeCompilerFunction::FunctionFinish()
 	{
 		HAZE_STRING_STREAM SStream;
 		SStream << GetInstructionString(InstructionOpCode::RET) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Void) << std::endl;
-		EntryBlock->PushIRCode(SStream.str());
+		Module->GetCompiler()->GetInsertBlock()->PushIRCode(SStream.str());
 	}
 }
 
@@ -199,6 +199,13 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 
 	OFStream << GetFunctionEndHeader() << std::endl << std::endl;
 #endif // HAZE_ASS_ENABLE
+}
+
+HAZE_STRING HazeCompilerFunction::GenDafaultBlockName()
+{
+	HAZE_STRING_STREAM HSS;
+	HSS << HAZE_TEXT("DefaultBlock") << ++CurrBlockCount;
+	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenIfBlockName()

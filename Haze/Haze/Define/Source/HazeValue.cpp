@@ -199,6 +199,12 @@ void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
 }
 
 template<>
+void CalculateValue(InstructionOpCode TypeCode, bool& Source, bool& Target)
+{
+    HAZE_LOG_ERR("Calculate error: bool value is not support operator %s!\n", WString2String(GetInstructionString(TypeCode)).c_str());
+}
+
+template<>
 void CalculateValue(InstructionOpCode TypeCode, int& Source, int& Target)
 {
     switch (TypeCode)
@@ -395,6 +401,13 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
 {
     switch (Type)
     {
+    case HazeValueType::Bool:
+    {
+        VARIABLE_DEFINE_INIT(bool, Source, Target);
+        VARIABLE_CALCULATE(bool, TypeCode);
+        ASSIGN(bool);
+    }
+        break;
     case HazeValueType::Int:
     {
         VARIABLE_DEFINE_INIT(int, Source, Target);
@@ -446,6 +459,13 @@ void CompareValueByType(HazeValueType Type, HazeRegister* Register, const void* 
 {
     switch (Type)
     {
+    case HazeValueType::Bool:
+    {
+        VARIABLE_DEFINE_INIT(bool, Source, Target);
+        VARIABLE_COMPARE();
+        COMPARE_ASSIGN();
+    }
+    break;
     case HazeValueType::Int:
     {
         VARIABLE_DEFINE_INIT(int, Source, Target);

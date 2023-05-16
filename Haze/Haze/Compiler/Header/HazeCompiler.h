@@ -48,6 +48,8 @@ public:
 
 	bool IsConstantValueBoolTrue(std::shared_ptr<HazeCompilerValue> V);
 
+	bool IsConstantValueBoolFalse(std::shared_ptr<HazeCompilerValue> V);
+
 public:
 	static std::shared_ptr<HazeCompilerValue> GetNewRegister(HazeCompilerModule* Module, const HazeDefineType& Data);
 
@@ -150,8 +152,10 @@ public:
 	void CreateJmpOut(std::shared_ptr<HazeBaseBlock> Block);
 
 	void CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut = false, bool ElseNullJmpOut = false);
-	
+
 	std::shared_ptr<HazeCompilerValue> CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right);
+
+	std::shared_ptr<HazeCompilerValue> CreateBoolCmp(std::shared_ptr<HazeCompilerValue> Value);
 
 private:
 	void GenModuleCodeFile();

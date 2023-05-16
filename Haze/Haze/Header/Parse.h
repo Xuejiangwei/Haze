@@ -89,6 +89,8 @@ private:
 
 	std::unique_ptr<ASTBase> ParseDec();
 
+	std::unique_ptr<ASTBase> ParseThreeOperator(std::unique_ptr<ASTBase> Condition);
+
 	std::unique_ptr<ASTBase> ParseMultiExpression();
 
 	std::unique_ptr<ASTFunctionSection> ParseFunctionSection();
@@ -112,7 +114,7 @@ private:
 private:
 	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* ClassName = nullptr);
 
-	bool ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
+	bool ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr, ...);
 
 	bool TokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
 

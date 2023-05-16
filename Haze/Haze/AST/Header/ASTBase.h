@@ -22,6 +22,8 @@ public:
 
 	virtual const HAZE_CHAR* GetName() { return HAZE_TEXT(""); }
 
+	virtual bool IsBlock() const { return false; }
+
 protected:
 	HazeVM* VM;
 	HazeValue Value;
@@ -227,6 +229,7 @@ class ASTBinaryExpression : public ASTBase
 	friend class ASTIfExpression;
 	friend class ASTWhileExpression;
 	friend class ASTForExpression;
+	friend class ASTThreeExpression;
 public:
 	ASTBinaryExpression(HazeVM* VM, HazeSectionSignal Section, HazeToken OperatorToken, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST);
 	virtual ~ASTBinaryExpression() override;
@@ -238,6 +241,27 @@ private:
 	HazeSectionSignal SectionSignal;
 	HazeToken OperatorToken;
 
+	std::unique_ptr<ASTBase> LeftAST;
+	std::unique_ptr<ASTBase> RightAST;
+
+};
+
+//三目表达式
+class ASTThreeExpression : public ASTBase
+{
+	friend class ASTIfExpression;
+	friend class ASTWhileExpression;
+	friend class ASTForExpression;
+public:
+	ASTThreeExpression(HazeVM* VM, std::unique_ptr<ASTBase>& ConditionAST, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST);
+	virtual ~ASTThreeExpression() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+	virtual bool IsBlock() const override { return true; }
+
+private:
+	std::unique_ptr<ASTBase> ConditionAST;
 	std::unique_ptr<ASTBase> LeftAST;
 	std::unique_ptr<ASTBase> RightAST;
 
@@ -298,6 +322,8 @@ public:
 	virtual ~ASTIfExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+	virtual bool IsBlock() const { return true; }
 
 private:
 	std::unique_ptr<ASTBase> Condition;
