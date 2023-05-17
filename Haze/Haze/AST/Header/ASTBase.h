@@ -108,6 +108,8 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
+	virtual const HAZE_CHAR* GetName() { return DefineVariable.Name.c_str(); }
+
 private:
 	HazeSectionSignal SectionSignal;
 	std::unique_ptr<ASTBase> Expression;

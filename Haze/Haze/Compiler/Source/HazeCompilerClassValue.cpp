@@ -3,20 +3,14 @@
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerClass.h"
 
+extern std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeDataDesc Scope, int Count,
+	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param);
+
 HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count)
 	: HazeCompilerValue(Module, DefineType, Scope, Count)
 {
 	OwnerClass = Module->FindClass(DefineType.CustomName).get();
-
-	const auto Members = OwnerClass->GetClassMemberData();
-	for (size_t i = 0; i < Members.size(); i++)
-	{
-		Vector_Data.push_back({ Members[i].first,{} });
-		for (size_t j = 0; j < Members[i].second.size(); j++)
-		{
-			Vector_Data.back().second.push_back(CreateVariable(Module, Members[i].second[j], Members[i].first, 0));
-		}
-	}
+	Vector_Data = std::move(CreateVariableCopyClassMember(Module, OwnerClass));
 }
 
 HazeCompilerClassValue::~HazeCompilerClassValue()
@@ -36,14 +30,16 @@ const HAZE_STRING& HazeCompilerClassValue::GetOwnerClassName()
 std::shared_ptr<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HAZE_STRING& Name)
 {
 	auto Index = OwnerClass->GetMemberIndex(Name);
+
 	for (size_t i = 0; i < Vector_Data.size(); i++)
 	{
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
-			if (Index-- == 0)
+			if (Index == 0)
 			{
 				return Vector_Data[i].second[j];
 			}
+			Index--;
 		}
 	}
 
@@ -52,20 +48,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HAZE_
 
 void HazeCompilerClassValue::GetMemberName(const std::shared_ptr<HazeCompilerValue>& MemberValue, HAZE_STRING& OutName)
 {
-	return GetMemberName(MemberValue.get(), OutName);
+	OwnerClass->GetMemberName(MemberValue, OutName);
 }
 
 void HazeCompilerClassValue::GetMemberName(const HazeCompilerValue* MemberValue, HAZE_STRING& OutName)
 {
-	for (size_t i = 0; i < Vector_Data.size(); i++)
-	{
-		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
-		{
-			if (MemberValue == Vector_Data[i].second[j].get())
-			{
-				OutName = OwnerClass->GetClassMemberData()[i].second[j].Name;
-				return;
-			}
-		}
-	}
+	OwnerClass->GetMemberName(MemberValue, OutName);
 }
+

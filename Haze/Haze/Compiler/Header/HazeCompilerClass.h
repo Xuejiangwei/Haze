@@ -13,7 +13,7 @@ class HazeCompilerClass
 public:
 	friend class HazeCompiler;
 
-	HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>>& Data);
+	HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& Data);
 
 	~HazeCompilerClass();
 
@@ -39,9 +39,9 @@ public:
 
 	bool GetMemberName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
 
-	const std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable>>>& GetClassMemberData() const { return Vector_Data; }
+	const std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& GetClassMemberData() const { return Vector_Data; }
 
-	const HazeDefineVariable* GetClassMemberData(const HAZE_STRING& MemberName) const;
+	//const HazeDefineVariable* GetClassMemberData(const HAZE_STRING& MemberName) const;
 
 	//bool GetDataName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
@@ -63,7 +63,7 @@ private:
 
 	std::shared_ptr<HazeCompilerClassValue> NewPointerToValue;		//所有New出来的对象指向此Value
 
-	std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable>>> Vector_Data;
+	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>> Vector_Data;
 
 	std::vector<std::shared_ptr<HazeCompilerFunction>> Vector_Function;
 	std::unordered_map<HAZE_STRING, unsigned int> HashMap_Function;

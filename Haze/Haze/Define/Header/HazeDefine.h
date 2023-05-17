@@ -1,6 +1,5 @@
 #pragma once
 
-#include "HazeDebug.h"
 
 #define HAZE_STRING_STREAM std::wstringstream
 #define HAZE_OFSTREAM std::wofstream

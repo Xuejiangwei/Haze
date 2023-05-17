@@ -139,7 +139,8 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	{
 		if (!VM->GetCompiler()->GetCurrModule()->GetFunction(DefineVariable.Name))
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("未能找到变量<%s>!\n"), DefineVariable.Name.c_str());
+			HAZE_LOG_ERR(HAZE_TEXT("未能找到变量<%s>,当前函数<%s>!\n"), DefineVariable.Name.c_str(),
+				SectionSignal == HazeSectionSignal::Function ? Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
 		}
 	}
 
@@ -215,7 +216,8 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		}
 		else
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("变量定义失败，定义数组长度必须是常量！\n"));
+			HAZE_LOG_ERR(HAZE_TEXT("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n"), DefineVariable.Name.c_str(),
+				SectionSignal == HazeSectionSignal::Function ? Module->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
 			return nullptr;
 		}
 	}
@@ -239,6 +241,10 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	else if (SectionSignal == HazeSectionSignal::Function)
 	{
 		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
+	}
+	else if (SectionSignal == HazeSectionSignal::Class)
+	{
+		RetValue = Compiler->CreateClassVariable(Module, DefineVariable, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
 	}
 
 	if (RetValue && ExprValue)
@@ -271,7 +277,7 @@ ASTReturn::~ASTReturn()
 
 std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 {
-	std::shared_ptr<HazeCompilerValue> RetValue = Expression->CodeGen();
+	std::shared_ptr<HazeCompilerValue> RetValue = Expression ? Expression->CodeGen() : VM->GetCompiler()->GetConstantValueInt(0);
 	return VM->GetCompiler()->CreateRet(RetValue);
 }
 
@@ -646,7 +652,7 @@ std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 	Compiler->SetInsertBlock(IfBlock);
 
 	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(Condition.get());
-	if (ConditionExp)
+	if (ConditionExp && GetHazeCmpTypeByToken(ConditionExp->OperatorToken) != HazeCmpType::None)
 	{
 		Condition->CodeGen();
 		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, ElseExpression ? ElseBlock : InsertBlock, false);
@@ -738,7 +744,6 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 {
 	auto& Compiler = VM->GetCompiler();
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
-	auto ConditionExp = static_cast<ASTBinaryExpression*>(ConditionExpression.get());
 	auto ParentBlock = Compiler->GetInsertBlock()->GetInsertToBlock()->GetShared();
 
 	auto ForBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForBlockName(), Function, ParentBlock);
@@ -756,9 +761,19 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 	Compiler->CreateJmpToBlock(ForConditionBlock);
 
 	Compiler->SetInsertBlock(ForConditionBlock);
-	ConditionExpression->CodeGen();
 
-	Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
+	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(ConditionExpression.get());
+	if (ConditionExp)
+	{
+		ConditionExpression->CodeGen();
+		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
+	}
+	else
+	{
+		Compiler->CreateBoolCmp(ConditionExpression->CodeGen());
+		Compiler->CreateCompareJmp(HazeCmpType::Equal, nullptr, nullptr, false, true);
+	}
+
 	MultiExpression->CodeGen();
 	
 	Compiler->SetInsertBlock(ForEndBlock);

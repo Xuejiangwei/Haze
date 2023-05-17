@@ -53,19 +53,24 @@ void HazeCompilerModule::GenCodeFile()
 #endif
 }
 
-std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>>& ClassData)
+std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, 
+	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& ClassData)
 {
 	std::shared_ptr<HazeCompilerClass> Class = FindClass(Name);
 	if (!Class)
 	{
 		HashMap_Class[Name] = std::make_shared<HazeCompilerClass>(this, Name, ClassData);
 		Class = HashMap_Class[Name];
-
 		Class->InitThisValue();
 	}
 
 	CurrClass = Name;
 	return Class;
+}
+
+void HazeCompilerModule::FinishCreateClass()
+{
+	CurrClass.clear();
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
@@ -91,28 +96,41 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE
 	{
 		return It->second;
 	}
+	else if (!CurrClass.empty())
+	{
+		auto Iter = HashMap_Class.find(CurrClass);
+		if (Iter != HashMap_Class.end())
+		{
+			return Iter->second->FindFunction(Name);
+		}
+	}
 	else
 	{
 		bool IsPointer;
 		return GetObjectFunction(this, Name, IsPointer);
 	}
+
+	return nullptr;
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
 {
+	std::shared_ptr<HazeCompilerFunction> Function = nullptr;
 	auto It = HashMap_Function.find(Name);
 	if (It == HashMap_Function.end())
 	{
 		HashMap_Function[Name] = std::make_shared<HazeCompilerFunction>(this, Name, Type, Param);
-		CurrFunction = Name;
-
 		HashMap_Function[Name]->InitEntryBlock(HazeBaseBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, HashMap_Function[Name], nullptr));
 
-		return HashMap_Function[Name];
+		Function = HashMap_Function[Name];
+	}
+	else
+	{
+		Function = It->second;
 	}
 
 	CurrFunction = Name;
-	return It->second;
+	return Function;
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(std::shared_ptr<HazeCompilerClass> Class, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
@@ -124,10 +142,9 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(std::sh
 		Class->AddFunction(Function);
 
 		Function->InitEntryBlock(HazeBaseBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, Function, nullptr));
-
-		CurrFunction = Name;
 	}
 
+	CurrFunction = Name;
 	return Function;
 }
 
@@ -366,7 +383,7 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 
 	if (CmpType == HazeCmpType::None)
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("Compare error, type is none!\n"));
+		HAZE_LOG_ERR(HAZE_TEXT("比较失败,比较类型为空! 当前函数<%s>\n"), GetCurrFunction()->GetName().c_str());
 	}
 
 	SStream << GetInstructionString(GetInstructionOpCodeByCmpType(CmpType)) << " ";
@@ -724,24 +741,41 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const H
 		}
 	}
 
+	for (auto& Module : Vector_ImportModule)
+	{
+		auto Ret = Module->GetGlobalVariable(Name);
+		if (Ret)
+		{
+			return Ret;
+		}
+	}
+
 	return nullptr;
 }
 
 bool HazeCompilerModule::GetGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {
-	for (auto& it : Vector_Variable)
+	for (auto& It : Vector_Variable)
 	{
-		if (TrtGetVariableName(nullptr, it, Value, OutName))
+		if (TrtGetVariableName(nullptr, It, Value, OutName))
 		{
 			return true;
 		}
 	}
 
-	for (auto& it : HashMap_StringTable)
+	for (auto& It : Vector_ImportModule)
 	{
-		if (it.second == Value)
+		if (It->GetGlobalVariableName(Value, OutName))
 		{
-			OutName = it.first;
+			return true;
+		}
+	}
+
+	for (auto& It : HashMap_StringTable)
+	{
+		if (It.second == Value)
+		{
+			OutName = It.first;
 			return true;
 		}
 	}
@@ -751,19 +785,19 @@ bool HazeCompilerModule::GetGlobalVariableName(const std::shared_ptr<HazeCompile
 
 bool HazeCompilerModule::GetGlobalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName)
 {
-	for (auto& it : Vector_Variable)
+	for (auto& It : Vector_Variable)
 	{
-		if (TrtGetVariableName(nullptr, it, Value, OutName))
+		if (TrtGetVariableName(nullptr, It, Value, OutName))
 		{
 			return true;
 		}
 	}
 
-	for (auto& it : HashMap_StringTable)
+	for (auto& It : HashMap_StringTable)
 	{
-		if (it.second.get() == Value)
+		if (It.second.get() == Value)
 		{
-			OutName = it.first;
+			OutName = It.first;
 			return true;
 		}
 	}
@@ -854,7 +888,7 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("GenValueHzicText can not find variable!\n"));
+				HAZE_LOG_ERR(HAZE_TEXT("生成中间码错误:不能找到变量! 当前函数<%s>\n"), Module->CurrFunction.empty() ? HAZE_TEXT("None") : Module->GetCurrFunction()->GetName().c_str());
 			}
 		}
 

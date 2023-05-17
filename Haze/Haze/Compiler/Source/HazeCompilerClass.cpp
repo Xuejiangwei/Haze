@@ -7,21 +7,17 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 
-HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>>& Data)
-	: Module(Module), Name(Name)
+HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, 
+	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& Data)
+	: Module(Module), Name(Name), Vector_Data(std::move(Data))
 {
 	DataSize = 0;
-	Vector_Data.resize(Data.size());
-	for (size_t i = 0; i < Data.size(); i++)
-	{
-		Vector_Data[i].first = Data[i].first;
 
-		Vector_Data[i].second.resize(Data[i].second.size());
-		for (size_t j = 0; j < Data[i].second.size(); j++)
+	for (size_t i = 0; i < Vector_Data.size(); i++)
+	{
+		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
-			Vector_Data[i].second[j] = *(Data[i].second[j]);
-			
-			DataSize += GetSizeByType(Vector_Data[i].second[j].Type, Module);
+			DataSize += Vector_Data[i].second[j].second->GetSize();
 		}
 	}
 }
@@ -57,11 +53,13 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared
 
 void HazeCompilerClass::InitThisValue()
 {
-	NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), HAZE_TEXT("")), HazeDataDesc::ClassThis, 0));
-	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
+	NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), 
+		HAZE_TEXT("")), HazeDataDesc::ClassThis, 0));
+	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), 
+		HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
 	
-	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
-	//ThisPointerValue->InitPointerTo(ThisClassValue);
+	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(Module, 
+		HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
 }
 
 uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
@@ -71,7 +69,7 @@ uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 	{
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
-			if (Vector_Data[i].second[j].Name == MemberName)
+			if (Vector_Data[i].second[j].first == MemberName)
 			{
 				return Index;
 			}
@@ -80,8 +78,6 @@ uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 		}
 		
 	}
-
-	HAZE_LOG_ERR(HAZE_TEXT("查找成员变量失败<%s>"), MemberName.c_str());
 
 	return uint64(-1);
 }
@@ -97,7 +93,7 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 	{
 		for (size_t j = 0; j < ThisClassValue->Vector_Data[i].second.size(); j++)
 		{
-			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].Name, ThisClassValue->Vector_Data[i].second[j] }, Value, OutName))
+			if (TrtGetVariableName(nullptr, Vector_Data[i].second[j], Value, OutName))
 			{
 				return true;
 			}
@@ -108,7 +104,7 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 	{
 		for (size_t j = 0; j < NewPointerToValue->Vector_Data[i].second.size(); j++)
 		{
-			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].Name, NewPointerToValue->Vector_Data[i].second[j] }, Value, OutName))
+			if (TrtGetVariableName(nullptr, Vector_Data[i].second[j], Value, OutName))
 			{
 				return true;
 			}
@@ -118,25 +114,26 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 	return false;
 }
 
-const HazeDefineVariable* HazeCompilerClass::GetClassMemberData(const HAZE_STRING& MemberName) const
-{
-	for (auto& Iter : Vector_Data)
-	{
-		for (size_t i = 0; i < Iter.second.size(); i++)
-		{
-			if (Iter.second[i].Name == MemberName)
-			{
-				return &Iter.second[i];
-			}
-		}
-	}
-
-	return nullptr;
-}
+//const HazeDefineVariable* HazeCompilerClass::GetClassMemberData(const HAZE_STRING& MemberName) const
+//{
+//	for (auto& Iter : Vector_Data)
+//	{
+//		for (size_t i = 0; i < Iter.second.size(); i++)
+//		{
+//			if (Iter.second[i].first == MemberName)
+//			{
+//				return Iter.second[i].second.get();
+//			}
+//		}
+//	}
+//
+//	return nullptr;
+//}
 
 void HazeCompilerClass::GenClassData_I_Code(HAZE_OFSTREAM& OFStream)
 {
 #if HAZE_I_CODE_ENABLE
+
 	size_t DataNum = 0;
 	for (auto& Datas : Vector_Data)
 	{
@@ -150,20 +147,36 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_OFSTREAM& OFStream)
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
 			HAZE_STRING_STREAM HSS;
-			StreamDefineVariable(HSS, Vector_Data[i].second[j]);
+			
+			HSS << Vector_Data[i].second[j].first << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().PrimaryType);
+			if (Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::PointerBase)
+			{
+				HSS << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().SecondaryType);
+			}
+			else if (Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::PointerClass ||
+				Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::Class)
+			{
+				HSS << " " << Vector_Data[i].second[j].second->GetValueType().CustomName;
+			}
+
+			HSS << std::endl;
+
 			OFStream << HSS.str();
 		}
 	}
+
 #endif //HAZE_I_CODE_ENABLE
 }
 
 void HazeCompilerClass::GenClassFunction_I_Code(HAZE_OFSTREAM& OFStream)
 {
 #if HAZE_I_CODE_ENABLE
+
 	for (auto& Iter : Vector_Function)
 	{
 		Iter->GenI_Code(OFStream);
 	}
+
 #endif //HAZE_I_CODE_ENABLE
 }
 

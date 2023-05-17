@@ -201,7 +201,21 @@ void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
 template<>
 void CalculateValue(InstructionOpCode TypeCode, bool& Source, bool& Target)
 {
-    HAZE_LOG_ERR("Calculate error: bool value is not support operator %s!\n", WString2String(GetInstructionString(TypeCode)).c_str());
+    switch (TypeCode)
+    {
+    case InstructionOpCode::AND:
+        Target = Target && Source;
+        break;
+    case InstructionOpCode::OR:
+        Target = Target || Source;
+        break;
+    case InstructionOpCode::NOT:
+        Target = !Source;
+        break;
+    default:
+        HAZE_LOG_ERR("Calculate error: bool value is not support operator %s!\n", WString2String(GetInstructionString(TypeCode)).c_str());
+        break;
+    }
 }
 
 template<>

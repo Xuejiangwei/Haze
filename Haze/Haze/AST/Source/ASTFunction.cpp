@@ -148,6 +148,14 @@ void ASTClassFunctionSection::CodeGen()
 	{
 		for (auto& F : Iter.second)
 		{
+			F->RegisterFunction();
+		}
+	}
+
+	for (auto& Iter : Functions)
+	{
+		for (auto& F : Iter.second)
+		{
 			F->CodeGen();
 		}
 	}

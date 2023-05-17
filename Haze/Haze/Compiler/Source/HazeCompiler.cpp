@@ -5,6 +5,7 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerArrayValue.h"
+#include "HazeCompilerPointerArray.h"
 #include "HazeCompilerInitListValue.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
@@ -398,9 +399,16 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 	{
 		CreateMovToPV(Alloca, Value->IsRef() ? CreateMovPV(GetTempRegister(), Value) : Value);
 	}
-	else if (Value->IsArrayElement())
+	else if (Value->IsArrayElement() || Alloca->IsArrayElement())
 	{
-		GetArrayElementToValue(GetCurrModule().get(), Value, Alloca);
+		if (Alloca->IsArrayElement() && !Value->IsArrayElement())
+		{
+			GetArrayElementToValue(GetCurrModule().get(), Value, Alloca);
+		}
+		else if (!Alloca->IsArrayElement() && Value->IsArrayElement())
+		{
+			GetArrayElementToValue(GetCurrModule().get(), Value, Alloca);
+		}
 	}
 	else
 	{
@@ -450,6 +458,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::uniqu
 	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
 	return Module->CreateGlobalVariable(Var, RefValue, ArraySize, Vector_Param);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateClassVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var,
+	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
+{
+	return CreateVariable(Module.get(), Var, HazeDataDesc::Class, 0, RefValue, ArraySize, nullptr, Vector_Param);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeCompilerValue> Value)
@@ -520,7 +534,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNot(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
-	return GetCurrModule()->CreateMod(Left, Right);
+	return GetCurrModule()->CreateAnd(Left, Right);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
@@ -622,6 +636,55 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArray(std::share
 	return Ret;
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArrayElement(std::shared_ptr<HazeCompilerValue> ElementValue)
+{
+	auto ArrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(ElementValue);
+	auto ArrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(ArrayElementValue->GetArray()->GetShared());
+	auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerArray>(ArrayElementValue->GetArray()->GetShared());
+
+	if (ArrayValue || PointerValue)
+	{
+		auto TempRegister = GetTempRegister();
+		std::shared_ptr<HazeCompilerValue> ArrayPointer;
+		if (ArrayValue)
+		{
+			ArrayPointer = CreatePointerToArray(ArrayValue);
+		}
+		else
+		{
+			ArrayPointer = CreatePointerToPointerArray(PointerValue);
+		}
+
+		for (size_t i = 0; i < ArrayElementValue->GetIndex().size(); i++)
+		{
+			uint32 Size = i == ArrayElementValue->GetIndex().size() - 1 ? ArrayElementValue->GetIndex()[i]->GetValue().Value.Int :
+				(ArrayValue ? ArrayValue->GetSizeByLevel((uint32)i) : PointerValue->GetSizeByLevel((uint32)i));
+			std::shared_ptr<HazeCompilerValue> SizeValue = nullptr;
+
+			if (ArrayElementValue->GetIndex()[i]->IsConstant())
+			{
+				SizeValue = GetConstantValueInt(Size);
+			}
+			else
+			{
+				SizeValue = i == ArrayElementValue->GetIndex().size() - 1 ? ArrayElementValue->GetIndex()[i]->GetShared() : GetConstantValueInt(Size);
+			}
+
+			CreateMov(TempRegister, SizeValue);
+			if (i != ArrayElementValue->GetIndex().size() - 1)
+			{
+				CreateMul(TempRegister, ArrayElementValue->GetIndex()[i]->GetShared());
+			}
+			CreateAdd(ArrayPointer, TempRegister);
+		}
+
+		return ArrayPointer;
+		//Compiler->CreateMovPV(MovToValue ? MovToValue : TempRegister, ArrayPointer);
+	}
+
+	return nullptr;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToPointerArray(std::shared_ptr<HazeCompilerValue> PointerArray, std::shared_ptr<HazeCompilerValue> Index)
 {
 	auto Pointer = GetTempRegister();
@@ -707,7 +770,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBoolCmp(std::shared_ptr<H
 	}
 	else
 	{
-		return nullptr;
+		return CreateIntCmp(Value, GenConstantValueBool(true));
 	}
 }
 

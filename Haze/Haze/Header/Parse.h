@@ -114,7 +114,7 @@ private:
 private:
 	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* ClassName = nullptr);
 
-	bool ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr, ...);
+	bool ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
 
 	bool TokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
 

@@ -23,7 +23,10 @@ public:
 	
 	void GenCodeFile();
 
-	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>>& ClassData);
+	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, 
+		std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& ClassData);
+
+	void FinishCreateClass();
 
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 

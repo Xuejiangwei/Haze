@@ -489,7 +489,8 @@ HazeToken Parse::GetNextToken()
 					CurrCode += 2;
 				}
 			}
-			else if (CurrLexeme.length() == 0 || IsPointerOrRef(CurrLexeme + *CurrCode, CurrToken))
+			else if (CurrLexeme.length() == 0 || IsPointerOrRef(CurrLexeme + *CurrCode, CurrToken)
+				|| IsHazeSignalToken(CurrCode - 1, Signal, 2))
 			{
 				CurrLexeme += *(CurrCode++);
 			}
@@ -971,7 +972,7 @@ std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
 		auto ConditionExpression = ParseExpression();
 
 		std::unique_ptr<ASTBase> IfMultiExpression = nullptr;
-		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：若 执行表达式期望捕捉 { %s\n")))
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：若 执行表达式期望捕捉 { \n")))
 		{
 			IfMultiExpression = ParseMultiExpression();
 			GetNextToken();
@@ -1327,6 +1328,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
+					Param.Name = HAZE_TEXT("多参数");
 					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
 					Vector_Param.push_back(Param);
 
@@ -1394,6 +1396,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
+					Param.Name = HAZE_TEXT("多参数");
 					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse class construction function expression expect function multiply param right need ) \n"));
 					Vector_Param.push_back(Param);
 
@@ -1582,6 +1585,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 
 						if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 						{
+							Param.Name = HAZE_TEXT("多参数");
 							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
 							Vector_Param.push_back(Param);
 
@@ -1727,9 +1731,9 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 						std::move(std::vector<std::unique_ptr<ASTBase>>{}) })));
 
 					GetNextToken();
+					GetNextToken();
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						GetNextToken();
 						Vector_ClassData.back().second.push_back(ParseVariableDefine());
 					}
 
@@ -1749,9 +1753,9 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 						std::move(std::vector<std::unique_ptr<ASTBase>>{}) })));
 
 					GetNextToken();
+					GetNextToken();
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						GetNextToken();
 						Vector_ClassData.back().second.push_back(ParseVariableDefine());
 					}
 
@@ -1869,17 +1873,14 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 	return nullptr;
 }
 
-bool Parse::ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo, ...)
+bool Parse::ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo)
 {
 	HazeToken NextToken = GetNextToken();
 	if (Token != NextToken)
 	{
 		if (ErrorInfo)
 		{
-			va_list args;
-			va_start(args, ErrorInfo);
-			HAZE_LOG_ERR(ErrorInfo, args);
-			va_end(args);
+			HAZE_LOG_ERR(ErrorInfo);
 		}
 		return false;
 	}

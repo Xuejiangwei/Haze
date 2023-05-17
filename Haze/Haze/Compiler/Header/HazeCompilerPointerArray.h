@@ -11,6 +11,8 @@ public:
 
 	uint32 GetSizeByLevel(uint32 Level);
 
+	const std::vector<std::shared_ptr<HazeCompilerValue>>& GetArraySize() const { return Vector_ArraySize; }
+
 private:
 	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_ArraySize;
 };

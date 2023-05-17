@@ -30,7 +30,7 @@ public:
 
 	uint32 GetArrayLength() { return ArrayLength; }
 
-	const std::vector<HazeCompilerValue*>& GetSizeValue() const { return Vector_Size; }
+	const std::vector<std::shared_ptr<HazeCompilerValue>>& GetArraySize() const { return Vector_Size; }
 
 	uint32 GetSizeByLevel(uint32 Level);
 
@@ -38,6 +38,6 @@ private:
 	uint32 ArrayLength;
 	uint32 Size;
 
-	std::vector<HazeCompilerValue*> Vector_Size;
+	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_Size;
 };
 

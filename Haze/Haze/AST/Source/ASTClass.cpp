@@ -4,6 +4,7 @@
 
 #include "HazeVM.h"
 #include "HazeCompiler.h"
+#include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"
 
 ASTClass::ASTClass(HazeVM* VM, HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& Data,
@@ -18,24 +19,26 @@ ASTClass::~ASTClass()
 
 void ASTClass::CodeGen()
 {
-	std::vector<std::pair<HazeDataDesc, std::vector<HazeDefineVariable*>>> Data;
+	auto& Compiler = VM->GetCompiler();
+	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>> Data;
 
 	for (size_t i = 0; i < Vector_ClassData.size(); i++)
 	{
 		Data.push_back({ Vector_ClassData[i].first, {} });
 		for (size_t j = 0; j < Vector_ClassData[i].second.size(); j++)
 		{
-			Data.back().second.push_back(&Vector_ClassData[i].second[j]->DefineVariable);
+			Data.back().second.push_back({ Vector_ClassData[i].second[j]->GetName(), Vector_ClassData[i].second[j]->CodeGen() });
 		}
 	}
 
-	VM->GetCompiler()->GetCurrModule()->CreateClass(ClassName, Data);
+	Compiler->GetCurrModule()->CreateClass(ClassName, Data);
 
 	if (ClassFunctionSection)
 	{
 		ClassFunctionSection->CodeGen();
-
 	}
+
+	VM->GetCompiler()->GetCurrModule()->FinishCreateClass();
 }
 
 ASTClassDefine::ASTClassDefine(HazeVM* VM, HAZE_STRING& Name, std::vector<std::vector<std::unique_ptr<ASTBase>>>& Data, std::vector<std::unique_ptr<ASTFunctionDefine>>& Function)

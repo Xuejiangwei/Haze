@@ -6,6 +6,7 @@
 #include "HazeVM.h"
 #include "HazeFilePathHelper.h"
 
+#include "HazeDebug.h"
 #include "HazeLog.h"
 
 
@@ -725,9 +726,24 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 							it.Extra.Address.Offset = it.Extra.Index * GetSizeByType(it.Variable.Type, this);
 							it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[Iter_Index->second].Offset;
 						}
+						else if (CurrFunction.Vector_Variable[0].Variable.Name.substr(0, 1) == HAZE_CLASS_THIS)
+						{
+							auto Class = GetClass(CurrFunction.Vector_Variable[0].Variable.Type.CustomName);
+							if (Class)
+							{
+								it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[0].Offset;
+								it.Extra.Address.Offset = GetMemberOffset(*Class, it.Variable.Name);
+								it.AddressType = InstructionAddressType::Pointer_Offset;
+							}
+							else
+							{
+								HAZE_LOG_ERR(HAZE_TEXT("查找变量<%s>的偏移地址错误,当前函数<%s>,当前类<%s>未找到!\n"),
+									it.Variable.Name.c_str(), CurrFunction.Name.c_str(), CurrFunction.Vector_Variable[0].Variable.Type.CustomName.c_str());
+							}
+						}
 						else
 						{
-							HAZE_LOG_ERR(HAZE_TEXT("find Offset error %s in function %s\n"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
+							HAZE_LOG_ERR(HAZE_TEXT("查找变量<%s>的偏移地址错误,当前函数<%s>!\n"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
 						}
 					}
 					else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)

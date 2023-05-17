@@ -8,8 +8,10 @@
 #include "GarbageCollection.h"
 #include "HazeCompiler.h"
 #include "Parse.h"
-#include "HazeLog.h"
 #include "HazeFilePathHelper.h"
+
+#include "HazeDebug.h"
+#include "HazeLog.h"
 
 #include "BackendParse.h"
 

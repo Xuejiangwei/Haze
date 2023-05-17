@@ -26,7 +26,7 @@ HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* Module, const
 		{
 			ArrayLength *= Iter->GetValueType().PrimaryType == HazeValueType::UnsignedLong || Iter->GetValueType().PrimaryType == HazeValueType::Long ?
 				(uint32)Iter->GetValue().Value.UnsignedLong : Iter->GetValue().Value.UnsignedInt;
-			Vector_Size.push_back(Iter.get());
+			Vector_Size.push_back(Iter);
 		}
 
 		Size = ArrayLength * GetSizeByType(DefineType, Module);
