@@ -105,10 +105,10 @@ void HazeCompilerFunction::FunctionFinish()
 	}
 }
 
-void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
+void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& SStream)
 {
 #if HAZE_I_CODE_ENABLE
-	OFStream << GetFunctionLabelHeader() << " " << Name << " " << HAZE_CAST_VALUE_TYPE(Type.PrimaryType);
+	SStream << GetFunctionLabelHeader() << " " << Name << " " << HAZE_CAST_VALUE_TYPE(Type.PrimaryType);
 	/*if (!Type.second.empty())
 	{
 		OFStream << Type.second;
@@ -118,32 +118,32 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 		OFStream << GetValueTypeByToken(Type.first);
 	}*/
 
-	OFStream << std::endl;
+	SStream << std::endl;
 
 	//Push所有参数，从右到左, push 参数与返回地址的事由call去做
 	for (int i = (int)VectorParam.size() - 1; i >= 0; i--)
 	{
-		OFStream << GetFunctionParamHeader() << " " << VectorParam[i].first << " " << HAZE_CAST_VALUE_TYPE(VectorParam[i].second->GetValueType().PrimaryType);
+		SStream << GetFunctionParamHeader() << " " << VectorParam[i].first << " " << HAZE_CAST_VALUE_TYPE(VectorParam[i].second->GetValueType().PrimaryType);
 
 		if (VectorParam[i].second->IsPointer())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(VectorParam[i].second);
 			if (PointerValue->IsPointerBase())
 			{
-				OFStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetValueType().PrimaryType);
+				SStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetValueType().PrimaryType);
 			}
 			else if(PointerValue->IsPointerClass())
 			{
-				OFStream << " " << PointerValue->GetValueType().CustomName;
+				SStream << " " << PointerValue->GetValueType().CustomName;
 			}
 		}
 		else if (VectorParam[i].second->IsClass())
 		{
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(VectorParam[i].second);
-			OFStream << " " << ClassValue->GetOwnerClassName();
+			SStream << " " << ClassValue->GetOwnerClassName();
 		}
 
-		OFStream << std::endl;
+		SStream << std::endl;
 	}
 
 
@@ -175,11 +175,11 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 	for (int i = (int)VectorParam.size() - 1; i >= 0; i--)
 	{
 		FindLocalVariableName(Vector_LocalVariable[i], LocalVariableName);
-		OFStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
-		HazeCompilerOFStream(OFStream, Vector_LocalVariable[i]);
+		SStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
+		HazeCompilerStream(SStream, Vector_LocalVariable[i], false);
 
 		Size -= Vector_LocalVariable[i]->GetSize();
-		OFStream << " " << Size << " " << Vector_LocalVariable[i]->GetSize() << std::endl;
+		SStream << " " << Size << " " << Vector_LocalVariable[i]->GetSize() << std::endl;
 	}
 
 	Size = 0;
@@ -187,17 +187,17 @@ void HazeCompilerFunction::GenI_Code(HAZE_OFSTREAM& OFStream)
 	for (size_t i = VectorParam.size(); i < Vector_LocalVariable.size(); i++)
 	{
 		FindLocalVariableName(Vector_LocalVariable[i], LocalVariableName);
-		OFStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
-		HazeCompilerOFStream(OFStream, Vector_LocalVariable[i]);
-		OFStream << " " << Size << " " << Vector_LocalVariable[i]->GetSize() << std::endl;
+		SStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
+		HazeCompilerStream(SStream, Vector_LocalVariable[i], false);
+		SStream << " " << Size << " " << Vector_LocalVariable[i]->GetSize() << std::endl;
 		Size += Vector_LocalVariable[i]->GetSize();
 	}
 
-	OFStream << GetFunctionStartHeader() << std::endl;
+	SStream << GetFunctionStartHeader() << std::endl;
 
-	EntryBlock->GenI_Code(OFStream);
+	EntryBlock->GenI_Code(SStream);
 
-	OFStream << GetFunctionEndHeader() << std::endl << std::endl;
+	SStream << std::endl << GetFunctionEndHeader() << std::endl << std::endl;
 #endif // HAZE_ASS_ENABLE
 }
 

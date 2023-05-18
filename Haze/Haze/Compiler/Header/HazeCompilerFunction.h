@@ -36,7 +36,7 @@ public:
 
 	void FunctionFinish();
 
-	void GenI_Code(HAZE_OFSTREAM& OFStream);
+	void GenI_Code(HAZE_STRING_STREAM& SStream);
 
 	HAZE_STRING GenDafaultBlockName();
 	

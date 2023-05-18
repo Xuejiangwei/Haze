@@ -24,6 +24,7 @@ void HazeInit()
 	std::set_new_handler(HazeNewHandler);
 	setlocale(LC_ALL, "chs");
 	std::wcout.imbue(std::locale("chs"));
+	std::locale::global(std::locale(std::locale::classic(), "", std::locale::ctype));
 };
 
 //解析文本  --->  生成字节码   --->  用虚拟机解析字节码，并执行

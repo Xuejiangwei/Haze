@@ -11,9 +11,9 @@ HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& ClassName, const HAZE_ST
 
 HAZE_STRING GetLocalVariableName(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerValue> Value);
 
-void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value);
+void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value, bool StreamValue = true);
 
-void HazeCompilerOFStream(HAZE_OFSTREAM& OFStream, std::shared_ptr<HazeCompilerValue> Value, bool StreamValue = false);
+void HazeCompilerStream(HAZE_STRING_STREAM& Stream, std::shared_ptr<HazeCompilerValue> Value, bool StreamValue = true);
 
 std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count, 
 	std::shared_ptr<HazeCompilerValue> RefValue = nullptr, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, HazeValue* DefaultValue = nullptr, std::vector<HazeDefineType>* Vector_Param = nullptr);

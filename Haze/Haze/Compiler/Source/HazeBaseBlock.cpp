@@ -156,9 +156,9 @@ void HazeBaseBlock::SetJmpOut()
 //	IsFinish = true;
 //}
 
-void HazeBaseBlock::GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount)
+void HazeBaseBlock::GenI_Code(HAZE_STRING_STREAM& SStream, int SkipCount)
 {
-	OFStream << std::endl;
+	SStream << std::endl;
 
 	for (size_t i = 0; i < Vector_IRCode.size(); i++)
 	{
@@ -166,12 +166,12 @@ void HazeBaseBlock::GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount)
 		{
 			continue;
 		}
-		OFStream << Vector_IRCode[i];
+		SStream << Vector_IRCode[i];
 	}
 
 	for (auto& Iter : List_ChildBlock)
 	{
-		Iter->GenI_Code(OFStream);
+		Iter->GenI_Code(SStream);
 	}
 }
 

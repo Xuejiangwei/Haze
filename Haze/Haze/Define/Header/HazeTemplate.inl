@@ -19,3 +19,14 @@ T StringToStandardType(const HAZE_STRING& String)
 	return Ret;
 }
 
+template <typename T>
+HAZE_BINARY_STRING ToString(T Value)
+{
+	return HAZE_TO_STR(Value);
+}
+
+template <typename T>
+HAZE_STRING ToHazeString(T Value)
+{
+	return HAZE_TO_HAZE_STR(Value);
+}

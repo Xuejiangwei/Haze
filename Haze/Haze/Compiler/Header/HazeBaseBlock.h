@@ -50,7 +50,7 @@ public:
 
 	//void FinishBlock(std::shared_ptr<HazeBaseBlock> MoveFinishPopBlock = nullptr, bool JmpOut = true);
 
-	void GenI_Code(HAZE_OFSTREAM& OFStream, int SkipCount = 0);
+	void GenI_Code(HAZE_STRING_STREAM& SStream, int SkipCount = 0);
 
 public:
 	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock);

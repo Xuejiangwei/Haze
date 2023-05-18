@@ -93,23 +93,24 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 	{
 		for (size_t j = 0; j < ThisClassValue->Vector_Data[i].second.size(); j++)
 		{
-			if (TrtGetVariableName(nullptr, Vector_Data[i].second[j], Value, OutName))
+			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].first, ThisClassValue->Vector_Data[i].second[j] }, Value, OutName))
 			{
+				OutName = HAZE_CLASS_THIS + OutName;
 				return true;
 			}
 		}
 	}
 
-	for (size_t i = 0; i < NewPointerToValue->Vector_Data.size(); i++)
+	/*for (size_t i = 0; i < NewPointerToValue->Vector_Data.size(); i++)
 	{
 		for (size_t j = 0; j < NewPointerToValue->Vector_Data[i].second.size(); j++)
 		{
-			if (TrtGetVariableName(nullptr, Vector_Data[i].second[j], Value, OutName))
+			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].first, NewPointerToValue->Vector_Data[i].second[j] }, Value, OutName))
 			{
 				return true;
 			}
 		}
-	}
+	}*/
 
 	return false;
 }
@@ -130,7 +131,7 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 //	return nullptr;
 //}
 
-void HazeCompilerClass::GenClassData_I_Code(HAZE_OFSTREAM& OFStream)
+void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& SStream)
 {
 #if HAZE_I_CODE_ENABLE
 
@@ -140,41 +141,37 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_OFSTREAM& OFStream)
 		DataNum += Datas.second.size();
 	}
 
-	OFStream << GetClassLabelHeader() << " " << Name << " " << GetDataSize() << " " << DataNum << std::endl;
+	SStream << GetClassLabelHeader() << " " << Name << " " << GetDataSize() << " " << DataNum << std::endl;
 
 	for (size_t i = 0; i < Vector_Data.size(); ++i)
 	{
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
-			HAZE_STRING_STREAM HSS;
-			
-			HSS << Vector_Data[i].second[j].first << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().PrimaryType);
+			SStream << Vector_Data[i].second[j].first << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().PrimaryType);
 			if (Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::PointerBase)
 			{
-				HSS << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().SecondaryType);
+				SStream << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().SecondaryType);
 			}
 			else if (Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::PointerClass ||
 				Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::Class)
 			{
-				HSS << " " << Vector_Data[i].second[j].second->GetValueType().CustomName;
+				SStream << " " << Vector_Data[i].second[j].second->GetValueType().CustomName;
 			}
 
-			HSS << std::endl;
-
-			OFStream << HSS.str();
+			SStream << std::endl;
 		}
 	}
 
 #endif //HAZE_I_CODE_ENABLE
 }
 
-void HazeCompilerClass::GenClassFunction_I_Code(HAZE_OFSTREAM& OFStream)
+void HazeCompilerClass::GenClassFunction_I_Code(HAZE_STRING_STREAM& SStream)
 {
 #if HAZE_I_CODE_ENABLE
 
 	for (auto& Iter : Vector_Function)
 	{
-		Iter->GenI_Code(OFStream);
+		Iter->GenI_Code(SStream);
 	}
 
 #endif //HAZE_I_CODE_ENABLE

@@ -974,20 +974,20 @@ void HazeCompilerModule::GenICode()
 	//FS_Ass << 1024 << std::endl;
 
 	//是不是标准库
-	FS_I_Code << IsStdLib << std::endl;
-
+	HAZE_STRING_STREAM HSS_I_Code;
+	HSS_I_Code << IsStdLib << std::endl;
 	/*
 	*	全局数据 ：	个数
 	*				数据名 数据类型 数据
 	*/
-	FS_I_Code << GetGlobalDataHeaderString() << std::endl;
-	FS_I_Code << Vector_Variable.size() << std::endl;
+	HSS_I_Code << GetGlobalDataHeaderString() << std::endl;
+	HSS_I_Code << Vector_Variable.size() << std::endl;
 
 	for (auto& iter : Vector_Variable)
 	{
-		FS_I_Code << iter.first << " " << HAZE_CAST_VALUE_TYPE(iter.second->GetValueType().PrimaryType);
-		HazeCompilerOFStream(FS_I_Code, iter.second, true);
-		FS_I_Code << std::endl;
+		HSS_I_Code << iter.first << " " << HAZE_CAST_VALUE_TYPE(iter.second->GetValueType().PrimaryType) << " ";
+		HazeCompilerStream(HSS_I_Code, iter.second);
+		HSS_I_Code << std::endl;
 	}
 
 	/*
@@ -1000,12 +1000,12 @@ void HazeCompilerModule::GenICode()
 			HashMap_StringMapping.size(), HashMap_StringTable.size());
 		return;
 	}
-	FS_I_Code << GetStringTableHeaderString() << std::endl;
-	FS_I_Code << HashMap_StringMapping.size() << std::endl;
+	HSS_I_Code << GetStringTableHeaderString() << std::endl;
+	HSS_I_Code << HashMap_StringMapping.size() << std::endl;
 
 	for (auto& iter : HashMap_StringMapping)
 	{
-		FS_I_Code << iter.second->length() << " " << *iter.second << std::endl;
+		HSS_I_Code << iter.second->length() << " " << *iter.second << std::endl;
 	}
 
 	/*
@@ -1015,12 +1015,12 @@ void HazeCompilerModule::GenICode()
 	*/
 	size_t FunctionSize = 0;
 
-	FS_I_Code << GetClassTableHeaderString() << std::endl;
-	FS_I_Code << HashMap_Class.size() << std::endl;
+	HSS_I_Code << GetClassTableHeaderString() << std::endl;
+	HSS_I_Code << HashMap_Class.size() << std::endl;
 
 	for (auto& iter : HashMap_Class)
 	{
-		iter.second->GenClassData_I_Code(FS_I_Code);
+		iter.second->GenClassData_I_Code(HSS_I_Code);
 		FunctionSize += iter.second->GetFunctionSize();
 	}
 
@@ -1029,21 +1029,23 @@ void HazeCompilerModule::GenICode()
 	*				名称 指令流
 	*
 	*/
-	FS_I_Code << GetFucntionTableHeaderString() << std::endl;
-	FS_I_Code << HashMap_Function.size() + FunctionSize << std::endl;
+	HSS_I_Code << GetFucntionTableHeaderString() << std::endl;
+	HSS_I_Code << HashMap_Function.size() + FunctionSize << std::endl;
 
 	for (auto& iter : HashMap_Class)
 	{
-		iter.second->GenClassFunction_I_Code(FS_I_Code);
+		iter.second->GenClassFunction_I_Code(HSS_I_Code);
 	}
 
 	for (auto& iter : HashMap_Function)
 	{
-		iter.second->GenI_Code(FS_I_Code);
+		iter.second->GenI_Code(HSS_I_Code);
 	}
 
 	/*Main函数是否存在
 	auto MainFuncIter = MapGlobalFunction.find(HAZE_MAIN_FUNCTION_TEXT);
 	bool HasMain = MainFuncIter != MapGlobalFunction.end();
 	FS_Ass << HasMain << std::endl;*/
+
+	FS_I_Code << HSS_I_Code.str();
 }

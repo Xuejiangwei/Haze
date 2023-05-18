@@ -135,7 +135,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetTempRegister()
 		}
 	}
 
-	HAZE_LOG_ERR(HAZE_TEXT("Get temp register error\n"));
+	HAZE_LOG_ERR(HAZE_TEXT("不能获得临时寄存器!\n"));
 	return nullptr;
 }
 
@@ -403,11 +403,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 	{
 		if (Alloca->IsArrayElement() && !Value->IsArrayElement())
 		{
-			GetArrayElementToValue(GetCurrModule().get(), Value, Alloca);
+			auto ArrayPointer = CreatePointerToArrayElement(Alloca);
+			CreateMovToPV(ArrayPointer, Value);
+			//GetArrayElementToValue(GetCurrModule().get(), Value, Alloca);
 		}
 		else if (!Alloca->IsArrayElement() && Value->IsArrayElement())
 		{
 			GetArrayElementToValue(GetCurrModule().get(), Value, Alloca);
+		}
+		else
+		{
+			auto TempValue = GetArrayElementToValue(GetCurrModule().get(), Value);
+			auto ArrayPointer = CreatePointerToArrayElement(Alloca);
+			CreateMovToPV(ArrayPointer, TempValue);
 		}
 	}
 	else

@@ -44,4 +44,10 @@ unsigned int GetSizeByType(HazeDefineType Type, T* This);
 template <typename T>
 T StringToStandardType(const HAZE_STRING& String);
 
+template <typename T>
+HAZE_BINARY_STRING ToString(T Value);
+
+template <typename T>
+HAZE_STRING ToHazeString(T Value);
+
 #include "HazeTemplate.inl"

@@ -15,6 +15,9 @@
 #define HAZE_BINARY_OP_WRITE_CODE(X) (const char*)(&X)
 #define HAZE_BINARY_OP_READ_CODE_SIZE(X) (char*)(&X), sizeof(X)
 
+#define HAZE_TO_STR(V) std::to_string(V)
+#define HAZE_TO_HAZE_STR(V) std::to_wstring(V)
+
 #define HAZE_TEXT(S) L##S
 
 #define HAZE_CAST_VALUE_TYPE(X) (uint32)(X)
@@ -43,8 +46,8 @@
 #define CLASS_LABEL_HEADER				HAZE_TEXT("Class")
 #define FUNCTION_LABEL_HEADER			HAZE_TEXT("Function")
 #define FUNCTION_PARAM_HEADER			HAZE_TEXT("Param")
-#define FUNCTION_START_HEADER			HAZE_TEXT("Start")
-#define FUNCTION_END_HEADER				HAZE_TEXT("End")
+#define FUNCTION_START_HEADER			HAZE_TEXT("FunctionStart")
+#define FUNCTION_END_HEADER				HAZE_TEXT("FunctionEnd")
 
 #define HAZE_LOCAL_VARIABLE_HEADER		HAZE_TEXT("Variable")
 #define HAZE_LOCAL_VARIABLE_CONBINE		HAZE_TEXT("$")

@@ -93,28 +93,26 @@ void HazeStack::PCStepInc()
 
 void HazeStack::PreMainFunction()
 {
+	//0-4存储FaultPC,Main函数return后读取此PC,然后退出循环
 	int FaultPC = -2;
 	memcpy(&Stack_Main[ESP], &FaultPC, HAZE_ADDRESS_SIZE);
-	ESP += HAZE_ADDRESS_SIZE;
-	EBP = ESP;
+	ESP = HAZE_ADDRESS_SIZE;
+	EBP = 0;
 }
 
 void HazeStack::PushMainFuntion()
 {
-	ESP += HAZE_ADDRESS_SIZE;
-	EBP = ESP;
-
 	auto& MainFunction = VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
 	OnCall(&MainFunction, 0);
 	PCStepInc();
 
-	ESP -= HAZE_ADDRESS_SIZE;
+	/*ESP -= HAZE_ADDRESS_SIZE;
 	EBP -= HAZE_ADDRESS_SIZE;
 
 	if (MainFunction.Vector_Variable.size() > 0)
 	{
 		ESP += MainFunction.Vector_Variable.back().Offset + MainFunction.Vector_Variable.back().Size;
-	}
+	}*/
 }
 
 HazeRegister* HazeStack::GetVirtualRegister(const HAZE_CHAR* Name)

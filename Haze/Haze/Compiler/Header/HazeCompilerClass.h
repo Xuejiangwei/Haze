@@ -45,9 +45,9 @@ public:
 
 	//bool GetDataName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
-	void GenClassData_I_Code(HAZE_OFSTREAM& OFStream);
+	void GenClassData_I_Code(HAZE_STRING_STREAM& SStream);
 
-	void GenClassFunction_I_Code(HAZE_OFSTREAM& OFStream);
+	void GenClassFunction_I_Code(HAZE_STRING_STREAM& SStream);
 
 	unsigned int GetDataSize();
 
