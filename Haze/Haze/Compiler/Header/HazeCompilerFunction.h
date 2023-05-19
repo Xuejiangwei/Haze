@@ -40,9 +40,11 @@ public:
 
 	HAZE_STRING GenDafaultBlockName();
 	
-	HAZE_STRING GenIfBlockName();
+	HAZE_STRING GenIfThenBlockName();
 
 	HAZE_STRING GenElseBlockName();
+
+	HAZE_STRING GenLoopBlockName();
 
 	HAZE_STRING GenWhileBlockName();
 
@@ -50,7 +52,7 @@ public:
 
 	HAZE_STRING GenForConditionBlockName();
 
-	HAZE_STRING GenForEndBlockName();
+	HAZE_STRING GenForStepBlockName();
 
 	//std::shared_ptr<HazeBaseBlock> GetTopBaseBlock();
 

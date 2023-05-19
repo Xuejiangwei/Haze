@@ -3,8 +3,9 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
 
-extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
+#include "HazeDebug.h"
 
+extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 {
@@ -473,6 +474,10 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() >= 1)
 		{
+#if HAZE_CALL_LOG
+			HAZE_LOG_INFO(HAZE_TEXT("调用函数<%s>\n"), Operator[0].Variable.Name.c_str());
+#endif
+
 			memcpy(&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], &Stack->PC, HAZE_ADDRESS_SIZE);
 
 			if (Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
@@ -489,6 +494,9 @@ public:
 
 				if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 				{
+#if HAZE_CALL_HAZE_FUNC_LOG
+					HAZE_LOG_INFO(HAZE_TEXT("调用Haze函数<%s>\n"), Operator[0].Variable.Name.c_str());
+#endif
 					Stack->OnCall(&Function, Operator[0].Extra.Call.ParamByteSize);
 				}
 				else
@@ -730,7 +738,8 @@ private:
 
 			Ret = Register->Data.begin()._Unwrapped();
 		}
-		else if (Operator.Scope == HazeDataDesc::ClassMember_Local_Public && Operator.AddressType == InstructionAddressType::Pointer_Offset)
+		else if (Operator.Scope >= HazeDataDesc::ClassMember_Local_Public && Operator.Scope <= HazeDataDesc::ClassMember_Local_Protected
+			&& Operator.AddressType == InstructionAddressType::Pointer_Offset)
 		{
 			memcpy(&TempAddress, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
 

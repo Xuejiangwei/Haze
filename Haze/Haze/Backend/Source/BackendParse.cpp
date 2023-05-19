@@ -746,7 +746,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 							HAZE_LOG_ERR(HAZE_TEXT("查找变量<%s>的偏移地址错误,当前函数<%s>!\n"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
 						}
 					}
-					else if (it.Scope == HazeDataDesc::ClassMember_Local_Public)
+					else if (it.Scope >= HazeDataDesc::ClassMember_Local_Public && it.Scope <= HazeDataDesc::ClassMember_Local_Protected)
 					{
 						HAZE_STRING ObjName;
 						HAZE_STRING MemberName;

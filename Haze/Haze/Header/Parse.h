@@ -45,7 +45,7 @@ private:
 
 	std::unique_ptr<ASTBase> ParseExpression(int Prec = 0);
 
-	std::unique_ptr<ASTBase> ParseUnaryExpression(bool HasLeft = false);
+	std::unique_ptr<ASTBase> ParseUnaryExpression();
 
 	std::unique_ptr<ASTBase> ParseBinaryOperateExpression(int Prec, std::unique_ptr<ASTBase> Left);
 
@@ -140,4 +140,6 @@ private:
 
 	HazeDefineVariable DefineVariable;
 	HAZE_STRING CurrParseClass;
+
+	int LeftParenthesesExpressionCount;
 };

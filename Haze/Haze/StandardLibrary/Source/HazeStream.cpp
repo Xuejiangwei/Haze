@@ -210,9 +210,6 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				memcpy((char*)Address, &TempV, sizeof(TempV));
 
 				HSS << TempV;
-				HazePrintfCall(HSS.str().c_str());
-				HSS.str(HAZE_TEXT(""));
-
 				Start++;
 			}
 			else if (*Start == HAZE_CHAR('f'))
@@ -227,9 +224,6 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				memcpy((char*)Address, &TempV, sizeof(TempV));
 
 				HSS << TempV;
-				HazePrintfCall(HSS.str().c_str());
-				HSS.str(HAZE_TEXT(""));
-
 				Start++;
 			}
 			/*else if (*Start == HAZE_CHAR('s'))
@@ -247,8 +241,6 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 			}*/
 		}
 	}
-
-	HazePrintfCall(HSS.str().c_str());
 }
 
 void HazeStream::HazeScanfCall()

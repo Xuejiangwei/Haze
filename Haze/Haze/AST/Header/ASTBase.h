@@ -342,6 +342,8 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
+	virtual bool IsBlock() const { return true; }
+
 private:
 	std::unique_ptr<ASTBase> Condition;
 	std::unique_ptr<ASTBase> MultiExpression;
@@ -356,6 +358,8 @@ public:
 	virtual	~ASTForExpression()	override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+	virtual bool IsBlock() const { return true; }
 
 private:
 	std::unique_ptr<ASTBase> InitExpression;

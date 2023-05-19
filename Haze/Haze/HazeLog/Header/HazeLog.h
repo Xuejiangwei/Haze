@@ -19,4 +19,6 @@ public:
 
 #define HAZE_LOG_ERR(FORMAT, ...) HazeLog::LogInfo(HazeLog::Error, FORMAT, __VA_ARGS__)
 
+#define HAZE_LOG_INFO(FORMAT, ...) HazeLog::LogInfo(HazeLog::Info, FORMAT, __VA_ARGS__)
+
 #define HAZE_TO_DO(X) HazeLog::LogInfo(HazeLog::Error, HAZE_TEXT("%s\n"), L"Haze to do : " L###X)

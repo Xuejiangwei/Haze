@@ -7,6 +7,7 @@ class HazeCompilerModule;
 
 class HazeCompilerValue : public std::enable_shared_from_this<HazeCompilerValue>
 {
+	friend class HazeCompilerClass;
 public:
 	HazeCompilerValue();
 

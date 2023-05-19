@@ -17,6 +17,7 @@ HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRI
 	{
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
+			Vector_Data[i].second[j].second->Scope = Vector_Data[i].first;
 			DataSize += Vector_Data[i].second[j].second->GetSize();
 		}
 	}
@@ -95,7 +96,6 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 		{
 			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].first, ThisClassValue->Vector_Data[i].second[j] }, Value, OutName))
 			{
-				OutName = HAZE_CLASS_THIS + OutName;
 				return true;
 			}
 		}

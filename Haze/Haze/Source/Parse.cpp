@@ -292,7 +292,7 @@ static std::unordered_map<HazeToken, int> HashMap_OperatorPriority =
 	//{ HazeToken::Inc, 900 },				//后置++
 
 	
-	//{ HazeToken::LeftParentheses, 1000 },
+	//{ HazeToken::LeftParentheses, 1000 },	
 };
 
 //static std::unordered_map<HazeToken, HazeValueType> MapValueType =
@@ -338,7 +338,7 @@ static void GetType(HazeDefineType& Type, const HAZE_STRING& Str)
 	}
 }
 
-Parse::Parse(HazeVM* VM) :VM(VM), CurrCode(nullptr), CurrToken(HazeToken::None)
+Parse::Parse(HazeVM* VM) :VM(VM), CurrCode(nullptr), CurrToken(HazeToken::None), LeftParenthesesExpressionCount(0)
 {
 }
 
@@ -565,10 +565,14 @@ std::unique_ptr<ASTBase> Parse::ParseExpression(int Prec)
 	return nullptr;
 }
 
-std::unique_ptr<ASTBase> Parse::ParseUnaryExpression(bool HasLeft)
+std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
 {
 	auto it = HashMap_OperatorPriority.find(CurrToken);
-	if (it == HashMap_OperatorPriority.end() || !HasLeft)
+	if (it == HashMap_OperatorPriority.end())
+	{
+		return ParsePrimary();
+	}
+	else if (CurrToken == HazeToken::Mul)		//给指针指向的值赋值
 	{
 		return ParsePrimary();
 	}
@@ -598,7 +602,7 @@ std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::uniq
 		else
 		{
 			GetNextToken();
-			Right = ParseUnaryExpression(true);
+			Right = ParseExpression(it->second);
 			if (!Right)
 			{
 				return nullptr;
@@ -984,8 +988,8 @@ std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
 		if (CurrToken == HazeToken::Else)
 		{
 			GetNextToken();
-
 			bool NextNotIf = CurrToken != HazeToken::If;
+
 			if (NextNotIf)
 			{
 				ElseExpression = ParseMultiExpression();
@@ -1166,11 +1170,16 @@ std::unique_ptr<ASTBase> Parse::ParseThreeOperator(std::unique_ptr<ASTBase> Cond
 
 std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 {
+	LeftParenthesesExpressionCount++;
 	GetNextToken();
 	auto Expression = ParseExpression();
-	if (CurrToken == HazeToken::RightParentheses)
+	if (CurrToken == HazeToken::RightParentheses || LeftParenthesesExpressionCount == 0)
 	{
-		GetNextToken();
+		if (LeftParenthesesExpressionCount > 0)
+		{
+			LeftParenthesesExpressionCount--;
+			GetNextToken();
+		}
 		return Expression;
 	}
 	else
@@ -1189,14 +1198,34 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 	
 	auto Expression = ParseExpression(HashMap_OperatorPriority.find(HazeToken::PointerValue)->second);
 
-	if (CurrToken == HazeToken::Assign)
+	if (CurrToken == HazeToken::RightParentheses)
 	{
-		GetNextToken();
-		auto AssignExpression = ParseExpression();
-		return std::make_unique<ASTPointerValue>(VM, Expression, Level, std::move(AssignExpression));
+		if (LeftParenthesesExpressionCount > 0)
+		{
+			LeftParenthesesExpressionCount--;
+			GetNextToken();
+			if (CurrToken == HazeToken::Assign)
+			{
+				GetNextToken();
+				auto AssignExpression = ParseExpression();
+				return std::make_unique<ASTPointerValue>(VM, Expression, Level, std::move(AssignExpression));
+			}
+			else
+			{
+				return std::make_unique<ASTPointerValue>(VM, Expression, Level);
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("解指针<%s>错误,需要小括号!\n"), Expression->GetName());
+		}
+	}
+	else
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("解指针<%s>错误,需要小括号!\n"), Expression->GetName());
 	}
 
-	return std::make_unique<ASTPointerValue>(VM, Expression, Level);
+	return nullptr;
 }
 
 std::unique_ptr<ASTBase> Parse::ParseNeg()

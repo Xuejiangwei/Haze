@@ -174,6 +174,11 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		if (Function->GetClass())
 		{
 			ThisPointerValue = Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(GetObjectName(Name));
+
+			if (!ThisPointerValue)
+			{
+				Param.push_back(Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(HAZE_CLASS_THIS));
+			}
 		}
 
 		return Compiler->CreateFunctionCall(Function, Param, ThisPointerValue);
@@ -427,16 +432,6 @@ std::shared_ptr<HazeCompilerValue> ASTMultiExpression::CodeGen()
 {
 	for (size_t i = 0; i < VectorExpression.size(); i++)
 	{
-		if (VectorExpression[i]->IsBlock())
-		{
-			auto& Compiler = VM->GetCompiler();
-			auto Function = Compiler->GetCurrModule()->GetCurrFunction();
-
-			auto ParentBlock = Compiler->GetInsertBlock()->GetShared();
-			auto DefauleBlock = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, ParentBlock);
-			Compiler->SetInsertBlock(DefauleBlock);
-		}
-		
 		VectorExpression[i]->CodeGen();
 	}
 
@@ -641,46 +636,43 @@ std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 	auto& Compiler = VM->GetCompiler();
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 
-	auto ParentBlock = Compiler->GetInsertBlock()->GetParentBlock()->GetShared();
+	auto ParentBlock = Compiler->GetInsertBlock()/*->GetParentBlock()->GetShared()*/;
 	auto InsertBlock = Compiler->GetInsertBlock();//ParentBlock->GetInsertToBlock()->GetShared();
-	auto IfBlock = HazeBaseBlock::CreateBaseBlock(Function->GenIfBlockName(), Function, ParentBlock);
+	auto IfThenBlock = HazeBaseBlock::CreateBaseBlock(Function->GenIfThenBlockName(), Function, ParentBlock);
 	auto ElseBlock = ElseExpression ? HazeBaseBlock::CreateBaseBlock(Function->GenElseBlockName(), Function, ParentBlock) : nullptr;
-
-	Compiler->SetInsertBlock(ParentBlock);
-	Compiler->CreateJmpFromBlock(ParentBlock, IfBlock, false);
-
-	Compiler->SetInsertBlock(IfBlock);
+	auto NextBlock = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, ParentBlock);
 
 	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(Condition.get());
+	//Compiler->CreateJmpToBlock(IfBlock);
+
 	if (ConditionExp && GetHazeCmpTypeByToken(ConditionExp->OperatorToken) != HazeCmpType::None)
 	{
 		Condition->CodeGen();
-		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, ElseExpression ? ElseBlock : InsertBlock, false);
+		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), IfThenBlock, ElseExpression ? ElseBlock : InsertBlock);
 	}
 	else
 	{
 		Compiler->CreateBoolCmp(Condition->CodeGen());
-		Compiler->CreateCompareJmp(HazeCmpType::Equal, nullptr, ElseExpression ? ElseBlock : InsertBlock, false);
+		Compiler->CreateCompareJmp(HazeCmpType::Equal, IfThenBlock, ElseExpression ? ElseBlock : InsertBlock);
 	}
 
+	Compiler->SetInsertBlock(IfThenBlock);
 	IfExpression->CodeGen();
-
-	Compiler->CreateJmpToBlock(InsertBlock);
-	//IfBlock->FinishBlock(nullptr);
+	Compiler->CreateJmpToBlock(NextBlock);
 
 	if (ElseExpression)
 	{
 		Compiler->SetInsertBlock(ElseBlock);
 		ElseExpression->CodeGen();
-		//ElseBlock->FinishBlock(nullptr);
-		Compiler->CreateJmpToBlock(InsertBlock);
-		Compiler->SetInsertBlock(InsertBlock);
+		Compiler->CreateJmpToBlock(NextBlock);
+		//Compiler->SetInsertBlock(InsertBlock);
 	}
 	else
 	{
-		Compiler->SetInsertBlock(InsertBlock);
-		//Compiler->CreateJmpToBlock(InsertBlock);
+		//Compiler->SetInsertBlock(InsertBlock);
 	}
+
+	Compiler->SetInsertBlock(NextBlock);
 	return nullptr;
 }
 
@@ -703,7 +695,6 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 	WhileBlock->SetLoopEnd(WhileBlock.get());
 
 	Compiler->CreateJmpFromBlock(ParentBlock, WhileBlock, true);
-
 	Compiler->SetInsertBlock(WhileBlock);
 
 	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(Condition.get());
@@ -744,47 +735,42 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 {
 	auto& Compiler = VM->GetCompiler();
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
-	auto ParentBlock = Compiler->GetInsertBlock()->GetInsertToBlock()->GetShared();
+	auto ParentBlock = Compiler->GetInsertBlock()/*->GetInsertToBlock()->GetShared()*/;
 
-	auto ForBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForBlockName(), Function, ParentBlock);
-	auto ForConditionBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForConditionBlockName(), Function, ForBlock);
-	auto ForEndBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForEndBlockName(), Function, ForBlock);
-	ForBlock->SetLoopEnd(ForEndBlock.get());
-	ForConditionBlock->SetLoopEnd(ForEndBlock.get());
-
-	Compiler->CreateJmpFromBlock(ParentBlock, ForBlock, true);
-
-	Compiler->SetInsertBlock(ForBlock);
-
-	InitExpression->CodeGen();
+	//auto ForBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForBlockName(), Function, ParentBlock);
+	auto ForConditionBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForConditionBlockName(), Function, ParentBlock);
+	auto LoopBlock = HazeBaseBlock::CreateBaseBlock(Function->GenLoopBlockName(), Function, ParentBlock);
+	auto ForStepBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForStepBlockName(), Function, ParentBlock);
+	auto EndLoopBlock = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, ParentBlock);
+	
+	if (!InitExpression->CodeGen())
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("Ñ­»·Óï¾ä³õÊ¼»¯Ê§°Ü!\n"));
+	}
 
 	Compiler->CreateJmpToBlock(ForConditionBlock);
-
 	Compiler->SetInsertBlock(ForConditionBlock);
-
 	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(ConditionExpression.get());
 	if (ConditionExp)
 	{
 		ConditionExpression->CodeGen();
-		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
+		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), LoopBlock, EndLoopBlock);
 	}
 	else
 	{
 		Compiler->CreateBoolCmp(ConditionExpression->CodeGen());
-		Compiler->CreateCompareJmp(HazeCmpType::Equal, nullptr, nullptr, false, true);
+		Compiler->CreateCompareJmp(HazeCmpType::Equal, LoopBlock, EndLoopBlock);
 	}
 
+	Compiler->SetInsertBlock(LoopBlock);
 	MultiExpression->CodeGen();
-	
-	Compiler->SetInsertBlock(ForEndBlock);
-	StepExpression->CodeGen();
+	Compiler->CreateJmpToBlock(ForStepBlock);
 
+	Compiler->SetInsertBlock(ForStepBlock);
+	StepExpression->CodeGen();
 	Compiler->CreateJmpToBlock(ForConditionBlock);
 
-	//ForBlock->FinishBlock(ForEndBlock, false);
-	//ForEndBlock->FinishBlock();
-
-	Compiler->SetInsertBlock(ParentBlock);
+	Compiler->SetInsertBlock(EndLoopBlock);
 
 	return nullptr;
 }

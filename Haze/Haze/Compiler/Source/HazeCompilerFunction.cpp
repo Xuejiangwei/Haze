@@ -76,6 +76,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 			}
 		}
 
+		if (Ret)
+		{
+			break;
+		}
 		CurrBlock = CurrBlock->GetParentBlock();
 	}
 
@@ -208,10 +212,10 @@ HAZE_STRING HazeCompilerFunction::GenDafaultBlockName()
 	return HSS.str();
 }
 
-HAZE_STRING HazeCompilerFunction::GenIfBlockName()
+HAZE_STRING HazeCompilerFunction::GenIfThenBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("IfBlock") << ++CurrBlockCount;
+	HSS << HAZE_TEXT("IfThenBlock") << ++CurrBlockCount;
 	return HSS.str();
 }
 
@@ -219,6 +223,13 @@ HAZE_STRING HazeCompilerFunction::GenElseBlockName()
 {
 	HAZE_STRING_STREAM HSS;
 	HSS << HAZE_TEXT("ElseBlock") << ++CurrBlockCount;
+	return HSS.str();
+}
+
+HAZE_STRING HazeCompilerFunction::GenLoopBlockName()
+{
+	HAZE_STRING_STREAM HSS;
+	HSS << HAZE_TEXT("LoopBlock") << ++CurrBlockCount;
 	return HSS.str();
 }
 
@@ -243,10 +254,10 @@ HAZE_STRING HazeCompilerFunction::GenForConditionBlockName()
 	return HSS.str();
 }
 
-HAZE_STRING HazeCompilerFunction::GenForEndBlockName()
+HAZE_STRING HazeCompilerFunction::GenForStepBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("ForEndBlock") << ++CurrBlockCount;
+	HSS << HAZE_TEXT("ForStepBlock") << ++CurrBlockCount;
 	return HSS.str();
 }
 
