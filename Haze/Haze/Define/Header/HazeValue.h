@@ -107,3 +107,5 @@ size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
 const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type);
 
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, HazeValue& Value);
+
+HazeValue GetNegValue(HazeValueType Type, const HazeValue& Value);

@@ -60,11 +60,17 @@ public:
 	};
 
 public:
+	struct ClassMemberData
+	{
+		HazeDefineVariable Member;
+		uint32 Size;
+	};
+
 	struct ClassTableData
 	{
 		HAZE_STRING Name;
-		unsigned int Size;
-		std::vector<HazeDefineVariable> Vector_Member;
+		uint32 Size;
+		std::vector<ClassMemberData> Vector_Member;
 	};
 
 	struct ClassTable

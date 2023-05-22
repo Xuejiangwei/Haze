@@ -367,7 +367,7 @@ std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 	return nullptr;
 }
 
-ASTNeg::ASTNeg(HazeVM* VM, std::unique_ptr<ASTBase>& Expression) : ASTBase(VM), Expression(std::move(Expression))
+ASTNeg::ASTNeg(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, bool IsNumberNeg) : ASTBase(VM), Expression(std::move(Expression)), IsNumberNeg(IsNumberNeg)
 {
 }
 
@@ -377,7 +377,14 @@ ASTNeg::~ASTNeg()
 
 std::shared_ptr<HazeCompilerValue> ASTNeg::CodeGen()
 {
-	return VM->GetCompiler()->CreateBitNeg(Expression->CodeGen());
+	if (IsNumberNeg)
+	{
+		return VM->GetCompiler()->CreateNeg(Expression->CodeGen());
+	}
+	else
+	{
+		return VM->GetCompiler()->CreateBitNeg(Expression->CodeGen());
+	}
 }
 
 ASTInc::ASTInc(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, bool IsPreInc) : ASTBase(VM), IsPreInc(IsPreInc), Expression(std::move(Expression))
@@ -449,6 +456,12 @@ ASTBinaryExpression::~ASTBinaryExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 {
+	auto LeftExp = dynamic_cast<ASTBinaryExpression*>(LeftAST.get());
+	if (LeftExp)
+	{
+		LeftExp->SetLeftAndRightBlock(LeftBlock, RightBlock);
+	}
+
 	std::shared_ptr<HazeCompilerValue> LeftValue = LeftAST->CodeGen();
 	std::shared_ptr<HazeCompilerValue> RightValue = RightAST->CodeGen();
 
@@ -490,7 +503,28 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	case HazeToken::GreaterEqual:
 	case HazeToken::Less:
 	case HazeToken::LessEqual:
-		return Compiler->CreateIntCmp(LeftValue, RightValue);
+	{
+		auto Function = Compiler->GetCurrModule()->GetCurrFunction();
+		auto Ret = Compiler->CreateIntCmp(LeftValue, RightValue);
+
+		if (LeftExp)
+		{
+
+			if (LeftExp->OperatorToken != OperatorToken)
+			{
+				auto Block = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, Compiler->GetInsertBlock());
+			
+				Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(OperatorToken), LeftBlock->GetShared(), Block, false, false);
+				Compiler->SetInsertBlock(Block);
+			}
+			
+		}
+		else
+		{
+			Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(OperatorToken), LeftBlock->GetShared(), RightBlock->GetShared(), false, false);
+			return Ret;
+		}
+	}
 	case HazeToken::AddAssign:
 		Compiler->CreateAdd(LeftValue, RightValue, true);
 		return LeftValue;
@@ -521,16 +555,17 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	case HazeToken::ShrAssign:
 		Compiler->CreateShr(LeftValue, RightValue, true);
 		return LeftValue;
-	case HazeToken::LeftParentheses:
-		break;
-	case HazeToken::RightParentheses:
-		break;
-
 	default:
 		break;
 	}
 
 	return nullptr;
+}
+
+void ASTBinaryExpression::SetLeftAndRightBlock(HazeBaseBlock* LeftBlock, HazeBaseBlock* RightBlock)
+{
+	this->LeftBlock = LeftBlock;
+	this->RightBlock = RightBlock;
 }
 
 ASTThreeExpression::ASTThreeExpression(HazeVM* VM, std::unique_ptr<ASTBase>& ConditionAST, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST)
@@ -558,12 +593,12 @@ std::shared_ptr<HazeCompilerValue> ASTThreeExpression::CodeGen()
 	if (ConditionExp)
 	{
 		ConditionExp->CodeGen();
-		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), BlockLeft, BlockRight, false, false);
+		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), BlockLeft, BlockRight);
 	}
 	else
 	{
 		Compiler->CreateBoolCmp(ConditionAST->CodeGen());
-		Compiler->CreateCompareJmp(HazeCmpType::Equal, BlockLeft, BlockRight, false, false);
+		Compiler->CreateCompareJmp(HazeCmpType::Equal, BlockLeft, BlockRight);
 	}
 
 	auto TempValue = HazeCompiler::GetTempRegister();
@@ -604,7 +639,7 @@ ASTBreakExpression::~ASTBreakExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTBreakExpression::CodeGen()
 {
-	VM->GetCompiler()->CreateJmpOut(VM->GetCompiler()->GetInsertBlock());
+	VM->GetCompiler()->CreateJmpToBlock(VM->GetCompiler()->GetInsertBlock()->FindLoopBlock()->GetLoopEnd()->GetShared());
 	return nullptr;
 }
 
@@ -618,7 +653,7 @@ ASTContinueExpression::~ASTContinueExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTContinueExpression::CodeGen()
 {
-	VM->GetCompiler()->CreateJmpToBlock(VM->GetCompiler()->GetInsertBlock()->FindLoopBlock()->GetLoopEnd()->GetShared());
+	VM->GetCompiler()->CreateJmpToBlock(VM->GetCompiler()->GetInsertBlock()->FindLoopBlock()->GetLoopStep()->GetShared());
 	return nullptr;
 }
 
@@ -647,13 +682,14 @@ std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 
 	if (ConditionExp && GetHazeCmpTypeByToken(ConditionExp->OperatorToken) != HazeCmpType::None)
 	{
+		ConditionExp->SetLeftAndRightBlock(IfThenBlock.get(), ElseExpression ? ElseBlock.get() : NextBlock.get());
 		Condition->CodeGen();
-		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), IfThenBlock, ElseExpression ? ElseBlock : InsertBlock);
+		//Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), IfThenBlock, ElseExpression ? ElseBlock : NextBlock);
 	}
 	else
 	{
 		Compiler->CreateBoolCmp(Condition->CodeGen());
-		Compiler->CreateCompareJmp(HazeCmpType::Equal, IfThenBlock, ElseExpression ? ElseBlock : InsertBlock);
+		Compiler->CreateCompareJmp(HazeCmpType::Equal, IfThenBlock, ElseExpression ? ElseBlock : NextBlock);
 	}
 
 	Compiler->SetInsertBlock(IfThenBlock);
@@ -692,30 +728,31 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 
 	auto ParentBlock = Compiler->GetInsertBlock()->GetInsertToBlock()->GetShared();
 	auto WhileBlock = HazeBaseBlock::CreateBaseBlock(Function->GenWhileBlockName(), Function, ParentBlock);
-	WhileBlock->SetLoopEnd(WhileBlock.get());
+	auto NextBlock = HazeBaseBlock::CreateBaseBlock(Function->GenWhileBlockName(), Function, ParentBlock);
 
-	Compiler->CreateJmpFromBlock(ParentBlock, WhileBlock, true);
-	Compiler->SetInsertBlock(WhileBlock);
+	WhileBlock->SetLoopEnd(NextBlock.get());
+	WhileBlock->SetLoopStep(WhileBlock.get());
 
 	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(Condition.get());
 	if (ConditionExp)
 	{
+		ConditionExp->SetLeftAndRightBlock(WhileBlock.get(), NextBlock.get());
 		Condition->CodeGen();
-		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), nullptr, nullptr, false, true);
+		//Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), WhileBlock, NextBlock);
 	}
 	else
 	{
 		Compiler->CreateBoolCmp(Condition->CodeGen());
-		Compiler->CreateCompareJmp(HazeCmpType::Equal, nullptr, nullptr, false, true);
+		Compiler->CreateCompareJmp(HazeCmpType::Equal, WhileBlock, NextBlock);
 	}
 
+	Compiler->SetInsertBlock(WhileBlock);
 	MultiExpression->CodeGen();
-
 	Compiler->CreateJmpToBlock(WhileBlock);
 
 	//WhileBlock->FinishBlock(nullptr, false);
 
-	Compiler->SetInsertBlock(ParentBlock);
+	Compiler->SetInsertBlock(NextBlock);
 
 	return nullptr;
 }
@@ -742,7 +779,9 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 	auto LoopBlock = HazeBaseBlock::CreateBaseBlock(Function->GenLoopBlockName(), Function, ParentBlock);
 	auto ForStepBlock = HazeBaseBlock::CreateBaseBlock(Function->GenForStepBlockName(), Function, ParentBlock);
 	auto EndLoopBlock = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, ParentBlock);
-	
+	LoopBlock->SetLoopEnd(EndLoopBlock.get());
+	LoopBlock->SetLoopStep(ForStepBlock.get());
+
 	if (!InitExpression->CodeGen())
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("—≠ª∑”Ôæ‰≥ı ºªØ ß∞‹!\n"));
@@ -753,8 +792,9 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(ConditionExpression.get());
 	if (ConditionExp)
 	{
+		ConditionExp->SetLeftAndRightBlock(LoopBlock.get(), LoopBlock.get());
 		ConditionExpression->CodeGen();
-		Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), LoopBlock, EndLoopBlock);
+		//Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(ConditionExp->OperatorToken), LoopBlock, LoopBlock);
 	}
 	else
 	{

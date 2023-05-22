@@ -733,6 +733,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 	return Function->CreateNew(Data);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNeg(std::shared_ptr<HazeCompilerValue> Value)
+{
+	return GetCurrModule()->CreateNeg(Value);
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
 {
 	return GetCurrModule()->CreateInc(Value, IsPreInc);
@@ -760,6 +765,16 @@ void HazeCompiler::CreateJmpOut(std::shared_ptr<HazeBaseBlock> Block)
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
+	if (Left->IsArrayElement())
+	{
+		Left = GetArrayElementToValue(GetCurrModule().get(), Left);
+	}
+
+	if (Right->IsArrayElement())
+	{
+		Right = GetArrayElementToValue(GetCurrModule().get(), Right);
+	}
+
 	GetCurrModule()->GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::CMP);
 	return GetRegister(CMP_REGISTER);
 }

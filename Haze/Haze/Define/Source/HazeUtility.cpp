@@ -54,8 +54,13 @@ const HAZE_CHAR* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
-bool HazeIsSpace(HAZE_CHAR Char)
+bool HazeIsSpace(HAZE_CHAR Char, bool* IsNewLine)
 {
+	if (IsNewLine)
+	{
+		*IsNewLine = Char == HAZE_CHAR('\n');
+	}
+	
 	return Char == HAZE_CHAR(' ') || Char == HAZE_CHAR('\n') || Char == HAZE_CHAR('\t') || Char == HAZE_CHAR('\v') || Char == HAZE_CHAR('\f') || Char == HAZE_CHAR('\r');
 }
 

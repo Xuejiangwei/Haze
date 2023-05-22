@@ -142,4 +142,6 @@ private:
 	HAZE_STRING CurrParseClass;
 
 	int LeftParenthesesExpressionCount;
+
+	uint64 LineCount;
 };

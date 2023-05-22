@@ -148,17 +148,16 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& SStream)
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
 			SStream << Vector_Data[i].second[j].first << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().PrimaryType);
-			if (Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::PointerBase)
+			if (Vector_Data[i].second[j].second->IsPointerBase())
 			{
 				SStream << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().SecondaryType);
 			}
-			else if (Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::PointerClass ||
-				Vector_Data[i].second[j].second->GetValueType().PrimaryType == HazeValueType::Class)
+			else if (Vector_Data[i].second[j].second->IsPointerClass() || Vector_Data[i].second[j].second->IsClass())
 			{
 				SStream << " " << Vector_Data[i].second[j].second->GetValueType().CustomName;
 			}
 
-			SStream << std::endl;
+			SStream << " " << Vector_Data[i].second[j].second->GetSize() << std::endl;
 		}
 	}
 

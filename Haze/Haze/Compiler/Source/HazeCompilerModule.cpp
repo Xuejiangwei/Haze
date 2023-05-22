@@ -224,6 +224,31 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateNot(std::shared_ptr
 	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::NOT);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateNeg(std::shared_ptr<HazeCompilerValue> Value)
+{
+	if (Value->IsConstant())
+	{
+		Value = Compiler->GenConstantValue(Value->GetValueType().PrimaryType, GetNegValue(Value->GetValueType().PrimaryType, Value->GetValue()));
+	}
+	else
+	{
+		auto TempRegister = Compiler->GetTempRegister();
+		Compiler->CreateMov(TempRegister, Value);
+
+		HAZE_STRING_STREAM SStream;
+		SStream << GetInstructionString(InstructionOpCode::NEG) << " ";
+		GenValueHzicText(this, SStream, TempRegister);
+		SStream << std::endl;
+
+		std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
+		BB->PushIRCode(SStream.str());
+
+		Value = TempRegister;
+	}
+
+	return Value;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
 {
 	std::shared_ptr<HazeCompilerValue> Ret = Value;

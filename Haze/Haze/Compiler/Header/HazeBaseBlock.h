@@ -32,7 +32,11 @@ public:
 
 	void SetLoopEnd(HazeBaseBlock* Block) { LoopEndBlock = Block; }
 
+	void SetLoopStep(HazeBaseBlock* Block) { LoopStepBlock = Block; }
+
 	HazeBaseBlock* GetLoopEnd() const { return LoopEndBlock; }
+
+	HazeBaseBlock* GetLoopStep() const { return LoopStepBlock; }
 
 	HazeBaseBlock* GetInsertToBlock();
 
@@ -71,7 +75,10 @@ private:
 	HazeCompilerFunction* ParentFunction;
 
 	HazeBaseBlock* ParentBlock;
+
 	HazeBaseBlock* LoopEndBlock;
+	HazeBaseBlock* LoopStepBlock;
+	
 	std::list<std::shared_ptr<HazeBaseBlock>> List_ChildBlock;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Vector_Alloca;

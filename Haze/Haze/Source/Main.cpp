@@ -74,7 +74,7 @@ int main(int ArgCount, char* ArgValue[])
 	
 	std::cout << std::endl << "Haze End!" << std::endl;
 	
-	getchar();
+	system("pause");
 	return 0;
 }
 

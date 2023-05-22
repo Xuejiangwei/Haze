@@ -28,7 +28,7 @@ const HAZE_CHAR* GetFunctionStartHeader();
 
 const HAZE_CHAR* GetFunctionEndHeader();
 
-bool HazeIsSpace(HAZE_CHAR Char);
+bool HazeIsSpace(HAZE_CHAR Char, bool* IsNewLine = nullptr);
 
 bool IsNumber(const HAZE_STRING& Str);
 

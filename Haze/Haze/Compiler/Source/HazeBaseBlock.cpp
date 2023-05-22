@@ -96,7 +96,7 @@ HazeBaseBlock* HazeBaseBlock::FindLoopBlock()
 bool HazeBaseBlock::IsLoopBlock() const
 {
 	static HAZE_STRING WhileBlockName = HAZE_TEXT("WhileBlock");
-	static HAZE_STRING ForBlockName = HAZE_TEXT("ForBlock");
+	static HAZE_STRING ForBlockName = HAZE_TEXT("LoopBlock");
 
 	if (Name.length() >= WhileBlockName.length() && Name.substr(0, WhileBlockName.length()) == WhileBlockName)
 	{

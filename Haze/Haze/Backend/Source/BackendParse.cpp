@@ -183,19 +183,21 @@ void BackendParse::Parse_I_Code_ClassTable()
 
 				for (size_t j = 0; j < Table.Vector_Class[i].Vector_Member.size(); j++)
 				{
-					GetNextLexmeAssign_HazeString(Table.Vector_Class[i].Vector_Member[j].Name);
+					GetNextLexmeAssign_HazeString(Table.Vector_Class[i].Vector_Member[j].Member.Name);
 
-					GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType);
+					GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Member.Type.PrimaryType);
 
-					if (Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType == HazeValueType::PointerClass 
-						|| Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType == HazeValueType::Class)
+					if (Table.Vector_Class[i].Vector_Member[j].Member.Type.PrimaryType == HazeValueType::PointerClass 
+						|| Table.Vector_Class[i].Vector_Member[j].Member.Type.PrimaryType == HazeValueType::Class)
 					{
-						GetNextLexmeAssign_HazeString(Table.Vector_Class[i].Vector_Member[j].Type.CustomName);
+						GetNextLexmeAssign_HazeString(Table.Vector_Class[i].Vector_Member[j].Member.Type.CustomName);
 					}
-					else if (Table.Vector_Class[i].Vector_Member[j].Type.PrimaryType == HazeValueType::PointerBase)
+					else if (Table.Vector_Class[i].Vector_Member[j].Member.Type.PrimaryType == HazeValueType::PointerBase)
 					{
-						GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Type.SecondaryType);
+						GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Member.Type.SecondaryType);
 					}
+
+					GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Size);
 				}
 			}
 		}
@@ -382,6 +384,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
 	break;
+	case InstructionOpCode::NEG:
 	case InstructionOpCode::NOT:
 	case InstructionOpCode::BIT_NEG:
 	case InstructionOpCode::PUSH:
@@ -549,14 +552,14 @@ void BackendParse::GenOpCodeFile()
 
 		for (size_t i = 0; i < Iter.Vector_Member.size(); i++)
 		{
-			BinaryString = WString2String(Iter.Vector_Member[i].Name);
+			BinaryString = WString2String(Iter.Vector_Member[i].Member.Name);
 			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.data(), UnsignedInt);
 
-			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Vector_Member[i].Type.PrimaryType));
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Vector_Member[i].Member.Type.PrimaryType));
 
-			BinaryString = WString2String(HAZE_STRING(Iter.Vector_Member[i].Type.CustomName));
+			BinaryString = WString2String(HAZE_STRING(Iter.Vector_Member[i].Member.Type.CustomName));
 			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.data(), UnsignedInt);
@@ -661,6 +664,9 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 	//替换变量为索引或相对函数起始偏移
 	for (size_t k = 0; k < NewFunctionTable.Vector_Function.size(); ++k)
 	{
+#if BACKEND_INSTRUCTION_LOG
+		std::wcout << NewFunctionTable.Vector_Function[k].Name << std::endl;
+#endif
 		auto& CurrFunction = NewFunctionTable.Vector_Function[k];
 
 		std::unordered_map<HAZE_STRING, int> HashMap_Variable;
@@ -746,7 +752,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 							HAZE_LOG_ERR(HAZE_TEXT("查找变量<%s>的偏移地址错误,当前函数<%s>!\n"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
 						}
 					}
-					else if (it.Scope >= HazeDataDesc::ClassMember_Local_Public && it.Scope <= HazeDataDesc::ClassMember_Local_Protected)
+					else if (IsClassMember(it.Scope))
 					{
 						HAZE_STRING ObjName;
 						HAZE_STRING MemberName;
@@ -850,7 +856,7 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Index));								//操作数索引
 		B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.AddressType));
 		
-		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement
+		if (IsClassMember(Iter.Scope) || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement
 			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
 		{
 			B_OFS.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移
@@ -903,9 +909,9 @@ uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& Class, co
 	uint32 Offset = 0;
 	for (auto& Iter : Class.Vector_Member)
 	{
-		if (Iter.Name != MemberName)
+		if (Iter.Member.Name != MemberName)
 		{
-			Offset += GetSizeByType(Iter.Type, this);
+			Offset += Iter.Size;
 		}
 		else
 		{

@@ -282,7 +282,7 @@ void HazeVM::ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instructi
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Index));
 		B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.AddressType));
 
-		if (Iter.Scope == HazeDataDesc::ClassMember_Local_Public || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement
+		if (IsClassMember(Iter.Scope) || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement
 			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
 		{
 			B_IFS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型

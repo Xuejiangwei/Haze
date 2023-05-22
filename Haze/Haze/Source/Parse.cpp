@@ -338,7 +338,8 @@ static void GetType(HazeDefineType& Type, const HAZE_STRING& Str)
 	}
 }
 
-Parse::Parse(HazeVM* VM) :VM(VM), CurrCode(nullptr), CurrToken(HazeToken::None), LeftParenthesesExpressionCount(0)
+Parse::Parse(HazeVM* VM) :VM(VM), CurrCode(nullptr), CurrToken(HazeToken::None), LeftParenthesesExpressionCount(0),
+	LineCount(-1)
 {
 }
 
@@ -425,8 +426,13 @@ void Parse::ParseContent()
 
 HazeToken Parse::GetNextToken()
 {
-	while (HazeIsSpace(*CurrCode))
+	bool NewLine = false;
+	while (HazeIsSpace(*CurrCode, &NewLine))
 	{
+		if (NewLine)
+		{
+			LineCount++;
+		}
 		CurrCode++;
 	}
 
@@ -440,8 +446,13 @@ HazeToken Parse::GetNextToken()
 	//Match Token
 	CurrLexeme.clear();
 	const HAZE_CHAR* Signal;
-	while (!HazeIsSpace(*CurrCode) || CurrToken == HazeToken::StringMatch)
+	while (!HazeIsSpace(*CurrCode, &NewLine) || CurrToken == HazeToken::StringMatch)
 	{
+		if (NewLine)
+		{
+			LineCount++;
+		}
+
 		if (IsHazeSignalToken(CurrCode, Signal))
 		{
 			if (CurrToken == HazeToken::StringMatch)
@@ -509,6 +520,7 @@ HazeToken Parse::GetNextToken()
 			CurrCode++;
 			Comment_Str = *CurrCode;
 		}
+		LineCount++;
 		return GetNextToken();
 	}
 	else if (CurrLexeme == HAZE_MULTI_COMMENT_START)
@@ -518,6 +530,12 @@ HazeToken Parse::GetNextToken()
 		{
 			CurrCode++;
 			memcpy(Comment_Str.data(), CurrCode, sizeof(HAZE_CHAR) * 2);
+		
+			HazeIsSpace(*CurrCode, &NewLine);
+			if (NewLine)
+			{
+				LineCount++;
+			}
 		}
 
 		CurrCode += 2;
@@ -576,6 +594,15 @@ std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
 	{
 		return ParsePrimary();
 	}
+	else if (CurrToken == HazeToken::BitAnd)	//取地址
+	{
+		return ParseGetAddress();
+	}
+	else if (CurrToken == HazeToken::Sub)		//取负数
+	{
+		return ParseNeg();
+	}
+
 	return nullptr;
 }
 
@@ -712,7 +739,9 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 	std::unique_ptr<ASTBase> Ret = nullptr;
 	HAZE_STRING IdentiferName = CurrLexeme;
 	std::vector<std::unique_ptr<ASTBase>> IndexExpression;
-	if (GetNextToken() == HazeToken::LeftParentheses)
+
+	uint64 TempLineCount = LineCount;
+	if (GetNextToken() == HazeToken::LeftParentheses && LineCount == TempLineCount)
 	{
 		//函数调用
 		std::vector<std::unique_ptr<ASTBase>> VectorParam;
@@ -1210,15 +1239,9 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 				auto AssignExpression = ParseExpression();
 				return std::make_unique<ASTPointerValue>(VM, Expression, Level, std::move(AssignExpression));
 			}
-			else
-			{
-				return std::make_unique<ASTPointerValue>(VM, Expression, Level);
-			}
 		}
-		else
-		{
-			HAZE_LOG_ERR(HAZE_TEXT("解指针<%s>错误,需要小括号!\n"), Expression->GetName());
-		}
+
+		return std::make_unique<ASTPointerValue>(VM, Expression, Level);
 	}
 	else
 	{
@@ -1230,16 +1253,22 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 
 std::unique_ptr<ASTBase> Parse::ParseNeg()
 {
+	bool IsNumberNeg = CurrToken == HazeToken::Sub;
 	GetNextToken();
 	auto Expression = ParseExpression();
 	
-	return std::make_unique<ASTNeg>(VM, Expression);
+	return std::make_unique<ASTNeg>(VM, Expression, IsNumberNeg);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseGetAddress()
 {
 	GetNextToken();
 	auto Expression = ParseExpression(HashMap_OperatorPriority.find(HazeToken::GetAddress)->second);
+	if (CurrToken != HazeToken::RightParentheses)
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("获得<%s>地址错误,需要小括号!\n"), Expression->GetName());
+		return nullptr;
+	}
 
 	return std::make_unique<ASTGetAddress>(VM, Expression);
 }

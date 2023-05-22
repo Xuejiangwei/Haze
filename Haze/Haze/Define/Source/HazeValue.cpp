@@ -212,6 +212,9 @@ void CalculateValue(InstructionOpCode TypeCode, bool& Source, bool& Target)
     case InstructionOpCode::NOT:
         Target = !Source;
         break;
+    case InstructionOpCode::NEG:
+        Target = -Source;
+        break;
     default:
         HAZE_LOG_ERR("Calculate error: bool value is not support operator %s!\n", WString2String(GetInstructionString(TypeCode)).c_str());
         break;
@@ -265,6 +268,9 @@ void CalculateValue(InstructionOpCode TypeCode, int& Source, int& Target)
     case InstructionOpCode::SHR:
     case InstructionOpCode::SHR_ASSIGN:
         Target >>= Source;
+        break;
+    case InstructionOpCode::NEG:
+        Target = -Source;
         break;
     default:
         break;
@@ -365,6 +371,9 @@ void CalculateValue(InstructionOpCode TypeCode, int64& Source, int64& Target)
     case InstructionOpCode::SHR:
     case InstructionOpCode::SHR_ASSIGN:
         Target >>= Source;
+        break;
+    case InstructionOpCode::NEG:
+        Target = -Source;
         break;
     default:
         break;
@@ -575,4 +584,28 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, HazeValue& Value)
         break;
     }
     return nullptr;
+}
+
+HazeValue GetNegValue(HazeValueType Type, const HazeValue& Value)
+{
+    HazeValue Ret;
+    switch (Type)
+    {
+    case HazeValueType::Int:
+        Ret.Value.Int = -Value.Value.Int;
+        break;
+    case HazeValueType::Float:
+        Ret.Value.Float = -Value.Value.Float;
+        break;
+    case HazeValueType::Long:
+        Ret.Value.Long = -Value.Value.Long;
+        break;
+    case HazeValueType::Double:
+        Ret.Value.Double = -Value.Value.Double;
+        break;
+    default:
+        break;
+    }
+
+    return Ret;
 }

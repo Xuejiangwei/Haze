@@ -70,6 +70,8 @@ enum class InstructionOpCode : uint32
 	DIV,
 	MOD,
 
+	NEG,
+
 	AND,
 	OR,
 	NOT,
@@ -236,6 +238,8 @@ struct HazFrameFunctionData
 bool IsRegisterScope(HazeDataDesc Scope);
 
 bool IsJmpOpCode(InstructionOpCode Code);
+
+bool IsClassMember(HazeDataDesc Scope);
 
 const HAZE_CHAR* GetInstructionString(InstructionOpCode Code);
 

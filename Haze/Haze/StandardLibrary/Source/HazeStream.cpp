@@ -95,6 +95,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 		{
 			if (++ArgNum > MultiParamNum) //入栈参数个数
 			{
+				HAZE_LOG_ERR(HAZE_TEXT("调用<打印>函数参数个数错误!\n"));
 				return;
 			}
 			HAZE_CHAR Form[MAX_FORMAT];

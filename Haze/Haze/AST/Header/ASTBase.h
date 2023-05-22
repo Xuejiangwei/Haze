@@ -7,6 +7,7 @@
 
 class HazeVM;
 class HazeCompilerValue;
+class HazeBaseBlock;
 
 //Base
 class ASTBase
@@ -174,13 +175,14 @@ private:
 class ASTNeg : public ASTBase
 {
 public:
-	ASTNeg(HazeVM* VM, std::unique_ptr<ASTBase>& Expression);
+	ASTNeg(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, bool IsNumberNeg);
 	virtual ~ASTNeg() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
 	std::unique_ptr<ASTBase> Expression;
+	bool IsNumberNeg;
 };
 
 //Inc
@@ -238,6 +240,7 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
+	void SetLeftAndRightBlock(HazeBaseBlock* LeftBlock, HazeBaseBlock* RightBlock);
 
 private:
 	HazeSectionSignal SectionSignal;
@@ -246,6 +249,8 @@ private:
 	std::unique_ptr<ASTBase> LeftAST;
 	std::unique_ptr<ASTBase> RightAST;
 
+	HazeBaseBlock* LeftBlock;
+	HazeBaseBlock* RightBlock;
 };
 
 //三目表达式

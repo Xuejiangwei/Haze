@@ -19,6 +19,8 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("DIV"), InstructionOpCode::DIV },
 	{HAZE_TEXT("MOD"), InstructionOpCode::MOD },
 
+	{HAZE_TEXT("NEG"), InstructionOpCode::NEG },
+
 	{HAZE_TEXT("AND"), InstructionOpCode::AND },
 	{HAZE_TEXT("OR"), InstructionOpCode::OR },
 	{HAZE_TEXT("NOT"), InstructionOpCode::NOT },
@@ -102,6 +104,12 @@ bool IsJmpOpCode(InstructionOpCode Code)
 {
 	return Code >= InstructionOpCode::JMP && Code <= InstructionOpCode::JL;
 }
+
+bool IsClassMember(HazeDataDesc Scope)
+{
+	return Scope >= HazeDataDesc::ClassMember_Local_Public && Scope <= HazeDataDesc::ClassMember_Local_Protected;
+}
+
 
 class InstructionProcessor
 {
@@ -232,6 +240,19 @@ public:
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MOD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Neg(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				
+				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::NEG, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -738,8 +759,7 @@ private:
 
 			Ret = Register->Data.begin()._Unwrapped();
 		}
-		else if (Operator.Scope >= HazeDataDesc::ClassMember_Local_Public && Operator.Scope <= HazeDataDesc::ClassMember_Local_Protected
-			&& Operator.AddressType == InstructionAddressType::Pointer_Offset)
+		else if (IsClassMember(Operator.Scope) && Operator.AddressType == InstructionAddressType::Pointer_Offset)
 		{
 			memcpy(&TempAddress, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
 
@@ -840,6 +860,8 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::MUL, &InstructionProcessor::Mul},
 	{InstructionOpCode::DIV, &InstructionProcessor::Div},
 	{InstructionOpCode::MOD, &InstructionProcessor::Mod},
+
+	{InstructionOpCode::NEG, &InstructionProcessor::Neg},
 
 	{InstructionOpCode::AND, &InstructionProcessor::And},
 	{InstructionOpCode::OR, &InstructionProcessor::Or},
