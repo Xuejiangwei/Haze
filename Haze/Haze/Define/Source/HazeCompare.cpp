@@ -12,6 +12,9 @@ HazeCmpType GetHazeCmpTypeByToken(HazeToken Token)
 		{HazeToken::GreaterEqual, HazeCmpType::GreaterEqual},
 		{HazeToken::Less, HazeCmpType::Less},
 		{HazeToken::LessEqual, HazeCmpType::LessEqual},
+
+		{HazeToken::And, HazeCmpType::And},
+		{HazeToken::Or, HazeCmpType::Or},
 	};
 
 	auto Iter = HashMap.find(Token);
@@ -33,6 +36,9 @@ InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType Type)
 		{HazeCmpType::GreaterEqual, InstructionOpCode::JNL},
 		{HazeCmpType::Less, InstructionOpCode::JL},
 		{HazeCmpType::LessEqual, InstructionOpCode::JNG},
+
+		{HazeCmpType::And, InstructionOpCode::JE},
+		{HazeCmpType::Or, InstructionOpCode::JE},
 	};
 
 	auto Iter = HashMap.find(Type);

@@ -4,6 +4,21 @@
 #include <string>
 #include <regex>
 
+bool IsAndOrToken(HazeToken Token)
+{
+	return Token == HazeToken::And || Token == HazeToken::Or;
+}
+
+bool IsAndToken(HazeToken Token)
+{
+	return Token == HazeToken::And;
+}
+
+bool IsOrToken(HazeToken Token)
+{
+	return Token == HazeToken::Or;
+}
+
 const HAZE_CHAR* GetGlobalDataHeaderString()
 {
 	return HEADER_STRING_GLOBAL_DATA;

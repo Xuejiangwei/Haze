@@ -243,56 +243,56 @@ const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token()
 
 static std::unordered_map<HazeToken, int> HashMap_OperatorPriority =
 {
-	{ HazeToken::Assign, 100 },
-	{ HazeToken::AddAssign, 100 },
-	{ HazeToken::SubAssign, 100 },
-	{ HazeToken::MulAssign, 100 },
-	{ HazeToken::DivAssign, 100 },
-	{ HazeToken::ModAssign, 100 },
-	{ HazeToken::BitAndAssign, 100 },
-	{ HazeToken::BitOrAssign, 100 },
-	{ HazeToken::BitXorAssign, 100 },
-	{ HazeToken::ShlAssign, 100 },
-	{ HazeToken::ShrAssign, 100 },
+	{ HazeToken::Assign, 1000 },
+	{ HazeToken::AddAssign, 1000 },
+	{ HazeToken::SubAssign, 1000 },
+	{ HazeToken::MulAssign, 1000 },
+	{ HazeToken::DivAssign, 1000 },
+	{ HazeToken::ModAssign, 1000 },
+	{ HazeToken::BitAndAssign, 1000 },
+	{ HazeToken::BitOrAssign, 1000 },
+	{ HazeToken::BitXorAssign, 1000 },
+	{ HazeToken::ShlAssign, 1000 },
+	{ HazeToken::ShrAssign, 1000 },
 
-	{ HazeToken::ThreeOperatorStart, 120 },
+	{ HazeToken::ThreeOperatorStart, 1200 },
 
-	{ HazeToken::Or, 140 },
-	{ HazeToken::And, 150 },
+	{ HazeToken::Or, 1400 },
+	{ HazeToken::And, 1500 },
 
-	{ HazeToken::BitOr, 170 },
-	{ HazeToken::BitXor, 180 },
-	{ HazeToken::BitAnd, 190 },
+	{ HazeToken::BitOr, 1700 },
+	{ HazeToken::BitXor, 1800 },
+	{ HazeToken::BitAnd, 1900 },
 
-	{ HazeToken::Equal, 200 },
-	{ HazeToken::NotEqual, 200 },
+	{ HazeToken::Equal, 2000 },
+	{ HazeToken::NotEqual, 2000 },
 
-	{ HazeToken::Greater, 250 },
-	{ HazeToken::GreaterEqual, 250 },
-	{ HazeToken::Less, 250 },
-	{ HazeToken::LessEqual, 250 },
+	{ HazeToken::Greater, 2500 },
+	{ HazeToken::GreaterEqual, 2500 },
+	{ HazeToken::Less, 2500 },
+	{ HazeToken::LessEqual, 2500 },
 
-	{ HazeToken::Shl, 300 },
-	{ HazeToken::Shr, 300 },
+	{ HazeToken::Shl, 3000 },
+	{ HazeToken::Shr, 3000 },
 
 
-	{ HazeToken::Add, 400 },
-	{ HazeToken::Sub, 400 },
+	{ HazeToken::Add, 4000 },
+	{ HazeToken::Sub, 4000 },
 
-	{ HazeToken::Mul, 500 },
-	{ HazeToken::Div, 500 },
-	{ HazeToken::Mod, 500 },
+	{ HazeToken::Mul, 5000 },
+	{ HazeToken::Div, 5000 },
+	{ HazeToken::Mod, 5000 },
 
-	//{ HazeToken::BitNeg, 600 }
+	//{ HazeToken::BitNeg, 6000 }
 
-	{ HazeToken::PointerValue, 700 },
-	{ HazeToken::GetAddress, 700 },
+	{ HazeToken::PointerValue, 7000 },
+	{ HazeToken::GetAddress, 7000 },
 
-	//{ HazeToken::Not, 60 },
-	//{ HazeToken::Inc, 900 },				//后置++
+	//{ HazeToken::Not, 6000 },
+	//{ HazeToken::Inc, 9000 },				//后置++
 
 	
-	//{ HazeToken::LeftParentheses, 1000 },	
+	//{ HazeToken::LeftParentheses, 10000 },	
 };
 
 //static std::unordered_map<HazeToken, HazeValueType> MapValueType =
@@ -740,7 +740,7 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 	HAZE_STRING IdentiferName = CurrLexeme;
 	std::vector<std::unique_ptr<ASTBase>> IndexExpression;
 
-	uint64 TempLineCount = LineCount;
+	int64 TempLineCount = LineCount;
 	if (GetNextToken() == HazeToken::LeftParentheses && LineCount == TempLineCount)
 	{
 		//函数调用

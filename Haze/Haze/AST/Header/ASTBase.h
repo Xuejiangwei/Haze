@@ -240,7 +240,9 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
-	void SetLeftAndRightBlock(HazeBaseBlock* LeftBlock, HazeBaseBlock* RightBlock);
+	void SetLeftAndRightBlock(HazeBaseBlock* LeftJmpBlock, HazeBaseBlock* RightJmpBlock);
+
+	ASTBase* GetFinalRightAST();
 
 private:
 	HazeSectionSignal SectionSignal;
@@ -251,6 +253,7 @@ private:
 
 	HazeBaseBlock* LeftBlock;
 	HazeBaseBlock* RightBlock;
+	HazeBaseBlock* DafaultBlock;
 };
 
 //三目表达式

@@ -1,0 +1,110 @@
+0
+GlobalDataTable
+0
+StringTable
+6
+6 输入坐标\n
+4 %d%d
+6 玩家胜利\n
+12 AI放子 %d %d\n
+6 AI胜利\n
+6 游戏结束\n
+ClassTable
+0
+FunctionTable
+1
+Function 主函数 3
+Variable 我的五子棋$1 17 五子棋 0 4356
+Variable 甲$2 3 4356 4
+Variable 乙$3 3 4360 4
+FunctionStart
+
+Block Entry
+PUSH 11 我的五子棋$1 13 五子棋
+PUSH 3 Address 11
+CALL 五子棋@开始游戏 18 0 8
+MOV 1 Temp_R0 9 1 1 3
+BIT_XOR 1 Temp_R0 9 1 0 3
+CMP 1 Temp_R0 9 1 1 3
+JE WhileBlock1 WhileBlock2
+
+Block WhileBlock1
+MOV 3 甲$2 2 3 8 3
+MOV 3 乙$3 2 3 8 3
+PUSH 10 常字符串指针 4 2 0
+PUSH 3 Address 11
+CALL 打印 18 1 8
+LEA 10 Temp_R0 9 3 3 乙$3 2
+LEA 10 Temp_R1 9 3 3 甲$2 2
+PUSH 10 Temp_R0 9 3
+PUSH 10 Temp_R1 9 3
+PUSH 10 常字符串指针 4 2 1
+PUSH 3 Address 11
+CALL 输入 18 3 24
+PUSH 3 玩家默认颜色 1
+PUSH 3 乙$3 2
+PUSH 3 甲$2 2
+PUSH 11 我的五子棋$1 13 五子棋
+PUSH 3 Address 11
+CALL 五子棋@放子 18 3 20
+PUSH 3 玩家默认颜色 1
+PUSH 11 我的五子棋$1 13 五子棋
+PUSH 3 Address 11
+CALL 五子棋@是否胜利 18 1 12
+CMP 0 Ret_R 6 1 1 3
+JE IfThenBlock3 DefaultBlock4
+JE IfThenBlock3 DefaultBlock4
+
+Block IfThenBlock3
+PUSH 10 常字符串指针 4 2 2
+PUSH 3 Address 11
+CALL 打印 18 1 8
+JMP WhileBlock2
+JMP DefaultBlock4
+
+Block DefaultBlock4
+LEA 10 Temp_R0 9 3 3 乙$3 2
+LEA 10 Temp_R1 9 3 3 甲$2 2
+PUSH 3 AI默认颜色 1
+PUSH 10 Temp_R0 9 3
+PUSH 10 Temp_R1 9 3
+PUSH 11 我的五子棋$1 13 五子棋
+PUSH 3 Address 11
+CALL 五子棋@模拟计算AI放子 18 3 28
+PUSH 3 AI默认颜色 1
+PUSH 3 乙$3 2
+PUSH 3 甲$2 2
+PUSH 11 我的五子棋$1 13 五子棋
+PUSH 3 Address 11
+CALL 五子棋@放子 18 3 20
+PUSH 3 乙$3 2
+PUSH 3 甲$2 2
+PUSH 10 常字符串指针 4 2 3
+PUSH 3 Address 11
+CALL 打印 18 3 16
+PUSH 3 AI默认颜色 1
+PUSH 11 我的五子棋$1 13 五子棋
+PUSH 3 Address 11
+CALL 五子棋@是否胜利 18 1 12
+CMP 0 Ret_R 6 1 1 3
+JE IfThenBlock5 DefaultBlock6
+JE IfThenBlock5 DefaultBlock6
+
+Block IfThenBlock5
+PUSH 10 常字符串指针 4 2 4
+PUSH 3 Address 11
+CALL 打印 18 1 8
+JMP WhileBlock2
+JMP DefaultBlock6
+
+Block DefaultBlock6
+JMP WhileBlock1
+
+Block WhileBlock2
+PUSH 10 常字符串指针 4 2 5
+PUSH 3 Address 11
+CALL 打印 18 1 8
+RET 0
+
+FunctionEnd
+

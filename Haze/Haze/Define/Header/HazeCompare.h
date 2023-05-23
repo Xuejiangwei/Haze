@@ -14,6 +14,9 @@ enum class HazeCmpType : uint32
 	GreaterEqual,
 	Less,
 	LessEqual,
+
+	And,
+	Or,
 };
 
 enum class HazeOperatorAssign : uint32

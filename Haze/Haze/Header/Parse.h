@@ -143,5 +143,5 @@ private:
 
 	int LeftParenthesesExpressionCount;
 
-	uint64 LineCount;
+	int64 LineCount;
 };

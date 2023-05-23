@@ -8,6 +8,13 @@
 #include "HazeStrcut.h"
 #include "HazeValue.h"
 
+
+bool IsAndOrToken(HazeToken Token);
+
+bool IsAndToken(HazeToken Token);
+
+bool IsOrToken(HazeToken Token);
+
 const HAZE_CHAR* GetGlobalDataHeaderString();
 
 const HAZE_CHAR* GetStringTableHeaderString();
