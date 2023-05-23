@@ -242,8 +242,6 @@ public:
 
 	void SetLeftAndRightBlock(HazeBaseBlock* LeftJmpBlock, HazeBaseBlock* RightJmpBlock);
 
-	ASTBase* GetFinalRightAST();
-
 private:
 	HazeSectionSignal SectionSignal;
 	HazeToken OperatorToken;
