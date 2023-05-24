@@ -13,14 +13,22 @@ HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRI
 {
 	DataSize = 0;
 
+	uint32 MemberNum = 0;
+	std::shared_ptr<HazeCompilerValue> LastMember = nullptr;
 	for (size_t i = 0; i < Vector_Data.size(); i++)
 	{
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
 			Vector_Data[i].second[j].second->Scope = Vector_Data[i].first;
-			DataSize += Vector_Data[i].second[j].second->GetSize();
+			//DataSize += Vector_Data[i].second[j].second->GetSize();
+			MemberNum++;
+			LastMember = Vector_Data[i].second[j].second;
 		}
 	}
+
+	MemoryAlign(MemberNum);
+	DataSize = LastMember ? Vector_Offset.back() + HAZE_ALIGN(LastMember->GetSize(), HAZE_ALIGN_BYTE) : 0;
+	//HAZE_LOG_INFO(HAZE_TEXT("¿‡ <%s> DataSize %d\n"), Name.c_str(), DataSize);
 }
 
 HazeCompilerClass::~HazeCompilerClass()
@@ -115,6 +123,22 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 	return false;
 }
 
+bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* ClassValue, const HazeCompilerValue* Value, HAZE_STRING& OutName)
+{
+	for (size_t i = 0; i < ClassValue->Vector_Data.size(); i++)
+	{
+		for (size_t j = 0; j < ClassValue->Vector_Data[i].second.size(); j++)
+		{
+			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].first, ClassValue->Vector_Data[i].second[j] }, Value, OutName))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 //const HazeDefineVariable* HazeCompilerClass::GetClassMemberData(const HAZE_STRING& MemberName) const
 //{
 //	for (auto& Iter : Vector_Data)
@@ -143,6 +167,7 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& SStream)
 
 	SStream << GetClassLabelHeader() << " " << Name << " " << GetDataSize() << " " << DataNum << std::endl;
 
+	uint32 Index = 0;
 	for (size_t i = 0; i < Vector_Data.size(); ++i)
 	{
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
@@ -157,7 +182,8 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& SStream)
 				SStream << " " << Vector_Data[i].second[j].second->GetValueType().CustomName;
 			}
 
-			SStream << " " << Vector_Data[i].second[j].second->GetSize() << std::endl;
+			SStream << " " << Vector_Offset[Index] << " " << Vector_Data[i].second[j].second->GetSize() << std::endl;
+			Index++;
 		}
 	}
 
@@ -176,7 +202,67 @@ void HazeCompilerClass::GenClassFunction_I_Code(HAZE_STRING_STREAM& SStream)
 #endif //HAZE_I_CODE_ENABLE
 }
 
-unsigned int HazeCompilerClass::GetDataSize()
+uint32 HazeCompilerClass::GetDataSize()
 {
 	return DataSize;
+}
+
+uint32 HazeCompilerClass::GetAlignSize()
+{
+	uint32 MaxMemberSize = 0;
+	for (auto& It : Vector_Data)
+	{
+		for (auto& Iter : It.second)
+		{
+			if (Iter.second->GetSize() > MaxMemberSize)
+			{
+				MaxMemberSize = Iter.second->GetSize();
+			}
+		}
+	}
+
+	return MaxMemberSize < HAZE_ALIGN_BYTE ? MaxMemberSize : HAZE_ALIGN_BYTE;
+}
+
+uint32 HazeCompilerClass::GetOffset(uint32 Index, std::shared_ptr<HazeCompilerValue> Member)
+{
+	return Index * Member->GetSize();
+}
+
+void HazeCompilerClass::MemoryAlign(uint32 MemberNum)
+{
+	Vector_Offset.resize(MemberNum);
+	uint32 Align = GetAlignSize();
+	uint32 Index = 0;
+
+	uint32 Size = 0;
+	for (auto& It : Vector_Data)
+	{
+		for (auto& Iter : It.second)
+		{
+			uint32 ModSize = Size % Align;
+
+			if (ModSize + Iter.second->GetSize() <= Align)
+			{
+				uint32 ModValue = ModSize % Iter.second->GetSize();
+				if (ModValue == 0)
+				{
+					Vector_Offset[Index] = Size;
+					Size += Iter.second->GetSize();
+				}
+				else
+				{
+					Vector_Offset[Index] = Size + ModValue;
+					Size += (ModValue + Iter.second->GetSize());
+				}
+			}
+			else
+			{
+				Vector_Offset[Index] = Size + (Align - ModSize);
+				Size += ((Align - ModSize) + Iter.second->GetSize());
+			}
+
+			Index++;
+		}
+	}
 }

@@ -14,116 +14,7 @@
 #include "HazeLog.h"
 #include <cstdarg>
 
-#define HAZE_SINGLE_COMMENT				HAZE_TEXT("//")
-#define HAZE_MULTI_COMMENT_START		HAZE_TEXT("/*")
-#define HAZE_MULTI_COMMENT_END			HAZE_TEXT("*/")
-
-#define TOKEN_VOID						HAZE_TEXT("空")
-#define TOKEN_BOOL						HAZE_TEXT("布尔")
-#define TOKEN_SHORT						HAZE_TEXT("双字节")
-#define TOKEN_INT						HAZE_TEXT("整数")
-#define TOKEN_FLOAT						HAZE_TEXT("小数")
-#define TOKEN_LONG						HAZE_TEXT("长整数")
-#define TOKEN_DOUBLE					HAZE_TEXT("长小数")
-
-#define TOKEN_UNSIGNED_BYTE				HAZE_TEXT("正字节")
-#define TOKEN_UNSIGNED_SHORT			HAZE_TEXT("正双字节")
-#define TOKEN_UNSIGNED_INT				HAZE_TEXT("正整数")
-#define TOKEN_UNSIGNED_LONG				HAZE_TEXT("正长整数")
-
-#define TOKEN_ARRAY						HAZE_TEXT("数组")
-#define TOKEN_ARRAY_START				HAZE_TEXT("[")
-#define TOKEN_ARRAY_END					HAZE_TEXT("]")
-
-#define TOKEN_CHAR						HAZE_TEXT("字符")
-#define TOKEN_STRING_MATCH				HAZE_TEXT("\"")
-
-#define TOKEN_CLASS						HAZE_TEXT("类")
-#define TOKEN_CLASS_DATA				HAZE_TEXT("数据")
-#define TOKEN_CLASS_DATA_PUBLIC			HAZE_TEXT("公")
-#define TOKEN_CLASS_DATA_PRIVATE		HAZE_TEXT("私")
-#define TOKEN_CLASS_DATA_PROTECTED		HAZE_TEXT("共")
-
-#define TOKEN_FUNCTION					HAZE_TEXT("函数")
-
-#define TOKEN_MAIN_FUNCTION				HAZE_MAIN_FUNCTION_TEXT
-
-#define TOKEN_TRUE						HAZE_TEXT("真")
-#define TOKEN_FALSE						HAZE_TEXT("假")
-
-#define TOKEN_ADD						HAZE_TEXT("+")
-#define TOKEN_SUB						HAZE_TEXT("-")
-#define TOKEN_MUL						HAZE_TEXT("*")
-#define TOKEN_DIV						HAZE_TEXT("/")
-#define TOKEN_MOD						HAZE_TEXT("%")
-
-#define TOKEN_AND						HAZE_TEXT("且")		//&&
-#define TOKEN_OR						HAZE_TEXT("或")		//||
-#define TOKEN_NOT						HAZE_TEXT("非")		//!
-
-#define TOKEN_BIT_AND					HAZE_TEXT("&")
-#define TOKEN_BIT_OR					HAZE_TEXT("|")
-#define TOKEN_BIT_NEG					HAZE_TEXT("~")
-#define TOKEN_BIT_XOR					HAZE_TEXT("^")
-
-#define TOKEN_LEFT_MOVE					HAZE_TEXT("<<")
-#define TOKEN_RIGHT_MOVE				HAZE_TEXT(">>")
-
-#define TOKEN_ASSIGN					HAZE_TEXT("=")
-#define TOKEN_EQUAL						HAZE_TEXT("==")
-#define TOKEN_NOT_EQUAL					HAZE_TEXT("!=")
-#define TOKEN_GREATER					HAZE_TEXT(">")
-#define TOKEN_GREATER_EQUAL				HAZE_TEXT(">=")
-#define TOKEN_LESS						HAZE_TEXT("<")
-#define TOKEN_LESS_EQUAL				HAZE_TEXT("<=")
-
-#define TOKEN_INC						HAZE_TEXT("++")
-#define TOKEN_DEC						HAZE_TEXT("--")
-
-#define TOKEN_ADD_ASSIGN				HAZE_TEXT("+=")
-#define TOKEN_SUB_ASSIGN				HAZE_TEXT("-=")
-#define TOKEN_MUL_ASSIGN				HAZE_TEXT("*=")
-#define TOKEN_DIV_ASSIGN				HAZE_TEXT("/=")
-#define TOKEN_MOD_ASSIGN				HAZE_TEXT("%=")
-#define TOKEN_SHL_ASSIGN				HAZE_TEXT("<<=")
-#define TOKEN_SHR_ASSIGN				HAZE_TEXT(">>=")
-#define	TOKEN_BIT_AND_ASSIGN			HAZE_TEXT("&=")
-#define	TOKEN_BIT_OR_ASSIGN				HAZE_TEXT("|=")
-#define	TOKEN_BIT_XOR_ASSIGN			HAZE_TEXT("^=")
-
-#define TOKEN_LEFT_PARENTHESES			HAZE_TEXT("(")
-#define TOKEN_RIGHT_PARENTHESES			HAZE_TEXT(")")
-
-#define TOKEN_COMMA						HAZE_TEXT(",")
-
-#define TOKEN_LEFT_BRACE				HAZE_TEXT("{")
-#define TOKEN_RIGHT_BRACE				HAZE_TEXT("}")
-
-#define TOKEN_QUESTION_MARK				HAZE_TEXT("?")
-#define TOKEN_QUESTIOB_COLON			HAZE_TEXT(":")
-
-#define TOKEN_IF						HAZE_TEXT("若")
-#define TOKEN_ELSE						HAZE_TEXT("否则")
-
-#define TOKEN_FOR						HAZE_TEXT("循环")
-#define TOKEN_FOR_STEP					HAZE_TEXT("步进")
-
-#define TOKEN_BREAK						HAZE_TEXT("跳出")
-#define TOKEN_CONTINUE					HAZE_TEXT("跳过")
-#define TOKEN_RETURN					HAZE_TEXT("返")
-
-#define TOKEN_WHILE						HAZE_TEXT("当")
-
-#define TOKEN_CAST						HAZE_TEXT("转")
-
-#define TOKEN_DEFINE					HAZE_TEXT("定义")
-
-#define TOKEN_STANDARD_LIBRARY			HAZE_TEXT("标准库")
-#define TOKEN_IMPORT_MODULE				HAZE_TEXT("引")
-
-#define TOKEN_MULTI_VARIABLE			HAZE_TEXT("...")
-
-#define TOKEN_NEW						HAZE_TEXT("生成")
+#include "HazeTokenText.h"
 
 void test(int)
 {
@@ -136,6 +27,7 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 {
 	{TOKEN_VOID, HazeToken::Void},
 	{TOKEN_BOOL, HazeToken::Bool},
+	{TOKEN_BYTE, HazeToken::Byte},
 	{TOKEN_CHAR, HazeToken::Char},
 	{TOKEN_INT, HazeToken::Int},
 	{TOKEN_FLOAT, HazeToken::Float},
@@ -234,6 +126,8 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 
 	{TOKEN_QUESTION_MARK, HazeToken::ThreeOperatorStart},
 	{TOKEN_QUESTIOB_COLON, HazeToken::ThreeOperatorBranch},
+
+	{TOKEN_NULL_PTR, HazeToken::NullPtr},
 };
 
 const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token()
@@ -339,7 +233,7 @@ static void GetType(HazeDefineType& Type, const HAZE_STRING& Str)
 }
 
 Parse::Parse(HazeVM* VM) :VM(VM), CurrCode(nullptr), CurrToken(HazeToken::None), LeftParenthesesExpressionCount(0),
-	LineCount(-1)
+	LineCount(-1), NeedParseNextStatement(false)
 {
 }
 
@@ -372,6 +266,7 @@ void Parse::ParseContent()
 		switch (CurrToken)
 		{
 		case HazeToken::Bool:
+		case HazeToken::Byte:
 		case HazeToken::Char:
 		case HazeToken::Int:
 		case HazeToken::Float:
@@ -573,6 +468,11 @@ std::unique_ptr<ASTBase> Parse::HandleParseExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseExpression(int Prec)
 {
+	if (NeedParseNextStatement)
+	{
+		NeedParseNextStatement = false;
+	}
+
 	std::unique_ptr<ASTBase> Left = ParseUnaryExpression();
 
 	if (Left)
@@ -610,6 +510,11 @@ std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::uniq
 {
 	while (true)
 	{
+		if (NeedParseNextStatement)
+		{
+			return Left;
+		}
+
 		auto it = HashMap_OperatorPriority.find(CurrToken);
 		if (it == HashMap_OperatorPriority.end())
 		{
@@ -650,11 +555,7 @@ std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::uniq
 				return nullptr;
 			}
 
-			/*NextPrec = MapBinOp.find(CurrToken);
-			if (NextPrec == MapBinOp.end())
-			{
-				return std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
-			}*/
+			Left = std::make_unique<ASTBinaryExpression>(VM, StackSectionSignal.top(), OpToken, Left, Right);
 		}
 		else if (NextPrec == HashMap_OperatorPriority.find(HazeToken::ThreeOperatorStart))
 		{
@@ -674,6 +575,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	switch (Token)
 	{
 	case HazeToken::Bool:
+	case HazeToken::Byte:
 	case HazeToken::Char:
 	case HazeToken::Int:
 	case HazeToken::Float:
@@ -727,6 +629,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseGetAddress();
 	case HazeToken::BitNeg:
 		return ParseNeg();
+	case HazeToken::NullPtr:
+		return ParseNullPtr();
 	default:
 		break;
 	}
@@ -773,11 +677,11 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 			GetNextToken();
 		}
 
-		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, nullptr, IndexExpression);
+		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, IndexExpression);
 	}
 	else
 	{
-		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, nullptr, IndexExpression);
+		Ret = std::make_unique<ASTIdentifier>(VM, StackSectionSignal.top(), IdentiferName, IndexExpression);
 	}
 
 	return Ret;
@@ -1243,12 +1147,16 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 
 		return std::make_unique<ASTPointerValue>(VM, Expression, Level);
 	}
-	else
+	else if (CurrToken == HazeToken::Assign)
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("解指针<%s>错误,需要小括号!\n"), Expression->GetName());
+		GetNextToken();
+		auto AssignExpression = ParseExpression();
+		return std::make_unique<ASTPointerValue>(VM, Expression, Level, std::move(AssignExpression));
 	}
-
-	return nullptr;
+	else 
+	{
+		return std::make_unique<ASTPointerValue>(VM, Expression, Level);
+	}
 }
 
 std::unique_ptr<ASTBase> Parse::ParseNeg()
@@ -1260,15 +1168,18 @@ std::unique_ptr<ASTBase> Parse::ParseNeg()
 	return std::make_unique<ASTNeg>(VM, Expression, IsNumberNeg);
 }
 
-std::unique_ptr<ASTBase> Parse::ParseGetAddress()
+std::unique_ptr<ASTBase> Parse::ParseNullPtr()
 {
 	GetNextToken();
+	return std::make_unique<ASTNullPtr>(VM);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseGetAddress()
+{
+	int64 TempLine = LineCount;
+	GetNextToken();
 	auto Expression = ParseExpression(HashMap_OperatorPriority.find(HazeToken::GetAddress)->second);
-	if (CurrToken != HazeToken::RightParentheses)
-	{
-		HAZE_LOG_ERR(HAZE_TEXT("获得<%s>地址错误,需要小括号!\n"), Expression->GetName());
-		return nullptr;
-	}
+	NeedParseNextStatement = TempLine != LineCount;
 
 	return std::make_unique<ASTGetAddress>(VM, Expression);
 }
@@ -1386,7 +1297,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
-					Param.Name = HAZE_TEXT("多参数");
+					Param.Name = HAZE_MULTI_PARAM_NAME;
 					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
 					Vector_Param.push_back(Param);
 
@@ -1454,7 +1365,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
-					Param.Name = HAZE_TEXT("多参数");
+					Param.Name = HAZE_MULTI_PARAM_NAME;
 					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse class construction function expression expect function multiply param right need ) \n"));
 					Vector_Param.push_back(Param);
 
@@ -1643,7 +1554,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 
 						if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 						{
-							Param.Name = HAZE_TEXT("多参数");
+							Param.Name = HAZE_MULTI_PARAM_NAME;
 							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
 							Vector_Param.push_back(Param);
 

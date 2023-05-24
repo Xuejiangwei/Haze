@@ -10,7 +10,6 @@
 #include "Parse.h"
 #include "HazeFilePathHelper.h"
 
-#include "HazeDebug.h"
 #include "HazeLog.h"
 
 #include "BackendParse.h"
@@ -159,16 +158,19 @@ void HazeVM::LoadOpCodeFile()
 			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 			B_String.resize(Num);
 			FS.read(B_String.data(), Num);
-			Vector_ClassTable[i].Vector_Member[j].Name = String2WString(B_String);
+			Vector_ClassTable[i].Vector_Member[j].MemberData.Name = String2WString(B_String);
 
-			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_ClassTable[i].Vector_Member[j].Type.PrimaryType));
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_ClassTable[i].Vector_Member[j].MemberData.Type.PrimaryType));
 			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Num));
 
 			FS.read(B_String.data(), Num);
 			if (Num > 0)
 			{
-				Vector_ClassTable[i].Vector_Member[j].Type.CustomName = String2WString(B_String);
+				Vector_ClassTable[i].Vector_Member[j].MemberData.Type.CustomName = String2WString(B_String);
 			}
+
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_ClassTable[i].Vector_Member[j].Offset));
+			FS.read(HAZE_BINARY_OP_READ_CODE_SIZE(Vector_ClassTable[i].Vector_Member[j].Size));
 		}
 	}
 

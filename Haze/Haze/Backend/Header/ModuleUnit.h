@@ -62,7 +62,8 @@ public:
 public:
 	struct ClassMemberData
 	{
-		HazeDefineVariable Member;
+		HazeDefineVariable Variable;
+		uint32 Offset;
 		uint32 Size;
 	};
 

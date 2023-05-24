@@ -47,19 +47,11 @@ HazeValue* ASTFunction::CodeGen()
 		Compiler->CreateLocalVariable(CompilerFunction, Vector_FunctionParam[i]);
 	}
 
-	/*if (Class)
-	{
-		std::shared_ptr<HazeCompilerPointerValue> PointerThis = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CompilerFunction->GetLocalVariable(HAZE_CLASS_THIS));
-		PointerThis->InitPointerTo(Class->GetThisPointerValue()->GetPointerValue());
-	}*/
-
 	if (Body)
 	{
 		Body->CodeGen();
 	}
 	
-
-	//生成函数字节码
 
 	if (CompilerFunction)
 	{
@@ -98,14 +90,14 @@ ASTFunctionSection::~ASTFunctionSection()
 
 void ASTFunctionSection::CodeGen()
 {
-	for (auto& it : Functions)
+	for (auto& Iter : Functions)
 	{
-		it->RegisterFunction();
+		Iter->RegisterFunction();
 	}
 
-	for (auto& it : Functions)
+	for (auto& Iter : Functions)
 	{
-		it->CodeGen();
+		Iter->CodeGen();
 	}
 }
 
@@ -126,9 +118,9 @@ void ASTFunctionDefine::CodeGen()
 
 	Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
 
-	for (auto& iter : Vector_FunctionParam)
+	for (auto& Iter : Vector_FunctionParam)
 	{
-		Compiler->CreateLocalVariable(CompilerFunction, iter);
+		Compiler->CreateLocalVariable(CompilerFunction, Iter);
 	}
 }
 
@@ -146,17 +138,17 @@ void ASTClassFunctionSection::CodeGen()
 {
 	for (auto& Iter : Functions)
 	{
-		for (auto& F : Iter.second)
+		for (auto& Function : Iter.second)
 		{
-			F->RegisterFunction();
+			Function->RegisterFunction();
 		}
 	}
 
 	for (auto& Iter : Functions)
 	{
-		for (auto& F : Iter.second)
+		for (auto& Function : Iter.second)
 		{
-			F->CodeGen();
+			Function->CodeGen();
 		}
 	}
 }

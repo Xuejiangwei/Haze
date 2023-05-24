@@ -341,6 +341,20 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValueBool(bool IsTru
 	return GenConstantValue(HazeValueType::Bool, Value);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNullPtr(const HazeDefineType& Type)
+{
+	static std::unordered_map<HazeDefineType, std::shared_ptr<HazeCompilerValue>, HazeDefineTypeHashFunction> HashMap_NullPtr;
+	
+	auto Iter = HashMap_NullPtr.find(Type);
+	if (Iter != HashMap_NullPtr.end())
+	{
+		return Iter->second;
+	}
+	
+	HashMap_NullPtr[Type] = CreateVariable(nullptr, HazeDefineVariable(Type, HAZE_TEXT("")), HazeDataDesc::NullPtr, 0);
+	return HashMap_NullPtr[Type];
+}
+
 bool HazeCompiler::IsConstantValueBoolTrue(std::shared_ptr<HazeCompilerValue> V)
 {
 	return V == GenConstantValueBool(true);
@@ -540,16 +554,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNot(std::shared_ptr<HazeC
 	return GetCurrModule()->CreateNot(Left, Right);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GetCurrModule()->CreateAnd(Left, Right);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GetCurrModule()->CreateOr(Left, Right);
-}
-
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo)
 {
 	return GetCurrModule()->CreateFunctionCall(Function, Param, ThisPointerTo);
@@ -740,27 +744,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNeg(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
 {
+	HAZE_TO_DO(需要使用Inc字节码);
 	return GetCurrModule()->CreateInc(Value, IsPreInc);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDec(std::shared_ptr<HazeCompilerValue> Value, bool IsPreDec)
 {
+	HAZE_TO_DO(需要使用Dec字节码);
 	return GetCurrModule()->CreateDec(Value, IsPreDec);
 }
 
-void HazeCompiler::CreateJmpFromBlock(std::shared_ptr<HazeBaseBlock> FromBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL)
+void HazeCompiler::CreateJmpToBlock(std::shared_ptr<HazeBaseBlock> Block)
 {
-	GetCurrModule()->GenIRCode_JmpFrom(FromBlock, ToBlock, IsJmpL);
-}
-
-void HazeCompiler::CreateJmpToBlock(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
-{
-	GetCurrModule()->GenIRCode_JmpTo(Block, IsJmpL);
-}
-
-void HazeCompiler::CreateJmpOut(std::shared_ptr<HazeBaseBlock> Block)
-{
-	Block->SetJmpOut();
+	GetCurrModule()->GenIRCode_JmpTo(Block);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateIntCmp(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
@@ -797,8 +793,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBoolCmp(std::shared_ptr<H
 	}
 }
 
-void HazeCompiler::CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut, bool ElseNullJmpOut)
+void HazeCompiler::CreateCompareJmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock)
 {
-	GetCurrModule()->GenIRCode_Cmp(CmpType, IfJmpBlock, ElseJmpBlock, IfNullJmpOut, ElseNullJmpOut);
+	GetCurrModule()->GenIRCode_Cmp(CmpType, IfJmpBlock, ElseJmpBlock);
 }
 

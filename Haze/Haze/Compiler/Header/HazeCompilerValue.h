@@ -53,6 +53,8 @@ public:
 
 	bool IsCalssThis() const { return Scope == HazeDataDesc::ClassThis; }
 
+	bool IsNullPtr() const { return Scope == HazeDataDesc::NullPtr; }
+
 	bool IsPointer() const { return IsPointerType(ValueType.PrimaryType); }
 	
 	bool IsPointerBase() const { return ValueType.PrimaryType == HazeValueType::PointerBase; }

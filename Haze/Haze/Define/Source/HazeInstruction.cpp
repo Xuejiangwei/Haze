@@ -3,8 +3,6 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
 
-#include "HazeDebug.h"
-
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
@@ -21,8 +19,6 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 
 	{HAZE_TEXT("NEG"), InstructionOpCode::NEG },
 
-	{HAZE_TEXT("AND"), InstructionOpCode::AND },
-	{HAZE_TEXT("OR"), InstructionOpCode::OR },
 	{HAZE_TEXT("NOT"), InstructionOpCode::NOT },
 	{HAZE_TEXT("BIT_AND"), InstructionOpCode::BIT_AND },
 	{HAZE_TEXT("BIT_OR"), InstructionOpCode::BIT_OR },
@@ -253,30 +249,6 @@ public:
 			{
 				
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::NEG, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[0]));
-			}
-		}
-	}
-
-	static void And(HazeStack* Stack)
-	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 2)
-		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::AND, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
-			}
-		}
-	}
-
-	static void Or(HazeStack* Stack)
-	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 2)
-		{
-			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::OR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -729,7 +701,7 @@ private:
 		thread_local static HazeVariable ConstantValue;
 		thread_local static uint64 TempAddress;
 
-		if (Operator.Scope == HazeDataDesc::Constant)
+		if (Operator.Scope == HazeDataDesc::Constant || Operator.Scope == HazeDataDesc::NullPtr)
 		{
 			auto& Type = const_cast<HazeDefineType&>(ConstantValue.GetType());
 			auto& Value = const_cast<HazeValue&>(ConstantValue.GetValue());
@@ -796,10 +768,6 @@ private:
 		if (Operator.Variable.Name == HAZE_JMP_NULL)
 		{
 		}
-		else if (Operator.Variable.Name == HAZE_JMP_OUT)
-		{
-			JmpOut(Stack);
-		}
 		else
 		{
 			Stack->JmpTo(Operator);
@@ -863,8 +831,6 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 
 	{InstructionOpCode::NEG, &InstructionProcessor::Neg},
 
-	{InstructionOpCode::AND, &InstructionProcessor::And},
-	{InstructionOpCode::OR, &InstructionProcessor::Or},
 	{InstructionOpCode::NOT, &InstructionProcessor::Not},
 
 	{InstructionOpCode::BIT_AND, &InstructionProcessor::Bit_And},

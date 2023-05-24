@@ -10,6 +10,8 @@ enum class HazeToken : unsigned int
 	
 	Bool,
 
+	Byte,
+
 	Char,
 
 	Int,
@@ -132,4 +134,6 @@ enum class HazeToken : unsigned int
 
 	ThreeOperatorStart,
 	ThreeOperatorBranch,
+
+	NullPtr,
 };

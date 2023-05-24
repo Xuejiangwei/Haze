@@ -20,9 +20,13 @@
 
 #define HAZE_TEXT(S) L##S
 
+#define HAZE_ADDRESS_SIZE (int)sizeof(int)
+
 #define HAZE_CAST_VALUE_TYPE(X) (uint32)(X)
 
 #define HAZE_CAST_SCOPE_TYPE(X) (uint32)(X)
+
+#define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
 
 #define HAZE_FILE_SUFFIX				HAZE_TEXT(".hz")
 #define HAZE_FILE_INTER_SUFFIX			HAZE_TEXT(".Hzic")
@@ -38,6 +42,8 @@
 
 #define HAZE_CONSTANT_STRING_NAME		HAZE_TEXT("常字符串指针")
 
+#define HAZE_MULTI_PARAM_NAME			HAZE_TEXT("多参数")
+
 #define HEADER_STRING_GLOBAL_DATA		HAZE_TEXT("GlobalDataTable")
 #define HEADER_STRING_STRING_TABLE		HAZE_TEXT("StringTable")
 #define HEADER_STRING_CLASS_TABLE		HAZE_TEXT("ClassTable")
@@ -52,8 +58,19 @@
 #define HAZE_LOCAL_VARIABLE_HEADER		HAZE_TEXT("Variable")
 #define HAZE_LOCAL_VARIABLE_CONBINE		HAZE_TEXT("$")
 
+#define HAZE_CLASS_FUNCTION_CONBINE		HAZE_TEXT("@")
+
 #define BLOCK_ENTRY_NAME				HAZE_TEXT("Entry")
 #define BLOCK_START						HAZE_TEXT("Block")
+
+#define BLOCK_DEFAULT					HAZE_TEXT("DefaultBlock")
+#define BLOCK_IF_THEN					HAZE_TEXT("IfThenBlock")
+#define BLOCK_ELSE						HAZE_TEXT("ElseBlock")
+#define BLOCK_LOOP						HAZE_TEXT("LoopBlock")
+#define BLOCK_WHILE						HAZE_TEXT("WhileBlock")
+#define BLOCK_FOR						HAZE_TEXT("ForBlock")
+#define BLOCK_FOR_CONDITION				HAZE_TEXT("ForConditionBlock")
+#define BLOCK_FOR_STEP					HAZE_TEXT("ForStepBlock")
 
 #define ADD_REGISTER					HAZE_TEXT("Add_R")
 #define SUB_REGISTER					HAZE_TEXT("Sub_R")
@@ -78,19 +95,20 @@
 #define HAZE_TEMP_BINART_NAME			HAZE_TEXT("TempBinaryValue")
 
 #define	HAZE_JMP_NULL					HAZE_TEXT("JmpNull")
-#define	HAZE_JMP_OUT					HAZE_TEXT("JmpOut")
 
 #define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_STRING(HAZE_TEXT("Address"))
 
-#define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
-
-#define HAZE_I_CODE_ENABLE			1
+#define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data, int MultiParamNum
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 20
 
-#define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data, int MultiParamNum
+#define HAZE_NEW_ALIGN_BYTE 4
 
-#define HAZE_ADDRESS_SIZE (int)sizeof(int)
+#define HAZE_ALIGN_BYTE 4
+
+#define HAZE_ALIGN(X, ALIGN) ((X + ALIGN -1) & ~(ALIGN -1))
+
+#define HAZE_NEW_ALIGN(X) ((X + HAZE_NEW_ALIGN_BYTE -1) & ~(HAZE_NEW_ALIGN_BYTE -1))
 
 using int64 = long long;
 using uint8 = unsigned char;

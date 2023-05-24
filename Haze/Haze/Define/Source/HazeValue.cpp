@@ -12,6 +12,7 @@ uint32 GetSizeByHazeType(HazeValueType Type)
     switch (Type)
     {
     case HazeValueType::Bool:
+    case HazeValueType::Byte:
         return 1;
     case HazeValueType::Char:
         return 2;
@@ -42,6 +43,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
     {
         { HazeToken::Void, HazeValueType::Void },
         { HazeToken::Bool, HazeValueType::Bool },
+        { HazeToken::Byte, HazeValueType::Byte },
         { HazeToken::Char, HazeValueType::Char },
         { HazeToken::Int, HazeValueType::Int },
         { HazeToken::Float, HazeValueType::Float },
@@ -158,6 +160,13 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeVal
     case HazeValueType::UnsignedLong:
         WSS >> Value.Value.UnsignedLong;
         break;
+    case HazeValueType::PointerBase:
+    case HazeValueType::PointerClass:
+    case HazeValueType::PointerFunction:
+    case HazeValueType::PointerArray:
+    case HazeValueType::PointerPointer:
+        WSS >> Value.Value.UnsignedLong;
+        break;
     default:
         break;
     }
@@ -211,9 +220,6 @@ void CalculateValue(InstructionOpCode TypeCode, bool& Source, bool& Target)
         break;
     case InstructionOpCode::NOT:
         Target = !Source;
-        break;
-    case InstructionOpCode::NEG:
-        Target = -Source;
         break;
     default:
         HAZE_LOG_ERR("Calculate error: bool value is not support operator %s!\n", WString2String(GetInstructionString(TypeCode)).c_str());
@@ -579,6 +585,12 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, HazeValue& Value)
     case HazeValueType::Double:
         return (HAZE_BINARY_CHAR*)&Value.Value.Double;
     case HazeValueType::UnsignedLong:
+        return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
+    case HazeValueType::PointerBase:
+    case HazeValueType::PointerClass:
+    case HazeValueType::PointerFunction:
+    case HazeValueType::PointerArray:
+    case HazeValueType::PointerPointer:
         return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
     default:
         break;

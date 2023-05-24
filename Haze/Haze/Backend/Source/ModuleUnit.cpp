@@ -1,6 +1,6 @@
 #include "ModuleUnit.h"
 
-ModuleUnit::ModuleUnit()
+ModuleUnit::ModuleUnit() :IsStdLib(false)
 {
 
 }

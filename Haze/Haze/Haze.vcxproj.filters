@@ -311,6 +311,9 @@
     <ClInclude Include="Compiler\Header\HazeCompilerPointerArray.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Define\Header\HazeTokenText.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Define\Header\HazeTemplate.inl">

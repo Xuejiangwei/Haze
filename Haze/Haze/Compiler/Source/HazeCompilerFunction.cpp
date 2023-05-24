@@ -208,71 +208,58 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& SStream)
 HAZE_STRING HazeCompilerFunction::GenDafaultBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("DefaultBlock") << ++CurrBlockCount;
+	HSS << BLOCK_DEFAULT << ++CurrBlockCount;
 	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenIfThenBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("IfThenBlock") << ++CurrBlockCount;
+	HSS << BLOCK_IF_THEN << ++CurrBlockCount;
 	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenElseBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("ElseBlock") << ++CurrBlockCount;
+	HSS << BLOCK_ELSE << ++CurrBlockCount;
 	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenLoopBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("LoopBlock") << ++CurrBlockCount;
+	HSS << BLOCK_LOOP << ++CurrBlockCount;
 	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenWhileBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("WhileBlock") << ++CurrBlockCount;
+	HSS << BLOCK_WHILE << ++CurrBlockCount;
 	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenForBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("ForBlock") << ++CurrBlockCount;
+	HSS << BLOCK_FOR << ++CurrBlockCount;
 	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenForConditionBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("ForConditionBlock") << ++CurrBlockCount;
+	HSS << BLOCK_FOR_CONDITION << ++CurrBlockCount;
 	return HSS.str();
 }
 
 HAZE_STRING HazeCompilerFunction::GenForStepBlockName()
 {
 	HAZE_STRING_STREAM HSS;
-	HSS << HAZE_TEXT("ForStepBlock") << ++CurrBlockCount;
+	HSS << BLOCK_FOR_STEP << ++CurrBlockCount;
 	return HSS.str();
 }
-
-//std::shared_ptr<HazeBaseBlock> HazeCompilerFunction::GetTopBaseBlock()
-//{
-//	for (auto Iter = BBList.rbegin(); Iter != BBList.rend(); Iter++)
-//	{
-//		if (!(*Iter)->BlockIsFinish())
-//		{
-//			return *Iter;
-//		}
-//	}
-//
-//	return nullptr;
-//}
 
 bool HazeCompilerFunction::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {

@@ -5,10 +5,7 @@
 #include "HazeUtility.h"
 #include "HazeVM.h"
 #include "HazeFilePathHelper.h"
-
-#include "HazeDebug.h"
 #include "HazeLog.h"
-
 
 static std::pair<bool, int> ParseStringCount = { false, 0 };
 
@@ -33,10 +30,10 @@ static void FindObjectAndMemberName(const HAZE_STRING& InName, HAZE_STRING& OutO
 	}
 }
 
-BackendParse::BackendParse(HazeVM* VM) : VM(VM)
+BackendParse::BackendParse(HazeVM* VM) : VM(VM), CurrCode(nullptr)
 {
-	CurrCode = nullptr;
-	FS_OpCode.open(GetMainBinaryFilePath(), std::ios::out | std::ios::binary); //不用二进制的话，写入10，会当成换行特殊处理，写入两个字符 0x0d 0x0a，即回车换行符
+	//不用二进制的话，写入10，会当成换行特殊处理，写入两个字符 0x0d 0x0a，即回车换行符
+	FS_OpCode.open(GetMainBinaryFilePath(), std::ios::out | std::ios::binary); 
 }
 
 BackendParse::~BackendParse()
@@ -174,30 +171,32 @@ void BackendParse::Parse_I_Code_ClassTable()
 
 			if (CurrLexeme == GetClassLabelHeader())
 			{
-				GetNextLexmeAssign_HazeString(Table.Vector_Class[i].Name);
+				auto& Class = Table.Vector_Class[i];
 
-				GetNextLexmeAssign_StandardType(Table.Vector_Class[i].Size);
-
+				GetNextLexmeAssign_HazeString(Class.Name);
+				GetNextLexmeAssign_StandardType(Class.Size);
 				GetNextLexmeAssign_StandardType(Num);
-				Table.Vector_Class[i].Vector_Member.resize(Num);
+				Class.Vector_Member.resize(Num);
 
-				for (size_t j = 0; j < Table.Vector_Class[i].Vector_Member.size(); j++)
+				for (size_t j = 0; j < Class.Vector_Member.size(); j++)
 				{
-					GetNextLexmeAssign_HazeString(Table.Vector_Class[i].Vector_Member[j].Member.Name);
+					auto& ClassMember = Class.Vector_Member[j];
 
-					GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Member.Type.PrimaryType);
+					GetNextLexmeAssign_HazeString(ClassMember.Variable.Name);
 
-					if (Table.Vector_Class[i].Vector_Member[j].Member.Type.PrimaryType == HazeValueType::PointerClass 
-						|| Table.Vector_Class[i].Vector_Member[j].Member.Type.PrimaryType == HazeValueType::Class)
+					GetNextLexmeAssign_CustomType<uint32>(ClassMember.Variable.Type.PrimaryType);
+
+					if (ClassMember.Variable.Type.PrimaryType == HazeValueType::PointerClass || ClassMember.Variable.Type.PrimaryType == HazeValueType::Class)
 					{
-						GetNextLexmeAssign_HazeString(Table.Vector_Class[i].Vector_Member[j].Member.Type.CustomName);
+						GetNextLexmeAssign_HazeString(ClassMember.Variable.Type.CustomName);
 					}
-					else if (Table.Vector_Class[i].Vector_Member[j].Member.Type.PrimaryType == HazeValueType::PointerBase)
+					else if (ClassMember.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 					{
-						GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Member.Type.SecondaryType);
+						GetNextLexmeAssign_CustomType<uint32>(ClassMember.Variable.Type.SecondaryType);
 					}
 
-					GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Class[i].Vector_Member[j].Size);
+					GetNextLexmeAssign_CustomType<uint32>(ClassMember.Offset);
+					GetNextLexmeAssign_CustomType<uint32>(ClassMember.Size);
 				}
 			}
 		}
@@ -317,7 +316,6 @@ void BackendParse::ParseInstructionData(InstructionData& Data, bool ParsePrimary
 	}
 	
 	GetNextLexmeAssign_HazeString(Data.Variable.Name);
-
 	GetNextLexmeAssign_CustomType<uint32>(Data.Scope);
 
 	if (Data.Scope == HazeDataDesc::ArrayElement)
@@ -325,7 +323,8 @@ void BackendParse::ParseInstructionData(InstructionData& Data, bool ParsePrimary
 		GetNextLexmeAssign_CustomType<uint32>(Data.Extra.Index);
 	}
 
-	if (Data.Variable.Type.PrimaryType == HazeValueType::PointerBase || Data.Variable.Type.PrimaryType == HazeValueType::ReferenceBase)
+	if ((Data.Variable.Type.PrimaryType == HazeValueType::PointerBase || Data.Variable.Type.PrimaryType == HazeValueType::ReferenceBase)
+		&& Data.Scope != HazeDataDesc::NullPtr)
 	{
 		GetNextLexmeAssign_CustomType<uint32>(Data.Variable.Type.SecondaryType);
 
@@ -357,8 +356,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::MOD:
 	case InstructionOpCode::CMP:
-	case InstructionOpCode::AND:
-	case InstructionOpCode::OR:
 	case InstructionOpCode::BIT_AND:
 	case InstructionOpCode::BIT_OR:
 	case InstructionOpCode::BIT_XOR:
@@ -511,24 +508,24 @@ void BackendParse::GenOpCodeFile()
 	HAZE_BINARY_STRING BinaryString;
 	
 	FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
-	for (auto& i : NewGlobalDataTable.Vector_Data)
+	for (auto& Iter : NewGlobalDataTable.Vector_Data)
 	{
-		BinaryString = WString2String(i.Name);
+		BinaryString = WString2String(Iter.Name);
 		UnsignedInt = (uint32)BinaryString.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		
 		FS_OpCode.write(BinaryString.c_str(), UnsignedInt);
-		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(i.Type.PrimaryType));
-		FS_OpCode.write(GetBinaryPointer(i.Type.PrimaryType, i.Value), GetSizeByHazeType(i.Type.PrimaryType));
+		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Type.PrimaryType));
+		FS_OpCode.write(GetBinaryPointer(Iter.Type.PrimaryType, Iter.Value), GetSizeByHazeType(Iter.Type.PrimaryType));
 	}
 
 	//将字符串表写入
 	UnsignedInt = (uint32)NewStringTable.Vector_String.size();
 	FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 
-	for (auto& i : NewStringTable.Vector_String)
+	for (auto& Iter : NewStringTable.Vector_String)
 	{
-		BinaryString = WString2String(i.String);
+		BinaryString = WString2String(Iter.String);
 		UnsignedInt = (uint32)BinaryString.size();
 		FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 		FS_OpCode.write(BinaryString.data(), UnsignedInt);
@@ -552,17 +549,20 @@ void BackendParse::GenOpCodeFile()
 
 		for (size_t i = 0; i < Iter.Vector_Member.size(); i++)
 		{
-			BinaryString = WString2String(Iter.Vector_Member[i].Member.Name);
+			BinaryString = WString2String(Iter.Vector_Member[i].Variable.Name);
 			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.data(), UnsignedInt);
 
-			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Vector_Member[i].Member.Type.PrimaryType));
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Vector_Member[i].Variable.Type.PrimaryType));
 
-			BinaryString = WString2String(HAZE_STRING(Iter.Vector_Member[i].Member.Type.CustomName));
+			BinaryString = WString2String(HAZE_STRING(Iter.Vector_Member[i].Variable.Type.CustomName));
 			UnsignedInt = (uint32)BinaryString.size();
 			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(UnsignedInt));
 			FS_OpCode.write(BinaryString.data(), UnsignedInt);
+
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Vector_Member[i].Offset));
+			FS_OpCode.write(HAZE_BINARY_OP_WRITE_CODE_SIZE(Iter.Vector_Member[i].Size));
 		}
 	}
 
@@ -682,7 +682,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 				//设置 Block块 偏移值
 				for (auto& Operator : CurrFunction.Vector_Instruction[i].Operator)
 				{
-					if (Operator.Variable.Name != HAZE_JMP_NULL && Operator.Variable.Name != HAZE_JMP_OUT)
+					if (Operator.Variable.Name != HAZE_JMP_NULL)
 					{
 						for (size_t j = 0; j < CurrFunction.Vector_Block.size(); j++)
 						{
@@ -715,7 +715,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 					}
 					else
 					{
-						HAZE_LOG_ERR(HAZE_TEXT("Find call pointer function address failed!\n"));
+						HAZE_LOG_ERR(HAZE_TEXT("查找调用的函数指针<%s>失败!\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str());
 					}
 				}
 			}
@@ -801,7 +801,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 						}
 						else
 						{
-							HAZE_LOG_ERR(HAZE_TEXT("find Offset error %s\n  in function %s"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
+							HAZE_LOG_ERR(HAZE_TEXT("在函数<%s>中查找<%s>的偏移值失败!\n"), CurrFunction.Name.c_str(), it.Variable.Name.c_str());
 						}
 					}
 					else if (it.Scope == HazeDataDesc::Global)
@@ -906,16 +906,11 @@ uint32 const BackendParse::GetClassSize(const HAZE_STRING& ClassName)
 
 uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName)
 {
-	uint32 Offset = 0;
 	for (auto& Iter : Class.Vector_Member)
 	{
-		if (Iter.Member.Name != MemberName)
+		if (Iter.Variable.Name == MemberName)
 		{
-			Offset += Iter.Size;
-		}
-		else
-		{
-			return Offset;
+			return Iter.Offset;
 		}
 	}
 

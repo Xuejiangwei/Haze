@@ -1,6 +1,5 @@
 #include "HazeCompilerHelper.h"
 
-#include <fstream>
 #include "HazeLog.h"
 #include "HazeCompiler.h"
 #include "HazeCompilerModule.h"
@@ -15,7 +14,7 @@
 
 HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& ClassName, const HAZE_STRING& FunctionName)
 {
-	return ClassName + HAZE_TEXT("@") + FunctionName;
+	return ClassName + HAZE_CLASS_FUNCTION_CONBINE + FunctionName;
 }
 
 HAZE_STRING GetLocalVariableName(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerValue> Value)
@@ -41,6 +40,9 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value, bo
 		{
 		case HazeValueType::Bool:
 			Stream << V.Value.Bool;
+			break;
+		case HazeValueType::Byte:
+			Stream << V.Value.Byte;
 			break;
 		case HazeValueType::Char:
 			Stream << V.Value.Char;
@@ -106,6 +108,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module
 	{
 	case HazeValueType::Void:
 	case HazeValueType::Bool:
+	case HazeValueType::Byte:
 	case HazeValueType::Char:
 	case HazeValueType::Int:
 	case HazeValueType::Float:
@@ -374,7 +377,7 @@ bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STR
 				OutName = GetLocalVariableName(Data.first, Data.second) + HAZE_CLASS_ATTR + OutName;
 				if (!Value->IsClassPublicMember())
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("can not access non public member data %s\n"), OutName.c_str());
+					HAZE_LOG_ERR(HAZE_TEXT("不能够访问类<%s>非公开成员变量<%s>!\n"), Class->GetOwnerClassName().c_str(), OutName.c_str());
 				}
 				return true;
 			}

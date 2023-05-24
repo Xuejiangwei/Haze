@@ -55,6 +55,8 @@ enum class HazeDataDesc : uint32
 
 	Initlist,
 	ArrayElement,
+
+	NullPtr,
 };
 
 enum class InstructionOpCode : uint32
@@ -72,8 +74,6 @@ enum class InstructionOpCode : uint32
 
 	NEG,
 
-	AND,
-	OR,
 	NOT,
 
 	BIT_AND,
@@ -194,11 +194,18 @@ struct FunctionDescData
 	unsigned int InstructionStartAddress;
 };
 
+struct ClassMemberData
+{
+	HazeDefineVariable MemberData;
+	uint32 Offset;
+	uint32 Size;
+};
+
 struct ClassData
 {
 	HAZE_STRING Name;
 	unsigned int Size;
-	std::vector<HazeDefineVariable> Vector_Member;
+	std::vector<ClassMemberData> Vector_Member;
 };
 
 struct FunctionData

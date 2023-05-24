@@ -8,6 +8,7 @@ enum class HazeValueType : uint32
 	Void,
 	Bool,
 
+	Byte,
 	Char,
 
 	Int,
@@ -43,12 +44,14 @@ struct HazeValue
 	{
 		bool Bool;
 
+		char Byte;
 		HAZE_CHAR Char;
 		int Int;
 		float Float;
 		long long Long;
 		double Double;
 
+		unsigned char UnsignedByte;
 		unsigned int UnsignedInt;
 		unsigned long long UnsignedLong;
 

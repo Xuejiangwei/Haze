@@ -32,6 +32,8 @@ public:
 
 	void LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath);
 
+	const std::vector<Instruction>& GetInstruction() const { return Vector_Instruction; }
+
 	void StartMainFunction();
 
 	void ParseString(const HAZE_STRING& String);

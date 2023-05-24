@@ -24,7 +24,9 @@ public:
 public:
 	char* GetAddressByEBP(int Offset) { return &Stack_Main[(uint64)EBP + Offset]; }
 
-	const HazeVM* GetVM() const { return VM; }
+	HazeVM* GetVM() const { return VM; }
+
+	int GetCurrPC() const { return PC; }
 
 public:
 	struct HazeStackFrame

@@ -7,8 +7,9 @@
 #include "ASTStandardLibrary.h"
 
 ASTStandardLibrary::ASTStandardLibrary(HazeVM* VM, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTFunctionDefine>>& Vector_FunctionExpression,
-	std::vector<std::unique_ptr<ASTClassDefine>>& Vector_ClassExpression)
-	: VM(VM), Name(std::move(Name)), Vector_FunctionExpression(std::move(Vector_FunctionExpression)), Vector_ClassExpression(std::move(Vector_ClassExpression))
+	std::vector<std::unique_ptr<ASTClassDefine>>& Vector_ClassExpression) :
+	VM(VM), Name(std::move(Name)), Vector_FunctionExpression(std::move(Vector_FunctionExpression)),
+	Vector_ClassExpression(std::move(Vector_ClassExpression))
 {
 }
 

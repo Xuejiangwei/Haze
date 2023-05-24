@@ -83,6 +83,8 @@ private:
 
 	std::unique_ptr<ASTBase> ParseNeg();
 
+	std::unique_ptr<ASTBase> ParseNullPtr();
+
 	std::unique_ptr<ASTBase> ParseGetAddress();
 
 	std::unique_ptr<ASTBase> ParseInc();
@@ -144,4 +146,5 @@ private:
 	int LeftParenthesesExpressionCount;
 
 	int64 LineCount;
+	bool NeedParseNextStatement;
 };

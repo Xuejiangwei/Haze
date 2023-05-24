@@ -53,6 +53,6 @@ void HazeCompilerClassValue::GetMemberName(const std::shared_ptr<HazeCompilerVal
 
 void HazeCompilerClassValue::GetMemberName(const HazeCompilerValue* MemberValue, HAZE_STRING& OutName)
 {
-	OwnerClass->GetMemberName(MemberValue, OutName);
+	OwnerClass->GetMemberName(this, MemberValue, OutName);
 }
 

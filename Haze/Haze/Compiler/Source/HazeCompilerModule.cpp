@@ -209,16 +209,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateShr(std::shared_ptr
 	return GenIRCode_BinaryOperater(Left, Right, IsAssign ? InstructionOpCode::SHR_ASSIGN : InstructionOpCode::SHR);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::AND);
-}
-
-std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
-{
-	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::OR);
-}
-
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateNot(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right)
 {
 	return GenIRCode_BinaryOperater(Left, Right, InstructionOpCode::NOT);
@@ -402,7 +392,7 @@ void HazeCompilerModule::GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value)
 	BB->PushIRCode(SStream.str());
 }
 
-void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock, bool IfNullJmpOut, bool ElseNullJmpOut)
+void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<HazeBaseBlock> IfJmpBlock, std::shared_ptr<HazeBaseBlock> ElseJmpBlock)
 {
 	HAZE_STRING_STREAM SStream;
 
@@ -419,14 +409,7 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 	}
 	else
 	{
-		if (IfNullJmpOut)
-		{
-			SStream << HAZE_JMP_OUT << " ";
-		}
-		else
-		{
-			SStream << HAZE_JMP_NULL << " ";
-		}
+		SStream << HAZE_JMP_NULL << " ";
 	}
 
 	if (ElseJmpBlock)
@@ -435,14 +418,7 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 	}
 	else
 	{
-		if (ElseNullJmpOut)
-		{
-			SStream << HAZE_JMP_OUT << " ";
-		}
-		else
-		{
-			SStream << HAZE_JMP_NULL << " ";
-		}
+		SStream << HAZE_JMP_NULL << " ";
 	}
 
 	SStream << std::endl;
@@ -451,39 +427,11 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType CmpType, std::shared_ptr<Haze
 	BB->PushIRCode(SStream.str());
 }
 
-void HazeCompilerModule::GenIRCode_JmpFrom(std::shared_ptr<HazeBaseBlock> FormBlock, std::shared_ptr<HazeBaseBlock> ToBlock, bool IsJmpL)
-{
-	HAZE_STRING_STREAM HSS;
-
-	if (IsJmpL)
-	{
-		HSS << GetInstructionString(InstructionOpCode::JMPL);
-	}
-	else
-	{
-		HSS << GetInstructionString(InstructionOpCode::JMP);
-	}
-
-	HSS << " " << ToBlock->GetName() << std::endl;
-
-	FormBlock->PushIRCode(HSS.str());
-}
-
-void HazeCompilerModule::GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block, bool IsJmpL)
+void HazeCompilerModule::GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block)
 {
 	auto TopBlock = Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM HSS;
-
-	if (IsJmpL)
-	{
-		HSS << GetInstructionString(InstructionOpCode::JMPL);
-	}
-	else
-	{
-		HSS << GetInstructionString(InstructionOpCode::JMP);
-	}
-
-	HSS << " " << Block->GetName() << std::endl;
+	HSS << GetInstructionString(InstructionOpCode::JMP) << " " << Block->GetName() << std::endl;
 
 	TopBlock->PushIRCode(HSS.str());
 }
@@ -883,6 +831,10 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		HSS << " " << (uint32)Value->GetScope() << " " << (uint32)HazeValueType::Char;
 		HSS << " " << Module->GetGlobalStringIndex(Value);
 	}
+	else if (Value->IsNullPtr())
+	{
+		HSS << " " << 0 << " " << (uint32)Value->GetScope();
+	}
 	else if (Value->IsRegister())
 	{
 		HSS << " " << HazeCompiler::GetRegisterName(Value);
@@ -911,6 +863,7 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 			{
 				HSS << " " << Value->GetValueType().CustomName << " " << (uint32)HazeDataDesc::FunctionAddress;		//表示需要运行中查找函数地址
 			}
+			
 			else
 			{
 				HAZE_LOG_ERR(HAZE_TEXT("生成中间码错误:不能找到变量! 当前函数<%s>\n"), Module->CurrFunction.empty() ? HAZE_TEXT("None") : Module->GetCurrFunction()->GetName().c_str());

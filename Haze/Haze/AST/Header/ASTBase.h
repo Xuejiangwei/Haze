@@ -68,7 +68,7 @@ private:
 class ASTIdentifier : public ASTBase
 {
 public:
-	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression);
+	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression);
 	virtual ~ASTIdentifier() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -77,7 +77,6 @@ public:
 
 private:
 	HazeSectionSignal SectionSignal;
-	HAZE_STRING ClassMemberName;
 	std::vector<std::unique_ptr<ASTBase>> ArrayIndexExpression;
 };
 
@@ -183,6 +182,18 @@ public:
 private:
 	std::unique_ptr<ASTBase> Expression;
 	bool IsNumberNeg;
+};
+
+//Null pointer
+class ASTNullPtr : public ASTBase
+{
+public:
+	ASTNullPtr(HazeVM* VM);
+	virtual ~ASTNullPtr() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+	void SetDefineType(const HazeDefineType& Type);
 };
 
 //Inc

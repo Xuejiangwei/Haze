@@ -51,6 +51,21 @@ struct HazeDefineType
 	}
 };
 
+struct HazeDefineTypeHashFunction
+{
+	uint64 operator()(const HazeDefineType& Type) const
+	{
+		if (!Type.CustomName.empty())
+		{
+			return std::hash<HAZE_STRING>()(Type.CustomName);
+		}
+		else
+		{
+			return (uint64)Type.PrimaryType * 100 + (uint64)Type.SecondaryType * 10;
+		}
+	}
+};
+
 struct HazeDefineVariable
 {
 	HazeDefineType Type;		//变量类型

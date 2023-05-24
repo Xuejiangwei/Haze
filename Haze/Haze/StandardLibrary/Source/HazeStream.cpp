@@ -104,12 +104,25 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 			Start++;
 			if (*Start == HAZE_CHAR('d'))
 			{
-				Offset -= sizeof(int);
+				auto Ins = Stack->GetVM()->GetInstruction()[Stack->GetCurrPC() - ArgNum - 1];
+				int Size = GetSizeByType(Ins.Operator[0].Variable.Type, Stack->GetVM());
+
+				Offset -= Size;
+				if (Size == 1)
+				{
+					char TempV;
+					char* Address = Stack->GetAddressByEBP(Offset);
+					memcpy(&TempV, Address, Size);
+					HSS << (int)TempV;
+				}
+				else
+				{
+					int TempV;
+					char* Address = Stack->GetAddressByEBP(Offset);
+					memcpy(&TempV, Address, Size);
+					HSS << TempV;
+				}
 				
-				int TempV;
-				char* Address = Stack->GetAddressByEBP(Offset);
-				memcpy(&TempV, Address, sizeof(int));
-				HSS << TempV;
 				Start++;
 			}
 			else if (*Start == HAZE_CHAR('f'))

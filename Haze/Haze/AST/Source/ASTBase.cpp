@@ -61,10 +61,7 @@ ASTNumber::~ASTNumber()
 
 std::shared_ptr<HazeCompilerValue> ASTNumber::CodeGen()
 {
-	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
-	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenConstantValue(DefineVariable.Type.PrimaryType, Value);
-
-	return RetValue;
+	return VM->GetCompiler()->GenConstantValue(DefineVariable.Type.PrimaryType, Value);
 }
 
 ASTStringText::ASTStringText(HazeVM* VM, HAZE_STRING& Text) : ASTBase(VM), Text(std::move(Text))
@@ -77,20 +74,13 @@ ASTStringText::~ASTStringText()
 
 std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 {
-	std::unique_ptr<HazeCompiler>& Compiler = VM->GetCompiler();
-	std::shared_ptr<HazeCompilerValue> RetValue = Compiler->GenStringVariable(Text);
-
-	return RetValue;
+	return VM->GetCompiler()->GenStringVariable(Text);
 }
 
-ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HAZE_STRING* MemberName, std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression)
+ASTIdentifier::ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression)
 	: ASTBase(VM), SectionSignal(Section), ArrayIndexExpression(std::move(ArrayIndexExpression))
 {
 	DefineVariable.Name = std::move(Name);
-	if (MemberName)
-	{
-		ClassMemberName = std::move(*MemberName);
-	}
 }
 
 ASTIdentifier::~ASTIdentifier()
@@ -141,6 +131,7 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 		{
 			HAZE_LOG_ERR(HAZE_TEXT("未能找到变量<%s>,当前函数<%s>!\n"), DefineVariable.Name.c_str(),
 				SectionSignal == HazeSectionSignal::Function ? Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
+			return nullptr;
 		}
 	}
 
@@ -230,6 +221,11 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	std::shared_ptr<HazeCompilerValue> ExprValue = nullptr;
 	if (Expression)
 	{
+		if (auto NullExpression = dynamic_cast<ASTNullPtr*>(Expression.get()))
+		{
+			NullExpression->SetDefineType(DefineVariable.Type);
+		}
+
 		ExprValue = Expression->CodeGen();
 		if (!ExprValue)
 		{
@@ -387,6 +383,25 @@ std::shared_ptr<HazeCompilerValue> ASTNeg::CodeGen()
 	}
 }
 
+
+ASTNullPtr::ASTNullPtr(HazeVM* VM) : ASTBase(VM)
+{
+}
+
+ASTNullPtr::~ASTNullPtr()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTNullPtr::CodeGen()
+{
+	return VM->GetCompiler()->GetNullPtr(DefineVariable.Type);
+}
+
+void ASTNullPtr::SetDefineType(const HazeDefineType& Type)
+{
+	DefineVariable.Type = Type;
+}
+
 ASTInc::ASTInc(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, bool IsPreInc) : ASTBase(VM), IsPreInc(IsPreInc), Expression(std::move(Expression))
 {
 }
@@ -505,11 +520,9 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		}
 		else
 		{
-			//Ret = Compiler->CreateAnd(Ret, RightAST->CodeGen());
 			if (!LeftExp)
 			{
 				HAZE_LOG_ERR(HAZE_TEXT("二元表达式错误!\n"));
-				//LeftExp->SetLeftAndRightBlock(LeftBlock, RightBlock);
 				return nullptr;
 			}
 
@@ -633,7 +646,6 @@ std::shared_ptr<HazeCompilerValue> ASTThreeExpression::CodeGen()
 	auto ParentBlock = Compiler->GetInsertBlock();
 
 	auto DefauleBlock = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, ParentBlock);
-
 	auto BlockLeft = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, ParentBlock);
 	auto BlockRight = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, ParentBlock);
 
@@ -747,10 +759,6 @@ std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 		ElseExpression->CodeGen();
 		Compiler->CreateJmpToBlock(NextBlock);
 	}
-	else
-	{
-		//Compiler->SetInsertBlock(InsertBlock);
-	}
 
 	Compiler->SetInsertBlock(NextBlock);
 	return nullptr;
@@ -770,7 +778,7 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 	auto& Compiler = VM->GetCompiler();
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 
-	auto ParentBlock = Compiler->GetInsertBlock()->GetInsertToBlock()->GetShared();
+	auto ParentBlock = Compiler->GetInsertBlock();
 	auto WhileBlock = HazeBaseBlock::CreateBaseBlock(Function->GenWhileBlockName(), Function, ParentBlock);
 	auto NextBlock = HazeBaseBlock::CreateBaseBlock(Function->GenWhileBlockName(), Function, ParentBlock);
 
@@ -876,5 +884,3 @@ std::shared_ptr<HazeCompilerValue> ASTInitializeList::CodeGen()
 
 	return InitilaizeListValue;
 }
-
-

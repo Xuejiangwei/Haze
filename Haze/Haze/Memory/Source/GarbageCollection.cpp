@@ -31,26 +31,25 @@ void GarbageCollection::MarkClassMember(std::vector<std::pair<uint64, HazeValueT
 	std::vector<std::pair<uint64, ClassData*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress)
 {
 	uint64 Address = 0;
-	int Offset = 0;
 	auto ClassData = VM->FindClass(VarType.CustomName);
 	for (size_t i = 0; i < ClassData->Vector_Member.size(); i++)
 	{
-		if (ClassData->Vector_Member[i].Type.PrimaryType == HazeValueType::PointerBase)
+		auto& Member = ClassData->Vector_Member[i];
+		if (Member.MemberData.Type.PrimaryType == HazeValueType::PointerBase)
 		{
-			memcpy(&Address, BaseAddress + Offset, sizeof(Address));
-			Vector_MarkAddressBase.push_back({ Address, ClassData->Vector_Member[i].Type.SecondaryType });
+			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
+			Vector_MarkAddressBase.push_back({ Address, Member.MemberData.Type.SecondaryType });
 		}
 		else if (VarType.PrimaryType == HazeValueType::PointerClass)
 		{
-			memcpy(&Address, BaseAddress + Offset, sizeof(Address));
-			Vector_MarkAddressClass.push_back({ Address, VM->FindClass(ClassData->Vector_Member[i].Type.CustomName) });
+			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
+			Vector_MarkAddressClass.push_back({ Address, VM->FindClass(Member.MemberData.Type.CustomName) });
 		}
 		else if (VarType.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, ClassData->Vector_Member[i].Type, BaseAddress + Offset);
+			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.MemberData.Type, BaseAddress + Member.Offset);
 		}
 
-		Offset += GetSizeByType(ClassData->Vector_Member[i].Type, VM);
 	}
 }
 

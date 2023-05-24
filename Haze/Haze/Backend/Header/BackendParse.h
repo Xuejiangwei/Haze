@@ -65,14 +65,14 @@ private:
 
 	const ModuleUnit::ClassTableData* const GetClass(const HAZE_STRING& ClassName);
 
-	unsigned int GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName);
+	uint32 GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName);
 	
 private:
 	HazeVM* VM;
 
 	HAZE_BINARY_OFSTREAM FS_OpCode;
 
-	const HAZE_CHAR* CurrCode = nullptr;
+	const HAZE_CHAR* CurrCode;
 	HAZE_STRING CurrLexeme;
 
 	std::shared_ptr<ModuleUnit> CurrParseModule;
