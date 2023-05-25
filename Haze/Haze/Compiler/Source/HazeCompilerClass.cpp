@@ -20,7 +20,6 @@ HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRI
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
 			Vector_Data[i].second[j].second->Scope = Vector_Data[i].first;
-			//DataSize += Vector_Data[i].second[j].second->GetSize();
 			MemberNum++;
 			LastMember = Vector_Data[i].second[j].second;
 		}
@@ -139,22 +138,6 @@ bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* ClassValue, const 
 	return false;
 }
 
-//const HazeDefineVariable* HazeCompilerClass::GetClassMemberData(const HAZE_STRING& MemberName) const
-//{
-//	for (auto& Iter : Vector_Data)
-//	{
-//		for (size_t i = 0; i < Iter.second.size(); i++)
-//		{
-//			if (Iter.second[i].first == MemberName)
-//			{
-//				return Iter.second[i].second.get();
-//			}
-//		}
-//	}
-//
-//	return nullptr;
-//}
-
 void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& SStream)
 {
 #if HAZE_I_CODE_ENABLE
@@ -172,10 +155,10 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& SStream)
 	{
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
-			SStream << Vector_Data[i].second[j].first << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().PrimaryType);
+			SStream << Vector_Data[i].second[j].first << " " << CAST_UINT32(Vector_Data[i].second[j].second->GetValueType().PrimaryType);
 			if (Vector_Data[i].second[j].second->IsPointerBase())
 			{
-				SStream << " " << HAZE_CAST_VALUE_TYPE(Vector_Data[i].second[j].second->GetValueType().SecondaryType);
+				SStream << " " << CAST_UINT32(Vector_Data[i].second[j].second->GetValueType().SecondaryType);
 			}
 			else if (Vector_Data[i].second[j].second->IsPointerClass() || Vector_Data[i].second[j].second->IsClass())
 			{

@@ -138,7 +138,7 @@
     <ClCompile Include="AST\Source\ASTFunction.cpp" />
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
-    <ClCompile Include="Compiler\Header\HazeCompilerInitListValue.cpp" />
+    <ClCompile Include="Compiler\Source\HazeCompilerInitListValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeBaseBlock.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompiler.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerArrayValue.cpp" />
@@ -154,6 +154,7 @@
     <ClCompile Include="Compiler\Source\HazeCompilerRefValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp" />
     <ClCompile Include="Define\Source\HazeCompare.cpp" />
+    <ClCompile Include="Define\Source\HazeExecuteFile.cpp" />
     <ClCompile Include="Define\Source\HazeUtility.cpp" />
     <ClCompile Include="Define\Source\HazeValue.cpp" />
     <ClCompile Include="Define\Source\HazeInstruction.cpp" />
@@ -203,7 +204,7 @@
     <ClInclude Include="Compiler\Header\HazeCompilerPointerArray.h" />
     <ClInclude Include="Define\Header\HazeCompare.h" />
     <ClInclude Include="Define\Header\HazeDebug.h" />
-    <ClInclude Include="Define\Header\HazeFile.h" />
+    <ClInclude Include="Define\Header\HazeExecuteFile.h" />
     <ClInclude Include="Define\Header\HazeInstruction.h" />
     <ClInclude Include="Define\Header\HazeToken.h" />
     <ClInclude Include="Define\Header\HazeTokenText.h" />

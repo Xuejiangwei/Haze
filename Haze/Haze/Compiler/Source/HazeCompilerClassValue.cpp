@@ -9,7 +9,7 @@ extern std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule*
 HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count)
 	: HazeCompilerValue(Module, DefineType, Scope, Count)
 {
-	OwnerClass = Module->FindClass(DefineType.CustomName).get();
+	OwnerClass = Module->GetClass(DefineType.CustomName).get();
 	Vector_Data = std::move(CreateVariableCopyClassMember(Module, OwnerClass));
 }
 

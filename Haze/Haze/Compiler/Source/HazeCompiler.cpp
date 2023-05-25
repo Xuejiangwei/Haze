@@ -112,13 +112,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModu
 	{
 		Iter->second = CreateVariable(Module, HazeDefineVariable(Data, HAZE_TEXT("")), HazeDataDesc::RegisterNew, 0);
 
-		/*auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Iter->second);
-		
-		if (!Data.CustomName.empty())
-		{
-			PointerValue->InitPointerTo(Module->FindClass(Data.CustomName)->GetNewPointerToValue());
-		}*/
-		
 		return Iter->second;
 	}
 
@@ -139,19 +132,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetTempRegister()
 	return nullptr;
 }
 
-//const HAZE_CHAR* HazeCompiler::GetRegisterName(std::shared_ptr<HazeCompilerValue> Register)
-//{
-//	for (auto& iter : Map_GlobalRegister)
-//	{
-//		if (iter.second == Register)
-//		{
-//			return iter.first;
-//		}
-//	}
-//
-//	return nullptr;
-//}
-//
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetRegister(const HAZE_CHAR* Name)
 {
 	auto Iter = HashMap_GlobalRegister.find(Name);
@@ -163,11 +143,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetRegister(const HAZE_CHAR* Na
 	return nullptr;
 }
 
-const HAZE_CHAR* HazeCompiler::GetRegisterName(const std::shared_ptr<HazeCompilerValue>& Value)
+const HAZE_CHAR* HazeCompiler::GetRegisterName(const std::shared_ptr<HazeCompilerValue>& Register)
 {
 	for (auto& Iter : HashMap_GlobalRegister)
 	{
-		if (Iter.second == Value)
+		if (Iter.second == Register)
 		{
 			return Iter.first;
 		}
@@ -175,13 +155,13 @@ const HAZE_CHAR* HazeCompiler::GetRegisterName(const std::shared_ptr<HazeCompile
 
 	for (auto& Iter : HashMap_GlobalTempRegister)
 	{
-		if (Iter.second == Value)
+		if (Iter.second == Register)
 		{
 			return Iter.first;
 		}
 	}
 
-	HAZE_LOG_ERR(HAZE_TEXT("find register name error\n"));
+	HAZE_LOG_ERR(HAZE_TEXT("查找寄存器错误,未能找到!\n"));
 	return nullptr;
 }
 
@@ -193,7 +173,7 @@ std::shared_ptr<HazeCompilerInitListValue> HazeCompiler::GetInitializeListValue(
 bool HazeCompiler::IsClass(const HAZE_STRING& Name)
 {
 	auto& Module = GetCurrModule();
-	if (Module->FindClass(Name))
+	if (Module->GetClass(Name))
 	{
 		return true;
 	}
@@ -201,7 +181,7 @@ bool HazeCompiler::IsClass(const HAZE_STRING& Name)
 	{
 		for (auto& Iter : Module->Vector_ImportModule)
 		{
-			if (Iter->FindClass(Name))
+			if (Iter->GetClass(Name))
 			{
 				return true;
 			}
@@ -215,7 +195,7 @@ const HAZE_CHAR* HazeCompiler::GetClassName(const HAZE_STRING& Name)
 {
 	for (auto& Iter : HashMap_CompilerModule)
 	{
-		auto Class = Iter.second->FindClass(Name);
+		auto Class = Iter.second->GetClass(Name);
 		if (Class)
 		{
 			return Class->GetName().c_str();
@@ -242,6 +222,56 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType 
 		}
 		HashMap_BoolConstantValue[Var.Value.Bool] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, {}, &V);
 		return HashMap_BoolConstantValue[Var.Value.Bool];
+	}
+	case HazeValueType::Byte:
+	{
+		auto it = HashMap_ByteConstantValue.find(Var.Value.Byte);
+		if (it != HashMap_ByteConstantValue.end())
+		{
+			return it->second;
+		}
+		HashMap_ByteConstantValue[Var.Value.Byte] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, {}, &V);
+		return HashMap_ByteConstantValue[Var.Value.Byte];
+	}
+	case HazeValueType::UnsignedByte:
+	{
+		auto it = HashMap_UnsignedByteConstantValue.find(Var.Value.UnsignedByte);
+		if (it != HashMap_UnsignedByteConstantValue.end())
+		{
+			return it->second;
+		}
+		HashMap_UnsignedByteConstantValue[Var.Value.UnsignedByte] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, {}, &V);
+		return HashMap_UnsignedByteConstantValue[Var.Value.UnsignedByte];
+	}
+	case HazeValueType::Char:
+	{
+		auto it = HashMap_CharConstantValue.find(Var.Value.Char);
+		if (it != HashMap_CharConstantValue.end())
+		{
+			return it->second;
+		}
+		HashMap_CharConstantValue[Var.Value.Char] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, {}, &V);
+		return HashMap_CharConstantValue[Var.Value.Char];
+	}
+	case HazeValueType::Short:
+	{
+		auto it = HashMap_ShortConstantValue.find(Var.Value.Short);
+		if (it != HashMap_ShortConstantValue.end())
+		{
+			return it->second;
+		}
+		HashMap_ShortConstantValue[Var.Value.Short] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, {}, &V);
+		return HashMap_ShortConstantValue[Var.Value.Short];
+	}
+	case HazeValueType::UnsignedShort:
+	{
+		auto it = HashMap_UnsignedShortConstantValue.find(Var.Value.UnsignedShort);
+		if (it != HashMap_UnsignedShortConstantValue.end())
+		{
+			return it->second;
+		}
+		HashMap_UnsignedShortConstantValue[Var.Value.UnsignedShort] = CreateVariable(nullptr, DefineVariable, HazeDataDesc::Constant, 0, nullptr, {}, &V);
+		return HashMap_UnsignedShortConstantValue[Var.Value.UnsignedShort];
 	}
 	case HazeValueType::Int:
 	{
@@ -304,6 +334,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType 
 		return HashMap_DobuleConstantValue[Var.Value.Double];
 	}
 	default:
+		HAZE_LOG_ERR(HAZE_TEXT("未支持生成<%s>常量类型!\n"), GetHazeValueTypeString(Type));
 		break;
 	}
 
@@ -312,7 +343,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType 
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GenStringVariable(HAZE_STRING& String)
 {
-	return GetCurrModule()->GetGlobalStringVariable(String);
+	return GetCurrModule()->GetOrCreateGlobalStringVariable(String);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetGlobalVariable(const HAZE_STRING& Name)
@@ -377,14 +408,6 @@ void HazeCompiler::ClearBlockPoint()
 
 void HazeCompiler::AddImportModuleToCurrModule(HazeCompilerModule* Module)
 {
-	/*for (auto& i : HashMap_CompilerModule)
-	{
-		if (i.second.get() == Module)
-		{
-			std::wcout << GetCurrModuleName()<< " add module " << i.first << std::endl;
-		}
-	}*/
-
 	for (auto& Iter : GetCurrModule()->Vector_ImportModule)
 	{
 		if (Iter == Module)
@@ -419,7 +442,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 		{
 			auto ArrayPointer = CreatePointerToArrayElement(Alloca);
 			CreateMovToPV(ArrayPointer, Value);
-			//GetArrayElementToValue(GetCurrModule().get(), Value, Alloca);
 		}
 		else if (!Alloca->IsArrayElement() && Value->IsArrayElement())
 		{
@@ -715,20 +737,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToPointerArray(std
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(std::shared_ptr<HazeCompilerFunction> Function)
 {
-	/*HAZE_STRING_STREAM SStream;
-
-	auto TempReg = GetTempRegister();
-	auto& ValueType = const_cast<HazeDefineType&>(TempReg->GetValueType());
-
-	ValueType.PrimaryType = HazeValueType::PointerFunction;
-	ValueType.CustomName = Function->GetName();
-
-	SStream << GetInstructionString(InstructionOpCode::LEA) << " ";
-	HazeCompilerModule::GenValueHzicText(, SStream, TempReg);
-	
-	SStream << " ";
-	HazeCompilerModule::GenValueHzicText(this, SStream, Right);*/
-
 	return CreateVariable(GetCurrModule().get(), HazeDefineVariable({ HazeValueType::PointerFunction, Function->GetName() }, HAZE_TEXT("")), HazeDataDesc::None, 0);
 }
 
@@ -744,13 +752,11 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNeg(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateInc(std::shared_ptr<HazeCompilerValue> Value, bool IsPreInc)
 {
-	HAZE_TO_DO(需要使用Inc字节码);
 	return GetCurrModule()->CreateInc(Value, IsPreInc);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDec(std::shared_ptr<HazeCompilerValue> Value, bool IsPreDec)
 {
-	HAZE_TO_DO(需要使用Dec字节码);
 	return GetCurrModule()->CreateDec(Value, IsPreDec);
 }
 

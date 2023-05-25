@@ -3,21 +3,10 @@
 
 #include <string.h>
 
-HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Scope(HazeDataDesc::Local)
+HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Scope(HazeDataDesc::Local), Count(0)
 {
 	memset(&Value, 0, sizeof(Value));
 }
-
-/*HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module) : Module(Module), Address(-1)
-{
-	memset(&Value.Value, 0, sizeof(Value.Value));
-}
-
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, HazeValueType Type) : Module(Module), Address(-1)
-{
-	Value.Type = Type;
-	memset(&Value.Value, 0, sizeof(Value.Value));
-}*/
 
 HazeCompilerValue::HazeCompilerValue(HazeValue Value, HazeDataDesc Scope) : Module(nullptr), Value(Value), Scope(Scope), Count(0)
 {

@@ -117,7 +117,7 @@
     <ClCompile Include="Compiler\Source\HazeCompilerArrayValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Header\HazeCompilerInitListValue.cpp">
+    <ClCompile Include="Compiler\Source\HazeCompilerInitListValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Compiler\Source\HazeCompilerPointerPointerValue.cpp">
@@ -151,6 +151,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Compiler\Source\HazeCompilerPointerArray.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Define\Source\HazeExecuteFile.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -219,9 +222,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Define\Header\HazeValue.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Define\Header\HazeFile.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Define\Header\HazeInstruction.h">
@@ -312,6 +312,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Define\Header\HazeTokenText.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeExecuteFile.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

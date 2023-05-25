@@ -7,23 +7,29 @@
 	指令字节id	操作数个数	操作数类型	操作数值		(操作数类型	操作数值)	...(操作数类型	操作数值)
 */
 
+
 enum class InstructionOpCodeType : uint8
 {
 	Memory,
+
 	Bool,
 	Char,
 
 	Byte,
-	Short,
-	Int,
-	Float,
-	Long,
-	Double,
-
 	UnsignedByte,
+
+	Short,
 	UnsignedShort,
+
+	Int,
 	UnsignedInt,
+
+	Float,
+
+	Long,
 	UnsignedLong,
+
+	Double,
 };
 
 enum class HazeDataDesc : uint32
@@ -73,8 +79,11 @@ enum class InstructionOpCode : uint32
 	MOD,
 
 	NEG,
-
+	
 	NOT,
+
+	INC,
+	DEC,
 
 	BIT_AND,
 	BIT_OR,

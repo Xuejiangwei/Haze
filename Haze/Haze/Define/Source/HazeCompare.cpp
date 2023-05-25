@@ -74,28 +74,3 @@ HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken Token)
 
 	return HazeOperatorAssign::None;
 }
-
-InstructionOpCode GetInstructionOpCodeByOperatorAssignType(HazeOperatorAssign Type)
-{
-	static std::unordered_map<HazeOperatorAssign, InstructionOpCode> HashMap =
-	{
-		{HazeOperatorAssign::AddAssign, InstructionOpCode::ADD_ASSIGN},
-		{HazeOperatorAssign::SubAssign, InstructionOpCode::SUB_ASSIGN},
-		{HazeOperatorAssign::MulAssign, InstructionOpCode::MUL_ASSIGN},
-		{HazeOperatorAssign::DivAssign, InstructionOpCode::DIV_ASSIGN},
-		{HazeOperatorAssign::ModAssign, InstructionOpCode::MOD_ASSIGN},
-		{HazeOperatorAssign::BitAndAssign, InstructionOpCode::BIT_AND_ASSIGN},
-		{HazeOperatorAssign::BitOrAssign, InstructionOpCode::BIT_OR_ASSIGN},
-		{HazeOperatorAssign::BitXorAssign, InstructionOpCode::BIT_XOR_ASSIGN},
-		{HazeOperatorAssign::ShlAssign, InstructionOpCode::SHL_ASSIGN},
-		{HazeOperatorAssign::ShrAssign, InstructionOpCode::SHR_ASSIGN},
-	};
-
-	auto Iter = HashMap.find(Type);
-	if (Iter != HashMap.end())
-	{
-		return Iter->second;
-	}
-
-	return InstructionOpCode::NONE;
-}

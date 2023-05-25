@@ -10,15 +10,12 @@
 #include "HazeBaseBlock.h"
 
 HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class)
-	: Module(Module), Name(Name), Type(Type), OwnerClass(Class)
+	: Module(Module), Name(Name), Type(Type), OwnerClass(Class), CurrBlockCount(0), CurrVariableCount(0)
 {
 	for (int i = (int)Param.size() - 1; i >= 0; i--)
 	{
 		AddFunctionParam(Param[i]);
 	}
-
-	CurrBlockCount = 0;
-	CurrVariableCount = 0;
 }
 
 HazeCompilerFunction::~HazeCompilerFunction()
@@ -86,15 +83,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 
 	if (!Ret && OwnerClass)
 	{
-		//Ret = GetObjectMember(GetModule(), VariableName);
 		Ret = std::dynamic_pointer_cast<HazeCompilerClassValue>(OwnerClass->GetThisPointerToValue())->GetMember(VariableName);
 	}
-
-	/*if (MemberName)
-	{
-		HazeDefineData DefineData;
-		Ret->SetUseClassMember(0, DefineData);
-	}*/
 
 	return Ret;
 }
@@ -104,7 +94,7 @@ void HazeCompilerFunction::FunctionFinish()
 	if (Type.PrimaryType == HazeValueType::Void || Name == HAZE_MAIN_FUNCTION_TEXT)
 	{
 		HAZE_STRING_STREAM SStream;
-		SStream << GetInstructionString(InstructionOpCode::RET) << " " << HAZE_CAST_VALUE_TYPE(HazeValueType::Void) << std::endl;
+		SStream << GetInstructionString(InstructionOpCode::RET) << " " << CAST_UINT32(HazeValueType::Void) << std::endl;
 		Module->GetCompiler()->GetInsertBlock()->PushIRCode(SStream.str());
 	}
 }
@@ -112,66 +102,29 @@ void HazeCompilerFunction::FunctionFinish()
 void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& SStream)
 {
 #if HAZE_I_CODE_ENABLE
-	SStream << GetFunctionLabelHeader() << " " << Name << " " << HAZE_CAST_VALUE_TYPE(Type.PrimaryType);
-	/*if (!Type.second.empty())
-	{
-		OFStream << Type.second;
-	}
-	else
-	{
-		OFStream << GetValueTypeByToken(Type.first);
-	}*/
+	SStream << GetFunctionLabelHeader() << " " << Name << " ";
 
+	if (!Type.StringStreamTo(SStream))
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("函数<%s>类型解析失败,生成中间代码错误!\n"), Name.c_str());
+		return;
+	}
+	
 	SStream << std::endl;
 
-	//Push所有参数，从右到左, push 参数与返回地址的事由call去做
+	//Push所有参数，从右到左, push 参数与返回地址的事由function call去做
 	for (int i = (int)VectorParam.size() - 1; i >= 0; i--)
 	{
-		SStream << GetFunctionParamHeader() << " " << VectorParam[i].first << " " << HAZE_CAST_VALUE_TYPE(VectorParam[i].second->GetValueType().PrimaryType);
+		SStream << GetFunctionParamHeader() << " " << VectorParam[i].first << " ";
 
-		if (VectorParam[i].second->IsPointer())
+		if (!VectorParam[i].second->GetValueType().StringStreamTo(SStream))
 		{
-			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(VectorParam[i].second);
-			if (PointerValue->IsPointerBase())
-			{
-				SStream << " " << HAZE_CAST_VALUE_TYPE(PointerValue->GetValueType().PrimaryType);
-			}
-			else if(PointerValue->IsPointerClass())
-			{
-				SStream << " " << PointerValue->GetValueType().CustomName;
-			}
-		}
-		else if (VectorParam[i].second->IsClass())
-		{
-			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(VectorParam[i].second);
-			SStream << " " << ClassValue->GetOwnerClassName();
+			HAZE_LOG_ERR(HAZE_TEXT("函数<%s>的参数<%s>类型解析失败,生成中间代码错误!\n"), Name.c_str(), VectorParam[i].first.c_str());
+			return;
 		}
 
 		SStream << std::endl;
 	}
-
-
-	/*size_t ParamCount = VectorParam.size();
-	for (auto& it : BBList)
-	{
-		bool WriteBlockName = false;
-		for (auto& code : it->GetIRCode()) 
-		{
-			if (!WriteBlockName)
-			{
-				WriteBlockName = true;
-				OFStream << code;
-			}
-			else if (ParamCount > 0)
-			{
-				ParamCount--;
-			}
-			else
-			{
-				OFStream << code;
-			}
-		}
-	}*/
 
 	HAZE_STRING LocalVariableName;
 	int Size = -HAZE_ADDRESS_SIZE;
@@ -288,20 +241,6 @@ bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* Value,
 
 	return false;
 }
-
-//bool HazeCompilerFunction::GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName)
-//{
-//	if (BBList.size() > 0)
-//	{
-//		if (BBList.front()->GetAllocaList().size() > Index)
-//		{
-//			OutName = BBList.front()->GetAllocaList()[Index].first;
-//			return true;
-//		}
-//	}
-//
-//	return false;
-//}
 
 void HazeCompilerFunction::AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value)
 {

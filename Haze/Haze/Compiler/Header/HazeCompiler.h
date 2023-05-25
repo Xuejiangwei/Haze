@@ -65,7 +65,7 @@ public:
 
 	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* Name);
 
-	static const HAZE_CHAR* GetRegisterName(const std::shared_ptr<HazeCompilerValue>& Value);
+	static const HAZE_CHAR* GetRegisterName(const std::shared_ptr<HazeCompilerValue>& Register);
 
 	static std::shared_ptr<HazeCompilerInitListValue> GetInitializeListValue();
 
@@ -169,14 +169,24 @@ private:
 
 	//³£Á¿
 	std::unordered_map<bool, std::shared_ptr<HazeCompilerValue>> HashMap_BoolConstantValue;
+
+	std::unordered_map<hbyte, std::shared_ptr<HazeCompilerValue>> HashMap_ByteConstantValue;
+	std::unordered_map<uhbyte, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedByteConstantValue;
+	
+	std::unordered_map<hchar, std::shared_ptr<HazeCompilerValue>> HashMap_CharConstantValue;
+	
+	std::unordered_map<short, std::shared_ptr<HazeCompilerValue>> HashMap_ShortConstantValue;
+	std::unordered_map<ushort, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedShortConstantValue;
+	
 	std::unordered_map<int, std::shared_ptr<HazeCompilerValue>> HashMap_IntConstantValue;
-	std::unordered_map<long long, std::shared_ptr<HazeCompilerValue>> HashMap_LongConstantValue;
-	std::unordered_map<unsigned int, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedIntConstantValue;
-	std::unordered_map<unsigned long long, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedLongConstantValue;
+	std::unordered_map<uint32, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedIntConstantValue;
+	
+	std::unordered_map<int64, std::shared_ptr<HazeCompilerValue>> HashMap_LongConstantValue;
+	std::unordered_map<uint64, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedLongConstantValue;
+	
 	std::unordered_map<float, std::shared_ptr<HazeCompilerValue>> HashMap_FloatConstantValue;
 	std::unordered_map<double, std::shared_ptr<HazeCompilerValue>> HashMap_DobuleConstantValue;
-	std::unordered_map<HazeValueType, std::shared_ptr<HazeCompilerValue>> HashMap_DefineConstantValue;
-
+	
 	//BaseBlock
 	std::shared_ptr<HazeBaseBlock> InsertBaseBlock;
 };

@@ -54,17 +54,9 @@ public:
 
 	HAZE_STRING GenForStepBlockName();
 
-	//std::shared_ptr<HazeBaseBlock> GetTopBaseBlock();
-
-	//void RemoveTopBaseBlock() { return BBList.pop_back(); }
-	
-	//const std::list<std::shared_ptr<HazeBaseBlock>>& GetBaseBlockList() { return BBList; }
-
 	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 	
 	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
-
-	//bool GetFunctionParamNameByIndex(unsigned int Index, HAZE_STRING& OutName);
 
 	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value);
 
@@ -89,7 +81,6 @@ private:
 
 	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_LocalVariable;
 
-	//std::list<std::shared_ptr<HazeBaseBlock>> BBList;
 	std::shared_ptr<HazeBaseBlock> EntryBlock;
 
 	int CurrBlockCount;

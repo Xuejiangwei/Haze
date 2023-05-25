@@ -19,8 +19,12 @@ public:
 	HazeCompilerModule(HazeCompiler* Compiler, const HAZE_STRING& ModuleName);
 	~HazeCompilerModule();
 
-	void MarkStandardLibrary();
+	HazeCompiler* GetCompiler() { return Compiler; }
+
+	bool IsStandardLibrary() { return IsStdLib; }
 	
+	void MarkStandardLibrary();
+
 	void GenCodeFile();
 
 	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, 
@@ -28,30 +32,32 @@ public:
 
 	void FinishCreateClass();
 
+	std::shared_ptr<HazeCompilerClass> GetClass(const HAZE_STRING& ClassName);
+
+	uint32 GetClassSize(const HAZE_STRING& ClassName);
+
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
 	std::shared_ptr<HazeCompilerFunction> CreateFunction(const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
-
+	
 	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> Class, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 
 	void FinishFunction();
 
-	std::shared_ptr<HazeCompilerValue> GetGlobalStringVariable(const HAZE_STRING& String);
+	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
+
+	std::shared_ptr<HazeCompilerValue> GetOrCreateGlobalStringVariable(const HAZE_STRING& String);
 
 	uint32 GetGlobalStringIndex(std::shared_ptr<HazeCompilerValue> Value);
+
+	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
+		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& Name);
 
 	bool GetGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
 	bool GetGlobalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
-
-public:
-	std::shared_ptr<HazeCompilerClass> FindClass(const HAZE_STRING& ClassName);
-	
-	uint32 GetClassSize(const HAZE_STRING& ClassName);
-
-	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
 
 private:
 	std::shared_ptr<HazeCompilerValue> CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
@@ -86,7 +92,13 @@ private:
 
 	std::shared_ptr<HazeCompilerValue> CreateArrayInit(std::shared_ptr<HazeCompilerValue> Array, std::shared_ptr<HazeCompilerValue> InitList);
 
+	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
+
+	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerValue> PointerFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
+
 	std::shared_ptr<HazeCompilerValue> GenIRCode_BinaryOperater(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, InstructionOpCode IO_Code);
+
+	void GenIRCode_UnaryOperator(std::shared_ptr<HazeCompilerValue> Value, InstructionOpCode IO_Code);
 
 	void GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value);
 
@@ -94,24 +106,11 @@ private:
 
 	void GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block);
 
-	static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const std::shared_ptr<HazeCompilerValue>& Value, int Index = -1);
-
-public:
-	HazeCompiler* GetCompiler() { return Compiler; }
+	static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const std::shared_ptr<HazeCompilerValue>& Value, int Index = -1);	
 
 private:
-	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> RefValue = nullptr, 
-		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
+	void FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_STRING& CallName, uint32& Size, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo);
 
-	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> CallFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
-	
-	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerValue> PointerFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
-
-	void FunctionCall(HAZE_STRING_STREAM& SStream, uint32& Size, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo);
-
-	bool IsStandardLibrary() { return IsStdLib; }
-
-private:
 	void GenICode();
 
 private:

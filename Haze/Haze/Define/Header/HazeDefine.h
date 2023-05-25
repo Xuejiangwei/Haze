@@ -5,13 +5,14 @@
 #define HAZE_OFSTREAM std::wofstream
 #define HAZE_IFSTREAM std::wifstream
 #define HAZE_STRING std::wstring
+#define HAZE_BYTE char
 #define HAZE_CHAR wchar_t
 
 #define HAZE_BINARY_STRING std::string
 #define HAZE_BINARY_OFSTREAM std::ofstream
 #define HAZE_BINARY_IFSTREAM std::ifstream
 #define HAZE_BINARY_CHAR char
-#define HAZE_BINARY_OP_WRITE_CODE_SIZE(X) (const char*)(&X), sizeof(X)
+#define HAZE_WRITE_AND_SIZE(X) (const char*)(&X), sizeof(X)
 #define HAZE_BINARY_OP_WRITE_CODE(X) (const char*)(&X)
 #define HAZE_BINARY_OP_READ_CODE_SIZE(X) (char*)(&X), sizeof(X)
 
@@ -22,9 +23,7 @@
 
 #define HAZE_ADDRESS_SIZE (int)sizeof(int)
 
-#define HAZE_CAST_VALUE_TYPE(X) (uint32)(X)
-
-#define HAZE_CAST_SCOPE_TYPE(X) (uint32)(X)
+#define CAST_UINT32(X) (uint32)(X)
 
 #define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
 
@@ -110,7 +109,12 @@
 
 #define HAZE_NEW_ALIGN(X) ((X + HAZE_NEW_ALIGN_BYTE -1) & ~(HAZE_NEW_ALIGN_BYTE -1))
 
-using int64 = long long;
 using uint8 = unsigned char;
+
+using hbyte = HAZE_BYTE;
+using uhbyte = unsigned HAZE_BYTE;
+using hchar = HAZE_CHAR;
+using ushort = unsigned short;
 using uint32 = unsigned int;
+using int64 = long long;
 using uint64 = unsigned long long;

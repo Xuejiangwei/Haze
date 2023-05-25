@@ -172,13 +172,33 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeVal
     }
 }
 
-#define VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, Source, sizeof(TYPE)); memcpy(&T, Target, sizeof(TYPE))
+#define VARIABLE_DEFINE_INIT(TYPE, TARGET) TYPE T; memcpy(&T, Target, sizeof(TYPE))
+#define TWO_VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, Source, sizeof(TYPE)); memcpy(&T, Target, sizeof(TYPE))
 
-#define VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, S, T)
+#define VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, T)
+#define TWO_VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, S, T)
+
 #define ASSIGN(TYPE) memcpy((void*)Target, &T, sizeof(TYPE))
 
 #define VARIABLE_COMPARE() bool CmpEqual = S == T; bool CmpGreater = S > T; bool CmpLess = S < T
 #define COMPARE_ASSIGN() Register->Data.resize(3); Register->Data[0] = CmpEqual; Register->Data[1] = CmpGreater; Register->Data[2] = CmpLess
+
+template<typename T>
+void CalculateValue(InstructionOpCode TypeCode, T& Target)
+{
+    switch (TypeCode)
+    {
+    case InstructionOpCode::INC:
+        ++Target;
+        break;
+    case InstructionOpCode::DEC:
+        --Target;
+        break;
+    default:
+        HAZE_LOG_ERR(HAZE_TEXT("<%s>操作不支持!"), WString2String(GetInstructionString(TypeCode)).c_str());
+        break;
+    }
+}
 
 template<typename T>
 void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
@@ -212,12 +232,6 @@ void CalculateValue(InstructionOpCode TypeCode, bool& Source, bool& Target)
 {
     switch (TypeCode)
     {
-    case InstructionOpCode::AND:
-        Target = Target && Source;
-        break;
-    case InstructionOpCode::OR:
-        Target = Target || Source;
-        break;
     case InstructionOpCode::NOT:
         Target = !Source;
         break;
@@ -426,56 +440,114 @@ void CalculateValue(InstructionOpCode TypeCode, uint64& Source, uint64& Target)
     }
 }
 
+void OperatorValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Target)
+{
+    switch (Type)
+    {
+    /*case HazeValueType::Bool:
+    {
+        VARIABLE_DEFINE_INIT(bool, Target);
+        VARIABLE_CALCULATE(bool, TypeCode);
+        ASSIGN(bool);
+    }
+    break;*/
+    case HazeValueType::Int:
+    {
+        VARIABLE_DEFINE_INIT(int, Target);
+        VARIABLE_CALCULATE(int, TypeCode);
+        ASSIGN(int);
+    }
+    break;
+    case HazeValueType::Float:
+    {
+        VARIABLE_DEFINE_INIT(float, Target);
+        VARIABLE_CALCULATE(float, TypeCode);
+        ASSIGN(float);
+    }
+    break;
+    case HazeValueType::Long:
+    {
+        VARIABLE_DEFINE_INIT(int64, Target);
+        VARIABLE_CALCULATE(int64, TypeCode);
+        ASSIGN(int64);
+    }
+    break;
+    case HazeValueType::Double:
+    {
+        VARIABLE_DEFINE_INIT(double, Target);
+        VARIABLE_CALCULATE(double, TypeCode);
+        ASSIGN(double);
+    }
+    break;
+    case HazeValueType::UnsignedInt:
+    {
+        VARIABLE_DEFINE_INIT(uint32, Target);
+        VARIABLE_CALCULATE(uint32, TypeCode);
+        ASSIGN(uint32);
+    }
+    break;
+    case HazeValueType::UnsignedLong:
+    {
+        VARIABLE_DEFINE_INIT(uint64, Target);
+        VARIABLE_CALCULATE(uint64, TypeCode);
+        ASSIGN(uint64);
+    }
+    break;
+    default:
+        break;
+    }
+}
+
 void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Source, const void* Target)
 {
     switch (Type)
     {
     case HazeValueType::Bool:
     {
-        VARIABLE_DEFINE_INIT(bool, Source, Target);
-        VARIABLE_CALCULATE(bool, TypeCode);
+        TWO_VARIABLE_DEFINE_INIT(bool, Source, Target);
+        TWO_VARIABLE_CALCULATE(bool, TypeCode);
         ASSIGN(bool);
     }
         break;
     case HazeValueType::Int:
     {
-        VARIABLE_DEFINE_INIT(int, Source, Target);
-        VARIABLE_CALCULATE(int, TypeCode);
+        TWO_VARIABLE_DEFINE_INIT(int, Source, Target);
+        TWO_VARIABLE_CALCULATE(int, TypeCode);
         ASSIGN(int);
     }
         break;
     case HazeValueType::Float:
     {
-        VARIABLE_DEFINE_INIT(float, Source, Target);
-        VARIABLE_CALCULATE(float, TypeCode);
+        TWO_VARIABLE_DEFINE_INIT(float, Source, Target);
+        TWO_VARIABLE_CALCULATE(float, TypeCode);
         ASSIGN(float);
     }
         break;
     case HazeValueType::Long:
     {
-        VARIABLE_DEFINE_INIT(int64, Source, Target);
-        VARIABLE_CALCULATE(int64, TypeCode);
+        TWO_VARIABLE_DEFINE_INIT(int64, Source, Target);
+        TWO_VARIABLE_CALCULATE(int64, TypeCode);
         ASSIGN(int64);
     }
         break;
     case HazeValueType::Double:
     {
-        VARIABLE_DEFINE_INIT(double, Source, Target);
-        VARIABLE_CALCULATE(double, TypeCode);
+        TWO_VARIABLE_DEFINE_INIT(double, Source, Target);
+        TWO_VARIABLE_CALCULATE(double, TypeCode);
         ASSIGN(double);
     }
         break;
     case HazeValueType::UnsignedInt:
     {
-        VARIABLE_DEFINE_INIT(uint32, Source, Target);
-        VARIABLE_CALCULATE(uint32, TypeCode);
+        TWO_VARIABLE_DEFINE_INIT(uint32, Source, Target);
+        TWO_VARIABLE_CALCULATE(uint32, TypeCode);
         ASSIGN(uint32);
     }
         break;
     case HazeValueType::UnsignedLong:
     {
-        VARIABLE_DEFINE_INIT(uint64, Source, Target);
-        VARIABLE_CALCULATE(uint64, TypeCode);
+        TWO_VARIABLE_DEFINE_INIT(uint64, Source, Target);
+        TWO_VARIABLE_CALCULATE(uint64, TypeCode);
         ASSIGN(uint64);
     }
         break;
@@ -490,49 +562,49 @@ void CompareValueByType(HazeValueType Type, HazeRegister* Register, const void* 
     {
     case HazeValueType::Bool:
     {
-        VARIABLE_DEFINE_INIT(bool, Source, Target);
+        TWO_VARIABLE_DEFINE_INIT(bool, Source, Target);
         VARIABLE_COMPARE();
         COMPARE_ASSIGN();
     }
     break;
     case HazeValueType::Int:
     {
-        VARIABLE_DEFINE_INIT(int, Source, Target);
+        TWO_VARIABLE_DEFINE_INIT(int, Source, Target);
         VARIABLE_COMPARE();
         COMPARE_ASSIGN();
     }
     break;
     case HazeValueType::Float:
     {
-        VARIABLE_DEFINE_INIT(float, Source, Target);
+        TWO_VARIABLE_DEFINE_INIT(float, Source, Target);
         VARIABLE_COMPARE();
         COMPARE_ASSIGN();
     }
     break;
     case HazeValueType::Long:
     {
-        VARIABLE_DEFINE_INIT(int64, Source, Target);
+        TWO_VARIABLE_DEFINE_INIT(int64, Source, Target);
         VARIABLE_COMPARE();
         COMPARE_ASSIGN();
     }
     break;
     case HazeValueType::Double:
     {
-        VARIABLE_DEFINE_INIT(double, Source, Target);
+        TWO_VARIABLE_DEFINE_INIT(double, Source, Target);
         VARIABLE_COMPARE();
         COMPARE_ASSIGN();
     }
     break;
     case HazeValueType::UnsignedInt:
     {
-        VARIABLE_DEFINE_INIT(uint32, Source, Target);
+        TWO_VARIABLE_DEFINE_INIT(uint32, Source, Target);
         VARIABLE_COMPARE();
         COMPARE_ASSIGN();
     }
     break;
     case HazeValueType::UnsignedLong:
     {
-        VARIABLE_DEFINE_INIT(uint64, Source, Target);
+        TWO_VARIABLE_DEFINE_INIT(uint64, Source, Target);
         VARIABLE_COMPARE();
         COMPARE_ASSIGN();
     }
@@ -568,7 +640,7 @@ const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type)
     return HAZE_TEXT("None");
 }
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, HazeValue& Value)
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, const HazeValue& Value)
 {
     switch (Type)
     {

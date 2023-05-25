@@ -6,6 +6,7 @@
 #include "ModuleUnit.h"
 
 class HazeVM;
+class HazeExecuteFile;
 
 class BackendParse
 {
@@ -70,11 +71,11 @@ private:
 private:
 	HazeVM* VM;
 
-	HAZE_BINARY_OFSTREAM FS_OpCode;
-
 	const HAZE_CHAR* CurrCode;
 	HAZE_STRING CurrLexeme;
 
 	std::shared_ptr<ModuleUnit> CurrParseModule;
 	std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>> HashMap_Modules;
+
+	std::unique_ptr<HazeExecuteFile> ExeFile;
 };

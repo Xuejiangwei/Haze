@@ -18,8 +18,10 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("MOD"), InstructionOpCode::MOD },
 
 	{HAZE_TEXT("NEG"), InstructionOpCode::NEG },
-
 	{HAZE_TEXT("NOT"), InstructionOpCode::NOT },
+	{HAZE_TEXT("INC"), InstructionOpCode::INC },
+	{HAZE_TEXT("DEC"), InstructionOpCode::DEC},
+
 	{HAZE_TEXT("BIT_AND"), InstructionOpCode::BIT_AND },
 	{HAZE_TEXT("BIT_OR"), InstructionOpCode::BIT_OR },
 	{HAZE_TEXT("BIT_NEG"), InstructionOpCode::BIT_NEG },
@@ -261,6 +263,30 @@ public:
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::NOT, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Inc(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				OperatorValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::INC, GetAddressByOperator(Stack, Operator[0]));
+			}
+		}
+	}
+
+	static void Dec(HazeStack* Stack)
+	{
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
+			{
+				OperatorValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
 	}
@@ -832,6 +858,9 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::NEG, &InstructionProcessor::Neg},
 
 	{InstructionOpCode::NOT, &InstructionProcessor::Not},
+	
+	{InstructionOpCode::INC, &InstructionProcessor::Inc},
+	{InstructionOpCode::DEC, &InstructionProcessor::Dec},
 
 	{InstructionOpCode::BIT_AND, &InstructionProcessor::Bit_And},
 	{InstructionOpCode::BIT_OR, &InstructionProcessor::Bit_Or},

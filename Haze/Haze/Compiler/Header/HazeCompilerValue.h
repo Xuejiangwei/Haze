@@ -82,7 +82,7 @@ public:
 
 protected:
 	HazeDefineType ValueType;
-	HazeValue Value;					//VlaueÖĞµÄTypeÆúÓÃ
+	HazeValue Value;
 	HazeCompilerModule* Module;
 	HazeDataDesc Scope;
 

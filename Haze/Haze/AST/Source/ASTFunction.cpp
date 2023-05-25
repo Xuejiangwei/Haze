@@ -36,7 +36,7 @@ HazeValue* ASTFunction::CodeGen()
 	}
 	else if (Section == HazeSectionSignal::Class)
 	{
-		Class = Module->FindClass(Vector_FunctionParam[0].Type.CustomName);
+		Class = Module->GetClass(Vector_FunctionParam[0].Type.CustomName);
 		CompilerFunction = Module->CreateFunction(Class, FunctionName, FunctionType, Vector_FunctionParam);
 	}
 
@@ -74,7 +74,7 @@ void ASTFunction::RegisterFunction()
 	}
 	else if (Section == HazeSectionSignal::Class)
 	{
-		Class = Module->FindClass(Vector_FunctionParam[0].Type.CustomName);
+		Class = Module->GetClass(Vector_FunctionParam[0].Type.CustomName);
 		Module->CreateFunction(Class, FunctionName, FunctionType, Vector_FunctionParam);
 	}
 }

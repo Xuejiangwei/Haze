@@ -41,5 +41,3 @@ HazeCmpType GetHazeCmpTypeByToken(HazeToken Token);
 InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType Type);
 
 HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken Token);
-
-InstructionOpCode GetInstructionOpCodeByOperatorAssignType(HazeCmpType Type);

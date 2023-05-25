@@ -9,7 +9,12 @@ enum class HazeValueType : uint32
 	Bool,
 
 	Byte,
+	UnsignedByte,
+
 	Char,
+
+	Short,
+	UnsignedShort,
 
 	Int,
 	Float,
@@ -38,22 +43,25 @@ enum class HazeValueType : uint32
 
 struct HazeValue
 {
-	//HazeValueType Type;
-
 	union
 	{
 		bool Bool;
 
-		char Byte;
+		hbyte Byte;
+		uhbyte UnsignedByte;
+
 		HAZE_CHAR Char;
+
+		short Short;
+		ushort UnsignedShort;
+
 		int Int;
 		float Float;
 		long long Long;
 		double Double;
 
-		unsigned char UnsignedByte;
-		unsigned int UnsignedInt;
-		unsigned long long UnsignedLong;
+		uint32 UnsignedInt;
+		uint64 UnsignedLong;
 
 		const void* Pointer;
 
@@ -101,6 +109,8 @@ bool IsNumberType(HazeValueType Type);
 
 void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& Value);
 
+void OperatorValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Target);
+
 void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Source, const void* Target);
 
 void CompareValueByType(HazeValueType Type, struct HazeRegister* Register, const void* Source, const void* Target);
@@ -109,6 +119,6 @@ size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
 
 const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type);
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, HazeValue& Value);
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, const HazeValue& Value);
 
 HazeValue GetNegValue(HazeValueType Type, const HazeValue& Value);
