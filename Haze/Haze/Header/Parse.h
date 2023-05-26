@@ -5,7 +5,8 @@
 
 #include "Haze.h"
 
-class OpCodeGenerator;
+class HazeCompiler;
+
 class ASTBase;
 
 class ASTVariableDefine;
@@ -23,7 +24,7 @@ class ASTStandardLibrary;
 class Parse
 {
 public:
-	Parse(class HazeVM* VM);
+	Parse(HazeCompiler* Compiler);
 	~Parse();
 
 	void InitializeFile(const HAZE_STRING& FilePath);
@@ -126,8 +127,10 @@ private:
 
 	void BackToPreLexemeAndNext();
 
+	void IncLineCount(bool Insert = false);
+
 private:
-	class HazeVM* VM;
+	HazeCompiler* Compiler;
 
 	HAZE_STRING CodeText;
 
@@ -138,13 +141,11 @@ private:
 
 	std::stack<HazeSectionSignal> StackSectionSignal;
 
-	std::shared_ptr<OpCodeGenerator> Generator;
-
 	HazeDefineVariable DefineVariable;
 	HAZE_STRING CurrParseClass;
 
 	int LeftParenthesesExpressionCount;
 
-	int64 LineCount;
+	uint64 LineCount;
 	bool NeedParseNextStatement;
 };

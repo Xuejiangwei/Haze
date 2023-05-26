@@ -2,7 +2,6 @@
 
 #include "Haze.h"
 
-class HazeVM;
 class ASTBase;
 class ASTClassFunctionSection;
 class ASTFunctionDefine;
@@ -10,13 +9,13 @@ class ASTFunctionDefine;
 class ASTClass
 {
 public:
-	ASTClass(HazeVM* VM, HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& Data,
+	ASTClass(HazeCompiler* Compiler, const SourceLocation& Location, HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& Data,
 		std::unique_ptr<ASTClassFunctionSection>& FunctionSection);
 	~ASTClass();
 
 	void CodeGen();
 private:
-	HazeVM* VM;
+	HazeCompiler* Compiler;
 
 	HAZE_STRING ClassName;
 	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Vector_ClassData;
@@ -26,12 +25,12 @@ private:
 class ASTClassDefine
 {
 public:
-	ASTClassDefine(HazeVM* VM, HAZE_STRING& Name, std::vector<std::vector<std::unique_ptr<ASTBase>>>& Data, std::vector<std::unique_ptr<ASTFunctionDefine>>& Function);
+	ASTClassDefine(HazeCompiler* Compiler, const SourceLocation& Location, HAZE_STRING& Name, std::vector<std::vector<std::unique_ptr<ASTBase>>>& Data, std::vector<std::unique_ptr<ASTFunctionDefine>>& Function);
 	~ASTClassDefine();
 
 	void CodeGen();
 private:
-	HazeVM* VM;
+	HazeCompiler* Compiler;
 
 	HAZE_STRING ClassName;
 	std::vector<std::vector<std::unique_ptr<ASTBase>>> ClassData;

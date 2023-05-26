@@ -1,7 +1,10 @@
 #pragma once
 
+#include <fstream>
 #include "Haze.h"
 #include "ModuleUnit.h"
+
+class HazeVM;
 
 //字节码文件头部数据格式定义(模仿linux程序结构 堆区、栈区、全局数据区、只读数据区等)
 enum HazeFileFormat : uint8
@@ -14,26 +17,53 @@ enum HazeFileFormat : uint8
 	End,
 };
 
-using GlobalDataTable = ModuleUnit::GlobalDataTable;
-using StringTable = ModuleUnit::StringTable;
+enum ExeFileType : uint8
+{
+	Out,
+	In,
+};
 
 class HazeExecuteFile
 {
 public:
-	HazeExecuteFile();
+	HazeExecuteFile(ExeFileType Type);
 	~HazeExecuteFile();
 
 public:
-	void WriteGlobalDataTable(const GlobalDataTable& Table);
+	void WriteExecuteFile(const ModuleUnit::GlobalDataTable& GlobalDataTable, const ModuleUnit::StringTable& StringTable,
+		const ModuleUnit::ClassTable& ClassTable, const ModuleUnit::FunctionTable& FunctionTable);
 
-	void WriteStringTable(const StringTable& Table);
+	void ReadExecuteFile(HazeVM* VM);
 
-	void WriteClassTable();
+	void CheckAll();
+private:
+	void WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Table);
 
-	void WriteFunctionTable();
+	void WriteStringTable(const ModuleUnit::StringTable& Table);
+
+	void WriteClassTable(const ModuleUnit::ClassTable& Table);
+
+	void WriteFunctionTable(const ModuleUnit::FunctionTable& Table);
+
+	void WriteFunctionInstruction(const ModuleUnit::FunctionTable& Table, uint32 Length);
+
+	void WriteInstruction(const ModuleUnit::FunctionInstruction& Instruction);
 
 private:
-	HAZE_BINARY_OFSTREAM FileStream;
+	void ReadGlobalDataTable(HazeVM* VM);
+
+	void ReadStringTable(HazeVM* VM);
+
+	void ReadClassTable(HazeVM* VM);
+
+	void ReadFunctionTable(HazeVM* VM);
+
+	void ReadFunctionInstruction(HazeVM* VM);
+	
+	void ReadInstruction(Instruction& Instruction);
+private:
+	std::unique_ptr<HAZE_BINARY_OFSTREAM> FileStream;
+	std::unique_ptr<HAZE_BINARY_IFSTREAM> InFileStream;
 
 	bool State[HazeFileFormat::End];
 };

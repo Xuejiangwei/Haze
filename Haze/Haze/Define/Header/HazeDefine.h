@@ -13,8 +13,7 @@
 #define HAZE_BINARY_IFSTREAM std::ifstream
 #define HAZE_BINARY_CHAR char
 #define HAZE_WRITE_AND_SIZE(X) (const char*)(&X), sizeof(X)
-#define HAZE_BINARY_OP_WRITE_CODE(X) (const char*)(&X)
-#define HAZE_BINARY_OP_READ_CODE_SIZE(X) (char*)(&X), sizeof(X)
+#define HAZE_READ(X) (char*)(&X), sizeof(X)
 
 #define HAZE_TO_STR(V) std::to_string(V)
 #define HAZE_TO_HAZE_STR(V) std::to_wstring(V)
@@ -91,11 +90,11 @@
 #define TEMP_REGISTER_8					HAZE_TEXT("Temp_R8")
 #define TEMP_REGISTER_9					HAZE_TEXT("Temp_R9")
 
-#define HAZE_TEMP_BINART_NAME			HAZE_TEXT("TempBinaryValue")
-
 #define	HAZE_JMP_NULL					HAZE_TEXT("JmpNull")
 
 #define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_STRING(HAZE_TEXT("Address"))
+
+#define HAZE_LINE_COUNT_HEADER			HAZE_TEXT("Line: ")
 
 #define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data, int MultiParamNum
 

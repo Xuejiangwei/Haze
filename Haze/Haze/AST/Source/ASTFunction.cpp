@@ -1,5 +1,4 @@
 #include "ASTFunction.h"
-#include "HazeVM.h"
 
 #include "HazeCompiler.h"
 #include "HazeBaseBlock.h"
@@ -9,8 +8,8 @@
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerModule.h"
 
-ASTFunction::ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
-	: VM(VM), Section(Section),
+ASTFunction::ASTFunction(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
+	: Compiler(Compiler), Section(Section),
 	FunctionName(std::move(Name)),
 	FunctionType(std::move(Type)),
 	Vector_FunctionParam(std::move(Param)),
@@ -24,7 +23,6 @@ ASTFunction::~ASTFunction()
 
 HazeValue* ASTFunction::CodeGen()
 {
-	auto& Compiler = VM->GetCompiler();
 	auto& Module = Compiler->GetCurrModule();
 
 	std::shared_ptr<HazeCompilerFunction> CompilerFunction = nullptr;
@@ -63,7 +61,6 @@ HazeValue* ASTFunction::CodeGen()
 
 void ASTFunction::RegisterFunction()
 {
-	auto& Compiler = VM->GetCompiler();
 	auto& Module = Compiler->GetCurrModule();
 
 	std::shared_ptr<HazeCompilerClass> Class = nullptr;
@@ -79,8 +76,8 @@ void ASTFunction::RegisterFunction()
 	}
 }
 
-ASTFunctionSection::ASTFunctionSection(HazeVM* VM,std::vector<std::unique_ptr<ASTFunction>>& Functions)
-	: VM(VM), Functions(std::move(Functions))
+ASTFunctionSection::ASTFunctionSection(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::unique_ptr<ASTFunction>>& Functions)
+	: Compiler(Compiler), Functions(std::move(Functions))
 {
 }
 
@@ -101,8 +98,8 @@ void ASTFunctionSection::CodeGen()
 	}
 }
 
-ASTFunctionDefine::ASTFunctionDefine(HazeVM* VM, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param) 
-	: VM(VM), FunctionName(Name), FunctionType(Type), Vector_FunctionParam(std::move(Param))
+ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* Compiler, const SourceLocation& Location, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
+	: Compiler(Compiler), FunctionName(Name), FunctionType(Type), Vector_FunctionParam(std::move(Param))
 {
 }
 
@@ -112,7 +109,6 @@ ASTFunctionDefine::~ASTFunctionDefine()
 
 void ASTFunctionDefine::CodeGen()
 {
-	auto& Compiler = VM->GetCompiler();
 	auto& Module = Compiler->GetCurrModule();
 	std::shared_ptr<HazeCompilerFunction> CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_FunctionParam);
 
@@ -124,8 +120,8 @@ void ASTFunctionDefine::CodeGen()
 	}
 }
 
-ASTClassFunctionSection::ASTClassFunctionSection(HazeVM* VM, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
-	: VM(VM), Functions(std::move(Functions))
+ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
+	: Compiler(Compiler), Functions(std::move(Functions))
 {
 
 }

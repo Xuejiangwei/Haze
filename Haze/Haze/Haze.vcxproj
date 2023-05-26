@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\StandardLibrary\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\StandardLibrary\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -153,6 +153,7 @@
     <ClCompile Include="Compiler\Source\HazeCompilerPointerValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerRefValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp" />
+    <ClCompile Include="Debugger\Source\HazeDebugger.cpp" />
     <ClCompile Include="Define\Source\HazeCompare.cpp" />
     <ClCompile Include="Define\Source\HazeExecuteFile.cpp" />
     <ClCompile Include="Define\Source\HazeUtility.cpp" />
@@ -202,8 +203,10 @@
     <ClInclude Include="Compiler\Header\HazeCompilerRefValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerPointerArray.h" />
+    <ClInclude Include="Debugger\Header\HazeDebugger.h" />
+    <ClInclude Include="Debugger\Header\HazeDebugInfo.h" />
     <ClInclude Include="Define\Header\HazeCompare.h" />
-    <ClInclude Include="Define\Header\HazeDebug.h" />
+    <ClInclude Include="Define\Header\HazeDebugDefine.h" />
     <ClInclude Include="Define\Header\HazeExecuteFile.h" />
     <ClInclude Include="Define\Header\HazeInstruction.h" />
     <ClInclude Include="Define\Header\HazeToken.h" />

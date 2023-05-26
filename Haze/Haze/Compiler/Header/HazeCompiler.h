@@ -5,6 +5,8 @@
 
 #include "Haze.h"
 
+class HazeVM;
+
 class HazeCompilerValue;
 class HazeCompilerInitListValue;
 class HazeCompilerFunction;
@@ -15,11 +17,13 @@ class HazeBaseBlock;
 class HazeCompiler
 {
 public:
-	HazeCompiler();
+	HazeCompiler(HazeVM* VM);
 	~HazeCompiler();
 
 	bool InitializeCompiler(const HAZE_STRING& ModuleName);
 
+	HazeCompilerModule* ParseModule(const HAZE_STRING& ModuleName);
+	
 	void FinishModule();
 
 	HazeCompilerModule* GetModule(const HAZE_STRING& Name);
@@ -159,10 +163,15 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> CreateBoolCmp(std::shared_ptr<HazeCompilerValue> Value);
 
+public:
+	void InsertLineCount(int64 LineCount);
+
 private:
 	void GenModuleCodeFile();
 
 private:
+	HazeVM* VM;
+
 	std::vector<HAZE_STRING> Vector_ModuleNameStack;
 
 	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> HashMap_CompilerModule;

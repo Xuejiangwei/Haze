@@ -76,6 +76,4 @@ private:
 
 	std::shared_ptr<ModuleUnit> CurrParseModule;
 	std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>> HashMap_Modules;
-
-	std::unique_ptr<HazeExecuteFile> ExeFile;
 };

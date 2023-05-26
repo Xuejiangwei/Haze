@@ -5,6 +5,7 @@
 class HazeVariable
 {
 public:
+	friend class HazeExecuteFile;
 	friend class HazeVM;
 	friend class GarbageCollection;
 

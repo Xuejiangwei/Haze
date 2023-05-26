@@ -1,7 +1,11 @@
 #include <filesystem>
 
+#include "HazeVM.h"
 #include "HazeLog.h"
+#include "HazeFilePathHelper.h"
+
 #include "HazeCompiler.h"
+#include "HazeBaseBlock.h"
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerArrayValue.h"
@@ -12,8 +16,6 @@
 #include "HazeCompilerClass.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerHelper.h"
-
-#include "HazeBaseBlock.h"
 
 static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> HashMap_GlobalRegister = {
 	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("Ret_Register")), HAZE_TEXT("")), HazeDataDesc::RegisterRet, 0) },
@@ -37,7 +39,7 @@ static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> 
 static std::shared_ptr<HazeCompilerInitListValue> InitializeListValue = 
 	std::make_shared<HazeCompilerInitListValue>(nullptr, HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HazeDataDesc::Initlist, 0);
 
-HazeCompiler::HazeCompiler()
+HazeCompiler::HazeCompiler(HazeVM* VM) : VM(VM)
 {
 }
 
@@ -59,6 +61,12 @@ bool HazeCompiler::InitializeCompiler(const HAZE_STRING& ModuleName)
 	return true;
 }
 
+HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& ModuleName)
+{
+	VM->ParseFile(GetModuleFilePath(ModuleName), ModuleName);
+	return GetModule(ModuleName);
+}
+
 void HazeCompiler::FinishModule()
 {
 	GenModuleCodeFile();
@@ -78,6 +86,14 @@ HazeCompilerModule* HazeCompiler::GetModule(const HAZE_STRING& Name)
 void HazeCompiler::GenModuleCodeFile()
 {
 	HashMap_CompilerModule[GetCurrModuleName()]->GenCodeFile();
+}
+
+void HazeCompiler::InsertLineCount(int64 LineCount)
+{
+	/*if (InsertBaseBlock)
+	{
+		InsertBaseBlock->PushIRCode(HAZE_LINE_COUNT_HEADER + HAZE_TO_HAZE_STR(LineCount) + HAZE_TEXT("\n"));
+	}*/
 }
 
 std::unique_ptr<HazeCompilerModule>& HazeCompiler::GetCurrModule()

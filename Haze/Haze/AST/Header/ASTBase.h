@@ -4,8 +4,9 @@
 #include <memory>
 
 #include "Haze.h"
+#include "HazeDebugInfo.h"
 
-class HazeVM;
+class HazeCompiler;
 class HazeCompilerValue;
 class HazeBaseBlock;
 
@@ -15,8 +16,8 @@ class ASTBase
 	friend class ASTClass;
 
 public:
-	ASTBase(HazeVM* VM);
-	ASTBase(HazeVM* VM, const HazeDefineVariable& DefVar);
+	ASTBase(HazeCompiler* Compiler, const SourceLocation& Location);
+	ASTBase(HazeCompiler* Compiler, const SourceLocation& Location, const HazeDefineVariable& DefVar);
 	virtual ~ASTBase();
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() { return  nullptr; }
@@ -26,16 +27,18 @@ public:
 	virtual bool IsBlock() const { return false; }
 
 protected:
-	HazeVM* VM;
+	HazeCompiler* Compiler;
 	HazeValue Value;
 	HazeDefineVariable DefineVariable;
+
+	SourceLocation Location;
 };
 
 //²¼¶û
 class ASTBool : public ASTBase
 {
 public:
-	ASTBool(HazeVM* VM, const HazeValue& InValue);
+	ASTBool(HazeCompiler* Compiler, const SourceLocation& Location, const HazeValue& InValue);
 	virtual ~ASTBool() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -45,7 +48,7 @@ public:
 class ASTNumber : public ASTBase
 {
 public:
-	ASTNumber(HazeVM* VM, HazeValueType Type, const HazeValue& InValue);
+	ASTNumber(HazeCompiler* Compiler, const SourceLocation& Location, HazeValueType Type, const HazeValue& InValue);
 	virtual ~ASTNumber() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -55,7 +58,7 @@ public:
 class ASTStringText : public ASTBase
 {
 public:
-	ASTStringText(HazeVM* VM, HAZE_STRING& Text);
+	ASTStringText(HazeCompiler* Compiler, const SourceLocation& Location, HAZE_STRING& Text);
 	virtual ~ASTStringText() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -68,7 +71,7 @@ private:
 class ASTIdentifier : public ASTBase
 {
 public:
-	ASTIdentifier(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression);
+	ASTIdentifier(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression);
 	virtual ~ASTIdentifier() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -84,7 +87,7 @@ private:
 class ASTFunctionCall : public ASTBase
 {
 public:
-	ASTFunctionCall(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTBase>>& FunctionParam);
+	ASTFunctionCall(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTBase>>& FunctionParam);
 	virtual ~ASTFunctionCall() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -103,7 +106,7 @@ class ASTVariableDefine : public ASTBase
 {
 public:
 
-	ASTVariableDefine(HazeVM* VM, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::vector<std::unique_ptr<ASTBase>> ArraySize = {}, int PointerLevel = 0, std::vector<HazeDefineType>* Vector_ParamType = nullptr);
+	ASTVariableDefine(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable, std::unique_ptr<ASTBase> Expression, std::vector<std::unique_ptr<ASTBase>> ArraySize = {}, int PointerLevel = 0, std::vector<HazeDefineType>* Vector_ParamType = nullptr);
 	virtual ~ASTVariableDefine() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -123,7 +126,7 @@ private:
 class ASTReturn : public ASTBase
 {
 public:
-	ASTReturn(HazeVM* VM, std::unique_ptr<ASTBase>& Expression);
+	ASTReturn(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression);
 	virtual ~ASTReturn() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -136,7 +139,7 @@ private:
 class ASTNew : public ASTBase
 {
 public:
-	ASTNew(HazeVM* VM, const HazeDefineVariable& Define);
+	ASTNew(HazeCompiler* Compiler, const SourceLocation& Location, const HazeDefineVariable& Define);
 	virtual ~ASTNew() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -146,7 +149,7 @@ public:
 class ASTGetAddress : public ASTBase
 {
 public:
-	ASTGetAddress(HazeVM* VM, std::unique_ptr<ASTBase>& Expression);
+	ASTGetAddress(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression);
 	virtual ~ASTGetAddress() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -159,7 +162,7 @@ private:
 class ASTPointerValue : public ASTBase
 {
 public:
-	ASTPointerValue(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, int Level, std::unique_ptr<ASTBase> AssignExpression = nullptr);
+	ASTPointerValue(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression, int Level, std::unique_ptr<ASTBase> AssignExpression = nullptr);
 	virtual ~ASTPointerValue() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -174,7 +177,7 @@ private:
 class ASTNeg : public ASTBase
 {
 public:
-	ASTNeg(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, bool IsNumberNeg);
+	ASTNeg(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression, bool IsNumberNeg);
 	virtual ~ASTNeg() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -188,7 +191,7 @@ private:
 class ASTNullPtr : public ASTBase
 {
 public:
-	ASTNullPtr(HazeVM* VM);
+	ASTNullPtr(HazeCompiler* Compiler, const SourceLocation& Location);
 	virtual ~ASTNullPtr() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -200,7 +203,7 @@ public:
 class ASTInc : public ASTBase
 {
 public:
-	ASTInc(HazeVM* VM, std::unique_ptr<ASTBase>& Expression, bool IsPreInc);
+	ASTInc(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression, bool IsPreInc);
 	virtual ~ASTInc() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -214,7 +217,7 @@ private:
 class ASTDec : public ASTBase
 {
 public:
-	ASTDec(HazeVM* VMM, std::unique_ptr<ASTBase>& Expression, bool IsPreDec);
+	ASTDec(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression, bool IsPreDec);
 	virtual ~ASTDec() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -228,7 +231,7 @@ private:
 class ASTOperetorAssign : public ASTBase
 {
 public:
-	ASTOperetorAssign(HazeVM* VM, HazeToken Token, std::unique_ptr<ASTBase>& Expression);
+	ASTOperetorAssign(HazeCompiler* Compiler, const SourceLocation& Location, HazeToken Token, std::unique_ptr<ASTBase>& Expression);
 	virtual ~ASTOperetorAssign() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -246,7 +249,7 @@ class ASTBinaryExpression : public ASTBase
 	friend class ASTForExpression;
 	friend class ASTThreeExpression;
 public:
-	ASTBinaryExpression(HazeVM* VM, HazeSectionSignal Section, HazeToken OperatorToken, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST);
+	ASTBinaryExpression(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HazeToken OperatorToken, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST);
 	virtual ~ASTBinaryExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -272,7 +275,7 @@ class ASTThreeExpression : public ASTBase
 	friend class ASTWhileExpression;
 	friend class ASTForExpression;
 public:
-	ASTThreeExpression(HazeVM* VM, std::unique_ptr<ASTBase>& ConditionAST, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST);
+	ASTThreeExpression(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& ConditionAST, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST);
 	virtual ~ASTThreeExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -290,7 +293,7 @@ private:
 class ASTMultiExpression : public ASTBase
 {
 public:
-	ASTMultiExpression(HazeVM* VM, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression);
+	ASTMultiExpression(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, std::vector<std::unique_ptr<ASTBase>>& VectorExpression);
 	virtual ~ASTMultiExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -304,7 +307,7 @@ private:
 class ASTImportModule : public ASTBase
 {
 public:
-	ASTImportModule(HazeVM* VM, const HAZE_STRING& ModuleName);
+	ASTImportModule(HazeCompiler* Compiler, const SourceLocation& Location, const HAZE_STRING& ModuleName);
 	virtual ~ASTImportModule() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -317,7 +320,7 @@ private:
 class ASTBreakExpression : public ASTBase
 {
 public:
-	ASTBreakExpression(HazeVM* VM);
+	ASTBreakExpression(HazeCompiler* Compiler, const SourceLocation& Location);
 	virtual ~ASTBreakExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -327,7 +330,7 @@ public:
 class ASTContinueExpression : public ASTBase
 {
 public:
-	ASTContinueExpression(HazeVM* VM);
+	ASTContinueExpression(HazeCompiler* Compiler, const SourceLocation& Location);
 	virtual ~ASTContinueExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -337,7 +340,7 @@ public:
 class ASTIfExpression : public ASTBase
 {
 public:
-	ASTIfExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& IfExpression, std::unique_ptr<ASTBase>& ElseExpression);
+	ASTIfExpression(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& IfExpression, std::unique_ptr<ASTBase>& ElseExpression);
 	virtual ~ASTIfExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -354,7 +357,7 @@ private:
 class ASTWhileExpression : public ASTBase
 {
 public:
-	ASTWhileExpression(HazeVM* VM, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& MultiExpression);
+	ASTWhileExpression(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Condition, std::unique_ptr<ASTBase>& MultiExpression);
 	virtual ~ASTWhileExpression() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
@@ -370,7 +373,7 @@ private:
 class ASTForExpression : public ASTBase
 {
 public:
-	ASTForExpression(HazeVM* VM, std::unique_ptr<ASTBase>& InitExpression, std::unique_ptr<ASTBase>& ConditionExpression, std::unique_ptr<ASTBase>& StepExpression,
+	ASTForExpression(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& InitExpression, std::unique_ptr<ASTBase>& ConditionExpression, std::unique_ptr<ASTBase>& StepExpression,
 		std::unique_ptr<ASTBase>& MultiExpression);
 	virtual	~ASTForExpression()	override;
 
@@ -389,7 +392,7 @@ private:
 class ASTInitializeList : public ASTBase
 {
 public:
-	ASTInitializeList(HazeVM* VM, std::vector<std::unique_ptr<ASTBase>>& InitializeListExpression);
+	ASTInitializeList(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::unique_ptr<ASTBase>>& InitializeListExpression);
 	virtual	~ASTInitializeList() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;

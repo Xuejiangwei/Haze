@@ -9,7 +9,7 @@
 class ASTFunction
 {
 public:
-	ASTFunction(HazeVM* VM, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body);
+	ASTFunction(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body);
 
 	~ASTFunction();
 
@@ -18,7 +18,7 @@ public:
 	void RegisterFunction();
 
 private:
-	HazeVM* VM;
+	HazeCompiler* Compiler;
 	HazeSectionSignal Section;
 
 	HAZE_STRING FunctionName;
@@ -30,38 +30,38 @@ private:
 class ASTFunctionSection
 {
 public:
-	ASTFunctionSection(HazeVM* VM, std::vector<std::unique_ptr<ASTFunction>>& Functions);
+	ASTFunctionSection(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::unique_ptr<ASTFunction>>& Functions);
 	~ASTFunctionSection();
 
 	void CodeGen();
 
 private:
-	HazeVM* VM;
+	HazeCompiler* Compiler;
 	std::vector<std::unique_ptr<ASTFunction>> Functions;
 };
 
 class ASTClassFunctionSection
 {
 public:
-	ASTClassFunctionSection(HazeVM* VM, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions);
+	ASTClassFunctionSection(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions);
 	~ASTClassFunctionSection();
 
 	void CodeGen();
 private:
-	HazeVM* VM;
+	HazeCompiler* Compiler;
 	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>> Functions;
 };
 
 class ASTFunctionDefine
 {
 public:
-	ASTFunctionDefine(HazeVM* VM, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
+	ASTFunctionDefine(HazeCompiler* Compiler, const SourceLocation& Location, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 	~ASTFunctionDefine();
 
 	void CodeGen();
 
 private:
-	HazeVM* VM;
+	HazeCompiler* Compiler;
 	HAZE_STRING FunctionName;
 	HazeDefineType FunctionType;
 	std::vector<HazeDefineVariable> Vector_FunctionParam; //´Ó×óµ½ÓÒ

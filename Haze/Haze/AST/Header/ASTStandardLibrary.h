@@ -8,14 +8,14 @@ class ASTClassDefine;
 class ASTStandardLibrary
 {
 public:
-	ASTStandardLibrary(HazeVM* VM, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTFunctionDefine>>& Vector_FunctionExpression, 
+	ASTStandardLibrary(HazeCompiler* Compiler, const SourceLocation& Location, HAZE_STRING& Name, std::vector<std::unique_ptr<ASTFunctionDefine>>& Vector_FunctionExpression,
 		std::vector<std::unique_ptr<ASTClassDefine>>& Vector_ClassExpression);
 	~ASTStandardLibrary();
 
 	void CodeGen();
 
 private:
-	HazeVM* VM;
+	HazeCompiler* Compiler;
 	HAZE_STRING Name;
 	std::vector<std::unique_ptr<ASTFunctionDefine>> Vector_FunctionExpression;
 	std::vector<std::unique_ptr<ASTClassDefine>> Vector_ClassExpression;

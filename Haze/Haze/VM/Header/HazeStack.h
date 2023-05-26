@@ -69,6 +69,7 @@ private:
 
 	void OnRet();
 
+private:
 	void* Alloca(uint32 Size);
 
 	void GarbageCollection(bool Force = false, bool CollectionAll = false);

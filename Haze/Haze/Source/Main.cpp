@@ -8,10 +8,6 @@
 #include "HazeLog.h"
 #include "HazeVM.h"
 
-//#ifdef _DEBUG
-//	#include "HazeDebug.h"
-//#endif // _DEBUG
-
 std::wstring RootCodePath;
 
 void HazeNewHandler()

@@ -1,17 +1,13 @@
 #pragma once
 
-#include <memory>
-#include <string>
-#include <unordered_map>
+#include "Haze.h"
+//#include <memory>
 #include <unordered_set>
 
-#include "Haze.h"
-#include "HazeModule.h"
 
 #include "HazeVariable.h"
 
 class HazeCompiler;
-class HazeCompilerModule;
 
 class HazeStack;
 class GarbageCollection;
@@ -22,6 +18,7 @@ public:
 	friend class InstructionProcessor;
 	friend class GarbageCollection;
 	friend class HazeStack;
+	friend class HazeExecuteFile;
 
 	HazeVM();
 	~HazeVM();
@@ -36,11 +33,9 @@ public:
 
 	void StartMainFunction();
 
-	void ParseString(const HAZE_STRING& String);
+	//void ParseString(const HAZE_STRING& String);
 
 	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName);
-
-	HazeCompilerModule* ParseModule(const HAZE_STRING& ModuleName);
 
 	std::unique_ptr<HazeCompiler>& GetCompiler() { return Compiler; }
 
@@ -58,14 +53,8 @@ public:
 
 	unsigned int GetClassSize(const HAZE_STRING& ClassName);
 
-public:
-	//[[deprecated("will remove")]]
-	bool IsClass(const HAZE_STRING& Name);
-	
 private:
-	void LoadOpCodeFile();
-
-	void ReadInstruction(HAZE_BINARY_IFSTREAM& B_IFS, Instruction& Instruction);
+	void SetHook();
 
 private:
 	std::unique_ptr<HazeCompiler> Compiler;
