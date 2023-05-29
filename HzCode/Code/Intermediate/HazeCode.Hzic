@@ -2,7 +2,8 @@
 GlobalDataTable
 0
 StringTable
-6
+7
+9 ---- %d\n
 6 输入坐标\n
 4 %d%d
 6 玩家胜利\n
@@ -14,109 +15,146 @@ ClassTable
 FunctionTable
 1
 Function 主函数 7
-Variable 我的五子棋$1 21 五子棋 0 4368
-Variable 甲$2 7 4368 4
-Variable 乙$3 7 4372 4
+Variable 甲$1 7 0 4
+Variable 我的五子棋$2 21 五子棋 4 4368
+Variable 甲$3 7 4372 4
+Variable 乙$4 7 4376 4
 FunctionStart
 
 Block Entry
-LINE 122
+LINE 121
+MOV 7 甲$1 2 7 0 3
+JMP ForConditionBlock1
+
+Block ForConditionBlock1
+LINE 121
+CMP 7 甲$1 2 7 10 3
+JL LoopBlock2 DefaultBlock4
+
+Block LoopBlock2
 LINE 123
-PUSH 15 我的五子棋$1 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@开始游戏 22 0 8
-MOV 1 Temp_R0 9 1 1 3
-BIT_XOR 1 Temp_R0 9 1 0 3
-CMP 1 Temp_R0 9 1 1 3
-JE WhileBlock1 WhileBlock2
-
-Block WhileBlock1
-LINE 126
-MOV 7 甲$2 2 7 8 3
-LINE 127
-MOV 7 乙$3 2 7 8 3
-LINE 128
-PUSH 14 常字符串指针 4 4 0
-PUSH 7 Address 11
-CALL 打印 22 1 8
-LEA 14 Temp_R0 9 7 7 乙$3 2
-LEA 14 Temp_R1 9 7 7 甲$2 2
-LINE 129
-PUSH 14 Temp_R0 9 7
-PUSH 14 Temp_R1 9 7
-PUSH 14 常字符串指针 4 4 1
-PUSH 7 Address 11
-CALL 输入 22 3 24
-LINE 131
-PUSH 7 玩家默认颜色 1
-PUSH 7 乙$3 2
-PUSH 7 甲$2 2
-PUSH 15 我的五子棋$1 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@放子 22 3 20
-LINE 131
-LINE 131
-PUSH 7 玩家默认颜色 1
-PUSH 15 我的五子棋$1 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@是否胜利 22 1 12
-CMP 0 Ret_R 6 1 1 3
-JE IfThenBlock3 DefaultBlock4
-
-Block IfThenBlock3
-LINE 134
-PUSH 14 常字符串指针 4 4 2
-PUSH 7 Address 11
-CALL 打印 22 1 8
-JMP WhileBlock2
-JMP DefaultBlock4
-
-Block DefaultBlock4
-LEA 14 Temp_R0 9 7 7 乙$3 2
-LEA 14 Temp_R1 9 7 7 甲$2 2
-LINE 138
-PUSH 7 AI默认颜色 1
-PUSH 14 Temp_R0 9 7
-PUSH 14 Temp_R1 9 7
-PUSH 15 我的五子棋$1 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@模拟计算AI放子 22 3 28
-LINE 139
-PUSH 7 AI默认颜色 1
-PUSH 7 乙$3 2
-PUSH 7 甲$2 2
-PUSH 15 我的五子棋$1 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@放子 22 3 20
-LINE 141
-PUSH 7 乙$3 2
-PUSH 7 甲$2 2
-PUSH 14 常字符串指针 4 4 3
-PUSH 7 Address 11
-CALL 打印 22 3 16
-LINE 141
-LINE 141
-PUSH 7 AI默认颜色 1
-PUSH 15 我的五子棋$1 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@是否胜利 22 1 12
-CMP 0 Ret_R 6 1 1 3
+CMP 7 甲$1 2 7 5 3
 JE IfThenBlock5 DefaultBlock6
 
 Block IfThenBlock5
-LINE 144
-PUSH 14 常字符串指针 4 4 4
-PUSH 7 Address 11
-CALL 打印 22 1 8
-JMP WhileBlock2
+JMP ForStepBlock3
+LINE 125
 JMP DefaultBlock6
 
 Block DefaultBlock6
-JMP WhileBlock1
+LINE 127
+PUSH 7 甲$1 2
+PUSH 14 常字符串指针 4 4 0
+PUSH 7 Address 11
+CALL 打印 22 2 12
+JMP ForStepBlock3
 
-Block WhileBlock2
-LINE 163
+Block ForStepBlock3
+MOV 7 Temp_R0 9 7 甲$1 2
+INC 7 甲$1 2
+JMP ForConditionBlock1
+
+Block DefaultBlock4
+LINE 130
+LINE 131
+PUSH 15 我的五子棋$2 13 五子棋
+PUSH 7 Address 11
+CALL 五子棋@开始游戏 22 0 8
+LINE 132
+MOV 1 Temp_R0 9 1 1 3
+BIT_XOR 1 Temp_R0 9 1 0 3
+CMP 1 Temp_R0 9 1 1 3
+JE WhileBlock7 WhileBlock8
+
+Block WhileBlock7
+LINE 134
+MOV 7 甲$3 2 7 8 3
+LINE 135
+MOV 7 乙$4 2 7 8 3
+LINE 136
+PUSH 14 常字符串指针 4 4 1
+PUSH 7 Address 11
+CALL 打印 22 1 8
+LEA 14 Temp_R0 9 7 7 乙$4 2
+LEA 14 Temp_R1 9 7 7 甲$3 2
+LINE 137
+PUSH 14 Temp_R0 9 7
+PUSH 14 Temp_R1 9 7
+PUSH 14 常字符串指针 4 4 2
+PUSH 7 Address 11
+CALL 输入 22 3 24
+LINE 138
+PUSH 7 玩家默认颜色 1
+PUSH 7 乙$4 2
+PUSH 7 甲$3 2
+PUSH 15 我的五子棋$2 13 五子棋
+PUSH 7 Address 11
+CALL 五子棋@放子 22 3 20
+LINE 140
+LINE 140
+PUSH 7 玩家默认颜色 1
+PUSH 15 我的五子棋$2 13 五子棋
+PUSH 7 Address 11
+CALL 五子棋@是否胜利 22 1 12
+CMP 0 Ret_R 6 1 1 3
+JE IfThenBlock9 DefaultBlock10
+
+Block IfThenBlock9
+LINE 142
+PUSH 14 常字符串指针 4 4 3
+PUSH 7 Address 11
+CALL 打印 22 1 8
+JMP WhileBlock8
+LINE 143
+JMP DefaultBlock10
+
+Block DefaultBlock10
+LEA 14 Temp_R0 9 7 7 乙$4 2
+LEA 14 Temp_R1 9 7 7 甲$3 2
+LINE 146
+PUSH 7 AI默认颜色 1
+PUSH 14 Temp_R0 9 7
+PUSH 14 Temp_R1 9 7
+PUSH 15 我的五子棋$2 13 五子棋
+PUSH 7 Address 11
+CALL 五子棋@模拟计算AI放子 22 3 28
+LINE 147
+PUSH 7 AI默认颜色 1
+PUSH 7 乙$4 2
+PUSH 7 甲$3 2
+PUSH 15 我的五子棋$2 13 五子棋
+PUSH 7 Address 11
+CALL 五子棋@放子 22 3 20
+LINE 148
+PUSH 7 乙$4 2
+PUSH 7 甲$3 2
+PUSH 14 常字符串指针 4 4 4
+PUSH 7 Address 11
+CALL 打印 22 3 16
+LINE 150
+LINE 150
+PUSH 7 AI默认颜色 1
+PUSH 15 我的五子棋$2 13 五子棋
+PUSH 7 Address 11
+CALL 五子棋@是否胜利 22 1 12
+CMP 0 Ret_R 6 1 1 3
+JE IfThenBlock11 DefaultBlock12
+
+Block IfThenBlock11
+LINE 152
 PUSH 14 常字符串指针 4 4 5
+PUSH 7 Address 11
+CALL 打印 22 1 8
+JMP WhileBlock8
+LINE 153
+JMP DefaultBlock12
+
+Block DefaultBlock12
+JMP WhileBlock7
+
+Block WhileBlock8
+LINE 156
+PUSH 14 常字符串指针 4 4 6
 PUSH 7 Address 11
 CALL 打印 22 1 8
 RET 0

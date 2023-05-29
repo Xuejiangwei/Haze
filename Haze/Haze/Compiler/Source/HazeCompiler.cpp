@@ -103,6 +103,7 @@ void HazeCompiler::InsertLineCount(int64 LineCount)
 {
 	if (VM->IsDebug() && InsertBaseBlock)
 	{
+		std::cout << "line " << LineCount << std::endl;
 		InsertBaseBlock->PushIRCode(GetInstructionString(InstructionOpCode::LINE) + (HAZE_TEXT(" ") + HAZE_TO_HAZE_STR(LineCount)) + HAZE_TEXT("\n"));
 	}
 }

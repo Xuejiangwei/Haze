@@ -70,7 +70,7 @@ void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
 
 void HazeVM::StartMainFunction()
 {
-	VMDebugger->AddBreakPoint(HAZE_TEXT("五子棋"), 58);
+	//VMDebugger->AddBreakPoint(HAZE_TEXT("五子棋"), 68);
 
 	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
 	if (Iter != HashMap_FunctionTable.end())
