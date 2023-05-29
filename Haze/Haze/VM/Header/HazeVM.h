@@ -3,29 +3,37 @@
 #include "Haze.h"
 //#include <memory>
 #include <unordered_set>
-
-
 #include "HazeVariable.h"
 
 class HazeCompiler;
 
+class HazeDebugger;
 class HazeStack;
 class GarbageCollection;
+
+enum class HazeGenType : uint8
+{
+	Debug,
+	Release,
+};
 
 class HazeVM
 {
 public:
+	friend class HazeDebugger;
 	friend class InstructionProcessor;
 	friend class GarbageCollection;
 	friend class HazeStack;
 	friend class HazeExecuteFile;
 
-	HazeVM();
+	HazeVM(HazeGenType GenType);
 	~HazeVM();
 
 	using ModulePair = std::pair<HAZE_STRING, HAZE_STRING>;
 
 	void InitVM(std::vector<ModulePair> Vector_ModulePath);
+
+	bool IsDebug() const { return GenType == HazeGenType::Debug; }
 
 	void LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath);
 
@@ -41,6 +49,9 @@ public:
 
 	const std::unordered_set<HAZE_STRING>& GetReferenceModules() const { return HashSet_RefModule; }
 
+public:
+	const HAZE_STRING* GetModuleNameByCurrFunction();
+
 	int GetFucntionIndexByName(const HAZE_STRING& Name);
 
 	const FunctionData& GetFunctionByName(const HAZE_STRING& Name);
@@ -51,10 +62,14 @@ public:
 
 	ClassData* FindClass(const HAZE_STRING& ClassName);
 
-	unsigned int GetClassSize(const HAZE_STRING& ClassName);
+	uint32 GetClassSize(const HAZE_STRING& ClassName);
 
 private:
-	void SetHook();
+	void OnExecLine(uint32 Line);
+
+	void InstructionExecPost();
+	
+	static void Hook(HazeVM* VM);
 
 private:
 	std::unique_ptr<HazeCompiler> Compiler;
@@ -63,13 +78,14 @@ private:
 	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;
 	std::unordered_set<HAZE_STRING> MapString;
 
+	std::unique_ptr<HazeDebugger> VMDebugger;
 	std::unique_ptr<HazeStack> VMStack;
-	
 	std::unique_ptr<GarbageCollection> GC;
 
-	std::pair<HazeDefineType, HazeValue> FunctionReturn;
-
 	std::unordered_set<HAZE_STRING> HashSet_RefModule;
+
+private:
+	std::vector<ModuleData> Vector_ModuleData;
 
 	std::vector<HazeVariable> Vector_GlobalData;
 
@@ -78,7 +94,9 @@ private:
 	std::vector<ClassData> Vector_ClassTable;
 
 	std::vector<FunctionData> Vector_FunctionTable;
-	std::unordered_map<HAZE_STRING, unsigned int> HashMap_FunctionTable;
+	std::unordered_map<HAZE_STRING, uint32> HashMap_FunctionTable;
 
 	std::vector<Instruction> Vector_Instruction;
+
+	HazeGenType GenType;
 };

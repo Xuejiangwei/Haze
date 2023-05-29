@@ -94,8 +94,6 @@
 
 #define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_STRING(HAZE_TEXT("Address"))
 
-#define HAZE_LINE_COUNT_HEADER			HAZE_TEXT("Line: ")
-
 #define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data, int MultiParamNum
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 20

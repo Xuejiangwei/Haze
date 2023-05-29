@@ -30,10 +30,14 @@ public:
 	~HazeExecuteFile();
 
 public:
+	void WriteModule(const std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>>& Module);
+
 	void WriteExecuteFile(const ModuleUnit::GlobalDataTable& GlobalDataTable, const ModuleUnit::StringTable& StringTable,
 		const ModuleUnit::ClassTable& ClassTable, const ModuleUnit::FunctionTable& FunctionTable);
 
 	void ReadExecuteFile(HazeVM* VM);
+
+	void ReadModule(HazeVM* VM);
 
 	void CheckAll();
 private:

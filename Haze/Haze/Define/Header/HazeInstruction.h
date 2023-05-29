@@ -102,15 +102,12 @@ enum class InstructionOpCode : uint32
 
 	CMP,
 	JMP,
-	JMPL,
 	JNE,		//不等于
 	JNG,		//不大于
 	JNL,		//不小于
 	JE,			//等于
 	JG,			//大于
 	JL,			//小于
-
-	JMPOUT,			//JmpOut 跳出block
 
 	ADD_ASSIGN,
 	SUB_ASSIGN,
@@ -122,6 +119,8 @@ enum class InstructionOpCode : uint32
 	BIT_XOR_ASSIGN,
 	SHL_ASSIGN,
 	SHR_ASSIGN,
+
+	LINE,			//调试用
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，
@@ -175,6 +174,8 @@ struct InstructionData
 		BlockJmp Jmp;
 		void* Pointer;
 
+		uint32 Line;
+
 		Extra()
 		{
 		}
@@ -201,6 +202,24 @@ struct FunctionDescData
 {
 	InstructionFunctionType Type;
 	unsigned int InstructionStartAddress;
+};
+
+struct ModuleData
+{
+	HAZE_STRING Name;
+	std::pair<uint32, uint32> GlobalDataIndex;
+	std::pair<uint32, uint32> StringIndex;
+	std::pair<uint32, uint32> ClassIndex;
+	std::pair<uint32, uint32> FunctionIndex;
+
+	ModuleData()
+	{
+		Name.clear();
+		GlobalDataIndex = { 0, 0 };
+		StringIndex = { 0, 0 };
+		ClassIndex = { 0, 0 };
+		FunctionIndex = { 0, 0 };
+	}
 };
 
 struct ClassMemberData

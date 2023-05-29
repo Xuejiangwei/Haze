@@ -32,7 +32,6 @@ public:
 	struct HazeStackFrame
 	{
 		const FunctionData* FunctionInfo;
-		std::vector<int> Vector_LoopStack;
 		uint32 FunctionParamSize;
 		uint32 EBP;
 		uint32 ESP;
@@ -40,7 +39,6 @@ public:
 		HazeStackFrame(const FunctionData* Info, uint32 ParamSize, uint32 EBP, uint32 ESP) : FunctionParamSize(ParamSize), EBP(EBP), ESP(ESP)
 		{
 			FunctionInfo = Info;
-			Vector_LoopStack.clear();
 		}
 	};
 
@@ -49,10 +47,6 @@ public:
 	bool FrameIsValid() { return Stack_Frame.size(); }
 
 	void JmpTo(const InstructionData& Data);
-
-	void PushLoopStack();
-
-	void PopLoopStack();
 
 	HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name);
 

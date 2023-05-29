@@ -54,17 +54,6 @@ void HazeStack::Start(unsigned int Address)
 	GarbageCollection(true, true);
 }
 
-//void HazeStack::PushVariableStack(HazeDefineVariable* Variable)
-//{
-//	Stack_Frame.back().FunctionData.Vector_LocalParam.push_back(Variable);
-//}
-//
-//void HazeStack::PopVariableStack(int Num)
-//{
-//	uint64 NewSize = Stack_Frame.back().FunctionData.Vector_LocalParam.size() - Num;
-//	Stack_Frame.back().FunctionData.Vector_LocalParam.resize(NewSize);
-//}
-
 void HazeStack::JmpTo(const InstructionData& Data)
 {
 	auto& Function = Stack_Frame.back().FunctionInfo;
@@ -72,18 +61,6 @@ void HazeStack::JmpTo(const InstructionData& Data)
 	memcpy(&PC, &Address, sizeof(PC));
 
 	PC--;
-}
-
-void HazeStack::PushLoopStack()
-{
-	Stack_Frame.back().Vector_LoopStack.push_back(PC);
-}
-
-void HazeStack::PopLoopStack()
-{
-	auto& Stack = Stack_Frame.back().Vector_LoopStack;
-	PC = Stack.back();
-	Stack.pop_back();
 }
 
 void HazeStack::PCStepInc()

@@ -21,6 +21,8 @@ public:
 
 	HazeCompiler* GetCompiler() { return Compiler; }
 
+	const HAZE_STRING& GetName() const;
+
 	bool IsStandardLibrary() { return IsStdLib; }
 	
 	void MarkStandardLibrary();

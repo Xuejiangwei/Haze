@@ -7,7 +7,7 @@ static void SetSystemColor(int type = 0)
 	switch (type)
 	{
 	case HazeLog::Info:
-		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE),/* FOREGROUND_INTENSITY | FOREGROUND_RED |*/ FOREGROUND_GREEN /*| FOREGROUND_BLUE*/);
 		break;
 	case HazeLog::Warning:
 		SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), FOREGROUND_INTENSITY | FOREGROUND_RED | FOREGROUND_GREEN);

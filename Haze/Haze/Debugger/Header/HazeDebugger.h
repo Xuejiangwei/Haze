@@ -3,19 +3,41 @@
 #include "HazeDebugInfo.h"
 #include <unordered_set>
 
+class HazeVM;
+
 class HazeDebugger
 {
 public:
-	HazeDebugger();
+	HazeDebugger(HazeVM* VM);
 	~HazeDebugger();
 
-	void AddBreakPoint(const HAZE_STRING& FilePath, uint32 Line);
+
+	enum DebuggerHookType
+	{
+		Line = 1,
+		Instruction = 1 << 1,
+		Function = 1 << 2,
+	};
+
+	void SetHook(void(* HookCall)(HazeVM* VM), uint32 Type);
+
+	void AddBreakPoint(const HAZE_STRING& FileName, uint32 Line);
+
+	void DeleteBreakPoint(const HAZE_STRING& FileName, uint32 Line);
+
+	void DeleteAllBreakPoint();
+
+	void OnExecLine(uint32 Line);
 
 	void StepOver();
 
 	void StepIn();
 
 private:
-	std::unordered_set<BreakPoint, BreakPointHash> HashSet_BreakPoint;
+	HazeVM* VM;
+	void(* HookFunctionCall)(HazeVM* VM);
+	uint32 HookType;
+
+	std::unordered_map<HAZE_STRING, std::unordered_set<uint32>> HashMap_BreakPoint;
 };
 

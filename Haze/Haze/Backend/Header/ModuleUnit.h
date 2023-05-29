@@ -6,11 +6,12 @@
 class ModuleUnit
 {
 public:
-	ModuleUnit();
+	ModuleUnit(const HAZE_STRING& Name);
 	~ModuleUnit();
 
 public:
 	friend class BackendParse;
+	friend class HazeExecuteFile;
 
 	struct GlobalData
 	{
@@ -130,6 +131,8 @@ public:
 
 private:
 	bool IsStdLib;
+
+	HAZE_STRING Name;
 
 	GlobalDataTable Table_GlobalData;
 	StringTable Table_String;

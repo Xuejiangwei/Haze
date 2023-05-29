@@ -83,6 +83,17 @@ HazeCompilerModule* HazeCompiler::GetModule(const HAZE_STRING& Name)
 	return nullptr;
 }
 
+const HAZE_STRING& HazeCompiler::GetModuleName(const HazeCompilerModule* Module) const
+{
+	for (auto& Iter : HashMap_CompilerModule)
+	{
+		if (Iter.second.get() == Module) 
+		{
+			return Iter.first;
+		}
+	}
+}
+
 void HazeCompiler::GenModuleCodeFile()
 {
 	HashMap_CompilerModule[GetCurrModuleName()]->GenCodeFile();
@@ -90,10 +101,15 @@ void HazeCompiler::GenModuleCodeFile()
 
 void HazeCompiler::InsertLineCount(int64 LineCount)
 {
-	/*if (InsertBaseBlock)
+	if (VM->IsDebug() && InsertBaseBlock)
 	{
-		InsertBaseBlock->PushIRCode(HAZE_LINE_COUNT_HEADER + HAZE_TO_HAZE_STR(LineCount) + HAZE_TEXT("\n"));
-	}*/
+		InsertBaseBlock->PushIRCode(GetInstructionString(InstructionOpCode::LINE) + (HAZE_TEXT(" ") + HAZE_TO_HAZE_STR(LineCount)) + HAZE_TEXT("\n"));
+	}
+}
+
+bool HazeCompiler::IsDebug() const
+{
+	return VM->IsDebug();
 }
 
 std::unique_ptr<HazeCompilerModule>& HazeCompiler::GetCurrModule()

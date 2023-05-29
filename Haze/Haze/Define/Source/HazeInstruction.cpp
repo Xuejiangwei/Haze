@@ -3,6 +3,8 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
 
+#define HAZE_CALL_LOG				0
+
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
@@ -50,7 +52,6 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 
 	{HAZE_TEXT("CMP"), InstructionOpCode::CMP },
 	{HAZE_TEXT("JMP"), InstructionOpCode::JMP },
-	{HAZE_TEXT("JMPL"), InstructionOpCode::JMPL },
 	{HAZE_TEXT("JNE"), InstructionOpCode::JNE },
 	{HAZE_TEXT("JNG"), InstructionOpCode::JNG },
 	{HAZE_TEXT("JNL"), InstructionOpCode::JNL },
@@ -58,7 +59,8 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("JG"), InstructionOpCode::JG },
 	{HAZE_TEXT("JL"), InstructionOpCode::JL },
 
-	{HAZE_TEXT("JMPOUT"), InstructionOpCode::JMPOUT },
+
+	{HAZE_TEXT("LINE"), InstructionOpCode::LINE },
 };
 
 bool IsRegisterScope(HazeDataDesc Scope)
@@ -121,6 +123,13 @@ public:
 			const void* Src = GetAddressByOperator(Stack, Operator[1]);
 			memcpy(Dst, Src, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void MovPV(HazeStack* Stack)
@@ -135,6 +144,13 @@ public:
 			memcpy(&Address, Src, sizeof(Address));
 			memcpy(Dst, (void*)Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void MovToPV(HazeStack* Stack)
@@ -149,6 +165,13 @@ public:
 			memcpy(&Address, Dst, sizeof(Address));
 			memcpy((void*)Address, Src, GetSizeByType(Operator[1].Variable.Type, Stack->VM));
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Lea(HazeStack* Stack)
@@ -160,6 +183,13 @@ public:
 			uint64 Address = (uint64)GetAddressByOperator(Stack, Operator[1]);
 			memcpy(Dst, &Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Push(HazeStack* Stack)
@@ -199,6 +229,13 @@ public:
 
 			Stack->ESP += Size;
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Pop(HazeStack* Stack)
@@ -208,26 +245,61 @@ public:
 		{
 			Stack->ESP -= GetSizeByType(Operator[0].Variable.Type, Stack->VM);
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Add(HazeStack* Stack)
 	{
 		BinaryOperator(Stack);
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Sub(HazeStack* Stack)
 	{
 		BinaryOperator(Stack);
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Mul(HazeStack* Stack)
 	{
 		BinaryOperator(Stack);
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Div(HazeStack* Stack)
 	{
 		BinaryOperator(Stack);
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Mod(HazeStack* Stack)
@@ -240,6 +312,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MOD, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Neg(HazeStack* Stack)
@@ -253,6 +332,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::NEG, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Not(HazeStack* Stack)
@@ -265,6 +351,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::NOT, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Inc(HazeStack* Stack)
@@ -277,6 +370,13 @@ public:
 				OperatorValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::INC, GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Dec(HazeStack* Stack)
@@ -289,6 +389,13 @@ public:
 				OperatorValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DEC, GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Bit_And(HazeStack* Stack)
@@ -301,6 +408,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_AND, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Bit_Or(HazeStack* Stack)
@@ -313,6 +427,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_OR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Bit_Xor(HazeStack* Stack)
@@ -325,6 +446,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_XOR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Add_Assign(HazeStack* Stack)
@@ -337,6 +465,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::ADD_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Sub_Assign(HazeStack* Stack)
@@ -349,6 +484,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SUB_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Mul_Assign(HazeStack* Stack)
@@ -361,6 +503,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MUL_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Div_Assign(HazeStack* Stack)
@@ -373,6 +522,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::DIV_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Mod_Assign(HazeStack* Stack)
@@ -385,6 +541,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::MOD_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Bit_And_Assign(HazeStack* Stack)
@@ -397,6 +560,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_AND_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Bit_Or_Assign(HazeStack* Stack)
@@ -409,6 +579,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_OR_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Bit_Neg(HazeStack* Stack)
@@ -425,6 +602,13 @@ public:
 		{
 			HAZE_LOG_ERR(HAZE_TEXT("bir neg operator error!\n"));
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Bit_Xor_Assign(HazeStack* Stack)
@@ -437,6 +621,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_XOR_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Shl_Assign(HazeStack* Stack)
@@ -449,6 +640,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHL_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Shr_Assign(HazeStack* Stack)
@@ -461,6 +659,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHR_ASSIGN, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Shl(HazeStack* Stack)
@@ -473,6 +678,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHL, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Shr(HazeStack* Stack)
@@ -485,6 +697,13 @@ public:
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHR, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Call(HazeStack* Stack)
@@ -495,6 +714,12 @@ public:
 		{
 #if HAZE_CALL_LOG
 			HAZE_LOG_INFO(HAZE_TEXT("调用函数<%s>\n"), Operator[0].Variable.Name.c_str());
+#endif
+
+#if HAZE_DEBUG_ENABLE
+
+			Stack->VM->InstructionExecPost();
+
 #endif
 
 			memcpy(&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], &Stack->PC, HAZE_ADDRESS_SIZE);
@@ -513,9 +738,6 @@ public:
 
 				if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 				{
-#if HAZE_CALL_HAZE_FUNC_LOG
-					HAZE_LOG_INFO(HAZE_TEXT("调用Haze函数<%s>\n"), Operator[0].Variable.Name.c_str());
-#endif
 					Stack->OnCall(&Function, Operator[0].Extra.Call.ParamByteSize);
 				}
 				else
@@ -534,6 +756,12 @@ public:
 
 	static void Ret(HazeStack* Stack)
 	{
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 1)
 		{
@@ -564,6 +792,13 @@ public:
 			NewRegister->Data.resize(Size);
 			memcpy(NewRegister->Data.begin()._Unwrapped(), &Address, Size);
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Cmp(HazeStack* Stack)
@@ -575,6 +810,13 @@ public:
 			CompareValueByType(GetStrongerType(Operator[0].Variable.Type.PrimaryType, Operator[1].Variable.Type.PrimaryType),
 				CmpRegister, GetAddressByOperator(Stack, Operator[0]), GetAddressByOperator(Stack, Operator[1]));
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Jmp(HazeStack* Stack)
@@ -584,16 +826,13 @@ public:
 		{
 			JmpToOperator(Stack, Operator[0]);
 		}
-	}
 
-	static void JmpL(HazeStack* Stack)
-	{
-		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
-		if (Operator.size() == 1)
-		{
-			Stack->PushLoopStack();
-			JmpToOperator(Stack, Operator[0]);
-		}
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Jne(HazeStack* Stack)
@@ -616,6 +855,13 @@ public:
 				JmpToOperator(Stack, Operator[1]);
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Jng(HazeStack* Stack)
@@ -634,6 +880,13 @@ public:
 				JmpToOperator(Stack, Operator[1]);
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Jnl(HazeStack* Stack)
@@ -652,6 +905,13 @@ public:
 				JmpToOperator(Stack, Operator[1]);
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Je(HazeStack* Stack)
@@ -670,6 +930,13 @@ public:
 				JmpToOperator(Stack, Operator[1]);
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Jg(HazeStack* Stack)
@@ -688,6 +955,13 @@ public:
 				JmpToOperator(Stack, Operator[1]);
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
 	static void Jl(HazeStack* Stack)
@@ -706,11 +980,28 @@ public:
 				JmpToOperator(Stack, Operator[1]);
 			}
 		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
+
 	}
 
-	static void JmpOut(HazeStack* Stack)
+	static void Line(HazeStack* Stack)
 	{
-		Stack->PopLoopStack();
+		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
+		if (Operator.size() == 1)
+		{
+			Stack->VM->OnExecLine(Operator[0].Extra.Line);
+		}
+
+#if HAZE_DEBUG_ENABLE
+
+		Stack->VM->InstructionExecPost();
+
+#endif
 	}
 
 private:
@@ -890,13 +1181,13 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 
 	{InstructionOpCode::CMP, &InstructionProcessor::Cmp},
 	{InstructionOpCode::JMP, &InstructionProcessor::Jmp},
-	{InstructionOpCode::JMPL, &InstructionProcessor::JmpL},
 	{InstructionOpCode::JNE, &InstructionProcessor::Jne},
 	{InstructionOpCode::JNG, &InstructionProcessor::Jng},
 	{InstructionOpCode::JNL, &InstructionProcessor::Jnl},
 	{InstructionOpCode::JE, &InstructionProcessor::Je},
 	{InstructionOpCode::JG, &InstructionProcessor::Jg},
 	{InstructionOpCode::JL, &InstructionProcessor::Jl},
-	
-	{InstructionOpCode::JMPOUT, &InstructionProcessor::JmpOut},
+
+
+	{InstructionOpCode::LINE, &InstructionProcessor::Line},
 };

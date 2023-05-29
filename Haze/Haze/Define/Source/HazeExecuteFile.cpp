@@ -7,6 +7,8 @@
 #include "HazeFilePathHelper.h"
 #include "HazeLog.h"
 
+#define HAZE_INS_LOG			0
+
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 thread_local static HAZE_BINARY_STRING BinaryString;
@@ -143,6 +145,41 @@ void HazeExecuteFile::CheckAll()
 				}
 			}
 		}
+	}
+}
+
+void HazeExecuteFile::WriteModule(const std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>>& Module)
+{
+	uint32 GlobalDataIndex = 0;
+	uint32 StringIndex = 0;
+	uint32 ClassIndex = 0;
+	uint32 FunctionIndex = 0;
+
+	uint32 UInt = (uint32)Module.size();
+	FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
+	
+	for (auto& Iter : Module)
+	{
+		BinaryString = WString2String(Iter.first);
+		UInt = CAST_UINT32(BinaryString.size());
+		FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
+		FileStream->write(BinaryString.c_str(), UInt);
+
+		FileStream->write(HAZE_WRITE_AND_SIZE(GlobalDataIndex));
+		GlobalDataIndex += (uint32)Iter.second->Table_GlobalData.Vector_Data.size();
+		FileStream->write(HAZE_WRITE_AND_SIZE(GlobalDataIndex));
+		
+		FileStream->write(HAZE_WRITE_AND_SIZE(StringIndex));
+		StringIndex += (uint32)Iter.second->Table_String.Vector_String.size();
+		FileStream->write(HAZE_WRITE_AND_SIZE(StringIndex));
+
+		FileStream->write(HAZE_WRITE_AND_SIZE(ClassIndex));
+		ClassIndex += (uint32)Iter.second->Table_Class.Vector_Class.size();
+		FileStream->write(HAZE_WRITE_AND_SIZE(ClassIndex));
+
+		FileStream->write(HAZE_WRITE_AND_SIZE(FunctionIndex));
+		FunctionIndex += (uint32)Iter.second->Table_Function.Vector_Function.size();
+		FileStream->write(HAZE_WRITE_AND_SIZE(FunctionIndex));
 	}
 }
 
@@ -369,11 +406,43 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& In
 
 void HazeExecuteFile::ReadExecuteFile(HazeVM* VM)
 {
+	if (VM->IsDebug())
+	{
+		ReadModule(VM);
+	}
+
 	ReadGlobalDataTable(VM);
 	ReadStringTable(VM);
 	ReadClassTable(VM);
 	ReadFunctionTable(VM);
 	ReadFunctionInstruction(VM);
+}
+
+void HazeExecuteFile::ReadModule(HazeVM* VM)
+{
+	uint32 Num = 0;
+	InFileStream->read(HAZE_READ(Num));
+	VM->Vector_ModuleData.resize(Num);
+
+	for (uint64 i = 0; i < VM->Vector_ModuleData.size(); i++)
+	{
+		InFileStream->read(HAZE_READ(Num));
+		BinaryString.resize(Num);
+		InFileStream->read(BinaryString.data(), Num);
+		VM->Vector_ModuleData[i].Name = String2WString(BinaryString);
+
+		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].GlobalDataIndex.first));
+		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].GlobalDataIndex.second));
+
+		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].StringIndex.first));
+		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].StringIndex.second));
+
+		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].ClassIndex.first));
+		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].ClassIndex.second));
+
+		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].FunctionIndex.first));
+		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].FunctionIndex.second));
+	}
 }
 
 void HazeExecuteFile::ReadGlobalDataTable(HazeVM* VM)
@@ -384,7 +453,7 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* VM)
 	InFileStream->read(HAZE_READ(Num));
 	VM->Vector_GlobalData.resize(Num);
 
-	for (size_t i = 0; i < VM->Vector_GlobalData.size(); i++)
+	for (uint64 i = 0; i < VM->Vector_GlobalData.size(); i++)
 	{
 		InFileStream->read(HAZE_READ(Num));
 
@@ -416,7 +485,7 @@ void HazeExecuteFile::ReadStringTable(HazeVM* VM)
 	InFileStream->read(HAZE_READ(Num));
 	VM->Vector_StringTable.resize(Num);
 
-	for (size_t i = 0; i < VM->Vector_StringTable.size(); i++)
+	for (uint64 i = 0; i < VM->Vector_StringTable.size(); i++)
 	{
 		InFileStream->read(HAZE_READ(Num));
 		BinaryString.resize(Num);
@@ -433,7 +502,7 @@ void HazeExecuteFile::ReadClassTable(HazeVM* VM)
 	InFileStream->read(HAZE_READ(Num));
 	VM->Vector_ClassTable.resize(Num);
 
-	for (size_t i = 0; i < VM->Vector_ClassTable.size(); i++)
+	for (uint64 i = 0; i < VM->Vector_ClassTable.size(); i++)
 	{
 		InFileStream->read(HAZE_READ(Num));
 		BinaryString.resize(Num);
@@ -445,7 +514,7 @@ void HazeExecuteFile::ReadClassTable(HazeVM* VM)
 		InFileStream->read(HAZE_READ(Num));
 		VM->Vector_ClassTable[i].Vector_Member.resize(Num);
 
-		for (size_t j = 0; j < VM->Vector_ClassTable[i].Vector_Member.size(); j++)
+		for (uint64 j = 0; j < VM->Vector_ClassTable[i].Vector_Member.size(); j++)
 		{
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
@@ -475,12 +544,12 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 	InFileStream->read(HAZE_READ(Num));
 	VM->Vector_FunctionTable.resize(Num);
 
-	for (size_t i = 0; i < VM->Vector_FunctionTable.size(); i++)
+	for (uint64 i = 0; i < VM->Vector_FunctionTable.size(); i++)
 	{
 		InFileStream->read(HAZE_READ(Num));
 		BinaryString.resize(Num);
 		InFileStream->read(BinaryString.data(), Num);
-		VM->HashMap_FunctionTable[String2WString(BinaryString)] = (unsigned int)i;
+		VM->HashMap_FunctionTable[String2WString(BinaryString)] = (uint32)i;
 
 		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Type));
 		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Extra.FunctionDescData.Type));
@@ -488,7 +557,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 		InFileStream->read(HAZE_READ(Num));
 		VM->Vector_FunctionTable[i].Vector_Param.resize(Num);
 
-		for (size_t j = 0; j < VM->Vector_FunctionTable[i].Vector_Param.size(); j++)
+		for (uint64 j = 0; j < VM->Vector_FunctionTable[i].Vector_Param.size(); j++)
 		{
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
@@ -506,7 +575,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 		InFileStream->read(HAZE_READ(Num));
 		VM->Vector_FunctionTable[i].Vector_Variable.resize(Num);
 
-		for (size_t j = 0; j < VM->Vector_FunctionTable[i].Vector_Variable.size(); j++)
+		for (uint64 j = 0; j < VM->Vector_FunctionTable[i].Vector_Variable.size(); j++)
 		{
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
@@ -536,7 +605,7 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* VM)
 	uint32 Num = 0;
 	InFileStream->read(HAZE_READ(Num));
 	VM->Vector_Instruction.resize(Num);
-	for (size_t i = 0; i < VM->Vector_Instruction.size(); i++)
+	for (uint64 i = 0; i < VM->Vector_Instruction.size(); i++)
 	{
 		InFileStream->read(HAZE_READ(VM->Vector_Instruction[i].InsCode));
 		ReadInstruction(VM->Vector_Instruction[i]);

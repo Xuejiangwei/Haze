@@ -36,6 +36,11 @@ HazeCompilerModule::~HazeCompilerModule()
 	}
 }
 
+const HAZE_STRING& HazeCompilerModule::GetName() const
+{
+	return Compiler->GetModuleName(this);
+}
+
 void HazeCompilerModule::MarkStandardLibrary()
 {
 	IsStdLib = true;

@@ -6,12 +6,13 @@
 #include "BackendParse.h"
 #include "HazeExecuteFile.h"
 
+#include "HazeDebugger.h"
 #include "HazeStack.h"
 #include "GarbageCollection.h"
 
-HazeVM::HazeVM()
+
+HazeVM::HazeVM(HazeGenType GenType) : GenType(GenType)
 {
-	FunctionReturn.first.PrimaryType = HazeValueType::Void;
 	VMStack = std::make_unique<HazeStack>(this);
 	GC = std::make_unique<GarbageCollection>(this);
 	
@@ -29,30 +30,38 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 		ParseFile(iter.first, iter.second);
 	}
 
-	{
 #define HAZE_BACKEND_PARSE_ENABLE	1
+	{
 
 #if HAZE_BACKEND_PARSE_ENABLE
 
 		BackendParse BP(this);
 		BP.Parse();
 
-#endif // HAZE_BACKEND_PARSE_ENABLE
+#endif
 
 	}
 
 #define HAZE_LOAD_OP_CODE_ENABLE	1
 
 	{
+
 #if HAZE_LOAD_OP_CODE_ENABLE
 
 		HazeExecuteFile ExeFile(ExeFileType::In);
 		ExeFile.ReadExecuteFile(this);
 
-#endif // ENABLE_LOAD_OP_CODE
+#endif
 	}
 
 	Compiler.release();
+	HashSet_RefModule.clear();
+
+	if (!VMDebugger)
+	{
+		VMDebugger = std::make_unique<HazeDebugger>(this);
+		VMDebugger->SetHook(&HazeVM::Hook, HazeDebugger::DebuggerHookType::Instruction | HazeDebugger::DebuggerHookType::Line);
+	}
 }
 
 void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
@@ -61,6 +70,8 @@ void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
 
 void HazeVM::StartMainFunction()
 {
+	VMDebugger->AddBreakPoint(HAZE_TEXT("五子棋"), 58);
+
 	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
 	if (Iter != HashMap_FunctionTable.end())
 	{
@@ -93,6 +104,25 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleNam
 	{
 		Compiler->PopCurrModule();
 	}
+}
+
+const HAZE_STRING* HazeVM::GetModuleNameByCurrFunction()
+{
+	for (size_t i = 0; i < Vector_FunctionTable.size(); i++)
+	{
+		if (&Vector_FunctionTable[i] == VMStack->GetCurrFrame().FunctionInfo)
+		{
+			for (auto& Iter : Vector_ModuleData)
+			{
+				if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second) 
+				{
+					return &Iter.Name;
+				}
+			}
+		}
+	}
+
+	return nullptr;
 }
 
 int HazeVM::GetFucntionIndexByName(const HAZE_STRING& Name)
@@ -137,13 +167,31 @@ ClassData* HazeVM::FindClass(const HAZE_STRING& ClassName)
 	return nullptr;
 }
 
-unsigned int HazeVM::GetClassSize(const HAZE_STRING& ClassName)
+uint32 HazeVM::GetClassSize(const HAZE_STRING& ClassName)
 {
 	auto Class = FindClass(ClassName);
 	return Class ? Class->Size : 0;
 }
 
-void HazeVM::SetHook()
+void HazeVM::OnExecLine(uint32 Line)
 {
+	VMDebugger->OnExecLine(Line);
+}
 
+void HazeVM::InstructionExecPost()
+{
+#define HAZE_INS_LOG 0
+
+#if HAZE_INS_LOG
+
+	HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s>\n"), GetInstructionString(Vector_Instruction[VMStack->GetCurrPC()].InsCode), 
+		Vector_Instruction[VMStack->GetCurrPC()].Operator[0].Variable.Name.c_str());
+
+#endif
+
+}
+
+void HazeVM::Hook(HazeVM* VM)
+{
+	HAZE_LOG_INFO(HAZE_TEXT("已命中断点\n"));
 }

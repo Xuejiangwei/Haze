@@ -8,6 +8,8 @@
 #include "HazeFilePathHelper.h"
 #include "HazeLog.h"
 
+#define BACKEND_INSTRUCTION_LOG			0
+
 static std::pair<bool, int> ParseStringCount = { false, 0 };
 
 static void FindObjectAndMemberName(const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutMemberName, bool& ObjectIsPointer)
@@ -50,7 +52,7 @@ void BackendParse::Parse()
 
 	for (auto& Module : Modules)
 	{
-		CurrParseModule = std::make_shared<ModuleUnit>();
+		CurrParseModule = std::make_shared<ModuleUnit>(Module);
 		HashMap_Modules[Module] = CurrParseModule;
 
 		HAZE_IFSTREAM FS(GetIntermediateModuleFile(Module));
@@ -428,7 +430,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	}
 	break;
 	case InstructionOpCode::JMP:
-	case InstructionOpCode::JMPL:
 	{
 		InstructionData OperatorOne;
 		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
@@ -453,6 +454,14 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
 	break;
+	case InstructionOpCode::LINE:
+	{
+		InstructionData OperatorOne;
+		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Extra.Line);
+
+		Instruction.Operator = { OperatorOne };
+	}
+	break;
 	default:
 		break;
 	}
@@ -460,6 +469,13 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 
 void BackendParse::GenOpCodeFile()
 {
+	HazeExecuteFile ExeFile(ExeFileType::Out);
+
+	if (VM->IsDebug())
+	{
+		ExeFile.WriteModule(HashMap_Modules);
+	}
+
 	ModuleUnit::GlobalDataTable NewGlobalDataTable;
 	ModuleUnit::StringTable NewStringTable;
 	ModuleUnit::ClassTable NewClassTable;
@@ -468,6 +484,7 @@ void BackendParse::GenOpCodeFile()
 	size_t FunctionCount = 0;
 	for (auto& Module : HashMap_Modules)
 	{
+		
 		NewFunctionTable.Vector_Function.insert(NewFunctionTable.Vector_Function.end(), Module.second->Table_Function.Vector_Function.begin(), Module.second->Table_Function.Vector_Function.end());
 		ReplaceStringIndex(NewStringTable, NewFunctionTable, FunctionCount);
 
@@ -478,7 +495,6 @@ void BackendParse::GenOpCodeFile()
 	
 	FindAddress(NewGlobalDataTable, NewFunctionTable);
 
-	HazeExecuteFile ExeFile(ExeFileType::Out);
 	ExeFile.WriteExecuteFile(NewGlobalDataTable, NewStringTable, NewClassTable, NewFunctionTable);
 }
 
