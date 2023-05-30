@@ -120,7 +120,7 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_NEW, HazeToken::New},
 
 	{TOKEN_QUESTION_MARK, HazeToken::ThreeOperatorStart},
-	{TOKEN_QUESTIOB_COLON, HazeToken::ThreeOperatorBranch},
+	{TOKEN_QUESTIOB_COLON, HazeToken::Colon},
 
 	{TOKEN_NULL_PTR, HazeToken::NullPtr},
 };
@@ -1082,7 +1082,7 @@ std::unique_ptr<ASTBase> Parse::ParseThreeOperator(std::unique_ptr<ASTBase> Cond
 		GetNextToken();
 		auto LeftExpression = ParseExpression(Iter->second);
 
-		if (CurrToken != HazeToken::ThreeOperatorBranch)
+		if (CurrToken != HazeToken::Colon)
 		{
 			HAZE_LOG_ERR(HAZE_TEXT("三目表达式 需要 : 符号!\n"));
 			return nullptr;
@@ -1594,11 +1594,15 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 
 std::unique_ptr<ASTBase> Parse::ParseImportModule()
 {
-	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Parse import module name is error\n")))
+	if (ExpectNextTokenIs(HazeToken::Identifier))
 	{
 		HAZE_STRING Name = CurrLexeme;
 		GetNextToken();
 		return std::make_unique<ASTImportModule>(Compiler, SourceLocation(LineCount), Name);
+	}
+	else
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("解析引入模块<%s>错误!\n"), CurrLexeme.c_str());
 	}
 	
 	return nullptr;
@@ -1606,11 +1610,44 @@ std::unique_ptr<ASTBase> Parse::ParseImportModule()
 
 std::unique_ptr<ASTClass> Parse::ParseClass()
 {
-	if (ExpectNextTokenIs(HazeToken::Identifier, (HAZE_TEXT("expect correct class name not ") + CurrLexeme).c_str()))
+	if (ExpectNextTokenIs(HazeToken::Identifier))
 	{
 		CurrParseClass = CurrLexeme;
 		HAZE_STRING Name = CurrLexeme;
-		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("expect { ")))
+		std::vector<HAZE_STRING> Vector_ParentClass;
+
+		GetNextToken();
+		if (TokenIs(HazeToken::Colon))
+		{
+			if (ExpectNextTokenIs(HazeToken::CustomClass))
+			{
+				while (TokenIs(HazeToken::CustomClass))
+				{
+					Vector_ParentClass.push_back(CurrLexeme);
+
+					GetNextToken();
+					if (TokenIs(HazeToken::Comma))
+					{
+						GetNextToken();
+					}
+					else if (TokenIs(HazeToken::LeftBrace))
+					{
+						break;
+					}
+					else
+					{
+						HAZE_LOG_ERR(HAZE_TEXT("解析类<%s>继承<%s>失败!"), Name.c_str(), CurrLexeme.c_str());
+					}
+				}
+			}
+			else
+			{
+				HAZE_LOG_ERR(HAZE_TEXT("解析类<%s>继承<%s>失败!"), Name.c_str(), CurrLexeme.c_str());
+			}
+		}
+
+
+		if (TokenIs(HazeToken::LeftBrace))
 		{
 			StackSectionSignal.push(HazeSectionSignal::Class);
 
@@ -1628,7 +1665,7 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 					}
 					else
 					{
-						HAZE_LOG_ERR(HAZE_TEXT("class only one data define section  class :%ws \n"), Name.c_str());
+						HAZE_LOG_ERR(HAZE_TEXT("类中相同的区域<%s>只能存在一种\n"), Name.c_str());
 					}
 				}
 				else if (CurrToken == HazeToken::Function)
@@ -1642,8 +1679,12 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 			GetNextToken();
 
 			CurrParseClass.clear();
-			return std::make_unique<ASTClass>(Compiler, SourceLocation(LineCount), Name, Vector_ClassData, ClassFunction);
+			return std::make_unique<ASTClass>(Compiler, SourceLocation(LineCount), Name, Vector_ParentClass, Vector_ClassData, ClassFunction);
 		}
+	}
+	else
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("解析类名<%s>错误!"), CurrLexeme.c_str());
 	}
 
 	return nullptr;

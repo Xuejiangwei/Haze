@@ -28,7 +28,7 @@ public:
 
 	HazeCompilerModule* GetModule(const HAZE_STRING& Name);
 
-	const HAZE_STRING& GetModuleName(const HazeCompilerModule* Module) const;
+	const HAZE_STRING* GetModuleName(const HazeCompilerModule* Module) const;
 
 	std::unique_ptr<HazeCompilerModule>& GetCurrModule();
 

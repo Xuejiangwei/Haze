@@ -133,7 +133,7 @@ enum class HazeToken : unsigned int
 	GetAddress,			//占位, 获得地址
 
 	ThreeOperatorStart,
-	ThreeOperatorBranch,
+	Colon,
 
 	NullPtr,
 };

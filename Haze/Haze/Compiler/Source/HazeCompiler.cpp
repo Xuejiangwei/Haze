@@ -83,15 +83,17 @@ HazeCompilerModule* HazeCompiler::GetModule(const HAZE_STRING& Name)
 	return nullptr;
 }
 
-const HAZE_STRING& HazeCompiler::GetModuleName(const HazeCompilerModule* Module) const
+const HAZE_STRING* HazeCompiler::GetModuleName(const HazeCompilerModule* Module) const
 {
 	for (auto& Iter : HashMap_CompilerModule)
 	{
 		if (Iter.second.get() == Module) 
 		{
-			return Iter.first;
+			return &(Iter.first);
 		}
 	}
+
+	return nullptr;
 }
 
 void HazeCompiler::GenModuleCodeFile()

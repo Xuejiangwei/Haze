@@ -175,8 +175,14 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	{
 		//函数指针
 		auto FunctionPointer = Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(Name);
-		return Compiler->CreateFunctionCall(FunctionPointer, Param);
+		if (FunctionPointer)
+		{
+			return Compiler->CreateFunctionCall(FunctionPointer, Param);
+		}
 	}
+
+	HAZE_LOG_ERR(HAZE_TEXT("生成函数调用<%s>错误,"), Name.c_str());
+	return nullptr;
 }
 
 ASTVariableDefine::ASTVariableDefine(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, const HazeDefineVariable& DefineVariable,

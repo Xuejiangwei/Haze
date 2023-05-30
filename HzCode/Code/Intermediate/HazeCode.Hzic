@@ -2,161 +2,59 @@
 GlobalDataTable
 0
 StringTable
-7
-9 ---- %d\n
-6 输入坐标\n
-4 %d%d
-6 玩家胜利\n
-12 AI放子 %d %d\n
-6 AI胜利\n
-6 游戏结束\n
+2
+12 我是父类 年龄 %d\n
+12 我是子类 性别 %d\n
 ClassTable
-0
+2
+Class 父类 4 1
+年龄 7 0 4
+Class 子类 4 1
+性别 7 0 4
 FunctionTable
-1
-Function 主函数 7
-Variable 甲$1 7 0 4
-Variable 我的五子棋$2 21 五子棋 4 4368
-Variable 甲$3 7 4372 4
-Variable 乙$4 7 4376 4
+3
+Function 父类@打印名称 0
+Param 己 15 父类
+Variable 己$1 15 父类 -12 8
 FunctionStart
 
 Block Entry
-LINE 121
-MOV 7 甲$1 2 7 0 3
-JMP ForConditionBlock1
-
-Block ForConditionBlock1
-LINE 121
-CMP 7 甲$1 2 7 10 3
-JL LoopBlock2 DefaultBlock4
-
-Block LoopBlock2
-LINE 123
-CMP 7 甲$1 2 7 5 3
-JE IfThenBlock5 DefaultBlock6
-
-Block IfThenBlock5
-JMP ForStepBlock3
-LINE 125
-JMP DefaultBlock6
-
-Block DefaultBlock6
-LINE 127
-PUSH 7 甲$1 2
+LINE 21
+PUSH 7 己$1指之年龄 15
 PUSH 14 常字符串指针 4 4 0
 PUSH 7 Address 11
 CALL 打印 22 2 12
-JMP ForStepBlock3
+RET 0
 
-Block ForStepBlock3
-MOV 7 Temp_R0 9 7 甲$1 2
-INC 7 甲$1 2
-JMP ForConditionBlock1
+FunctionEnd
 
-Block DefaultBlock4
-LINE 130
-LINE 131
-PUSH 15 我的五子棋$2 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@开始游戏 22 0 8
-LINE 132
-MOV 1 Temp_R0 9 1 1 3
-BIT_XOR 1 Temp_R0 9 1 0 3
-CMP 1 Temp_R0 9 1 1 3
-JE WhileBlock7 WhileBlock8
+Function 子类@打印名称 0
+Param 己 15 子类
+Variable 己$1 15 子类 -12 8
+FunctionStart
 
-Block WhileBlock7
-LINE 134
-MOV 7 甲$3 2 7 8 3
-LINE 135
-MOV 7 乙$4 2 7 8 3
-LINE 136
+Block Entry
+LINE 65
+PUSH 7 己$1指之性别 15
 PUSH 14 常字符串指针 4 4 1
 PUSH 7 Address 11
-CALL 打印 22 1 8
-LEA 14 Temp_R0 9 7 7 乙$4 2
-LEA 14 Temp_R1 9 7 7 甲$3 2
+CALL 打印 22 2 12
+RET 0
+
+FunctionEnd
+
+Function 主函数 7
+Variable 甲$1 21 子类 0 4
+FunctionStart
+
+Block Entry
+LINE 136
 LINE 137
-PUSH 14 Temp_R0 9 7
-PUSH 14 Temp_R1 9 7
-PUSH 14 常字符串指针 4 4 2
-PUSH 7 Address 11
-CALL 输入 22 3 24
+MOV 7 甲$1之性别 15 7 10 3
 LINE 138
-PUSH 7 玩家默认颜色 1
-PUSH 7 乙$4 2
-PUSH 7 甲$3 2
-PUSH 15 我的五子棋$2 13 五子棋
+PUSH 15 甲$1 13 子类
 PUSH 7 Address 11
-CALL 五子棋@放子 22 3 20
-LINE 140
-LINE 140
-PUSH 7 玩家默认颜色 1
-PUSH 15 我的五子棋$2 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@是否胜利 22 1 12
-CMP 0 Ret_R 6 1 1 3
-JE IfThenBlock9 DefaultBlock10
-
-Block IfThenBlock9
-LINE 142
-PUSH 14 常字符串指针 4 4 3
-PUSH 7 Address 11
-CALL 打印 22 1 8
-JMP WhileBlock8
-LINE 143
-JMP DefaultBlock10
-
-Block DefaultBlock10
-LEA 14 Temp_R0 9 7 7 乙$4 2
-LEA 14 Temp_R1 9 7 7 甲$3 2
-LINE 146
-PUSH 7 AI默认颜色 1
-PUSH 14 Temp_R0 9 7
-PUSH 14 Temp_R1 9 7
-PUSH 15 我的五子棋$2 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@模拟计算AI放子 22 3 28
-LINE 147
-PUSH 7 AI默认颜色 1
-PUSH 7 乙$4 2
-PUSH 7 甲$3 2
-PUSH 15 我的五子棋$2 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@放子 22 3 20
-LINE 148
-PUSH 7 乙$4 2
-PUSH 7 甲$3 2
-PUSH 14 常字符串指针 4 4 4
-PUSH 7 Address 11
-CALL 打印 22 3 16
-LINE 150
-LINE 150
-PUSH 7 AI默认颜色 1
-PUSH 15 我的五子棋$2 13 五子棋
-PUSH 7 Address 11
-CALL 五子棋@是否胜利 22 1 12
-CMP 0 Ret_R 6 1 1 3
-JE IfThenBlock11 DefaultBlock12
-
-Block IfThenBlock11
-LINE 152
-PUSH 14 常字符串指针 4 4 5
-PUSH 7 Address 11
-CALL 打印 22 1 8
-JMP WhileBlock8
-LINE 153
-JMP DefaultBlock12
-
-Block DefaultBlock12
-JMP WhileBlock7
-
-Block WhileBlock8
-LINE 156
-PUSH 14 常字符串指针 4 4 6
-PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 子类@打印名称 22 0 8
 RET 0
 
 FunctionEnd
