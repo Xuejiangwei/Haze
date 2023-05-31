@@ -155,6 +155,9 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& SStream)
 	EntryBlock->GenI_Code(SStream);
 
 	SStream << std::endl << GetFunctionEndHeader() << std::endl << std::endl;
+
+	EntryBlock->ClearLocalVariable();
+
 #endif // HAZE_ASS_ENABLE
 }
 

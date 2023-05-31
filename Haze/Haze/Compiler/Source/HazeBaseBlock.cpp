@@ -116,6 +116,21 @@ void HazeBaseBlock::GenI_Code(HAZE_STRING_STREAM& SStream)
 	}
 }
 
+void HazeBaseBlock::ClearLocalVariable()
+{
+	for (auto& Iter : Vector_Alloca)
+	{
+		Iter.second.reset();
+	}
+
+	Vector_Alloca.clear();
+
+	for (auto& Iter : List_ChildBlock)
+	{
+		Iter->ClearLocalVariable();
+	}
+}
+
 std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock)
 {
 	auto BB = std::make_shared<HazeBaseBlock>(Name, Parent.get(), ParentBlock.get());

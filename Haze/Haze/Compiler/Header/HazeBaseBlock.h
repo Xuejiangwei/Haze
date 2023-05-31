@@ -52,6 +52,8 @@ public:
 
 	void GenI_Code(HAZE_STRING_STREAM& SStream);
 
+	void ClearLocalVariable();
+
 public:
 	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock);
 
