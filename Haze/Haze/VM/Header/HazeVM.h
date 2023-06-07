@@ -78,7 +78,6 @@ private:
 	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;
 	std::unordered_set<HAZE_STRING> MapString;
 
-	std::unique_ptr<HazeDebugger> VMDebugger;
 	std::unique_ptr<HazeStack> VMStack;
 	std::unique_ptr<GarbageCollection> GC;
 

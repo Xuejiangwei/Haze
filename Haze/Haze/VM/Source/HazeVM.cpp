@@ -6,10 +6,13 @@
 #include "BackendParse.h"
 #include "HazeExecuteFile.h"
 
+#include "HazeDebuggerServer.h"
 #include "HazeDebugger.h"
+
 #include "HazeStack.h"
 #include "GarbageCollection.h"
 
+extern std::unique_ptr<HazeDebugger> Debugger;
 
 HazeVM::HazeVM(HazeGenType GenType) : GenType(GenType)
 {
@@ -57,10 +60,11 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 	Compiler.release();
 	HashSet_RefModule.clear();
 
-	if (!VMDebugger)
+	if (IsDebug())
 	{
-		VMDebugger = std::make_unique<HazeDebugger>(this);
-		VMDebugger->SetHook(&HazeVM::Hook, HazeDebugger::DebuggerHookType::Instruction | HazeDebugger::DebuggerHookType::Line);
+		HazeDebuggerServer::InitDebuggerServer(this);
+		//VMDebugger = std::make_unique<HazeDebugger>(this);
+		//VMDebugger->SetHook(&HazeVM::Hook, HazeDebugger::DebuggerHookType::Instruction | HazeDebugger::DebuggerHookType::Line);
 	}
 }
 
@@ -175,7 +179,10 @@ uint32 HazeVM::GetClassSize(const HAZE_STRING& ClassName)
 
 void HazeVM::OnExecLine(uint32 Line)
 {
-	VMDebugger->OnExecLine(Line);
+	if (Debugger)
+	{
+		Debugger->OnExecLine(Line);
+	}
 }
 
 void HazeVM::InstructionExecPost()

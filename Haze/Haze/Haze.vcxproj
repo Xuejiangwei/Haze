@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\StandardLibrary\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty;$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\StandardLibrary\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -154,6 +154,8 @@
     <ClCompile Include="Compiler\Source\HazeCompilerRefValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp" />
     <ClCompile Include="Debugger\Source\HazeDebugger.cpp" />
+    <ClCompile Include="Debugger\Source\HazeDebuggerBuffer.cpp" />
+    <ClCompile Include="Debugger\Source\HazeDebuggerServer.cpp" />
     <ClCompile Include="Define\Source\HazeCompare.cpp" />
     <ClCompile Include="Define\Source\HazeExecuteFile.cpp" />
     <ClCompile Include="Define\Source\HazeUtility.cpp" />
@@ -170,6 +172,7 @@
     <ClCompile Include="Source\Haze.cpp" />
     <ClCompile Include="HazeLog\Source\HazeLog.cpp" />
     <ClCompile Include="Source\HazeFilePathHelper.cpp" />
+    <ClCompile Include="ThirdParty\OpenJson\openjson.cpp" />
     <ClCompile Include="VM\Source\HazeStack.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Parse.cpp" />
@@ -204,6 +207,8 @@
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerPointerArray.h" />
     <ClInclude Include="Debugger\Header\HazeDebugger.h" />
+    <ClInclude Include="Debugger\Header\HazeDebuggerBuffer.h" />
+    <ClInclude Include="Debugger\Header\HazeDebuggerServer.h" />
     <ClInclude Include="Debugger\Header\HazeDebugInfo.h" />
     <ClInclude Include="Define\Header\HazeCompare.h" />
     <ClInclude Include="Define\Header\HazeDebugDefine.h" />
@@ -218,6 +223,7 @@
     <ClInclude Include="Header\HazeHeaderDefine.h" />
     <ClInclude Include="HazeLog\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeFilePathHelper.h" />
+    <ClInclude Include="ThirdParty\OpenJson\openjson.h" />
     <ClInclude Include="VM\Header\HazeStack.h" />
     <ClInclude Include="Header\Parse.h" />
     <ClInclude Include="Define\Header\HazeStrcut.h" />

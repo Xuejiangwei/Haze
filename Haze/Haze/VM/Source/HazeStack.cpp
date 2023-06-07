@@ -7,7 +7,10 @@
 #include "MemoryBucket.h"
 #include "GarbageCollection.h"
 
+#include "HazeDebugger.h"
+
 extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor;
+extern std::unique_ptr<HazeDebugger> Debugger;
 
 thread_local static std::unique_ptr<MemoryPool> Pool = std::make_unique<MemoryPool>();
 
@@ -35,6 +38,14 @@ void HazeStack::Start(unsigned int Address)
 	while (PC < VM->Vector_Instruction.size())
 	{
 #ifdef _DEBUG
+		while (VM->IsDebug())
+		{
+			if (!Debugger || Debugger->IsPause)
+			{
+				continue;
+			}
+		}
+
 		auto Iter = HashMap_InstructionProcessor.find(VM->Vector_Instruction[PC].InsCode);
 		if (Iter != HashMap_InstructionProcessor.end())
 		{
@@ -44,6 +55,7 @@ void HazeStack::Start(unsigned int Address)
 		{
 			return;
 		}
+
 #else
 		HashMap_InstructionProcessor[Vector_Instruction[PC].InsCode](this);
 #endif // DEBUG

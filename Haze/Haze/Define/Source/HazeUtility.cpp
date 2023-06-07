@@ -1,6 +1,9 @@
 #include "HazeUtility.h"
 
-#include <Windows.h>
+#ifdef _WIN32
+	#include <Windows.h>
+#endif
+
 #include <string>
 #include <regex>
 
@@ -100,10 +103,15 @@ HazeValueType GetNumberDefaultType(const HAZE_STRING& Str)
 	return HazeValueType::Int;
 }
 
+HAZE_STRING String2WString(const char* Str)
+{
+	return String2WString(HAZE_BINARY_STRING(Str));
+}
+
 HAZE_STRING String2WString(const HAZE_BINARY_STRING& str)
 {
 	HAZE_STRING result;
-#ifdef WIN32
+#ifdef _WIN32
 
 	//获取缓冲区大小，并申请空间，缓冲区大小按字符计算  
 	int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.size(), NULL, 0);
@@ -140,4 +148,32 @@ HAZE_BINARY_STRING WString2String(const HAZE_STRING& wstr)
 #endif // WIN32
 
 	return result;
+}
+
+char* UTF8_2_GB2312(const char* utf8)
+{
+	int len = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, NULL, 0);
+	wchar_t* wstr = new wchar_t[len + 1];
+	memset(wstr, 0, len + 1);
+	MultiByteToWideChar(CP_UTF8, 0, utf8, -1, wstr, len);
+	len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
+	char* str = new char[len + 1];
+	memset(str, 0, len + 1);
+	WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, len, NULL, NULL);
+	if (wstr) delete[] wstr;
+	return str;
+}
+
+char* GB2312_2_UFT8(const char* gb2312)
+{
+	int len = MultiByteToWideChar(CP_ACP, 0, gb2312, -1, NULL, 0);
+	wchar_t* wstr = new wchar_t[len + 1];
+	memset(wstr, 0, len + 1);
+	MultiByteToWideChar(CP_ACP, 0, gb2312, -1, wstr, len);
+	len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
+	char* str = new char[len + 1];
+	memset(str, 0, len + 1);
+	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
+	if (wstr) delete[] wstr;
+	return str;
 }

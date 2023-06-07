@@ -159,6 +159,12 @@
     <ClCompile Include="Debugger\Source\HazeDebugger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\Source\HazeDebuggerServer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\OpenJson\openjson.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -324,6 +330,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Debugger\Header\HazeDebugger.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\Header\HazeDebuggerServer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\OpenJson\openjson.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

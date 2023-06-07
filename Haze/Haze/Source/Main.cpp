@@ -23,6 +23,12 @@ void HazeInit()
 	std::locale::global(std::locale(std::locale::classic(), "", std::locale::ctype));
 };
 
+void HazeEnd()
+{
+	std::cout << std::endl << "Haze End!" << std::endl;
+	system("pause");
+}
+
 //解析文本  --->  生成字节码   --->  用虚拟机解析字节码，并执行
 int main(int ArgCount, char* ArgValue[])
 {
@@ -48,7 +54,7 @@ int main(int ArgCount, char* ArgValue[])
 
 #ifdef _DEBUG
 	
-	VM.InitVM({ {/*RootCodePath + HAZE_TEST_FOLDER + HAZE_TEST_FILE_PATH*/ MainFile , MainFile.filename().wstring().substr(0, MainFile.filename().wstring().length() - 3) /*HAZE_TEST_FILE*/ } });
+	VM.InitVM({ { MainFile , MainFile.filename().wstring().substr(0, MainFile.filename().wstring().length() - 3) } });
 
 #else
 
@@ -68,9 +74,8 @@ int main(int ArgCount, char* ArgValue[])
 	
 	VM.StartMainFunction();
 	
-	std::cout << std::endl << "Haze End!" << std::endl;
-	
-	system("pause");
+	HazeEnd();
+
 	return 0;
 }
 

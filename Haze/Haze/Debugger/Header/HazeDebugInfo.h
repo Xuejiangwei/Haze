@@ -2,6 +2,23 @@
 
 #include "Haze.h"
 
+enum HazeDebugOperatorType : uint8
+{
+	None,
+	Start,
+	StepOver,
+	StepIn,
+	StepInstruction,
+
+	AddBreakPoint,
+	DeleteBreakPoint,
+	DeleteAllBreakPoint,
+
+	Continue,
+
+	GetLocalVariable,
+};
+
 struct SourceLocation
 {
 	int64 Line;

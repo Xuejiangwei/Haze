@@ -19,7 +19,7 @@ Variable 己$1 15 父类 -12 8
 FunctionStart
 
 Block Entry
-LINE 21
+LINE 19
 PUSH 7 己$1指之年龄 15
 PUSH 14 常字符串指针 4 4 0
 PUSH 7 Address 11
@@ -34,7 +34,7 @@ Variable 己$1 15 子类 -12 8
 FunctionStart
 
 Block Entry
-LINE 65
+LINE 41
 PUSH 7 己$1指之性别 15
 PUSH 14 常字符串指针 4 4 1
 PUSH 7 Address 11
@@ -45,13 +45,22 @@ FunctionEnd
 
 Function 主函数 7
 Variable 甲$1 21 子类 0 4
+Variable 乙$2 7 4 4
 FunctionStart
 
 Block Entry
-LINE 136
-LINE 137
+LINE 49
+LINE 50
+MOV 7 乙$2 2 7 12536 3
+LINE 51
 MOV 7 甲$1之性别 15 7 10 3
-LINE 138
+LINE 52
+PUSH 15 甲$1 13 子类
+PUSH 7 Address 11
+CALL 子类@打印名称 22 0 8
+LINE 54
+MOV 7 甲$1之性别 15 7 乙$2 2
+LINE 55
 PUSH 15 甲$1 13 子类
 PUSH 7 Address 11
 CALL 子类@打印名称 22 0 8
