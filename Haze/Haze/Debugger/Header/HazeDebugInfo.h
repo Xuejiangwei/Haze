@@ -2,7 +2,7 @@
 
 #include "Haze.h"
 
-enum HazeDebugOperatorType : uint8
+enum class HazeDebugOperatorType : uint8
 {
 	None,
 	Start,
@@ -12,6 +12,7 @@ enum HazeDebugOperatorType : uint8
 
 	AddBreakPoint,
 	DeleteBreakPoint,
+	DeleteModuleAllBreakPoint,
 	DeleteAllBreakPoint,
 
 	Continue,
@@ -19,11 +20,18 @@ enum HazeDebugOperatorType : uint8
 	GetLocalVariable,
 };
 
+enum class HazeDebugInfoType : uint8
+{
+	None,
+	ProgramEnd,
+	BreakInfo,
+};
+
 struct SourceLocation
 {
-	int64 Line;
+	uint32 Line;
 
-	SourceLocation(int64 Line) : Line(Line)
+	SourceLocation(uint32 Line) : Line(Line)
 	{
 	}
 };

@@ -9,7 +9,7 @@
 #include "HazeCompilerModule.h"
 
 ASTFunction::ASTFunction(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body)
-	: Compiler(Compiler), Section(Section),
+	: Compiler(Compiler), Location(Location), Section(Section),
 	FunctionName(std::move(Name)),
 	FunctionType(std::move(Type)),
 	Vector_FunctionParam(std::move(Param)),
@@ -50,6 +50,10 @@ HazeValue* ASTFunction::CodeGen()
 		Body->CodeGen();
 	}
 	
+	if (FunctionType.PrimaryType == HazeValueType::Void)
+	{
+		Compiler->InsertLineCount(Location.Line);
+	}
 
 	if (CompilerFunction)
 	{
@@ -76,7 +80,7 @@ void ASTFunction::RegisterFunction()
 	}
 }
 
-ASTFunctionSection::ASTFunctionSection(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::unique_ptr<ASTFunction>>& Functions)
+ASTFunctionSection::ASTFunctionSection(HazeCompiler* Compiler,/* const SourceLocation& Location,*/ std::vector<std::unique_ptr<ASTFunction>>& Functions)
 	: Compiler(Compiler), Functions(std::move(Functions))
 {
 }
@@ -98,7 +102,7 @@ void ASTFunctionSection::CodeGen()
 	}
 }
 
-ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* Compiler, const SourceLocation& Location, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
+ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* Compiler, /*const SourceLocation& Location,*/ const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
 	: Compiler(Compiler), FunctionName(Name), FunctionType(Type), Vector_FunctionParam(std::move(Param))
 {
 }
@@ -120,7 +124,7 @@ void ASTFunctionDefine::CodeGen()
 	}
 }
 
-ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
+ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* Compiler, /*const SourceLocation& Location,*/ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
 	: Compiler(Compiler), Functions(std::move(Functions))
 {
 

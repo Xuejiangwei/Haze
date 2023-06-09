@@ -51,6 +51,8 @@ char* UTF8_2_GB2312(const char* utf8);
 
 char* GB2312_2_UFT8(const char* gb2312);
 
+void ReplacePathSlash(HAZE_STRING& Path);
+
 template <typename T>
 unsigned int GetSizeByType(HazeDefineType Type, T* This);
 
@@ -65,8 +67,5 @@ HAZE_BINARY_STRING ToString(T Value);
 
 template <typename T>
 HAZE_STRING ToHazeString(T Value);
-
-template <typename T>
-T GetHazeValueByBaseType(const char* Address, HazeValueType Type);
 
 #include "HazeTemplate.inl"

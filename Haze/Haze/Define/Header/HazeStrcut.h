@@ -155,7 +155,7 @@ struct HazeDefineVariable
 	HazeDefineVariable(const HazeDefineType& Type, const HAZE_STRING& Name) : Type(Type), Name(Name) {}
 };
 
-struct HazeLocalVariable
+struct HazeVariableData
 {
 	HazeDefineVariable Variable;
 	int Offset;

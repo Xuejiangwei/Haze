@@ -134,6 +134,11 @@ bool IsNumberType(HazeValueType Type)
     return HashSet_Table.find(Type) != HashSet_Table.end();
 }
 
+bool IsClassType(HazeValueType Type)
+{
+    return Type == HazeValueType::Class;
+}
+
 void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& Value)
 {
     HAZE_STRING_STREAM WSS;

@@ -519,15 +519,15 @@ void HazeExecuteFile::ReadClassTable(HazeVM* VM)
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
 			InFileStream->read(BinaryString.data(), Num);
-			VM->Vector_ClassTable[i].Vector_Member[j].MemberData.Name = String2WString(BinaryString);
+			VM->Vector_ClassTable[i].Vector_Member[j].Variable.Name = String2WString(BinaryString);
 
-			InFileStream->read(HAZE_READ(VM->Vector_ClassTable[i].Vector_Member[j].MemberData.Type.PrimaryType));
+			InFileStream->read(HAZE_READ(VM->Vector_ClassTable[i].Vector_Member[j].Variable.Type.PrimaryType));
 			InFileStream->read(HAZE_READ(Num));
 
 			InFileStream->read(BinaryString.data(), Num);
 			if (Num > 0)
 			{
-				VM->Vector_ClassTable[i].Vector_Member[j].MemberData.Type.CustomName = String2WString(BinaryString);
+				VM->Vector_ClassTable[i].Vector_Member[j].Variable.Type.CustomName = String2WString(BinaryString);
 			}
 
 			InFileStream->read(HAZE_READ(VM->Vector_ClassTable[i].Vector_Member[j].Offset));

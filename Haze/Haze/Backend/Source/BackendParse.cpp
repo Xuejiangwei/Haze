@@ -237,7 +237,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 				while (CurrLexeme == GetFunctionVariableHeader())
 				{
-					HazeLocalVariable Var;
+					HazeVariableData Var;
 					GetNextLexmeAssign_HazeString(Var.Variable.Name);
 
 					Var.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString, &BackendParse::GetNextLexmeAssign_CustomType<uint32>);

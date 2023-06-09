@@ -198,6 +198,35 @@ void HazeVM::InstructionExecPost()
 
 }
 
+uint32 HazeVM::GetNextLine(uint32 CurrLine)
+{
+	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->Extra.FunctionDescData.InstructionStartAddress;
+	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (size_t i = VMStack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
+	{
+		if (Vector_Instruction[i].InsCode == InstructionOpCode::LINE && Vector_Instruction[i].Operator[0].Extra.Line > CurrLine)
+		{
+			return Vector_Instruction[i].Operator[0].Extra.Line;
+		}
+	}
+	
+	return CurrLine + 1;
+}
+
+uint32 HazeVM::GetCurrCallFunctionLine()
+{
+	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->Extra.FunctionDescData.InstructionStartAddress;
+	for (size_t i = VMStack->GetCurrPC(); i >= StartAddress; i--)
+	{
+		if (Vector_Instruction[i].InsCode == InstructionOpCode::LINE)
+		{
+			return Vector_Instruction[i].Operator[0].Extra.Line;
+		}
+	}
+
+	return 0;
+}
+
 void HazeVM::Hook(HazeVM* VM)
 {
 	HAZE_LOG_INFO(HAZE_TEXT("ÒÑÃüÖÐ¶Ïµã\n"));

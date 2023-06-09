@@ -69,6 +69,10 @@ private:
 
 	void InstructionExecPost();
 	
+	uint32 GetNextLine(uint32 CurrLine);
+
+	uint32 GetCurrCallFunctionLine();
+
 	static void Hook(HazeVM* VM);
 
 private:

@@ -146,6 +146,6 @@ private:
 
 	int LeftParenthesesExpressionCount;
 
-	uint64 LineCount;
+	uint32 LineCount;
 	bool NeedParseNextStatement;
 };

@@ -177,3 +177,21 @@ char* GB2312_2_UFT8(const char* gb2312)
 	if (wstr) delete[] wstr;
 	return str;
 }
+
+void ReplacePathSlash(HAZE_STRING& Path)
+{
+	static HAZE_STRING WindowsPathSlash(HAZE_TEXT("\\"));
+	static HAZE_STRING PathSlash(HAZE_TEXT("/"));
+
+	for (HAZE_STRING::size_type pos(0); pos != HAZE_STRING::npos; pos += PathSlash.length())
+	{
+		if ((pos = Path.find(WindowsPathSlash, pos)) != HAZE_STRING::npos)
+		{
+			Path.replace(pos, WindowsPathSlash.length(), PathSlash);
+		}
+		else
+		{
+			break;
+		}
+	}
+}

@@ -222,18 +222,11 @@ struct ModuleData
 	}
 };
 
-struct ClassMemberData
-{
-	HazeDefineVariable MemberData;
-	uint32 Offset;
-	uint32 Size;
-};
-
 struct ClassData
 {
 	HAZE_STRING Name;
 	unsigned int Size;
-	std::vector<ClassMemberData> Vector_Member;
+	std::vector<HazeVariableData> Vector_Member;
 };
 
 struct FunctionData
@@ -242,7 +235,7 @@ struct FunctionData
 
 	HazeValueType Type;
 	std::vector<HazeDefineVariable> Vector_Param;
-	std::vector<HazeLocalVariable> Vector_Variable;
+	std::vector<HazeVariableData> Vector_Variable;
 	unsigned int InstructionNum;
 
 	union

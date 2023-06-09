@@ -488,7 +488,7 @@ std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int Prec, std::unique_ptr<ASTBase> Left)
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	while (true)
 	{
 		if (NeedParseNextStatement)
@@ -621,7 +621,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 
 std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	std::unique_ptr<ASTBase> Ret = nullptr;
 	HAZE_STRING IdentiferName = CurrLexeme;
 	std::vector<std::unique_ptr<ASTBase>> IndexExpression;
@@ -671,7 +671,7 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 
 std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	DefineVariable.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 
 	int PointerLevel = 1;
@@ -773,7 +773,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 	else if (CurrToken == HazeToken::LeftParentheses)
 	{
 		//函数指针或数组指针
-		if (ExpectNextTokenIs(HazeToken::Mul) && ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("解析错误：函数指针或者数组指针需要一个正确的名称!\n")))
+		if (ExpectNextTokenIs(HazeToken::Mul) && ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("函数指针或者数组指针需要一个正确的名称")))
 		{
 			std::vector<HazeDefineType> Vector_ParamType;
 			Vector_ParamType.push_back(DefineVariable.Type);
@@ -857,7 +857,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 
 std::unique_ptr<ASTBase> Parse::ParseStringText()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	GetNextToken();
 	HAZE_STRING Text = CurrLexeme;
 
@@ -867,7 +867,7 @@ std::unique_ptr<ASTBase> Parse::ParseStringText()
 
 std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	HazeValue Value;
 	Value.Value.Bool = CurrLexeme == TOKEN_TRUE;
 
@@ -877,7 +877,7 @@ std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	HazeValue Value;
 	HazeValueType Type = GetNumberDefaultType(CurrLexeme);
 
@@ -889,14 +889,14 @@ std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
 {
-	uint64 TempLineCount = LineCount;
-	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：若 表达式期望捕捉 (\n")))
+	uint32 TempLineCount = LineCount;
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("若 表达式期望捕捉 (")))
 	{
 		GetNextToken();
 		auto ConditionExpression = ParseExpression();
 
 		std::unique_ptr<ASTBase> IfMultiExpression = nullptr;
-		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：若 执行表达式期望捕捉 { \n")))
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("若 执行表达式期望捕捉 { ")))
 		{
 			IfMultiExpression = ParseMultiExpression();
 			GetNextToken();
@@ -933,8 +933,8 @@ std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
 
 std::unique_ptr<ASTBase> Parse::ParseForExpression()
 {
-	uint64 TempLineCount = LineCount;
-	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：循环 表达式期望捕捉 (")))
+	uint32 TempLineCount = LineCount;
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("循环 表达式期望捕捉 (")))
 	{
 		GetNextToken();
 		auto InitExpression = ParseExpression();
@@ -945,7 +945,7 @@ std::unique_ptr<ASTBase> Parse::ParseForExpression()
 		GetNextToken();
 		auto StepExpression = ParseExpression();
 
-		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：循环 表达式块期望捕捉 {")))
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("循环 表达式块期望捕捉 {")))
 		{
 			auto MultiExpression = ParseMultiExpression();
 
@@ -959,14 +959,14 @@ std::unique_ptr<ASTBase> Parse::ParseForExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseWhileExpression()
 {
-	uint64 TempLineCount = LineCount;
-	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("解析错误：当 表达式期望捕捉 (")))
+	uint32 TempLineCount = LineCount;
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("当 表达式期望捕捉 (")))
 	{
 		GetNextToken();
 		auto ConditionExpression = ParseExpression();
 
 		std::unique_ptr<ASTBase> MultiExpression = nullptr;
-		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("解析错误：当 执行表达式期望捕捉 {")))
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("当 执行表达式期望捕捉 {")))
 		{
 			MultiExpression = ParseMultiExpression();
 			
@@ -980,21 +980,21 @@ std::unique_ptr<ASTBase> Parse::ParseWhileExpression()
 
 std::unique_ptr<ASTBase> Parse::ParseBreakExpression()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	GetNextToken();
 	return std::make_unique<ASTBreakExpression>(Compiler, SourceLocation(TempLineCount));
 }
 
 std::unique_ptr<ASTBase> Parse::ParseContinueExpression()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	GetNextToken();
 	return std::make_unique<ASTContinueExpression>(Compiler, SourceLocation(TempLineCount));
 }
 
 std::unique_ptr<ASTBase> Parse::ParseReturn()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	GetNextToken();
 	auto ReturnExpression = ParseExpression();
 	return std::make_unique<ASTReturn>(Compiler, SourceLocation(TempLineCount), ReturnExpression);
@@ -1002,7 +1002,7 @@ std::unique_ptr<ASTBase> Parse::ParseReturn()
 
 std::unique_ptr<ASTBase> Parse::ParseNew()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	GetNextToken();
 
 	HazeDefineVariable Define;
@@ -1019,9 +1019,9 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 		Define.Type.PrimaryType = HazeValueType::PointerBase;
 	}
 
-	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("New expression expect (\n")))
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("生成表达式 期望 (")))
 	{
-		if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("New expression expect )\n"))) 
+		if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("生成表达式 期望 )"))) 
 		{
 			GetNextToken();
 			return std::make_unique<ASTNew>(Compiler, SourceLocation(TempLineCount), Define);
@@ -1033,7 +1033,7 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 
 std::unique_ptr<ASTBase> Parse::ParseInc()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	bool IsPre = CurrPreLexeme.first.empty();
 	std::unique_ptr<ASTBase> Expression;
 	if (IsPre)
@@ -1053,7 +1053,7 @@ std::unique_ptr<ASTBase> Parse::ParseInc()
 
 std::unique_ptr<ASTBase> Parse::ParseDec()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	bool IsPre = CurrPreLexeme.first.empty();
 	std::unique_ptr<ASTBase> Expression;
 	if (IsPre)
@@ -1073,7 +1073,7 @@ std::unique_ptr<ASTBase> Parse::ParseDec()
 
 std::unique_ptr<ASTBase> Parse::ParseThreeOperator(std::unique_ptr<ASTBase> Condition)
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	auto Iter = HashMap_OperatorPriority.find(HazeToken::ThreeOperatorStart);
 	if (Iter != HashMap_OperatorPriority.end())
 	{
@@ -1121,7 +1121,7 @@ std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 
 std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	int Level = (int)CurrLexeme.length();
 
 	GetNextToken();
@@ -1158,7 +1158,7 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 
 std::unique_ptr<ASTBase> Parse::ParseNeg()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	bool IsNumberNeg = CurrToken == HazeToken::Sub;
 	GetNextToken();
 	auto Expression = ParseExpression();
@@ -1168,14 +1168,14 @@ std::unique_ptr<ASTBase> Parse::ParseNeg()
 
 std::unique_ptr<ASTBase> Parse::ParseNullPtr()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	GetNextToken();
 	return std::make_unique<ASTNullPtr>(Compiler, SourceLocation(TempLineCount));
 }
 
 std::unique_ptr<ASTBase> Parse::ParseGetAddress()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	GetNextToken();
 	auto Expression = ParseExpression(HashMap_OperatorPriority.find(HazeToken::GetAddress)->second);
 	NeedParseNextStatement = TempLineCount != LineCount;
@@ -1185,7 +1185,7 @@ std::unique_ptr<ASTBase> Parse::ParseGetAddress()
 
 std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	std::vector<std::unique_ptr<ASTBase>> Vector_Element;
 
 	GetNextToken();
@@ -1237,7 +1237,7 @@ std::unique_ptr<ASTBase> Parse::ParseMultiExpression()
 
 std::unique_ptr<ASTFunctionSection> Parse::ParseFunctionSection()
 {
-	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function expression expect { \n")))
+	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数群期望 {")))
 	{
 		std::vector<std::unique_ptr<ASTFunction>> Functions;
 
@@ -1248,7 +1248,7 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunctionSection()
 		}
 
 		GetNextToken();
-		return std::make_unique<ASTFunctionSection>(Compiler, SourceLocation(LineCount), Functions);
+		return std::make_unique<ASTFunctionSection>(Compiler,/* SourceLocation(LineCount),*/ Functions);
 	}
 
 	return nullptr;
@@ -1256,8 +1256,8 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunctionSection()
 
 std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 {
-	uint64 TempLineCount = LineCount;
 	StackSectionSignal.push(HazeSectionSignal::Function);
+	uint32 TempLineCount = LineCount;
 
 	//获得函数返回类型及是自定义类型时获得类型名字
 	HazeDefineType FuncType;
@@ -1268,10 +1268,10 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 	}
 
 	//获得函数名
-	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("Error: Parse function expression expect correct function name \n")))
+	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("函数命名错误")))
 	{
 		HAZE_STRING FunctionName = CurrLexeme;
-		if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
+		if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
 		{
 			std::vector<HazeDefineVariable> Vector_Param;
 
@@ -1299,7 +1299,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
 					Param.Name = HAZE_MULTI_PARAM_NAME;
-					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
+					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("函数多参参数右面需要 )"));
 					Vector_Param.push_back(Param);
 
 					GetNextToken();
@@ -1317,13 +1317,14 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				}
 			}
 
-			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function body expect { \n")))
+			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
 			{
 				std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
-				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse function expression expect function body expect } \n")))
+				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("函数体需要 }")))
 				{
 					StackSectionSignal.pop();
+					TempLineCount = LineCount;
 
 					GetNextToken();
 					return std::make_unique<ASTFunction>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body);
@@ -1367,7 +1368,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 				{
 					Param.Name = HAZE_MULTI_PARAM_NAME;
-					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse class construction function expression expect function multiply param right need ) \n"));
+					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("类的构造函数多参参数右边需要 )"));
 					Vector_Param.push_back(Param);
 
 					GetNextToken();
@@ -1385,13 +1386,14 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				}
 			}
 
-			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse class construction function body expect { \n")))
+			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("类的构造函数体需要 {")))
 			{
 				std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
-				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse class construction function expression expect function body expect } \n")))
+				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("类的构造函数体需要 }")))
 				{
 					StackSectionSignal.pop();
+					TempLineCount = LineCount;
 
 					GetNextToken();
 					return std::make_unique<ASTFunction>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body);
@@ -1405,10 +1407,10 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 {
-	uint64 TempLineCount = LineCount;
+	uint32 TempLineCount = LineCount;
 	HAZE_STRING FunctionName = CurrLexeme;
 	StackSectionSignal.push(HazeSectionSignal::Function);
-	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数左边需要 (")))
 	{
 		std::vector<HazeDefineVariable> Vector_Param;
 
@@ -1438,16 +1440,17 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 			}
 		}
 
-		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse function body expect { \n")))
+		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
 		{
 			std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
-			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse main function expression expect function body expect } \n")))
+			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("函数体需要 }")))
 			{
 				StackSectionSignal.pop();
 
+				TempLineCount = LineCount;
 				GetNextToken();
-				HazeDefineType DefineType = { HazeValueType::Int, HAZE_TEXT("") };
+				HazeDefineType DefineType = { HazeValueType::Void, HAZE_TEXT("") };
 				return std::make_unique<ASTFunction>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, DefineType, Vector_Param, Body);
 			}
 		}
@@ -1463,7 +1466,7 @@ std::unique_ptr<ASTStandardLibrary> Parse::ParseStandardLibrary()
 
 	StackSectionSignal.push(HazeSectionSignal::StandardLibrary);
 
-	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse standard library expect { \n")))
+	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("标准库需要 {")))
 	{
 		std::vector<std::unique_ptr<ASTClassDefine>> Vector_ClassDefine;
 		std::vector<std::unique_ptr<ASTFunctionDefine>> Vector_FunctionDefine;
@@ -1488,7 +1491,7 @@ std::unique_ptr<ASTStandardLibrary> Parse::ParseStandardLibrary()
 		StackSectionSignal.pop();
 		GetNextToken();
 
-		return std::make_unique<ASTStandardLibrary>(Compiler, SourceLocation(LineCount), StandardLibraryName, Vector_FunctionDefine, Vector_ClassDefine);
+		return std::make_unique<ASTStandardLibrary>(Compiler, /*SourceLocation(LineCount),*/ StandardLibraryName, Vector_FunctionDefine, Vector_ClassDefine);
 	}
 
 	return nullptr;
@@ -1508,7 +1511,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 {
 	std::vector<std::unique_ptr<ASTFunctionDefine>> Vector_FunctionDefine;
 
-	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("Error: Parse standard library function section expect { \n")))
+	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("标准库函数群需要 {")))
 	{
 		GetNextToken();
 		while (CurrToken != HazeToken::RightBrace)
@@ -1524,10 +1527,10 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 			}
 
 			//获得函数名
-			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("解析错误: \n")))
+			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("函数命名错误")))
 			{
 				HAZE_STRING FunctionName = CurrLexeme;
-				if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("Error: Parse function expression expect function param left need ( \n")))
+				if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
 				{
 					std::vector<HazeDefineVariable> Vector_Param;
 
@@ -1557,7 +1560,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 						if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
 						{
 							Param.Name = HAZE_MULTI_PARAM_NAME;
-							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("Error: Parse function expression expect function multiply param right need ) \n"));
+							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("函数多参参数右面需要 )"));
 							Vector_Param.push_back(Param);
 
 							GetNextToken();
@@ -1576,13 +1579,13 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 					}
 
 					StackSectionSignal.pop();
-					Vector_FunctionDefine.push_back(std::make_unique<ASTFunctionDefine>(Compiler, SourceLocation(LineCount), FunctionName, FuncType, Vector_Param));
+					Vector_FunctionDefine.push_back(std::make_unique<ASTFunctionDefine>(Compiler, /*SourceLocation(LineCount),*/ FunctionName, FuncType, Vector_Param));
 
 				}
 			}
 		}
 
-		ExpectNextTokenIs(HazeToken::RightBrace, HAZE_TEXT("Error: Parse standard library end need } \n"));
+		ExpectNextTokenIs(HazeToken::RightBrace, HAZE_TEXT("标准库需要 }"));
 
 		GetNextToken();
 
@@ -1602,7 +1605,7 @@ std::unique_ptr<ASTBase> Parse::ParseImportModule()
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("解析引入模块<%s>错误!\n"), CurrLexeme.c_str());
+		HAZE_LOG_ERR(HAZE_TEXT("解析错误: 引入模块<%s>错误! <%s>文件<%d>行!\n"), CurrLexeme.c_str(), Compiler->GetCurrModuleName().c_str(), LineCount);
 	}
 	
 	return nullptr;
@@ -1636,13 +1639,13 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 					}
 					else
 					{
-						HAZE_LOG_ERR(HAZE_TEXT("解析类<%s>继承<%s>失败!"), Name.c_str(), CurrLexeme.c_str());
+						HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), Name.c_str(), CurrLexeme.c_str(), Compiler->GetCurrModuleName().c_str(), LineCount);
 					}
 				}
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("解析类<%s>继承<%s>失败!"), Name.c_str(), CurrLexeme.c_str());
+				HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), Name.c_str(), CurrLexeme.c_str(), Compiler->GetCurrModuleName().c_str(), LineCount);
 			}
 		}
 
@@ -1665,7 +1668,7 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 					}
 					else
 					{
-						HAZE_LOG_ERR(HAZE_TEXT("类中相同的区域<%s>只能存在一种\n"), Name.c_str());
+						HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!"), Name.c_str(), Compiler->GetCurrModuleName().c_str(), LineCount);
 					}
 				}
 				else if (CurrToken == HazeToken::Function)
@@ -1679,12 +1682,12 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 			GetNextToken();
 
 			CurrParseClass.clear();
-			return std::make_unique<ASTClass>(Compiler, SourceLocation(LineCount), Name, Vector_ParentClass, Vector_ClassData, ClassFunction);
+			return std::make_unique<ASTClass>(Compiler, /*SourceLocation(LineCount),*/ Name, Vector_ParentClass, Vector_ClassData, ClassFunction);
 		}
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("解析类名<%s>错误!"), CurrLexeme.c_str());
+		HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类名<%s>错误! <%s>文件<%d>行!"), CurrLexeme.c_str(), Compiler->GetCurrModuleName().c_str(), LineCount);
 	}
 
 	return nullptr;
@@ -1706,7 +1709,7 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 		return false;
 	};
 
-	if (ExpectNextTokenIs(HazeToken::LeftBrace, (HAZE_TEXT("expect { ") + CurrLexeme).c_str()))
+	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("类数据需要 {")))
 	{
 		GetNextToken();
 
@@ -1731,7 +1734,7 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 				}
 				else
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("Class scope only once for public"));
+					HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类的公有区域只能定义一次! <%s>文件<%d>行!\n"), Compiler->GetCurrModuleName().c_str(), LineCount);
 				}
 			}
 			else if (CurrToken == HazeToken::ClassPrivate)
@@ -1753,7 +1756,7 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 				}
 				else
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("Class scope only once for private"));
+					HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类的私有区域只能定义一次! <%s>文件<%d>行!\n"), Compiler->GetCurrModuleName().c_str(), LineCount);
 				}
 			}
 			else if (CurrToken == HazeToken::ClassProtected)
@@ -1775,14 +1778,15 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 				}
 				else
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("Class scope only once for protected"));
+					HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类的保护区域只能定义一次! <%s>文件<%d>行!\n"), Compiler->GetCurrModuleName().c_str(), LineCount);
+
 				}
 			}
 		}
 
 		if (CurrToken != HazeToken::RightBrace)
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("Parse class data section end error \n"));
+			HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类需要 }! <%s>文件<%d>行!\n"), Compiler->GetCurrModuleName().c_str(), LineCount);
 		}
 
 		GetNextToken();
@@ -1793,7 +1797,7 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 
 std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_STRING& ClassName)
 {
-	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("class function expect { ")))
+	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("类函数定义需要 {")))
 	{
 		GetNextToken();
 
@@ -1875,11 +1879,11 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 
 		if (CurrToken != HazeToken::RightBrace)
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("Parse class function section end error \n"));
+			HAZE_LOG_ERR(HAZE_TEXT("类函数需要 }"));
 		}
 
 		GetNextToken();
-		return std::make_unique<ASTClassFunctionSection>(Compiler, SourceLocation(LineCount), Vector_ClassFunction);
+		return std::make_unique<ASTClassFunctionSection>(Compiler, /*SourceLocation(LineCount),*/ Vector_ClassFunction);
 	}
 
 	return nullptr;
@@ -1892,7 +1896,7 @@ bool Parse::ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo)
 	{
 		if (ErrorInfo)
 		{
-			HAZE_LOG_ERR(ErrorInfo);
+			HAZE_LOG_ERR(HAZE_TEXT("解析错误: %s ! <%s>文件<%d>行!\n"), ErrorInfo, Compiler->GetCurrModuleName().c_str(), LineCount);
 		}
 		return false;
 	}

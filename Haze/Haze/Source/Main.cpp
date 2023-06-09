@@ -8,6 +8,11 @@
 #include "HazeLog.h"
 #include "HazeVM.h"
 
+#include "HazeDebugger.h"
+
+extern std::unique_ptr<HazeDebugger> Debugger;
+
+bool IsHazeEnd = false;
 std::wstring RootCodePath;
 
 void HazeNewHandler()
@@ -25,13 +30,29 @@ void HazeInit()
 
 void HazeEnd()
 {
+	IsHazeEnd = true;
 	std::cout << std::endl << "Haze End!" << std::endl;
 	system("pause");
+}
+
+void HazeExit()
+{
+	if (Debugger)
+	{
+		Debugger.release();
+	}
+
+	/*if (!IsHazeEnd)
+	{
+		HazeEnd();
+	}*/
 }
 
 //解析文本  --->  生成字节码   --->  用虚拟机解析字节码，并执行
 int main(int ArgCount, char* ArgValue[])
 {
+	atexit(HazeExit);
+
 	HazeInit();
 
 	std::filesystem::path ExeFile(ArgValue[0]);

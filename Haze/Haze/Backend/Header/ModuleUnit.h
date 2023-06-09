@@ -104,7 +104,7 @@ public:
 		HAZE_STRING Name;
 		HazeValueType Type;
 		std::vector<HazeDefineVariable> Vector_Param;
-		std::vector<HazeLocalVariable> Vector_Variable;
+		std::vector<HazeVariableData> Vector_Variable;
 		std::vector<FunctionBlock> Vector_Block;
 		std::vector<FunctionInstruction> Vector_Instruction;
 		InstructionFunctionType DescType;

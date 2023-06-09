@@ -29,6 +29,11 @@ void HazeDebuggerServer::InitDebuggerServer(HazeVM* VM)
 	LaunchDebuggerThread.detach();
 }
 
+void HazeDebuggerServer::SendData(char* Data, int Length, int Flags)
+{
+	send(SocketClient, Data, Length, Flags);
+}
+
 void HazeDebuggerServer::Start(HazeVM* VM)
 {
 	WORD sockVersion = MAKEWORD(2, 2);
@@ -70,7 +75,7 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 
 	//循环接收数据
 
-	while (true)
+	while (VM)
 	{
 		sockaddr_in remoteAddr;//sockaddr_in常用于socket定义和赋值,sockaddr用于函数参数
 		int nAddrlen = sizeof(remoteAddr);
@@ -95,13 +100,13 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 	}
 }
 
-static bool HandleMessage(const char* Message)
+static bool HandleMessage(char* Message)
 { 
 	Message = UTF8_2_GB2312(Message);
 	std::string Str;
 	Str += Message[0];
 	uint32 Type = StringToStandardType<uint32>(Str);
-	HAZE_LOG_INFO("%s\n", Message);
+	HAZE_LOG_INFO("handle message %s\n", Message);
 	switch ((HazeDebugOperatorType)Type)
 	{
 	case HazeDebugOperatorType::None:
@@ -131,9 +136,13 @@ static bool HandleMessage(const char* Message)
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<删除断点>操作\n"));
 		Debugger->DeleteBreakPoint(Message + 1);
 		return true;
+	case HazeDebugOperatorType::DeleteModuleAllBreakPoint:
+		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<删除模块所有断点>操作\n"));
+		Debugger->DeleteModuleAllBreakPoint(Message + 1);
+		return true;
 	case HazeDebugOperatorType::DeleteAllBreakPoint:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<删除所有断点>操作\n"));
-		Debugger->DeleteAllBreakPoint(Message + 1);
+		Debugger->DeleteAllBreakPoint();
 		return true;
 	case HazeDebugOperatorType::Continue:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<继续>操作\n"));
@@ -143,9 +152,10 @@ static bool HandleMessage(const char* Message)
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<请求临时变量数据>操作\n"));
 		{
 			open::OpenJson json;
-			Debugger->GetLocalVariable(json);
+			json["Type"] = (int)HazeDebugOperatorType::GetLocalVariable;
+			Debugger->SetJsonLocalVariable(json);
 			auto data = json.encode();
-			send(SocketClient, data.data(), data.length() , 0);
+			HazeDebuggerServer::SendData(data.data(), data.length());
 		}
 		return true;
 	default:
@@ -159,9 +169,8 @@ void HazeDebuggerServer::Recv()
 {
 	char RecvData[1024];
 	char TempRecvData[1024];
-	while (true)
+	while (Debugger)
 	{
-		int Length;
 		int Ret = recv(SocketClient, TempRecvData, 1024, MSG_PEEK);
 		if (Ret > 0)
 		{

@@ -11,6 +11,8 @@ class HazeDebuggerServer
 public:
     static void InitDebuggerServer(HazeVM* VM);
 
+    static void SendData(char* Data, int Length, int Flags = 0);
+
 private:
     static void Start(HazeVM* VM);
 

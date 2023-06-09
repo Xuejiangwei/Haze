@@ -107,6 +107,8 @@ bool IsPointerType(HazeValueType Type);
 
 bool IsNumberType(HazeValueType Type);
 
+bool IsClassType(HazeValueType Type);
+
 void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& Value);
 
 void OperatorValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Target);

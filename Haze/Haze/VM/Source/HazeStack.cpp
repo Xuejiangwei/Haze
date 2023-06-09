@@ -40,9 +40,17 @@ void HazeStack::Start(unsigned int Address)
 #ifdef _DEBUG
 		while (VM->IsDebug())
 		{
-			if (!Debugger || Debugger->IsPause)
+			if (!Debugger)
 			{
 				continue;
+			}
+			else
+			{
+				if (Debugger->IsPause)
+				{
+					continue;
+				}
+				break;
 			}
 		}
 
@@ -63,6 +71,7 @@ void HazeStack::Start(unsigned int Address)
 		PCStepInc();
 	}
 
+	Debugger->SendProgramEnd();
 	GarbageCollection(true, true);
 }
 
@@ -141,6 +150,11 @@ void HazeStack::InitStackRegister()
 
 void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 {
+	if (Debugger)
+	{
+		Debugger->AddTempBreakPoint(VM->GetNextLine(VM->GetCurrCallFunctionLine()));
+	}
+
 	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize)));
 	
 	EBP = ESP;

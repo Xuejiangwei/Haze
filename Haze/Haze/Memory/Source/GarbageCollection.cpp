@@ -35,19 +35,19 @@ void GarbageCollection::MarkClassMember(std::vector<std::pair<uint64, HazeValueT
 	for (size_t i = 0; i < ClassData->Vector_Member.size(); i++)
 	{
 		auto& Member = ClassData->Vector_Member[i];
-		if (Member.MemberData.Type.PrimaryType == HazeValueType::PointerBase)
+		if (Member.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 		{
 			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
-			Vector_MarkAddressBase.push_back({ Address, Member.MemberData.Type.SecondaryType });
+			Vector_MarkAddressBase.push_back({ Address, Member.Variable.Type.SecondaryType });
 		}
 		else if (VarType.PrimaryType == HazeValueType::PointerClass)
 		{
 			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
-			Vector_MarkAddressClass.push_back({ Address, VM->FindClass(Member.MemberData.Type.CustomName) });
+			Vector_MarkAddressClass.push_back({ Address, VM->FindClass(Member.Variable.Type.CustomName) });
 		}
 		else if (VarType.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.MemberData.Type, BaseAddress + Member.Offset);
+			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.Variable.Type, BaseAddress + Member.Offset);
 		}
 
 	}

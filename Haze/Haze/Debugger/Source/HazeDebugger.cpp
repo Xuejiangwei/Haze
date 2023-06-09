@@ -3,6 +3,8 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
 
+#include "HazeDebuggerServer.h"
+
 static HAZE_STRING GetFileName(const HAZE_CHAR*& Msg)
 {
 	bool IsNewLine = false;
@@ -45,10 +47,117 @@ void HookCall(HazeVM* VM)
 	
 }
 
-HazeDebugger::HazeDebugger(HazeVM* VM, void(*EndCall)()) : VM(VM), HookFunctionCall(&HookCall), HookType(DebuggerHookType::Line), IsPause(true),
-	EndCall(EndCall)
+void GetHazeValueByBaseType(open::OpenJson& Json, const char* Address, HazeValueType Type)
+{
+	switch (Type)
+	{
+	case HazeValueType::Bool:
+	{
+		bool Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::Byte:
+	{
+		hbyte Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::UnsignedByte:
+	{
+		uhbyte Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::Char:
+	{
+		char Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::Short:
+	{
+		short Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::UnsignedShort:
+	{
+		ushort Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::Int:
+	{
+		int Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::Float:
+	{
+		float Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::Long:
+	{
+		int64 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::Double:
+	{
+		double Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::UnsignedInt:
+	{
+		uint32 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::UnsignedLong:
+	{
+		uint64 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	break;
+	case HazeValueType::Array:
+	case HazeValueType::PointerBase:
+	case HazeValueType::PointerClass:
+	case HazeValueType::PointerFunction:
+	case HazeValueType::PointerArray:
+	case HazeValueType::PointerPointer:
+	case HazeValueType::ReferenceBase:
+	case HazeValueType::ReferenceClass:
+	{
+		uint64 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
+	}
+	default:
+		break;
+	}
+}
+
+HazeDebugger::HazeDebugger(HazeVM* VM, void(*EndCall)()) : VM(VM), EndCall(EndCall), HookFunctionCall(&HookCall), HookType(DebuggerHookType::Line),
+	IsPause(true), IsStepOver(false)
 {
 	HashMap_BreakPoint.clear();
+	HashMap_TempBreakPoint.clear();
 }
 
 HazeDebugger::~HazeDebugger()
@@ -70,37 +179,39 @@ void HazeDebugger::AddBreakPoint(const char* Message)
 	auto Msg = String2WString(Message);
 	auto HazeChar = Msg.c_str();
 
-	auto ModuleName = GetFileModuleName(HazeChar);
+	auto FileName = GetFileName(HazeChar);
+	auto ModuleName = GetModuleName(FileName);
 	uint32 Line = StringToStandardType<uint32>(HAZE_STRING(HazeChar));
 
 	auto Iter = HashMap_BreakPoint.find(ModuleName);
 	if (Iter != HashMap_BreakPoint.end())
 	{
-		Iter->second.insert(Line);
+		Iter->second.first.insert(Line);
 	}
 	else
 	{
-		HashMap_BreakPoint[ModuleName] = { Line };
+		HashMap_BreakPoint[ModuleName] = { { Line }, FileName };
 	}
 
-	HAZE_LOG_INFO(HAZE_TEXT("添加断点<%s><%d>\n"), ModuleName.c_str(), Line);
+	HAZE_LOG_INFO(HAZE_TEXT("添加断点<%s><%s><%d>\n"), ModuleName.c_str(), FileName.c_str(), Line);
 }
 
 void HazeDebugger::DeleteBreakPoint(const char* Message)
 {
-	const HAZE_CHAR* Msg = String2WString(Message).c_str();
+	auto MsgString = String2WString(Message);
+	auto Msg = MsgString.c_str();
 
 	auto FileName = GetFileName(Msg);
 	uint32 Line = StringToStandardType<uint32>(Msg);
-	
+
 	auto ModuleName = GetModuleName(FileName);
 	auto Iter = HashMap_BreakPoint.find(FileName);
 	if (Iter != HashMap_BreakPoint.end())
 	{
-		auto It = Iter->second.find(Line);
-		if (It != Iter->second.end())
+		auto It = Iter->second.first.find(Line);
+		if (It != Iter->second.first.end())
 		{
-			Iter->second.erase(It);
+			Iter->second.first.erase(It);
 		}
 		else
 		{
@@ -113,7 +224,12 @@ void HazeDebugger::DeleteBreakPoint(const char* Message)
 	}
 }
 
-void HazeDebugger::DeleteAllBreakPoint(const char* Message)
+void HazeDebugger::DeleteAllBreakPoint()
+{
+	HashMap_BreakPoint.clear();
+}
+
+void HazeDebugger::DeleteModuleAllBreakPoint(const char* Message)
 {
 	auto Msgs = String2WString(Message);
 	auto ModuleName = GetModuleName(Msgs);
@@ -121,7 +237,7 @@ void HazeDebugger::DeleteAllBreakPoint(const char* Message)
 	auto Iter = HashMap_BreakPoint.find(ModuleName);
 	if (Iter != HashMap_BreakPoint.end())
 	{
-		Iter->second.clear();
+		Iter->second.first.clear();
 	}
 
 	HAZE_LOG_ERR(HAZE_TEXT("清除模块<%s>的所有断点!\n"), ModuleName.c_str());
@@ -129,46 +245,64 @@ void HazeDebugger::DeleteAllBreakPoint(const char* Message)
 
 void HazeDebugger::OnExecLine(uint32 Line)
 {
-	if (!CurrPauseModule.first.empty())
+	HAZE_LOG_INFO(HAZE_TEXT("运行到<%d>行!\n"), Line);
+
+	auto ModuleName = VM->GetModuleNameByCurrFunction();
+	auto Iter = HashMap_BreakPoint.find(*ModuleName);
+	if (Iter != HashMap_BreakPoint.end())
 	{
-		if (Line == CurrPauseModule.second)
+		auto It = Iter->second.first.find(Line);
+		if (It != Iter->second.first.end()) 
+		{
+			if (HookType & DebuggerHookType::Line)
+			{
+				if (HookFunctionCall)
+				{
+					HookFunctionCall(VM);
+				}
+
+				CurrPauseModule = { Iter->first, Line };
+				IsPause = true;
+			}
+		}
+	}
+	
+	if (!IsPause && IsStepOver)
+	{
+		if (Line == CurrPauseModule.second && *ModuleName == CurrPauseModule.first)
 		{
 			IsPause = true;
 		}
-		else if (Line > CurrPauseModule.second)
+		else
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("断点错误!\n"));
-		}
-	}
-	else
-	{
-		for (auto& Iter : HashMap_BreakPoint)
-		{
-			auto It = Iter.second.find(Line);
-			if (It != Iter.second.end())
+			auto TempIter = HashMap_TempBreakPoint.find(*ModuleName);
+			if (TempIter != HashMap_TempBreakPoint.end())
 			{
-				auto Name = VM->GetModuleNameByCurrFunction();
-				if (*Name == Iter.first)
+				auto TempIt = TempIter->second.first.find(Line);
+				if (TempIt != TempIter->second.first.end())
 				{
 					if (HookType & DebuggerHookType::Line)
 					{
-						if (HookFunctionCall)
-						{
-							HookFunctionCall(VM);
-						}
-
-						CurrPauseModule = { Iter.first, Line };
+						CurrPauseModule = { TempIter->first, Line };
 						IsPause = true;
-						break;
+
+						TempIter->second.first.erase(TempIt);
 					}
 				}
 			}
 		}
 	}
 
+	/*if (IsStepOver && Line != CurrPauseModule.second)
+	{
+		IsPause = true;
+		CurrPauseModule.second = Line;
+	}*/
+
 	if (IsPause)
 	{
 		HAZE_LOG_INFO(HAZE_TEXT("调试器暂停<%s><%d>!\n"), CurrPauseModule.first.c_str(), Line);
+		SendBreakInfo();
 	}
 }
 
@@ -179,10 +313,12 @@ void HazeDebugger::Start()
 
 void HazeDebugger::StepOver()
 {
+	IsStepOver = true;
+
 	if (IsPause)
 	{
 		IsPause = false;
-		CurrPauseModule.second++;
+		CurrPauseModule.second = VM->GetNextLine(CurrPauseModule.second);
 	}
 	else
 	{
@@ -200,38 +336,88 @@ void HazeDebugger::StepInstruction()
 
 void HazeDebugger::Continue()
 {
-	CurrPauseModule.first.clear();
-	CurrPauseModule.second = 0;
+	ClearCurrParseModuleData();
 }
 
-void HazeDebugger::GetLocalVariable(open::OpenJson& json)
+void HazeDebugger::SetJsonLocalVariable(open::OpenJson& Json)
 {
-	auto& Info = json["Info"];
-
-	Info["Type"] = 9;
+	auto& Info = Json["LocalVariable"];
 
 	auto& Frame = VM->VMStack->GetCurrFrame();
 	if (Frame.FunctionInfo)
 	{
 		for (size_t i = 0; i < Frame.FunctionInfo->Vector_Variable.size(); i++)
 		{
-			auto Name = WString2String(Frame.FunctionInfo->Vector_Variable[i].Variable.Name);
-			Info["Var"][i]["Name"] = GB2312_2_UFT8(Name.c_str());
-
-			if (Frame.FunctionInfo->Vector_Variable[i].Variable.Type.NeedCustomName())
-			{
-
-			}
-			else if (Frame.FunctionInfo->Vector_Variable[i].Variable.Type.NeedSecondaryType())
-			{
-
-			}
-			else
-			{
-				auto Address = VM->VMStack->GetAddressByEBP(Frame.FunctionInfo->Vector_Variable[i].Offset);
-				Info["Var"][i]["Value"] = GetHazeValueByBaseType<int>(Address, Frame.FunctionInfo->Vector_Variable[i].Variable.Type.PrimaryType);
-			}
-
+			SetJsonVariableData(Info[i], Frame.FunctionInfo->Vector_Variable[i]);
 		}
+	}
+}
+
+void HazeDebugger::AddTempBreakPoint(uint32 Line)
+{
+	if (IsStepOver)
+	{
+		auto ModuleName = VM->GetModuleNameByCurrFunction();
+		HashMap_TempBreakPoint[*ModuleName].first.insert(Line);
+	}
+}
+
+void HazeDebugger::SendProgramEnd()
+{
+	open::OpenJson json;
+	json["Type"] = (int)HazeDebugInfoType::ProgramEnd;
+	auto& data = json.encode();
+	HazeDebuggerServer::SendData(const_cast<char*>(data.data()), data.length());
+}
+
+void HazeDebugger::SendBreakInfo()
+{
+	auto Iter = HashMap_BreakPoint.find(CurrPauseModule.first);
+	if (Iter != HashMap_BreakPoint.end())
+	{
+		open::OpenJson Json;
+		SetJsonType(Json, HazeDebugInfoType::BreakInfo);
+		SetJsonBreakFilePath(Json, Iter->second.second);
+		SetJsonBreakLine(Json, CurrPauseModule.second);
+		SetJsonLocalVariable(Json);
+
+		auto& data = Json.encode();
+		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), data.length());
+	}
+}
+
+void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableData& Variable, const char* Address)
+{
+	static std::string String;
+
+	String = WString2String(Variable.Variable.Name);
+	Json["Name"] = GB2312_2_UFT8(String.c_str());
+
+	auto DataAddress = VM->VMStack->GetAddressByEBP(Variable.Offset);
+	if (Address)
+	{
+		DataAddress += Variable.Offset;
+	}
+
+	if (IsClassType(Variable.Variable.Type.PrimaryType))
+	{
+		auto Class = VM->FindClass(Variable.Variable.Type.CustomName);
+		String = WString2String(Variable.Variable.Type.CustomName);
+		Json["Type"] = GB2312_2_UFT8(String.c_str());
+
+		for (size_t j = 0; j < Class->Vector_Member.size(); j++)
+		{
+			SetJsonVariableData(Json["Value"][j], Class->Vector_Member[j], DataAddress);
+		}
+	}
+	else if (Variable.Variable.Type.NeedSecondaryType())
+	{
+
+	}
+	else
+	{
+		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.PrimaryType));
+		Json["Type"] = GB2312_2_UFT8(String.c_str());
+		GetHazeValueByBaseType(Json["Value"], DataAddress, Variable.Variable.Type.PrimaryType);
 	}
 }

@@ -25,12 +25,14 @@ private:
 	HazeDefineType FunctionType;
 	std::vector<HazeDefineVariable> Vector_FunctionParam; //´Ó×óµ½ÓÒ
 	std::unique_ptr<ASTBase> Body;
+
+	SourceLocation Location;
 };
 
 class ASTFunctionSection
 {
 public:
-	ASTFunctionSection(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::unique_ptr<ASTFunction>>& Functions);
+	ASTFunctionSection(HazeCompiler* Compiler,/* const SourceLocation& Location,*/ std::vector<std::unique_ptr<ASTFunction>>& Functions);
 	~ASTFunctionSection();
 
 	void CodeGen();
@@ -43,7 +45,7 @@ private:
 class ASTClassFunctionSection
 {
 public:
-	ASTClassFunctionSection(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions);
+	ASTClassFunctionSection(HazeCompiler* Compiler, /*const SourceLocation& Location,*/ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions);
 	~ASTClassFunctionSection();
 
 	void CodeGen();
@@ -55,7 +57,7 @@ private:
 class ASTFunctionDefine
 {
 public:
-	ASTFunctionDefine(HazeCompiler* Compiler, const SourceLocation& Location, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
+	ASTFunctionDefine(HazeCompiler* Compiler,/* const SourceLocation& Location,*/ const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 	~ASTFunctionDefine();
 
 	void CodeGen();
