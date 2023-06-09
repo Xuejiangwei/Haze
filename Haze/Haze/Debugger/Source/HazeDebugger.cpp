@@ -5,6 +5,9 @@
 
 #include "HazeDebuggerServer.h"
 
+#define ENABLE_DEBUGGER_LOG 0
+
+
 static HAZE_STRING GetFileName(const HAZE_CHAR*& Msg)
 {
 	bool IsNewLine = false;
@@ -154,10 +157,11 @@ void GetHazeValueByBaseType(open::OpenJson& Json, const char* Address, HazeValue
 }
 
 HazeDebugger::HazeDebugger(HazeVM* VM, void(*EndCall)()) : VM(VM), EndCall(EndCall), HookFunctionCall(&HookCall), HookType(DebuggerHookType::Line),
-	IsPause(true), IsStepOver(false)
+	IsPause(true)
 {
 	HashMap_BreakPoint.clear();
 	HashMap_TempBreakPoint.clear();
+	HashMap_IsStepOver.clear();
 }
 
 HazeDebugger::~HazeDebugger()
@@ -193,7 +197,12 @@ void HazeDebugger::AddBreakPoint(const char* Message)
 		HashMap_BreakPoint[ModuleName] = { { Line }, FileName };
 	}
 
+#if ENABLE_DEBUGGER_LOG
+
 	HAZE_LOG_INFO(HAZE_TEXT("添加断点<%s><%s><%d>\n"), ModuleName.c_str(), FileName.c_str(), Line);
+
+#endif
+
 }
 
 void HazeDebugger::DeleteBreakPoint(const char* Message)
@@ -245,7 +254,12 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* Message)
 
 void HazeDebugger::OnExecLine(uint32 Line)
 {
+
+#if ENABLE_DEBUGGER_LOG
+
 	HAZE_LOG_INFO(HAZE_TEXT("运行到<%d>行!\n"), Line);
+
+#endif // ENABLE_DEBUGGER_LOG
 
 	auto ModuleName = VM->GetModuleNameByCurrFunction();
 	auto Iter = HashMap_BreakPoint.find(*ModuleName);
@@ -267,7 +281,7 @@ void HazeDebugger::OnExecLine(uint32 Line)
 		}
 	}
 	
-	if (!IsPause && IsStepOver)
+	if (!IsPause && CurrModuleIsStepOver())
 	{
 		if (Line == CurrPauseModule.second && *ModuleName == CurrPauseModule.first)
 		{
@@ -301,7 +315,12 @@ void HazeDebugger::OnExecLine(uint32 Line)
 
 	if (IsPause)
 	{
+#if ENABLE_DEBUGGER_LOG
+
 		HAZE_LOG_INFO(HAZE_TEXT("调试器暂停<%s><%d>!\n"), CurrPauseModule.first.c_str(), Line);
+		
+#endif
+
 		SendBreakInfo();
 	}
 }
@@ -313,7 +332,7 @@ void HazeDebugger::Start()
 
 void HazeDebugger::StepOver()
 {
-	IsStepOver = true;
+	HashMap_IsStepOver[*VM->GetModuleNameByCurrFunction()] = true;
 
 	if (IsPause)
 	{
@@ -355,7 +374,7 @@ void HazeDebugger::SetJsonLocalVariable(open::OpenJson& Json)
 
 void HazeDebugger::AddTempBreakPoint(uint32 Line)
 {
-	if (IsStepOver)
+	if (CurrModuleIsStepOver())
 	{
 		auto ModuleName = VM->GetModuleNameByCurrFunction();
 		HashMap_TempBreakPoint[*ModuleName].first.insert(Line);
@@ -368,6 +387,18 @@ void HazeDebugger::SendProgramEnd()
 	json["Type"] = (int)HazeDebugInfoType::ProgramEnd;
 	auto& data = json.encode();
 	HazeDebuggerServer::SendData(const_cast<char*>(data.data()), data.length());
+}
+
+bool HazeDebugger::CurrModuleIsStepOver()
+{
+	auto ModuleName = VM->GetModuleNameByCurrFunction();
+	auto Iter = HashMap_IsStepOver.find(*ModuleName);
+	if (Iter != HashMap_IsStepOver.end())
+	{
+		return Iter->second;
+	}
+	
+	return false;
 }
 
 void HazeDebugger::SendBreakInfo()

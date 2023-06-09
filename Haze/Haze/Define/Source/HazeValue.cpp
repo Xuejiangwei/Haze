@@ -103,6 +103,11 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
     return HazeValueType::Void;
 }
 
+bool IsVoidType(HazeValueType Type)
+{
+    return Type == HazeValueType::Void;
+}
+
 bool IsHazeDefaultTypeAndVoid(HazeValueType Type)
 {
     return HazeValueType::Void <= Type && Type <= HazeValueType::UnsignedLong;

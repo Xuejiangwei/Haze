@@ -50,6 +50,13 @@ struct HazeDefineType
 			|| CustomName != InType.CustomName;
 	}
 
+	void Reset()
+	{
+		PrimaryType = HazeValueType::Void;
+		SecondaryType = HazeValueType::Void;
+		CustomName.clear();
+	}
+
 	bool NeedSecondaryType() const { return NeedSecondaryType(*this); }
 
 	bool NeedCustomName() const { return NeedCustomName(*this); }

@@ -283,8 +283,17 @@ ASTReturn::~ASTReturn()
 std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 {
 	std::shared_ptr<HazeCompilerValue> RetValue = Expression ? Expression->CodeGen() : Compiler->GetConstantValueInt(0);
-	Compiler->InsertLineCount(Location.Line);
-	return Compiler->CreateRet(RetValue);
+
+	if (Expression ? RetValue->GetValueType() == Compiler->GetCurrModule()->GetCurrFunction()->GetFunctionType() : IsVoidType(Compiler->GetCurrModule()->GetCurrFunction()->GetFunctionType().PrimaryType))
+	{
+		return Compiler->CreateRet(RetValue);
+	}
+	else
+	{
+		HAZE_LOG_ERR(HAZE_TEXT("返回值类型错误! <%s>文件<%s>函数<%d>行\n"), Compiler->GetCurrModuleName().c_str(), Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), Location.Line);
+	}
+
+	return nullptr;
 }
 
 ASTNew::ASTNew(HazeCompiler* Compiler, const SourceLocation& Location, const HazeDefineVariable& Define) : ASTBase(Compiler, Location, Define)

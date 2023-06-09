@@ -105,7 +105,7 @@ void HazeCompiler::InsertLineCount(int64 LineCount)
 {
 	if (VM->IsDebug() && InsertBaseBlock)
 	{
-		std::cout << "HazeCompiler line " << LineCount << std::endl;
+		HAZE_LOG_INFO("HazeCompiler line %d\n", LineCount);
 		InsertBaseBlock->PushIRCode(GetInstructionString(InstructionOpCode::LINE) + (HAZE_TEXT(" ") + HAZE_TO_HAZE_STR(LineCount)) + HAZE_TEXT("\n"));
 	}
 }
@@ -695,6 +695,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArray(std::share
 	
 	auto& Type = const_cast<HazeDefineType&>(Pointer->GetValueType());
 	Type.PrimaryType = HazeValueType::PointerBase;
+	Type.SecondaryType = Array->GetValueType().SecondaryType;
+	Type.CustomName = Array->GetValueType().CustomName;
 
 	auto Ret = CreateMov(Pointer, Array);
 	if (Index)

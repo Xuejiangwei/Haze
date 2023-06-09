@@ -97,6 +97,8 @@ HazeValueType GetValueTypeByToken(HazeToken Token);
 
 HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2);
 
+bool IsVoidType(HazeValueType Type);
+
 bool IsHazeDefaultTypeAndVoid(HazeValueType Type);
 
 bool IsHazeDefaultType(HazeValueType Type);

@@ -672,6 +672,8 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 {
 	uint32 TempLineCount = LineCount;
+	DefineVariable.Type.Reset();
+
 	DefineVariable.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 
 	int PointerLevel = 1;
@@ -739,7 +741,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			//函数调用
 			return std::make_unique<ASTVariableDefine>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), DefineVariable, nullptr);
 		}
-		else if (DefineVariable.Type.PrimaryType == HazeValueType::Class )
+		else if (DefineVariable.Type.PrimaryType == HazeValueType::Class)
 		{
 			if (CurrToken == HazeToken::LeftParentheses)
 			{
@@ -761,10 +763,10 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("类对象定义需要括号\"(\" !\n"));
+				HAZE_LOG_ERR(HAZE_TEXT("解析错误 类对象定义需要括号\"(\" <%s>文件<%d>行!!\n"), Compiler->GetCurrModuleName().c_str(), LineCount);
+
 			}
 		}
-		
 		else
 		{
 			return std::make_unique<ASTVariableDefine>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), DefineVariable, nullptr, std::move(ArraySize), PointerLevel);
@@ -826,6 +828,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 				}
 				else if (CurrToken == HazeToken::Array)
 				{
+					DefineVariable.Type.SecondaryType = DefineVariable.Type.PrimaryType;
 					DefineVariable.Type.PrimaryType = HazeValueType::PointerArray;
 
 					GetNextToken();

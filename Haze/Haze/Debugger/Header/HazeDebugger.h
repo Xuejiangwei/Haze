@@ -58,6 +58,8 @@ private:
 		CurrPauseModule.second = 0; 
 	}
 
+	bool CurrModuleIsStepOver();
+
 	void SetJsonType(open::OpenJson& Json, HazeDebugInfoType Type) { Json["Type"] = (int)Type; }
 	
 	void SetJsonBreakFilePath(open::OpenJson& Json, HAZE_STRING Path)
@@ -85,6 +87,6 @@ private:
 	std::pair<HAZE_STRING, uint32> CurrPauseModule;
 	bool IsPause;
 
-	bool IsStepOver;
+	std::unordered_map<HAZE_STRING, bool> HashMap_IsStepOver;
 };
 
