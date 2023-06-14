@@ -70,7 +70,7 @@ int main(int ArgCount, char* ArgValue[])
 	std::filesystem::create_directory(RootCodePath + HAZE_FILE_INTER);
 	std::filesystem::create_directory(RootCodePath + HAZE_FILE_PATH_BIN);
 
-	HazeVM VM(HazeGenType::Debug);
+	HazeVM VM(HazeGenType::Release);
 
 
 #ifdef _DEBUG

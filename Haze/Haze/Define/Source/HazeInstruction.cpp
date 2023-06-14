@@ -179,7 +179,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
-			void* Dst = GetAddressByOperator(Stack, Operator[0]);
+ 			void* Dst = GetAddressByOperator(Stack, Operator[0]);
 			uint64 Address = (uint64)GetAddressByOperator(Stack, Operator[1]);
 			memcpy(Dst, &Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 		}

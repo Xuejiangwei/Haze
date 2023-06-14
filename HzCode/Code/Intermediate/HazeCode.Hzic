@@ -18,39 +18,30 @@ Variable 乙$3 7 4372 4
 FunctionStart
 
 Block Entry
-LINE 6
-LINE 7
 PUSH 15 我的五子棋$1 13 五子棋
 PUSH 7 Address 11
 CALL 五子棋@开始游戏 22 0 8
-LINE 8
 MOV 1 Temp_R0 9 1 1 3
 BIT_XOR 1 Temp_R0 9 1 0 3
 CMP 1 Temp_R0 9 1 1 3
 JE WhileBlock1 WhileBlock2
 
 Block WhileBlock1
-LINE 10
 MOV 7 甲$2 2 7 0 3
-LINE 11
 MOV 7 乙$3 2 7 0 3
 LEA 14 Temp_R0 9 7 7 乙$3 2
 LEA 14 Temp_R1 9 7 7 甲$2 2
-LINE 12
 PUSH 14 Temp_R0 9 7
 PUSH 14 Temp_R1 9 7
 PUSH 14 常字符串指针 4 4 0
 PUSH 7 Address 11
 CALL 输入 22 3 24
-LINE 13
 PUSH 7 玩家默认颜色 1
 PUSH 7 乙$3 2
 PUSH 7 甲$2 2
 PUSH 15 我的五子棋$1 13 五子棋
 PUSH 7 Address 11
 CALL 五子棋@放子 22 3 20
-LINE 15
-LINE 15
 PUSH 7 玩家默认颜色 1
 PUSH 15 我的五子棋$1 13 五子棋
 PUSH 7 Address 11
@@ -59,33 +50,27 @@ CMP 1 Ret_R 6 1 1 3
 JE IfThenBlock3 DefaultBlock4
 
 Block IfThenBlock3
-LINE 17
 PUSH 14 常字符串指针 4 4 1
 PUSH 7 Address 11
 CALL 打印 22 1 8
 JMP WhileBlock2
-LINE 18
 JMP DefaultBlock4
 
 Block DefaultBlock4
 LEA 14 Temp_R0 9 7 7 乙$3 2
 LEA 14 Temp_R1 9 7 7 甲$2 2
-LINE 21
 PUSH 7 AI默认颜色 1
 PUSH 14 Temp_R0 9 7
 PUSH 14 Temp_R1 9 7
 PUSH 15 我的五子棋$1 13 五子棋
 PUSH 7 Address 11
 CALL 五子棋@模拟计算AI放子 22 3 28
-LINE 22
 PUSH 7 AI默认颜色 1
 PUSH 7 乙$3 2
 PUSH 7 甲$2 2
 PUSH 15 我的五子棋$1 13 五子棋
 PUSH 7 Address 11
 CALL 五子棋@放子 22 3 20
-LINE 23
-LINE 23
 PUSH 7 AI默认颜色 1
 PUSH 15 我的五子棋$1 13 五子棋
 PUSH 7 Address 11
@@ -94,23 +79,19 @@ CMP 1 Ret_R 6 1 1 3
 JE IfThenBlock5 DefaultBlock6
 
 Block IfThenBlock5
-LINE 25
 PUSH 14 常字符串指针 4 4 2
 PUSH 7 Address 11
 CALL 打印 22 1 8
 JMP WhileBlock2
-LINE 26
 JMP DefaultBlock6
 
 Block DefaultBlock6
 JMP WhileBlock1
 
 Block WhileBlock2
-LINE 30
 PUSH 14 常字符串指针 4 4 3
 PUSH 7 Address 11
 CALL 打印 22 1 8
-LINE 31
 RET 0
 
 FunctionEnd

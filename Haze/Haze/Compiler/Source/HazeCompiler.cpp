@@ -513,9 +513,13 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovPV(std::shared_ptr<Haz
 	{
 		Alloca->StoreValue(Value);
 
-		HazeDefineType& ValueType = const_cast<HazeDefineType&>(Alloca->GetValueType());
-		ValueType.PrimaryType = ValueType.SecondaryType;
-		ValueType.SecondaryType = HazeValueType::Void;
+		HazeDefineType& AllocaValueType = const_cast<HazeDefineType&>(Alloca->GetValueType());
+		auto& ValueValueType = Value->GetValueType();
+		
+		AllocaValueType.PrimaryType = ValueValueType.SecondaryType;
+		AllocaValueType.CustomName = ValueValueType.CustomName;
+
+		AllocaValueType.SecondaryType =  HazeValueType::Void;
 
 		return GetCurrModule()->GenIRCode_BinaryOperater(Alloca, Value, InstructionOpCode::MOVPV);
 	}
