@@ -130,7 +130,7 @@ public:
 	};
 
 private:
-	bool IsStdLib;
+	HazeLibraryType LibraryType;
 
 	HAZE_STRING Name;
 

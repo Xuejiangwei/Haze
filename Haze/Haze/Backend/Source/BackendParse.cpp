@@ -91,7 +91,7 @@ void BackendParse::Parse_I_Code()
 {
 	//Standard lib
 	GetNextLexeme();
-	CurrParseModule->IsStdLib = StringToStandardType<uint32>(CurrLexeme);
+	CurrParseModule->LibraryType = (HazeLibraryType)StringToStandardType<uint32>(CurrLexeme);
 
 	//Global data
 	GetNextLexeme();
@@ -217,7 +217,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 			if (CurrLexeme == GetFunctionLabelHeader())
 			{
-				Table.Vector_Function[i].DescType = (InstructionFunctionType)CurrParseModule->IsStdLib;
+				Table.Vector_Function[i].DescType = GetFunctionTypeByLibraryType(CurrParseModule->LibraryType);
 
 				GetNextLexmeAssign_HazeString(Table.Vector_Function[i].Name);
 
@@ -392,7 +392,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::CALL:
 	{
 		InstructionData OperatorOne;
-
+		InstructionData OperatorTwo;
 
 		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
 
@@ -401,14 +401,9 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamNum);
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamByteSize);
 
-		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::PointerFunction)
-		{
-			Instruction.Operator = { OperatorOne, InstructionData() };
-		}
-		else
-		{
-			Instruction.Operator = { OperatorOne };
-		}
+		GetNextLexmeAssign_HazeString(OperatorTwo.Variable.Name);
+
+		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
 	break;
 	case InstructionOpCode::NEW:

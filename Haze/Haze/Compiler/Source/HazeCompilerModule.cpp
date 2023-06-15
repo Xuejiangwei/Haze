@@ -18,7 +18,7 @@
 
 
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* Compiler, const HAZE_STRING& ModuleName)
-	: Compiler(Compiler), IsStdLib(false)
+	: Compiler(Compiler), ModuleLibraryType(HazeLibraryType::Normal)
 {
 #if HAZE_I_CODE_ENABLE
 
@@ -41,9 +41,9 @@ const HAZE_STRING& HazeCompilerModule::GetName() const
 	return *Compiler->GetModuleName(this);
 }
 
-void HazeCompilerModule::MarkStandardLibrary()
+void HazeCompilerModule::MarkLibraryType(HazeLibraryType Type)
 {
-	IsStdLib = true;
+	ModuleLibraryType = Type;
 }
 
 void HazeCompilerModule::GenCodeFile()
@@ -657,7 +657,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 
 	FunctionCall(SStream, CallFunction->GetName(), Size, Param, ThisPointerTo);
 
-	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << CAST_UINT32(HazeValueType::Function) << " " << Param.size() << " " << Size << std::endl;
+	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << CallFunction->GetName() << " " << CAST_UINT32(HazeValueType::Function) << " " << Param.size() 
+		<< " " << Size << " " << CallFunction->GetModule()->GetName() << std::endl;
 	BB->PushIRCode(SStream.str());
 
 	auto RetRegister = HazeCompiler::GetRegister(RET_REGISTER);
@@ -688,7 +689,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 
 	FunctionCall(SStream, VarName, Size, Param, ThisPointerTo);
 
-	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << VarName << " " << CAST_UINT32(HazeValueType::PointerFunction) << " " << Param.size() << " " << Size << std::endl;
+	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << VarName << " " << CAST_UINT32(HazeValueType::PointerFunction) << " " << Param.size() 
+		<< " " << Size << " " << Compiler->GetCurrModuleName() << std::endl;
 	BB->PushIRCode(SStream.str());
 
 	return HazeCompiler::GetRegister(RET_REGISTER);
@@ -985,9 +987,9 @@ void HazeCompilerModule::GenICode()
 	//堆栈 4个字节
 	//FS_Ass << 1024 << std::endl;
 
-	//是不是标准库
+	//库类型
 	HAZE_STRING_STREAM HSS_I_Code;
-	HSS_I_Code << IsStdLib << std::endl;
+	HSS_I_Code << CAST_UINT32(ModuleLibraryType) << std::endl;
 	/*
 	*	全局数据 ：	个数
 	*				数据名 数据类型 数据

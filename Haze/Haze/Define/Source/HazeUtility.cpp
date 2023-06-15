@@ -195,3 +195,51 @@ void ReplacePathSlash(HAZE_STRING& Path)
 		}
 	}
 }
+
+HazeLibraryType GetHazeLibraryTypeByToken(HazeToken Token)
+{
+	switch (Token)
+	{
+	case HazeToken::StandardLibrary:
+		return HazeLibraryType::Standard;
+		break;
+	case HazeToken::DLLLibrary:
+		return HazeLibraryType::DLL;
+		break;
+	default:
+		return HazeLibraryType::Normal;
+		break;
+	}
+}
+
+InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType Type)
+{
+	switch (Type)
+	{
+	case HazeLibraryType::Normal:
+		return InstructionFunctionType::HazeFunction;
+	case HazeLibraryType::Standard:
+		return InstructionFunctionType::StdLibFunction;
+	case HazeLibraryType::DLL:
+		return InstructionFunctionType::DLLLibFunction;
+	default:
+		return InstructionFunctionType::HazeFunction;
+	}
+}
+
+HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& FilePath)
+{
+	auto Index = FilePath.find_last_of(HAZE_TEXT("\\"));
+	if (Index != HAZE_STRING::npos)
+	{
+		return FilePath.substr(Index + 1, FilePath.length() - Index - 1 - 3);
+	}
+
+	Index = FilePath.find_last_of(HAZE_TEXT("/"));
+	if (Index != HAZE_STRING::npos)
+	{
+		return FilePath.substr(Index + 1, FilePath.length() - Index - 1 - 3);
+	}
+
+	return HAZE_TEXT("None");
+}

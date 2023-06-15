@@ -79,7 +79,7 @@ void HazeVM::StartMainFunction()
 	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
 	if (Iter != HashMap_FunctionTable.end())
 	{
-		VMStack->Start(Vector_FunctionTable[Iter->second].Extra.FunctionDescData.InstructionStartAddress);
+		VMStack->Start(Vector_FunctionTable[Iter->second].FunctionDescData.InstructionStartAddress);
 	}
 }
 
@@ -200,7 +200,7 @@ void HazeVM::InstructionExecPost()
 
 uint32 HazeVM::GetNextLine(uint32 CurrLine)
 {
-	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->Extra.FunctionDescData.InstructionStartAddress;
+	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
 	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
 	for (size_t i = VMStack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
 	{
@@ -215,7 +215,7 @@ uint32 HazeVM::GetNextLine(uint32 CurrLine)
 
 uint32 HazeVM::GetCurrCallFunctionLine()
 {
-	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->Extra.FunctionDescData.InstructionStartAddress;
+	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
 	for (size_t i = VMStack->GetCurrPC(); i >= StartAddress; i--)
 	{
 		if (Vector_Instruction[i].InsCode == InstructionOpCode::LINE)

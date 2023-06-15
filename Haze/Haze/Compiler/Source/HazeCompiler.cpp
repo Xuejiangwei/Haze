@@ -122,7 +122,7 @@ std::unique_ptr<HazeCompilerModule>& HazeCompiler::GetCurrModule()
 
 bool HazeCompiler::CurrModuleIsStdLib()
 {
-	return GetCurrModule()->IsStandardLibrary();
+	return GetCurrModule()->GetModuleLibraryType() == HazeLibraryType::Standard;
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompiler::GetFunction(const HAZE_STRING& Name)

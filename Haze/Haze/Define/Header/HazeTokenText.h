@@ -106,6 +106,7 @@
 #define TOKEN_DEFINE					HAZE_TEXT("定义")
 
 #define TOKEN_STANDARD_LIBRARY			HAZE_TEXT("标准库")
+#define TOKEN_DLL_LIBRARY				HAZE_TEXT("动态库")
 #define TOKEN_IMPORT_MODULE				HAZE_TEXT("引")
 
 #define TOKEN_MULTI_VARIABLE			HAZE_TEXT("...")

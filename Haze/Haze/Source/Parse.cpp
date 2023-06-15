@@ -7,7 +7,7 @@
 #include "ASTBase.h"
 #include "ASTFunction.h"
 #include "ASTClass.h"
-#include "ASTStandardLibrary.h"
+#include "ASTLibrary.h"
 
 #include "HazeCompiler.h"
 
@@ -113,6 +113,7 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_DEFINE, HazeToken::Define},
 
 	{TOKEN_STANDARD_LIBRARY, HazeToken::StandardLibrary},
+	{TOKEN_DLL_LIBRARY, HazeToken::DLLLibrary},
 	{TOKEN_IMPORT_MODULE, HazeToken::ImportModule},
 
 	{TOKEN_MULTI_VARIABLE, HazeToken::MultiVariable},
@@ -279,8 +280,9 @@ void Parse::ParseContent()
 		}
 		break;
 		case HazeToken::StandardLibrary:
+		case HazeToken::DLLLibrary:
 		{
-			auto AST = ParseStandardLibrary();
+			auto AST = ParseLibrary();
 			AST->CodeGen();
 		}
 		break;
@@ -1462,8 +1464,9 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 	return nullptr;
 }
 
-std::unique_ptr<ASTStandardLibrary> Parse::ParseStandardLibrary()
+std::unique_ptr<ASTLibrary> Parse::ParseLibrary()
 {
+	HazeLibraryType LibType = GetHazeLibraryTypeByToken(CurrToken);
 	GetNextToken();
 	HAZE_STRING StandardLibraryName = CurrLexeme;
 
@@ -1479,7 +1482,7 @@ std::unique_ptr<ASTStandardLibrary> Parse::ParseStandardLibrary()
 		{
 			if (CurrToken == HazeToken::Function)
 			{
-				auto Vector_Function = ParseStandardLibrary_FunctionDefine();
+				auto Vector_Function = ParseLibrary_FunctionDefine();
 				for (auto& Iter : Vector_Function)
 				{
 					Vector_FunctionDefine.push_back(std::move(Iter));
@@ -1487,20 +1490,20 @@ std::unique_ptr<ASTStandardLibrary> Parse::ParseStandardLibrary()
 			}
 			else if (CurrToken == HazeToken::Class)
 			{
-				Vector_ClassDefine.push_back(ParseStandardLibrary_ClassDefine());
+				Vector_ClassDefine.push_back(ParseLibrary_ClassDefine());
 			}
 		}
 
 		StackSectionSignal.pop();
 		GetNextToken();
 
-		return std::make_unique<ASTStandardLibrary>(Compiler, /*SourceLocation(LineCount),*/ StandardLibraryName, Vector_FunctionDefine, Vector_ClassDefine);
+		return std::make_unique<ASTLibrary>(Compiler, /*SourceLocation(LineCount),*/ StandardLibraryName, LibType, Vector_FunctionDefine, Vector_ClassDefine);
 	}
 
 	return nullptr;
 }
 
-std::unique_ptr<ASTClassDefine> Parse::ParseStandardLibrary_ClassDefine()
+std::unique_ptr<ASTClassDefine> Parse::ParseLibrary_ClassDefine()
 {
 	CurrParseClass = CurrLexeme;
 	CurrParseClass.clear();
@@ -1510,7 +1513,7 @@ std::unique_ptr<ASTClassDefine> Parse::ParseStandardLibrary_ClassDefine()
 	return nullptr;
 }
 
-std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_FunctionDefine()
+std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefine()
 {
 	std::vector<std::unique_ptr<ASTFunctionDefine>> Vector_FunctionDefine;
 
@@ -1530,7 +1533,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 			}
 
 			//获得函数名
-			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("函数命名错误")))
+			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("库函数命名错误")))
 			{
 				HAZE_STRING FunctionName = CurrLexeme;
 				if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
@@ -1566,7 +1569,6 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("函数多参参数右面需要 )"));
 							Vector_Param.push_back(Param);
 
-							GetNextToken();
 							break;
 						}
 
@@ -1583,15 +1585,12 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseStandardLibrary_Func
 
 					StackSectionSignal.pop();
 					Vector_FunctionDefine.push_back(std::make_unique<ASTFunctionDefine>(Compiler, /*SourceLocation(LineCount),*/ FunctionName, FuncType, Vector_Param));
-
+					GetNextToken();
 				}
 			}
 		}
 
-		ExpectNextTokenIs(HazeToken::RightBrace, HAZE_TEXT("标准库需要 }"));
-
 		GetNextToken();
-
 		//return std::make_unique<ASTStandardLibrary>(Compiler, SourceLocation(LineCount) StandardLibraryName, Vector_FunctionDefine);
 	}
 

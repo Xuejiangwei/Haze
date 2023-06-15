@@ -16,6 +16,8 @@ public:
 
 	static bool AddStdLib(HAZE_STRING LibName, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>* HashMap);
 
+	static void InitializeStdLibs();
+
 private:
 
 };

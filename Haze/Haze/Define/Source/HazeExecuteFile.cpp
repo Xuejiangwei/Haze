@@ -552,7 +552,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 		VM->HashMap_FunctionTable[String2WString(BinaryString)] = (uint32)i;
 
 		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Type));
-		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Extra.FunctionDescData.Type));
+		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].FunctionDescData.Type));
 
 		InFileStream->read(HAZE_READ(Num));
 		VM->Vector_FunctionTable[i].Vector_Param.resize(Num);
@@ -594,7 +594,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 		}
 
 		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].InstructionNum));
-		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Extra.FunctionDescData.InstructionStartAddress));
+		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].FunctionDescData.InstructionStartAddress));
 	}
 }
 
@@ -615,14 +615,14 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* VM)
 	for (auto& Iter : VM->HashMap_FunctionTable)
 	{
 		auto& Function = VM->Vector_FunctionTable[Iter.second];
-		if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
+		if (Function.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
 		{
 			for (auto& I : Hash_MapStdLib)
 			{
 				auto P = I.second->find(Iter.first);
 				if (P != I.second->end())
 				{
-					Function.Extra.StdLibFunction = P->second;
+					Function.FunctionDescData.StdLibFunction = P->second;
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-0
+2
 GlobalDataTable
 0
 StringTable
@@ -7,13 +7,10 @@ ClassTable
 0
 FunctionTable
 1
-Function 主函数 0
+Function 显示窗口 7
 FunctionStart
 
 Block Entry
-PUSH 7 Address 11
-CALL 显示窗口 22 0 0 OpenGL接口
-RET 0
 
 FunctionEnd
 

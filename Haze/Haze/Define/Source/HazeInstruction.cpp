@@ -3,9 +3,12 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
 
+#include "HazeLibraryManager.h"
+
 #define HAZE_CALL_LOG				0
 
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
+extern std::unique_ptr<HazeLibraryManager> HazeLibManager;
 
 static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 {
@@ -736,7 +739,7 @@ public:
 				int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
 				auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
 
-				if (Function.Extra.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
+				if (Function.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 				{
 					Stack->OnCall(&Function, Operator[0].Extra.Call.ParamByteSize);
 				}
@@ -745,7 +748,15 @@ public:
 					uint32 TempEBP = Stack->EBP;
 					Stack->EBP = Stack->ESP;
 
-					Function.Extra.StdLibFunction(Stack, &Function, Operator[0].Extra.Call.ParamNum);
+					if (Function.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
+					{
+						Function.FunctionDescData.StdLibFunction(Stack, &Function, Operator[0].Extra.Call.ParamNum);
+					}
+					else if (Function.FunctionDescData.Type == InstructionFunctionType::DLLLibFunction)
+					{
+						HazeLibManager->GetDLLFunctionAddress(Operator[1].Variable.Name, Operator[0].Variable.Name);
+					}
+
 
 					Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
 					Stack->EBP = TempEBP;

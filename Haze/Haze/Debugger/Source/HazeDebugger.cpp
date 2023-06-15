@@ -23,26 +23,9 @@ static HAZE_STRING GetFileName(const HAZE_CHAR*& Msg)
 	return FileName;
 }
 
-static HAZE_STRING GetModuleName(const HAZE_STRING& FilePath)
-{
-	auto Index = FilePath.find_last_of(HAZE_TEXT("\\"));
-	if (Index != HAZE_STRING::npos)
-	{
-		return FilePath.substr(Index + 1, FilePath.length() - Index - 1 - 3);
-	}
-
-	Index = FilePath.find_last_of(HAZE_TEXT("/"));
-	if (Index != HAZE_STRING::npos)
-	{
-		return FilePath.substr(Index + 1, FilePath.length() - Index - 1 - 3);
-	}
-
-	return HAZE_TEXT("None");
-}
-
 static  HAZE_STRING GetFileModuleName(const HAZE_CHAR*& FilePath)
 {
-	return GetModuleName(GetFileName(FilePath));
+	return GetModuleNameByFilePath(GetFileName(FilePath));
 }
 
 void HookCall(HazeVM* VM)
@@ -184,7 +167,7 @@ void HazeDebugger::AddBreakPoint(const char* Message)
 	auto HazeChar = Msg.c_str();
 
 	auto FileName = GetFileName(HazeChar);
-	auto ModuleName = GetModuleName(FileName);
+	auto ModuleName = GetModuleNameByFilePath(FileName);
 	uint32 Line = StringToStandardType<uint32>(HAZE_STRING(HazeChar));
 
 	auto Iter = HashMap_BreakPoint.find(ModuleName);
@@ -213,7 +196,7 @@ void HazeDebugger::DeleteBreakPoint(const char* Message)
 	auto FileName = GetFileName(Msg);
 	uint32 Line = StringToStandardType<uint32>(Msg);
 
-	auto ModuleName = GetModuleName(FileName);
+	auto ModuleName = GetModuleNameByFilePath(FileName);
 	auto Iter = HashMap_BreakPoint.find(FileName);
 	if (Iter != HashMap_BreakPoint.end())
 	{
@@ -241,7 +224,7 @@ void HazeDebugger::DeleteAllBreakPoint()
 void HazeDebugger::DeleteModuleAllBreakPoint(const char* Message)
 {
 	auto Msgs = String2WString(Message);
-	auto ModuleName = GetModuleName(Msgs);
+	auto ModuleName = GetModuleNameByFilePath(Msgs);
 
 	auto Iter = HashMap_BreakPoint.find(ModuleName);
 	if (Iter != HashMap_BreakPoint.end())

@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty;$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\StandardLibrary\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty;$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\Library\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -132,7 +132,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AST\Source\ASTStandardLibrary.cpp" />
+    <ClCompile Include="AST\Source\ASTLibrary.cpp" />
     <ClCompile Include="AST\Source\ASTBase.cpp" />
     <ClCompile Include="AST\Source\ASTClass.cpp" />
     <ClCompile Include="AST\Source\ASTFunction.cpp" />
@@ -173,11 +173,12 @@
     <ClCompile Include="HazeLog\Source\HazeLog.cpp" />
     <ClCompile Include="Source\HazeFilePathHelper.cpp" />
     <ClCompile Include="ThirdParty\OpenJson\openjson.cpp" />
+    <ClCompile Include="VM\Source\HazeLibraryManager.cpp" />
     <ClCompile Include="VM\Source\HazeStack.cpp" />
     <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Parse.cpp" />
-    <ClCompile Include="StandardLibrary\Source\HazeStandardLibraryBase.cpp" />
-    <ClCompile Include="StandardLibrary\Source\HazeStream.cpp" />
+    <ClCompile Include="Library\Source\HazeStandardLibraryBase.cpp" />
+    <ClCompile Include="Library\Source\HazeStream.cpp" />
     <ClCompile Include="Memory\Source\GarbageCollection.cpp" />
     <ClCompile Include="VM\Source\HazeVM.cpp" />
     <ClCompile Include="Memory\Source\MemoryBucket.cpp" />
@@ -188,7 +189,7 @@
     <ClInclude Include="AST\Header\ASTBase.h" />
     <ClInclude Include="AST\Header\ASTClass.h" />
     <ClInclude Include="AST\Header\ASTFunction.h" />
-    <ClInclude Include="AST\Header\ASTStandardLibrary.h" />
+    <ClInclude Include="AST\Header\ASTLibrary.h" />
     <ClInclude Include="Backend\Header\BackendParse.h" />
     <ClInclude Include="Backend\Header\ModuleUnit.h" />
     <ClInclude Include="Compiler\Header\HazeBaseBlock.h" />
@@ -214,6 +215,7 @@
     <ClInclude Include="Define\Header\HazeDebugDefine.h" />
     <ClInclude Include="Define\Header\HazeExecuteFile.h" />
     <ClInclude Include="Define\Header\HazeInstruction.h" />
+    <ClInclude Include="Define\Header\HazeLibraryType.h" />
     <ClInclude Include="Define\Header\HazeToken.h" />
     <ClInclude Include="Define\Header\HazeTokenText.h" />
     <ClInclude Include="Define\Header\HazeUtility.h" />
@@ -224,6 +226,7 @@
     <ClInclude Include="HazeLog\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeFilePathHelper.h" />
     <ClInclude Include="ThirdParty\OpenJson\openjson.h" />
+    <ClInclude Include="VM\Header\HazeLibraryManager.h" />
     <ClInclude Include="VM\Header\HazeStack.h" />
     <ClInclude Include="Header\Parse.h" />
     <ClInclude Include="Define\Header\HazeStrcut.h" />
@@ -236,8 +239,8 @@
     <ClInclude Include="MetaData\Header\HazeFunction.h" />
     <ClInclude Include="MetaData\Header\HazeModule.h" />
     <ClInclude Include="MetaData\Header\HazeVariable.h" />
-    <ClInclude Include="StandardLibrary\Header\HazeStandardLibraryBase.h" />
-    <ClInclude Include="StandardLibrary\Header\HazeStream.h" />
+    <ClInclude Include="Library\Header\HazeStandardLibraryBase.h" />
+    <ClInclude Include="Library\Header\HazeStream.h" />
     <ClInclude Include="Memory\Header\GarbageCollection.h" />
     <ClInclude Include="VM\Header\HazeVM.h" />
     <ClInclude Include="Memory\Header\MemoryBucket.h" />

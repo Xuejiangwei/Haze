@@ -5,6 +5,7 @@
 
 #include "Haze.h"
 
+
 class HazeCompiler;
 class HazeCompilerValue;
 class HazeBaseBlock;
@@ -23,9 +24,9 @@ public:
 
 	const HAZE_STRING& GetName() const;
 
-	bool IsStandardLibrary() { return IsStdLib; }
-	
-	void MarkStandardLibrary();
+	HazeLibraryType GetModuleLibraryType() { return ModuleLibraryType; }
+
+	void MarkLibraryType(HazeLibraryType Type);
 
 	void GenCodeFile();
 
@@ -118,7 +119,7 @@ private:
 private:
 	HazeCompiler* Compiler;
 
-	bool IsStdLib;
+	HazeLibraryType ModuleLibraryType;
 
 	HAZE_OFSTREAM FS_I_Code;
 

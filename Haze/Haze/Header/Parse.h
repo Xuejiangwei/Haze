@@ -19,7 +19,7 @@ class ASTFunctionSection;
 class ASTFunctionDefine;
 class ASTClassFunctionSection;
 
-class ASTStandardLibrary;
+class ASTLibrary;
 
 class Parse
 {
@@ -100,11 +100,11 @@ private:
 
 	std::unique_ptr<ASTFunction> ParseMainFunction();
 
-	std::unique_ptr<ASTStandardLibrary> ParseStandardLibrary();
+	std::unique_ptr<ASTLibrary> ParseLibrary();
 
-	std::unique_ptr<ASTClassDefine> ParseStandardLibrary_ClassDefine();
+	std::unique_ptr<ASTClassDefine> ParseLibrary_ClassDefine();
 
-	std::vector<std::unique_ptr<ASTFunctionDefine>> ParseStandardLibrary_FunctionDefine();
+	std::vector<std::unique_ptr<ASTFunctionDefine>> ParseLibrary_FunctionDefine();
 
 	std::unique_ptr<ASTBase> ParseImportModule();
 

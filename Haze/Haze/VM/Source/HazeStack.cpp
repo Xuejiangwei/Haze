@@ -78,7 +78,7 @@ void HazeStack::Start(unsigned int Address)
 void HazeStack::JmpTo(const InstructionData& Data)
 {
 	auto& Function = Stack_Frame.back().FunctionInfo;
-	int Address = Function->Extra.FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
+	int Address = Function->FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
 	memcpy(&PC, &Address, sizeof(PC));
 
 	PC--;
@@ -163,7 +163,7 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 		ESP += Info->Vector_Variable.back().Offset + GetSizeByType(Info->Vector_Variable.back().Variable.Type, VM);
 	}
 
-	PC = Info->Extra.FunctionDescData.InstructionStartAddress;
+	PC = Info->FunctionDescData.InstructionStartAddress;
 	--PC;
 }
 

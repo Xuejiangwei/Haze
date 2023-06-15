@@ -7,7 +7,8 @@
 #include "HazeDefine.h"
 #include "HazeStrcut.h"
 #include "HazeValue.h"
-
+#include "HazeLibraryType.h"
+#include "HazeInstruction.h"
 
 bool IsAndOrToken(HazeToken Token);
 
@@ -52,6 +53,12 @@ char* UTF8_2_GB2312(const char* utf8);
 char* GB2312_2_UFT8(const char* gb2312);
 
 void ReplacePathSlash(HAZE_STRING& Path);
+
+HazeLibraryType GetHazeLibraryTypeByToken(HazeToken Token);
+
+InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType Type);
+
+HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& FilePath);
 
 template <typename T>
 unsigned int GetSizeByType(HazeDefineType Type, T* This);

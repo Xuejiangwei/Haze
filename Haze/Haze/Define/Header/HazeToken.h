@@ -112,6 +112,7 @@ enum class HazeToken : unsigned int
 	Define,
 
 	StandardLibrary,
+	DLLLibrary,
 	ImportModule,
 
 	MultiVariable,

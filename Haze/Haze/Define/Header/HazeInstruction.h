@@ -132,6 +132,7 @@ enum class InstructionFunctionType : uint32
 {
 	HazeFunction,
 	StdLibFunction,
+	DLLLibFunction,
 };
 
 enum class InstructionAddressType : uint8
@@ -200,8 +201,15 @@ struct Instruction
 
 struct FunctionDescData
 {
+	using StdLibFunctionCall = void(*)(HAZE_STD_CALL_PARAM);
+
 	InstructionFunctionType Type;
-	unsigned int InstructionStartAddress;
+
+	union
+	{
+		uint32 InstructionStartAddress;
+		StdLibFunctionCall StdLibFunction;
+	};
 };
 
 struct ModuleData
@@ -231,18 +239,13 @@ struct ClassData
 
 struct FunctionData
 {
-	using StdLibFunctionCall = void(*)(HAZE_STD_CALL_PARAM);
 
 	HazeValueType Type;
 	std::vector<HazeDefineVariable> Vector_Param;
 	std::vector<HazeVariableData> Vector_Variable;
-	unsigned int InstructionNum;
+	uint32 InstructionNum;
 
-	union
-	{
-		FunctionDescData FunctionDescData;
-		StdLibFunctionCall StdLibFunction;
-	} Extra;
+	FunctionDescData FunctionDescData;
 };
 
 struct HazeRegister
