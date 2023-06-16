@@ -14,7 +14,7 @@ public:
 	HazeLibraryManager();
 	~HazeLibraryManager();
 
-	void GetDLLFunctionAddress(const HAZE_STRING& ModuleName, const HAZE_STRING& FunctionName);
+	void ExecuteDLLFunction(const HAZE_STRING& ModuleName, const HAZE_STRING& FunctionName, char* ParamStartAddress, char* RetStartAddress);
 
 	void LoadDLLLibrary(const HAZE_STRING& LibraryPath, const HAZE_STRING& FilePath);
 

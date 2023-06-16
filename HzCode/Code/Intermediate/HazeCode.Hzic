@@ -2,17 +2,40 @@
 GlobalDataTable
 0
 StringTable
-0
+1
+14 甲 %d 乙 %d 丙 %d
 ClassTable
 0
 FunctionTable
 1
 Function 主函数 0
+Variable 甲$1 7 0 4
+Variable 乙$2 7 4 4
+Variable 丙$3 7 8 4
 FunctionStart
 
 Block Entry
+PUSH 7 30 3
+PUSH 7 20 3
 PUSH 7 Address 11
-CALL 显示窗口 22 0 0 OpenGL接口
+CALL OpenGLAdd 22 2 8 OpenGL接口
+MOV 7 甲$1 2 7 Ret_R 6
+PUSH 7 11 3
+PUSH 7 21 3
+PUSH 7 Address 11
+CALL OpenGL减法 22 2 8 OpenGL接口
+MOV 7 乙$2 2 7 Ret_R 6
+PUSH 7 6 3
+PUSH 7 5 3
+PUSH 7 Address 11
+CALL 乘法 22 2 8 OpenGL接口
+MOV 7 丙$3 2 7 Ret_R 6
+PUSH 7 丙$3 2
+PUSH 7 乙$2 2
+PUSH 7 甲$1 2
+PUSH 14 常字符串指针 4 4 0
+PUSH 7 Address 11
+CALL 打印 22 4 20 标准流
 RET 0
 
 FunctionEnd

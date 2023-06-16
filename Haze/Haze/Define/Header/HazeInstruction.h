@@ -239,7 +239,6 @@ struct ClassData
 
 struct FunctionData
 {
-
 	HazeValueType Type;
 	std::vector<HazeDefineVariable> Vector_Param;
 	std::vector<HazeVariableData> Vector_Variable;

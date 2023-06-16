@@ -1,4 +1,5 @@
 #include "HazeLibraryManager.h"
+#include "HazeLibraryDefine.h"
 
 #ifdef _WIN32
 
@@ -9,7 +10,7 @@
 
 #endif // _WIN32
 
-using ShowHazeWindow = int(*)();
+
 
 std::unique_ptr<HazeLibraryManager> HazeLibManager = std::make_unique<HazeLibraryManager>();
 
@@ -25,15 +26,16 @@ HazeLibraryManager::~HazeLibraryManager()
 	}
 }
 
-void HazeLibraryManager::GetDLLFunctionAddress(const HAZE_STRING& ModuleName, const HAZE_STRING& FunctionName)
+void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& ModuleName, const HAZE_STRING& FunctionName, char* ParamStartAddress, char* RetStartAddress)
 {
 	auto Iter = HashMap_Library.find(ModuleName);
 	if (Iter != HashMap_Library.end())
 	{
-		ShowHazeWindow Func = (ShowHazeWindow)HAZE_GET_DLL_FUNCTION(Iter->second.second, "ShowOpenGLWindow"/*WString2String(FunctionName).c_str()*/);
+		ExecuteFunctionType Func = (ExecuteFunctionType)HAZE_GET_DLL_FUNCTION(Iter->second.second, "ExecuteFunction");
 		if (Func)
 		{
-			Func();
+
+			Func(FunctionName.c_str(), ParamStartAddress, RetStartAddress);
 		}
 	}
 }

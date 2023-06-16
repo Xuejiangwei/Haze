@@ -754,7 +754,12 @@ public:
 					}
 					else if (Function.FunctionDescData.Type == InstructionFunctionType::DLLLibFunction)
 					{
-						HazeLibManager->GetDLLFunctionAddress(Operator[1].Variable.Name, Operator[0].Variable.Name);
+						HazeRegister* RetRegister = Stack->GetVirtualRegister(RET_REGISTER);
+						RetRegister->Type.PrimaryType = Function.Type;
+						int Size = GetSizeByType(RetRegister->Type, Stack->VM);
+						RetRegister->Data.resize(Size);
+						HazeLibManager->ExecuteDLLFunction(Operator[1].Variable.Name, Operator[0].Variable.Name,
+							&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], RetRegister->Data.begin()._Unwrapped());
 					}
 
 

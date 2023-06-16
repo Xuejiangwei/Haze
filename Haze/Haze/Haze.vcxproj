@@ -103,7 +103,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty;$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\Library\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
@@ -225,6 +225,7 @@
     <ClInclude Include="Header\HazeHeaderDefine.h" />
     <ClInclude Include="HazeLog\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeFilePathHelper.h" />
+    <ClInclude Include="Library\Header\HazeLibraryDefine.h" />
     <ClInclude Include="ThirdParty\OpenJson\openjson.h" />
     <ClInclude Include="VM\Header\HazeLibraryManager.h" />
     <ClInclude Include="VM\Header\HazeStack.h" />
