@@ -1,6 +1,8 @@
 #include "HazeLibraryManager.h"
 #include "HazeLibraryDefine.h"
 
+#include "HazeStream.h"
+
 #ifdef _WIN32
 
 	#include <Windows.h>
@@ -10,7 +12,7 @@
 
 #endif // _WIN32
 
-
+extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 std::unique_ptr<HazeLibraryManager> HazeLibManager = std::make_unique<HazeLibraryManager>();
 
@@ -62,5 +64,13 @@ void HazeLibraryManager::UnloadDLLLibrary(const HAZE_STRING& LibraryPath)
 	if (Iter != HashMap_Library.end())
 	{
 		HAZE_UNLOAD_DLL(Iter->second.second);
+	}
+}
+
+void HazeLibraryManager::LoadStdLibrary()
+{
+	if (Hash_MapStdLib.size() == 0)
+	{
+		HazeStream::InitializeLib();
 	}
 }

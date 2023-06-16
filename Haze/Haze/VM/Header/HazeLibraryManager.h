@@ -20,6 +20,8 @@ public:
 
 	void UnloadDLLLibrary(const HAZE_STRING& LibraryPath);
 
+	static void LoadStdLibrary();
+
 private:
 	std::unordered_map<HAZE_STRING, std::pair<LibraryLoadState, void*>> HashMap_Library;
 };
