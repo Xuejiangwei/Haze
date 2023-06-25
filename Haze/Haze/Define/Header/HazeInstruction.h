@@ -182,7 +182,7 @@ struct InstructionData
 		}
 	} Extra;
 
-	InstructionData() : Scope(HazeDataDesc::None), Variable()
+	InstructionData() : Variable(), Scope(HazeDataDesc::None)
 	{
 		AddressType = InstructionAddressType::Direct;
 		memset(&Extra, 0, sizeof(Extra));

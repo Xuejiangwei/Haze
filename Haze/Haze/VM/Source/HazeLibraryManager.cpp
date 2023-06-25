@@ -12,6 +12,8 @@
 
 #endif // _WIN32
 
+using ExecuteFunctionType = void(*)(const wchar_t*, char*, char*);
+
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 std::unique_ptr<HazeLibraryManager> HazeLibManager = std::make_unique<HazeLibraryManager>();

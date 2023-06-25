@@ -125,7 +125,7 @@ FunctionStart
 Block Entry
 PUSH 15 己$1 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@清除 22 1 8
+CALL 五子棋@清除 22 1 8 五子棋
 MOV 7 Temp_R0 9 7 棋盘长度 1
 DIV 7 Temp_R0 9 7 2 3
 MOV 7 己$1指之上边界 16 7 Temp_R0 9
@@ -142,7 +142,7 @@ PUSH 7 己$1指之棋子范围 16
 PUSH 7 己$1指之放子计数 16
 PUSH 14 常字符串指针 4 4 0
 PUSH 7 Address 11
-CALL 打印 22 8 36
+CALL 打印 22 8 36 标准流
 RET 0
 
 FunctionEnd
@@ -212,7 +212,7 @@ MOVPV 7 Temp_R0 9 14 Temp_R1 9 7
 PUSH 7 Temp_R0 9 
 PUSH 14 常字符串指针 4 4 1
 PUSH 7 Address 11
-CALL 打印 22 3 16
+CALL 打印 22 3 16 标准流
 RET 1 1 3
 JMP DefaultBlock15
 
@@ -238,7 +238,7 @@ JMP ForConditionBlock4
 Block DefaultBlock7
 PUSH 14 常字符串指针 4 4 2
 PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 打印 22 1 8 标准流
 RET 1 0 3
 
 Block DefaultBlock2
@@ -265,7 +265,7 @@ FunctionStart
 Block Entry
 PUSH 14 常字符串指针 4 4 3
 PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 打印 22 1 8 标准流
 MOV 7 甲$2 2 7 0 3
 JMP ForConditionBlock1
 
@@ -281,14 +281,14 @@ Block IfThenBlock5
 PUSH 7 甲$2 2
 PUSH 14 常字符串指针 4 4 4
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock7
 
 Block ElseBlock6
 PUSH 7 甲$2 2
 PUSH 14 常字符串指针 4 4 5
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock7
 
 Block DefaultBlock7
@@ -302,7 +302,7 @@ JMP ForConditionBlock1
 Block DefaultBlock4
 PUSH 14 常字符串指针 4 4 6
 PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 打印 22 1 8 标准流
 MOV 7 甲$3 2 7 0 3
 JMP ForConditionBlock8
 
@@ -318,14 +318,14 @@ Block IfThenBlock12
 PUSH 7 甲$3 2
 PUSH 14 常字符串指针 4 4 5
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock14
 
 Block ElseBlock13
 PUSH 7 甲$3 2
 PUSH 14 常字符串指针 4 4 7
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock14
 
 Block DefaultBlock14
@@ -351,7 +351,7 @@ Block IfThenBlock19
 PUSH 14 常字符串指针 4 4 8
 PUSH 14 常字符串指针 4 4 9
 PUSH 7 Address 11
-CALL 打印 22 2 16
+CALL 打印 22 2 16 标准流
 JMP DefaultBlock21
 
 Block ElseBlock20
@@ -362,14 +362,14 @@ Block IfThenBlock22
 PUSH 14 常字符串指针 4 4 10
 PUSH 14 常字符串指针 4 4 9
 PUSH 7 Address 11
-CALL 打印 22 2 16
+CALL 打印 22 2 16 标准流
 JMP DefaultBlock24
 
 Block ElseBlock23
 PUSH 14 常字符串指针 4 4 11
 PUSH 14 常字符串指针 4 4 9
 PUSH 7 Address 11
-CALL 打印 22 2 16
+CALL 打印 22 2 16 标准流
 JMP DefaultBlock24
 
 Block DefaultBlock24
@@ -386,7 +386,7 @@ JMP ForConditionBlock15
 Block DefaultBlock18
 PUSH 14 常字符串指针 4 4 12
 PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 打印 22 1 8 标准流
 JMP ForStepBlock10
 
 Block ForStepBlock10
@@ -413,10 +413,10 @@ FunctionStart
 Block Entry
 PUSH 14 常字符串指针 4 4 13
 PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 打印 22 1 8 标准流
 PUSH 14 常字符串指针 4 4 3
 PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 打印 22 1 8 标准流
 CMP 7 颜色$1 2 7 棋子黑 1
 JE DefaultBlock2 DefaultBlock3
 
@@ -437,14 +437,14 @@ Block IfThenBlock8
 PUSH 7 甲$4 2
 PUSH 14 常字符串指针 4 4 4
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock10
 
 Block ElseBlock9
 PUSH 7 甲$4 2
 PUSH 14 常字符串指针 4 4 5
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock10
 
 Block DefaultBlock10
@@ -458,7 +458,7 @@ JMP ForConditionBlock4
 Block DefaultBlock7
 PUSH 14 常字符串指针 4 4 6
 PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 打印 22 1 8 标准流
 MOV 7 甲$5 2 7 0 3
 JMP ForConditionBlock11
 
@@ -474,14 +474,14 @@ Block IfThenBlock15
 PUSH 7 甲$5 2
 PUSH 14 常字符串指针 4 4 5
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock17
 
 Block ElseBlock16
 PUSH 7 甲$5 2
 PUSH 14 常字符串指针 4 4 7
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock17
 
 Block DefaultBlock17
@@ -514,7 +514,7 @@ MOVPV 7 Temp_R0 9 14 Temp_R1 9 7
 PUSH 7 Temp_R0 9 
 PUSH 14 常字符串指针 4 4 4
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock24
 
 Block ElseBlock23
@@ -528,7 +528,7 @@ MOVPV 7 Temp_R0 9 14 Temp_R1 9 7
 PUSH 7 Temp_R0 9 
 PUSH 14 常字符串指针 4 4 7
 PUSH 7 Address 11
-CALL 打印 22 2 12
+CALL 打印 22 2 12 标准流
 JMP DefaultBlock24
 
 Block DefaultBlock24
@@ -542,7 +542,7 @@ JMP ForConditionBlock18
 Block DefaultBlock21
 PUSH 14 常字符串指针 4 4 12
 PUSH 7 Address 11
-CALL 打印 22 1 8
+CALL 打印 22 1 8 标准流
 JMP ForStepBlock13
 
 Block ForStepBlock13
@@ -592,24 +592,24 @@ PUSH 7 横坐标$3 2
 PUSH 7 己$4指之放子计数 16
 PUSH 14 常字符串指针 4 4 14
 PUSH 7 Address 11
-CALL 打印 22 5 24
+CALL 打印 22 5 24 标准流
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@刷新打印 22 1 8
+CALL 五子棋@刷新打印 22 1 8 五子棋
 PUSH 7 纵坐标$2 2
 PUSH 7 横坐标$3 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@更新得分 22 3 16
+CALL 五子棋@更新得分 22 3 16 五子棋
 PUSH 7 纵坐标$2 2
 PUSH 7 横坐标$3 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@更新边界 22 3 16
+CALL 五子棋@更新边界 22 3 16 五子棋
 PUSH 7 颜色$1 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@打印得分 22 2 12
+CALL 五子棋@打印得分 22 2 12 五子棋
 RET 0
 
 FunctionEnd
@@ -690,7 +690,7 @@ PUSH 7 乙$9 2
 PUSH 7 甲$8 2
 PUSH 15 己$3 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@获得连线最大分 22 4 20
+CALL 五子棋@获得连线最大分 22 4 20 五子棋
 LEA 14 Temp_R1 9 7 13 己$3指之黑棋得分 15
 MOV 7 Temp_R0 9 7 19 3
 MUL 7 Temp_R0 9 7 甲$8 2
@@ -703,7 +703,7 @@ PUSH 7 乙$9 2
 PUSH 7 甲$8 2
 PUSH 15 己$3 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@获得连线最大分 22 4 20
+CALL 五子棋@获得连线最大分 22 4 20 五子棋
 LEA 14 Temp_R1 9 7 13 己$3指之白棋得分 15
 MOV 7 Temp_R0 9 7 19 3
 MUL 7 Temp_R0 9 7 甲$8 2
@@ -792,7 +792,7 @@ PUSH 7 己$3指之下边界 16
 PUSH 7 己$3指之上边界 16
 PUSH 14 常字符串指针 4 4 15
 PUSH 7 Address 11
-CALL 打印 22 7 32
+CALL 打印 22 7 32 标准流
 CMP 7 横$2 2 7 己$3指之上边界 16
 JNG IfThenBlock1 DefaultBlock2
 
@@ -871,7 +871,7 @@ PUSH 7 己$3指之下边界 16
 PUSH 7 己$3指之上边界 16
 PUSH 14 常字符串指针 4 4 16
 PUSH 7 Address 11
-CALL 打印 22 5 24
+CALL 打印 22 5 24 标准流
 RET 0
 
 FunctionEnd
@@ -1154,7 +1154,7 @@ PUSH 1 阻挡甲$6 2
 PUSH 7 列计数$5 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@算取分数 22 4 14
+CALL 五子棋@算取分数 22 4 14 五子棋
 MOV 7 分数甲$12 2 7 Ret_R 6
 CMP 7 分数甲$12 2 7 五分 1
 JNL IfThenBlock23 DefaultBlock24
@@ -1280,7 +1280,7 @@ PUSH 1 阻挡甲$6 2
 PUSH 7 行计数$13 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@算取分数 22 4 14
+CALL 五子棋@算取分数 22 4 14 五子棋
 MOV 7 分数乙$18 2 7 Ret_R 6
 CMP 7 分数乙$18 2 7 五分 1
 JNL IfThenBlock45 DefaultBlock46
@@ -1416,7 +1416,7 @@ PUSH 1 阻挡甲$6 2
 PUSH 7 斜向计数甲$19 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@算取分数 22 4 14
+CALL 五子棋@算取分数 22 4 14 五子棋
 MOV 7 分数丙$28 2 7 Ret_R 6
 CMP 7 分数丙$28 2 7 五分 1
 JNL IfThenBlock67 DefaultBlock68
@@ -1560,7 +1560,7 @@ PUSH 1 阻挡甲$6 2
 PUSH 7 斜向计数乙$29 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@算取分数 22 4 14
+CALL 五子棋@算取分数 22 4 14 五子棋
 MOV 7 分数丁$38 2 7 Ret_R 6
 CMP 7 分数丁$38 2 7 五分 1
 JNL IfThenBlock89 DefaultBlock90
@@ -1708,7 +1708,7 @@ PUSH 7 乙$10 2
 PUSH 7 甲$9 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@获得连线最大分 22 4 20
+CALL 五子棋@获得连线最大分 22 4 20 五子棋
 MOV 7 临时分$11 2 7 Ret_R 6
 JMP DefaultBlock20
 
@@ -1799,7 +1799,7 @@ PUSH 7 乙$15 2
 PUSH 7 甲$14 2
 PUSH 15 己$4 2 五子棋
 PUSH 7 Address 11
-CALL 五子棋@获得连线最大分 22 4 20
+CALL 五子棋@获得连线最大分 22 4 20 五子棋
 MOV 7 临时分$16 2 7 Ret_R 6
 JMP DefaultBlock39
 

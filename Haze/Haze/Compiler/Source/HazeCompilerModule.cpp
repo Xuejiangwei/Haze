@@ -346,11 +346,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 
 	bool NeedTemp = HashSet_NoTemp.find(IO_Code) == HashSet_NoTemp.end();
 
-	if (CurrFunction.empty())
-	{
-		HAZE_TO_DO(全局语句暂时不处理);
-	}
-	else
+	if (!CurrFunction.empty())
 	{
 		HAZE_STRING_STREAM SStream;
 

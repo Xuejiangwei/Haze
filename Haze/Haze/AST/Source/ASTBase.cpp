@@ -153,6 +153,11 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	for (int i = (int)FunctionParam.size() - 1; i >= 0; i--)
 	{
 		Param.push_back(FunctionParam[i]->CodeGen());
+		if (!Param.back())
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("函数<%s>中<%d>行调用<%s>第<%d>个参数错误!\n"), Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), Location.Line, Name.c_str(), i + 1);
+			return nullptr;
+		}
 	}
 
 	Compiler->InsertLineCount(Location.Line);

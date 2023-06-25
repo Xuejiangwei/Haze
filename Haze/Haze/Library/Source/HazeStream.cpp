@@ -34,7 +34,7 @@ static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form)
 
 void HazeStream::InitializeLib()
 {
-	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &HashMap_Function);
+	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("±ê×¼Á÷"), &HashMap_Function);
 }
 
 void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)

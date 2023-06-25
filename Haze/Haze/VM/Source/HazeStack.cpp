@@ -37,7 +37,6 @@ void HazeStack::Start(unsigned int Address)
 
 	while (PC < VM->Vector_Instruction.size())
 	{
-#ifdef _DEBUG
 		while (VM->IsDebug())
 		{
 			if (!Debugger)
@@ -63,10 +62,6 @@ void HazeStack::Start(unsigned int Address)
 		{
 			return;
 		}
-
-#else
-		HashMap_InstructionProcessor[Vector_Instruction[PC].InsCode](this);
-#endif // DEBUG
 
 		PCStepInc();
 	}

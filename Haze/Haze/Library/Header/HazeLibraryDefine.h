@@ -10,6 +10,6 @@
 
 #else
 	
-	using ExecuteFunctionType = void(*)(const wchar_t*, char*, char*);
+	
 
 #endif // HAZE

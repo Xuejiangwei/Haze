@@ -270,7 +270,14 @@ std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule
 			OutMemberName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
 
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
-			return ClassValue->GetMember(OutMemberName);
+			if (ClassValue)
+			{
+				return ClassValue->GetMember(OutMemberName);
+			}
+			else
+			{
+				HAZE_LOG_ERR(HAZE_TEXT("函数<%s>中未能找到类对象<%s>!\n"), Module->GetCurrFunction()->GetName().c_str(), OutObjectName.c_str());
+			}
 		}
 	}
 
@@ -313,7 +320,10 @@ std::shared_ptr<HazeCompilerFunction> GetObjectNameAndFunctionName(HazeCompilerM
 			OutFunctionName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
 
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
-			return ClassValue->GetOwnerClass()->FindFunction(OutFunctionName);
+			if (ClassValue)
+			{
+				return ClassValue->GetOwnerClass()->FindFunction(OutFunctionName);
+			}
 		}
 	}
 

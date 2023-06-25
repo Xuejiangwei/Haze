@@ -223,10 +223,12 @@ Parse::~Parse()
 
 void Parse::InitializeFile(const HAZE_STRING& FilePath)
 {
-	HAZE_IFSTREAM FS(FilePath);
+	HAZE_BINARY_IFSTREAM FS(FilePath);
 	FS.imbue(std::locale("chs"));
-	HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(FS), {});
-	CodeText = std::move(Content);
+	std::string Content(std::istreambuf_iterator<char>(FS), {});
+	Content = UTF8_2_GB2312(Content.c_str());
+	CodeText = String2WString(Content);
+
 	CurrCode = CodeText.c_str();
 	FS.close();
 }

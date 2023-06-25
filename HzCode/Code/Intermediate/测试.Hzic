@@ -7,45 +7,45 @@ StringTable
 ClassTable
 1
 Class 三维点 12 3
-横坐标 3
-纵坐标 3
-前坐标 3
+横坐标 7 0 4
+纵坐标 7 4 4
+前坐标 7 8 4
 FunctionTable
 2
 Function 三维点@输出点 0
-Param 己 11 三维点
-Variable 己$1 11 三维点 -12 8
+Param 己 15 三维点
+Variable 己$1 15 三维点 -12 8
 FunctionStart
 
 Block Entry
-MOV 3 己$1指之横坐标 15 3 10 3
-MOV 3 己$1指之纵坐标 15 3 20 3
-MOV 3 己$1指之前坐标 15 3 30 3
-PUSH 11 己$1 2 三维点
-PUSH 3 Address 11
-CALL 三维点@打印坐标 18 1 8
-MOV 3 己$1指之横坐标 15 3 100 3
-MOV 3 己$1指之纵坐标 15 3 200 3
-PUSH 11 己$1 2 三维点
-PUSH 3 Address 11
-CALL 三维点@打印坐标 18 1 8
+MOV 7 己$1指之横坐标 15 7 10 3
+MOV 7 己$1指之纵坐标 15 7 20 3
+MOV 7 己$1指之前坐标 15 7 30 3
+PUSH 15 己$1 2 三维点
+PUSH 7 Address 11
+CALL 三维点@打印坐标 22 1 8 测试
+MOV 7 己$1指之横坐标 15 7 100 3
+MOV 7 己$1指之纵坐标 15 7 200 3
+PUSH 15 己$1 2 三维点
+PUSH 7 Address 11
+CALL 三维点@打印坐标 22 1 8 测试
 RET 0
 
 FunctionEnd
 
 Function 三维点@打印坐标 0
-Param 己 11 三维点
-Variable 己$1 11 三维点 -12 8
+Param 己 15 三维点
+Variable 己$1 15 三维点 -12 8
 FunctionStart
 
 Block Entry
-PUSH 3 己$1指之前坐标 15
-PUSH 3 己$1指之纵坐标 15
-PUSH 3 己$1指之横坐标 15
-PUSH 10 常字符串指针 4 2 0
-PUSH 3 Address 11
-CALL 打印 18 4 20
-MOV 3 己$1指之前坐标 15 3 300 3
+PUSH 7 己$1指之前坐标 15
+PUSH 7 己$1指之纵坐标 15
+PUSH 7 己$1指之横坐标 15
+PUSH 14 常字符串指针 4 4 0
+PUSH 7 Address 11
+CALL 打印 22 4 20 标准流
+MOV 7 己$1指之前坐标 15 7 300 3
 RET 0
 
 FunctionEnd
