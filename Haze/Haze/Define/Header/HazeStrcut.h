@@ -6,9 +6,9 @@
 enum class HazeSectionSignal : uint8
 {
 	Global,
-	Function,
+	Local,
+	Static,
 	Class,
-	StandardLibrary,
 };
 
 struct HazeDefineType
@@ -89,7 +89,7 @@ struct HazeDefineType
 
 	static bool StringStreamTo(HAZE_STRING_STREAM& SStream, const HazeDefineType& Type)
 	{
-		SStream << CAST_UINT32(Type.PrimaryType);
+		SStream << CAST_TYPE(Type.PrimaryType);
 
 		/*if (Type.PrimaryType == HazeValueType::MultiVariable)
 		{
@@ -98,7 +98,7 @@ struct HazeDefineType
 
 		if (Type.NeedSecondaryType())
 		{
-			SStream << " " << CAST_UINT32(Type.SecondaryType);
+			SStream << " " << CAST_TYPE(Type.SecondaryType);
 		}
 
 		if (Type.NeedCustomName())

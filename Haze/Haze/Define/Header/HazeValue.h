@@ -3,6 +3,8 @@
 #include "HazeDefine.h"
 #include <iostream>
 
+#define CAST_TYPE(V) (uint32)V
+
 enum class HazeValueType : uint32
 {
 	Void,

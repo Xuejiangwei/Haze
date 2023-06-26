@@ -9,11 +9,11 @@ class HazeCompilerValue : public std::enable_shared_from_this<HazeCompilerValue>
 {
 	friend class HazeCompilerClass;
 public:
-	HazeCompilerValue();
+	//HazeCompilerValue();
 
-	HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
+	//HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, HazeValue* DefaultValue = nullptr);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, HazeValue* DefaultValue = nullptr);
 
 	virtual ~HazeCompilerValue();
 
@@ -25,36 +25,40 @@ public:
 
 	const HazeValue& GetValue() const { return Value; }
 
-	HazeDataDesc GetScope() const { return Scope; }
+	HazeVariableScope GetVariableScope() const { return Scope; }
+	
+	HazeDataDesc GetVariableDesc() const { return Desc; }
 
 	int GetCount() const { return Count; }
 
-	bool IsRegister() const { return IsRegisterScope(Scope); }
+	bool IsGlobalVariable() const { return Scope == HazeVariableScope::Global; }
 
-	bool IsRegister(HazeDataDesc Type) const { return IsRegisterScope(Scope) && Scope == Type; }
+	bool IsLocalVariable() const { return Scope == HazeVariableScope::Local; }
 
-	bool IsConstant() const { return Scope == HazeDataDesc::Constant; }
+public:
+	bool IsRegister() const { return IsRegisterScope(Desc); }
 
-	bool IsGlobal() const { return Scope == HazeDataDesc::Global; }
+	bool IsRegister(HazeDataDesc Type) const { return IsRegisterScope(Desc) && Desc == Type; }
 
-	bool IsLocal() const { return Scope == HazeDataDesc::Local; }
+	bool IsConstant() const { return Desc == HazeDataDesc::Constant; }
 
-	bool IsString() const { return Scope == HazeDataDesc::ConstantString; }
+	bool IsString() const { return Desc == HazeDataDesc::ConstantString; }
 
 	bool IsClassMember() const { return IsClassPublicMember() || IsClassPrivateMember() || IsClassProtectedMember(); }
 
-	bool IsClassPublicMember() const { return  Scope == HazeDataDesc::ClassMember_Local_Public; }
+	bool IsClassPublicMember() const { return  Desc == HazeDataDesc::ClassMember_Local_Public; }
 
-	bool IsClassPrivateMember() const { return  Scope == HazeDataDesc::ClassMember_Local_Private; }
+	bool IsClassPrivateMember() const { return  Desc == HazeDataDesc::ClassMember_Local_Private; }
 
-	bool IsClassProtectedMember() const { return  Scope == HazeDataDesc::ClassMember_Local_Protected; }
+	bool IsClassProtectedMember() const { return  Desc == HazeDataDesc::ClassMember_Local_Protected; }
 
-	bool IsArrayElement() const { return Scope == HazeDataDesc::ArrayElement; }
+	bool IsArrayElement() const { return Desc == HazeDataDesc::ArrayElement; }
 
-	bool IsCalssThis() const { return Scope == HazeDataDesc::ClassThis; }
+	bool IsCalssThis() const { return Desc == HazeDataDesc::ClassThis; }
 
-	bool IsNullPtr() const { return Scope == HazeDataDesc::NullPtr; }
+	bool IsNullPtr() const { return Desc == HazeDataDesc::NullPtr; }
 
+public:
 	bool IsPointer() const { return IsPointerType(ValueType.PrimaryType); }
 	
 	bool IsPointerBase() const { return ValueType.PrimaryType == HazeValueType::PointerBase; }
@@ -84,7 +88,8 @@ protected:
 	HazeDefineType ValueType;
 	HazeValue Value;
 	HazeCompilerModule* Module;
-	HazeDataDesc Scope;
+	HazeVariableScope Scope;
+	HazeDataDesc Desc;
 
 	int Count;			//ÃüÃû¼ÆÊý
 };

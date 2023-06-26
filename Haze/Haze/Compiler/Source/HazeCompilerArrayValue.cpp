@@ -6,8 +6,8 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 
-HazeCompilerArrayElementValue::HazeCompilerArrayElementValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, 
-	HazeCompilerValue* Array, std::vector<HazeCompilerValue*> Index) : HazeCompilerValue(Module, DefineType, Scope, Count), ArrayOrPointer(Array), Index(Index)
+HazeCompilerArrayElementValue::HazeCompilerArrayElementValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
+	HazeCompilerValue* Array, std::vector<HazeCompilerValue*> Index) : HazeCompilerValue(Module, DefineType, Scope, Desc, Count), ArrayOrPointer(Array), Index(Index)
 {
 }
 
@@ -15,9 +15,9 @@ HazeCompilerArrayElementValue::~HazeCompilerArrayElementValue()
 {
 }
 
-HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count,
+HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
 	std::vector<std::shared_ptr<HazeCompilerValue>>& ArraySize)
-	: HazeCompilerValue(Module, DefineType, Scope, Count), ArrayLength(0), Size(0)
+	: HazeCompilerValue(Module, DefineType, Scope, Desc, Count), ArrayLength(0), Size(0)
 {
 	if (ArraySize.size() > 0)
 	{

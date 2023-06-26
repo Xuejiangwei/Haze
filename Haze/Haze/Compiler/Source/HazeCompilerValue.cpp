@@ -3,16 +3,16 @@
 
 #include <string.h>
 
-HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Scope(HazeDataDesc::Local), Count(0)
-{
-	memset(&Value, 0, sizeof(Value));
-}
+//HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Scope(HazeDataDesc::Local), Count(0)
+//{
+//	memset(&Value, 0, sizeof(Value));
+//}
 
-HazeCompilerValue::HazeCompilerValue(HazeValue Value, HazeDataDesc Scope) : Module(nullptr), Value(Value), Scope(Scope), Count(0)
-{
-}
+//HazeCompilerValue::HazeCompilerValue(HazeValue Value, HazeDataDesc Scope) : Module(nullptr), Value(Value), Scope(Scope), Count(0)
+//{
+//}
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, HazeValue* DefaultValue)
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, HazeValue* DefaultValue)
 	: Module(Module), ValueType(DefineType), Scope(Scope), Count(Count)
 {
 	if (DefaultValue)

@@ -81,7 +81,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, std::shared_ptr<HazeCompiler
 	HazeCompilerStream(Stream, Value.get(), StreamValue);
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeDataDesc Scope, int Count,
+std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
 	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param)
 {
 	switch (Type.PrimaryType)
@@ -96,26 +96,26 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module
 	case HazeValueType::Double:
 	case HazeValueType::UnsignedInt:
 	case HazeValueType::UnsignedLong:
-		return std::make_shared<HazeCompilerValue>(Module, Type, Scope, Count, DefaultValue);
+		return std::make_shared<HazeCompilerValue>(Module, Type, Scope, Desc, Count, DefaultValue);
 	case HazeValueType::MultiVariable:
 	{
-		return std::make_shared<HazeCompilerValue>(Module, Type, Scope, Count, DefaultValue);
+		return std::make_shared<HazeCompilerValue>(Module, Type, Scope, Desc, Count, DefaultValue);
 	}
 	case HazeValueType::Array:
-		return std::make_shared<HazeCompilerArrayValue>(Module, Type, Scope, Count, ArraySize);
+		return std::make_shared<HazeCompilerArrayValue>(Module, Type, Scope, Desc, Count, ArraySize);
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerPointer:
-		return std::make_shared<HazeCompilerPointerValue>(Module, Type, Scope, Count);
+		return std::make_shared<HazeCompilerPointerValue>(Module, Type, Scope, Desc, Count);
 	case HazeValueType::PointerFunction:
-		return std::make_shared<HazeCompilerPointerFunction>(Module, Type, Scope, Count, Vector_Param ? *Vector_Param : std::vector<HazeDefineType>{});
+		return std::make_shared<HazeCompilerPointerFunction>(Module, Type, Scope, Desc, Count, Vector_Param ? *Vector_Param : std::vector<HazeDefineType>{});
 	case HazeValueType::PointerArray:
-		return std::make_shared<HazeCompilerPointerArray>(Module, Type, Scope, Count, ArraySize);
+		return std::make_shared<HazeCompilerPointerArray>(Module, Type, Scope, Desc, Count, ArraySize);
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
 		if (RefValue)
 		{
-			return std::make_shared<HazeCompilerRefValue>(Module, Type, Scope, Count, RefValue);
+			return std::make_shared<HazeCompilerRefValue>(Module, Type, Scope, Desc, Count, RefValue);
 		}
 		else
 		{
@@ -123,7 +123,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module
 			return nullptr;
 		}
 	case HazeValueType::Class:
-		return std::make_shared<HazeCompilerClassValue>(Module, Type, Scope, Count);
+		return std::make_shared<HazeCompilerClassValue>(Module, Type, Scope, Desc, Count);
 	default:
 		break;
 	}
@@ -131,13 +131,13 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module
 	return nullptr;
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeDataDesc Scope, int Count, 
+std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
 	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param)
 {
-	return CreateVariableImpl(Module, Var.Type, Scope, Count, RefValue, ArraySize, DefaultValue, Vector_Param);
+	return CreateVariableImpl(Module, Var.Type, Scope, Desc, Count, RefValue, ArraySize, DefaultValue, Vector_Param);
 }
 
-std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> CreateVariableCopyClassMember(HazeCompilerModule* Module, HazeCompilerClass* Class)
+std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> CreateVariableCopyClassMember(HazeCompilerModule* Module, HazeVariableScope Scope, HazeCompilerClass* Class)
 {
 	std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> Vector_Member;
 	for (auto& It : Class->GetClassMemberData())
@@ -147,7 +147,7 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValu
 		for (size_t i = 0; i < It.second.size(); i++)
 		{
 			auto& Var = It.second[i].second;
-			Vector_Member.back().second[i] = CreateVariableImpl(Module, Var->GetValueType(), Var->GetScope(), 0,
+			Vector_Member.back().second[i] = CreateVariableImpl(Module, Var->GetValueType(), Scope, Var->GetVariableDesc(), 0,
 				Var->IsRef() ? std::dynamic_pointer_cast<HazeCompilerRefValue>(Var)->GetRefValue() : nullptr,
 				Var->IsArray() ? std::dynamic_pointer_cast<HazeCompilerArrayValue>(Var)->GetArraySize() : Var->IsPointerArray() ?
 				std::dynamic_pointer_cast<HazeCompilerPointerArray>(Var)->GetArraySize() : std::vector<std::shared_ptr<HazeCompilerValue>>{},
@@ -159,10 +159,10 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValu
 	return Vector_Member;
 }
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(const HazeValue& Var, HazeDataDesc Scope)
-{
-	return std::make_shared<HazeCompilerValue>(Var, Scope);
-}
+//std::shared_ptr<HazeCompilerValue> CreateVariable(const HazeValue& Var, HazeDataDesc Scope)
+//{
+//	return std::make_shared<HazeCompilerValue>(Var, Scope);
+//}
 
 void StreamPointerValue(HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue> Value)
 {
@@ -190,7 +190,7 @@ void StreamCompilerValue(HAZE_STRING_STREAM& HSS, InstructionOpCode InsCode, std
 	{
 		HSS << " " << DefaultName;
 	}
-	HSS << " " << (uint32)Value->GetScope();
+	HSS << " " << (uint32)Value->GetVariableDesc();
 
 	if (Value->IsPointer())
 	{

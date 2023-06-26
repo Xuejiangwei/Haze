@@ -10,7 +10,7 @@ class HazeCompilerClassValue : public HazeCompilerValue
 public:
 	friend class HazeCompilerClass;
 
-	explicit HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count);
+	explicit HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count);
 
 	virtual ~HazeCompilerClassValue() override;
 

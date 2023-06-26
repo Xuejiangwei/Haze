@@ -33,7 +33,7 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 		ParseFile(iter.first, iter.second);
 	}
 
-#define HAZE_BACKEND_PARSE_ENABLE	1
+#define HAZE_BACKEND_PARSE_ENABLE	0
 	{
 
 #if HAZE_BACKEND_PARSE_ENABLE
@@ -45,7 +45,7 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 
 	}
 
-#define HAZE_LOAD_OP_CODE_ENABLE	1
+#define HAZE_LOAD_OP_CODE_ENABLE	0
 
 	{
 

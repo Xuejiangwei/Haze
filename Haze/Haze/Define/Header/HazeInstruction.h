@@ -32,11 +32,21 @@ enum class InstructionOpCodeType : uint8
 	Double,
 };
 
-enum class HazeDataDesc : uint32
+#define CAST_SCOPE(V) (uint32)V
+enum class HazeVariableScope : uint32
 {
 	None,
 	Global,
 	Local,
+	Static,
+};
+
+#define CAST_DESC(V) (uint32)V
+enum class HazeDataDesc : uint32
+{
+	None,
+	/*Global,
+	Local,*/
 	Constant,
 	ConstantString,
 
@@ -146,7 +156,8 @@ enum class InstructionAddressType : uint8
 struct InstructionData
 {
 	HazeDefineVariable Variable;
-	HazeDataDesc Scope;
+	HazeVariableScope Scope;
+	HazeDataDesc Desc;
 
 	struct AddressData
 	{
@@ -182,7 +193,7 @@ struct InstructionData
 		}
 	} Extra;
 
-	InstructionData() : Variable(), Scope(HazeDataDesc::None)
+	InstructionData() : Variable(), Desc(HazeDataDesc::None)
 	{
 		AddressType = InstructionAddressType::Direct;
 		memset(&Extra, 0, sizeof(Extra));

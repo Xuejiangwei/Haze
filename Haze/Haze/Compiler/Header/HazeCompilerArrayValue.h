@@ -5,7 +5,7 @@
 class HazeCompilerArrayElementValue : public HazeCompilerValue
 {
 public:
-	explicit HazeCompilerArrayElementValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, HazeCompilerValue* Array, 
+	explicit HazeCompilerArrayElementValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, HazeCompilerValue* Array, 
 		std::vector<HazeCompilerValue*> Index);
 	
 	virtual ~HazeCompilerArrayElementValue() override;
@@ -22,7 +22,7 @@ private:
 class HazeCompilerArrayValue : public HazeCompilerValue
 {
 public:
-	explicit HazeCompilerArrayValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, 
+	explicit HazeCompilerArrayValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
 		std::vector<std::shared_ptr<HazeCompilerValue>>& ArraySize);
 	
 	virtual ~HazeCompilerArrayValue() override;

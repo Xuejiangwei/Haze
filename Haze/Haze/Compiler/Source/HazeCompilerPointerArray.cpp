@@ -1,7 +1,7 @@
 #include "HazeCompilerPointerArray.h"
 
-HazeCompilerPointerArray::HazeCompilerPointerArray(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize)
-	:HazeCompilerPointerValue(Module, DefineType, Scope, Count), Vector_ArraySize(ArraySize)
+HazeCompilerPointerArray::HazeCompilerPointerArray(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize)
+	:HazeCompilerPointerValue(Module, DefineType, Scope, Desc, Count), Vector_ArraySize(ArraySize)
 {
 }
 

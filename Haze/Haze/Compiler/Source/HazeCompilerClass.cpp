@@ -19,7 +19,7 @@ HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRI
 	{
 		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
 		{
-			Vector_Data[i].second[j].second->Scope = Vector_Data[i].first;
+			Vector_Data[i].second[j].second->Desc = Vector_Data[i].first;
 			MemberNum++;
 			LastMember = Vector_Data[i].second[j].second;
 		}
@@ -62,12 +62,12 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared
 void HazeCompilerClass::InitThisValue()
 {
 	NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), 
-		HAZE_TEXT("")), HazeDataDesc::ClassThis, 0));
+		HAZE_TEXT("")), HazeVariableScope::None, HazeDataDesc::ClassThis, 0));
 	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), 
-		HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
+		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 	
-	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(Module, 
-		HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, Name), HAZE_CLASS_THIS), HazeDataDesc::ClassThis, 0));
+	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, Name),
+		 HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 }
 
 uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)

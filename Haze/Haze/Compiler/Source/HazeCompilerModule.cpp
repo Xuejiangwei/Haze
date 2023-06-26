@@ -235,7 +235,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateNeg(std::shared_ptr
 
 		HAZE_STRING_STREAM SStream;
 		SStream << GetInstructionString(InstructionOpCode::NEG) << " ";
-		GenValueHzicText(this, SStream, TempRegister);
+		GenVariableHzic(this, SStream, TempRegister);
 		SStream << std::endl;
 
 		std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
@@ -304,7 +304,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(std::shar
 			GenValueHzicText(this, SStream, Array, (int)i);
 
 			SStream << " ";
-			GenValueHzicText(this, SStream, InitListValue->GetList()[i]);
+			GenVariableHzic(this, SStream, InitListValue->GetList()[i]);
 
 			SStream << std::endl;
 
@@ -368,12 +368,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 		}
 
 		SStream << GetInstructionString(IO_Code) << " ";
-		GenValueHzicText(this, SStream, Ret);
+		GenVariableHzic(this, SStream, Ret);
 
 		if (Right)
 		{
 			SStream << " ";
-			GenValueHzicText(this, SStream, Right);
+			GenVariableHzic(this, SStream, Right);
 		}
 
 		SStream << std::endl;
@@ -397,7 +397,7 @@ void HazeCompilerModule::GenIRCode_UnaryOperator(std::shared_ptr<HazeCompilerVal
 	else
 	{
 		SStream << GetInstructionString(IO_Code) << " ";
-		GenValueHzicText(this, SStream, Value);
+		GenVariableHzic(this, SStream, Value);
 
 		SStream << std::endl;
 	}
@@ -411,7 +411,7 @@ void HazeCompilerModule::GenIRCode_Ret(std::shared_ptr<HazeCompilerValue> Value)
 	auto Function = GetCurrFunction();
 	HAZE_STRING_STREAM SStream;
 	SStream << GetInstructionString(InstructionOpCode::RET) << " ";
-	GenValueHzicText(this, SStream, Value);
+	GenVariableHzic(this, SStream, Value);
 
 	SStream << std::endl;
 
@@ -476,7 +476,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 	}
 
 	Vector_Variable.push_back({ Var.Name, 
-		CreateVariable(this, Var, HazeDataDesc::Global, 0, RefValue, ArraySize, nullptr, Vector_Param) });
+		CreateVariable(this, Var, HazeVariableScope::Global, HazeDataDesc::None, 0, RefValue, ArraySize, nullptr, Vector_Param) });
 
 	auto& CompilerValue = Vector_Variable.back().second;
 
@@ -508,7 +508,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_ST
 					{
 						Name = Compiler->GetRegisterName(Variable);
 					}
-					else if (Variable->IsLocal() || Variable->IsGlobal() || Variable->IsRegister())
+					else if (Variable->IsLocalVariable() || Variable->IsGlobalVariable() || Variable->IsRegister())
 					{
 						HAZE_LOG_ERR(HAZE_TEXT("函数调用<%s>错误,未能找到变量!\n"), CallName.c_str());
 					}
@@ -523,7 +523,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_ST
 				{
 					Name = Compiler->GetRegisterName(Variable);
 				}
-				else if (Variable->IsLocal() || Variable->IsGlobal() || Variable->IsRegister())
+				else if (Variable->IsLocalVariable() || Variable->IsGlobalVariable() || Variable->IsRegister())
 				{
 					HAZE_LOG_ERR(HAZE_TEXT("函数调用<%s>错误,未能找到变量!\n"), CallName.c_str());
 				}
@@ -533,25 +533,25 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_ST
 		if (Variable->IsConstant())
 		{
 			HazeCompilerStream(SStream, Variable.get());
-			SStream << " " << (uint32)Variable->GetScope();
+			SStream << " " << (uint32)Variable->GetVariableDesc();
 		}
 		else if (Variable->IsString())
 		{
-			SStream << HAZE_CONSTANT_STRING_NAME << " " << (uint32)Variable->GetScope() << " " << (uint32)Variable->GetValueType().SecondaryType
+			SStream << HAZE_CONSTANT_STRING_NAME << " " << (uint32)Variable->GetVariableDesc() << " " << (uint32)Variable->GetValueType().SecondaryType
 				<< " " << Variable->GetValue().Value.Extra.StringTableIndex;
 		}
 		else if (Variable->IsPointerBase() || Variable->IsRefBase())
 		{
-			SStream << Name << " " << (uint32)Variable->GetScope() << " " << (uint32)Variable->GetValueType().SecondaryType;
+			SStream << Name << " " << (uint32)Variable->GetVariableDesc() << " " << (uint32)Variable->GetValueType().SecondaryType;
 		}
 		else if (Variable->IsPointerClass() || Variable->IsRefClass())
 		{
-			SStream << Name << " " << (uint32)Variable->GetScope() << " " << Variable->GetValueType().CustomName;
+			SStream << Name << " " << (uint32)Variable->GetVariableDesc() << " " << Variable->GetValueType().CustomName;
 		}
 		else if (Variable->IsClass())
 		{
 			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Variable);
-			SStream << Name << " " << (uint32)Variable->GetScope() << " " << ClassValue->GetOwnerClassName();
+			SStream << Name << " " << (uint32)Variable->GetVariableDesc() << " " << ClassValue->GetOwnerClassName();
 		}
 		else if (Variable->IsArrayElement())
 		{
@@ -565,14 +565,14 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_ST
 					{
 						Name = Compiler->GetRegisterName(Variable);
 					}
-					else if (Variable->IsLocal() || Variable->IsGlobal() || Variable->IsRegister())
+					else if (Variable->IsLocalVariable() || Variable->IsGlobalVariable() || Variable->IsRegister())
 					{
 						HAZE_LOG_ERR(HAZE_TEXT("Haze parse function call not find variable name!\n"));
 					}
 				}
 			}
 
-			SStream << Name << " " << (uint32)Variable->GetScope() << " ";
+			SStream << Name << " " << (uint32)Variable->GetVariableDesc() << " ";
 			/*if (ArrayElementValue->GetIndex()->IsConstant())
 			{
 				HazeCompilerStream(SStream, ArrayElementValue->GetIndex());
@@ -599,7 +599,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_ST
 		}
 		else
 		{
-			SStream << Name << " " << (uint32)Variable->GetScope();
+			SStream << Name << " " << (uint32)Variable->GetVariableDesc();
 		}
 
 		SStream << std::endl;
@@ -709,7 +709,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetOrCreateGlobalStringVa
 	Define.Type.PrimaryType = HazeValueType::PointerBase;
 	Define.Type.SecondaryType = HazeValueType::Char;
 
-	it->second = CreateVariable(this, Define, HazeDataDesc::ConstantString, 0);
+	it->second = CreateVariable(this, Define, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
 
 	HazeValue& V = const_cast<HazeValue&>(it->second->GetValue());
 	V.Value.Extra.StringTableIndex = (int)HashMap_StringMapping.size() - 1;
@@ -868,17 +868,17 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 	else if (Value->IsString())
 	{
 		HSS << " " << HAZE_CONSTANT_STRING_NAME;			//空名字
-		HSS << " " << (uint32)Value->GetScope() << " " << (uint32)HazeValueType::Char;
+		HSS << " " << (uint32)Value->GetVariableDesc() << " " << (uint32)HazeValueType::Char;
 		HSS << " " << Module->GetGlobalStringIndex(Value);
 	}
 	else if (Value->IsNullPtr())
 	{
-		HSS << " " << 0 << " " << (uint32)Value->GetScope();
+		HSS << " " << 0 << " " << (uint32)Value->GetVariableDesc();
 	}
 	else if (Value->IsRegister())
 	{
 		HSS << " " << HazeCompiler::GetRegisterName(Value);
-		HSS << " " << (uint32)Value->GetScope();
+		HSS << " " << (uint32)Value->GetVariableDesc();
 
 		StreamExtra = true;
 	}
@@ -889,7 +889,7 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 		if (bFind)
 		{
 			HSS << " " << VarName;
-			ArrayValue ? HSS << " " << (uint32)HazeDataDesc::ArrayElement : HSS << " " << (uint32)Value->GetScope();
+			ArrayValue ? HSS << " " << (uint32)HazeDataDesc::ArrayElement : HSS << " " << (uint32)Value->GetVariableDesc();
 		}
 		else
 		{
@@ -897,7 +897,7 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 			if (bFind)
 			{
 				HSS << " " << VarName;
-				ArrayValue ? HSS << " " << (uint32)HazeDataDesc::ArrayElement : HSS << " " << (uint32)HazeDataDesc::Global;
+				ArrayValue ? HSS << " " << (uint32)HazeDataDesc::ArrayElement : HSS << " " << (uint32)HazeVariableScope::Global;
 			}
 			else if (Value->IsPointerFunction())
 			{
@@ -981,6 +981,27 @@ void HazeCompilerModule::GenValueHzicText(HazeCompilerModule* Module, HAZE_STRIN
 			}
 		}
 	}
+}
+
+void HazeCompilerModule::GenVariableHzic(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const std::shared_ptr<HazeCompilerValue>& Value)
+{
+	static HAZE_STRING Name;
+
+	Name.clear();
+	if (Value->IsGlobalVariable() && Module->GetGlobalVariableName(Value, Name))
+	{
+	}
+	else if (Value->IsLocalVariable() && Module->GetCurrFunction()->FindLocalVariableName(Value, Name))
+	{
+	}
+	else
+	{
+		HAZE_LOG_ERR_W("生成中间代码错误,变量作用域错误!\n");
+		return;
+	}
+
+	HSS << Name << " " << CAST_SCOPE(Value->GetVariableScope()) << " " << CAST_DESC(Value->GetVariableDesc()) << " ";
+	Value->GetValueType().StringStreamTo(HSS);
 }
 
 void HazeCompilerModule::GenICode()

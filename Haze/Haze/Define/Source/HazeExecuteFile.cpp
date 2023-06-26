@@ -385,7 +385,7 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& In
 		FileStream->write(HAZE_WRITE_AND_SIZE(Uint));
 		FileStream->write(BinaryString.data(), Uint);								//操作数名字
 
-		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Scope));								//操作数作用域
+		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Desc));								//操作数作用域
 		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.SecondaryType));		//子类型
 
 		BinaryString = WString2String(Iter.Variable.Type.CustomName);
@@ -396,7 +396,7 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& In
 		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Extra.Index));								//操作数索引
 		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.AddressType));
 
-		if (IsClassMember(Iter.Scope) || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement
+		if (IsClassMember(Iter.Desc) || IsJmpOpCode(Instruction.InsCode) || Iter.Desc == HazeDataDesc::ArrayElement
 			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
 		{
 			FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移
@@ -674,7 +674,7 @@ void HazeExecuteFile::ReadInstruction(Instruction& Instruction)
 		InFileStream->read(BinaryString.data(), UnsignedInt);
 		Iter.Variable.Name = String2WString(BinaryString);
 
-		InFileStream->read(HAZE_READ(Iter.Scope));
+		InFileStream->read(HAZE_READ(Iter.Desc));
 		InFileStream->read(HAZE_READ(Iter.Variable.Type.SecondaryType));
 
 		InFileStream->read(HAZE_READ(UnsignedInt));
@@ -685,7 +685,7 @@ void HazeExecuteFile::ReadInstruction(Instruction& Instruction)
 		InFileStream->read(HAZE_READ(Iter.Extra.Index));
 		InFileStream->read(HAZE_READ(Iter.AddressType));
 
-		if (IsClassMember(Iter.Scope) || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement
+		if (IsClassMember(Iter.Desc) || IsJmpOpCode(Instruction.InsCode) || Iter.Desc == HazeDataDesc::ArrayElement
 			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
 		{
 			InFileStream->read(HAZE_READ(Iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型

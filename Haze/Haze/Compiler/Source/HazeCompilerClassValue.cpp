@@ -3,14 +3,14 @@
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerClass.h"
 
-extern std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeDataDesc Scope, int Count,
-	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param);
+//extern std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
+//	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param);
 
-HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count)
-	: HazeCompilerValue(Module, DefineType, Scope, Count)
+HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count)
+	: HazeCompilerValue(Module, DefineType, Scope, Desc, Count)
 {
 	OwnerClass = Module->GetClass(DefineType.CustomName).get();
-	Vector_Data = std::move(CreateVariableCopyClassMember(Module, OwnerClass));
+	Vector_Data = std::move(CreateVariableCopyClassMember(Module, Scope, OwnerClass));
 }
 
 HazeCompilerClassValue::~HazeCompilerClassValue()

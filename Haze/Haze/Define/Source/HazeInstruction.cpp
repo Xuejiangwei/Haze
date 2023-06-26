@@ -202,16 +202,16 @@ public:
 		{
 			int Size = GetSizeByType(Operator[0].Variable.Type, Stack->VM);
 
-			if (Operator[0].Scope == HazeDataDesc::Constant)
+			if (Operator[0].Desc == HazeDataDesc::Constant)
 			{
 				int N = StringToStandardType<int>(Operator[0].Variable.Name);
 				memcpy(&Stack->Stack_Main[Stack->ESP], &N, Size);
 			}
-			else if (Operator[0].Scope == HazeDataDesc::Address)
+			else if (Operator[0].Desc == HazeDataDesc::Address)
 			{
 				memcpy(&Stack->Stack_Main[Stack->ESP], &Stack->PC, Size);
 			}
-			else if (Operator[0].Scope == HazeDataDesc::ClassThis)
+			else if (Operator[0].Desc == HazeDataDesc::ClassThis)
 			{
 				uint64 Address = (uint64)GetAddressByOperator(Stack, Operator[0]);
 				memcpy(&Stack->Stack_Main[Stack->ESP], &Address, sizeof(uint64));
@@ -1034,7 +1034,7 @@ private:
 		thread_local static HazeVariable ConstantValue;
 		thread_local static uint64 TempAddress;
 
-		if (Operator.Scope == HazeDataDesc::Constant || Operator.Scope == HazeDataDesc::NullPtr)
+		if (Operator.Desc == HazeDataDesc::Constant || Operator.Desc == HazeDataDesc::NullPtr)
 		{
 			auto& Type = const_cast<HazeDefineType&>(ConstantValue.GetType());
 			auto& Value = const_cast<HazeValue&>(ConstantValue.GetValue());
@@ -1043,16 +1043,16 @@ private:
 			StringToHazeValueNumber(Operator.Variable.Name, Type.PrimaryType, Value);
 			Ret = GetBinaryPointer(Type.PrimaryType, Value);
 		}
-		else if (Operator.Scope == HazeDataDesc::Global)
+		else if (Operator.Scope == HazeVariableScope::Global)
 		{
 			Ret = Stack->VM->GetGlobalValue(Operator.Variable.Name);
 		}
-		else if (Operator.Scope == HazeDataDesc::ConstantString)
+		else if (Operator.Desc == HazeDataDesc::ConstantString)
 		{
 			TempAddress = (uint64)&Stack->GetVM()->GetHazeStringByIndex(Operator.Extra.Index);
 			Ret = &TempAddress;
 		}
-		else if (IsRegisterScope(Operator.Scope))
+		else if (IsRegisterScope(Operator.Desc))
 		{
 			HazeRegister* Register = Stack->GetVirtualRegister(Operator.Variable.Name.c_str());
 
@@ -1064,7 +1064,7 @@ private:
 
 			Ret = Register->Data.begin()._Unwrapped();
 		}
-		else if (IsClassMember(Operator.Scope) && Operator.AddressType == InstructionAddressType::Pointer_Offset)
+		else if (IsClassMember(Operator.Desc) && Operator.AddressType == InstructionAddressType::Pointer_Offset)
 		{
 			memcpy(&TempAddress, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
 
@@ -1074,11 +1074,11 @@ private:
 			HSS << Stack->EBP << " " << Stack->ESP << " " << Operator.Extra.Address.BaseAddress << " " << Address << " ";
 #endif
 		}
-		else if (Operator.Scope == HazeDataDesc::ArrayElement)
+		else if (Operator.Desc == HazeDataDesc::ArrayElement)
 		{
 			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress + Operator.Extra.Address.Offset];
 		}
-		else if (Operator.Scope == HazeDataDesc::FunctionAddress)
+		else if (Operator.Desc == HazeDataDesc::FunctionAddress)
 		{
 			TempAddress = (uint64)((void*)&Stack->VM->GetFunctionByName(Operator.Variable.Name));
 			Ret = &TempAddress;
@@ -1117,7 +1117,7 @@ private:
 			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, Instruction.InsCode, GetAddressByOperator(Stack, Operator[1]), GetAddressByOperator(Stack, Operator[0]));
 			}
-			else if (IsRegisterScope(Operator[0].Scope) && IsIntegerType(Operator[1].Variable.Type.PrimaryType))
+			else if (IsRegisterScope(Operator[0].Desc) && IsIntegerType(Operator[1].Variable.Type.PrimaryType))
 			{
 				if (Instruction.InsCode == InstructionOpCode::ADD || Instruction.InsCode == InstructionOpCode::SUB
 					|| Instruction.InsCode == InstructionOpCode::ADD_ASSIGN || Instruction.InsCode == InstructionOpCode::SUB_ASSIGN)

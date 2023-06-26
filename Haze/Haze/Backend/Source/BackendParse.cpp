@@ -303,19 +303,19 @@ void BackendParse::ParseInstructionData(InstructionData& Data, bool ParsePrimary
 	}
 	
 	GetNextLexmeAssign_HazeString(Data.Variable.Name);
-	GetNextLexmeAssign_CustomType<uint32>(Data.Scope);
+	GetNextLexmeAssign_CustomType<uint32>(Data.Desc);
 
-	if (Data.Scope == HazeDataDesc::ArrayElement)
+	if (Data.Desc == HazeDataDesc::ArrayElement)
 	{
 		GetNextLexmeAssign_CustomType<uint32>(Data.Extra.Index);
 	}
 
 	if ((Data.Variable.Type.PrimaryType == HazeValueType::PointerBase || Data.Variable.Type.PrimaryType == HazeValueType::ReferenceBase)
-		&& Data.Scope != HazeDataDesc::NullPtr)
+		&& Data.Desc != HazeDataDesc::NullPtr)
 	{
 		GetNextLexmeAssign_CustomType<uint32>(Data.Variable.Type.SecondaryType);
 
-		if (Data.Scope == HazeDataDesc::ConstantString)
+		if (Data.Desc == HazeDataDesc::ConstantString)
 		{
 			GetNextLexmeAssign_CustomType<int>(Data.Extra.Index);
 		}
@@ -391,7 +391,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::Void)
 		{
 			OperatorOne.Variable.Name = HAZE_TEXT("Void");
-			OperatorOne.Scope = HazeDataDesc::None;
+			OperatorOne.Desc = HazeDataDesc::None;
 		}
 		else
 		{
@@ -515,7 +515,7 @@ void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& NewStringTable, M
 		{
 			for (auto& Operator : Iter.Operator)
 			{
-				if (Operator.Scope == HazeDataDesc::ConstantString)
+				if (Operator.Desc == HazeDataDesc::ConstantString)
 				{
 					Operator.Extra.Index += (uint32)NewStringTable.Vector_String.size();
 				}
@@ -600,7 +600,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 				for (auto& it : CurrFunction.Vector_Instruction[i].Operator)
 				{
 					auto& VariableName = it.Variable.Name;
-					if (it.Scope == HazeDataDesc::ArrayElement)
+					if (it.Desc == HazeDataDesc::ArrayElement)
 					{
 						auto Iter_Index = HashMap_Variable.find(it.Variable.Name);
 						if (Iter_Index != HashMap_Variable.end())
@@ -628,7 +628,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 							HAZE_LOG_ERR(HAZE_TEXT("查找变量<%s>的偏移地址错误,当前函数<%s>!\n"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
 						}
 					}
-					else if (IsClassMember(it.Scope))
+					else if (IsClassMember(it.Desc))
 					{
 
 
@@ -660,7 +660,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 						auto Index = (int)NewGlobalDataTable.GetIndex(ObjName);
 						if (Index >= 0)
 						{
-							it.Scope = HazeDataDesc::Global;
+							it.Scope = HazeVariableScope::Global;
 							it.Extra.Address.BaseAddress = Index;
 
 							auto Class = GetClass(NewGlobalDataTable.Vector_Data[Index].Type.CustomName);
@@ -679,7 +679,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 							continue;
 						}
 					}
-					else if (it.Scope == HazeDataDesc::Local || it.Scope == HazeDataDesc::ClassThis)
+					else if (it.Scope == HazeVariableScope::Local || it.Desc == HazeDataDesc::ClassThis)
 					{
 						it.AddressType = InstructionAddressType::Address_Offset;
 
@@ -693,7 +693,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 							HAZE_LOG_ERR(HAZE_TEXT("在函数<%s>中查找<%s>的偏移值失败!\n"), CurrFunction.Name.c_str(), it.Variable.Name.c_str());
 						}
 					}
-					else if (it.Scope == HazeDataDesc::Global)
+					else if (it.Scope == HazeVariableScope::Global)
 					{
 						auto Index = (int)NewGlobalDataTable.GetIndex(it.Variable.Name);
 
@@ -710,7 +710,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 								auto Class = GetClass(NewGlobalDataTable.Vector_Data[Index].Type.CustomName);
 								if (Class)
 								{
-									it.Scope = HazeDataDesc::Global;
+									it.Scope = HazeVariableScope::Global;
 									it.Extra.Index = Index;
 									it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
 								}
@@ -758,7 +758,7 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		B_OFS.write(HAZE_WRITE_AND_SIZE(UnsignedInt));
 		B_OFS.write(BinaryString.data(), UnsignedInt);								//操作数名字
 
-		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Scope));								//操作数作用域
+		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Desc));								//操作数作用域
 		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.SecondaryType));		//子类型
 
 		BinaryString = WString2String(Iter.Variable.Type.CustomName);
@@ -769,7 +769,7 @@ void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::Fun
 		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Extra.Index));								//操作数索引
 		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.AddressType));
 		
-		if (IsClassMember(Iter.Scope) || IsJmpOpCode(Instruction.InsCode) || Iter.Scope == HazeDataDesc::ArrayElement
+		if (IsClassMember(Iter.Desc) || IsJmpOpCode(Instruction.InsCode) || Iter.Desc == HazeDataDesc::ArrayElement
 			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
 		{
 			B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移

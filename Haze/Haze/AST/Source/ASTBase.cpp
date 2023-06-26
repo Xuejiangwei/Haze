@@ -93,7 +93,7 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	{
 		RetValue = Compiler->GetGlobalVariable(DefineVariable.Name);
 	}
-	else if (SectionSignal == HazeSectionSignal::Function)
+	else if (SectionSignal == HazeSectionSignal::Local)
 	{
 		RetValue = Compiler->GetLocalVariable(DefineVariable.Name);
 		if (!RetValue)
@@ -126,8 +126,8 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	{
 		if (!Compiler->GetCurrModule()->GetFunction(DefineVariable.Name))
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("未能找到变量<%s>,当前函数<%s>!\n"), DefineVariable.Name.c_str(),
-				SectionSignal == HazeSectionSignal::Function ? Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
+			HAZE_LOG_ERR_W("未能找到变量<%s>,当前函数<%s>!\n", DefineVariable.Name.c_str(),
+				SectionSignal == HazeSectionSignal::Local ? Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
 			return nullptr;
 		}
 	}
@@ -155,7 +155,7 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		Param.push_back(FunctionParam[i]->CodeGen());
 		if (!Param.back())
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("函数<%s>中<%d>行调用<%s>第<%d>个参数错误!\n"), Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), Location.Line, Name.c_str(), i + 1);
+			HAZE_LOG_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误!\n", Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), Location.Line, Name.c_str(), i + 1);
 			return nullptr;
 		}
 	}
@@ -186,7 +186,7 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		}
 	}
 
-	HAZE_LOG_ERR(HAZE_TEXT("生成函数调用<%s>错误,"), Name.c_str());
+	HAZE_LOG_ERR_W("生成函数调用<%s>错误,", Name.c_str());
 	return nullptr;
 }
 
@@ -219,8 +219,8 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		}
 		else
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n"), DefineVariable.Name.c_str(),
-				SectionSignal == HazeSectionSignal::Function ? Module->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
+			HAZE_LOG_ERR_W("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n", DefineVariable.Name.c_str(),
+				SectionSignal == HazeSectionSignal::Local ? Module->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
 			return nullptr;
 		}
 	}
@@ -246,7 +246,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	{
 		RetValue = Compiler->CreateGlobalVariable(Module, DefineVariable, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
 	}
-	else if (SectionSignal == HazeSectionSignal::Function)
+	else if (SectionSignal == HazeSectionSignal::Local)
 	{
 		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
 		Compiler->InsertLineCount(Location.Line);
@@ -255,7 +255,6 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	{
 		RetValue = Compiler->CreateClassVariable(Module, DefineVariable, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
 	}
-
 
 	if (RetValue && ExprValue)
 	{
@@ -295,7 +294,7 @@ std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("返回值类型错误! <%s>文件<%s>函数<%d>行\n"), Compiler->GetCurrModuleName().c_str(), Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), Location.Line);
+		HAZE_LOG_ERR_W("返回值类型错误! <%s>文件<%s>函数<%d>行\n", Compiler->GetCurrModuleName().c_str(), Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), Location.Line);
 	}
 
 	return nullptr;
@@ -340,7 +339,7 @@ std::shared_ptr<HazeCompilerValue> ASTGetAddress::CodeGen()
 		}
 		else
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("未能找到函数<%s>去获得函数地址!\n"), Expression->GetName());
+			HAZE_LOG_ERR_W("未能找到函数<%s>去获得函数地址!\n", Expression->GetName());
 		}
 	}
 	else
@@ -375,7 +374,7 @@ std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("未能获得<%s>指针指向的值!\n"), DefineVariable.Name.c_str());
+		HAZE_LOG_ERR_W("未能获得<%s>指针指向的值!\n", DefineVariable.Name.c_str());
 	}
 
 	return nullptr;
@@ -541,7 +540,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		{
 			if (!LeftExp)
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("二元表达式错误!\n"));
+				HAZE_LOG_ERR_W("二元表达式错误!\n");
 				return nullptr;
 			}
 
@@ -849,7 +848,7 @@ std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 
 	if (!InitExpression->CodeGen())
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("循环语句初始化失败!\n"));
+		HAZE_LOG_ERR_W("循环语句初始化失败!\n");
 		return nullptr;
 	}
 

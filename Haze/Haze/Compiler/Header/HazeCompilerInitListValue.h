@@ -5,7 +5,7 @@
 class HazeCompilerInitListValue : public HazeCompilerValue
 {
 public:
-	explicit HazeCompilerInitListValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeDataDesc Scope, int Count);
+	explicit HazeCompilerInitListValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count);
 	~HazeCompilerInitListValue();
 
 	void ResetInitializeList(std::vector<std::shared_ptr<HazeCompilerValue>>& List) { Vector_InitList = std::move(List); }

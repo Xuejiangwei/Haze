@@ -742,7 +742,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 
 			return std::make_unique<ASTVariableDefine>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), DefineVariable, std::move(Expression), std::move(ArraySize), PointerLevel);
 		}
-		else if ((CurrToken == HazeToken::RightParentheses || CurrToken == HazeToken::Comma) && StackSectionSignal.top() == HazeSectionSignal::Function)
+		else if ((CurrToken == HazeToken::RightParentheses || CurrToken == HazeToken::Comma) && StackSectionSignal.top() == HazeSectionSignal::Local)
 		{
 			//函数调用
 			return std::make_unique<ASTVariableDefine>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), DefineVariable, nullptr);
@@ -1265,7 +1265,7 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunctionSection()
 
 std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 {
-	StackSectionSignal.push(HazeSectionSignal::Function);
+	StackSectionSignal.push(HazeSectionSignal::Local);
 	uint32 TempLineCount = LineCount;
 
 	//获得函数返回类型及是自定义类型时获得类型名字
@@ -1418,7 +1418,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 {
 	uint32 TempLineCount = LineCount;
 	HAZE_STRING FunctionName = CurrLexeme;
-	StackSectionSignal.push(HazeSectionSignal::Function);
+	StackSectionSignal.push(HazeSectionSignal::Local);
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数左边需要 (")))
 	{
 		std::vector<HazeDefineVariable> Vector_Param;
@@ -1474,7 +1474,7 @@ std::unique_ptr<ASTLibrary> Parse::ParseLibrary()
 	GetNextToken();
 	HAZE_STRING StandardLibraryName = CurrLexeme;
 
-	StackSectionSignal.push(HazeSectionSignal::StandardLibrary);
+	StackSectionSignal.push(HazeSectionSignal::Global);
 
 	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("标准库需要 {")))
 	{
@@ -1526,7 +1526,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefi
 		GetNextToken();
 		while (CurrToken != HazeToken::RightBrace)
 		{
-			StackSectionSignal.push(HazeSectionSignal::Function);
+			StackSectionSignal.push(HazeSectionSignal::Local);
 
 			//获得函数返回类型及是自定义类型时获得类型名字
 			HazeDefineType FuncType;
