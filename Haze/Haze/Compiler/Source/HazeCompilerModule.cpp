@@ -744,6 +744,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const H
 		{
 			return it.second;
 		}
+		else if (it.second->IsClass())
+		{
+			auto Ret = GetObjectMember(this, Name);
+			if (Ret)
+			{
+				return Ret;
+			}
+		}
 	}
 
 	for (auto& Module : Vector_ImportModule)
@@ -995,8 +1003,22 @@ void HazeCompilerModule::GenICode()
 
 	for (auto& iter : Vector_Variable)
 	{
-		HSS_I_Code << iter.first << " " << CAST_UINT32(iter.second->GetValueType().PrimaryType) << " ";
-		HazeCompilerStream(HSS_I_Code, iter.second);
+		HSS_I_Code << iter.first << " " << iter.second->GetSize() << " " << CAST_UINT32(iter.second->GetValueType().PrimaryType) << " ";
+		
+		if (IsHazeDefaultType(iter.second->GetValueType().PrimaryType))
+		{
+			HazeCompilerStream(HSS_I_Code, iter.second);
+		}
+		else
+		{
+			if (iter.second->IsClass())
+			{
+				auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(iter.second);
+				HSS_I_Code << ClassValue->GetOwnerClassName();
+			}
+		}
+
+
 		HSS_I_Code << std::endl;
 	}
 

@@ -20,5 +20,10 @@ private:
 	HAZE_STRING Name;
 
 	HazeDefineType Type;
-	HazeValue Value;
+
+	union
+	{
+		HazeValue Value;
+		void* Address;
+	};
 };

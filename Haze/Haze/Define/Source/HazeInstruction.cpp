@@ -1045,7 +1045,7 @@ private:
 		}
 		else if (Operator.Scope == HazeDataDesc::Global)
 		{
-			Ret = (void*)&Stack->VM->GetGlobalValue(Operator.Variable.Name)->Value;
+			Ret = Stack->VM->GetGlobalValue(Operator.Variable.Name);
 		}
 		else if (Operator.Scope == HazeDataDesc::ConstantString)
 		{

@@ -198,6 +198,10 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Ta
 
 	uint32 UInt = (uint32)Table.Vector_Data.size();
 	FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
+
+	UInt = (uint32)Table.ClassObjectAllSize;
+	FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
+
 	for (auto& Iter : Table.Vector_Data)
 	{
 		BinaryString = WString2String(Iter.Name);
@@ -205,17 +209,26 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Ta
 		FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 		FileStream->write(BinaryString.c_str(), UInt);
 		
-		
+		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Size));
+
 		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Type.PrimaryType));
 
-		if (Iter.Type.HasCustomName() || Iter.Type.NeedSecondaryType())
+		if (Iter.Type.NeedSecondaryType())
 		{
-			HAZE_TO_DO(生成文件全局变量为复杂类型或自定义类类型);
-			return;
+			FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Type.SecondaryType));
 		}
-		else
+
+		if (Iter.Type.NeedCustomName())
 		{
-			FileStream->write(GetBinaryPointer(Iter.Type.PrimaryType, Iter.Value), GetSizeByHazeType(Iter.Type.PrimaryType));
+			BinaryString = WString2String(Iter.Type.CustomName);
+			UInt = CAST_UINT32(BinaryString.size());
+			FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
+			FileStream->write(BinaryString.c_str(), UInt);
+		}
+
+		if (!(Iter.Type.NeedCustomName() || Iter.Type.NeedSecondaryType()))
+		{
+			FileStream->write(GetBinaryPointer(Iter.Type.PrimaryType, Iter.Value), Iter.Size);
 		}
 	}
 }
@@ -453,6 +466,10 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* VM)
 	InFileStream->read(HAZE_READ(Num));
 	VM->Vector_GlobalData.resize(Num);
 
+	InFileStream->read(HAZE_READ(Num));
+	VM->Vector_GlobalDataClassObjectMemory.resize(Num);
+
+	int ClassObjectMemoryIndex = 0;
 	for (uint64 i = 0; i < VM->Vector_GlobalData.size(); i++)
 	{
 		InFileStream->read(HAZE_READ(Num));
@@ -460,20 +477,33 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* VM)
 		BinaryString.resize(Num);
 		InFileStream->read(BinaryString.data(), Num);
 		VM->Vector_GlobalData[i].Name = String2WString(BinaryString);
+		
+		int Size = 0;
+		InFileStream->read(HAZE_READ(Size));
 
 		InFileStream->read((char*)&VM->Vector_GlobalData[i].Type.PrimaryType, sizeof(HazeValueType));
 
-		if (VM->Vector_GlobalData[i].Type.HasCustomName() || VM->Vector_GlobalData[i].Type.NeedSecondaryType())
+		if (VM->Vector_GlobalData[i].Type.NeedSecondaryType())
 		{
-			HAZE_TO_DO(读取文件全局变量为复杂类型或自定义类类型);
-			return;
+			InFileStream->read((char*)&VM->Vector_GlobalData[i].Type.SecondaryType, sizeof(HazeValueType));
+		}
+		if (VM->Vector_GlobalData[i].Type.NeedCustomName())
+		{
+			InFileStream->read(HAZE_READ(Num));
+			BinaryString.resize(Num);
+			InFileStream->read(BinaryString.data(), Num);
+			VM->Vector_GlobalData[i].Type.CustomName = String2WString(BinaryString);
+		}
+
+		if (!(VM->Vector_GlobalData[i].Type.NeedCustomName() || VM->Vector_GlobalData[i].Type.NeedSecondaryType()))
+		{
+			InFileStream->read(GetBinaryPointer(VM->Vector_GlobalData[i].Type.PrimaryType, VM->Vector_GlobalData[i].Value), Size);
 		}
 		else
 		{
-			InFileStream->read(GetBinaryPointer(VM->Vector_GlobalData[i].Type.PrimaryType, VM->Vector_GlobalData[i].Value),
-				GetSizeByHazeType(VM->Vector_GlobalData[i].Type.PrimaryType));
+			VM->Vector_GlobalData[i].Address = &VM->Vector_GlobalDataClassObjectMemory[ClassObjectMemoryIndex];
+			ClassObjectMemoryIndex += Size;
 		}
-
 	}
 }
 

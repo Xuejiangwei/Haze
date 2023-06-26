@@ -124,11 +124,23 @@ void BackendParse::Parse_I_Code_GlobalTable()
 		{
 			GetNextLexmeAssign_HazeString(Table.Vector_Data[i].Name);
 
+			GetNextLexmeAssign_StandardType(Table.Vector_Data[i].Size);
 
 			GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Data[i].Type.PrimaryType);
 
-			GetNextLexeme();
-			StringToHazeValueNumber(CurrLexeme, Table.Vector_Data[i].Type.PrimaryType, Table.Vector_Data[i].Value);
+			if (IsHazeDefaultType(Table.Vector_Data[i].Type.PrimaryType))
+			{
+				GetNextLexeme();
+				StringToHazeValueNumber(CurrLexeme, Table.Vector_Data[i].Type.PrimaryType, Table.Vector_Data[i].Value);
+			}
+			else
+			{
+				if (IsClassType(Table.Vector_Data[i].Type.PrimaryType))
+				{
+					GetNextLexmeAssign_HazeString(Table.Vector_Data[i].Type.CustomName);
+					Table.ClassObjectAllSize += Table.Vector_Data[i].Size;
+				}
+			}
 		}
 	}
 }
@@ -484,6 +496,8 @@ void BackendParse::GenOpCodeFile()
 		ReplaceStringIndex(NewStringTable, NewFunctionTable, FunctionCount);
 
 		NewGlobalDataTable.Vector_Data.insert(NewGlobalDataTable.Vector_Data.end(), Module.second->Table_GlobalData.Vector_Data.begin(), Module.second->Table_GlobalData.Vector_Data.end());
+		NewGlobalDataTable.ClassObjectAllSize += Module.second->Table_GlobalData.ClassObjectAllSize;
+		
 		NewStringTable.Vector_String.insert(NewStringTable.Vector_String.end(), Module.second->Table_String.Vector_String.begin(), Module.second->Table_String.Vector_String.end());
 		NewClassTable.Vector_Class.insert(NewClassTable.Vector_Class.end(), Module.second->Table_Class.Vector_Class.begin(), Module.second->Table_Class.Vector_Class.end());
 	}
@@ -578,6 +592,11 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 			}
 			else
 			{
+				HAZE_STRING ObjName;
+				HAZE_STRING MemberName;
+				bool IsPointer = false;
+				bool Find = false;
+
 				for (auto& it : CurrFunction.Vector_Instruction[i].Operator)
 				{
 					auto& VariableName = it.Variable.Name;
@@ -611,40 +630,53 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 					}
 					else if (IsClassMember(it.Scope))
 					{
-						HAZE_STRING ObjName;
-						HAZE_STRING MemberName;
-						bool IsPointer = false;
-						bool Find = false;
-						{
-							FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
 
-							for (uint32 j = 0; j < CurrFunction.Vector_Variable.size(); j++)
+
+						FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
+
+						for (uint32 j = 0; j < CurrFunction.Vector_Variable.size(); j++)
+						{
+							if (CurrFunction.Vector_Variable[j].Variable.Name == ObjName)
 							{
-								if (CurrFunction.Vector_Variable[j].Variable.Name == ObjName)
+								auto Class = GetClass(CurrFunction.Vector_Variable[j].Variable.Type.CustomName);
+								if (IsPointer)
 								{
-									auto Class = GetClass(CurrFunction.Vector_Variable[j].Variable.Type.CustomName);
-									if (IsPointer)
-									{
-										//需要存储一个指针指向地址的相对偏移
-										it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset;
-										it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
-										it.AddressType = InstructionAddressType::Pointer_Offset;
-										Find = true;
-										break;
-									}
-									else
-									{
-										it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset + GetMemberOffset(*Class, MemberName);
-										Find = true;
-										break;
-									}
+									//需要存储一个指针指向地址的相对偏移
+									it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset;
+									it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+									it.AddressType = InstructionAddressType::Pointer_Offset;
+									Find = true;
+									break;
+								}
+								else
+								{
+									it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset + GetMemberOffset(*Class, MemberName);
+									Find = true;
+									break;
 								}
 							}
+						}
 
-							if (Find)
+						auto Index = (int)NewGlobalDataTable.GetIndex(ObjName);
+						if (Index >= 0)
+						{
+							it.Scope = HazeDataDesc::Global;
+							it.Extra.Address.BaseAddress = Index;
+
+							auto Class = GetClass(NewGlobalDataTable.Vector_Data[Index].Type.CustomName);
+							if (Class)
 							{
-								continue;
+								it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
 							}
+							else
+							{
+								HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", VariableName.c_str());
+							}
+						}
+
+						if (Find)
+						{
+							continue;
 						}
 					}
 					else if (it.Scope == HazeDataDesc::Local || it.Scope == HazeDataDesc::ClassThis)
@@ -663,7 +695,31 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 					}
 					else if (it.Scope == HazeDataDesc::Global)
 					{
-						it.Extra.Index = (int)NewGlobalDataTable.GetIndex(it.Variable.Name);
+						auto Index = (int)NewGlobalDataTable.GetIndex(it.Variable.Name);
+
+						if (Index >= 0)
+						{
+							it.Extra.Index = Index;
+						}
+						else
+						{
+							FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
+							Index = (int)NewGlobalDataTable.GetIndex(ObjName);
+							if (Index >= 0)
+							{
+								auto Class = GetClass(NewGlobalDataTable.Vector_Data[Index].Type.CustomName);
+								if (Class)
+								{
+									it.Scope = HazeDataDesc::Global;
+									it.Extra.Index = Index;
+									it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+								}
+							}
+							else
+							{
+								HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", VariableName.c_str());
+							}
+						}
 					}
 				}
 			}

@@ -16,6 +16,7 @@ public:
 	struct GlobalData
 	{
 		HAZE_STRING Name;
+		uint32 Size;
 		HazeDefineType Type;
 		HazeValue Value;
 	};
@@ -23,10 +24,12 @@ public:
 	struct GlobalDataTable
 	{
 		std::vector<GlobalData> Vector_Data;
+		uint32 ClassObjectAllSize;
 
 		GlobalDataTable()
 		{
 			Vector_Data.clear();
+			ClassObjectAllSize = 0;
 		}
 
 		uint64 GetIndex(const HAZE_STRING& Name)

@@ -58,7 +58,7 @@ public:
 
 	const HAZE_STRING& GetHazeStringByIndex(int Index) const { return Vector_StringTable[Index].second; }
 
-	HazeValue* GetGlobalValue(const HAZE_STRING& Name);
+	void* GetGlobalValue(const HAZE_STRING& Name);
 
 	ClassData* FindClass(const HAZE_STRING& ClassName);
 
@@ -100,6 +100,8 @@ private:
 	std::unordered_map<HAZE_STRING, uint32> HashMap_FunctionTable;
 
 	std::vector<Instruction> Vector_Instruction;
+
+	std::vector<char> Vector_GlobalDataClassObjectMemory;
 
 	HazeGenType GenType;
 };

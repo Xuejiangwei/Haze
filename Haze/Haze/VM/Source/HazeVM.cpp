@@ -145,13 +145,70 @@ const FunctionData& HazeVM::GetFunctionByName(const HAZE_STRING& Name)
 	return Vector_FunctionTable[Index];
 }
 
-HazeValue* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
+void* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 {
-	for (auto& Iter : Vector_GlobalData)
+	static HAZE_STRING ObjectName;
+	static HAZE_STRING MemberName;
+
+	auto Pos = Name.find(HAZE_CLASS_POINTER_ATTR);
+	if (Pos != HAZE_STRING::npos)
 	{
-		if (Iter.Name == Name)
+		ObjectName = Name.substr(0, Pos);
+		MemberName = Name.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
+
+		for (auto& Iter : Vector_GlobalData)
 		{
-			return &Iter.Value;
+			if (Iter.Name == ObjectName)
+			{
+				auto Class = FindClass(Iter.GetType().CustomName);
+				if (Class)
+				{
+					for (size_t i = 0; i < Class->Vector_Member.size(); i++)
+					{
+						if (Class->Vector_Member[i].Variable.Name == MemberName)
+						{
+							uint64 Address = 0;
+							memcpy(&Address, Iter.Value.Value.Pointer, sizeof(Address));
+							return (char*)(Address + Class->Vector_Member[i].Offset);
+						}
+					}
+				}
+			}
+		}
+	}
+	 
+	Pos = Name.find(HAZE_CLASS_ATTR);
+	if (Pos != HAZE_STRING::npos)
+	{
+		ObjectName = Name.substr(0, Pos);
+		MemberName = Name.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
+
+		for (auto& Iter : Vector_GlobalData)
+		{
+			if (Iter.Name == ObjectName)
+			{
+				auto Class = FindClass(Iter.GetType().CustomName);
+				if (Class)
+				{
+					for (size_t i = 0; i < Class->Vector_Member.size(); i++)
+					{
+						if (Class->Vector_Member[i].Variable.Name == MemberName)
+						{
+							return (char*)Iter.Address + Class->Vector_Member[i].Offset;
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (auto& Iter : Vector_GlobalData)
+		{
+			if (Iter.Name == Name)
+			{
+				return &Iter.Value.Value;
+			}
 		}
 	}
 

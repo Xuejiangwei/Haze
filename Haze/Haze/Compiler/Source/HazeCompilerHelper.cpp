@@ -238,7 +238,7 @@ std::shared_ptr<HazeCompilerValue> GetObjectMember(HazeCompilerModule* Module, c
 
 std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* Module, const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutMemberName, bool& IsPointer)
 {
-	size_t Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
+	auto Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
 	if (Pos != HAZE_STRING::npos)
 	{
 		IsPointer = true;
@@ -276,7 +276,15 @@ std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("函数<%s>中未能找到类对象<%s>!\n"), Module->GetCurrFunction()->GetName().c_str(), OutObjectName.c_str());
+				ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Module->GetGlobalVariable(OutObjectName));
+				if (ClassValue)
+				{
+					return ClassValue->GetMember(OutMemberName);
+				}
+				else
+				{
+					HAZE_LOG_ERR(HAZE_TEXT("函数<%s>中未能找到类对象<%s>!\n"), Module->GetCurrFunction()->GetName().c_str(), OutObjectName.c_str());
+				}
 			}
 		}
 	}
@@ -299,7 +307,7 @@ std::shared_ptr<HazeCompilerFunction> GetObjectFunction(HazeCompilerModule* Modu
 
 std::shared_ptr<HazeCompilerFunction> GetObjectNameAndFunctionName(HazeCompilerModule* Module, const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutFunctionName, bool& IsPointer)
 {
-	size_t Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
+	auto Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
 	if (Pos != HAZE_STRING::npos)
 	{
 		IsPointer = true;

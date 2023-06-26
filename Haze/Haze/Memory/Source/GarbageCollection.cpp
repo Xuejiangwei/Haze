@@ -40,16 +40,15 @@ void GarbageCollection::MarkClassMember(std::vector<std::pair<uint64, HazeValueT
 			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
 			Vector_MarkAddressBase.push_back({ Address, Member.Variable.Type.SecondaryType });
 		}
-		else if (VarType.PrimaryType == HazeValueType::PointerClass)
+		else if (Member.Variable.Type.PrimaryType == HazeValueType::PointerClass)
 		{
 			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
 			Vector_MarkAddressClass.push_back({ Address, VM->FindClass(Member.Variable.Type.CustomName) });
 		}
-		else if (VarType.PrimaryType == HazeValueType::Class)
+		else if (Member.Variable.Type.PrimaryType == HazeValueType::Class)
 		{
 			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.Variable.Type, BaseAddress + Member.Offset);
 		}
-
 	}
 }
 

@@ -256,8 +256,9 @@ void Parse::ParseContent()
 		case HazeToken::Double:
 		case HazeToken::UnsignedInt:
 		case HazeToken::UnsignedLong:
-		case HazeToken::String:
+		//case HazeToken::String:
 		case HazeToken::Identifier:
+		case HazeToken::CustomClass:
 		{
 			auto AST = ParseExpression();
 			AST->CodeGen();
@@ -292,6 +293,7 @@ void Parse::ParseContent()
 		{
 			auto AST = ParseImportModule();
 			AST->CodeGen();
+			GetNextToken();
 		}
 		break;
 		default:
@@ -568,7 +570,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::Double:
 	case HazeToken::UnsignedInt:
 	case HazeToken::UnsignedLong:
-	case HazeToken::String:
+	//case HazeToken::String:
 	case HazeToken::CustomClass:
 	case HazeToken::PointerBase:
 	case HazeToken::PointerClass:
@@ -1604,7 +1606,6 @@ std::unique_ptr<ASTBase> Parse::ParseImportModule()
 	if (ExpectNextTokenIs(HazeToken::Identifier))
 	{
 		HAZE_STRING Name = CurrLexeme;
-		GetNextToken();
 		return std::make_unique<ASTImportModule>(Compiler, SourceLocation(LineCount), Name);
 	}
 	else
