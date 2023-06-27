@@ -33,6 +33,8 @@ enum class InstructionOpCodeType : uint8
 };
 
 #define CAST_SCOPE(V) (uint32)V
+#define IS_SCOPE_GLOBAL(V) V == HazeVariableScope::Global
+#define IS_SCOPE_LOCAL(V) V == HazeVariableScope::Local
 enum class HazeVariableScope : uint32
 {
 	None,
@@ -147,10 +149,19 @@ enum class InstructionFunctionType : uint32
 
 enum class InstructionAddressType : uint8
 {
-	Direct,
-	GlobalDataIndex,
-	Address_Offset,
-	Pointer_Offset,
+	Global,
+	Global_Base_Offset,
+	Global_BasePointer_Offset,
+
+	Local,
+	Local_Base_Offset,
+	Local_BasePointer_Offset,
+
+	Constant,
+	NullPtr,
+	ConstantString,
+
+	Register,
 };
 
 struct InstructionData
@@ -158,7 +169,8 @@ struct InstructionData
 	HazeDefineVariable Variable;
 	HazeVariableScope Scope;
 	HazeDataDesc Desc;
-
+	InstructionAddressType AddressType;
+	
 	struct AddressData
 	{
 		int BaseAddress;
@@ -177,7 +189,6 @@ struct InstructionData
 		int InstructionNum;
 	};
 
-	InstructionAddressType AddressType;
 	union Extra
 	{
 		int Index;
@@ -195,7 +206,7 @@ struct InstructionData
 
 	InstructionData() : Variable(), Desc(HazeDataDesc::None)
 	{
-		AddressType = InstructionAddressType::Direct;
+		AddressType = InstructionAddressType::Local;
 		memset(&Extra, 0, sizeof(Extra));
 	}
 
@@ -276,7 +287,7 @@ struct HazFrameFunctionData
 	std::vector<HazeDefineVariable*> Vector_LocalParam;
 };
 
-bool IsRegisterScope(HazeDataDesc Scope);
+bool IsRegisterDesc(HazeDataDesc Scope);
 
 bool IsJmpOpCode(InstructionOpCode Code);
 

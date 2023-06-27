@@ -22,8 +22,6 @@
 
 #define HAZE_ADDRESS_SIZE (int)sizeof(int)
 
-#define CAST_UINT32(X) (uint32)(X)
-
 #define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
 
 #define HAZE_FILE_SUFFIX				HAZE_TEXT(".hz")
@@ -92,7 +90,7 @@
 
 #define	HAZE_JMP_NULL					HAZE_TEXT("JmpNull")
 
-#define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_STRING(HAZE_TEXT("Address"))
+#define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_STRING(HAZE_TEXT("RetAddress"))
 
 #define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* Data, int MultiParamNum
 

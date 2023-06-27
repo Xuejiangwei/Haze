@@ -8,7 +8,7 @@
 #include "HazeFilePathHelper.h"
 #include "HazeLog.h"
 
-#define BACKEND_INSTRUCTION_LOG			0
+#define BACKEND_INSTRUCTION_LOG			1
 
 static std::pair<bool, int> ParseStringCount = { false, 0 };
 
@@ -31,6 +31,50 @@ static void FindObjectAndMemberName(const HAZE_STRING& InName, HAZE_STRING& OutO
 			ObjectIsPointer = false;
 		}
 	}
+}
+
+static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& Ins)
+{
+	if (Ins.InsCode == InstructionOpCode::CALL && Ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::Function)
+	{
+		return true;
+	}
+
+	if (Ins.InsCode == InstructionOpCode::RET && IsVoidType(Ins.Operator[0].Variable.Type.PrimaryType))
+	{
+		return true;
+	}
+
+	return false;
+}
+
+static bool IsIgnoreFindAddress(InstructionData& Operator)
+{
+	if (Operator.Desc == HazeDataDesc::Constant)
+	{
+		Operator.AddressType = InstructionAddressType::Constant;
+		return true;
+	}
+
+	if (Operator.Desc == HazeDataDesc::ConstantString)
+	{
+		Operator.AddressType = InstructionAddressType::ConstantString;
+		return true;
+	}
+
+	if (Operator.Variable.Name == HAZE_CALL_PUSH_ADDRESS_NAME)
+	{
+		Operator.AddressType = InstructionAddressType::Local;
+		return true;
+	}
+
+	if (IsRegisterDesc(Operator.Desc))
+	{
+		Operator.AddressType = InstructionAddressType::Register;
+		return true;
+	}
+
+	return false;
 }
 
 BackendParse::BackendParse(HazeVM* VM) : VM(VM), CurrCode(nullptr)
@@ -295,35 +339,18 @@ void BackendParse::Parse_I_Code_FunctionTable()
 	}
 }
 
-void BackendParse::ParseInstructionData(InstructionData& Data, bool ParsePrimaryType)
+void BackendParse::ParseInstructionData(InstructionData& Data)
 {
-	if (ParsePrimaryType)
-	{
-		GetNextLexmeAssign_CustomType<uint32>(Data.Variable.Type.PrimaryType);
-	}
-	
 	GetNextLexmeAssign_HazeString(Data.Variable.Name);
+	GetNextLexmeAssign_CustomType<uint32>(Data.Scope);
 	GetNextLexmeAssign_CustomType<uint32>(Data.Desc);
 
-	if (Data.Desc == HazeDataDesc::ArrayElement)
+	Data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString, 
+		&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
+
+	if (Data.Desc == HazeDataDesc::ArrayElement || Data.Desc == HazeDataDesc::ConstantString)
 	{
 		GetNextLexmeAssign_CustomType<uint32>(Data.Extra.Index);
-	}
-
-	if ((Data.Variable.Type.PrimaryType == HazeValueType::PointerBase || Data.Variable.Type.PrimaryType == HazeValueType::ReferenceBase)
-		&& Data.Desc != HazeDataDesc::NullPtr)
-	{
-		GetNextLexmeAssign_CustomType<uint32>(Data.Variable.Type.SecondaryType);
-
-		if (Data.Desc == HazeDataDesc::ConstantString)
-		{
-			GetNextLexmeAssign_CustomType<int>(Data.Extra.Index);
-		}
-	}
-	else if (Data.Variable.Type.PrimaryType == HazeValueType::PointerClass || Data.Variable.Type.PrimaryType == HazeValueType::ReferenceClass
-		|| Data.Variable.Type.PrimaryType == HazeValueType::Class)
-	{
-		GetNextLexmeAssign_HazeString(Data.Variable.Type.CustomName);
 	}
 }
 
@@ -385,18 +412,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::RET:
 	{
 		InstructionData OperatorOne;
-
-		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
-
-		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::Void)
-		{
-			OperatorOne.Variable.Name = HAZE_TEXT("Void");
-			OperatorOne.Desc = HazeDataDesc::None;
-		}
-		else
-		{
-			ParseInstructionData(OperatorOne, false);
-		}
+		ParseInstructionData(OperatorOne);
 
 		Instruction.Operator = { OperatorOne };
 	}
@@ -518,8 +534,161 @@ void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& NewStringTable, M
 				if (Operator.Desc == HazeDataDesc::ConstantString)
 				{
 					Operator.Extra.Index += (uint32)NewStringTable.Vector_String.size();
+					Operator.AddressType = InstructionAddressType::ConstantString;
 				}
 			}
+		}
+	}
+}
+
+void ResetFunctionBlockOffset(InstructionData& Operator, ModuleUnit::FunctionTableData& Function)
+{
+	if (Operator.Variable.Name != HAZE_JMP_NULL)
+	{
+		for (size_t i = 0; i < Function.Vector_Block.size(); i++)
+		{
+			if (Operator.Variable.Name == Function.Vector_Block[i].BlockName)
+			{
+				Operator.Extra.Jmp.StartAddress = Function.Vector_Block[i].StartAddress;
+				Operator.Extra.Jmp.InstructionNum = Function.Vector_Block[i].InstructionNum;
+				break;
+			}
+		}
+	}
+}
+
+inline void BackendParse::ResetLocalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable)
+{
+	HAZE_STRING ObjName;
+	HAZE_STRING MemberName;
+	bool IsPointer = false;
+	int Index = 0;
+
+	if (IsClassMember(Operator.Desc))
+	{
+		FindObjectAndMemberName(Operator.Variable.Name, ObjName, MemberName, IsPointer);
+		for (uint32 i = 0; i < Function.Vector_Variable.size(); i++)
+		{
+			if (Function.Vector_Variable[i].Variable.Name == ObjName)
+			{
+				auto Class = GetClass(Function.Vector_Variable[i].Variable.Type.CustomName);
+				if (IsPointer)
+				{
+					Operator.Extra.Address.BaseAddress = Function.Vector_Variable[i].Offset;
+					Operator.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+					Operator.AddressType = InstructionAddressType::Local_BasePointer_Offset;
+					break;
+				}
+				else
+				{
+					Operator.Extra.Address.BaseAddress = Function.Vector_Variable[i].Offset + GetMemberOffset(*Class, MemberName);
+					Operator.AddressType = InstructionAddressType::Local;
+					break;
+				}
+			}
+		}
+	}
+	else if (Operator.Desc == HazeDataDesc::ArrayElement)
+	{
+		auto Iter_Index = HashMap_LocalVariable.find(Operator.Variable.Name);
+		if (Iter_Index != HashMap_LocalVariable.end())
+		{
+			//避免先把Index值替换掉
+			Operator.Extra.Address.Offset = Operator.Extra.Index * GetSizeByType(Operator.Variable.Type, this);
+			Operator.Extra.Address.BaseAddress = Function.Vector_Variable[Iter_Index->second].Offset;
+			Operator.AddressType = InstructionAddressType::Local_Base_Offset;
+		}
+		else if (Function.Vector_Variable[0].Variable.Name.substr(0, 1) == HAZE_CLASS_THIS)
+		{
+			auto Class = GetClass(Function.Vector_Variable[0].Variable.Type.CustomName);
+			if (Class)
+			{
+				Operator.Extra.Address.Offset = GetMemberOffset(*Class, Operator.Variable.Name) + Operator.Extra.Index * GetSizeByType(Operator.Variable.Type, this);
+				Operator.Extra.Address.BaseAddress = Function.Vector_Variable[0].Offset;
+				Operator.AddressType = InstructionAddressType::Local_BasePointer_Offset;
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>,当前类<%s>未找到!\n",
+					Operator.Variable.Name.c_str(), Function.Name.c_str(), Function.Vector_Variable[0].Variable.Type.CustomName.c_str());
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>!\n", Operator.Variable.Name.c_str(), Function.Name.c_str());
+		}
+	}
+	else
+	{
+		auto Iter_Index = HashMap_LocalVariable.find(Operator.Variable.Name);
+		if (Iter_Index != HashMap_LocalVariable.end())
+		{
+			Operator.Extra.Address.BaseAddress = Function.Vector_Variable[Iter_Index->second].Offset;
+			Operator.AddressType = InstructionAddressType::Local;
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("在函数<%s>中查找<%s>的偏移值失败!\n", Function.Name.c_str(), Operator.Variable.Name.c_str());
+			return;
+		}
+	}
+}
+
+inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable)
+{
+	HAZE_STRING ObjName;
+	HAZE_STRING MemberName;
+	bool IsPointer = false;
+	int Index = 0;
+
+	if (IsClassMember(Operator.Desc))
+	{
+		FindObjectAndMemberName(Operator.Variable.Name, ObjName, MemberName, IsPointer);
+		Index = (int)NewGlobalDataTable.GetIndex(ObjName);
+		if (Index >= 0)
+		{
+			auto Class = GetClass(NewGlobalDataTable.Vector_Data[Index].Type.CustomName);
+			if (Class)
+			{
+				Operator.AddressType = InstructionAddressType::Global_Base_Offset;
+				Operator.Extra.Index = Index;
+				Operator.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("未能查找到全局变量类对象成员<%s>!\n", Operator.Variable.Name.c_str());
+			return;
+		}
+	}
+	else if (Operator.Desc == HazeDataDesc::ArrayElement)
+	{
+		Index = (int)NewGlobalDataTable.GetIndex(Operator.Variable.Name);
+		if (Index >= 0)
+		{
+			//避免先把Index值替换掉
+			Operator.Extra.Address.Offset = Operator.Extra.Index * GetSizeByType(Operator.Variable.Type, this);
+			Operator.Extra.Index = Index;
+			Operator.AddressType = InstructionAddressType::Global_Base_Offset;
+		}
+	}
+	else
+	{
+		Index = (int)NewGlobalDataTable.GetIndex(Operator.Variable.Name);
+		if (Index >= 0)
+		{
+			Operator.Extra.Index = Index;
+			Operator.AddressType = InstructionAddressType::Global;
+		}
+		else
+		{
+			if (Operator.Desc == HazeDataDesc::Constant)
+			{
+				return;
+			}
+
+			HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", Operator.Variable.Name.c_str());
+			return;
 		}
 	}
 }
@@ -540,10 +709,10 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 #endif
 		auto& CurrFunction = NewFunctionTable.Vector_Function[k];
 
-		std::unordered_map<HAZE_STRING, int> HashMap_Variable;
+		std::unordered_map<HAZE_STRING, int> HashMap_LocalVariable;
 		for (size_t i = 0; i < CurrFunction.Vector_Variable.size(); i++)
 		{
-			HashMap_Variable[CurrFunction.Vector_Variable[i].Variable.Name] = (int)i;
+			HashMap_LocalVariable[CurrFunction.Vector_Variable[i].Variable.Name] = (int)i;
 		}
 
 		for (size_t i = 0; i < CurrFunction.Vector_Instruction.size(); ++i)
@@ -555,20 +724,11 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 				{
 					if (Operator.Variable.Name != HAZE_JMP_NULL)
 					{
-						for (size_t j = 0; j < CurrFunction.Vector_Block.size(); j++)
-						{
-							if (Operator.Variable.Name == CurrFunction.Vector_Block[j].BlockName)
-							{
-								Operator.Extra.Jmp.StartAddress = CurrFunction.Vector_Block[j].StartAddress;
-								Operator.Extra.Jmp.InstructionNum = CurrFunction.Vector_Block[j].InstructionNum;
-
-								break;
-							}
-						}
+						ResetFunctionBlockOffset(Operator, CurrFunction);
 					}
 				}
 			}
-			else if (CurrFunction.Vector_Instruction[i].InsCode == InstructionOpCode::CALL 
+			/*else if (CurrFunction.Vector_Instruction[i].InsCode == InstructionOpCode::CALL 
 				&& CurrFunction.Vector_Instruction[i].Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
 			{
 				auto Iter_Index = HashMap_Variable.find(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name);
@@ -578,10 +738,9 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 				}
 				else
 				{
-					uint64 Index = NewGlobalDataTable.GetIndex(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name);
-					if (Index != (uint64)-1)
+					int Index = NewGlobalDataTable.GetIndex(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name);
+					if (Index >= 0)
 					{
-
 						CurrFunction.Vector_Instruction[i].Operator[1].Extra.Index = (int)Index;
 					}
 					else
@@ -589,136 +748,29 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 						HAZE_LOG_ERR(HAZE_TEXT("查找调用的函数指针<%s>失败!\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str());
 					}
 				}
-			}
-			else
+			}*/
+			else if (!IsIgnoreFindAddressInsCode(CurrFunction.Vector_Instruction[i]))
 			{
 				HAZE_STRING ObjName;
 				HAZE_STRING MemberName;
 				bool IsPointer = false;
 				bool Find = false;
 
-				for (auto& it : CurrFunction.Vector_Instruction[i].Operator)
+				for (auto& Operator : CurrFunction.Vector_Instruction[i].Operator)
 				{
-					auto& VariableName = it.Variable.Name;
-					if (it.Desc == HazeDataDesc::ArrayElement)
+					if (!IsIgnoreFindAddress(Operator))
 					{
-						auto Iter_Index = HashMap_Variable.find(it.Variable.Name);
-						if (Iter_Index != HashMap_Variable.end())
+						if (IS_SCOPE_LOCAL(Operator.Scope))
 						{
-							it.Extra.Address.Offset = it.Extra.Index * GetSizeByType(it.Variable.Type, this);
-							it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[Iter_Index->second].Offset;
+							ResetLocalOperatorAddress(Operator, CurrFunction, HashMap_LocalVariable, NewGlobalDataTable);
 						}
-						else if (CurrFunction.Vector_Variable[0].Variable.Name.substr(0, 1) == HAZE_CLASS_THIS)
+						else if (IS_SCOPE_GLOBAL(Operator.Scope))
 						{
-							auto Class = GetClass(CurrFunction.Vector_Variable[0].Variable.Type.CustomName);
-							if (Class)
-							{
-								it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[0].Offset;
-								it.Extra.Address.Offset = GetMemberOffset(*Class, it.Variable.Name);
-								it.AddressType = InstructionAddressType::Pointer_Offset;
-							}
-							else
-							{
-								HAZE_LOG_ERR(HAZE_TEXT("查找变量<%s>的偏移地址错误,当前函数<%s>,当前类<%s>未找到!\n"),
-									it.Variable.Name.c_str(), CurrFunction.Name.c_str(), CurrFunction.Vector_Variable[0].Variable.Type.CustomName.c_str());
-							}
+							ResetGlobalOperatorAddress(Operator, CurrFunction, HashMap_LocalVariable, NewGlobalDataTable);
 						}
 						else
 						{
-							HAZE_LOG_ERR(HAZE_TEXT("查找变量<%s>的偏移地址错误,当前函数<%s>!\n"), it.Variable.Name.c_str(), CurrFunction.Name.c_str());
-						}
-					}
-					else if (IsClassMember(it.Desc))
-					{
-
-
-						FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
-
-						for (uint32 j = 0; j < CurrFunction.Vector_Variable.size(); j++)
-						{
-							if (CurrFunction.Vector_Variable[j].Variable.Name == ObjName)
-							{
-								auto Class = GetClass(CurrFunction.Vector_Variable[j].Variable.Type.CustomName);
-								if (IsPointer)
-								{
-									//需要存储一个指针指向地址的相对偏移
-									it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset;
-									it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
-									it.AddressType = InstructionAddressType::Pointer_Offset;
-									Find = true;
-									break;
-								}
-								else
-								{
-									it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[j].Offset + GetMemberOffset(*Class, MemberName);
-									Find = true;
-									break;
-								}
-							}
-						}
-
-						auto Index = (int)NewGlobalDataTable.GetIndex(ObjName);
-						if (Index >= 0)
-						{
-							it.Scope = HazeVariableScope::Global;
-							it.Extra.Address.BaseAddress = Index;
-
-							auto Class = GetClass(NewGlobalDataTable.Vector_Data[Index].Type.CustomName);
-							if (Class)
-							{
-								it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
-							}
-							else
-							{
-								HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", VariableName.c_str());
-							}
-						}
-
-						if (Find)
-						{
-							continue;
-						}
-					}
-					else if (it.Scope == HazeVariableScope::Local || it.Desc == HazeDataDesc::ClassThis)
-					{
-						it.AddressType = InstructionAddressType::Address_Offset;
-
-						auto Iter_Index = HashMap_Variable.find(it.Variable.Name);
-						if (Iter_Index != HashMap_Variable.end())
-						{
-							it.Extra.Address.BaseAddress = CurrFunction.Vector_Variable[Iter_Index->second].Offset;
-						}
-						else
-						{
-							HAZE_LOG_ERR(HAZE_TEXT("在函数<%s>中查找<%s>的偏移值失败!\n"), CurrFunction.Name.c_str(), it.Variable.Name.c_str());
-						}
-					}
-					else if (it.Scope == HazeVariableScope::Global)
-					{
-						auto Index = (int)NewGlobalDataTable.GetIndex(it.Variable.Name);
-
-						if (Index >= 0)
-						{
-							it.Extra.Index = Index;
-						}
-						else
-						{
-							FindObjectAndMemberName(VariableName, ObjName, MemberName, IsPointer);
-							Index = (int)NewGlobalDataTable.GetIndex(ObjName);
-							if (Index >= 0)
-							{
-								auto Class = GetClass(NewGlobalDataTable.Vector_Data[Index].Type.CustomName);
-								if (Class)
-								{
-									it.Scope = HazeVariableScope::Global;
-									it.Extra.Index = Index;
-									it.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
-								}
-							}
-							else
-							{
-								HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", VariableName.c_str());
-							}
+							HAZE_LOG_ERR_W("寻找变量<%s>的地址失败!\n", Operator.Variable.Name.c_str());
 						}
 					}
 				}
@@ -736,58 +788,6 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 #endif // ENABLE_BACKEND_INSTRUCTION_LOG
 		}
 	}
-}
-
-void BackendParse::WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction)
-{
-	uint32 UnsignedInt = 0;
-	HAZE_BINARY_STRING BinaryString;
-
-	B_OFS.write(HAZE_WRITE_AND_SIZE(Instruction.InsCode));				//字节码
-
-	UnsignedInt = (uint32)Instruction.Operator.size();										
-	B_OFS.write(HAZE_WRITE_AND_SIZE(UnsignedInt));						//操作数个数
-
-	//std::pair<InstructionDataType, std::pair<HAZE_STRING, uint>>;
-	for (auto& Iter : Instruction.Operator)
-	{
-		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.PrimaryType));		//操作数类型
-
-		BinaryString = WString2String(Iter.Variable.Name);
-		UnsignedInt = (uint32)BinaryString.size();
-		B_OFS.write(HAZE_WRITE_AND_SIZE(UnsignedInt));
-		B_OFS.write(BinaryString.data(), UnsignedInt);								//操作数名字
-
-		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Desc));								//操作数作用域
-		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.SecondaryType));		//子类型
-
-		BinaryString = WString2String(Iter.Variable.Type.CustomName);
-		UnsignedInt = (uint32)BinaryString.size();
-		B_OFS.write(HAZE_WRITE_AND_SIZE(UnsignedInt));
-		B_OFS.write(BinaryString.data(), UnsignedInt);								//操作数类型2
-
-		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Extra.Index));								//操作数索引
-		B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.AddressType));
-		
-		if (IsClassMember(Iter.Desc) || IsJmpOpCode(Instruction.InsCode) || Iter.Desc == HazeDataDesc::ArrayElement
-			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
-		{
-			B_OFS.write(HAZE_WRITE_AND_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移
-		}
-	}
-
-#if HAZE_INS_LOG
-	HAZE_STRING_STREAM WSS;
-	WSS << "Write :" << GetInstructionString(Instruction.InsCode);
-	for (auto& it : Instruction.Operator)
-	{
-		WSS << " ----" << it.Variable.Name << " Type :" << (uint32)it.Variable.Type.PrimaryType << " Scope: " << (uint32)it.Scope << " Base: " << it.Extra.Index
-			<< " Offset: " << it.Extra.Address.Offset;
-	}
-	WSS << std::endl;
-
-	std::wcout << WSS.str();
-#endif
 }
 
 const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING& ClassName)

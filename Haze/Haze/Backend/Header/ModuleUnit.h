@@ -32,17 +32,17 @@ public:
 			ClassObjectAllSize = 0;
 		}
 
-		uint64 GetIndex(const HAZE_STRING& Name)
+		int GetIndex(const HAZE_STRING& Name)
 		{
 			for (uint64 i = 0; i < Vector_Data.size(); i++)
 			{
 				if (Vector_Data[i].Name == Name)
 				{
-					return i;
+					return (int)i;
 				}
 			}
 
-			return (uint64)-1;
+			return -1;
 		}
 	};
 

@@ -33,7 +33,7 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 		ParseFile(iter.first, iter.second);
 	}
 
-#define HAZE_BACKEND_PARSE_ENABLE	0
+#define HAZE_BACKEND_PARSE_ENABLE	1
 	{
 
 #if HAZE_BACKEND_PARSE_ENABLE
@@ -45,7 +45,7 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 
 	}
 
-#define HAZE_LOAD_OP_CODE_ENABLE	0
+#define HAZE_LOAD_OP_CODE_ENABLE	1
 
 	{
 
@@ -212,6 +212,22 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 		}
 	}
 
+	return nullptr;
+}
+
+char* HazeVM::GetGlobalValueByIndex(uint32 Index)
+{
+	if (Index < Vector_GlobalData.size())
+	{
+		if (IsClassType(Vector_GlobalData[Index].Type.PrimaryType))
+		{
+			return (char*)Vector_GlobalData[Index].Address;
+		}
+		else
+		{
+			return (char*)(&Vector_GlobalData[Index].Value);
+		}
+	}
 	return nullptr;
 }
 

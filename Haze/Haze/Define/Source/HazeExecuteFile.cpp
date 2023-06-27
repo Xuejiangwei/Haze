@@ -161,7 +161,7 @@ void HazeExecuteFile::WriteModule(const std::unordered_map<HAZE_STRING, std::sha
 	for (auto& Iter : Module)
 	{
 		BinaryString = WString2String(Iter.first);
-		UInt = CAST_UINT32(BinaryString.size());
+		UInt = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 		FileStream->write(BinaryString.c_str(), UInt);
 
@@ -205,7 +205,7 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Ta
 	for (auto& Iter : Table.Vector_Data)
 	{
 		BinaryString = WString2String(Iter.Name);
-		UInt = CAST_UINT32(BinaryString.size());
+		UInt = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 		FileStream->write(BinaryString.c_str(), UInt);
 		
@@ -221,7 +221,7 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Ta
 		if (Iter.Type.NeedCustomName())
 		{
 			BinaryString = WString2String(Iter.Type.CustomName);
-			UInt = CAST_UINT32(BinaryString.size());
+			UInt = (uint32)BinaryString.size();
 			FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 			FileStream->write(BinaryString.c_str(), UInt);
 		}
@@ -243,7 +243,7 @@ void HazeExecuteFile::WriteStringTable(const ModuleUnit::StringTable& Table)
 	for (auto& Iter : Table.Vector_String)
 	{
 		BinaryString = WString2String(Iter.String);
-		UInt = CAST_UINT32(BinaryString.size());
+		UInt = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 		FileStream->write(BinaryString.data(), UInt);
 	}
@@ -373,34 +373,30 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& In
 {
 	FileStream->write(HAZE_WRITE_AND_SIZE(Instruction.InsCode));				//字节码
 
-	uint32 Uint = CAST_UINT32(Instruction.Operator.size());
+	uint32 Uint = (uint32)Instruction.Operator.size();
 	FileStream->write(HAZE_WRITE_AND_SIZE(Uint));						//操作数个数
 
 	for (auto& Iter : Instruction.Operator)
 	{
-		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.PrimaryType));		//操作数类型
-
 		BinaryString = WString2String(Iter.Variable.Name);
 		Uint = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(Uint));
-		FileStream->write(BinaryString.data(), Uint);								//操作数名字
+		FileStream->write(BinaryString.data(), Uint);											//操作数名字
 
-		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Desc));								//操作数作用域
-		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.SecondaryType));		//子类型
+		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Scope));										//操作数作用域
+		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Desc));										//操作数数据描述
 
+		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.PrimaryType));					//操作数类型
+		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.SecondaryType));				//操作数类型子类型
 		BinaryString = WString2String(Iter.Variable.Type.CustomName);
 		Uint = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(Uint));
-		FileStream->write(BinaryString.data(), Uint);								//操作数类型2
+		FileStream->write(BinaryString.data(), Uint);											//操作数类型名
+
+		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.AddressType));								//操作数取址类型
 
 		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Extra.Index));								//操作数索引
-		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.AddressType));
-
-		if (IsClassMember(Iter.Desc) || IsJmpOpCode(Instruction.InsCode) || Iter.Desc == HazeDataDesc::ArrayElement
-			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
-		{
-			FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移
-		}
+		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Extra.Address.Offset));						//操作数地址偏移
 	}
 
 #if HAZE_INS_LOG
@@ -667,29 +663,25 @@ void HazeExecuteFile::ReadInstruction(Instruction& Instruction)
 
 	for (auto& Iter : Instruction.Operator)
 	{
-		InFileStream->read(HAZE_READ(Iter.Variable.Type.PrimaryType));
-
 		InFileStream->read(HAZE_READ(UnsignedInt));
 		BinaryString.resize(UnsignedInt);
 		InFileStream->read(BinaryString.data(), UnsignedInt);
 		Iter.Variable.Name = String2WString(BinaryString);
 
+		InFileStream->read(HAZE_READ(Iter.Scope));
 		InFileStream->read(HAZE_READ(Iter.Desc));
-		InFileStream->read(HAZE_READ(Iter.Variable.Type.SecondaryType));
 
+		InFileStream->read(HAZE_READ(Iter.Variable.Type.PrimaryType));
+		InFileStream->read(HAZE_READ(Iter.Variable.Type.SecondaryType));
 		InFileStream->read(HAZE_READ(UnsignedInt));
 		BinaryString.resize(UnsignedInt);
 		InFileStream->read(BinaryString.data(), UnsignedInt);
 		Iter.Variable.Type.CustomName = String2WString(BinaryString);
 
-		InFileStream->read(HAZE_READ(Iter.Extra.Index));
 		InFileStream->read(HAZE_READ(Iter.AddressType));
-
-		if (IsClassMember(Iter.Desc) || IsJmpOpCode(Instruction.InsCode) || Iter.Desc == HazeDataDesc::ArrayElement
-			|| (Instruction.InsCode == InstructionOpCode::CALL && &Iter == &Instruction.Operator[0]))
-		{
-			InFileStream->read(HAZE_READ(Iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型
-		}
+		
+		InFileStream->read(HAZE_READ(Iter.Extra.Index));
+		InFileStream->read(HAZE_READ(Iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型
 	}
 
 #if HAZE_INS_LOG

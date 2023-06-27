@@ -160,7 +160,8 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 		}
 	}
 
-	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeVariableScope::Local, HazeDataDesc::None, Count, RefValue, ArraySize, nullptr, Vector_Param);
+	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeVariableScope::Local, HazeDataDesc::None, Count, 
+		RefValue, ArraySize, Vector_Param);
 	Vector_Alloca.push_back({ Define.Name, Alloce });
 
 	ParentFunction->AddLocalVariable(Alloce);

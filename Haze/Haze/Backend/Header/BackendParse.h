@@ -52,7 +52,7 @@ private:
 	
 	void Parse_I_Code_FunctionTable();
 
-	void ParseInstructionData(InstructionData& Data, bool ParsePrimaryType = true);
+	void ParseInstructionData(InstructionData& Data);
 	
 	void ParseInstruction(ModuleUnit::FunctionInstruction& Instruction);
 
@@ -60,9 +60,11 @@ private:
 
 	void ReplaceStringIndex(ModuleUnit::StringTable& NewStringTable, ModuleUnit::FunctionTable& NewFunctionTable, size_t& FunctionCount);
 	
-	void FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::FunctionTable& NewFunctionTable);
+	inline void ResetLocalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable);
+	
+	inline void ResetGlobalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable);
 
-	void WriteInstruction(HAZE_BINARY_OFSTREAM& B_OFS, ModuleUnit::FunctionInstruction& Instruction);
+	void FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::FunctionTable& NewFunctionTable);
 
 	const ModuleUnit::ClassTableData* const GetClass(const HAZE_STRING& ClassName);
 

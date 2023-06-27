@@ -60,6 +60,8 @@ public:
 
 	void* GetGlobalValue(const HAZE_STRING& Name);
 
+	char* GetGlobalValueByIndex(uint32 Index);
+
 	ClassData* FindClass(const HAZE_STRING& ClassName);
 
 	uint32 GetClassSize(const HAZE_STRING& ClassName);

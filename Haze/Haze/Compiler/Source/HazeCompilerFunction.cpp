@@ -94,7 +94,8 @@ void HazeCompilerFunction::FunctionFinish()
 	if (Type.PrimaryType == HazeValueType::Void || Name == HAZE_MAIN_FUNCTION_TEXT)
 	{
 		HAZE_STRING_STREAM SStream;
-		SStream << GetInstructionString(InstructionOpCode::RET) << " " << CAST_UINT32(HazeValueType::Void) << std::endl;
+		SStream << GetInstructionString(InstructionOpCode::RET) << " " << HAZE_TEXT("Void") << " " << CAST_SCOPE(HazeVariableScope::None) << " "
+			<< CAST_DESC(HazeDataDesc::None) << " " << CAST_TYPE(HazeValueType::Void) << std::endl;
 		Module->GetCompiler()->GetInsertBlock()->PushIRCode(SStream.str());
 	}
 }

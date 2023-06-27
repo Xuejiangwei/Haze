@@ -1,0 +1,52 @@
+0
+GlobalDataTable
+0
+StringTable
+1
+27 三维点 横坐标 %d 纵坐标 %d 前坐标 %d \n
+ClassTable
+1
+Class 三维点 12 3
+横坐标 7 0 4
+纵坐标 7 4 4
+前坐标 7 8 4
+FunctionTable
+2
+Function 三维点@输出点 0
+Param 己 15 三维点
+Variable 己$1 15 三维点 -12 8
+FunctionStart
+
+Block Entry
+MOV 己$1指之横坐标 2 13 7 10 1 1 7
+MOV 己$1指之纵坐标 2 13 7 20 1 1 7
+MOV 己$1指之前坐标 2 13 7 30 1 1 7
+PUSH 己$1 2 0 15 三维点
+PUSH RetAddress 0 9 7
+CALL 三维点@打印坐标 22 1 8 测试
+MOV 己$1指之横坐标 2 13 7 100 1 1 7
+MOV 己$1指之纵坐标 2 13 7 200 1 1 7
+PUSH 己$1 2 0 15 三维点
+PUSH RetAddress 0 9 7
+CALL 三维点@打印坐标 22 1 8 测试
+RET Void 0 0 0
+
+FunctionEnd
+
+Function 三维点@打印坐标 0
+Param 己 15 三维点
+Variable 己$1 15 三维点 -12 8
+FunctionStart
+
+Block Entry
+PUSH 己$1指之前坐标 2 13 7
+PUSH 己$1指之纵坐标 2 13 7
+PUSH 己$1指之横坐标 2 13 7
+PUSH 常字符串指针 1 2 14 4 0
+PUSH RetAddress 0 9 7
+CALL 打印 22 4 20 标准流
+MOV 己$1指之前坐标 2 13 7 300 1 1 7
+RET Void 0 0 0
+
+FunctionEnd
+

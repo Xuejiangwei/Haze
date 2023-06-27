@@ -13,13 +13,15 @@ public:
 
 	//HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, HazeValue* DefaultValue = nullptr);
+	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::shared_ptr<HazeCompilerValue> AssignValue = nullptr);
 
 	virtual ~HazeCompilerValue();
 
 	std::shared_ptr<HazeCompilerValue> GetShared() { return shared_from_this(); }
 
-	virtual void StoreValue(std::shared_ptr<HazeCompilerValue> SrcValue);
+	virtual void StoreValueType(std::shared_ptr<HazeCompilerValue> SrcValue);
+
+	virtual void StoreValue(HazeValue& SrcValue);
 
 	const HazeDefineType& GetValueType() const { return ValueType; }
 
@@ -36,9 +38,9 @@ public:
 	bool IsLocalVariable() const { return Scope == HazeVariableScope::Local; }
 
 public:
-	bool IsRegister() const { return IsRegisterScope(Desc); }
+	bool IsRegister() const { return IsRegisterDesc(Desc); }
 
-	bool IsRegister(HazeDataDesc Type) const { return IsRegisterScope(Desc) && Desc == Type; }
+	bool IsRegister(HazeDataDesc Type) const { return IsRegisterDesc(Desc) && Desc == Type; }
 
 	bool IsConstant() const { return Desc == HazeDataDesc::Constant; }
 
@@ -83,6 +85,8 @@ public:
 
 public:
 	virtual uint32 GetSize();
+
+	bool TryGetVariableName(HAZE_STRING& OutName);
 
 protected:
 	HazeDefineType ValueType;
