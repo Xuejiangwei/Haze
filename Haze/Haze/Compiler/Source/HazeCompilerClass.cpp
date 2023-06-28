@@ -7,12 +7,19 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 
-HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name,
+HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<HazeCompilerClass*>& ParentClass,
 	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& Data)
-	: Module(Module), Name(Name), Vector_Data(std::move(Data))
+	: Module(Module), Name(Name), ParentClass(std::move(ParentClass)), Vector_Data(std::move(Data))
 {
 	DataSize = 0;
-
+	if (this->ParentClass.size() > 0)
+	{
+		for (size_t i = 0; i < this->ParentClass.size(); i++)
+		{
+			DataSize += this->ParentClass[i]->GetDataSize();
+		}
+	}
+	
 	uint32 MemberNum = 0;
 	std::shared_ptr<HazeCompilerValue> LastMember = nullptr;
 	for (size_t i = 0; i < Vector_Data.size(); i++)
@@ -26,8 +33,10 @@ HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRI
 	}
 
 	MemoryAlign(MemberNum);
-	DataSize = LastMember ? Vector_Offset.back() + HAZE_ALIGN(LastMember->GetSize(), HAZE_ALIGN_BYTE) : 0;
-	//HAZE_LOG_INFO(HAZE_TEXT("¿‡ <%s> DataSize %d\n"), Name.c_str(), DataSize);
+	uint32 AlignSize = GetAlignSize();
+	AlignSize = AlignSize > HAZE_ALIGN_BYTE ? AlignSize : HAZE_ALIGN_BYTE;
+	DataSize = LastMember ? HAZE_ALIGN(Vector_Offset.back() + LastMember->GetSize(), AlignSize) : 0;
+	HAZE_LOG_INFO(HAZE_TEXT("¿‡<%s> DataSize %d\n"), Name.c_str(), DataSize);
 }
 
 HazeCompilerClass::~HazeCompilerClass()
@@ -70,7 +79,7 @@ void HazeCompilerClass::InitThisValue()
 		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 }
 
-uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
+int HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 {
 	size_t Index = 0;
 	for (size_t i = 0; i < Vector_Data.size(); i++)
@@ -79,14 +88,14 @@ uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 		{
 			if (Vector_Data[i].second[j].first == MemberName)
 			{
-				return Index;
+				return (int)Index;
 			}
 
 			Index++;
 		}
 	}
 
-	return uint64(-1);
+	return -1;
 }
 
 bool HazeCompilerClass::GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
@@ -192,18 +201,39 @@ uint32 HazeCompilerClass::GetDataSize()
 uint32 HazeCompilerClass::GetAlignSize()
 {
 	uint32 MaxMemberSize = 0;
+
+	for (size_t i = 0; i < ParentClass.size(); i++)
+	{
+		uint32 ParentAlignSize = ParentClass[i]->GetAlignSize();
+		if (ParentAlignSize > MaxMemberSize)
+		{
+			MaxMemberSize = ParentAlignSize;
+		}
+	}
+
 	for (auto& It : Vector_Data)
 	{
 		for (auto& Iter : It.second)
 		{
-			if (Iter.second->GetSize() > MaxMemberSize)
+			if (Iter.second->IsClass())
 			{
-				MaxMemberSize = Iter.second->GetSize();
+				uint32 ClassAlignSize = std::dynamic_pointer_cast<HazeCompilerClassValue>(Iter.second)->GetOwnerClass()->GetAlignSize();
+				if (ClassAlignSize > MaxMemberSize)
+				{
+					MaxMemberSize = ClassAlignSize;
+				}
+			}
+			else
+			{
+				if (Iter.second->GetSize() > MaxMemberSize)
+				{
+					MaxMemberSize = Iter.second->GetSize();
+				}
 			}
 		}
 	}
 
-	return MaxMemberSize < HAZE_ALIGN_BYTE ? MaxMemberSize : HAZE_ALIGN_BYTE;
+	return MaxMemberSize;
 }
 
 uint32 HazeCompilerClass::GetOffset(uint32 Index, std::shared_ptr<HazeCompilerValue> Member)
@@ -218,13 +248,18 @@ void HazeCompilerClass::MemoryAlign(uint32 MemberNum)
 	uint32 Index = 0;
 
 	uint32 Size = 0;
+	for (size_t i = 0; i < ParentClass.size(); i++)
+	{
+		Size += ParentClass[i]->GetDataSize();
+	}
+
 	for (auto& It : Vector_Data)
 	{
 		for (auto& Iter : It.second)
 		{
 			uint32 ModSize = Size % Align;
 
-			if (ModSize + Iter.second->GetSize() <= Align)
+			if (ModSize + Iter.second->GetSize() <= Align || Iter.second->IsClass())
 			{
 				uint32 ModValue = ModSize % Iter.second->GetSize();
 				if (ModValue == 0)
@@ -242,8 +277,8 @@ void HazeCompilerClass::MemoryAlign(uint32 MemberNum)
 			{
 				Vector_Offset[Index] = Size + (Align - ModSize);
 				Size += ((Align - ModSize) + Iter.second->GetSize());
-			}
 
+			}
 			Index++;
 		}
 	}

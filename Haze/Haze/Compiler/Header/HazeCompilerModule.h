@@ -29,8 +29,8 @@ public:
 
 	void FinishModule();
 
-	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc,
-		std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& ClassData);
+	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<HazeCompilerClass*>& ParentClass,
+		std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& ClassData);
 
 	void FinishCreateClass();
 

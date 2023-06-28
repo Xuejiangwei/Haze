@@ -13,7 +13,8 @@ class HazeCompilerClass
 public:
 	friend class HazeCompiler;
 
-	HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& Data);
+	HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, std::vector<HazeCompilerClass*>& ParentClass,
+		std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& Data);
 
 	~HazeCompilerClass();
 
@@ -33,7 +34,7 @@ public:
 
 	const HAZE_STRING& GetName() { return Name; }
 
-	uint64 GetMemberIndex(const HAZE_STRING& MemberName);
+	int GetMemberIndex(const HAZE_STRING& MemberName);
 
 	bool GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
@@ -62,6 +63,8 @@ private:
 	HAZE_STRING Name;
 
 	uint32 DataSize;
+
+	std::vector<HazeCompilerClass*> ParentClass;
 
 	std::shared_ptr<HazeCompilerPointerValue> ThisPointerValue;
 	std::shared_ptr<HazeCompilerClassValue> ThisClassValue;			//所有同类对象指向此同一个this Value

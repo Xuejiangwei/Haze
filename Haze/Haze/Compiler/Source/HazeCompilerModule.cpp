@@ -65,13 +65,13 @@ void HazeCompilerModule::GenCodeFile()
 #endif
 }
 
-std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name,
+std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, std::vector<HazeCompilerClass*>& ParentClass,
 	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& ClassData)
 {
 	std::shared_ptr<HazeCompilerClass> Class = GetClass(Name);
 	if (!Class)
 	{
-		HashMap_Class[Name] = std::make_shared<HazeCompilerClass>(this, Name, ClassData);
+		HashMap_Class[Name] = std::make_shared<HazeCompilerClass>(this, Name, ParentClass, ClassData);
 		Class = HashMap_Class[Name];
 		Class->InitThisValue();
 	}

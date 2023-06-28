@@ -8,7 +8,7 @@
 #include "HazeFilePathHelper.h"
 #include "HazeLog.h"
 
-#define BACKEND_INSTRUCTION_LOG			1
+#define BACKEND_INSTRUCTION_LOG			0
 
 static std::pair<bool, int> ParseStringCount = { false, 0 };
 
