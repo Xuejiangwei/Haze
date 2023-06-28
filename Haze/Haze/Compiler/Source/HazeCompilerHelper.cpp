@@ -294,18 +294,19 @@ std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule
 std::shared_ptr<HazeCompilerFunction> GetObjectFunction(HazeCompilerModule* Module, const HAZE_STRING& InName)
 {
 	bool IsPointer;
-	return GetObjectFunction(Module, InName, IsPointer);
+	return GetObjectFunction(Module, InName, IsPointer).first;
 }
 
-std::shared_ptr<HazeCompilerFunction> GetObjectFunction(HazeCompilerModule* Module, const HAZE_STRING& InName, bool& IsPointer)
+std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetObjectFunction(HazeCompilerModule* Module, const HAZE_STRING& InName, bool& IsPointer)
 {
 	HAZE_STRING ObjectName;
 	HAZE_STRING FunctionName;
 	return GetObjectNameAndFunctionName(Module, InName, ObjectName, FunctionName, IsPointer);
 }
 
-std::shared_ptr<HazeCompilerFunction> GetObjectNameAndFunctionName(HazeCompilerModule* Module, const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutFunctionName, bool& IsPointer)
+std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetObjectNameAndFunctionName(HazeCompilerModule* Module, const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutFunctionName, bool& IsPointer)
 {
+	std::shared_ptr<HazeCompilerValue> FindVariable = nullptr;
 	auto Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
 	if (Pos != HAZE_STRING::npos)
 	{
@@ -313,9 +314,22 @@ std::shared_ptr<HazeCompilerFunction> GetObjectNameAndFunctionName(HazeCompilerM
 		OutObjectName = InName.substr(0, Pos);
 		OutFunctionName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
 
-		auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
-		auto Class = Module->GetClass(PointerValue->GetValueType().CustomName);
-		return Class->FindFunction(OutFunctionName);
+		if (Module->GetCurrFunction())
+		{
+			FindVariable = Module->GetCurrFunction()->GetLocalVariable(OutObjectName);
+		}
+
+		if (!FindVariable)
+		{
+			FindVariable = Module->GetGlobalVariable(OutObjectName);
+		}
+
+		auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(FindVariable);
+		if (PointerValue)
+		{
+			auto Class = Module->GetClass(PointerValue->GetValueType().CustomName);
+			return { Class->FindFunction(OutFunctionName), FindVariable };
+		}
 	}
 	else
 	{
@@ -326,15 +340,25 @@ std::shared_ptr<HazeCompilerFunction> GetObjectNameAndFunctionName(HazeCompilerM
 			OutObjectName = InName.substr(0, Pos);
 			OutFunctionName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
 
-			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Module->GetCurrFunction()->GetLocalVariable(OutObjectName));
+			if (Module->GetCurrFunction())
+			{
+				FindVariable = Module->GetCurrFunction()->GetLocalVariable(OutObjectName);
+			}
+
+			if (!FindVariable)
+			{
+				FindVariable = Module->GetGlobalVariable(OutObjectName);
+			}
+
+			auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(FindVariable);
 			if (ClassValue)
 			{
-				return ClassValue->GetOwnerClass()->FindFunction(OutFunctionName);
+				return { ClassValue->GetOwnerClass()->FindFunction(OutFunctionName), FindVariable };
 			}
 		}
 	}
 
-	return nullptr;
+	return { nullptr, nullptr };
 }
 
 bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>& Data, const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)

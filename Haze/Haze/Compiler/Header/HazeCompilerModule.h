@@ -27,7 +27,7 @@ public:
 
 	void MarkLibraryType(HazeLibraryType Type);
 
-	void GenCodeFile();
+	void FinishModule();
 
 	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc,
 		std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& ClassData);
@@ -46,7 +46,7 @@ public:
 
 	void FinishFunction();
 
-	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
+	std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetFunction(const HAZE_STRING& Name);
 
 	std::shared_ptr<HazeCompilerValue> GetOrCreateGlobalStringVariable(const HAZE_STRING& String);
 
@@ -114,6 +114,8 @@ private:
 
 private:
 	void FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_STRING& CallName, uint32& Size, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo);
+
+	void GenCodeFile();
 
 	void GenICode();
 

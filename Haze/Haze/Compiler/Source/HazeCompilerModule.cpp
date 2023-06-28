@@ -45,6 +45,12 @@ void HazeCompilerModule::MarkLibraryType(HazeLibraryType Type)
 	ModuleLibraryType = Type;
 }
 
+void HazeCompilerModule::FinishModule()
+{
+	CurrFunction.clear();
+	GenCodeFile();
+}
+
 void HazeCompilerModule::GenCodeFile()
 {
 #if HAZE_I_CODE_ENABLE
@@ -95,19 +101,19 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
 	return Iter->second;
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE_STRING& Name)
+std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> HazeCompilerModule::GetFunction(const HAZE_STRING& Name)
 {
 	auto It = HashMap_Function.find(Name);
 	if (It != HashMap_Function.end())
 	{
-		return It->second;
+		return { It->second, nullptr };
 	}
 	else if (!CurrClass.empty())
 	{
 		auto Iter = HashMap_Class.find(CurrClass);
 		if (Iter != HashMap_Class.end())
 		{
-			return Iter->second->FindFunction(Name);
+			return { Iter->second->FindFunction(Name), nullptr };
 		}
 	}
 	else
@@ -116,7 +122,7 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetFunction(const HAZE
 		return GetObjectFunction(this, Name, IsPointer);
 	}
 
-	return nullptr;
+	return { nullptr, nullptr };
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)

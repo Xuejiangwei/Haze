@@ -34,7 +34,7 @@ public:
 
 	bool CurrModuleIsStdLib();
 
-	std::shared_ptr<HazeCompilerFunction> GetFunction(const HAZE_STRING& Name);
+	std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetFunction(const HAZE_STRING& Name);
 
 	const HAZE_STRING& GetCurrModuleName() const { return Vector_ModuleNameStack.back(); }
 
@@ -169,9 +169,6 @@ public:
 	void InsertLineCount(int64 LineCount);
 
 	bool IsDebug() const;
-
-private:
-	void GenModuleCodeFile();
 
 private:
 	HazeVM* VM;

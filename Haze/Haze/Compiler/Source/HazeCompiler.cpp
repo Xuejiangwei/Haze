@@ -69,7 +69,7 @@ HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& ModuleName)
 
 void HazeCompiler::FinishModule()
 {
-	GenModuleCodeFile();
+	HashMap_CompilerModule[GetCurrModuleName()]->FinishModule();
 }
 
 HazeCompilerModule* HazeCompiler::GetModule(const HAZE_STRING& Name)
@@ -96,11 +96,6 @@ const HAZE_STRING* HazeCompiler::GetModuleName(const HazeCompilerModule* Module)
 	return nullptr;
 }
 
-void HazeCompiler::GenModuleCodeFile()
-{
-	HashMap_CompilerModule[GetCurrModuleName()]->GenCodeFile();
-}
-
 void HazeCompiler::InsertLineCount(int64 LineCount)
 {
 	if (VM->IsDebug() && InsertBaseBlock)
@@ -125,19 +120,18 @@ bool HazeCompiler::CurrModuleIsStdLib()
 	return GetCurrModule()->GetModuleLibraryType() == HazeLibraryType::Standard;
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompiler::GetFunction(const HAZE_STRING& Name)
+std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> HazeCompiler::GetFunction(const HAZE_STRING& Name)
 {
-	std::shared_ptr<HazeCompilerFunction> Function = nullptr;
 	for (auto& Iter : HashMap_CompilerModule)
 	{
-		Function = Iter.second->GetFunction(Name);
-		if (Function)
+		auto Function = Iter.second->GetFunction(Name);
+		if (Function.first)
 		{
 			return Function;
 		}
 	}
 
-	return Function;
+	return { nullptr, nullptr };
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModule* Module, const HazeDefineType& Data)

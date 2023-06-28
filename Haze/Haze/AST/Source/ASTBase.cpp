@@ -124,7 +124,8 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	}
 	else
 	{
-		if (!Compiler->GetCurrModule()->GetFunction(DefineVariable.Name))
+		auto Function = Compiler->GetCurrModule()->GetFunction(DefineVariable.Name);
+		if (!Function.first)
 		{
 			HAZE_LOG_ERR_W("未能找到变量<%s>,当前函数<%s>!\n", DefineVariable.Name.c_str(),
 				SectionSignal == HazeSectionSignal::Local ? Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
@@ -146,7 +147,7 @@ ASTFunctionCall::~ASTFunctionCall()
 
 std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 {
-	auto Function = Compiler->GetFunction(Name);
+	auto [Function, ObjectVariable] = Compiler->GetFunction(Name);
 
 	std::vector<std::shared_ptr<HazeCompilerValue>> Param;
 
@@ -163,18 +164,15 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	Compiler->InsertLineCount(Location.Line);
 	if (Function)
 	{
-		std::shared_ptr<HazeCompilerValue> ThisPointerValue = nullptr;
 		if (Function->GetClass())
 		{
-			ThisPointerValue = Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(GetObjectName(Name));
-
-			if (!ThisPointerValue)
+			if (!ObjectVariable)
 			{
 				Param.push_back(Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(HAZE_CLASS_THIS));
 			}
 		}
 
-		return Compiler->CreateFunctionCall(Function, Param, ThisPointerValue);
+		return Compiler->CreateFunctionCall(Function, Param, ObjectVariable);
 	}
 	else
 	{
@@ -186,7 +184,7 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		}
 	}
 
-	HAZE_LOG_ERR_W("生成函数调用<%s>错误,", Name.c_str());
+	HAZE_LOG_ERR_W("生成函数调用<%s>错误\n", Name.c_str());
 	return nullptr;
 }
 
@@ -333,9 +331,9 @@ std::shared_ptr<HazeCompilerValue> ASTGetAddress::CodeGen()
 	{
 		//获得函数地址
 		auto Function = Compiler->GetCurrModule()->GetFunction(Expression->GetName());
-		if (Function)
+		if (Function.first)
 		{
-			Ret = Compiler->CreatePointerToFunction(Function);
+			Ret = Compiler->CreatePointerToFunction(Function.first);
 		}
 		else
 		{
