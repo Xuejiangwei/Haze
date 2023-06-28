@@ -1,6 +1,5 @@
 #pragma once
 
-
 #define HAZE_STRING_STREAM std::wstringstream
 #define HAZE_OFSTREAM std::wofstream
 #define HAZE_IFSTREAM std::wifstream

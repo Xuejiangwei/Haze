@@ -49,7 +49,7 @@ HazeValue* ASTFunction::CodeGen()
 	{
 		Body->CodeGen();
 	}
-	
+
 	if (FunctionType.PrimaryType == HazeValueType::Void)
 	{
 		Compiler->InsertLineCount(Location.Line);
@@ -127,7 +127,6 @@ void ASTFunctionDefine::CodeGen()
 ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* Compiler, /*const SourceLocation& Location,*/ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
 	: Compiler(Compiler), Functions(std::move(Functions))
 {
-
 }
 
 ASTClassFunctionSection::~ASTClassFunctionSection()

@@ -34,7 +34,6 @@ void* MemoryBucket::Alloca(int Size)
 	{
 		if (CurrIndex != Pool.end())
 		{
-			
 			Ret = (CurrIndex)._Ptr + Size;
 			CurrIndex += Size;
 		}
@@ -50,6 +49,5 @@ void MemoryBucket::Dealloca(void* Alloc)
 
 void MemoryBucket::Release()
 {
-	
 	FreeList->Clear();
 }

@@ -38,7 +38,6 @@ struct SourceLocation
 
 struct HookInfo
 {
-
 };
 
 struct BreakPoint

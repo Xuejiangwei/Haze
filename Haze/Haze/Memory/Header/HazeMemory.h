@@ -19,4 +19,3 @@ public:
 private:
 	std::unordered_map<uint64, std::unique_ptr<MemoryPage>> HashMap_Page;
 };
-

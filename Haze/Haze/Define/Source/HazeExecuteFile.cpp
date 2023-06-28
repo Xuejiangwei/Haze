@@ -95,7 +95,7 @@ HazeExecuteFile::HazeExecuteFile(ExeFileType Type)
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("处理Haze二进制文件失败!\n"));
 	}
-	
+
 	memset(&State, 0, sizeof(State));
 }
 
@@ -157,7 +157,7 @@ void HazeExecuteFile::WriteModule(const std::unordered_map<HAZE_STRING, std::sha
 
 	uint32 UInt = (uint32)Module.size();
 	FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
-	
+
 	for (auto& Iter : Module)
 	{
 		BinaryString = WString2String(Iter.first);
@@ -168,7 +168,7 @@ void HazeExecuteFile::WriteModule(const std::unordered_map<HAZE_STRING, std::sha
 		FileStream->write(HAZE_WRITE_AND_SIZE(GlobalDataIndex));
 		GlobalDataIndex += (uint32)Iter.second->Table_GlobalData.Vector_Data.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(GlobalDataIndex));
-		
+
 		FileStream->write(HAZE_WRITE_AND_SIZE(StringIndex));
 		StringIndex += (uint32)Iter.second->Table_String.Vector_String.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(StringIndex));
@@ -208,7 +208,7 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Ta
 		UInt = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 		FileStream->write(BinaryString.c_str(), UInt);
-		
+
 		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Size));
 
 		FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Type.PrimaryType));
@@ -342,7 +342,6 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& Table)
 				FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Size));
 			}
 
-
 			//写入指令数与起始地址
 			UInt = (uint32)Function.Vector_Instruction.size();
 			FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
@@ -457,7 +456,7 @@ void HazeExecuteFile::ReadModule(HazeVM* VM)
 void HazeExecuteFile::ReadGlobalDataTable(HazeVM* VM)
 {
 	FileFormatCheck Check(ExeFileType::In, HazeFileFormat::GlobalDataTable, State);
-	
+
 	uint32 Num = 0;
 	InFileStream->read(HAZE_READ(Num));
 	VM->Vector_GlobalData.resize(Num);
@@ -473,7 +472,7 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* VM)
 		BinaryString.resize(Num);
 		InFileStream->read(BinaryString.data(), Num);
 		VM->Vector_GlobalData[i].Name = String2WString(BinaryString);
-		
+
 		int Size = 0;
 		InFileStream->read(HAZE_READ(Size));
 
@@ -679,7 +678,7 @@ void HazeExecuteFile::ReadInstruction(Instruction& Instruction)
 		Iter.Variable.Type.CustomName = String2WString(BinaryString);
 
 		InFileStream->read(HAZE_READ(Iter.AddressType));
-		
+
 		InFileStream->read(HAZE_READ(Iter.Extra.Index));
 		InFileStream->read(HAZE_READ(Iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型
 	}

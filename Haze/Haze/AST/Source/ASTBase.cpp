@@ -74,7 +74,7 @@ std::shared_ptr<HazeCompilerValue> ASTStringText::CodeGen()
 	return Compiler->GenStringVariable(Text);
 }
 
-ASTIdentifier::ASTIdentifier(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, 
+ASTIdentifier::ASTIdentifier(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name,
 	std::vector<std::unique_ptr<ASTBase>>& ArrayIndexExpression)
 	: ASTBase(Compiler, Location), SectionSignal(Section), ArrayIndexExpression(std::move(ArrayIndexExpression))
 {
@@ -328,7 +328,7 @@ std::shared_ptr<HazeCompilerValue> ASTGetAddress::CodeGen()
 	{
 		Ret = Expression->CodeGen();
 	}
-	
+
 	if (!Ret)
 	{
 		//获得函数地址
@@ -380,7 +380,7 @@ std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 	return nullptr;
 }
 
-ASTNeg::ASTNeg(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression, bool IsNumberNeg) 
+ASTNeg::ASTNeg(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression, bool IsNumberNeg)
 	: ASTBase(Compiler, Location), Expression(std::move(Expression)), IsNumberNeg(IsNumberNeg)
 {
 }
@@ -400,7 +400,6 @@ std::shared_ptr<HazeCompilerValue> ASTNeg::CodeGen()
 		return Compiler->CreateBitNeg(Expression->CodeGen());
 	}
 }
-
 
 ASTNullPtr::ASTNullPtr(HazeCompiler* Compiler, const SourceLocation& Location) : ASTBase(Compiler, Location)
 {
@@ -479,7 +478,7 @@ std::shared_ptr<HazeCompilerValue> ASTMultiExpression::CodeGen()
 }
 
 ASTBinaryExpression::ASTBinaryExpression(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HazeToken OperatorToken, std::unique_ptr<ASTBase>& LeftAST, std::unique_ptr<ASTBase>& RightAST)
-	:ASTBase(Compiler, Location), SectionSignal(Section), OperatorToken(OperatorToken), LeftAST(std::move(LeftAST)), RightAST(std::move(RightAST)), 
+	:ASTBase(Compiler, Location), SectionSignal(Section), OperatorToken(OperatorToken), LeftAST(std::move(LeftAST)), RightAST(std::move(RightAST)),
 	LeftBlock(nullptr), RightBlock(nullptr), DafaultBlock(nullptr)
 {
 }
@@ -534,7 +533,6 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 
 			Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(OperatorToken), LeftBlock ? LeftBlock->GetShared() : nullptr,
 				DafaultBlock ? DafaultBlock->GetShared() : RightBlock->GetShared());
-			
 		}
 		else
 		{
@@ -556,7 +554,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 
 		auto Ret = LeftAST->CodeGen();
-		
+
 		if (LeftExp && IsAndToken(LeftExp->OperatorToken))
 		{
 			auto Block = HazeBaseBlock::CreateBaseBlock(Function->GenDafaultBlockName(), Function, Compiler->GetInsertBlock());
@@ -581,7 +579,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		}
 
 		RightAST->CodeGen();
-		
+
 		return Ret;
 	}
 	case HazeToken::Not:
@@ -818,7 +816,7 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 	Compiler->SetInsertBlock(WhileBlock);
 	MultiExpression->CodeGen();
 	Compiler->CreateJmpToBlock(WhileBlock);
-	
+
 	Compiler->SetInsertBlock(NextBlock);
 	return nullptr;
 }

@@ -23,7 +23,7 @@ HazeCompilerFunction::~HazeCompilerFunction()
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> RefValue,
-	std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize , std::vector<HazeDefineType>* Vector_Param)
+	std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
 	auto BB = Module->GetCompiler()->GetInsertBlock();
 	return BB->CreateAlloce(Variable, ++CurrVariableCount, RefValue, ArraySize, Vector_Param);
@@ -80,7 +80,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 		CurrBlock = CurrBlock->GetParentBlock();
 	}
 
-
 	if (!Ret && OwnerClass)
 	{
 		Ret = std::dynamic_pointer_cast<HazeCompilerClassValue>(OwnerClass->GetThisPointerToValue())->GetMember(VariableName);
@@ -110,7 +109,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& SStream)
 		HAZE_LOG_ERR(HAZE_TEXT("函数<%s>类型解析失败,生成中间代码错误!\n"), Name.c_str());
 		return;
 	}
-	
+
 	SStream << std::endl;
 
 	//Push所有参数，从右到左, push 参数与返回地址的事由function call去做

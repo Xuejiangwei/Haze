@@ -151,7 +151,7 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 	}
 
 	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize)));
-	
+
 	EBP = ESP;
 	if (Info->Vector_Variable.size() > Info->Vector_Param.size())
 	{
@@ -180,7 +180,6 @@ void* HazeStack::Alloca(uint32 Size)
 
 	return Ret;
 }
-
 
 void HazeStack::GarbageCollection(bool Force, bool CollectionAll)
 {

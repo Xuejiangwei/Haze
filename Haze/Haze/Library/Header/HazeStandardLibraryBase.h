@@ -19,5 +19,4 @@ public:
 	static void InitializeStdLibs();
 
 private:
-
 };

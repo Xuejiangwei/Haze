@@ -41,4 +41,3 @@ public:
 private:
 	MemoryBlockInfo BlockInfo;
 };
-

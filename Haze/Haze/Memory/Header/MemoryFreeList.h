@@ -17,7 +17,7 @@ public:
 	~MemoryFreeList();
 
 	void Push(void* Obj);
-	
+
 	void PushRange(void* Start, void* End, uint64 Size);
 
 	void* Pop();

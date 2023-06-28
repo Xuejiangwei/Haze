@@ -4,7 +4,7 @@
 
 HazeCmpType GetHazeCmpTypeByToken(HazeToken Token)
 {
-	static std::unordered_map<HazeToken, HazeCmpType> HashMap = 
+	static std::unordered_map<HazeToken, HazeCmpType> HashMap =
 	{
 		{HazeToken::Equal, HazeCmpType::Equal},
 		{HazeToken::NotEqual, HazeCmpType::NotEqual},
@@ -22,7 +22,7 @@ HazeCmpType GetHazeCmpTypeByToken(HazeToken Token)
 	{
 		return Iter->second;
 	}
-	
+
 	return HazeCmpType::None;
 }
 

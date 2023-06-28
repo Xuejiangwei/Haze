@@ -83,7 +83,6 @@ BackendParse::BackendParse(HazeVM* VM) : VM(VM), CurrCode(nullptr)
 
 BackendParse::~BackendParse()
 {
-	
 }
 
 void BackendParse::Parse()
@@ -285,7 +284,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					HazeDefineVariable Param;
 					GetNextLexmeAssign_HazeString(Param.Name);
 					Param.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString, &BackendParse::GetNextLexmeAssign_CustomType<uint32>);
-					
+
 					Table.Vector_Function[i].Vector_Param.push_back(std::move(Param));
 
 					GetNextLexeme();
@@ -322,7 +321,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 							ParseInstruction(Instruction);
 
 							Table.Vector_Function[i].Vector_Instruction.push_back(Instruction);
-							
+
 							CurrBlock.InstructionNum++;
 
 							GetNextLexeme();
@@ -345,7 +344,7 @@ void BackendParse::ParseInstructionData(InstructionData& Data)
 	GetNextLexmeAssign_CustomType<uint32>(Data.Scope);
 	GetNextLexmeAssign_CustomType<uint32>(Data.Desc);
 
-	Data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString, 
+	Data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
 		&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 	if (Data.Desc == HazeDataDesc::ArrayElement || Data.Desc == HazeDataDesc::ConstantString)
@@ -425,7 +424,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 		GetNextLexmeAssign_HazeString(OperatorOne.Variable.Name);
 
 		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
-		
+
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamNum);
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamByteSize);
 
@@ -507,17 +506,16 @@ void BackendParse::GenOpCodeFile()
 	size_t FunctionCount = 0;
 	for (auto& Module : HashMap_Modules)
 	{
-		
 		NewFunctionTable.Vector_Function.insert(NewFunctionTable.Vector_Function.end(), Module.second->Table_Function.Vector_Function.begin(), Module.second->Table_Function.Vector_Function.end());
 		ReplaceStringIndex(NewStringTable, NewFunctionTable, FunctionCount);
 
 		NewGlobalDataTable.Vector_Data.insert(NewGlobalDataTable.Vector_Data.end(), Module.second->Table_GlobalData.Vector_Data.begin(), Module.second->Table_GlobalData.Vector_Data.end());
 		NewGlobalDataTable.ClassObjectAllSize += Module.second->Table_GlobalData.ClassObjectAllSize;
-		
+
 		NewStringTable.Vector_String.insert(NewStringTable.Vector_String.end(), Module.second->Table_String.Vector_String.begin(), Module.second->Table_String.Vector_String.end());
 		NewClassTable.Vector_Class.insert(NewClassTable.Vector_Class.end(), Module.second->Table_Class.Vector_Class.begin(), Module.second->Table_Class.Vector_Class.end());
 	}
-	
+
 	FindAddress(NewGlobalDataTable, NewFunctionTable);
 
 	ExeFile.WriteExecuteFile(NewGlobalDataTable, NewStringTable, NewClassTable, NewFunctionTable);
@@ -728,7 +726,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 					}
 				}
 			}
-			/*else if (CurrFunction.Vector_Instruction[i].InsCode == InstructionOpCode::CALL 
+			/*else if (CurrFunction.Vector_Instruction[i].InsCode == InstructionOpCode::CALL
 				&& CurrFunction.Vector_Instruction[i].Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
 			{
 				auto Iter_Index = HashMap_Variable.find(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name);
@@ -778,7 +776,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 
 #if BACKEND_INSTRUCTION_LOG
 			HAZE_STRING_STREAM WSS;
-			WSS << "Replace: " <<GetInstructionString(NewFunctionTable.Vector_Function[k].Vector_Instruction[i].InsCode) << " ";
+			WSS << "Replace: " << GetInstructionString(NewFunctionTable.Vector_Function[k].Vector_Instruction[i].InsCode) << " ";
 			for (auto& it : NewFunctionTable.Vector_Function[k].Vector_Instruction[i].Operator)
 			{
 				WSS << it.Variable.Name << " Base " << it.Extra.Address.BaseAddress << " Offset " << it.Extra.Address.Offset << " ";
@@ -794,7 +792,7 @@ const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING
 {
 	for (auto& Module : HashMap_Modules)
 	{
-		for (auto& Class : Module.second->Table_Class.Vector_Class) 
+		for (auto& Class : Module.second->Table_Class.Vector_Class)
 		{
 			if (Class.Name == ClassName)
 			{
@@ -802,7 +800,7 @@ const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING
 			}
 		}
 	}
-	
+
 	return nullptr;
 }
 
@@ -812,7 +810,6 @@ uint32 const BackendParse::GetClassSize(const HAZE_STRING& ClassName)
 	if (Class)
 	{
 		return Class->Size;
-
 	}
 	return 0;
 }

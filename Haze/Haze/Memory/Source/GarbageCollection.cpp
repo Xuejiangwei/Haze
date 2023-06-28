@@ -26,7 +26,6 @@ void GarbageCollection::AddToRoot(void*)
 //https://zhuanlan.zhihu.com/p/41023320
 //https://zhuanlan.zhihu.com/p/41398507
 
-
 void GarbageCollection::MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& Vector_MarkAddressBase,
 	std::vector<std::pair<uint64, ClassData*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress)
 {
@@ -176,7 +175,6 @@ void GarbageCollection::ForceGC()
 
 void GarbageCollection::MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index)
 {
-	
 }
 
 void GarbageCollection::MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index)

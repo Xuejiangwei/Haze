@@ -13,7 +13,7 @@
 //{
 //}
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, 
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
 	std::shared_ptr<HazeCompilerValue> AssignValue) : Module(Module), ValueType(DefineType), Scope(Scope), Desc(Desc), Count(Count)
 {
 	if (AssignValue)
@@ -36,7 +36,7 @@ void HazeCompilerValue::StoreValueType(std::shared_ptr<HazeCompilerValue> SrcVal
 	{
 		bool bPointer = IsPointer();
 		ValueType = SrcValue->GetValueType();
-		
+
 		if ((SrcValue->IsArray() || SrcValue->IsPointerArray()) && bPointer)
 		{
 			ValueType.PrimaryType = ValueType.CustomName.empty() ? HazeValueType::PointerBase : HazeValueType::PointerClass;
@@ -69,6 +69,3 @@ bool HazeCompilerValue::TryGetVariableName(HAZE_STRING& OutName)
 
 	return Ret;
 }
-
-
-

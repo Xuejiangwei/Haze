@@ -11,4 +11,3 @@
 #include "HazeLibraryType.h"
 
 int HazeMain(int ArgCount, char* ArgValue[]);
-

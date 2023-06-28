@@ -31,4 +31,3 @@ private:
 
 	std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> Vector_Data;
 };
-

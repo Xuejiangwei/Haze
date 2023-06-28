@@ -28,7 +28,7 @@ public:
 	const HazeValue& GetValue() const { return Value; }
 
 	HazeVariableScope GetVariableScope() const { return Scope; }
-	
+
 	HazeDataDesc GetVariableDesc() const { return Desc; }
 
 	int GetCount() const { return Count; }
@@ -62,13 +62,13 @@ public:
 
 public:
 	bool IsPointer() const { return IsPointerType(ValueType.PrimaryType); }
-	
+
 	bool IsPointerBase() const { return ValueType.PrimaryType == HazeValueType::PointerBase; }
 
 	bool IsPointerClass() const { return ValueType.PrimaryType == HazeValueType::PointerClass; }
 
 	bool IsPointerFunction() const { return ValueType.PrimaryType == HazeValueType::PointerFunction; }
-	
+
 	bool IsPointerArray() const { return ValueType.PrimaryType == HazeValueType::PointerArray; }
 
 	bool IsPointerPointer() const { return ValueType.PrimaryType == HazeValueType::PointerPointer; }

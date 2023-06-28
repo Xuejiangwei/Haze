@@ -55,4 +55,3 @@ void HazeCompilerClassValue::GetMemberName(const HazeCompilerValue* MemberValue,
 {
 	OwnerClass->GetMemberName(this, MemberValue, OutName);
 }
-

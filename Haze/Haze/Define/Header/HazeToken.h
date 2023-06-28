@@ -5,9 +5,9 @@ enum class HazeToken : unsigned int
 	None,
 
 	Identifier,
-	
+
 	Void,
-	
+
 	Bool,
 
 	Byte,
@@ -73,11 +73,11 @@ enum class HazeToken : unsigned int
 	MulAssign,
 	DivAssign,
 	ModAssign,
-	
+
 	BitAndAssign,
 	BitOrAssign,
 	BitXorAssign,
-	
+
 	ShlAssign,
 	ShrAssign,
 

@@ -73,7 +73,6 @@ struct HazeValue
 			int MemorySize;
 			//const HAZE_STRING* StringPointer;
 		} Extra;
-		
 	} Value;
 
 public:

@@ -25,7 +25,7 @@ void* MemoryPool::Alloca(uint32 Size)
 	Size = (uint32)RoundUp(Size);
 
 	uint32 Idx = (uint32)Index(Size);
-	
+
 	if (!Buckets[Idx])
 	{
 		Buckets[Idx] = std::make_unique<MemoryBucket>(Size, 128);

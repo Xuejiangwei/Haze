@@ -7,7 +7,6 @@
 
 #define ENABLE_DEBUGGER_LOG 0
 
-
 static HAZE_STRING GetFileName(const HAZE_CHAR*& Msg)
 {
 	bool IsNewLine = false;
@@ -17,7 +16,7 @@ static HAZE_STRING GetFileName(const HAZE_CHAR*& Msg)
 	{
 		FileName += *Msg++;
 	}
-	
+
 	Msg++;
 
 	return FileName;
@@ -30,7 +29,6 @@ static  HAZE_STRING GetFileModuleName(const HAZE_CHAR*& FilePath)
 
 void HookCall(HazeVM* VM)
 {
-	
 }
 
 void GetHazeValueByBaseType(open::OpenJson& Json, const char* Address, HazeValueType Type)
@@ -140,7 +138,7 @@ void GetHazeValueByBaseType(open::OpenJson& Json, const char* Address, HazeValue
 }
 
 HazeDebugger::HazeDebugger(HazeVM* VM, void(*EndCall)()) : VM(VM), EndCall(EndCall), HookFunctionCall(&HookCall), HookType(DebuggerHookType::Line),
-	IsPause(true)
+IsPause(true)
 {
 	HashMap_BreakPoint.clear();
 	HashMap_TempBreakPoint.clear();
@@ -185,7 +183,6 @@ void HazeDebugger::AddBreakPoint(const char* Message)
 	HAZE_LOG_INFO(HAZE_TEXT("添加断点<%s><%s><%d>\n"), ModuleName.c_str(), FileName.c_str(), Line);
 
 #endif
-
 }
 
 void HazeDebugger::DeleteBreakPoint(const char* Message)
@@ -237,7 +234,6 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* Message)
 
 void HazeDebugger::OnExecLine(uint32 Line)
 {
-
 #if ENABLE_DEBUGGER_LOG
 
 	HAZE_LOG_INFO(HAZE_TEXT("运行到<%d>行!\n"), Line);
@@ -249,7 +245,7 @@ void HazeDebugger::OnExecLine(uint32 Line)
 	if (Iter != HashMap_BreakPoint.end())
 	{
 		auto It = Iter->second.first.find(Line);
-		if (It != Iter->second.first.end()) 
+		if (It != Iter->second.first.end())
 		{
 			if (HookType & DebuggerHookType::Line)
 			{
@@ -263,7 +259,7 @@ void HazeDebugger::OnExecLine(uint32 Line)
 			}
 		}
 	}
-	
+
 	if (!IsPause && CurrModuleIsStepOver())
 	{
 		if (Line == CurrPauseModule.second && *ModuleName == CurrPauseModule.first)
@@ -301,7 +297,7 @@ void HazeDebugger::OnExecLine(uint32 Line)
 #if ENABLE_DEBUGGER_LOG
 
 		HAZE_LOG_INFO(HAZE_TEXT("调试器暂停<%s><%d>!\n"), CurrPauseModule.first.c_str(), Line);
-		
+
 #endif
 
 		SendBreakInfo();
@@ -380,7 +376,7 @@ bool HazeDebugger::CurrModuleIsStepOver()
 	{
 		return Iter->second;
 	}
-	
+
 	return false;
 }
 
@@ -426,7 +422,6 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 	}
 	else if (Variable.Variable.Type.NeedSecondaryType())
 	{
-
 	}
 	else
 	{

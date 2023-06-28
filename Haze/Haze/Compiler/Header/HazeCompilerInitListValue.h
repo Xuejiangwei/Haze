@@ -15,4 +15,3 @@ public:
 private:
 	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_InitList;
 };
-

@@ -25,7 +25,7 @@ public:
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& VariableName);
 
 	const HAZE_STRING& GetName() const { return Name; }
-	
+
 	const HazeDefineType& GetFunctionType() const { return Type; }
 
 	HazeCompilerModule* GetModule() const { return Module; }
@@ -39,7 +39,7 @@ public:
 	void GenI_Code(HAZE_STRING_STREAM& SStream);
 
 	HAZE_STRING GenDafaultBlockName();
-	
+
 	HAZE_STRING GenIfThenBlockName();
 
 	HAZE_STRING GenElseBlockName();
@@ -55,7 +55,7 @@ public:
 	HAZE_STRING GenForStepBlockName();
 
 	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
-	
+
 	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
 
 	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value);
@@ -63,8 +63,8 @@ public:
 private:
 	void AddFunctionParam(const HazeDefineVariable& Variable);
 
-	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> RefValue = nullptr, 
-		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>*Vector_Param = nullptr);
+	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
+		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& Data);
 

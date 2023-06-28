@@ -19,10 +19,9 @@ void HazeModule::ParseOpFile(const HAZE_STRING& OpFile)
 	HAZE_IFSTREAM FS(OpFile);
 	//FS.imbue(std::locale("chs"));
 	HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(FS), {});
-	
+
 	/*Content
 
-	
 	CodeText = std::move(Content);
 	CurrCode = CodeText.c_str();
 	FS.close();*/

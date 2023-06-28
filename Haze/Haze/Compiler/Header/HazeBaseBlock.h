@@ -17,8 +17,8 @@ public:
 
 	~HazeBaseBlock();
 
-	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> RefValue = nullptr, 
-		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>*Vector_Param = nullptr);
+	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
+		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeBaseBlock> GetShared() { return shared_from_this(); }
 
@@ -67,7 +67,7 @@ private:
 
 	HazeBaseBlock* LoopEndBlock;
 	HazeBaseBlock* LoopStepBlock;
-	
+
 	std::list<std::shared_ptr<HazeBaseBlock>> List_ChildBlock;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Vector_Alloca;

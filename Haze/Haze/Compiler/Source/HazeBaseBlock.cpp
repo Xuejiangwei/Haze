@@ -8,7 +8,7 @@
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerFunction.h"
 
-HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock) 
+HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock)
 	: enable_shared_from_this(*this), Name(Name), ParentFunction(ParentFunction), ParentBlock(ParentBlock), LoopEndBlock(nullptr)
 {
 	Vector_IRCode.clear();
@@ -134,7 +134,7 @@ void HazeBaseBlock::ClearLocalVariable()
 std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock)
 {
 	auto BB = std::make_shared<HazeBaseBlock>(Name, Parent.get(), ParentBlock.get());
-	
+
 	if (ParentBlock)
 	{
 		ParentBlock->AddChildBlock(BB);
@@ -160,7 +160,7 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 		}
 	}
 
-	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeVariableScope::Local, HazeDataDesc::None, Count, 
+	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeVariableScope::Local, HazeDataDesc::None, Count,
 		RefValue, ArraySize, Vector_Param);
 	Vector_Alloca.push_back({ Define.Name, Alloce });
 

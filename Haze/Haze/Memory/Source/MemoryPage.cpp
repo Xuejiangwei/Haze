@@ -27,9 +27,8 @@ void* MemoryPage::TryAlloca(uint64 Size)
 	{
 		if ((uint64)Block->GetTailAddress() < (uint64)PageInfo.HeadBlock->GetHeadAddress() + PageInfo.PageByteSize)
 		{
-
 			uint64 BlockUnitNum = DEFAULT_UNIT_NUM;
-			
+
 			auto NextBlock = std::make_unique<MemoryBlock>(Block->GetTailAddress(), BlockUnitNum, PageInfo.UnitSize);
 			Block->SetNextBlock(NextBlock);
 		}

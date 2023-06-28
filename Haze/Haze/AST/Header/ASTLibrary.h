@@ -8,7 +8,7 @@ class ASTClassDefine;
 class ASTLibrary
 {
 public:
-	ASTLibrary(HazeCompiler* Compiler, /*const SourceLocation& Location,*/ HAZE_STRING& Name, HazeLibraryType Type, 
+	ASTLibrary(HazeCompiler* Compiler, /*const SourceLocation& Location,*/ HAZE_STRING& Name, HazeLibraryType Type,
 		std::vector<std::unique_ptr<ASTFunctionDefine>>& Vector_FunctionExpression, std::vector<std::unique_ptr<ASTClassDefine>>& Vector_ClassExpression);
 	~ASTLibrary();
 

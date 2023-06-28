@@ -7,7 +7,7 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 
-HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name, 
+HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& Name,
 	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& Data)
 	: Module(Module), Name(Name), Vector_Data(std::move(Data))
 {
@@ -41,7 +41,7 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::FindFunction(const HAZE
 	{
 		return Vector_Function[Iter->second];
 	}
-	
+
 	return nullptr;
 }
 
@@ -61,13 +61,13 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared
 
 void HazeCompilerClass::InitThisValue()
 {
-	NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), 
+	NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name),
 		HAZE_TEXT("")), HazeVariableScope::None, HazeDataDesc::ClassThis, 0));
-	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name), 
+	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, Name),
 		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
-	
+
 	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, Name),
-		 HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
+		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 }
 
 uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
@@ -84,7 +84,6 @@ uint64 HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 
 			Index++;
 		}
-		
 	}
 
 	return uint64(-1);

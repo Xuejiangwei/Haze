@@ -8,14 +8,13 @@
 #include "OpenJson/openjson.h"
 
 #ifdef _WIN32
-	#include <winsock.h>
-	#pragma comment(lib,"ws2_32.lib")
+#include <winsock.h>
+#pragma comment(lib,"ws2_32.lib")
 #endif
 
 std::unique_ptr<HazeDebugger> Debugger;
 uint64 SocketServer;
 uint64 SocketClient;
-
 
 void CloseServer()
 {
@@ -88,7 +87,7 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 			break;
 		}
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试器接收到一个连接<%s>!\n"), String2WString(inet_ntoa(remoteAddr.sin_addr)).c_str());
-		
+
 		if (!Debugger)
 		{
 			Debugger = std::make_unique<HazeDebugger>(VM, &CloseServer);
@@ -101,7 +100,7 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 }
 
 static bool HandleMessage(char* Message)
-{ 
+{
 	Message = UTF8_2_GB2312(Message);
 	std::string Str;
 	Str += Message[0];
@@ -210,7 +209,6 @@ void HazeDebuggerServer::Recv()
 			break;
 		}
 		//发送数据
-		
 	}
 
 	closesocket(SocketClient);

@@ -14,7 +14,7 @@ enum class HazeSectionSignal : uint8
 struct HazeDefineType
 {
 	HazeValueType PrimaryType;				//Type类型
-	
+
 	HazeValueType SecondaryType;			//指针指向类型,自定义类指针值为void
 
 	HAZE_STRING CustomName;				//自定义类型名
@@ -40,7 +40,7 @@ struct HazeDefineType
 
 	bool operator==(const HazeDefineType& InType) const
 	{
-		return PrimaryType == InType.PrimaryType && SecondaryType == InType.SecondaryType 
+		return PrimaryType == InType.PrimaryType && SecondaryType == InType.SecondaryType
 			&& CustomName == InType.CustomName;
 	}
 
@@ -63,7 +63,7 @@ struct HazeDefineType
 
 	bool HasCustomName() const { return HasCustomName(*this); }
 
-	bool StringStreamTo(HAZE_STRING_STREAM& SStream) const { return StringStreamTo(SStream , *this); }
+	bool StringStreamTo(HAZE_STRING_STREAM& SStream) const { return StringStreamTo(SStream, *this); }
 
 	template<typename Class>
 	void StringStream(Class* This, void(Class::* StringCall)(HAZE_STRING&), void(Class::* TypeCall)(uint32&)) { StringStream(This, StringCall, TypeCall, *this); }

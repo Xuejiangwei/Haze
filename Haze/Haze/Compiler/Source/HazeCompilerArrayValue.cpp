@@ -49,6 +49,6 @@ uint32 HazeCompilerArrayValue::GetSizeByLevel(uint32 Level)
 				(uint32)Vector_Size[i]->GetValue().Value.UnsignedLong : Vector_Size[i]->GetValue().Value.UnsignedInt;
 		}
 	}
-	
+
 	return Ret;
 }

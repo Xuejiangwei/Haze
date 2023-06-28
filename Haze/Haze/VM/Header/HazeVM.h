@@ -70,7 +70,7 @@ private:
 	void OnExecLine(uint32 Line);
 
 	void InstructionExecPost();
-	
+
 	uint32 GetNextLine(uint32 CurrLine);
 
 	uint32 GetCurrCallFunctionLine();

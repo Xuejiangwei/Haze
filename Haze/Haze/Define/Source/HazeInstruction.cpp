@@ -62,7 +62,6 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> HashMap_String2Code =
 	{HAZE_TEXT("JG"), InstructionOpCode::JG },
 	{HAZE_TEXT("JL"), InstructionOpCode::JL },
 
-
 	{HAZE_TEXT("LINE"), InstructionOpCode::LINE },
 };
 
@@ -113,7 +112,6 @@ bool IsClassMember(HazeDataDesc Desc)
 	return Desc >= HazeDataDesc::ClassMember_Local_Public && Desc <= HazeDataDesc::ClassMember_Local_Protected;
 }
 
-
 class InstructionProcessor
 {
 public:
@@ -132,7 +130,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void MovPV(HazeStack* Stack)
@@ -153,7 +150,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void MovToPV(HazeStack* Stack)
@@ -174,7 +170,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Lea(HazeStack* Stack)
@@ -182,7 +177,7 @@ public:
 		const auto& Operator = Stack->VM->Vector_Instruction[Stack->PC].Operator;
 		if (Operator.size() == 2)
 		{
- 			void* Dst = GetOperatorAddress(Stack, Operator[0]);
+			void* Dst = GetOperatorAddress(Stack, Operator[0]);
 			uint64 Address = (uint64)GetOperatorAddress(Stack, Operator[1]);
 			memcpy(Dst, &Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
 		}
@@ -192,7 +187,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Push(HazeStack* Stack)
@@ -227,7 +221,6 @@ public:
 				{
 					memset(&Stack->Stack_Main[Stack->ESP], 0, Size);
 				}
-				
 			}
 
 			Stack->ESP += Size;
@@ -238,7 +231,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Pop(HazeStack* Stack)
@@ -254,7 +246,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Add(HazeStack* Stack)
@@ -266,7 +257,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Sub(HazeStack* Stack)
@@ -278,7 +268,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Mul(HazeStack* Stack)
@@ -290,7 +279,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Div(HazeStack* Stack)
@@ -302,7 +290,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Mod(HazeStack* Stack)
@@ -321,7 +308,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Neg(HazeStack* Stack)
@@ -331,7 +317,6 @@ public:
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
 			{
-				
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::NEG, GetOperatorAddress(Stack, Operator[0]), GetOperatorAddress(Stack, Operator[0]));
 			}
 		}
@@ -341,7 +326,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Not(HazeStack* Stack)
@@ -360,7 +344,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Inc(HazeStack* Stack)
@@ -379,7 +362,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Dec(HazeStack* Stack)
@@ -398,7 +380,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Bit_And(HazeStack* Stack)
@@ -417,7 +398,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Bit_Or(HazeStack* Stack)
@@ -436,7 +416,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Bit_Xor(HazeStack* Stack)
@@ -455,7 +434,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Add_Assign(HazeStack* Stack)
@@ -474,7 +452,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Sub_Assign(HazeStack* Stack)
@@ -493,7 +470,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Mul_Assign(HazeStack* Stack)
@@ -512,7 +488,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Div_Assign(HazeStack* Stack)
@@ -531,7 +506,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Mod_Assign(HazeStack* Stack)
@@ -550,7 +524,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Bit_And_Assign(HazeStack* Stack)
@@ -569,7 +542,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Bit_Or_Assign(HazeStack* Stack)
@@ -588,7 +560,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Bit_Neg(HazeStack* Stack)
@@ -611,7 +582,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Bit_Xor_Assign(HazeStack* Stack)
@@ -630,7 +600,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Shl_Assign(HazeStack* Stack)
@@ -649,7 +618,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Shr_Assign(HazeStack* Stack)
@@ -668,7 +636,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Shl(HazeStack* Stack)
@@ -687,7 +654,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Shr(HazeStack* Stack)
@@ -696,7 +662,7 @@ public:
 		if (Operator.size() == 2)
 		{
 			if (IsNumberType(Operator[0].Variable.Type.PrimaryType))
-			{ 
+			{
 				CalculateValueByType(Operator[0].Variable.Type.PrimaryType, InstructionOpCode::SHR, GetOperatorAddress(Stack, Operator[1]), GetOperatorAddress(Stack, Operator[0]));
 			}
 		}
@@ -706,7 +672,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Call(HazeStack* Stack)
@@ -762,7 +727,6 @@ public:
 							&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], RetRegister->Data.begin()._Unwrapped());
 					}
 
-
 					Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
 					Stack->EBP = TempEBP;
 				}
@@ -789,7 +753,7 @@ public:
 			RetRegister->Data.resize(Size);
 			memcpy(RetRegister->Data.begin()._Unwrapped(), GetOperatorAddress(Stack, Operator[0]), Size);
 		}
-		
+
 		Stack->OnRet();
 	}
 
@@ -814,7 +778,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Cmp(HazeStack* Stack)
@@ -832,7 +795,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Jmp(HazeStack* Stack)
@@ -848,7 +810,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Jne(HazeStack* Stack)
@@ -877,7 +838,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Jng(HazeStack* Stack)
@@ -902,7 +862,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Jnl(HazeStack* Stack)
@@ -927,7 +886,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Je(HazeStack* Stack)
@@ -952,7 +910,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Jg(HazeStack* Stack)
@@ -977,7 +934,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Jl(HazeStack* Stack)
@@ -1002,7 +958,6 @@ public:
 		Stack->VM->InstructionExecPost();
 
 #endif
-
 	}
 
 	static void Line(HazeStack* Stack)
@@ -1021,80 +976,80 @@ public:
 	}
 
 private:
-//	static void* const GetAddressByOperator(HazeStack* Stack, const InstructionData& Operator)
-//	{
-//#define HAZE_VM_GET_ADDRESS_LOG 0
-//
-//#if HAZE_VM_GET_ADDRESS_LOG
-//		HAZE_STRING_STREAM HSS;
-//		HSS << "Address " << Operator.Variable.Name << " ";
-//#endif
-//
-//		void* Ret = nullptr;
-//		thread_local static HazeVariable ConstantValue;
-//		thread_local static uint64 TempAddress;
-//
-//		if (Operator.Desc == HazeDataDesc::Constant || Operator.Desc == HazeDataDesc::NullPtr)
-//		{
-//			auto& Type = const_cast<HazeDefineType&>(ConstantValue.GetType());
-//			auto& Value = const_cast<HazeValue&>(ConstantValue.GetValue());
-//
-//			Type.PrimaryType = Operator.Variable.Type.PrimaryType;
-//			StringToHazeValueNumber(Operator.Variable.Name, Type.PrimaryType, Value);
-//			Ret = GetBinaryPointer(Type.PrimaryType, Value);
-//		}
-//		else if (Operator.Scope == HazeVariableScope::Global)
-//		{
-//			Ret = Stack->VM->GetGlobalValue(Operator.Variable.Name);
-//		}
-//		else if (Operator.Desc == HazeDataDesc::ConstantString)
-//		{
-//			TempAddress = (uint64)&Stack->GetVM()->GetHazeStringByIndex(Operator.Extra.Index);
-//			Ret = &TempAddress;
-//		}
-//		else if (IsRegisterScope(Operator.Desc))
-//		{
-//			HazeRegister* Register = Stack->GetVirtualRegister(Operator.Variable.Name.c_str());
-//
-//			if (Register->Type != Operator.Variable.Type)
-//			{
-//				Register->Type = Operator.Variable.Type;
-//				Register->Data.resize(GetSizeByType(Operator.Variable.Type, Stack->VM));
-//			}
-//
-//			Ret = Register->Data.begin()._Unwrapped();
-//		}
-//		else if (IsClassMember(Operator.Desc) && Operator.AddressType == InstructionAddressType::Pointer_Offset)
-//		{
-//			memcpy(&TempAddress, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
-//
-//			Ret = (char*)TempAddress + Operator.Extra.Address.Offset;
-//
-//#if HAZE_VM_GET_ADDRESS_LOG
-//			HSS << Stack->EBP << " " << Stack->ESP << " " << Operator.Extra.Address.BaseAddress << " " << Address << " ";
-//#endif
-//		}
-//		else if (Operator.Desc == HazeDataDesc::ArrayElement)
-//		{
-//			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress + Operator.Extra.Address.Offset];
-//		}
-//		else if (Operator.Desc == HazeDataDesc::FunctionAddress)
-//		{
-//			TempAddress = (uint64)((void*)&Stack->VM->GetFunctionByName(Operator.Variable.Name));
-//			Ret = &TempAddress;
-//		}
-//		else /*if (Operator.Scope == InstructionScopeType::Local)*/
-//		{
-//			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
-//		}
-//
-//#if HAZE_VM_GET_ADDRESS_LOG
-//		HSS << Ret << std::endl;
-//		HAZE_LOG_ERR(HSS.str().c_str());
-//#endif // HAZE_VM_GET_ADDRESS_LOG
-//
-//		return Ret;
-//	}
+	//	static void* const GetAddressByOperator(HazeStack* Stack, const InstructionData& Operator)
+	//	{
+	//#define HAZE_VM_GET_ADDRESS_LOG 0
+	//
+	//#if HAZE_VM_GET_ADDRESS_LOG
+	//		HAZE_STRING_STREAM HSS;
+	//		HSS << "Address " << Operator.Variable.Name << " ";
+	//#endif
+	//
+	//		void* Ret = nullptr;
+	//		thread_local static HazeVariable ConstantValue;
+	//		thread_local static uint64 TempAddress;
+	//
+	//		if (Operator.Desc == HazeDataDesc::Constant || Operator.Desc == HazeDataDesc::NullPtr)
+	//		{
+	//			auto& Type = const_cast<HazeDefineType&>(ConstantValue.GetType());
+	//			auto& Value = const_cast<HazeValue&>(ConstantValue.GetValue());
+	//
+	//			Type.PrimaryType = Operator.Variable.Type.PrimaryType;
+	//			StringToHazeValueNumber(Operator.Variable.Name, Type.PrimaryType, Value);
+	//			Ret = GetBinaryPointer(Type.PrimaryType, Value);
+	//		}
+	//		else if (Operator.Scope == HazeVariableScope::Global)
+	//		{
+	//			Ret = Stack->VM->GetGlobalValue(Operator.Variable.Name);
+	//		}
+	//		else if (Operator.Desc == HazeDataDesc::ConstantString)
+	//		{
+	//			TempAddress = (uint64)&Stack->GetVM()->GetHazeStringByIndex(Operator.Extra.Index);
+	//			Ret = &TempAddress;
+	//		}
+	//		else if (IsRegisterScope(Operator.Desc))
+	//		{
+	//			HazeRegister* Register = Stack->GetVirtualRegister(Operator.Variable.Name.c_str());
+	//
+	//			if (Register->Type != Operator.Variable.Type)
+	//			{
+	//				Register->Type = Operator.Variable.Type;
+	//				Register->Data.resize(GetSizeByType(Operator.Variable.Type, Stack->VM));
+	//			}
+	//
+	//			Ret = Register->Data.begin()._Unwrapped();
+	//		}
+	//		else if (IsClassMember(Operator.Desc) && Operator.AddressType == InstructionAddressType::Pointer_Offset)
+	//		{
+	//			memcpy(&TempAddress, &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress], sizeof(uint64));
+	//
+	//			Ret = (char*)TempAddress + Operator.Extra.Address.Offset;
+	//
+	//#if HAZE_VM_GET_ADDRESS_LOG
+	//			HSS << Stack->EBP << " " << Stack->ESP << " " << Operator.Extra.Address.BaseAddress << " " << Address << " ";
+	//#endif
+	//		}
+	//		else if (Operator.Desc == HazeDataDesc::ArrayElement)
+	//		{
+	//			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress + Operator.Extra.Address.Offset];
+	//		}
+	//		else if (Operator.Desc == HazeDataDesc::FunctionAddress)
+	//		{
+	//			TempAddress = (uint64)((void*)&Stack->VM->GetFunctionByName(Operator.Variable.Name));
+	//			Ret = &TempAddress;
+	//		}
+	//		else /*if (Operator.Scope == InstructionScopeType::Local)*/
+	//		{
+	//			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
+	//		}
+	//
+	//#if HAZE_VM_GET_ADDRESS_LOG
+	//		HSS << Ret << std::endl;
+	//		HAZE_LOG_ERR(HSS.str().c_str());
+	//#endif // HAZE_VM_GET_ADDRESS_LOG
+	//
+	//		return Ret;
+	//	}
 
 	static void* const GetOperatorAddress(HazeStack* Stack, const InstructionData& Operator)
 	{
@@ -1237,7 +1192,7 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::NEG, &InstructionProcessor::Neg},
 
 	{InstructionOpCode::NOT, &InstructionProcessor::Not},
-	
+
 	{InstructionOpCode::INC, &InstructionProcessor::Inc},
 	{InstructionOpCode::DEC, &InstructionProcessor::Dec},
 
@@ -1275,7 +1230,6 @@ std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_Instru
 	{InstructionOpCode::JE, &InstructionProcessor::Je},
 	{InstructionOpCode::JG, &InstructionProcessor::Jg},
 	{InstructionOpCode::JL, &InstructionProcessor::Jl},
-
 
 	{InstructionOpCode::LINE, &InstructionProcessor::Line},
 };

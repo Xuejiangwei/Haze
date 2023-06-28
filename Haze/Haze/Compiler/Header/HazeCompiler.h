@@ -23,7 +23,7 @@ public:
 	bool InitializeCompiler(const HAZE_STRING& ModuleName);
 
 	HazeCompilerModule* ParseModule(const HAZE_STRING& ModuleName);
-	
+
 	void FinishModule();
 
 	HazeCompilerModule* GetModule(const HAZE_STRING& Name);
@@ -83,15 +83,15 @@ public:
 	void ClearBlockPoint();
 
 public:
-	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, 
+	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable,
 		std::shared_ptr<HazeCompilerValue> RefValue = nullptr, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
-		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>*Vector_Param = nullptr);
+		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateClassVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
 		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
-	
+
 	std::shared_ptr<HazeCompilerValue> CreateLea(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value);
 
 	std::shared_ptr<HazeCompilerValue> CreateMov(std::shared_ptr<HazeCompilerValue> Alloca, std::shared_ptr<HazeCompilerValue> Value);
@@ -117,7 +117,7 @@ public:
 	std::shared_ptr<HazeCompilerValue> CreateBitOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
 
 	std::shared_ptr<HazeCompilerValue> CreateBitNeg(std::shared_ptr<HazeCompilerValue> Value);
-	
+
 	std::shared_ptr<HazeCompilerValue> CreateBitXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
 
 	std::shared_ptr<HazeCompilerValue> CreateShl(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
@@ -135,7 +135,7 @@ public:
 	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data);
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> Function, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
-	
+
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerValue> PointerFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& Param, std::shared_ptr<HazeCompilerValue> ThisPointerTo = nullptr);
 
 public:
@@ -185,21 +185,21 @@ private:
 
 	std::unordered_map<hbyte, std::shared_ptr<HazeCompilerValue>> HashMap_ByteConstantValue;
 	std::unordered_map<uhbyte, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedByteConstantValue;
-	
+
 	std::unordered_map<hchar, std::shared_ptr<HazeCompilerValue>> HashMap_CharConstantValue;
-	
+
 	std::unordered_map<short, std::shared_ptr<HazeCompilerValue>> HashMap_ShortConstantValue;
 	std::unordered_map<ushort, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedShortConstantValue;
-	
+
 	std::unordered_map<int, std::shared_ptr<HazeCompilerValue>> HashMap_IntConstantValue;
 	std::unordered_map<uint32, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedIntConstantValue;
-	
+
 	std::unordered_map<int64, std::shared_ptr<HazeCompilerValue>> HashMap_LongConstantValue;
 	std::unordered_map<uint64, std::shared_ptr<HazeCompilerValue>> HashMap_UnsignedLongConstantValue;
-	
+
 	std::unordered_map<float, std::shared_ptr<HazeCompilerValue>> HashMap_FloatConstantValue;
 	std::unordered_map<double, std::shared_ptr<HazeCompilerValue>> HashMap_DobuleConstantValue;
-	
+
 	//BaseBlock
 	std::shared_ptr<HazeBaseBlock> InsertBaseBlock;
 };

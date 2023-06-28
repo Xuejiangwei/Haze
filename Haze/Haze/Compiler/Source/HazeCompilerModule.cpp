@@ -16,7 +16,6 @@
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
 
-
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* Compiler, const HAZE_STRING& ModuleName)
 	: Compiler(Compiler), ModuleLibraryType(HazeLibraryType::Normal)
 {
@@ -60,7 +59,7 @@ void HazeCompilerModule::GenCodeFile()
 #endif
 }
 
-std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name, 
+std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& Name,
 	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& ClassData)
 {
 	std::shared_ptr<HazeCompilerClass> Class = GetClass(Name);
@@ -140,7 +139,7 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(const H
 	return Function;
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(std::shared_ptr<HazeCompilerClass> Class, const HAZE_STRING& Name, 
+std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(std::shared_ptr<HazeCompilerClass> Class, const HAZE_STRING& Name,
 	HazeDefineType& Type, std::vector<HazeDefineVariable>& Param)
 {
 	std::shared_ptr<HazeCompilerFunction> Function = Class->FindFunction(Name);
@@ -302,9 +301,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(std::shar
 			SStream << GetInstructionString(InstructionOpCode::MOV) << " ";
 
 			GenVariableHzic(this, SStream, Array, i);
-			
+
 			SStream << " ";
-			
+
 			GenVariableHzic(this, SStream, InitListValue->GetList()[i]);
 
 			SStream << std::endl;
@@ -476,8 +475,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 		}
 	}
 
-	Vector_Variable.push_back({ Var.Name, 
-		CreateVariable(this, Var, HazeVariableScope::Global, HazeDataDesc::None, 0, RefValue, ArraySize, Vector_Param)});
+	Vector_Variable.push_back({ Var.Name,
+		CreateVariable(this, Var, HazeVariableScope::Global, HazeDataDesc::None, 0, RefValue, ArraySize, Vector_Param) });
 
 	auto& CompilerValue = Vector_Variable.back().second;
 
@@ -495,6 +494,10 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_ST
 		if (Param[i]->IsRef())
 		{
 			Variable = Compiler->CreateMovPV(Compiler->GetTempRegister(), Param[i]);
+		}
+		else if (Param[i]->IsArrayElement())
+		{
+			Variable = GetArrayElementToValue(this, Param[i], Compiler->GetTempRegister());
 		}
 
 		SStream << GetInstructionString(InstructionOpCode::PUSH) << " ";
@@ -638,7 +641,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	BB->PushIRCode(SStream.str());
 
 	auto RetRegister = HazeCompiler::GetRegister(RET_REGISTER);
-	
+
 	auto& RetRegisterType = const_cast<HazeDefineType&>(RetRegister->GetValueType());
 	RetRegisterType = CallFunction->GetFunctionType();
 	return RetRegister;
@@ -649,7 +652,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	std::shared_ptr<HazeBaseBlock> BB = Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM SStream;
 	uint32 Size = 0;
-
 
 	HAZE_STRING VarName;
 	GetGlobalVariableName(PointerFunction, VarName);
@@ -779,8 +781,6 @@ bool HazeCompilerModule::GetGlobalVariableName(const std::shared_ptr<HazeCompile
 		}
 	}
 
-
-
 	return Value->TryGetVariableName(OutName);
 }
 
@@ -891,7 +891,7 @@ uint32 HazeCompilerModule::GetClassSize(const HAZE_STRING& ClassName)
 //			{
 //				HSS << " " << Value->GetValueType().CustomName << " " << (uint32)HazeDataDesc::FunctionAddress;		//表示需要运行中查找函数地址
 //			}
-//			
+//
 //			else
 //			{
 //				HAZE_LOG_ERR(HAZE_TEXT("生成中间码错误:不能找到变量! 当前函数<%s>\n"), Module->CurrFunction.empty() ? HAZE_TEXT("None") : Module->GetCurrFunction()->GetName().c_str());
@@ -1033,7 +1033,7 @@ void HazeCompilerModule::GenICode()
 	for (auto& iter : Vector_Variable)
 	{
 		HSS_I_Code << iter.first << " " << iter.second->GetSize() << " " << CAST_TYPE(iter.second->GetValueType().PrimaryType) << " ";
-		
+
 		if (IsHazeDefaultType(iter.second->GetValueType().PrimaryType))
 		{
 			HazeCompilerStream(HSS_I_Code, iter.second);
@@ -1046,7 +1046,6 @@ void HazeCompilerModule::GenICode()
 				HSS_I_Code << ClassValue->GetOwnerClassName();
 			}
 		}
-
 
 		HSS_I_Code << std::endl;
 	}

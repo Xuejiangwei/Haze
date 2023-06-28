@@ -202,7 +202,14 @@ JE IfThenBlock14 DefaultBlock15
 
 Block IfThenBlock14
 PUSH 五分 1 0 7
-PUSH 得分数组$3 2 20 7
+MOV Temp_R2 1 7 14 7 得分数组$3 2 0 17 7
+MOV Temp_R1 1 7 7 19 1 1 7
+MUL Temp_R1 1 7 7 甲$4 2 0 7
+ADD Temp_R2 1 7 14 7 Temp_R1 1 7 7
+MOV Temp_R1 1 7 7 乙$5 2 0 7
+ADD Temp_R2 1 7 14 7 Temp_R1 1 7 7
+MOVPV Temp_R0 1 7 7 Temp_R2 1 7 14 7
+PUSH Temp_R0 1 7 7
 PUSH 常字符串指针 1 2 14 4 1
 PUSH RetAddress 0 9 7
 CALL 打印 22 3 16 标准流
@@ -497,14 +504,28 @@ CMP Temp_R0 1 7 7 10 1 1 7
 JL IfThenBlock22 ElseBlock23
 
 Block IfThenBlock22
-PUSH 得分数组$3 2 20 7
+MOV Temp_R2 1 7 14 7 得分数组$3 2 0 17 7
+MOV Temp_R1 1 7 7 19 1 1 7
+MUL Temp_R1 1 7 7 甲$5 2 0 7
+ADD Temp_R2 1 7 14 7 Temp_R1 1 7 7
+MOV Temp_R1 1 7 7 乙$6 2 0 7
+ADD Temp_R2 1 7 14 7 Temp_R1 1 7 7
+MOVPV Temp_R0 1 7 7 Temp_R2 1 7 14 7
+PUSH Temp_R0 1 7 7
 PUSH 常字符串指针 1 2 14 4 4
 PUSH RetAddress 0 9 7
 CALL 打印 22 2 12 标准流
 JMP DefaultBlock24
 
 Block ElseBlock23
-PUSH 得分数组$3 2 20 7
+MOV Temp_R2 1 7 14 7 得分数组$3 2 0 17 7
+MOV Temp_R1 1 7 7 19 1 1 7
+MUL Temp_R1 1 7 7 甲$5 2 0 7
+ADD Temp_R2 1 7 14 7 Temp_R1 1 7 7
+MOV Temp_R1 1 7 7 乙$6 2 0 7
+ADD Temp_R2 1 7 14 7 Temp_R1 1 7 7
+MOVPV Temp_R0 1 7 7 Temp_R2 1 7 14 7
+PUSH Temp_R0 1 7 7
 PUSH 常字符串指针 1 2 14 4 7
 PUSH RetAddress 0 9 7
 CALL 打印 22 2 12 标准流

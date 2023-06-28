@@ -400,6 +400,6 @@ std::shared_ptr<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* Mo
 {
 	auto Compiler = Module->GetCompiler();
 	auto ArrayPointer = Compiler->CreatePointerToArrayElement(ElementValue);
-	
+
 	return Compiler->CreateMovPV(MovToValue ? MovToValue : Compiler->GetTempRegister(), ArrayPointer);
 }

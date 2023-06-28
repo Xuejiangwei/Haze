@@ -11,7 +11,7 @@ struct MemoryPageInfo
 
 	uint64 PageByteSize;
 	uint64 UnitSize;
-	
+
 	std::unique_ptr<MemoryPage> NextPage;
 };
 
@@ -34,4 +34,3 @@ public:
 private:
 	MemoryPageInfo PageInfo;
 };
-

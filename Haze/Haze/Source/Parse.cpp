@@ -165,7 +165,6 @@ static std::unordered_map<HazeToken, int> HashMap_OperatorPriority =
 	{ HazeToken::Shl, 3000 },
 	{ HazeToken::Shr, 3000 },
 
-
 	{ HazeToken::Add, 4000 },
 	{ HazeToken::Sub, 4000 },
 
@@ -181,8 +180,7 @@ static std::unordered_map<HazeToken, int> HashMap_OperatorPriority =
 	//{ HazeToken::Not, 6000 },
 	//{ HazeToken::Inc, 9000 },				//后置++
 
-	
-	//{ HazeToken::LeftParentheses, 10000 },	
+	//{ HazeToken::LeftParentheses, 10000 },
 };
 
 static HazeValueType GetPointerBaseType(const HAZE_STRING& Str)
@@ -213,7 +211,7 @@ static void GetType(HazeDefineType& Type, const HAZE_STRING& Str)
 }
 
 Parse::Parse(HazeCompiler* Compiler) : Compiler(Compiler), CurrCode(nullptr), CurrToken(HazeToken::None), LeftParenthesesExpressionCount(0),
-	LineCount(1), NeedParseNextStatement(false)
+LineCount(1), NeedParseNextStatement(false)
 {
 }
 
@@ -256,7 +254,7 @@ void Parse::ParseContent()
 		case HazeToken::Double:
 		case HazeToken::UnsignedInt:
 		case HazeToken::UnsignedLong:
-		//case HazeToken::String:
+			//case HazeToken::String:
 		case HazeToken::Identifier:
 		case HazeToken::CustomClass:
 		{
@@ -411,7 +409,7 @@ HazeToken Parse::GetNextToken()
 		{
 			CurrCode++;
 			memcpy(Comment_Str.data(), CurrCode, sizeof(HAZE_CHAR) * 2);
-		
+
 			HazeIsSpace(*CurrCode, &NewLine);
 			if (NewLine)
 			{
@@ -570,7 +568,7 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::Double:
 	case HazeToken::UnsignedInt:
 	case HazeToken::UnsignedLong:
-	//case HazeToken::String:
+		//case HazeToken::String:
 	case HazeToken::CustomClass:
 	case HazeToken::PointerBase:
 	case HazeToken::PointerClass:
@@ -661,7 +659,7 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 		{
 			GetNextToken();
 			IndexExpression.push_back(ParseExpression());
-			
+
 			GetNextToken();
 		}
 
@@ -763,14 +761,12 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 					//自定义构造函数
 					/*while (CurrToken != HazeToken::RightParentheses)
 					{
-
 					}*/
 				}
 			}
 			else
 			{
 				HAZE_LOG_ERR(HAZE_TEXT("解析错误 类对象定义需要括号\"(\" <%s>文件<%d>行!!\n"), Compiler->GetCurrModuleName().c_str(), LineCount);
-
 			}
 		}
 		else
@@ -787,7 +783,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			Vector_ParamType.push_back(DefineVariable.Type);
 
 			DefineVariable.Name = CurrLexeme;
-			
+
 			if (ExpectNextTokenIs(HazeToken::RightParentheses))
 			{
 				if (ExpectNextTokenIs(HazeToken::LeftParentheses))
@@ -841,7 +837,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 					while (true)
 					{
 						ArraySize.push_back(ParseExpression());
-						
+
 						if (!ExpectNextTokenIs(HazeToken::Array))
 						{
 							break;
@@ -910,10 +906,9 @@ std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
 			IfMultiExpression = ParseMultiExpression();
 			GetNextToken();
 		}
-		
+
 		std::unique_ptr<ASTBase> ElseExpression = nullptr;
 
-		
 		if (CurrToken == HazeToken::Else)
 		{
 			GetNextToken();
@@ -962,7 +957,7 @@ std::unique_ptr<ASTBase> Parse::ParseForExpression()
 			return std::make_unique<ASTForExpression>(Compiler, SourceLocation(TempLineCount), InitExpression, ConditionExpression, StepExpression, MultiExpression);
 		}
 	}
-	
+
 	return nullptr;
 }
 
@@ -978,7 +973,7 @@ std::unique_ptr<ASTBase> Parse::ParseWhileExpression()
 		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("当 执行表达式期望捕捉 {")))
 		{
 			MultiExpression = ParseMultiExpression();
-			
+
 			GetNextToken();
 			return std::make_unique<ASTWhileExpression>(Compiler, SourceLocation(TempLineCount), ConditionExpression, MultiExpression);
 		}
@@ -1015,7 +1010,7 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	GetNextToken();
 
 	HazeDefineVariable Define;
-	
+
 	Define.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 	if (Define.Type.PrimaryType == HazeValueType::Class)
 	{
@@ -1030,7 +1025,7 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("生成表达式 期望 (")))
 	{
-		if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("生成表达式 期望 )"))) 
+		if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("生成表达式 期望 )")))
 		{
 			GetNextToken();
 			return std::make_unique<ASTNew>(Compiler, SourceLocation(TempLineCount), Define);
@@ -1099,7 +1094,7 @@ std::unique_ptr<ASTBase> Parse::ParseThreeOperator(std::unique_ptr<ASTBase> Cond
 
 		GetNextToken();
 		auto RightExpression = ParseExpression(Iter->second);
-	
+
 		return std::make_unique<ASTThreeExpression>(Compiler, SourceLocation(TempLineCount), ConditionExpression, LeftExpression, RightExpression);
 	}
 
@@ -1134,7 +1129,7 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 	int Level = (int)CurrLexeme.length();
 
 	GetNextToken();
-	
+
 	auto Expression = ParseExpression(HashMap_OperatorPriority.find(HazeToken::PointerValue)->second);
 
 	if (CurrToken == HazeToken::RightParentheses)
@@ -1159,7 +1154,7 @@ std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 		auto AssignExpression = ParseExpression();
 		return std::make_unique<ASTPointerValue>(Compiler, SourceLocation(TempLineCount), Expression, Level, std::move(AssignExpression));
 	}
-	else 
+	else
 	{
 		return std::make_unique<ASTPointerValue>(Compiler, SourceLocation(TempLineCount), Expression, Level);
 	}
@@ -1171,7 +1166,7 @@ std::unique_ptr<ASTBase> Parse::ParseNeg()
 	bool IsNumberNeg = CurrToken == HazeToken::Sub;
 	GetNextToken();
 	auto Expression = ParseExpression();
-	
+
 	return std::make_unique<ASTNeg>(Compiler, SourceLocation(TempLineCount), Expression, IsNumberNeg);
 }
 
@@ -1207,7 +1202,7 @@ std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
 			GetNextToken();
 			break;
 		}
-		else if(CurrToken == HazeToken::Comma)
+		else if (CurrToken == HazeToken::Comma)
 		{
 			GetNextToken();
 		}
@@ -1290,7 +1285,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				ThisParam.Name = HAZE_CLASS_THIS;
 				ThisParam.Type.PrimaryType = HazeValueType::PointerClass;
 				ThisParam.Type.CustomName = ClassName->c_str();
-				
+
 				Vector_Param.push_back(ThisParam);
 			}
 
@@ -1612,7 +1607,7 @@ std::unique_ptr<ASTBase> Parse::ParseImportModule()
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("解析错误: 引入模块<%s>错误! <%s>文件<%d>行!\n"), CurrLexeme.c_str(), Compiler->GetCurrModuleName().c_str(), LineCount);
 	}
-	
+
 	return nullptr;
 }
 
@@ -1653,7 +1648,6 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 				HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), Name.c_str(), CurrLexeme.c_str(), Compiler->GetCurrModuleName().c_str(), LineCount);
 			}
 		}
-
 
 		if (TokenIs(HazeToken::LeftBrace))
 		{
@@ -1725,8 +1719,8 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 				if (!HasData(Vector_ClassData, HazeDataDesc::ClassMember_Local_Public))
 				{
 					Vector_ClassData.push_back(std::move(
-						std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>( { HazeDataDesc::ClassMember_Local_Public,
-						std::move(std::vector<std::unique_ptr<ASTBase>>{} )})));
+						std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>({ HazeDataDesc::ClassMember_Local_Public,
+						std::move(std::vector<std::unique_ptr<ASTBase>>{}) })));
 
 					GetNextToken();
 					GetNextToken();
@@ -1784,7 +1778,6 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 				else
 				{
 					HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类的保护区域只能定义一次! <%s>文件<%d>行!\n"), Compiler->GetCurrModuleName().c_str(), LineCount);
-
 				}
 			}
 		}
@@ -1879,7 +1872,6 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 					GetNextToken();
 				}
 			}
-
 		}
 
 		if (CurrToken != HazeToken::RightBrace)
@@ -1927,16 +1919,16 @@ bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, 
 {
 	static std::unordered_set<HAZE_STRING> HashSet_TokenText =
 	{
-		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD, 
+		TOKEN_ADD, TOKEN_SUB, TOKEN_MUL, TOKEN_DIV, TOKEN_MOD,
 		TOKEN_LEFT_MOVE, TOKEN_RIGHT_MOVE,
-		TOKEN_ASSIGN, 
+		TOKEN_ASSIGN,
 		TOKEN_BIT_AND, TOKEN_BIT_OR, TOKEN_BIT_NEG, TOKEN_BIT_XOR,
 		TOKEN_EQUAL, TOKEN_NOT_EQUAL, TOKEN_GREATER, TOKEN_GREATER_EQUAL, TOKEN_LESS, TOKEN_LESS_EQUAL,
-		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES, 
-		TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE, 
+		TOKEN_LEFT_PARENTHESES, TOKEN_RIGHT_PARENTHESES,
+		TOKEN_LEFT_BRACE, TOKEN_RIGHT_BRACE,
 		HAZE_SINGLE_COMMENT, HAZE_MULTI_COMMENT_START, HAZE_MULTI_COMMENT_END,
-		TOKEN_COMMA, 
-		TOKEN_MULTI_VARIABLE, 
+		TOKEN_COMMA,
+		TOKEN_MULTI_VARIABLE,
 		TOKEN_STRING_MATCH,
 		TOKEN_ARRAY_START, TOKEN_ARRAY_END,
 		TOKEN_INC, TOKEN_DEC, TOKEN_ADD_ASSIGN, TOKEN_SUB_ASSIGN, TOKEN_MUL_ASSIGN, TOKEN_DIV_ASSIGN, TOKEN_MOD_ASSIGN, TOKEN_SHL_ASSIGN, TOKEN_SHR_ASSIGN,
@@ -1944,7 +1936,7 @@ bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, 
 	};
 
 	static HAZE_STRING WS;
-	
+
 	WS.resize(CharSize);
 	memcpy(WS.data(), Char, sizeof(HAZE_CHAR) * CharSize);
 
@@ -1953,7 +1945,7 @@ bool Parse::IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, 
 	{
 		OutChar = Iter->c_str();
 	}
-	
+
 	return Iter != HashSet_TokenText.end();
 }
 
@@ -1983,7 +1975,7 @@ bool Parse::IsPointerOrRef(const HAZE_STRING& Str, HazeToken& OutToken)
 
 			for (size_t i = 0; i < Str.length() - 1; i++)
 			{
-				if (Str.substr(i, 1) != TOKEN_MUL) 
+				if (Str.substr(i, 1) != TOKEN_MUL)
 				{
 					return false;
 				}
@@ -2038,13 +2030,12 @@ void Parse::IncLineCount(bool Insert)
 {
 	LineCount++;
 
-//#if HAZE_DEBUG_ENABLE
-//
-//	if (Insert)
-//	{
-//		Compiler->InsertLineCount(LineCount);
-//	}
-//
-//#endif // HAZE_DEBUG_ENABLE
-
+	//#if HAZE_DEBUG_ENABLE
+	//
+	//	if (Insert)
+	//	{
+	//		Compiler->InsertLineCount(LineCount);
+	//	}
+	//
+	//#endif // HAZE_DEBUG_ENABLE
 }

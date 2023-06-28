@@ -18,7 +18,7 @@ HazeVM::HazeVM(HazeGenType GenType) : GenType(GenType)
 {
 	VMStack = std::make_unique<HazeStack>(this);
 	GC = std::make_unique<GarbageCollection>(this);
-	
+
 	Compiler = std::make_unique<HazeCompiler>(this);
 }
 
@@ -35,20 +35,17 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 
 #define HAZE_BACKEND_PARSE_ENABLE	1
 	{
-
 #if HAZE_BACKEND_PARSE_ENABLE
 
 		BackendParse BP(this);
 		BP.Parse();
 
 #endif
-
 	}
 
 #define HAZE_LOAD_OP_CODE_ENABLE	1
 
 	{
-
 #if HAZE_LOAD_OP_CODE_ENABLE
 
 		HazeExecuteFile ExeFile(ExeFileType::In);
@@ -118,7 +115,7 @@ const HAZE_STRING* HazeVM::GetModuleNameByCurrFunction()
 		{
 			for (auto& Iter : Vector_ModuleData)
 			{
-				if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second) 
+				if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second)
 				{
 					return &Iter.Name;
 				}
@@ -176,7 +173,7 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 			}
 		}
 	}
-	 
+
 	Pos = Name.find(HAZE_CLASS_ATTR);
 	if (Pos != HAZE_STRING::npos)
 	{
@@ -264,11 +261,10 @@ void HazeVM::InstructionExecPost()
 
 #if HAZE_INS_LOG
 
-	HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s>\n"), GetInstructionString(Vector_Instruction[VMStack->GetCurrPC()].InsCode), 
+	HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s>\n"), GetInstructionString(Vector_Instruction[VMStack->GetCurrPC()].InsCode),
 		Vector_Instruction[VMStack->GetCurrPC()].Operator[0].Variable.Name.c_str());
 
 #endif
-
 }
 
 uint32 HazeVM::GetNextLine(uint32 CurrLine)
@@ -282,7 +278,7 @@ uint32 HazeVM::GetNextLine(uint32 CurrLine)
 			return Vector_Instruction[i].Operator[0].Extra.Line;
 		}
 	}
-	
+
 	return CurrLine + 1;
 }
 

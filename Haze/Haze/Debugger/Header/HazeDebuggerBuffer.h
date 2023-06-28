@@ -23,6 +23,6 @@ private:
 
 	DebuggerBufferNode* HeadNode;
 	DebuggerBufferNode* TailNode;
-	
+
 	std::vector<DebuggerBufferNode*> Vector_Node;
 };

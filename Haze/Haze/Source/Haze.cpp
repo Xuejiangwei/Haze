@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include <filesystem>
 
@@ -65,7 +64,6 @@ uint32 GetParam(ParamType Type, char** ParamArray, int Length)
 	auto Iter = HashMap_Param.find(Type);
 	if (Iter != HashMap_Param.end())
 	{
-
 		for (size_t i = 0; i < Length; i++)
 		{
 			if (strcmp(ParamArray[i], Iter->second) == 0 && i + 1 < Length)
@@ -93,7 +91,6 @@ int HazeMain(int ArgCount, char* ArgValue[])
 	std::filesystem::path ExeFile(ArgValue[0]);
 	//RootCodePath = ExeFile.parent_path();
 	//std::wstring Path = std::filesystem::current_path();
-
 
 	char* MainFilePath = nullptr;
 	if (ArgCount < 2)

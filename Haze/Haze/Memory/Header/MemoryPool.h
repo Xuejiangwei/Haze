@@ -17,7 +17,7 @@ public:
 	~MemoryPool();
 
 	//MemoryPool& operator=(const MemoryPool& Pool) = delete;
-	
+
 	//MemoryPool& operator=(const MemoryPool&& Pool) = delete;
 
 	static int64 _RoundUp(int64 Bytes, int64 AlignNum)
@@ -47,7 +47,7 @@ public:
 		{
 			return _RoundUp(ByteSize, 1024);
 		}
-		else if(ByteSize <= 256 * 1024)
+		else if (ByteSize <= 256 * 1024)
 		{
 			return _RoundUp(ByteSize, 8 * 1024);
 		}
@@ -119,4 +119,3 @@ private:
 	std::unique_ptr<MemoryBucket> Bucket_256Byte;
 	std::unique_ptr<MemoryBucket> Bucket_AnyByte;
 };
-

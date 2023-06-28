@@ -7,7 +7,6 @@
 	指令字节id	操作数个数	操作数类型	操作数值		(操作数类型	操作数值)	...(操作数类型	操作数值)
 */
 
-
 enum class InstructionOpCodeType : uint8
 {
 	Memory,
@@ -91,7 +90,7 @@ enum class InstructionOpCode : uint32
 	MOD,
 
 	NEG,
-	
+
 	NOT,
 
 	INC,
@@ -170,7 +169,7 @@ struct InstructionData
 	HazeVariableScope Scope;
 	HazeDataDesc Desc;
 	InstructionAddressType AddressType;
-	
+
 	struct AddressData
 	{
 		int BaseAddress;

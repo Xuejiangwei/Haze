@@ -10,7 +10,7 @@ public:
 	virtual ~HazeCompilerPointerPointerValue() override;
 
 	int GetLevel() const { return Level; }
-	
+
 private:
 	int Level;
 };

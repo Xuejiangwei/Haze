@@ -9,14 +9,14 @@ class HazeVM;
 class HazeDebuggerServer
 {
 public:
-    static void InitDebuggerServer(HazeVM* VM);
+	static void InitDebuggerServer(HazeVM* VM);
 
-    static void SendData(char* Data, int Length, int Flags = 0);
+	static void SendData(char* Data, int Length, int Flags = 0);
 
 private:
-    static void Start(HazeVM* VM);
+	static void Start(HazeVM* VM);
 
-    static void Recv();
+	static void Recv();
 };
 
 //public static Action<Debugger, string> OnRequest;
@@ -74,7 +74,7 @@ private:
 //
 //static void StartProcessing(Object threadContext)
 //{
-//#if UNITY_EDITOR  
+//#if UNITY_EDITOR
 //    // ProcessQueue will be called directly from Unity Update()
 //# else
 //    try {

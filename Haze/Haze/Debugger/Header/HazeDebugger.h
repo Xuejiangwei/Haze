@@ -13,7 +13,7 @@ public:
 	friend class HazeVM;
 	friend class HazeStack;
 
-	HazeDebugger(HazeVM* VM, void(* EndCall)());
+	HazeDebugger(HazeVM* VM, void(*EndCall)());
 	~HazeDebugger();
 
 	enum DebuggerHookType
@@ -23,7 +23,7 @@ public:
 		Function = 1 << 2,
 	};
 
-	void SetHook(void(* HookCall)(HazeVM* VM), uint32 Type);
+	void SetHook(void(*HookCall)(HazeVM* VM), uint32 Type);
 
 	void AddBreakPoint(const char* Message);
 
@@ -52,25 +52,25 @@ public:
 	void SendProgramEnd();
 
 private:
-	void ClearCurrParseModuleData() 
+	void ClearCurrParseModuleData()
 	{
 		CurrPauseModule.first.clear();
-		CurrPauseModule.second = 0; 
+		CurrPauseModule.second = 0;
 	}
 
 	bool CurrModuleIsStepOver();
 
 	void SetJsonType(open::OpenJson& Json, HazeDebugInfoType Type) { Json["Type"] = (int)Type; }
-	
+
 	void SetJsonBreakFilePath(open::OpenJson& Json, HAZE_STRING Path)
 	{
 		ReplacePathSlash(Path);
 		auto Name = WString2String(Path);
 		Json["BreakPathFile"] = GB2312_2_UFT8(Name.c_str());
 	}
-	
+
 	void SetJsonBreakLine(open::OpenJson& Json, uint32 Line) { Json["BreakLine"] = Line; }
-	
+
 	void SendBreakInfo();
 
 	void SetJsonVariableData(open::OpenJson& Json, const HazeVariableData& Variable, const char* Address = nullptr);
@@ -89,4 +89,3 @@ private:
 
 	std::unordered_map<HAZE_STRING, bool> HashMap_IsStepOver;
 };
-

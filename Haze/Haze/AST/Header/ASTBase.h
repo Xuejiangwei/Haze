@@ -286,7 +286,6 @@ private:
 	std::unique_ptr<ASTBase> ConditionAST;
 	std::unique_ptr<ASTBase> LeftAST;
 	std::unique_ptr<ASTBase> RightAST;
-
 };
 
 //多行表达式

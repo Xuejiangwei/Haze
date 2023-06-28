@@ -47,21 +47,21 @@ private:
 	void Parse_I_Code_GlobalTable();
 
 	void Parse_I_Code_StringTable();
-	
+
 	void Parse_I_Code_ClassTable();
-	
+
 	void Parse_I_Code_FunctionTable();
 
 	void ParseInstructionData(InstructionData& Data);
-	
+
 	void ParseInstruction(ModuleUnit::FunctionInstruction& Instruction);
 
 	void GenOpCodeFile();
 
 	void ReplaceStringIndex(ModuleUnit::StringTable& NewStringTable, ModuleUnit::FunctionTable& NewFunctionTable, size_t& FunctionCount);
-	
+
 	inline void ResetLocalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable);
-	
+
 	inline void ResetGlobalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable);
 
 	void FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::FunctionTable& NewFunctionTable);
@@ -69,7 +69,7 @@ private:
 	const ModuleUnit::ClassTableData* const GetClass(const HAZE_STRING& ClassName);
 
 	uint32 GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName);
-	
+
 private:
 	HazeVM* VM;
 

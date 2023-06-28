@@ -1,8 +1,8 @@
 #include "HazeDebuggerBuffer.h"
 
 #ifdef _WIN32
-	#include <winsock.h>
-	#pragma comment(lib,"ws2_32.lib")
+#include <winsock.h>
+#pragma comment(lib,"ws2_32.lib")
 #endif
 
 HazeDebuggerBuffer::HazeDebuggerBuffer() : CurrIndex(0)
@@ -37,7 +37,6 @@ void HazeDebuggerBuffer::ReadBuffer(uint64 SocketClient)
 	{
 		if (Ret < DEBUGGER_BUFFER_NODE_SIZE - CurrIndex)
 		{
-			
 		}
 	}
 }

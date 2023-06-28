@@ -5,10 +5,10 @@
 
 #ifdef _WIN32
 
-	#include <Windows.h>
-	#define HAZE_LOAD_DLL(X) (void*)LoadLibrary(X)
-	#define HAZE_UNLOAD_DLL(X) FreeLibrary((HINSTANCE)X)
-	#define HAZE_GET_DLL_FUNCTION(X, Name) GetProcAddress((HINSTANCE)X, Name)
+#include <Windows.h>
+#define HAZE_LOAD_DLL(X) (void*)LoadLibrary(X)
+#define HAZE_UNLOAD_DLL(X) FreeLibrary((HINSTANCE)X)
+#define HAZE_GET_DLL_FUNCTION(X, Name) GetProcAddress((HINSTANCE)X, Name)
 
 #endif // _WIN32
 
@@ -38,7 +38,6 @@ void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& ModuleName, const
 		ExecuteFunctionType Func = (ExecuteFunctionType)HAZE_GET_DLL_FUNCTION(Iter->second.second, "ExecuteFunction");
 		if (Func)
 		{
-
 			Func(FunctionName.c_str(), ParamStartAddress, RetStartAddress);
 		}
 	}

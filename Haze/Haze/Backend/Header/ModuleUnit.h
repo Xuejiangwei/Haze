@@ -84,7 +84,7 @@ public:
 	};
 
 public:
-	
+
 	struct FunctionInstruction
 	{
 		InstructionOpCode InsCode;

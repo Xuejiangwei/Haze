@@ -5,7 +5,6 @@
 
 #include "Haze.h"
 
-
 class HazeCompiler;
 class HazeCompilerValue;
 class HazeBaseBlock;
@@ -30,7 +29,7 @@ public:
 
 	void GenCodeFile();
 
-	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc, 
+	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& Name, std::vector<std::pair<HazeDataDesc,
 		std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& ClassData);
 
 	void FinishCreateClass();
@@ -42,7 +41,7 @@ public:
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
 	std::shared_ptr<HazeCompilerFunction> CreateFunction(const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
-	
+
 	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> Class, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
 
 	void FinishFunction();
@@ -66,11 +65,11 @@ private:
 	std::shared_ptr<HazeCompilerValue> CreateAdd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
 
 	std::shared_ptr<HazeCompilerValue> CreateSub(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
-	
+
 	std::shared_ptr<HazeCompilerValue> CreateMul(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
 
 	std::shared_ptr<HazeCompilerValue> CreateDiv(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
-	
+
 	std::shared_ptr<HazeCompilerValue> CreateMod(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
 
 	std::shared_ptr<HazeCompilerValue> CreateBitAnd(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
@@ -78,7 +77,7 @@ private:
 	std::shared_ptr<HazeCompilerValue> CreateBitOr(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
 
 	std::shared_ptr<HazeCompilerValue> CreateBitNeg(std::shared_ptr<HazeCompilerValue> Value);
-	
+
 	std::shared_ptr<HazeCompilerValue> CreateBitXor(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
 
 	std::shared_ptr<HazeCompilerValue> CreateShl(std::shared_ptr<HazeCompilerValue> Left, std::shared_ptr<HazeCompilerValue> Right, bool IsAssign = false);
@@ -110,7 +109,7 @@ private:
 	void GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> Block);
 
 	//static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const std::shared_ptr<HazeCompilerValue>& Value, int Index = -1);
-	
+
 	static void GenVariableHzic(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const std::shared_ptr<HazeCompilerValue>& Value, int Index = -1);
 
 private:

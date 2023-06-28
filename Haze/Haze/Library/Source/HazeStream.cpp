@@ -14,7 +14,7 @@ static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> HashMap_Fun
 
 static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &HashMap_Function);
 
-static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form) 
+static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form)
 {
 #define L_FMTFLAGSF	HAZE_TEXT("-+#0 123456789.")
 #define MAX_FORMAT 32
@@ -58,7 +58,7 @@ void HazeStream::HazePrintCall(int V)
 void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 {
 #define PRE_SIGN HAZE_CHAR('%')
-	
+
 	uint64 V = 0;
 
 	int Offset = -(int)sizeof(V) - HAZE_ADDRESS_SIZE;
@@ -100,7 +100,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 			}
 			HAZE_CHAR Form[MAX_FORMAT];
 			Start._Seek_to(GetFormat(Start._Unwrapped(), Form));
-		
+
 			Start++;
 			if (*Start == HAZE_CHAR('d'))
 			{
@@ -122,7 +122,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 					memcpy(&TempV, Address, Size);
 					HSS << TempV;
 				}
-				
+
 				Start++;
 			}
 			else if (*Start == HAZE_CHAR('f'))
@@ -158,7 +158,6 @@ void HazeStream::HazePrintfCall(const HAZE_CHAR* V)
 {
 	std::wcout << V;
 }
-
 
 void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 {
@@ -218,7 +217,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 
 				int TempV;
 				std::cin >> TempV;
-				
+
 				char* Addr = Stack->GetAddressByEBP(Offset);
 				memcpy(&Address, Addr, sizeof(Address));
 				memcpy((char*)Address, &TempV, sizeof(TempV));

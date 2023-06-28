@@ -7,10 +7,9 @@
 //class HazeClass;
 //class HazeFunction;
 
-
 /*
 	Op File format
-	
+
 	Main Header:
 	4 byte : 全局变量大小
 	4 byte : main函数索引
@@ -44,8 +43,6 @@ private:
 private:
 
 	HazeValue* AddGlobalVariable();
-
-
 
 private:
 	//std::unordered_map<HAZE_STRING, HazeCompilerValue> MapGlobalVariables;

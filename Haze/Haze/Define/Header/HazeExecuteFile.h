@@ -63,7 +63,7 @@ private:
 	void ReadFunctionTable(HazeVM* VM);
 
 	void ReadFunctionInstruction(HazeVM* VM);
-	
+
 	void ReadInstruction(Instruction& Instruction);
 private:
 	std::unique_ptr<HAZE_BINARY_OFSTREAM> FileStream;
@@ -71,4 +71,3 @@ private:
 
 	bool State[HazeFileFormat::End];
 };
-
