@@ -796,7 +796,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToPointerArray(std
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(std::shared_ptr<HazeCompilerFunction> Function)
 {
-	return CreateVariable(GetCurrModule().get(), HazeDefineVariable({ HazeValueType::PointerFunction, Function->GetName() }, HAZE_TEXT("")), HazeVariableScope::None, HazeDataDesc::None, 0);
+	return CreateVariable(GetCurrModule().get(), HazeDefineVariable({ HazeValueType::PointerFunction, Function->GetName() }, HAZE_TEXT("")),
+		HazeVariableScope::Temp, HazeDataDesc::FunctionAddress, 0);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineType& Data)

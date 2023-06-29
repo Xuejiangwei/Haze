@@ -1,5 +1,6 @@
 #include "HazeLibraryManager.h"
 #include "HazeLibraryDefine.h"
+#include "HazeLog.h"
 
 #include "HazeStream.h"
 
@@ -12,11 +13,13 @@
 
 #endif // _WIN32
 
-using ExecuteFunctionType = void(*)(const wchar_t*, char*, char*);
-
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
 
 std::unique_ptr<HazeLibraryManager> HazeLibManager = std::make_unique<HazeLibraryManager>();
+
+void ExeFunc()
+{
+}
 
 HazeLibraryManager::HazeLibraryManager()
 {
@@ -26,7 +29,7 @@ HazeLibraryManager::~HazeLibraryManager()
 {
 	for (auto& Iter : HashMap_Library)
 	{
-		HAZE_UNLOAD_DLL(Iter.second.second);
+		HAZE_UNLOAD_DLL(Iter.second.Address);
 	}
 }
 
@@ -35,10 +38,17 @@ void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& ModuleName, const
 	auto Iter = HashMap_Library.find(ModuleName);
 	if (Iter != HashMap_Library.end())
 	{
-		ExecuteFunctionType Func = (ExecuteFunctionType)HAZE_GET_DLL_FUNCTION(Iter->second.second, "ExecuteFunction");
+		ExeFuncType Func = (ExeFuncType)HAZE_GET_DLL_FUNCTION(Iter->second.Address, "ExecuteFunction");
 		if (Func)
 		{
-			Func(FunctionName.c_str(), ParamStartAddress, RetStartAddress);
+			if (Func(FunctionName.c_str(), ParamStartAddress, RetStartAddress) == EXE_FUNC_ERR)
+			{
+				HAZE_LOG_ERR_W("执行三方库<%s>中函数<%s>返回错误代码!\n", ModuleName.c_str(), FunctionName.c_str());
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("调用三方库<%s>中函数<%s>错误,未能找到!\n", ModuleName.c_str(), FunctionName.c_str());
 		}
 	}
 }
@@ -49,13 +59,15 @@ void HazeLibraryManager::LoadDLLLibrary(const HAZE_STRING& LibraryPath, const HA
 	if (Iter == HashMap_Library.end())
 	{
 		auto Name = GetModuleNameByFilePath(FilePath);
-		HashMap_Library[Name] = { LibraryLoadState::Load, HAZE_LOAD_DLL(LibraryPath.c_str()) };
-
-		/*ShowHazeWindow Func = (ShowHazeWindow)GetProcAddress((HINSTANCE)HashMap_Library[LibraryPath].second, "ShowOpenGLWindow");
-		if (Func)
+		auto Address = HAZE_LOAD_DLL(LibraryPath.c_str());
+		if (Address != nullptr)
 		{
-			Func();
-		}*/
+			HashMap_Library[Name] = { LibraryLoadState::Load,  Address, std::move(LibraryPath), std::move(FilePath) };
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("导入三方库<%s>失败!\n", LibraryPath.c_str());
+		}
 	}
 }
 
@@ -64,8 +76,25 @@ void HazeLibraryManager::UnloadDLLLibrary(const HAZE_STRING& LibraryPath)
 	auto Iter = HashMap_Library.find(LibraryPath);
 	if (Iter != HashMap_Library.end())
 	{
-		HAZE_UNLOAD_DLL(Iter->second.second);
+		HAZE_UNLOAD_DLL(Iter->second.Address);
 	}
+}
+
+const HAZE_STRING* HazeLibraryManager::TryGetFilePath(const HAZE_STRING& ModuleName)
+{
+	auto Iter = HashMap_Library.find(ModuleName);
+	if (Iter != HashMap_Library.end())
+	{
+		return &Iter->second.FilePath;
+	}
+
+	return nullptr;
+}
+
+const void* HazeLibraryManager::GetExeAddress()
+{
+	static uint64 Address = (uint64)(&ExeFunc);
+	return &Address;
 }
 
 void HazeLibraryManager::LoadStdLibrary()

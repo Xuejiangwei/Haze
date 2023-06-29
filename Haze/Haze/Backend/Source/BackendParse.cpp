@@ -62,6 +62,11 @@ static bool IsIgnoreFindAddress(InstructionData& Operator)
 		return true;
 	}
 
+	if (Operator.Desc == HazeDataDesc::CallFunctionModule)
+	{
+		return true;
+	}
+
 	if (Operator.Variable.Name == HAZE_CALL_PUSH_ADDRESS_NAME)
 	{
 		Operator.AddressType = InstructionAddressType::Local;
@@ -401,13 +406,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::BIT_NEG:
 	case InstructionOpCode::PUSH:
 	case InstructionOpCode::POP:
-	{
-		InstructionData OperatorOne;
-		ParseInstructionData(OperatorOne);
-
-		Instruction.Operator = { OperatorOne };
-	}
-	break;
 	case InstructionOpCode::RET:
 	{
 		InstructionData OperatorOne;
@@ -425,10 +423,17 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 
 		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
 
+		if (IsPointerFunction(OperatorOne.Variable.Type.PrimaryType))
+		{
+			GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Scope);
+			GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Desc);
+		}
+
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamNum);
 		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamByteSize);
 
 		GetNextLexmeAssign_HazeString(OperatorTwo.Variable.Name);
+		OperatorTwo.Desc = HazeDataDesc::CallFunctionModule;
 
 		Instruction.Operator = { OperatorOne, OperatorTwo };
 	}
@@ -765,6 +770,17 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 						else if (IS_SCOPE_GLOBAL(Operator.Scope))
 						{
 							ResetGlobalOperatorAddress(Operator, CurrFunction, HashMap_LocalVariable, NewGlobalDataTable);
+						}
+						else if (IS_SCOPE_TEMP(Operator.Scope))
+						{
+							if (Operator.Desc == HazeDataDesc::FunctionAddress)
+							{
+								Operator.AddressType = InstructionAddressType::FunctionAddress;
+							}
+							else
+							{
+								HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", Operator.Variable.Name.c_str());
+							}
 						}
 						else
 						{

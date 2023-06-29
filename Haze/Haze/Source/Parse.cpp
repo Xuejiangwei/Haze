@@ -676,6 +676,7 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 {
 	uint32 TempLineCount = LineCount;
+	DefineVariable.Name.clear();
 	DefineVariable.Type.Reset();
 
 	DefineVariable.Type.PrimaryType = GetValueTypeByToken(CurrToken);
@@ -1277,7 +1278,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 		HAZE_STRING FunctionName = CurrLexeme;
 		if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
 		{
-			std::vector<HazeDefineVariable> Vector_Param;
+			std::vector<std::unique_ptr<ASTBase>> Vector_Param;
 
 			if (ClassName && !ClassName->empty())
 			{
@@ -1286,39 +1287,20 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 				ThisParam.Type.PrimaryType = HazeValueType::PointerClass;
 				ThisParam.Type.CustomName = ClassName->c_str();
 
-				Vector_Param.push_back(ThisParam);
+				Vector_Param.push_back(std::make_unique<ASTVariableDefine>(Compiler, SourceLocation(TempLineCount), HazeSectionSignal::Local, ThisParam, nullptr));
 			}
+			
+			GetNextToken();
 
-			while (!TokenIs(HazeToken::LeftBrace))
+			while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
 			{
-				HazeDefineVariable Param;
-				if (GetNextToken() == HazeToken::RightParentheses)
+				Vector_Param.push_back(ParseVariableDefine());
+				if (!TokenIs(HazeToken::Comma))
 				{
-					break;
-				}
-
-				Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
-				GetType(Param.Type, CurrLexeme);
-
-				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
-				{
-					Param.Name = HAZE_MULTI_PARAM_NAME;
-					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("函数多参参数右面需要 )"));
-					Vector_Param.push_back(Param);
-
-					GetNextToken();
 					break;
 				}
 
 				GetNextToken();
-				Param.Name = CurrLexeme;
-
-				Vector_Param.push_back(Param);
-
-				if (!ExpectNextTokenIs(HazeToken::Comma))
-				{
-					break;
-				}
 			}
 
 			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
@@ -1338,8 +1320,9 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 	}
 	else if (*ClassName == FuncType.CustomName)
 	{
+		HAZE_LOG_ERR_W("解析错误,暂时不支持定义类的构造函数!\n");
 		//类构造函数
-		HAZE_STRING FunctionName = FuncType.CustomName;
+		/*HAZE_STRING FunctionName = FuncType.CustomName;
 		if (CurrToken == HazeToken::LeftParentheses)
 		{
 			std::vector<HazeDefineVariable> Vector_Param;
@@ -1403,7 +1386,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 					return std::make_unique<ASTFunction>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body);
 				}
 			}
-		}
+		}*/
 	}
 
 	return nullptr;
@@ -1416,7 +1399,8 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 	StackSectionSignal.push(HazeSectionSignal::Local);
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数左边需要 (")))
 	{
-		std::vector<HazeDefineVariable> Vector_Param;
+		//std::vector<HazeDefineVariable> Vector_Param;
+		std::vector<std::unique_ptr<ASTBase>> Vector_Param;
 
 		while (!TokenIs(HazeToken::LeftBrace))
 		{
@@ -1426,7 +1410,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 				break;
 			}
 
-			Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
+			/*Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
 			if (CurrToken == HazeToken::Identifier)
 			{
 				Param.Type.PrimaryType = HazeValueType::Class;
@@ -1441,7 +1425,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 			if (!ExpectNextTokenIs(HazeToken::Comma))
 			{
 				break;
-			}
+			}*/
 		}
 
 		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
@@ -1537,49 +1521,19 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefi
 				HAZE_STRING FunctionName = CurrLexeme;
 				if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
 				{
-					std::vector<HazeDefineVariable> Vector_Param;
+					std::vector<std::unique_ptr<ASTBase>> Vector_Param;
 
-					while (!TokenIs(HazeToken::LeftBrace))
+					GetNextToken();
+
+					while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
 					{
-						HazeDefineVariable Param;
-						if (GetNextToken() == HazeToken::RightParentheses)
+						Vector_Param.push_back(ParseVariableDefine());
+						if (!TokenIs(HazeToken::Comma) || Vector_Param.back()->GetDefine().Type.PrimaryType == HazeValueType::MultiVariable)
 						{
-							break;
-						}
-
-						Param.Type.PrimaryType = GetValueTypeByToken(CurrToken);
-						if (CurrToken == HazeToken::Identifier)
-						{
-							Param.Type.PrimaryType = HazeValueType::Class;
-							Param.Type.CustomName = CurrLexeme;
-						}
-						else if (CurrToken == HazeToken::PointerBase)
-						{
-							Param.Type.SecondaryType = GetPointerBaseType(CurrLexeme);
-						}
-						else if (CurrToken == HazeToken::PointerClass)
-						{
-							Param.Type.CustomName = GetPointerClassType(CurrLexeme);
-						}
-
-						if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
-						{
-							Param.Name = HAZE_MULTI_PARAM_NAME;
-							ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("函数多参参数右面需要 )"));
-							Vector_Param.push_back(Param);
-
 							break;
 						}
 
 						GetNextToken();
-						Param.Name = CurrLexeme;
-
-						Vector_Param.push_back(Param);
-
-						if (!ExpectNextTokenIs(HazeToken::Comma))
-						{
-							break;
-						}
 					}
 
 					StackSectionSignal.pop();

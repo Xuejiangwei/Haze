@@ -694,7 +694,7 @@ public:
 
 			if (Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
 			{
-				void* Value = GetOperatorAddress(Stack, Operator[1]);
+				void* Value = GetOperatorAddress(Stack, Operator[0]);
 				uint64 FunctionAddress;
 				memcpy(&FunctionAddress, Value, sizeof(FunctionAddress));
 				Stack->OnCall((FunctionData*)FunctionAddress, Operator[0].Extra.Call.ParamByteSize);
@@ -723,6 +723,7 @@ public:
 						RetRegister->Type.PrimaryType = Function.Type;
 						int Size = GetSizeByType(RetRegister->Type, Stack->VM);
 						RetRegister->Data.resize(Size);
+
 						HazeLibManager->ExecuteDLLFunction(Operator[1].Variable.Name, Operator[0].Variable.Name,
 							&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], RetRegister->Data.begin()._Unwrapped());
 					}
@@ -1056,7 +1057,7 @@ private:
 		thread_local static HazeVariable ConstantValue;
 		thread_local static uint64 TempAddress;
 
-		char* Ret = nullptr;
+		void* Ret = nullptr;
 
 		switch (Operator.AddressType)
 		{
@@ -1067,7 +1068,7 @@ private:
 		case InstructionAddressType::Global_Base_Offset:
 		{
 			Ret = Stack->VM->GetGlobalValueByIndex(Operator.Extra.Index);
-			return Ret + Operator.Extra.Address.Offset;
+			return (char*)Ret + Operator.Extra.Address.Offset;
 		}
 		case InstructionAddressType::Global_BasePointer_Offset:
 		{
@@ -1088,6 +1089,12 @@ private:
 			Ret = &Stack->Stack_Main[Stack->EBP + Operator.Extra.Address.BaseAddress];
 			memcpy(&TempAddress, Ret, sizeof(TempAddress));
 			return (char*)TempAddress + Operator.Extra.Address.Offset;
+		}
+		case InstructionAddressType::FunctionAddress:
+		{
+			TempAddress = (uint64)((void*)&Stack->VM->GetFunctionByName(Operator.Variable.Name));
+			Ret = &TempAddress;
+			return Ret;
 		}
 		case InstructionAddressType::Constant:
 		case InstructionAddressType::NullPtr:
@@ -1173,6 +1180,22 @@ private:
 				HAZE_LOG_ERR(HAZE_TEXT("Binary operator error, %s %s operator %s!\n"), Operator[0].Variable.Name.c_str(), Operator[1].Variable.Name.c_str(), GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
 			}
 		}
+	}
+
+	void ExeHazePointerFunction(HazeStack* Stack, void* Value)
+	{
+		uint64 FunctionAddress;
+		memcpy(&FunctionAddress, Value, sizeof(FunctionAddress));
+		auto FuncData = (FunctionData*)FunctionAddress;
+		
+		int Size = 0;
+		for (size_t i = 0; i < FuncData->Vector_Param.size(); i++)
+		{
+			Size += GetSizeByType(FuncData->Vector_Param[i].Type, Stack->VM);
+		}
+		
+		Stack->OnCall(FuncData, Size);
+		Stack->ResetCallHaze();
 	}
 };
 

@@ -9,7 +9,8 @@
 class ASTFunction
 {
 public:
-	ASTFunction(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, std::unique_ptr<ASTBase>& Body);
+	ASTFunction(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, 
+		std::vector<std::unique_ptr<ASTBase>>& Param, std::unique_ptr<ASTBase>& Body);
 
 	~ASTFunction();
 
@@ -23,7 +24,7 @@ private:
 
 	HAZE_STRING FunctionName;
 	HazeDefineType FunctionType;
-	std::vector<HazeDefineVariable> Vector_FunctionParam; //从左到右
+	std::vector<std::unique_ptr<ASTBase>> Vector_FunctionParam; //从左到右
 	std::unique_ptr<ASTBase> Body;
 
 	SourceLocation Location;
@@ -57,7 +58,7 @@ private:
 class ASTFunctionDefine
 {
 public:
-	ASTFunctionDefine(HazeCompiler* Compiler,/* const SourceLocation& Location,*/ const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param);
+	ASTFunctionDefine(HazeCompiler* Compiler,/* const SourceLocation& Location,*/ const HAZE_STRING& Name, HazeDefineType& Type, std::vector<std::unique_ptr<ASTBase>>& Param);
 	~ASTFunctionDefine();
 
 	void CodeGen();
@@ -66,5 +67,5 @@ private:
 	HazeCompiler* Compiler;
 	HAZE_STRING FunctionName;
 	HazeDefineType FunctionType;
-	std::vector<HazeDefineVariable> Vector_FunctionParam; //从左到右
+	std::vector<std::unique_ptr<ASTBase>> Vector_FunctionParam; //从左到右
 };

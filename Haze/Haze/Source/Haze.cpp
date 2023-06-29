@@ -68,7 +68,7 @@ uint32 GetParam(ParamType Type, char** ParamArray, int Length)
 		{
 			if (strcmp(ParamArray[i], Iter->second) == 0 && i + 1 < Length)
 			{
-				return i + 1;
+				return (uint32)i + 1;
 			}
 		}
 	}
@@ -112,7 +112,7 @@ int HazeMain(int ArgCount, char* ArgValue[])
 	std::filesystem::create_directory(RootCodePath + HAZE_FILE_INTER);
 	std::filesystem::create_directory(RootCodePath + HAZE_FILE_PATH_BIN);
 
-	for (uint32 DLLLibIndex = 0; DLLLibIndex < ArgCount; DLLLibIndex += 2)
+	for (int DLLLibIndex = 0; DLLLibIndex < ArgCount; DLLLibIndex += 2)
 	{
 		DLLLibIndex = GetParam(ParamType::LoadLibrary, ArgValue + DLLLibIndex, ArgCount);
 		if (DLLLibIndex > 0)

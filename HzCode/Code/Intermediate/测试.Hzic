@@ -4,15 +4,6 @@ GlobalDataTable
 StringTable
 0
 ClassTable
-3
-Class 二维点 16 2
-横坐标 14 7 0 8
-纵坐标 14 7 8 8
-Class 三维点 24 3
-点 21 二维点 0 16
-点B 2 16 1
-前坐标 1 17 1
-Class 测试A 32 1
-前坐标C 4 24 2
+0
 FunctionTable
 0

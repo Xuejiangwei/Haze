@@ -673,7 +673,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 
 	FunctionCall(SStream, VarName, Size, Param, ThisPointerTo);
 
-	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << VarName << " " << CAST_TYPE(HazeValueType::PointerFunction) << " " << Param.size()
+	SStream << GetInstructionString(InstructionOpCode::CALL) << " " << VarName << " " << CAST_TYPE(HazeValueType::PointerFunction) << " "
+		<< CAST_SCOPE(PointerFunction->GetVariableScope())  << " " << CAST_DESC(PointerFunction->GetVariableDesc()) << " " << Param.size()
 		<< " " << Size << " " << Compiler->GetCurrModuleName() << std::endl;
 	BB->PushIRCode(SStream.str());
 
@@ -991,6 +992,11 @@ void HazeCompilerModule::GenVariableHzic(HazeCompilerModule* Module, HAZE_STRING
 	else if (Value->IsLocalVariable())
 	{
 		Find = Module->GetCurrFunction()->FindLocalVariableName(Value, Name);
+	}
+	else if (Value->IsTempVariable())
+	{
+		Find = true;
+		Name = Value->GetValueType().CustomName;
 	}
 	else
 	{

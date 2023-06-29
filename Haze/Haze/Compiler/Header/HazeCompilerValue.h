@@ -37,6 +37,8 @@ public:
 
 	bool IsLocalVariable() const { return Scope == HazeVariableScope::Local; }
 
+	bool IsTempVariable() const { return Scope == HazeVariableScope::Temp; }
+
 public:
 	bool IsRegister() const { return IsRegisterDesc(Desc); }
 

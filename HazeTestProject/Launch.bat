@@ -1,0 +1,1 @@
+F:\GitHub\Haze\Haze\x64\Debug\Haze.exe -m F:\GitHub\Haze\HazeTestProject\主文件.hz -ld F:\GitHub\Haze\HazeTestProject\三方库\DirectX12接口\dll\DirectX12Interface.dll F:\GitHub\Haze\HazeTestProject\三方库\DirectX12接口\DirectX12接口.hz

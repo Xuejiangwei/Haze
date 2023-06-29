@@ -30,11 +30,26 @@ HazeStack::~HazeStack()
 void HazeStack::Start(unsigned int Address)
 {
 	PC = Address;
-
 	PreMainFunction();
-
 	PushMainFuntion();
 
+	Run();
+
+	Debugger->SendProgramEnd();
+	GarbageCollection(true, true);
+}
+
+void HazeStack::JmpTo(const InstructionData& Data)
+{
+	auto& Function = Stack_Frame.back().FunctionInfo;
+	int Address = Function->FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
+	memcpy(&PC, &Address, sizeof(PC));
+
+	PC--;
+}
+
+void HazeStack::Run(bool IsHazeCall)
+{
 	while (PC < VM->Vector_Instruction.size())
 	{
 		while (VM->IsDebug())
@@ -63,20 +78,13 @@ void HazeStack::Start(unsigned int Address)
 			return;
 		}
 
+		if (IsHazeCall && Vector_CallHazeStack.size() == 0)
+		{
+			return;
+		}
+
 		PCStepInc();
 	}
-
-	Debugger->SendProgramEnd();
-	GarbageCollection(true, true);
-}
-
-void HazeStack::JmpTo(const InstructionData& Data)
-{
-	auto& Function = Stack_Frame.back().FunctionInfo;
-	int Address = Function->FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
-	memcpy(&PC, &Address, sizeof(PC));
-
-	PC--;
 }
 
 void HazeStack::PCStepInc()
@@ -160,6 +168,11 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 
 	PC = Info->FunctionDescData.InstructionStartAddress;
 	--PC;
+
+	if (Vector_CallHazeStack.size() > 0)
+	{
+		Vector_CallHazeStack.push_back(1);
+	}
 }
 
 void HazeStack::OnRet()
@@ -168,6 +181,19 @@ void HazeStack::OnRet()
 	EBP = Stack_Frame.back().EBP;
 	ESP = Stack_Frame.back().ESP;
 	Stack_Frame.pop_back();
+
+	if (Vector_CallHazeStack.size() > 0)
+	{
+		Vector_CallHazeStack.pop_back();
+	}
+}
+
+void HazeStack::ResetCallHaze()
+{
+	Vector_CallHazeStack.clear();
+	Vector_CallHazeStack.push_back(1);
+
+	Run(true);
 }
 
 void* HazeStack::Alloca(uint32 Size)

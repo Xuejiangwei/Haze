@@ -1,0 +1,30 @@
+2
+GlobalDataTable
+0
+StringTable
+0
+ClassTable
+0
+FunctionTable
+3
+Function 创建Windows窗口 1
+FunctionStart
+
+Block Entry
+
+FunctionEnd
+
+Function 初始化DirectX 0
+FunctionStart
+
+Block Entry
+
+FunctionEnd
+
+Function 是否退出 1
+FunctionStart
+
+Block Entry
+
+FunctionEnd
+

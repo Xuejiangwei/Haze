@@ -108,6 +108,8 @@ bool IsIntegerType(HazeValueType Type);
 
 bool IsPointerType(HazeValueType Type);
 
+bool IsPointerFunction(HazeValueType Type);
+
 bool IsNumberType(HazeValueType Type);
 
 bool IsClassType(HazeValueType Type);

@@ -8,6 +8,14 @@ enum class LibraryLoadState
 	Load,
 };
 
+struct LibraryData
+{
+	LibraryLoadState State;
+	void* Address;
+	HAZE_STRING LibraryPath;
+	HAZE_STRING FilePath;
+};
+
 class HazeLibraryManager
 {
 public:
@@ -20,8 +28,12 @@ public:
 
 	void UnloadDLLLibrary(const HAZE_STRING& LibraryPath);
 
+	const HAZE_STRING* TryGetFilePath(const HAZE_STRING& ModuleName);
+
+	const void* GetExeAddress();
+
 	static void LoadStdLibrary();
 
 private:
-	std::unordered_map<HAZE_STRING, std::pair<LibraryLoadState, void*>> HashMap_Library;
+	std::unordered_map<HAZE_STRING, LibraryData> HashMap_Library;
 };

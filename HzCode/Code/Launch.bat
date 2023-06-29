@@ -1,0 +1,1 @@
+-m $(SolutionDir)..\HzCode\Code\HazeCode.hz -ld $(OutDir)HazeOpenGL.dll $(SolutionDir)..\HzCode\Code\OpenGL??.hz

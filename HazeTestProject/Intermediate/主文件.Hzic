@@ -1,0 +1,69 @@
+0
+GlobalDataTable
+0
+StringTable
+2
+14 测试 甲 %d 乙 %d\n
+9 函数指针 %d\n
+ClassTable
+1
+Class 测试 8 2
+甲 7 0 4
+乙 7 4 4
+FunctionTable
+3
+Function 测试@打印数据 0
+Param 己 15 测试
+Variable 己$1 15 测试 -12 8
+FunctionStart
+
+Block Entry
+MOV 己$1指之甲 2 13 7 100 1 1 7
+MOV 己$1指之乙 2 13 7 101 1 1 7
+PUSH 己$1指之乙 2 13 7
+PUSH 己$1指之甲 2 13 7
+PUSH 常字符串指针 1 2 14 4 0
+PUSH RetAddress 0 9 7
+CALL 打印 22 3 16 标准流
+RET Void 0 0 0
+
+FunctionEnd
+
+Function 加法 7
+Param 甲 7
+Param 乙 7
+Variable 甲$2 7 -8 4
+Variable 乙$1 7 -12 4
+FunctionStart
+
+Block Entry
+MOV Temp_R0 1 7 7 甲$2 2 0 7
+ADD Temp_R0 1 7 7 乙$1 2 0 7
+RET Temp_R0 1 7 7
+
+FunctionEnd
+
+Function 主函数 0
+Variable 测试甲$1 21 测试 0 8
+Variable 函数指针$2 16 0 8 8
+Variable 甲$3 7 16 4
+FunctionStart
+
+Block Entry
+PUSH 测试甲$1 2 11 15 测试
+PUSH RetAddress 0 9 7
+CALL 测试@打印数据 22 0 8 主文件
+MOV 函数指针$2 2 0 16 0 加法 4 10 16 0
+PUSH 2 1 1 7
+PUSH 1 1 1 7
+PUSH RetAddress 0 9 7
+CALL 函数指针$2 16 2 0 2 8 主文件
+MOV 甲$3 2 0 7 Ret_R 1 4 0
+PUSH 甲$3 2 0 7
+PUSH 常字符串指针 1 2 14 4 1
+PUSH RetAddress 0 9 7
+CALL 打印 22 2 12 标准流
+RET Void 0 0 0
+
+FunctionEnd
+

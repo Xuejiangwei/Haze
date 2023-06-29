@@ -51,6 +51,8 @@ public:
 	HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name);
 
 private:
+	void Run(bool IsHazeCall = false);
+
 	void PCStepInc();
 
 	void PreMainFunction();
@@ -62,6 +64,8 @@ private:
 	void OnCall(const FunctionData* Info, int ParamSize);
 
 	void OnRet();
+
+	void ResetCallHaze();
 
 private:
 	void* Alloca(uint32 Size);
@@ -79,4 +83,6 @@ private:
 	uint32 ESP;		//Õ»¶¥
 
 	std::unordered_map<HAZE_STRING, HazeRegister>  HashMap_VirtualRegister;
+
+	std::vector<int> Vector_CallHazeStack;
 };

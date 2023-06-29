@@ -34,12 +34,16 @@ enum class InstructionOpCodeType : uint8
 #define CAST_SCOPE(V) (uint32)V
 #define IS_SCOPE_GLOBAL(V) V == HazeVariableScope::Global
 #define IS_SCOPE_LOCAL(V) V == HazeVariableScope::Local
+#define IS_SCOPE_TEMP(V) V == HazeVariableScope::Temp
 enum class HazeVariableScope : uint32
 {
 	None,
 	Global,
 	Local,
 	Static,
+
+	Temp,		//解析时生成中间变量
+	Ignore,
 };
 
 #define CAST_DESC(V) (uint32)V
@@ -74,6 +78,8 @@ enum class HazeDataDesc : uint32
 	ArrayElement,
 
 	NullPtr,
+
+	CallFunctionModule,
 };
 
 enum class InstructionOpCode : uint32
@@ -155,6 +161,8 @@ enum class InstructionAddressType : uint8
 	Local,
 	Local_Base_Offset,
 	Local_BasePointer_Offset,
+
+	FunctionAddress,
 
 	Constant,
 	NullPtr,

@@ -26,6 +26,8 @@ public:
 
 	virtual bool IsBlock() const { return false; }
 
+	const HazeDefineVariable& GetDefine() const { return DefineVariable; }
+
 protected:
 	HazeCompiler* Compiler;
 	HazeValue Value;
