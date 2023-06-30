@@ -5,6 +5,8 @@
 
 #include "HazeLibraryManager.h"
 
+#include <Windows.h>
+
 #define HAZE_CALL_LOG				0
 
 extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
@@ -724,8 +726,15 @@ public:
 						int Size = GetSizeByType(RetRegister->Type, Stack->VM);
 						RetRegister->Data.resize(Size);
 
+						uint64 Address = (uint64)(Stack);
+						memcpy(&Stack->Stack_Main[Stack->ESP], &Address, sizeof(Address));
+
+						Address = (uint64)(&ExeHazePointerFunction);
+						memcpy(&Stack->Stack_Main[Stack->ESP + sizeof(Address)], &Address, sizeof(Address));
+
 						HazeLibManager->ExecuteDLLFunction(Operator[1].Variable.Name, Operator[0].Variable.Name,
-							&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], RetRegister->Data.begin()._Unwrapped());
+							&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], RetRegister->Data.begin()._Unwrapped(),
+							Stack, &ExeHazePointerFunction);
 					}
 
 					Stack->ESP -= (Operator[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
@@ -1182,20 +1191,88 @@ private:
 		}
 	}
 
-	void ExeHazePointerFunction(HazeStack* Stack, void* Value)
+	static void ExeHazePointerFunction(void* StackPointer, void* Value, int ParamNum, ...)
 	{
-		uint64 FunctionAddress;
-		memcpy(&FunctionAddress, Value, sizeof(FunctionAddress));
-		auto FuncData = (FunctionData*)FunctionAddress;
-		
+		HazeStack* Stack = (HazeStack*)StackPointer;
+		auto FuncData = (FunctionData*)Value;
+
 		int Size = 0;
 		for (size_t i = 0; i < FuncData->Vector_Param.size(); i++)
 		{
 			Size += GetSizeByType(FuncData->Vector_Param[i].Type, Stack->VM);
 		}
+		Stack->ESP += Size;
+
+		va_list args;
+		va_start(args, ParamNum);
+		for (size_t i = 0; i < FuncData->Vector_Param.size(); i++)
+		{
+			PushParam(Stack, args, FuncData->Vector_Param[i].Type);
+		}
+		Stack->ESP += Size;
+		
+		va_end(args);
+
+		memcpy(&Stack->Stack_Main[Stack->ESP], &Stack->PC, HAZE_ADDRESS_SIZE);
+		Stack->ESP += HAZE_ADDRESS_SIZE;
 		
 		Stack->OnCall(FuncData, Size);
+		Stack->PC++;
 		Stack->ResetCallHaze();
+	}
+
+	static int PushParam(HazeStack* Stack, va_list& Args, const HazeDefineType& Type)
+	{
+		int Size = GetSizeByType(Type, Stack->VM);
+		if (IsHazeDefaultType(Type.PrimaryType))
+		{
+			Stack->ESP -= Size;
+			switch (Type.PrimaryType)
+			{
+			case HazeValueType::Bool:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, bool), Size);
+				break;
+			case HazeValueType::Byte:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, hbyte), Size);
+				break;
+			case HazeValueType::UnsignedByte:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, uhbyte), Size);
+				break;
+			case HazeValueType::Char:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, hchar), Size);
+				break;
+			case HazeValueType::Short:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, short), Size);
+				break;
+			case HazeValueType::UnsignedShort:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, ushort), Size);
+				break;
+			case HazeValueType::Int:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, int), Size);
+				break;
+			case HazeValueType::Long:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, int64), Size);
+				break;
+			case HazeValueType::Double:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, double), Size);
+				break;
+			case HazeValueType::UnsignedInt:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, uint32), Size);
+				break;
+			case HazeValueType::UnsignedLong:
+				memcpy(&Stack->Stack_Main[Stack->ESP], &va_arg(Args, uint64), Size);
+				break;
+			default:
+				HAZE_LOG_ERR_W("三方库调用Haze函数Push参数<%s>类型错误", GetHazeValueTypeString(Type.PrimaryType));
+				break;
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("三方库调用Haze函数暂时只支持默认类型!\n");
+		}
+
+		return Size;
 	}
 };
 

@@ -612,22 +612,37 @@ void Run()
 	}
 }
 
-void ff(char(*a)[9], int)
+void CallHaze(char* ParamStartAddress, char* RetStartAddress, void* Stack, void(*ExeHazeFunction)(void*, void*, int, ...))
 {
+	void* Call;
+	void* StackPointer = nullptr;
+	int a;
+	int b;
+	int c;
+	
+	GET_PARAM_START();
+	GET_PARAM(Call, ParamStartAddress);
+	GET_PARAM(a, ParamStartAddress);
+	GET_PARAM(b, ParamStartAddress);
+
+	ExeHazeFunction(Stack, Call, SET_HAZE_CALL_PARAM(a, b));
+
+	SET_RET(c, RetStartAddress);
 }
 
-int ExecuteFunction(const wchar_t* FunctionName, char* ParamStartAddress, char* RetStartAddress)
+int ExecuteFunction(const wchar_t* FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack, void(*ExeHazeFunction)(void*, void*, int, ...))
 {
-	static std::unordered_map<std::wstring, void(*)(char*, char*)> HashMap_Interface =
+	static std::unordered_map<std::wstring, void(*)(char*, char*, void*, void(*)(void*, void*, int, ...))> HashMap_Interface =
 	{
-		{ L"创建Windows窗口", &CreateWindowsWindow },
-		{ L"初始化DirectX", &InitDirect3D },
+		/*{ L"创建Windows窗口", &CreateWindowsWindow },
+		{ L"初始化DirectX", &InitDirect3D },*/
+		{ L"调用Haze", &CallHaze },
 	};
 
 	auto Iter = HashMap_Interface.find(FunctionName);
 	if (Iter != HashMap_Interface.end())
 	{
-		Iter->second(ParamStartAddress, RetStartAddress);
+		Iter->second(ParamStartAddress, RetStartAddress, Stack, ExeHazeFunction);
 		return 0;
 	}
 

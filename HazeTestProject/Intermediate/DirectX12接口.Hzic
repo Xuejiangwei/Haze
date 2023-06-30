@@ -6,7 +6,7 @@ StringTable
 ClassTable
 0
 FunctionTable
-3
+4
 Function 创建Windows窗口 1
 FunctionStart
 
@@ -22,6 +22,19 @@ Block Entry
 FunctionEnd
 
 Function 是否退出 1
+FunctionStart
+
+Block Entry
+
+FunctionEnd
+
+Function 调用Haze 0
+Param 加法 16 0
+Param 甲 7
+Param 乙 7
+Variable 乙$3 7 -8 4
+Variable 甲$2 7 -12 4
+Variable 加法$1 16 0 -20 8
 FunctionStart
 
 Block Entry

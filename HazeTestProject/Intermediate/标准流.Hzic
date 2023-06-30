@@ -9,8 +9,8 @@ FunctionTable
 2
 Function 打印 0
 Param 甲 14 4
-Param  23
-Variable $2 23 -4 0
+Param 多参数 23
+Variable 多参数$2 23 -4 0
 Variable 甲$1 14 4 -12 8
 FunctionStart
 
@@ -20,8 +20,8 @@ FunctionEnd
 
 Function 输入 0
 Param 甲 14 4
-Param  23
-Variable $2 23 -4 0
+Param 多参数 23
+Variable 多参数$2 23 -4 0
 Variable 甲$1 14 4 -12 8
 FunctionStart
 
