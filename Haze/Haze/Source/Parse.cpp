@@ -696,6 +696,10 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		DefineVariable.Type.SecondaryType = HazeValueType::Class;
 		DefineVariable.Type.CustomName = GetPointerClassType(CurrLexeme);
 	}
+	else if (CurrToken == HazeToken::MultiVariable)
+	{
+		DefineVariable.Name = HAZE_MULTI_PARAM_NAME;
+	}
 
 	if (CurrToken == HazeToken::PointerBase || CurrToken == HazeToken::PointerClass)
 	{
