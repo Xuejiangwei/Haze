@@ -2,9 +2,10 @@
 GlobalDataTable
 0
 StringTable
-2
+3
 14 测试 甲 %d 乙 %d\n
 7 加法 %d\n
+11 调用Haze %d\n
 ClassTable
 1
 Class 测试 8 2
@@ -73,6 +74,7 @@ Function 主函数 0
 Variable 测试甲$1 21 测试 0 8
 Variable 函数指针$2 16 0 8 8
 Variable 甲$3 7 16 4
+Variable 乙$4 7 20 4
 FunctionStart
 
 Block Entry
@@ -91,6 +93,11 @@ PUSH 30 1 1 7
 PUSH 函数指针$2 2 0 16 0
 PUSH RetAddress 0 9 7
 CALL 调用Haze 22 3 16 DirectX12接口
+MOV 乙$4 2 0 7 Ret_R 1 4 7
+PUSH 乙$4 2 0 7
+PUSH 常字符串指针 1 2 14 4 2
+PUSH RetAddress 0 9 7
+CALL 打印 22 2 12 标准流
 RET Void 0 0 0
 
 FunctionEnd

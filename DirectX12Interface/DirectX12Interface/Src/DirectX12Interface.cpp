@@ -198,7 +198,7 @@ MainWndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	return MsgProc(hwnd, msg, wParam, lParam);
 }
 
-void CreateWindowsWindow(char* ParamStartAddress, char* RetStartAddress)
+void CreateWindowsWindow(HAZE_CALL_FUNC_PARAM)
 {
 	HINSTANCE hInstance = ::GetModuleHandle(NULL);
 
@@ -418,7 +418,7 @@ void OnResize()
 	mScissorRect = { 0, 0, mClientWidth, mClientHeight };
 }
 
-void InitDirect3D(char* ParamStartAddress, char* RetStartAddress)
+void InitDirect3D(HAZE_CALL_FUNC_PARAM)
 {
 	ThrowIfFailed(CreateDXGIFactory1(IID_PPV_ARGS(&mdxgiFactory)));
 
@@ -612,13 +612,13 @@ void Run()
 	}
 }
 
-void CallHaze(char* ParamStartAddress, char* RetStartAddress, void* Stack, void(*ExeHazeFunction)(void*, void*, int, ...))
+void CallHaze(HAZE_CALL_FUNC_PARAM)
 {
 	void* Call;
 	void* StackPointer = nullptr;
 	int a;
 	int b;
-	int c;
+	//int c;
 	
 	GET_PARAM_START();
 	GET_PARAM(Call, ParamStartAddress);
@@ -627,15 +627,15 @@ void CallHaze(char* ParamStartAddress, char* RetStartAddress, void* Stack, void(
 
 	ExeHazeFunction(Stack, Call, SET_HAZE_CALL_PARAM(a, b));
 
-	SET_RET(c, RetStartAddress);
+	SET_HAZE_RET_TO_RET();
 }
 
 int ExecuteFunction(const wchar_t* FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack, void(*ExeHazeFunction)(void*, void*, int, ...))
 {
-	static std::unordered_map<std::wstring, void(*)(char*, char*, void*, void(*)(void*, void*, int, ...))> HashMap_Interface =
+	static std::unordered_map<std::wstring, void(*)(HAZE_CALL_FUNC_PARAM)> HashMap_Interface =
 	{
-		/*{ L"创建Windows窗口", &CreateWindowsWindow },
-		{ L"初始化DirectX", &InitDirect3D },*/
+		{ L"创建Windows窗口", &CreateWindowsWindow },
+		{ L"初始化DirectX", &InitDirect3D },
 		{ L"调用Haze", &CallHaze },
 	};
 
@@ -646,46 +646,13 @@ int ExecuteFunction(const wchar_t* FunctionName, char* ParamStartAddress, char* 
 		return 0;
 	}
 
-	//if (wcscmp(FunctionName, ) == 0)
-	//{
-	//	ShowOpenGLWindow();
-	//}
-	//else if (wcscmp(FunctionName, L"OpenGLAdd") == 0)
-	//{
-	//	int a, b;
-	//	GET_PARAM_START();
-	//	GET_PARAM(a, ParamStartAddress);
-	//	GET_PARAM(b, ParamStartAddress);
-	//	//memcpy(&a, ParamStartAddress - sizeof(a), sizeof(a));
-	//	//memcpy(&b, ParamStartAddress - sizeof(a) - sizeof(b), sizeof(b));
-	//	int c = Add(a, b);
-	//	//memcpy(RetStartAddress, &c, sizeof(c));
-	//	SET_RET(c, RetStartAddress);
-	//}
-	//else if (wcscmp(FunctionName, L"OpenGL减法") == 0)
-	//{
-	//	int a, b;
-	//	memcpy(&a, ParamStartAddress - sizeof(a), sizeof(a));
-	//	memcpy(&b, ParamStartAddress - sizeof(a) - sizeof(b), sizeof(b));
-	//	int c = a - b;
-	//	memcpy(RetStartAddress, &c, sizeof(c));
-	//}
-	//else if (wcscmp(FunctionName, L"乘法") == 0)
-	//{
-	//	int a, b;
-	//	memcpy(&a, ParamStartAddress - sizeof(a), sizeof(a));
-	//	memcpy(&b, ParamStartAddress - sizeof(a) - sizeof(b), sizeof(b));
-	//	int c = a * b;
-	//	memcpy(RetStartAddress, &c, sizeof(c));
-	//}
-
 	return EXE_FUNC_ERR;
 }
 
 int main()
 {
-	CreateWindowsWindow(nullptr, nullptr);
-	InitDirect3D(nullptr, nullptr);
+	CreateWindowsWindow(HAZE_CALL_NULL_PARAM);
+	InitDirect3D(HAZE_CALL_NULL_PARAM);
 	Run();
 	system("pause");
 }
