@@ -177,7 +177,7 @@ static std::unordered_map<HazeToken, int> HashMap_OperatorPriority =
 	{ HazeToken::PointerValue, 7000 },
 	{ HazeToken::GetAddress, 7000 },
 
-	//{ HazeToken::Not, 6000 },
+	//{ HazeToken::Not, 7000 },
 	//{ HazeToken::Inc, 9000 },				//后置++
 
 	//{ HazeToken::LeftParentheses, 10000 },
@@ -608,6 +608,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseLeftParentheses();
 	case HazeToken::LeftBrace:
 		return ParseLeftBrace();
+	case HazeToken::Not:
+		return ParseNot();
 	case HazeToken::Mul:	//pointer value
 		return ParsePointerValue();
 	case HazeToken::BitAnd:
@@ -1214,6 +1216,16 @@ std::unique_ptr<ASTBase> Parse::ParseLeftBrace()
 	}
 
 	return std::make_unique<ASTInitializeList>(Compiler, SourceLocation(TempLineCount), Vector_Element);
+}
+
+std::unique_ptr<ASTBase> Parse::ParseNot()
+{
+	int TempLine = LineCount;
+
+	GetNextToken();
+	auto Expression = ParseExpression(7000);
+
+	return std::make_unique<ASTNot>(Compiler, SourceLocation(TempLine), Expression);
 }
 
 //std::unique_ptr<ASTBase> Parse::ParseOperatorAssign()

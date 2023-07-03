@@ -201,6 +201,19 @@ public:
 	void SetDefineType(const HazeDefineType& Type);
 };
 
+//非 表达式
+class ASTNot : public ASTBase
+{
+public:
+	ASTNot(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression);
+	virtual ~ASTNot() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	std::unique_ptr<ASTBase> Expression;
+};
+
 //Inc
 class ASTInc : public ASTBase
 {

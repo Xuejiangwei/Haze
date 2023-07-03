@@ -167,6 +167,7 @@ struct HazeVariableData
 	HazeDefineVariable Variable;
 	int Offset;
 	uint32 Size;
+	uint32 Line;
 };
 
 struct HazeClassData

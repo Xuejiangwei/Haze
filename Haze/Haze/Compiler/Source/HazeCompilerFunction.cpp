@@ -22,11 +22,11 @@ HazeCompilerFunction::~HazeCompilerFunction()
 {
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> RefValue,
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, int Line, std::shared_ptr<HazeCompilerValue> RefValue,
 	std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
 	auto BB = Module->GetCompiler()->GetInsertBlock();
-	return BB->CreateAlloce(Variable, ++CurrVariableCount, RefValue, ArraySize, Vector_Param);
+	return BB->CreateAlloce(Variable, Line, ++CurrVariableCount, RefValue, ArraySize, Vector_Param);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& Data)
@@ -131,23 +131,23 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& SStream)
 
 	for (int i = (int)VectorParam.size() - 1; i >= 0; i--)
 	{
-		FindLocalVariableName(Vector_LocalVariable[i], LocalVariableName);
+		FindLocalVariableName(Vector_LocalVariable[i].first, LocalVariableName);
 		SStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
-		HazeCompilerStream(SStream, Vector_LocalVariable[i], false);
+		HazeCompilerStream(SStream, Vector_LocalVariable[i].first, false);
 
-		Size -= Vector_LocalVariable[i]->GetSize();
-		SStream << " " << Size << " " << Vector_LocalVariable[i]->GetSize() << std::endl;
+		Size -= Vector_LocalVariable[i].first->GetSize();
+		SStream << " " << Size << " " << Vector_LocalVariable[i].first->GetSize() << " " << Vector_LocalVariable[i].second << std::endl;
 	}
 
 	Size = 0;
 
 	for (size_t i = VectorParam.size(); i < Vector_LocalVariable.size(); i++)
 	{
-		FindLocalVariableName(Vector_LocalVariable[i], LocalVariableName);
+		FindLocalVariableName(Vector_LocalVariable[i].first, LocalVariableName);
 		SStream << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
-		HazeCompilerStream(SStream, Vector_LocalVariable[i], false);
-		SStream << " " << Size << " " << Vector_LocalVariable[i]->GetSize() << std::endl;
-		Size += Vector_LocalVariable[i]->GetSize();
+		HazeCompilerStream(SStream, Vector_LocalVariable[i].first, false);
+		SStream << " " << Size << " " << Vector_LocalVariable[i].first->GetSize() << " " << Vector_LocalVariable[i].second << std::endl;
+		Size += Vector_LocalVariable[i].first->GetSize();
 	}
 
 	SStream << GetFunctionStartHeader() << std::endl;
@@ -245,9 +245,9 @@ bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* Value,
 	return false;
 }
 
-void HazeCompilerFunction::AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value)
+void HazeCompilerFunction::AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value, int Line)
 {
-	Vector_LocalVariable.push_back(Value);
+	Vector_LocalVariable.push_back({ Value, Line });
 }
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& Variable)

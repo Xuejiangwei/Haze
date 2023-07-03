@@ -246,7 +246,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	}
 	else if (SectionSignal == HazeSectionSignal::Local)
 	{
-		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
+		RetValue = Compiler->CreateLocalVariable(Module->GetCurrFunction(), DefineVariable, Location.Line, ExprValue, SizeValue, &Vector_PointerFunctionParamType);
 		Compiler->InsertLineCount(Location.Line);
 	}
 	else if (SectionSignal == HazeSectionSignal::Class)
@@ -417,6 +417,21 @@ void ASTNullPtr::SetDefineType(const HazeDefineType& Type)
 	DefineVariable.Type = Type;
 }
 
+ASTNot::ASTNot(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression)
+	: ASTBase(Compiler, Location), Expression(std::move(Expression))
+{
+}
+
+ASTNot::~ASTNot()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTNot::CodeGen()
+{
+	return Compiler->CreateNot(Compiler->GetTempRegister(), Expression->CodeGen());
+}
+
+
 ASTInc::ASTInc(HazeCompiler* Compiler, const SourceLocation& Location, std::unique_ptr<ASTBase>& Expression, bool IsPreInc) : ASTBase(Compiler, Location), IsPreInc(IsPreInc), Expression(std::move(Expression))
 {
 }
@@ -534,13 +549,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		}
 		else
 		{
-			if (!LeftExp)
-			{
-				HAZE_LOG_ERR_W("二元表达式错误!\n");
-				return nullptr;
-			}
-
-			Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(LeftExp->OperatorToken), nullptr, RightBlock->GetShared());
+			Compiler->CreateCompareJmp(LeftExp ? GetHazeCmpTypeByToken(LeftExp->OperatorToken) : HazeCmpType::Equal, nullptr, RightBlock->GetShared());
 			Compiler->CreateBoolCmp(RightValue);
 			Compiler->CreateCompareJmp(HazeCmpType::Equal, LeftBlock ? LeftBlock->GetShared() : nullptr,
 				DafaultBlock ? DafaultBlock->GetShared() : RightBlock->GetShared());

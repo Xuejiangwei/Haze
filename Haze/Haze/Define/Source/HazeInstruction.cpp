@@ -1276,7 +1276,7 @@ private:
 	}
 };
 
-std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor =
+std::unordered_map<InstructionOpCode, void(*)(HazeStack* Stack)> HashMap_InstructionProcessor =
 {
 	{InstructionOpCode::MOV, &InstructionProcessor::Mov},
 	{InstructionOpCode::MOVPV, &InstructionProcessor::MovPV},

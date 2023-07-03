@@ -14,7 +14,7 @@
 
 extern std::unique_ptr<HazeDebugger> Debugger;
 
-HazeVM::HazeVM(HazeGenType GenType) : GenType(GenType)
+HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
 	VMStack = std::make_unique<HazeStack>(this);
 	GC = std::make_unique<GarbageCollection>(this);

@@ -58,12 +58,12 @@ public:
 
 	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
 
-	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value);
+	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value, int Line);
 
 private:
 	void AddFunctionParam(const HazeDefineVariable& Variable);
 
-	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
+	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable, int Line, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
 		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& Data);
@@ -79,7 +79,7 @@ private:
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> VectorParam; //从右到左加入参数
 
-	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_LocalVariable;
+	std::vector<std::pair<std::shared_ptr<HazeCompilerValue>, int>> Vector_LocalVariable;
 
 	std::shared_ptr<HazeBaseBlock> EntryBlock;
 

@@ -317,6 +317,7 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& Table)
 				FileStream->write(BinaryString.c_str(), UInt);
 
 				FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Type.PrimaryType));
+				FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Type.SecondaryType));
 				BinaryString = WString2String(Iter.Type.CustomName);
 				UInt = (uint32)BinaryString.size();
 				FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
@@ -333,6 +334,7 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& Table)
 				FileStream->write(BinaryString.c_str(), UInt);
 
 				FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.PrimaryType));
+				FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Variable.Type.SecondaryType));
 				BinaryString = WString2String(Iter.Variable.Type.CustomName);
 				UInt = (uint32)BinaryString.size();
 				FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
@@ -340,6 +342,7 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& Table)
 
 				FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Offset));
 				FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Size));
+				FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Line));
 			}
 
 			//写入指令数与起始地址
@@ -590,6 +593,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 			VM->Vector_FunctionTable[i].Vector_Param[j].Name = String2WString(BinaryString);
 
 			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Param[j].Type.PrimaryType));
+			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Param[j].Type.SecondaryType));
 
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
@@ -608,6 +612,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 			VM->Vector_FunctionTable[i].Vector_Variable[j].Variable.Name = String2WString(BinaryString);
 
 			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Variable.Type.PrimaryType));
+			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Variable.Type.SecondaryType));
 
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
@@ -616,6 +621,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 
 			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Offset));
 			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Size));
+			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Line));
 		}
 
 		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].InstructionNum));

@@ -550,10 +550,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovPV(std::shared_ptr<Haz
 	return Alloca;
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable,
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
 	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
-	return Function->CreateLocalVariable(Variable, RefValue, ArraySize, Vector_Param);
+	return Function->CreateLocalVariable(Variable, Line, RefValue, ArraySize, Vector_Param);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& Module, const HazeDefineVariable& Var,

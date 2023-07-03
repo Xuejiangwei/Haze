@@ -35,6 +35,11 @@ static void FindObjectAndMemberName(const HAZE_STRING& InName, HAZE_STRING& OutO
 
 static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& Ins)
 {
+	if (Ins.InsCode == InstructionOpCode::LINE)
+	{
+		return true;
+	}
+
 	if (Ins.InsCode == InstructionOpCode::CALL && Ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::Function)
 	{
 		return true;
@@ -303,6 +308,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					Var.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString, &BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 					GetNextLexmeAssign_CustomType<int>(Var.Offset);
 					GetNextLexmeAssign_CustomType<uint32>(Var.Size);
+					GetNextLexmeAssign_CustomType<uint32>(Var.Line);
 
 					Table.Vector_Function[i].Vector_Variable.push_back(std::move(Var));
 					GetNextLexeme();
@@ -374,6 +380,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::MOD:
 	case InstructionOpCode::CMP:
+	case InstructionOpCode::NOT:
 	case InstructionOpCode::BIT_AND:
 	case InstructionOpCode::BIT_OR:
 	case InstructionOpCode::BIT_XOR:
@@ -400,7 +407,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	}
 	break;
 	case InstructionOpCode::NEG:
-	case InstructionOpCode::NOT:
 	case InstructionOpCode::INC:
 	case InstructionOpCode::DEC:
 	case InstructionOpCode::BIT_NEG:

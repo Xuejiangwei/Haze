@@ -78,6 +78,8 @@ private:
 
 	std::unique_ptr<ASTBase> ParseLeftBrace();
 
+	std::unique_ptr<ASTBase> ParseNot();
+
 	std::unique_ptr<ASTBase> ParseLeftParentheses();
 
 	std::unique_ptr<ASTBase> ParsePointerValue();

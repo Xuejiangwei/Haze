@@ -148,7 +148,7 @@ void HazeBaseBlock::PushIRCode(const HAZE_STRING& Code)
 	Vector_IRCode.push_back(Code);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Count, std::shared_ptr<HazeCompilerValue> RefValue,
+std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Line, int Count, std::shared_ptr<HazeCompilerValue> RefValue,
 	std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
 	for (auto& Iter : Vector_Alloca)
@@ -164,7 +164,7 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 		RefValue, ArraySize, Vector_Param);
 	Vector_Alloca.push_back({ Define.Name, Alloce });
 
-	ParentFunction->AddLocalVariable(Alloce);
+	ParentFunction->AddLocalVariable(Alloce, Line);
 
 	return Alloce;
 }

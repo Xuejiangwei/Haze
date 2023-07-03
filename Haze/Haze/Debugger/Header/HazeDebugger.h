@@ -46,6 +46,9 @@ public:
 	void Continue();
 
 	void SetJsonLocalVariable(open::OpenJson& Json);
+
+	void SetJsonModuleGlobalVariable(open::OpenJson& Json);
+
 public:
 	void AddTempBreakPoint(uint32 Line);
 
@@ -56,6 +59,7 @@ private:
 	{
 		CurrPauseModule.first.clear();
 		CurrPauseModule.second = 0;
+		IsPause = false;
 	}
 
 	bool CurrModuleIsStepOver();

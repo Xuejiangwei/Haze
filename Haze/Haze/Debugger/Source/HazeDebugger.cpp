@@ -346,6 +346,23 @@ void HazeDebugger::SetJsonLocalVariable(open::OpenJson& Json)
 	{
 		for (size_t i = 0; i < Frame.FunctionInfo->Vector_Variable.size(); i++)
 		{
+			if (Frame.FunctionInfo->Vector_Variable[i].Line < CurrPauseModule.second)
+			{
+				SetJsonVariableData(Info[i], Frame.FunctionInfo->Vector_Variable[i]);
+			}
+		}
+	}
+}
+
+void HazeDebugger::SetJsonModuleGlobalVariable(open::OpenJson& Json)
+{
+	auto& Info = Json["GlobalVariable"];
+
+	auto& Frame = VM->VMStack->GetCurrFrame();
+	if (Frame.FunctionInfo)
+	{
+		for (size_t i = 0; i < Frame.FunctionInfo->Vector_Variable.size(); i++)
+		{
 			SetJsonVariableData(Info[i], Frame.FunctionInfo->Vector_Variable[i]);
 		}
 	}
@@ -390,6 +407,7 @@ void HazeDebugger::SendBreakInfo()
 		SetJsonBreakFilePath(Json, Iter->second.second);
 		SetJsonBreakLine(Json, CurrPauseModule.second);
 		SetJsonLocalVariable(Json);
+		//SetJsonModuleGlobalVariable(Json);
 
 		auto& data = Json.encode();
 		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), data.length());
@@ -420,8 +438,25 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 			SetJsonVariableData(Json["Value"][j], Class->Vector_Member[j], DataAddress);
 		}
 	}
-	else if (Variable.Variable.Type.NeedSecondaryType())
+	else if (IsPointerType(Variable.Variable.Type.PrimaryType))
 	{
+		if (Variable.Variable.Type.NeedCustomName())
+		{
+			auto Class = VM->FindClass(Variable.Variable.Type.CustomName);
+			String = WString2String(Variable.Variable.Type.CustomName);
+			Json["TypeClass"] = GB2312_2_UFT8(String.c_str());
+		}
+
+		if (Variable.Variable.Type.NeedSecondaryType())
+		{
+			String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.SecondaryType));
+			Json["SubType"] = GB2312_2_UFT8(String.c_str());
+		}
+
+		String = WString2String(HAZE_TEXT("÷∏’Î"));
+		Json["Type"] = GB2312_2_UFT8(String.c_str());
+		
+		GetHazeValueByBaseType(Json["Value"], DataAddress, Variable.Variable.Type.PrimaryType);
 	}
 	else
 	{

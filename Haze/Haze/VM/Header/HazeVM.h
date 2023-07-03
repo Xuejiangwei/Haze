@@ -11,7 +11,7 @@ class HazeDebugger;
 class HazeStack;
 class GarbageCollection;
 
-enum class HazeGenType : uint8
+enum class HazeRunType : uint8
 {
 	Debug,
 	Release,
@@ -26,14 +26,14 @@ public:
 	friend class HazeStack;
 	friend class HazeExecuteFile;
 
-	HazeVM(HazeGenType GenType);
+	HazeVM(HazeRunType GenType);
 	~HazeVM();
 
 	using ModulePair = std::pair<HAZE_STRING, HAZE_STRING>;
 
 	void InitVM(std::vector<ModulePair> Vector_ModulePath);
 
-	bool IsDebug() const { return GenType == HazeGenType::Debug; }
+	bool IsDebug() const { return GenType == HazeRunType::Debug; }
 
 	void LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath);
 
@@ -105,5 +105,5 @@ private:
 
 	std::vector<char> Vector_GlobalDataClassObjectMemory;
 
-	HazeGenType GenType;
+	HazeRunType GenType;
 };

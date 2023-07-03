@@ -50,6 +50,7 @@ void HazeExit()
 enum class ParamType
 {
 	MainFile,
+	DebugType,
 	LoadLibrary,
 };
 
@@ -58,6 +59,7 @@ uint32 GetParam(ParamType Type, char** ParamArray, int Length)
 	std::unordered_map<ParamType, const char*> HashMap_Param =
 	{
 		{ ParamType::MainFile, "-m" },
+		{ ParamType::DebugType, "-d" },
 		{ ParamType::LoadLibrary, "-ld" },
 	};
 
@@ -66,7 +68,7 @@ uint32 GetParam(ParamType Type, char** ParamArray, int Length)
 	{
 		for (size_t i = 0; i < Length; i++)
 		{
-			if (strcmp(ParamArray[i], Iter->second) == 0 && i + 1 < Length)
+			if (i + 1 < Length && strcmp(ParamArray[i], Iter->second) == 0)
 			{
 				return (uint32)i + 1;
 			}
@@ -106,6 +108,9 @@ int HazeMain(int ArgCount, char* ArgValue[])
 		MainFilePath = ArgValue[GetParam(ParamType::MainFile, ArgValue, ArgCount)];
 	}
 
+	HazeRunType Type = GetParam(ParamType::DebugType, ArgValue, ArgCount) != 0 ?
+		strcmp(ArgValue[GetParam(ParamType::DebugType, ArgValue, ArgCount)], "debug") == 0 ? HazeRunType::Debug : HazeRunType::Release : HazeRunType::Release;
+
 	std::filesystem::path MainFile(MainFilePath);
 	RootCodePath = MainFile.parent_path().wstring() + HAZE_TEXT("\\");
 
@@ -114,14 +119,18 @@ int HazeMain(int ArgCount, char* ArgValue[])
 
 	for (int DLLLibIndex = 0; DLLLibIndex < ArgCount; DLLLibIndex += 2)
 	{
-		DLLLibIndex = GetParam(ParamType::LoadLibrary, ArgValue + DLLLibIndex, ArgCount);
+		DLLLibIndex = GetParam(ParamType::LoadLibrary, ArgValue + DLLLibIndex, ArgCount - DLLLibIndex);
 		if (DLLLibIndex > 0)
 		{
 			HazeLibManager->LoadDLLLibrary(String2WString(ArgValue[DLLLibIndex]), String2WString(ArgValue[DLLLibIndex + 1]));
 		}
+		else
+		{
+			break;
+		}
 	}
 
-	HazeVM VM(HazeGenType::Release);
+	HazeVM VM(Type);
 
 	VM.InitVM({ { MainFile , MainFile.filename().wstring().substr(0, MainFile.filename().wstring().length() - 3) } });
 
