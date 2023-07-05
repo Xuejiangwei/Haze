@@ -158,7 +158,8 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 		Debugger->AddTempBreakPoint(VM->GetNextLine(VM->GetCurrCallFunctionLine()));
 	}
 
-	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize)));
+	RegisterData RegisterDara({ GetVirtualRegister(CMP_REGISTER)->Data });
+	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize), RegisterDara));
 
 	EBP = ESP;
 	if (Info->Vector_Variable.size() > Info->Vector_Param.size())
@@ -169,10 +170,7 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 	PC = Info->FunctionDescData.InstructionStartAddress;
 	--PC;
 
-	if (Vector_CallHazeStack.size() > 0)
-	{
-		Vector_CallHazeStack.push_back(1);
-	}
+	AddCallHazeTimes();
 }
 
 void HazeStack::OnRet()
@@ -180,12 +178,13 @@ void HazeStack::OnRet()
 	memcpy(&PC, &(Stack_Main[EBP - HAZE_ADDRESS_SIZE]), HAZE_ADDRESS_SIZE);
 	EBP = Stack_Frame.back().EBP;
 	ESP = Stack_Frame.back().ESP;
+
+	memcpy(GetVirtualRegister(CMP_REGISTER)->Data.begin()._Unwrapped(), Stack_Frame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
+		Stack_Frame.back().Register.Cmp_RegisterData.size());
+
 	Stack_Frame.pop_back();
 
-	if (Vector_CallHazeStack.size() > 0)
-	{
-		Vector_CallHazeStack.pop_back();
-	}
+	SubCallHazeTimes();
 }
 
 void HazeStack::ResetCallHaze()
@@ -194,6 +193,22 @@ void HazeStack::ResetCallHaze()
 	Vector_CallHazeStack.push_back(1);
 
 	Run(true);
+}
+
+void HazeStack::AddCallHazeTimes()
+{
+	if (Vector_CallHazeStack.size() > 0)
+	{
+		Vector_CallHazeStack.push_back(1);
+	}
+}
+
+void HazeStack::SubCallHazeTimes()
+{
+	if (Vector_CallHazeStack.size() > 0)
+	{
+		Vector_CallHazeStack.pop_back();
+	}
 }
 
 void* HazeStack::Alloca(uint32 Size)

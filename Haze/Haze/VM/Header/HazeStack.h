@@ -29,14 +29,21 @@ public:
 	int GetCurrPC() const { return PC; }
 
 public:
+	struct RegisterData
+	{
+		std::vector<char> Cmp_RegisterData;
+	};
+
 	struct HazeStackFrame
 	{
 		const FunctionData* FunctionInfo;
 		uint32 FunctionParamSize;
 		uint32 EBP;
 		uint32 ESP;
+		RegisterData Register;
 
-		HazeStackFrame(const FunctionData* Info, uint32 ParamSize, uint32 EBP, uint32 ESP) : FunctionParamSize(ParamSize), EBP(EBP), ESP(ESP)
+		HazeStackFrame(const FunctionData* Info, uint32 ParamSize, uint32 EBP, uint32 ESP, RegisterData& Register) 
+			: FunctionParamSize(ParamSize), EBP(EBP), ESP(ESP), Register(Register)
 		{
 			FunctionInfo = Info;
 		}
@@ -66,6 +73,10 @@ private:
 	void OnRet();
 
 	void ResetCallHaze();
+
+	void AddCallHazeTimes();
+
+	void SubCallHazeTimes();
 
 private:
 	void* Alloca(uint32 Size);
