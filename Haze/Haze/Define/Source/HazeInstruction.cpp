@@ -1276,6 +1276,7 @@ private:
 	}
 };
 
+//可以考虑将HashMap改为使用数组
 std::unordered_map<InstructionOpCode, void(*)(HazeStack* Stack)> HashMap_InstructionProcessor =
 {
 	{InstructionOpCode::MOV, &InstructionProcessor::Mov},
