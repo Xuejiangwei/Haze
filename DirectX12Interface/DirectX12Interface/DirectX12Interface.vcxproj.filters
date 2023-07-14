@@ -36,6 +36,12 @@
     <ClCompile Include="Common\MathHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Src\HazeExecute.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\DX12Interface.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="HazeDefine\HazeLibraryDefine.h">
@@ -63,6 +69,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Common\UploadBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\DX12Interface.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -9,7 +9,7 @@
 class ASTFunction
 {
 public:
-	ASTFunction(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, 
+	ASTFunction(HazeCompiler* Compiler, const SourceLocation& StartLocation, const SourceLocation& EndLocation, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type,
 		std::vector<std::unique_ptr<ASTBase>>& Param, std::unique_ptr<ASTBase>& Body);
 
 	~ASTFunction();
@@ -27,7 +27,8 @@ private:
 	std::vector<std::unique_ptr<ASTBase>> Vector_FunctionParam; //´Ó×óµ½ÓÒ
 	std::unique_ptr<ASTBase> Body;
 
-	SourceLocation Location;
+	SourceLocation StartLocation;
+	SourceLocation EndLocation;
 };
 
 class ASTFunctionSection

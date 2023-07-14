@@ -8,9 +8,9 @@
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerModule.h"
 
-ASTFunction::ASTFunction(HazeCompiler* Compiler, const SourceLocation& Location, HazeSectionSignal Section, HAZE_STRING& Name, HazeDefineType& Type, 
-	std::vector<std::unique_ptr<ASTBase>>& Param, std::unique_ptr<ASTBase>& Body) 
-	: Compiler(Compiler), Location(Location), Section(Section), FunctionName(std::move(Name)),FunctionType(std::move(Type)),
+ASTFunction::ASTFunction(HazeCompiler* Compiler, const SourceLocation& StartLocation, const SourceLocation& EndLocation, HazeSectionSignal Section, HAZE_STRING& Name, 
+	HazeDefineType& Type, std::vector<std::unique_ptr<ASTBase>>& Param, std::unique_ptr<ASTBase>& Body) 
+	: Compiler(Compiler), StartLocation(StartLocation), EndLocation(EndLocation), Section(Section), FunctionName(std::move(Name)),FunctionType(std::move(Type)),
 	Vector_FunctionParam(std::move(Param)), Body(std::move(Body))
 {
 }
@@ -56,7 +56,7 @@ HazeValue* ASTFunction::CodeGen()
 
 	if (FunctionType.PrimaryType == HazeValueType::Void)
 	{
-		Compiler->InsertLineCount(Location.Line);
+		Compiler->InsertLineCount(StartLocation.Line);
 	}
 
 	if (CompilerFunction)
