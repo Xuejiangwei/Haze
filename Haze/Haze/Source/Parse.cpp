@@ -1291,6 +1291,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 	//获得函数名
 	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("函数命名错误")))
 	{
+		uint32 StartLineCount = LineCount;
 		HAZE_STRING FunctionName = CurrLexeme;
 		if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
 		{
@@ -1329,7 +1330,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 					TempLineCount = LineCount;
 
 					GetNextToken();
-					return std::make_unique<ASTFunction>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body);
+					return std::make_unique<ASTFunction>(Compiler, SourceLocation(StartLineCount), SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body);
 				}
 			}
 		}
@@ -1410,7 +1411,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 {
-	uint32 TempLineCount = LineCount;
+	uint32 StartLineCount = LineCount;
 	HAZE_STRING FunctionName = CurrLexeme;
 	StackSectionSignal.push(HazeSectionSignal::Local);
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数左边需要 (")))
@@ -1452,10 +1453,10 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 			{
 				StackSectionSignal.pop();
 
-				TempLineCount = LineCount;
+				uint32 TempLineCount = LineCount;
 				GetNextToken();
 				HazeDefineType DefineType = { HazeValueType::Void, HAZE_TEXT("") };
-				return std::make_unique<ASTFunction>(Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, DefineType, Vector_Param, Body);
+				return std::make_unique<ASTFunction>(Compiler, SourceLocation(StartLineCount), SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, DefineType, Vector_Param, Body);
 			}
 		}
 	}

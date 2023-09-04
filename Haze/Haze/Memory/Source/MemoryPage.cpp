@@ -8,7 +8,7 @@ MemoryPage::MemoryPage(uint64 PageByteSize, uint64 BlockUnitSize)
 	PageInfo.PageByteSize = PageByteSize;
 	PageInfo.UnitSize = BlockUnitSize;
 
-	PageInfo.HeadBlock = std::make_unique<MemoryBlock>(malloc(PageByteSize), PageByteSize, BlockUnitSize);
+	PageInfo.MemBlock = std::make_unique<MemoryBlock>(malloc(PageByteSize), PageByteSize, BlockUnitSize);
 }
 
 MemoryPage::~MemoryPage()
@@ -17,12 +17,13 @@ MemoryPage::~MemoryPage()
 
 void* MemoryPage::TryAlloca(uint64 Size)
 {
-	void* Ret = PageInfo.HeadBlock->Alloca(Size);
+	void* Ret = PageInfo.MemBlock->Alloca(Size);
 
 	if (!Ret && PageInfo.NextPage)
 	{
 		Ret = PageInfo.NextPage->TryAlloca(Size);
 	}
+
 	/*if (!Ret && Block)
 	{
 		if ((uint64)Block->GetTailAddress() < (uint64)PageInfo.HeadBlock->GetHeadAddress() + PageInfo.PageByteSize)
@@ -39,7 +40,7 @@ void* MemoryPage::TryAlloca(uint64 Size)
 
 MemoryBlock* MemoryPage::GetLastBlock()
 {
-	MemoryBlock* Ret = PageInfo.HeadBlock.get();
+	MemoryBlock* Ret = PageInfo.MemBlock.get();
 	while (Ret->GetNextBlock())
 	{
 		Ret = Ret = GetLastBlock();
@@ -55,5 +56,5 @@ void MemoryPage::SetNextPage(std::unique_ptr<MemoryPage> Page)
 
 bool MemoryPage::IsInPage(void* Address)
 {
-	return PageInfo.HeadBlock->GetHeadAddress() <= Address && Address < PageInfo.HeadBlock->GetTailAddress();
+	return PageInfo.MemBlock->GetHeadAddress() <= Address && Address < PageInfo.MemBlock->GetTailAddress();
 }

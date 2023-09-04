@@ -13,7 +13,7 @@ MemoryBlock::MemoryBlock(void* HeadAddress, uint64 BlockSize, uint64 UnitSize)
 	char* Address = (char*)HeadAddress;
 	while (Length-- > 0)
 	{
-		BlockInfo.List.Push(Address);
+		BlockInfo.FreeList.Push(Address);
 		Address += UnitSize;
 	}
 }
@@ -29,9 +29,9 @@ void* MemoryBlock::GetTailAddress() const
 
 void* MemoryBlock::Alloca(uint64 Size)
 {
-	if (BlockInfo.List.Length > 0)
+	if (BlockInfo.FreeList.Length > 0)
 	{
-		return BlockInfo.List.Pop();
+		return BlockInfo.FreeList.Pop();
 	}
 
 	return nullptr;
@@ -51,12 +51,12 @@ void MemoryBlock::SetNextBlock(std::unique_ptr<MemoryBlock>& Block)
 
 void MemoryBlock::CollectionMemory()
 {
-	BlockInfo.List.Clear();
+	BlockInfo.FreeList.Clear();
 	for (size_t i = 0; i < BlockInfo.MemoryKeepSignal.size(); i++)
 	{
 		if (BlockInfo.MemoryKeepSignal[i] == 0)
 		{
-			BlockInfo.List.Push((char*)BlockInfo.HeadAddress + i * BlockInfo.UnitSize);
+			BlockInfo.FreeList.Push((char*)BlockInfo.HeadAddress + i * BlockInfo.UnitSize);
 		}
 	}
 }

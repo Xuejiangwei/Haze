@@ -24,11 +24,11 @@ public:
 
 	void PopRange(void*& Start, void*& End, uint64 Num);
 
-	bool Empty() const { return List == nullptr; }
+	bool Empty() const { return FreeList == nullptr; }
 
 	void Clear();
 
 private:
-	void* List;
+	void* FreeList;
 	uint64 Length;
 };

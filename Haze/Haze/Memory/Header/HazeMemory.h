@@ -3,6 +3,7 @@
 #include "Haze.h"
 
 class MemoryPage;
+enum class GC_State : uint8;
 
 class HazeMemory
 {
@@ -18,4 +19,5 @@ public:
 
 private:
 	std::unordered_map<uint64, std::unique_ptr<MemoryPage>> HashMap_Page;
+	std::unordered_map<void*, std::pair<GC_State, void*>> HashMap_BigMemory;
 };

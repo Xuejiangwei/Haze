@@ -11,7 +11,7 @@ struct MemoryBlockInfo
 	uint64 BlockSize;
 	uint64 UnitSize;
 
-	MemoryFreeList List;
+	MemoryFreeList FreeList;
 
 	std::vector<char> MemoryKeepSignal;
 
@@ -24,6 +24,7 @@ public:
 	friend class GarbageCollection;
 
 	MemoryBlock(void* HeadAddress, uint64 BlockSize, uint64 UnitSize);
+
 	~MemoryBlock();
 
 	void* GetHeadAddress() const { return BlockInfo.HeadAddress; }

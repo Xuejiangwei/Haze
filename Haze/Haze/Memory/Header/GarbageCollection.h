@@ -4,6 +4,13 @@
 
 class HazeVM;
 
+enum class GC_State : uint8
+{
+	White,			//Garbage
+	Gray,			//UnCertain, no scan completed
+	Black,			//Reserve
+};
+
 struct GC_Array
 {
 };

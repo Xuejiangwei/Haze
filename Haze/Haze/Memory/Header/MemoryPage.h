@@ -3,16 +3,15 @@
 #include "Haze.h"
 
 class MemoryBlock;
-class MemoryPage;
 
 struct MemoryPageInfo
 {
-	std::unique_ptr<MemoryBlock> HeadBlock;
+	std::unique_ptr<MemoryBlock> MemBlock;
 
 	uint64 PageByteSize;
 	uint64 UnitSize;
 
-	std::unique_ptr<MemoryPage> NextPage;
+	std::unique_ptr<class MemoryPage> NextPage;
 };
 
 class MemoryPage

@@ -150,18 +150,18 @@ void GarbageCollection::Sweep()
 		auto Page = Iter.second.get();
 		while (Page)
 		{
-			memset(Page->PageInfo.HeadBlock->BlockInfo.MemoryKeepSignal.begin()._Unwrapped(), 0, Page->PageInfo.HeadBlock->BlockInfo.MemoryKeepSignal.size());
+			memset(Page->PageInfo.MemBlock->BlockInfo.MemoryKeepSignal.begin()._Unwrapped(), 0, Page->PageInfo.MemBlock->BlockInfo.MemoryKeepSignal.size());
 
 			for (size_t i = 0; i < Vector_KeepMemory.size(); i++)
 			{
 				if (Page->IsInPage(Vector_KeepMemory[i]))
 				{
-					uint64 Index = ((uint64)Vector_KeepMemory[i] - (uint64)Page->PageInfo.HeadBlock->GetHeadAddress()) / Page->PageInfo.HeadBlock->BlockInfo.UnitSize;
-					Page->PageInfo.HeadBlock->BlockInfo.MemoryKeepSignal[Index] = 1;
+					uint64 Index = ((uint64)Vector_KeepMemory[i] - (uint64)Page->PageInfo.MemBlock->GetHeadAddress()) / Page->PageInfo.MemBlock->BlockInfo.UnitSize;
+					Page->PageInfo.MemBlock->BlockInfo.MemoryKeepSignal[Index] = 1;
 				}
 			}
 
-			Page->PageInfo.HeadBlock->CollectionMemory();
+			Page->PageInfo.MemBlock->CollectionMemory();
 			Page = Page->PageInfo.NextPage.get();
 		}
 	}
