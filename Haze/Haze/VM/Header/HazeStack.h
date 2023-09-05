@@ -6,14 +6,13 @@
 
 struct HazeRegister;
 
-class MemoryPool;
 class HazeVM;
 
 class HazeStack
 {
 public:
 	friend class InstructionProcessor;
-	friend class GarbageCollection;
+	friend class HazeMemory;
 
 	HazeStack(HazeVM* VM);
 

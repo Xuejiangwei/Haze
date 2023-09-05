@@ -1,62 +1,32 @@
 #include "MemoryBlock.h"
+#include "HazeMemory.h"
 #include "HazeLog.h"
 
-MemoryBlock::MemoryBlock(void* HeadAddress, uint64 BlockSize, uint64 UnitSize)
+MemoryBlock::MemoryBlock(uint64 UnitSize)
 {
-	BlockInfo.HeadAddress = HeadAddress;
-	BlockInfo.BlockSize = BlockSize;
 	BlockInfo.UnitSize = UnitSize;
-
-	uint64 Length = BlockSize / UnitSize;
-	BlockInfo.MemoryKeepSignal.resize(Length);
-
-	char* Address = (char*)HeadAddress;
-	while (Length-- > 0)
-	{
-		BlockInfo.FreeList.Push(Address);
-		Address += UnitSize;
-	}
 }
 
 MemoryBlock::~MemoryBlock()
 {
 }
 
-void* MemoryBlock::GetTailAddress() const
+void MemoryBlock::SetAllWhite()
 {
-	return (void*)((uint64)BlockInfo.HeadAddress + BlockInfo.BlockSize);
-}
-
-void* MemoryBlock::Alloca(uint64 Size)
-{
-	if (BlockInfo.FreeList.Length > 0)
+	for (auto& mark : BlockInfo.Mark)
 	{
-		return BlockInfo.FreeList.Pop();
-	}
-
-	return nullptr;
-}
-
-void MemoryBlock::SetNextBlock(std::unique_ptr<MemoryBlock>& Block)
-{
-	if (!BlockInfo.NextBlock)
-	{
-		BlockInfo.NextBlock = std::move(Block);
-	}
-	else
-	{
-		HAZE_LOG_ERR(HAZE_TEXT("Repeat set next block !\n"));
+		mark = (int)GC_State::White;
 	}
 }
 
-void MemoryBlock::CollectionMemory()
+void MemoryBlock::MarkBlack(void* address)
 {
-	BlockInfo.FreeList.Clear();
-	for (size_t i = 0; i < BlockInfo.MemoryKeepSignal.size(); i++)
-	{
-		if (BlockInfo.MemoryKeepSignal[i] == 0)
-		{
-			BlockInfo.FreeList.Push((char*)BlockInfo.HeadAddress + i * BlockInfo.UnitSize);
-		}
-	}
+	uint64 Index = ((uint64)address - (uint64)m_Memory) / BlockInfo.UnitSize;
+	assert(Index < BlockInfo.MarkCount);
+	BlockInfo.Mark[Index] = (int)GC_State::Black;
+}
+
+bool MemoryBlock::IsInBlock(void* address)
+{
+	return m_Memory <= address && address < m_Memory + 1;
 }

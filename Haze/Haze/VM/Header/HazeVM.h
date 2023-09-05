@@ -22,7 +22,7 @@ class HazeVM
 public:
 	friend class HazeDebugger;
 	friend class InstructionProcessor;
-	friend class GarbageCollection;
+	friend class HazeMemory;
 	friend class HazeStack;
 	friend class HazeExecuteFile;
 
@@ -85,7 +85,6 @@ private:
 	std::unordered_set<HAZE_STRING> MapString;
 
 	std::unique_ptr<HazeStack> VMStack;
-	std::unique_ptr<GarbageCollection> GC;
 
 	std::unordered_set<HAZE_STRING> HashSet_RefModule;
 

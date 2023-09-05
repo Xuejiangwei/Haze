@@ -10,15 +10,13 @@
 #include "HazeDebugger.h"
 
 #include "HazeStack.h"
-#include "GarbageCollection.h"
+#include "HazeMemory.h"
 
 extern std::unique_ptr<HazeDebugger> Debugger;
 
 HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
 	VMStack = std::make_unique<HazeStack>(this);
-	GC = std::make_unique<GarbageCollection>(this);
-
 	Compiler = std::make_unique<HazeCompiler>(this);
 }
 
@@ -72,6 +70,8 @@ void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
 void HazeVM::StartMainFunction()
 {
 	//VMDebugger->AddBreakPoint(HAZE_TEXT("Îå×ÓÆå"), 68);
+
+	HazeMemory::GetMemory()->SetVM(this);
 
 	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
 	if (Iter != HashMap_FunctionTable.end())

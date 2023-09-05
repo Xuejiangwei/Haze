@@ -1,6 +1,9 @@
 #include <stdio.h>
+#include <mutex>
 #include <windows.h>
 #include "HazeLog.h"
+
+static std::mutex g_LogMutex;
 
 static void SetSystemColor(int type = 0)
 {
@@ -23,6 +26,8 @@ static void SetSystemColor(int type = 0)
 
 void HazeLog::LogInfo(int type, const HAZE_CHAR* format, ...)
 {
+	std::lock_guard lock(g_LogMutex);
+
 	SetSystemColor(type);
 	va_list st;
 	va_start(st, format);
@@ -34,6 +39,8 @@ void HazeLog::LogInfo(int type, const HAZE_CHAR* format, ...)
 
 void HazeLog::LogInfo(int type, const char* format, ...)
 {
+	std::lock_guard lock(g_LogMutex);
+
 	SetSystemColor(type);
 	va_list st;
 	va_start(st, format);

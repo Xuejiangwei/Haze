@@ -5,40 +5,45 @@
 
 class MemoryBlock;
 
+enum class MemoryBlockState : uint8
+{
+	Used,
+	Free
+};
+
 struct MemoryBlockInfo
 {
-	void* HeadAddress;
-	uint64 BlockSize;
-	uint64 UnitSize;
-
-	MemoryFreeList FreeList;
-
-	std::vector<char> MemoryKeepSignal;
-
-	std::unique_ptr<MemoryBlock> NextBlock;//‘›≤ª π”√
+	MemoryBlock* Next;
+	MemoryBlock* Prev;
+	MemoryBlock* Block;
+	MemoryBlockState State;
+	uint32 MarkCount;
+	uint32 UnitSize;
+	int Mark[4096];
 };
 
 class MemoryBlock
 {
 public:
-	friend class GarbageCollection;
+	friend class HazeMemory;
 
-	MemoryBlock(void* HeadAddress, uint64 BlockSize, uint64 UnitSize);
+	MemoryBlock(uint64 UnitSize);
 
 	~MemoryBlock();
 
-	void* GetHeadAddress() const { return BlockInfo.HeadAddress; }
+	void SetAllWhite();
 
-	void* GetTailAddress() const;
+	void MarkBlack(void* address);
 
-	void* Alloca(uint64 Size);
+	bool IsUsed() const { return BlockInfo.State == MemoryBlockState::Used; }
 
-	void SetNextBlock(std::unique_ptr<MemoryBlock>& Block);
+	MemoryBlock* GetNext() { return BlockInfo.Next; }
 
-	MemoryBlock* GetNextBlock() const { return BlockInfo.NextBlock.get(); }
+	void SetNext(MemoryBlock* block) { BlockInfo.Next = block; block->BlockInfo.Prev = this; }
 
-	void CollectionMemory();
+	bool IsInBlock(void* address);
 
 private:
+	char m_Memory[4096];
 	MemoryBlockInfo BlockInfo;
 };

@@ -92,13 +92,26 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
 		RetValue = Compiler->GetGlobalVariable(DefineVariable.Name);
+
+		if (RetValue->IsClassMember())
+		{
+			RetValue->SetScope(HazeVariableScope::Global);
+		}
 	}
 	else if (SectionSignal == HazeSectionSignal::Local)
 	{
 		RetValue = Compiler->GetLocalVariable(DefineVariable.Name);
+		if (RetValue->IsClassMember())
+		{
+			RetValue->SetScope(HazeVariableScope::Local);
+		}
 		if (!RetValue)
 		{
 			RetValue = Compiler->GetGlobalVariable(DefineVariable.Name);
+			if (RetValue->IsClassMember())
+			{
+				RetValue->SetScope(HazeVariableScope::Global);
+			}
 		}
 	}
 

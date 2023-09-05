@@ -28,6 +28,8 @@ public:
 
 	void Clear();
 
+	bool HasMemory() { return Length > 0; }
+
 private:
 	void* FreeList;
 	uint64 Length;

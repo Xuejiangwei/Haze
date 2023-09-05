@@ -998,6 +998,13 @@ void HazeCompilerModule::GenVariableHzic(HazeCompilerModule* Module, HAZE_STRING
 		Find = true;
 		Name = Value->GetValueType().CustomName;
 	}
+	else if (Value->IsClassMember())
+	{
+		if (Value)
+		{
+
+		}
+	}
 	else
 	{
 		HAZE_LOG_ERR_W("生成中间代码错误,变量作用域错误!\n");

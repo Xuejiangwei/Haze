@@ -84,12 +84,6 @@
     <ClCompile Include="Library\Source\HazeStandardLibraryBase.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Memory\Source\MemoryPool.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory\Source\MemoryBucket.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Compiler\Source\HazeCompilerClassValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -129,12 +123,6 @@
     <ClCompile Include="Memory\Source\MemoryFreeList.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Memory\Source\GarbageCollection.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Memory\Source\MemoryPage.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Memory\Source\MemoryBlock.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -169,6 +157,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="VM\Source\HazeLibraryManager.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="ThirdParty\HazeJson.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -251,12 +242,6 @@
     <ClInclude Include="Library\Header\HazeStandardLibraryBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Memory\Header\MemoryPool.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory\Header\MemoryBucket.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerClassValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -297,12 +282,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Memory\Header\MemoryFreeList.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory\Header\GarbageCollection.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory\Header\MemoryPage.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Memory\Header\MemoryBlock.h">
@@ -354,6 +333,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Library\Header\HazeLibraryDefine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ThirdParty\HazeJson.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

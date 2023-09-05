@@ -3,16 +3,11 @@
 #include "HazeStack.h"
 #include "HazeInstruction.h"
 #include "HazeMemory.h"
-#include "MemoryPool.h"
-#include "MemoryBucket.h"
-#include "GarbageCollection.h"
 
 #include "HazeDebugger.h"
 
 extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor;
 extern std::unique_ptr<HazeDebugger> Debugger;
-
-thread_local static std::unique_ptr<MemoryPool> Pool = std::make_unique<MemoryPool>();
 
 HazeStack::HazeStack(HazeVM* VM) : VM(VM)
 {
@@ -226,6 +221,6 @@ void HazeStack::GarbageCollection(bool Force, bool CollectionAll)
 {
 	if (Force && CollectionAll)
 	{
-		VM->GC->ForceGC();
+		HazeMemory::GetMemory()->ForceGC();
 	}
 }
