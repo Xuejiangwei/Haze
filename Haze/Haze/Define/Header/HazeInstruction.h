@@ -66,6 +66,7 @@ enum class HazeDataDesc : uint32
 	FunctionAddress,
 
 	ClassThis,
+	ClassPointer,
 	Class,
 	ClassMember_Local_Public,
 	ClassMember_Local_Private,

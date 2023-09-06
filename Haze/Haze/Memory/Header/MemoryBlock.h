@@ -19,7 +19,10 @@ struct MemoryBlockInfo
 	MemoryBlockState State;
 	uint32 MarkCount;
 	uint32 UnitSize;
-	int Mark[4096];
+	uint8* Mark;
+
+	MemoryBlockInfo() : Next(nullptr), Prev(nullptr), Block(nullptr), State(MemoryBlockState::Free), MarkCount(0), UnitSize(0), Mark(nullptr)
+	{}
 };
 
 class MemoryBlock
@@ -27,7 +30,7 @@ class MemoryBlock
 public:
 	friend class HazeMemory;
 
-	MemoryBlock(uint64 UnitSize);
+	MemoryBlock(uint32 unitSize);
 
 	~MemoryBlock();
 
@@ -42,6 +45,10 @@ public:
 	void SetNext(MemoryBlock* block) { BlockInfo.Next = block; block->BlockInfo.Prev = this; }
 
 	bool IsInBlock(void* address);
+
+	void Reuse(uint32 unitSize);
+
+	void Recycle();
 
 private:
 	char m_Memory[4096];

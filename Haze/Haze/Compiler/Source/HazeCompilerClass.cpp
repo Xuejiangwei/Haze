@@ -116,7 +116,7 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 		}
 	}
 
-	/*for (size_t i = 0; i < NewPointerToValue->Vector_Data.size(); i++)
+	for (size_t i = 0; i < NewPointerToValue->Vector_Data.size(); i++)
 	{
 		for (size_t j = 0; j < NewPointerToValue->Vector_Data[i].second.size(); j++)
 		{
@@ -125,7 +125,7 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRIN
 				return true;
 			}
 		}
-	}*/
+	}
 
 	return false;
 }

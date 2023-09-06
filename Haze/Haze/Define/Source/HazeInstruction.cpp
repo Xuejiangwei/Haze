@@ -125,6 +125,8 @@ public:
 			void* Dst = GetOperatorAddress(Stack, Operator[0]);
 			const void* Src = GetOperatorAddress(Stack, Operator[1]);
 			memcpy(Dst, Src, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
+
+			ClearRegisterType(Stack, Operator[1]);
 		}
 
 #if HAZE_DEBUG_ENABLE
@@ -145,6 +147,8 @@ public:
 			uint64 Address = 0;
 			memcpy(&Address, Src, sizeof(Address));
 			memcpy(Dst, (void*)Address, GetSizeByType(Operator[0].Variable.Type, Stack->VM));
+
+			ClearRegisterType(Stack, Operator[1]);
 		}
 
 #if HAZE_DEBUG_ENABLE
@@ -165,6 +169,8 @@ public:
 			uint64 Address = 0;
 			memcpy(&Address, Dst, sizeof(Address));
 			memcpy((void*)Address, Src, GetSizeByType(Operator[1].Variable.Type, Stack->VM));
+
+			ClearRegisterType(Stack, Operator[1]);
 		}
 
 #if HAZE_DEBUG_ENABLE
@@ -1273,6 +1279,19 @@ private:
 		}
 
 		return Size;
+	}
+
+	static void ClearRegisterType(HazeStack* Stack, const InstructionData& Operator)
+	{
+		//New和Ret寄存器的type清空，防止没有垃圾回收掉
+		if (Operator.AddressType == InstructionAddressType::Register)
+		{
+			auto Register = Stack->GetVirtualRegister(Operator.Variable.Name.c_str());
+			if (Register == Stack->GetVirtualRegister(NEW_REGISTER) || Register == Stack->GetVirtualRegister(RET_REGISTER))
+			{
+				Register->Type.Reset();
+			}
+		}
 	}
 };
 

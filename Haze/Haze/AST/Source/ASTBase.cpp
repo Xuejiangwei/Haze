@@ -88,35 +88,32 @@ ASTIdentifier::~ASTIdentifier()
 std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 {
 	std::shared_ptr<HazeCompilerValue> RetValue = nullptr;
+	HazeVariableScope classMemberScope = HazeVariableScope::Local;
 
 	if (SectionSignal == HazeSectionSignal::Global)
 	{
 		RetValue = Compiler->GetGlobalVariable(DefineVariable.Name);
 
-		if (RetValue->IsClassMember())
-		{
-			RetValue->SetScope(HazeVariableScope::Global);
-		}
+		classMemberScope = HazeVariableScope::Global;
 	}
 	else if (SectionSignal == HazeSectionSignal::Local)
 	{
 		RetValue = Compiler->GetLocalVariable(DefineVariable.Name);
-		if (RetValue->IsClassMember())
-		{
-			RetValue->SetScope(HazeVariableScope::Local);
-		}
+		classMemberScope = HazeVariableScope::Local;
 		if (!RetValue)
 		{
 			RetValue = Compiler->GetGlobalVariable(DefineVariable.Name);
-			if (RetValue->IsClassMember())
-			{
-				RetValue->SetScope(HazeVariableScope::Global);
-			}
+			classMemberScope = HazeVariableScope::Global;
 		}
 	}
 
 	if (RetValue)
 	{
+		if (RetValue->IsClassMember())
+		{
+			RetValue->SetScope(classMemberScope);
+		}
+
 		if (RetValue->IsArray() || RetValue->IsPointerArray())
 		{
 			if (ArrayIndexExpression.size() > 0)

@@ -40,16 +40,16 @@ void* HazeMemory::Alloca(uint64 size)
 	
 	if (size <= MAX_HAZE_ALLOC_SIZE)
 	{
-		uint32 offset = size % GRANULE == 0 ? 0 : 1;
+		uint32 offset = size % GRANULE == 0 ? -1 : 1;
 		uint32 index = size / GRANULE + offset;
 		
 		auto memoryIns = GetMemory();
-		if (!memoryIns->m_FreeList[size])
+		if (!memoryIns->m_FreeList[index])
 		{
-			memoryIns->m_FreeList[size] = std::make_unique<MemoryFreeList>();
+			memoryIns->m_FreeList[index] = std::make_unique<MemoryFreeList>();
 		}
 		
-		auto freeList = memoryIns->m_FreeList[size].get();
+		auto freeList = memoryIns->m_FreeList[index].get();
 
 		if (freeList->HasMemory())
 		{
@@ -57,8 +57,7 @@ void* HazeMemory::Alloca(uint64 size)
 		}
 		else
 		{
-			offset = size % PAGE_UNIT == 0 ? 0 : 1;
-			index = size / PAGE_UNIT + offset;
+			index = size / PAGE_UNIT;
 			
 			void* mallocStart = nullptr;
 			void* mallocEnd = nullptr;
@@ -102,6 +101,8 @@ void* HazeMemory::Alloca(uint64 size)
 				freeList->Push(Address);
 				Address += block->BlockInfo.UnitSize;
 			}
+
+			Ret = freeList->Pop();
 		}
 	}
 	else
@@ -153,6 +154,7 @@ void HazeMemory::Mark()
 		while (block && block->IsUsed())
 		{
 			block->SetAllWhite();
+			block = block->GetNext();
 		}
 	}
 
@@ -177,21 +179,27 @@ void HazeMemory::Mark()
 		}
 	}
 
+	auto NewRegister = VM->VMStack->GetVirtualRegister(NEW_REGISTER);
+	auto RetRegister = VM->VMStack->GetVirtualRegister(RET_REGISTER);
 	for (auto& It : VM->VMStack->HashMap_VirtualRegister)
 	{
-		if (It.second.Type.PrimaryType == HazeValueType::PointerBase)
+		if (&It.second == NewRegister || &It.second == RetRegister)
 		{
-			memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
-			Vector_MarkAddressBase.push_back({ Address, It.second.Type.SecondaryType });
-		}
-		else if (It.second.Type.PrimaryType == HazeValueType::PointerClass)
-		{
-			memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
-			Vector_MarkAddressClass.push_back({ Address, VM->FindClass(It.second.Type.CustomName) });
-		}
-		else if (It.second.Type.PrimaryType == HazeValueType::Class)
-		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.second.Type, It.second.Data.begin()._Unwrapped());
+			//New和Ret寄存器中存留的内存在赋值后不需要保留，考虑在赋值字节码执行中清除
+			if (It.second.Type.PrimaryType == HazeValueType::PointerBase)
+			{
+				memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
+				Vector_MarkAddressBase.push_back({ Address, It.second.Type.SecondaryType });
+			}
+			else if (It.second.Type.PrimaryType == HazeValueType::PointerClass)
+			{
+				memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
+				Vector_MarkAddressClass.push_back({ Address, VM->FindClass(It.second.Type.CustomName) });
+			}
+			else if (It.second.Type.PrimaryType == HazeValueType::Class)
+			{
+				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.second.Type, It.second.Data.begin()._Unwrapped());
+			}
 		}
 	}
 

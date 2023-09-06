@@ -612,7 +612,8 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& SStream, const HAZE_ST
 		if (ThisPointerTo->IsPointerClass())
 		{
 			auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(ThisPointerTo);
-			SStream << Name << " " << CAST_SCOPE(PointerValue->GetVariableScope()) << " " << CAST_DESC(HazeDataDesc::ClassThis) << " ";
+			SStream << Name << " " << CAST_SCOPE(PointerValue->GetVariableScope()) << " " << CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
+				CAST_TYPE(HazeValueType::PointerClass) << " " << ThisPointerTo->GetValueType().CustomName;
 		}
 		else if (ThisPointerTo->IsClass())
 		{

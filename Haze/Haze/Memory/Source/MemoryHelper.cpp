@@ -9,11 +9,11 @@ int64 RoundUp(int64 ByteSize)
 {
 	if (ByteSize <= 4)
 	{
-		return _RoundUp(ByteSize, 4);
+		return _RoundUp(ByteSize, 16);
 	}
 	else if (ByteSize <= 128)
 	{
-		return _RoundUp(ByteSize, 8);
+		return _RoundUp(ByteSize, 16);
 	}
 	else if (ByteSize <= 1024)
 	{

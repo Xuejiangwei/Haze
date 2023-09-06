@@ -459,6 +459,9 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 			GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.SecondaryType);
 		}
 
+		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Scope);
+		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Desc);
+
 		Instruction.Operator = { OperatorOne };
 	}
 	break;

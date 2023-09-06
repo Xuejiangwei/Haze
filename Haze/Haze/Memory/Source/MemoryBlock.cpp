@@ -2,20 +2,21 @@
 #include "HazeMemory.h"
 #include "HazeLog.h"
 
-MemoryBlock::MemoryBlock(uint64 UnitSize)
+MemoryBlock::MemoryBlock(uint32 unitSize)
 {
-	BlockInfo.UnitSize = UnitSize;
+	Reuse(unitSize);
 }
 
 MemoryBlock::~MemoryBlock()
 {
+	free(BlockInfo.Mark);
 }
 
 void MemoryBlock::SetAllWhite()
 {
-	for (auto& mark : BlockInfo.Mark)
+	for (int i = 0; i < BlockInfo.MarkCount; i++)
 	{
-		mark = (int)GC_State::White;
+		BlockInfo.Mark[0] = (int)GC_State::White;
 	}
 }
 
@@ -28,5 +29,23 @@ void MemoryBlock::MarkBlack(void* address)
 
 bool MemoryBlock::IsInBlock(void* address)
 {
-	return m_Memory <= address && address < m_Memory + 1;
+	return m_Memory <= address && address < &m_Memory + 1;
+}
+
+void MemoryBlock::Reuse(uint32 unitSize)
+{
+	if (unitSize != BlockInfo.UnitSize && BlockInfo.Mark)
+	{
+		free(BlockInfo.Mark);
+	}
+
+	BlockInfo.MarkCount = _countof(m_Memory) / unitSize;
+	BlockInfo.Mark = (uint8*)malloc(sizeof(*BlockInfo.Mark) * BlockInfo.MarkCount);
+	BlockInfo.State = MemoryBlockState::Used;
+	BlockInfo.UnitSize = unitSize;
+}
+
+void MemoryBlock::Recycle()
+{
+	BlockInfo.State = MemoryBlockState::Free;
 }
