@@ -58,6 +58,7 @@ HazeValueType GetValueTypeByToken(HazeToken Token)
 		{ HazeToken::PointerClass, HazeValueType::PointerClass},
 		{ HazeToken::PointerPointer, HazeValueType::PointerPointer},
 		{ HazeToken::MultiVariable, HazeValueType::MultiVariable},
+		{ HazeToken::Array, HazeValueType::Array }
 	};
 
 	auto it = HashMap.find(Token);
@@ -147,6 +148,16 @@ bool IsNumberType(HazeValueType Type)
 bool IsClassType(HazeValueType Type)
 {
 	return Type == HazeValueType::Class;
+}
+
+bool IsArrayType(HazeValueType type)
+{
+	return type == HazeValueType::Array;
+}
+
+bool IsReferenceType(HazeValueType type)
+{
+	return type == HazeValueType::ReferenceBase || type == HazeValueType::ReferenceClass;
 }
 
 void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& Value)

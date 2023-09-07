@@ -276,6 +276,7 @@ void HazeExecuteFile::WriteClassTable(const ModuleUnit::ClassTable& Table)
 			FileStream->write(BinaryString.data(), UInt);
 
 			FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Vector_Member[i].Variable.Type.PrimaryType));
+			FileStream->write(HAZE_WRITE_AND_SIZE(Iter.Vector_Member[i].Variable.Type.SecondaryType));
 
 			BinaryString = WString2String(HAZE_STRING(Iter.Vector_Member[i].Variable.Type.CustomName));
 			UInt = (uint32)BinaryString.size();
@@ -550,6 +551,7 @@ void HazeExecuteFile::ReadClassTable(HazeVM* VM)
 			VM->Vector_ClassTable[i].Vector_Member[j].Variable.Name = String2WString(BinaryString);
 
 			InFileStream->read(HAZE_READ(VM->Vector_ClassTable[i].Vector_Member[j].Variable.Type.PrimaryType));
+			InFileStream->read(HAZE_READ(VM->Vector_ClassTable[i].Vector_Member[j].Variable.Type.SecondaryType));
 			InFileStream->read(HAZE_READ(Num));
 
 			InFileStream->read(BinaryString.data(), Num);

@@ -249,13 +249,14 @@ void BackendParse::Parse_I_Code_ClassTable()
 
 					GetNextLexmeAssign_CustomType<uint32>(ClassMember.Variable.Type.PrimaryType);
 
-					if (ClassMember.Variable.Type.PrimaryType == HazeValueType::PointerClass || ClassMember.Variable.Type.PrimaryType == HazeValueType::Class)
-					{
-						GetNextLexmeAssign_HazeString(ClassMember.Variable.Type.CustomName);
-					}
-					else if (ClassMember.Variable.Type.PrimaryType == HazeValueType::PointerBase)
+					if (ClassMember.Variable.Type.NeedSecondaryType())
 					{
 						GetNextLexmeAssign_CustomType<uint32>(ClassMember.Variable.Type.SecondaryType);
+					}
+
+					if (ClassMember.Variable.Type.NeedCustomName())
+					{
+						GetNextLexmeAssign_HazeString(ClassMember.Variable.Type.CustomName);
 					}
 
 					GetNextLexmeAssign_CustomType<uint32>(ClassMember.Offset);

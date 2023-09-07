@@ -98,21 +98,25 @@ HazeValueType GetValueTypeByToken(HazeToken Token);
 
 HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2);
 
-bool IsVoidType(HazeValueType Type);
+bool IsVoidType(HazeValueType type);
 
-bool IsHazeDefaultTypeAndVoid(HazeValueType Type);
+bool IsHazeDefaultTypeAndVoid(HazeValueType type);
 
-bool IsHazeDefaultType(HazeValueType Type);
+bool IsHazeDefaultType(HazeValueType type);
 
-bool IsIntegerType(HazeValueType Type);
+bool IsIntegerType(HazeValueType type);
 
-bool IsPointerType(HazeValueType Type);
+bool IsPointerType(HazeValueType type);
 
-bool IsPointerFunction(HazeValueType Type);
+bool IsPointerFunction(HazeValueType type);
 
-bool IsNumberType(HazeValueType Type);
+bool IsNumberType(HazeValueType type);
 
-bool IsClassType(HazeValueType Type);
+bool IsClassType(HazeValueType type);
+
+bool IsArrayType(HazeValueType type);
+
+bool IsReferenceType(HazeValueType type);
 
 void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& Value);
 

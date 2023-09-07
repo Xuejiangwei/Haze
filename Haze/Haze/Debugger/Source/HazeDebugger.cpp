@@ -119,20 +119,8 @@ void GetHazeValueByBaseType(open::OpenJson& Json, const char* Address, HazeValue
 		Json = Value;
 	}
 	break;
-	case HazeValueType::Array:
-	case HazeValueType::PointerBase:
-	case HazeValueType::PointerClass:
-	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerArray:
-	case HazeValueType::PointerPointer:
-	case HazeValueType::ReferenceBase:
-	case HazeValueType::ReferenceClass:
-	{
-		uint64 Value;
-		memcpy(&Value, Address, sizeof(Value));
-		Json = Value;
-	}
 	default:
+		HAZE_LOG_ERR_W("Debug 获得基础类型<%d>数据错误!\n", (uint32)Type);
 		break;
 	}
 }
@@ -352,6 +340,11 @@ void HazeDebugger::SetJsonLocalVariable(open::OpenJson& Json)
 			}
 		}
 	}
+
+	if (Info.empty())
+	{
+		Info = "";
+	}
 }
 
 void HazeDebugger::SetJsonModuleGlobalVariable(open::OpenJson& Json)
@@ -457,6 +450,42 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 		Json["Type"] = GB2312_2_UFT8(String.c_str());
 		
 		GetHazeValueByBaseType(Json["Value"], DataAddress, Variable.Variable.Type.PrimaryType);
+	}
+	else if (IsArrayType(Variable.Variable.Type.PrimaryType))
+	{
+		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.PrimaryType));
+		Json["Type"] = GB2312_2_UFT8(String.c_str());
+
+		if (Variable.Variable.Type.CustomName.empty())
+		{
+			String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.SecondaryType));
+			Json["SubType"] = GB2312_2_UFT8(String.c_str());
+
+			uint64 Value;
+			memcpy(&Value, Address, sizeof(Value));
+			
+			for (size_t i = 0; i < 5; i++)
+			{
+				for (size_t j = 0; j < 5; j++)
+				{
+					Json["Value"][i][j] = i * j;
+				}
+			}
+
+		}
+		else
+		{
+
+		}
+	}
+	else if (IsReferenceType(Variable.Variable.Type.PrimaryType))
+	{
+		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.PrimaryType));
+		Json["Type"] = GB2312_2_UFT8(String.c_str());
+
+		uint64 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json["Value"] = Value;
 	}
 	else
 	{

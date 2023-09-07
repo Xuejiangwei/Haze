@@ -15,6 +15,7 @@
 std::unique_ptr<HazeDebugger> Debugger;
 uint64 SocketServer;
 uint64 SocketClient;
+std::thread::id DebuggerThreadId;
 
 void CloseServer()
 {
@@ -25,6 +26,7 @@ void CloseServer()
 void HazeDebuggerServer::InitDebuggerServer(HazeVM* VM)
 {
 	std::thread LaunchDebuggerThread(HazeDebuggerServer::Start, VM);
+	DebuggerThreadId = LaunchDebuggerThread.get_id();
 	LaunchDebuggerThread.detach();
 }
 
@@ -92,11 +94,11 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 		{
 			Debugger = std::make_unique<HazeDebugger>(VM, &CloseServer);
 		}
-
-		//接收数据
-		std::thread DebuggerThread(HazeDebuggerServer::Recv);
-		DebuggerThread.detach();
+		break;
 	}
+
+	//接收数据
+	Recv();
 }
 
 static bool HandleMessage(char* Message)
