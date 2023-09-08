@@ -157,6 +157,8 @@ ASTFunctionCall::~ASTFunctionCall()
 
 std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 {
+	Compiler->InsertLineCount(Location.Line);
+
 	auto [Function, ObjectVariable] = Compiler->GetFunction(Name);
 
 	std::vector<std::shared_ptr<HazeCompilerValue>> Param;
@@ -170,8 +172,7 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 			return nullptr;
 		}
 	}
-
-	Compiler->InsertLineCount(Location.Line);
+	
 	if (Function)
 	{
 		if (Function->GetClass())
@@ -294,6 +295,8 @@ ASTReturn::~ASTReturn()
 
 std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 {
+	Compiler->InsertLineCount(Location.Line);
+
 	std::shared_ptr<HazeCompilerValue> RetValue = Expression ? Expression->CodeGen() : Compiler->GetConstantValueInt(0);
 
 	if (Expression ? RetValue->GetValueType() == Compiler->GetCurrModule()->GetCurrFunction()->GetFunctionType() : IsVoidType(Compiler->GetCurrModule()->GetCurrFunction()->GetFunctionType().PrimaryType))
@@ -452,6 +455,7 @@ ASTInc::~ASTInc()
 
 std::shared_ptr<HazeCompilerValue> ASTInc::CodeGen()
 {
+	Compiler->InsertLineCount(Location.Line);
 	return Compiler->CreateInc(Expression->CodeGen(), IsPreInc);
 }
 
@@ -465,6 +469,7 @@ ASTDec::~ASTDec()
 
 std::shared_ptr<HazeCompilerValue> ASTDec::CodeGen()
 {
+	Compiler->InsertLineCount(Location.Line);
 	return Compiler->CreateDec(Expression->CodeGen(), IsPreDec);
 }
 
@@ -673,6 +678,8 @@ ASTThreeExpression::~ASTThreeExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTThreeExpression::CodeGen()
 {
+	Compiler->InsertLineCount(Location.Line);
+
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 
 	auto ParentBlock = Compiler->GetInsertBlock();
@@ -731,8 +738,8 @@ ASTBreakExpression::~ASTBreakExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTBreakExpression::CodeGen()
 {
-	Compiler->CreateJmpToBlock(Compiler->GetInsertBlock()->FindLoopBlock()->GetLoopEnd()->GetShared());
 	Compiler->InsertLineCount(Location.Line);
+	Compiler->CreateJmpToBlock(Compiler->GetInsertBlock()->FindLoopBlock()->GetLoopEnd()->GetShared());
 	return nullptr;
 }
 
@@ -746,8 +753,8 @@ ASTContinueExpression::~ASTContinueExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTContinueExpression::CodeGen()
 {
-	Compiler->CreateJmpToBlock(Compiler->GetInsertBlock()->FindLoopBlock()->GetLoopStep()->GetShared());
 	Compiler->InsertLineCount(Location.Line);
+	Compiler->CreateJmpToBlock(Compiler->GetInsertBlock()->FindLoopBlock()->GetLoopStep()->GetShared());
 	return nullptr;
 }
 
@@ -762,6 +769,8 @@ ASTIfExpression::~ASTIfExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 {
+	Compiler->InsertLineCount(Location.Line);
+
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 
 	auto ParentBlock = Compiler->GetInsertBlock();
@@ -808,6 +817,8 @@ ASTWhileExpression::~ASTWhileExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 {
+	Compiler->InsertLineCount(Location.Line);
+
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 
 	auto ParentBlock = Compiler->GetInsertBlock();
@@ -817,7 +828,6 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 	WhileBlock->SetLoopEnd(NextBlock.get());
 	WhileBlock->SetLoopStep(WhileBlock.get());
 
-	Compiler->InsertLineCount(Location.Line);
 	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(Condition.get());
 	if (ConditionExp)
 	{
@@ -851,6 +861,8 @@ ASTForExpression::~ASTForExpression()
 
 std::shared_ptr<HazeCompilerValue> ASTForExpression::CodeGen()
 {
+	Compiler->InsertLineCount(Location.Line);
+
 	auto Function = Compiler->GetCurrModule()->GetCurrFunction();
 	auto ParentBlock = Compiler->GetInsertBlock();
 
