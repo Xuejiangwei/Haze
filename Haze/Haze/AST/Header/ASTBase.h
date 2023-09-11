@@ -407,6 +407,7 @@ class ASTInitializeList : public ASTBase
 {
 public:
 	ASTInitializeList(HazeCompiler* Compiler, const SourceLocation& Location, std::vector<std::unique_ptr<ASTBase>>& InitializeListExpression);
+
 	virtual	~ASTInitializeList() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;

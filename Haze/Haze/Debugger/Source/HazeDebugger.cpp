@@ -455,14 +455,14 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 	{
 		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.PrimaryType));
 		Json["Type"] = GB2312_2_UFT8(String.c_str());
+		
+		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.SecondaryType));
+		Json["SubType"] = GB2312_2_UFT8(String.c_str());
+
+		int size = GetSizeByType(Variable.Variable.Type, VM);
 
 		if (Variable.Variable.Type.CustomName.empty())
 		{
-			String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.SecondaryType));
-			Json["SubType"] = GB2312_2_UFT8(String.c_str());
-
-			int size = GetSizeByType(Variable.Variable.Type, VM);
-			
 			for (int i = 0; i < Variable.Size / size; i++)
 			{
 				GetHazeValueByBaseType(Json["Value"][i], DataAddress + i * size, Variable.Variable.Type.SecondaryType);
@@ -471,7 +471,10 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 		}
 		else
 		{
-
+			for (int i = 0; i < Variable.Size / size; i++)
+			{
+				SetJsonVariableData(Json["Value"][i], Variable, DataAddress + size * i);
+			}
 		}
 	}
 	else if (IsReferenceType(Variable.Variable.Type.PrimaryType))
