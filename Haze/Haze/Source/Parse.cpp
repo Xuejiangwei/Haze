@@ -194,7 +194,7 @@ static HAZE_STRING GetPointerClassType(const HAZE_STRING& Str)
 	return Str.substr(0, Str.length() - 1);
 }
 
-static void GetType(HazeDefineType& Type, const HAZE_STRING& Str)
+static void GetParseType(HazeDefineType& Type, const HAZE_STRING& Str)
 {
 	if (Type.PrimaryType == HazeValueType::PointerBase)
 	{

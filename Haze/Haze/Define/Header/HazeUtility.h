@@ -72,6 +72,8 @@ T StringToStandardType(const HAZE_CHAR* String);
 template <typename T>
 HAZE_BINARY_STRING ToString(T Value);
 
+HAZE_BINARY_STRING ToString(void* Value);
+
 template <typename T>
 HAZE_STRING ToHazeString(T Value);
 

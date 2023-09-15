@@ -14,7 +14,7 @@ MemoryBlock::~MemoryBlock()
 
 void MemoryBlock::SetAllWhite()
 {
-	for (int i = 0; i < BlockInfo.MarkCount; i++)
+	for (uint32 i = 0; i < BlockInfo.MarkCount; i++)
 	{
 		BlockInfo.Mark[0] = (int)GC_State::White;
 	}

@@ -242,3 +242,10 @@ HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& FilePath)
 
 	return HAZE_TEXT("None");
 }
+
+HAZE_BINARY_STRING ToString(void* Value)
+{
+	std::stringstream SS;
+	SS << Value;
+	return SS.str();
+}

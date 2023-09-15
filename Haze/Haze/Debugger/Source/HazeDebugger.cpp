@@ -407,14 +407,14 @@ void HazeDebugger::SendBreakInfo()
 	}
 }
 
-void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableData& Variable, const char* Address)
+void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableData& Variable, const char* Address, bool isStack)
 {
 	static std::string String;
 
 	String = WString2String(Variable.Variable.Name);
 	Json["Name"] = GB2312_2_UFT8(String.c_str());
 
-	auto DataAddress = VM->VMStack->GetAddressByEBP(Variable.Offset);
+	auto DataAddress = isStack ? VM->VMStack->GetAddressByEBP(Variable.Offset) : Address;
 	if (Address)
 	{
 		DataAddress += Variable.Offset;
@@ -433,11 +433,23 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 	}
 	else if (IsPointerType(Variable.Variable.Type.PrimaryType))
 	{
+		String = WString2String(HAZE_TEXT("÷∏’Î"));
+		Json["Type"] = GB2312_2_UFT8(String.c_str());
+
+		uint64 Value;
+		memcpy(&Value, DataAddress, sizeof(Value));
+		Json["Value"] = ToString((void*)Value);
+
 		if (Variable.Variable.Type.NeedCustomName())
 		{
 			auto Class = VM->FindClass(Variable.Variable.Type.CustomName);
 			String = WString2String(Variable.Variable.Type.CustomName);
 			Json["TypeClass"] = GB2312_2_UFT8(String.c_str());
+
+			for (size_t j = 0; j < Class->Vector_Member.size(); j++)
+			{
+				SetJsonVariableData(Json["PointerValue"][j], Class->Vector_Member[j], (const char*)Value, false);
+			}
 		}
 
 		if (Variable.Variable.Type.NeedSecondaryType())
@@ -445,11 +457,6 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 			String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.SecondaryType));
 			Json["SubType"] = GB2312_2_UFT8(String.c_str());
 		}
-
-		String = WString2String(HAZE_TEXT("÷∏’Î"));
-		Json["Type"] = GB2312_2_UFT8(String.c_str());
-		
-		GetHazeValueByBaseType(Json["Value"], DataAddress, Variable.Variable.Type.PrimaryType);
 	}
 	else if (IsArrayType(Variable.Variable.Type.PrimaryType))
 	{

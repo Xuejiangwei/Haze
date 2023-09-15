@@ -1,0 +1,52 @@
+0
+GlobalDataTable
+0
+StringTable
+1
+16 对象 身份证号 %d 性别 %d
+ClassTable
+1
+Class 对象 8 2
+身份证号 7 0 4
+性别 7 4 4
+FunctionTable
+2
+Function 对象@打印对象 0
+Param 己 15 对象
+Variable 己$1 15 对象 -12 8 25
+FunctionStart
+
+Block Entry
+LINE 25
+LINE 27
+PUSH 己$1指之性别 2 14 7
+PUSH 己$1指之身份证号 2 14 7
+PUSH 常字符串指针 1 2 14 4 0
+PUSH RetAddress 0 9 7
+CALL 打印 22 3 16 标准流
+LINE 25
+RET Void 0 0 0
+
+FunctionEnd
+
+Function 主函数 0
+Variable 甲$1 15 对象 0 8 35
+FunctionStart
+
+Block Entry
+NEW 15 对象 2 5
+LINE 35
+MOV 甲$1 2 0 15 对象 New_R 1 5 15 对象
+LINE 36
+MOV 甲$1指之身份证号 2 14 7 100 1 1 7
+LINE 37
+MOV 甲$1指之性别 2 14 7 5 1 1 7
+LINE 38
+PUSH 甲$1 2 12 15 对象
+PUSH RetAddress 0 9 7
+CALL 对象@打印对象 22 0 8 HazeCode
+LINE 33
+RET Void 0 0 0
+
+FunctionEnd
+

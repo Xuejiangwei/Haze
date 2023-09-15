@@ -77,7 +77,7 @@ private:
 
 	void SendBreakInfo();
 
-	void SetJsonVariableData(open::OpenJson& Json, const HazeVariableData& Variable, const char* Address = nullptr);
+	void SetJsonVariableData(open::OpenJson& Json, const HazeVariableData& Variable, const char* Address = nullptr, bool isStack = true);
 
 private:
 	HazeVM* VM;
