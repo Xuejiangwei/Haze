@@ -166,10 +166,23 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 	--PC;
 
 	AddCallHazeTimes();
+
+	if (Debugger)
+	{
+		VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.StartLine);
+	}
 }
 
 void HazeStack::OnRet()
 {
+	if (Debugger)
+	{
+		VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.EndLine);
+		while (Debugger->IsPause) 
+		{
+		}
+	}
+
 	memcpy(&PC, &(Stack_Main[EBP - HAZE_ADDRESS_SIZE]), HAZE_ADDRESS_SIZE);
 	EBP = Stack_Frame.back().EBP;
 	ESP = Stack_Frame.back().ESP;

@@ -352,6 +352,9 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& Table)
 
 			FileStream->write(HAZE_WRITE_AND_SIZE(InstructionStartAddr));
 			InstructionStartAddr += UInt;
+
+			FileStream->write(HAZE_WRITE_AND_SIZE(Function.StartLine));
+			FileStream->write(HAZE_WRITE_AND_SIZE(Function.EndLine));
 		}
 	}
 
@@ -628,6 +631,9 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 
 		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].InstructionNum));
 		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].FunctionDescData.InstructionStartAddress));
+
+		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].FunctionDescData.StartLine));
+		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].FunctionDescData.EndLine));
 	}
 }
 

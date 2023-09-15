@@ -111,6 +111,9 @@ public:
 		std::vector<FunctionBlock> Vector_Block;
 		std::vector<FunctionInstruction> Vector_Instruction;
 		InstructionFunctionType DescType;
+		
+		uint32 StartLine;
+		uint32 EndLine;
 
 		FunctionTableData()
 		{
@@ -119,6 +122,8 @@ public:
 			Vector_Block.clear();
 			Vector_Instruction.clear();
 			DescType = InstructionFunctionType::HazeFunction;
+			StartLine = 0;
+			EndLine = 0;
 		}
 	};
 

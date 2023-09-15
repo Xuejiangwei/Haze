@@ -10,7 +10,7 @@
 #include "HazeBaseBlock.h"
 
 HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* Module, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class)
-	: Module(Module), Name(Name), Type(Type), OwnerClass(Class), CurrBlockCount(0), CurrVariableCount(0)
+	: Module(Module), Name(Name), Type(Type), OwnerClass(Class), CurrBlockCount(0), CurrVariableCount(0), m_StartLine(0), m_EndLine(0)
 {
 	for (int i = (int)Param.size() - 1; i >= 0; i--)
 	{
@@ -157,11 +157,11 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& SStream)
 		Size += Vector_LocalVariable[i].first->GetSize();
 	}
 
-	SStream << GetFunctionStartHeader() << std::endl;
+	SStream << GetFunctionStartHeader() << " " << m_StartLine << std::endl;
 
 	EntryBlock->GenI_Code(SStream);
 
-	SStream << std::endl << GetFunctionEndHeader() << std::endl << std::endl;
+	SStream << std::endl << GetFunctionEndHeader() << " " << m_EndLine << std::endl << std::endl;
 
 	EntryBlock->ClearLocalVariable();
 

@@ -1322,6 +1322,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 
 			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
 			{
+				StartLineCount = LineCount;
 				std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
 				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("函数体需要 }")))
@@ -1447,6 +1448,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 
 		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
 		{
+			StartLineCount = LineCount;
 			std::unique_ptr<ASTBase> Body = ParseMultiExpression();
 
 			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("函数体需要 }")))

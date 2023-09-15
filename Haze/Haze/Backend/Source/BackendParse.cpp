@@ -317,6 +317,8 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 				if (CurrLexeme == GetFunctionStartHeader())
 				{
+					GetNextLexmeAssign_CustomType<int>(Table.Vector_Function[i].StartLine);
+
 					GetNextLexeme();
 					while (CurrLexeme == BLOCK_START)
 					{
@@ -341,6 +343,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 						if (CurrLexeme == GetFunctionEndHeader())
 						{
+							GetNextLexmeAssign_CustomType<int>(Table.Vector_Function[i].EndLine);
 							break;
 						}
 					}

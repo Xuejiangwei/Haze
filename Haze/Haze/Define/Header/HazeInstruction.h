@@ -240,6 +240,9 @@ struct FunctionDescData
 		uint32 InstructionStartAddress;
 		StdLibFunctionCall StdLibFunction;
 	};
+
+	uint32 StartLine;
+	uint32 EndLine;
 };
 
 struct ModuleData

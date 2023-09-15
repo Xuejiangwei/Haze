@@ -12,24 +12,24 @@ Param 甲 14 4
 Param 多参数 23
 Variable 多参数$2 23 -4 0 5
 Variable 甲$1 14 4 -12 8 5
-FunctionStart
+FunctionStart 0
 
 Block Entry
 LINE 5
 LINE 5
 
-FunctionEnd
+FunctionEnd 0
 
 Function 输入 0
 Param 甲 14 4
 Param 多参数 23
 Variable 多参数$2 23 -4 0 6
 Variable 甲$1 14 4 -12 8 6
-FunctionStart
+FunctionStart 0
 
 Block Entry
 LINE 6
 LINE 6
 
-FunctionEnd
+FunctionEnd 0
 

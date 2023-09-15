@@ -279,7 +279,7 @@ uint32 HazeVM::GetNextLine(uint32 CurrLine)
 		}
 	}
 
-	return CurrLine + 1;
+	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
 uint32 HazeVM::GetCurrCallFunctionLine()
@@ -293,7 +293,7 @@ uint32 HazeVM::GetCurrCallFunctionLine()
 		}
 	}
 
-	return 0;
+	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
 void HazeVM::Hook(HazeVM* VM)

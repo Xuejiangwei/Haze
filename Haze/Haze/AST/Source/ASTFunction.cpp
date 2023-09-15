@@ -41,7 +41,7 @@ HazeValue* ASTFunction::CodeGen()
 		Class = Module->GetClass(Vector_FunctionParam[0]->GetDefine().Type.CustomName);
 		CompilerFunction = Module->CreateFunction(Class, FunctionName, FunctionType, Vector_ParamDefine);
 	}
-
+	CompilerFunction->SetStartEndLine(StartLocation.Line, EndLocation.Line);
 	Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
 
 	for (int i = (int)Vector_FunctionParam.size() - 1; i >= 0; i--)
@@ -52,11 +52,6 @@ HazeValue* ASTFunction::CodeGen()
 	if (Body)
 	{
 		Body->CodeGen();
-	}
-
-	if (FunctionType.PrimaryType == HazeValueType::Void)
-	{
-		Compiler->InsertLineCount(StartLocation.Line);
 	}
 
 	if (CompilerFunction)

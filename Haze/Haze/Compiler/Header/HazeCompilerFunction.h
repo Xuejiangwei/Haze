@@ -20,7 +20,10 @@ public:
 	friend class HazeCompilerModule;
 
 	HazeCompilerFunction(HazeCompilerModule* Module, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class = nullptr);
+
 	~HazeCompilerFunction();
+
+	void SetStartEndLine(uint32 stratLine, uint32 endLine) { m_StartLine = stratLine; m_EndLine = endLine; };
 
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& VariableName);
 
@@ -85,4 +88,7 @@ private:
 
 	int CurrBlockCount;
 	int CurrVariableCount;
+	
+	uint32 m_StartLine;
+	uint32 m_EndLine;
 };
