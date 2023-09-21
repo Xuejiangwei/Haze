@@ -56,10 +56,11 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 	}
 
 	//绑定IP和端口
-	sockaddr_in sin;//ipv4的指定方法是使用struct sockaddr_in类型的变量
+	sockaddr_in sin;						//ipv4的指定方法是使用struct sockaddr_in类型的变量
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(11003);//设置端口。htons将主机的unsigned short int转换为网络字节顺序
-	sin.sin_addr.S_un.S_addr = INADDR_ANY;//IP地址设置成INADDR_ANY，让系统自动获取本机的IP地址
+	sin.sin_port = htons(11003);			//设置端口。htons将主机的unsigned short int转换为网络字节顺序
+	sin.sin_addr.S_un.S_addr = INADDR_ANY;	//IP地址设置成INADDR_ANY，让系统自动获取本机的IP地址
+	
 	//bind函数把一个地址族中的特定地址赋给scket。
 	if (bind(SocketServer, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
 	{
@@ -78,7 +79,7 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 
 	while (VM)
 	{
-		sockaddr_in remoteAddr;//sockaddr_in常用于socket定义和赋值,sockaddr用于函数参数
+		sockaddr_in remoteAddr;				//sockaddr_in常用于socket定义和赋值,sockaddr用于函数参数
 		int nAddrlen = sizeof(remoteAddr);
 
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试器等待Socket连接...\n"));
