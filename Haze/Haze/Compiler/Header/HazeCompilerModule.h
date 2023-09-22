@@ -10,6 +10,9 @@ class HazeCompilerValue;
 class HazeBaseBlock;
 class HazeCompilerFunction;
 class HazeCompilerClass;
+class HazeCompilerEnum;
+class HazeCompilerTemplateFunction;
+class HazeCompilerTemplateClass;
 
 class HazeCompilerModule
 {
@@ -131,6 +134,8 @@ private:
 
 	HAZE_STRING CurrFunction;
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerFunction>> HashMap_Function;
+
+	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerEnum>> m_HashMap_Enums;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Vector_Variable; //这个是Symbol table(符号表)
 

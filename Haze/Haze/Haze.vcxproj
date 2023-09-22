@@ -142,6 +142,9 @@
     <ClCompile Include="AST\Source\ASTFunction.cpp" />
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
+    <ClCompile Include="Compiler\Header\HazeCompilerEnum.h" />
+    <ClCompile Include="Compiler\Header\HazeCompilerTemplateFunction.h" />
+    <ClCompile Include="Compiler\Source\HazeCompilerEnum.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerInitListValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeBaseBlock.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompiler.cpp" />
@@ -156,6 +159,8 @@
     <ClCompile Include="Compiler\Source\HazeCompilerPointerPointerValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerPointerValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerRefValue.cpp" />
+    <ClCompile Include="Compiler\Source\HazeCompilerTemplateClass.cpp" />
+    <ClCompile Include="Compiler\Source\HazeCompilerTemplateFunction.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp" />
     <ClCompile Include="Debugger\Source\HazeDebugger.cpp" />
     <ClCompile Include="Debugger\Source\HazeDebuggerBuffer.cpp" />
@@ -206,6 +211,7 @@
     <ClInclude Include="Compiler\Header\HazeCompilerPointerPointerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerPointerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerRefValue.h" />
+    <ClInclude Include="Compiler\Header\HazeCompilerTemplateClass.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerPointerArray.h" />
     <ClInclude Include="Debugger\Header\HazeDebugger.h" />

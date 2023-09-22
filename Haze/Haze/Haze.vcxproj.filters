@@ -162,6 +162,21 @@
     <ClCompile Include="Debugger\Source\HazeDebugger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Compiler\Header\HazeCompilerTemplateFunction.h">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerTemplateFunction.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerTemplateClass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerEnum.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\Header\HazeCompilerEnum.h">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -336,6 +351,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ThirdParty\HazeJson.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerTemplateClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
