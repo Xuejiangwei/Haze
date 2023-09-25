@@ -14,16 +14,16 @@ public:
 
 	const HazeDefineType& GetType() const { return Type; }
 
-	const HazeValue& GetValue() const { return Value; }
+	const HazeValue& GetValue() const { return m_Value; }
 
 private:
-	HAZE_STRING Name;
+	HAZE_STRING m_Name;
 
 	HazeDefineType Type;
 
 	union
 	{
-		HazeValue Value;
+		HazeValue m_Value;
 		void* Address;
 	};
 };

@@ -8,23 +8,23 @@
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerFunction.h"
 
-HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock)
-	: enable_shared_from_this(*this), Name(Name), ParentFunction(ParentFunction), ParentBlock(ParentBlock), LoopEndBlock(nullptr)
+HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& m_Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock)
+	: enable_shared_from_this(*this), m_Name(m_Name), ParentFunction(ParentFunction), ParentBlock(ParentBlock), LoopEndBlock(nullptr)
 {
 	Vector_IRCode.clear();
 	Vector_Alloca.clear();
-	PushIRCode(HAZE_STRING(BLOCK_START) + HAZE_TEXT(" ") + Name + HAZE_TEXT("\n"));
+	PushIRCode(HAZE_STRING(BLOCK_START) + HAZE_TEXT(" ") + m_Name + HAZE_TEXT("\n"));
 }
 
 HazeBaseBlock::~HazeBaseBlock()
 {
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
+bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& m_Value, HAZE_STRING& OutName)
 {
 	for (auto& it : Vector_Alloca)
 	{
-		if (TrtGetVariableName(ParentFunction, it, Value, OutName))
+		if (TrtGetVariableName(ParentFunction, it, m_Value, OutName))
 		{
 			return true;
 		}
@@ -32,7 +32,7 @@ bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValu
 
 	for (auto& Iter : List_ChildBlock)
 	{
-		if (Iter->FindLocalVariableName(Value, OutName))
+		if (Iter->FindLocalVariableName(m_Value, OutName))
 		{
 			return true;
 		}
@@ -41,11 +41,11 @@ bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValu
 	return false;
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName)
+bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* m_Value, HAZE_STRING& OutName)
 {
 	for (auto& it : Vector_Alloca)
 	{
-		if (TrtGetVariableName(ParentFunction, it, Value, OutName))
+		if (TrtGetVariableName(ParentFunction, it, m_Value, OutName))
 		{
 			return true;
 		}
@@ -53,7 +53,7 @@ bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* Value, HAZE_S
 
 	for (auto& Iter : List_ChildBlock)
 	{
-		if (Iter->FindLocalVariableName(Value, OutName))
+		if (Iter->FindLocalVariableName(m_Value, OutName))
 		{
 			return true;
 		}
@@ -83,12 +83,12 @@ bool HazeBaseBlock::IsLoopBlock() const
 	static HAZE_STRING WhileBlockName = BLOCK_WHILE;
 	static HAZE_STRING ForBlockName = BLOCK_LOOP;
 
-	if (Name.length() >= WhileBlockName.length() && Name.substr(0, WhileBlockName.length()) == WhileBlockName)
+	if (m_Name.length() >= WhileBlockName.length() && m_Name.substr(0, WhileBlockName.length()) == WhileBlockName)
 	{
 		return true;
 	}
 
-	if (Name.length() >= ForBlockName.length() && Name.substr(0, ForBlockName.length()) == ForBlockName)
+	if (m_Name.length() >= ForBlockName.length() && m_Name.substr(0, ForBlockName.length()) == ForBlockName)
 	{
 		return true;
 	}
@@ -131,9 +131,9 @@ void HazeBaseBlock::ClearLocalVariable()
 	}
 }
 
-std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock)
+std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING& m_Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock)
 {
-	auto BB = std::make_shared<HazeBaseBlock>(Name, Parent.get(), ParentBlock.get());
+	auto BB = std::make_shared<HazeBaseBlock>(m_Name, Parent.get(), ParentBlock.get());
 
 	if (ParentBlock)
 	{
@@ -149,20 +149,20 @@ void HazeBaseBlock::PushIRCode(const HAZE_STRING& Code)
 }
 
 std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Line, int Count, std::shared_ptr<HazeCompilerValue> RefValue,
-	std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
+	std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
 	for (auto& Iter : Vector_Alloca)
 	{
-		if (Iter.first == Define.Name)
+		if (Iter.first == Define.m_Name)
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("重复添加临时变量 %s !\n"), Define.Name.c_str());
+			HAZE_LOG_ERR(HAZE_TEXT("重复添加临时变量 %s !\n"), Define.m_Name.c_str());
 			return nullptr;
 		}
 	}
 
 	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeVariableScope::Local, HazeDataDesc::None, Count,
-		RefValue, ArraySize, Vector_Param);
-	Vector_Alloca.push_back({ Define.Name, Alloce });
+		RefValue, m_ArraySize, Vector_Param);
+	Vector_Alloca.push_back({ Define.m_Name, Alloce });
 
 	ParentFunction->AddLocalVariable(Alloce, Line);
 

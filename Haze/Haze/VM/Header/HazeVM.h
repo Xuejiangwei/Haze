@@ -43,22 +43,22 @@ public:
 
 	//void ParseString(const HAZE_STRING& String);
 
-	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName);
+	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& m_ModuleName);
 
-	std::unique_ptr<HazeCompiler>& GetCompiler() { return Compiler; }
+	std::unique_ptr<HazeCompiler>& GetCompiler() { return m_Compiler; }
 
 	const std::unordered_set<HAZE_STRING>& GetReferenceModules() const { return HashSet_RefModule; }
 
 public:
 	const HAZE_STRING* GetModuleNameByCurrFunction();
 
-	int GetFucntionIndexByName(const HAZE_STRING& Name);
+	int GetFucntionIndexByName(const HAZE_STRING& m_Name);
 
-	const FunctionData& GetFunctionByName(const HAZE_STRING& Name);
+	const FunctionData& GetFunctionByName(const HAZE_STRING& m_Name);
 
 	const HAZE_STRING& GetHazeStringByIndex(int Index) const { return Vector_StringTable[Index].second; }
 
-	void* GetGlobalValue(const HAZE_STRING& Name);
+	void* GetGlobalValue(const HAZE_STRING& m_Name);
 
 	char* GetGlobalValueByIndex(uint32 Index);
 
@@ -78,7 +78,7 @@ private:
 	static void Hook(HazeVM* VM);
 
 private:
-	std::unique_ptr<HazeCompiler> Compiler;
+	std::unique_ptr<HazeCompiler> m_Compiler;
 
 private:
 	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;

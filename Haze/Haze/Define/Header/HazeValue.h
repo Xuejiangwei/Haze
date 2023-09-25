@@ -73,7 +73,7 @@ struct HazeValue
 			int MemorySize;
 			//const HAZE_STRING* StringPointer;
 		} Extra;
-	} Value;
+	} m_Value;
 
 public:
 	HazeValue& operator =(const HazeValue& V)
@@ -84,7 +84,7 @@ public:
 
 	HazeValue& operator =(int64_t V)
 	{
-		memcpy(&this->Value, &V, sizeof(V));
+		memcpy(&this->m_Value, &V, sizeof(V));
 		return *this;
 	}
 };
@@ -94,7 +94,7 @@ enum class HazeToken : uint32;
 
 uint32 GetSizeByHazeType(HazeValueType Type);
 
-HazeValueType GetValueTypeByToken(HazeToken Token);
+HazeValueType GetValueTypeByToken(HazeToken m_Token);
 
 HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2);
 
@@ -118,7 +118,7 @@ bool IsArrayType(HazeValueType type);
 
 bool IsReferenceType(HazeValueType type);
 
-void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& Value);
+void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& m_Value);
 
 void OperatorValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Target);
 
@@ -130,6 +130,6 @@ size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
 
 const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type);
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, const HazeValue& Value);
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, const HazeValue& m_Value);
 
-HazeValue GetNegValue(HazeValueType Type, const HazeValue& Value);
+HazeValue GetNegValue(HazeValueType Type, const HazeValue& m_Value);

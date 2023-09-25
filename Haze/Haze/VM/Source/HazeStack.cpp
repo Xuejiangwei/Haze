@@ -111,9 +111,9 @@ void HazeStack::PushMainFuntion()
 	}*/
 }
 
-HazeRegister* HazeStack::GetVirtualRegister(const HAZE_CHAR* Name)
+HazeRegister* HazeStack::GetVirtualRegister(const HAZE_CHAR* m_Name)
 {
-	auto Iter = HashMap_VirtualRegister.find(Name);
+	auto Iter = HashMap_VirtualRegister.find(m_Name);
 	if (Iter != HashMap_VirtualRegister.end())
 	{
 		return &Iter->second;
@@ -157,9 +157,9 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize), RegisterDara));
 
 	EBP = ESP;
-	if (Info->Vector_Variable.size() > Info->Vector_Param.size())
+	if (Info->m_Vector_Variables.size() > Info->Vector_Param.size())
 	{
-		ESP += Info->Vector_Variable.back().Offset + GetSizeByType(Info->Vector_Variable.back().Variable.Type, VM);
+		ESP += Info->m_Vector_Variables.back().Offset + GetSizeByType(Info->m_Vector_Variables.back().Variable.Type, VM);
 	}
 
 	PC = Info->FunctionDescData.InstructionStartAddress;

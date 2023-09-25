@@ -20,7 +20,7 @@ public:
 
 	const HAZE_STRING& GetOwnerClassName();
 
-	std::shared_ptr<HazeCompilerValue> GetMember(const HAZE_STRING& Name);
+	std::shared_ptr<HazeCompilerValue> GetMember(const HAZE_STRING& m_Name);
 
 	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& MemberValue, HAZE_STRING& OutName);
 

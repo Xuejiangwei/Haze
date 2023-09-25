@@ -2,7 +2,7 @@
 #include "Haze.h"
 #include <unordered_map>
 
-HazeCmpType GetHazeCmpTypeByToken(HazeToken Token)
+HazeCmpType GetHazeCmpTypeByToken(HazeToken m_Token)
 {
 	static std::unordered_map<HazeToken, HazeCmpType> HashMap =
 	{
@@ -17,7 +17,7 @@ HazeCmpType GetHazeCmpTypeByToken(HazeToken Token)
 		{HazeToken::Or, HazeCmpType::Or},
 	};
 
-	auto Iter = HashMap.find(Token);
+	auto Iter = HashMap.find(m_Token);
 	if (Iter != HashMap.end())
 	{
 		return Iter->second;
@@ -50,7 +50,7 @@ InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType Type)
 	return InstructionOpCode::NONE;
 }
 
-HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken Token)
+HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken m_Token)
 {
 	static std::unordered_map<HazeToken, HazeOperatorAssign> HashMap =
 	{
@@ -66,7 +66,7 @@ HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken Token)
 		{HazeToken::ShrAssign, HazeOperatorAssign::ShrAssign},
 	};
 
-	auto Iter = HashMap.find(Token);
+	auto Iter = HashMap.find(m_Token);
 	if (Iter != HashMap.end())
 	{
 		return Iter->second;

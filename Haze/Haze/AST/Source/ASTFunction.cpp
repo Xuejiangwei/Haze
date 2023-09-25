@@ -8,9 +8,9 @@
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerModule.h"
 
-ASTFunction::ASTFunction(HazeCompiler* Compiler, const SourceLocation& StartLocation, const SourceLocation& EndLocation, HazeSectionSignal Section, HAZE_STRING& Name, 
+ASTFunction::ASTFunction(HazeCompiler* m_Compiler, const SourceLocation& StartLocation, const SourceLocation& EndLocation, HazeSectionSignal Section, HAZE_STRING& m_Name, 
 	HazeDefineType& Type, std::vector<std::unique_ptr<ASTBase>>& Param, std::unique_ptr<ASTBase>& Body) 
-	: Compiler(Compiler), StartLocation(StartLocation), EndLocation(EndLocation), Section(Section), FunctionName(std::move(Name)),FunctionType(std::move(Type)),
+	: m_Compiler(m_Compiler), StartLocation(StartLocation), EndLocation(EndLocation), Section(Section), FunctionName(std::move(m_Name)),FunctionType(std::move(Type)),
 	Vector_FunctionParam(std::move(Param)), Body(std::move(Body))
 {
 }
@@ -21,7 +21,7 @@ ASTFunction::~ASTFunction()
 
 HazeValue* ASTFunction::CodeGen()
 {
-	auto& Module = Compiler->GetCurrModule();
+	auto& Module = m_Compiler->GetCurrModule();
 
 	std::shared_ptr<HazeCompilerFunction> CompilerFunction = nullptr;
 	std::shared_ptr<HazeCompilerClass> Class = nullptr;
@@ -42,7 +42,7 @@ HazeValue* ASTFunction::CodeGen()
 		CompilerFunction = Module->CreateFunction(Class, FunctionName, FunctionType, Vector_ParamDefine);
 	}
 	CompilerFunction->SetStartEndLine(StartLocation.Line, EndLocation.Line);
-	Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
+	m_Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
 
 	for (int i = (int)Vector_FunctionParam.size() - 1; i >= 0; i--)
 	{
@@ -64,7 +64,7 @@ HazeValue* ASTFunction::CodeGen()
 
 void ASTFunction::RegisterFunction()
 {
-	auto& Module = Compiler->GetCurrModule();
+	auto& Module = m_Compiler->GetCurrModule();
 
 	std::shared_ptr<HazeCompilerClass> Class = nullptr;
 
@@ -85,8 +85,8 @@ void ASTFunction::RegisterFunction()
 	}
 }
 
-ASTFunctionSection::ASTFunctionSection(HazeCompiler* Compiler,/* const SourceLocation& Location,*/ std::vector<std::unique_ptr<ASTFunction>>& Functions)
-	: Compiler(Compiler), Functions(std::move(Functions))
+ASTFunctionSection::ASTFunctionSection(HazeCompiler* m_Compiler,/* const SourceLocation& Location,*/ std::vector<std::unique_ptr<ASTFunction>>& Functions)
+	: m_Compiler(m_Compiler), Functions(std::move(Functions))
 {
 }
 
@@ -107,9 +107,9 @@ void ASTFunctionSection::CodeGen()
 	}
 }
 
-ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* Compiler, /*const SourceLocation& Location,*/ const HAZE_STRING& Name, HazeDefineType& Type, 
+ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* m_Compiler, /*const SourceLocation& Location,*/ const HAZE_STRING& m_Name, HazeDefineType& Type, 
 	std::vector<std::unique_ptr<ASTBase>>& Param)
-	: Compiler(Compiler), FunctionName(Name), FunctionType(Type), Vector_FunctionParam(std::move(Param))
+	: m_Compiler(m_Compiler), FunctionName(m_Name), FunctionType(Type), Vector_FunctionParam(std::move(Param))
 {
 }
 
@@ -119,7 +119,7 @@ ASTFunctionDefine::~ASTFunctionDefine()
 
 void ASTFunctionDefine::CodeGen()
 {
-	auto& Module = Compiler->GetCurrModule();
+	auto& Module = m_Compiler->GetCurrModule();
 
 	std::vector<HazeDefineVariable> Vector_ParamDefine(Vector_FunctionParam.size());
 	for (size_t i = 0; i < Vector_FunctionParam.size(); i++)
@@ -129,7 +129,7 @@ void ASTFunctionDefine::CodeGen()
 
 	std::shared_ptr<HazeCompilerFunction> CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_ParamDefine);
 
-	Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
+	m_Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
 
 	for (auto& Iter : Vector_FunctionParam)
 	{
@@ -137,8 +137,8 @@ void ASTFunctionDefine::CodeGen()
 	}
 }
 
-ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* Compiler, /*const SourceLocation& Location,*/ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
-	: Compiler(Compiler), Functions(std::move(Functions))
+ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* m_Compiler, /*const SourceLocation& Location,*/ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
+	: m_Compiler(m_Compiler), Functions(std::move(Functions))
 {
 }
 

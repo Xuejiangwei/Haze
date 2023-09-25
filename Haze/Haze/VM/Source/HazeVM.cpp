@@ -17,7 +17,7 @@ extern std::unique_ptr<HazeDebugger> Debugger;
 HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
 	VMStack = std::make_unique<HazeStack>(this);
-	Compiler = std::make_unique<HazeCompiler>(this);
+	m_Compiler = std::make_unique<HazeCompiler>(this);
 }
 
 HazeVM::~HazeVM()
@@ -52,7 +52,7 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 #endif
 	}
 
-	Compiler.release();
+	m_Compiler.release();
 	HashSet_RefModule.clear();
 
 	if (IsDebug())
@@ -87,23 +87,23 @@ void HazeVM::StartMainFunction()
 //	P.ParseContent();
 //}
 
-void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& ModuleName)
+void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& m_ModuleName)
 {
 	bool PopCurrModule = false;
-	if (Compiler->InitializeCompiler(ModuleName))
+	if (m_Compiler->InitializeCompiler(m_ModuleName))
 	{
 		PopCurrModule = true;
-		Parse P(Compiler.get());
+		Parse P(m_Compiler.get());
 		P.InitializeFile(FilePath);
 		P.ParseContent();
-		Compiler->FinishModule();
+		m_Compiler->FinishModule();
 	}
 
-	HashSet_RefModule.insert(ModuleName);
+	HashSet_RefModule.insert(m_ModuleName);
 
 	if (PopCurrModule)
 	{
-		Compiler->PopCurrModule();
+		m_Compiler->PopCurrModule();
 	}
 }
 
@@ -117,7 +117,7 @@ const HAZE_STRING* HazeVM::GetModuleNameByCurrFunction()
 			{
 				if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second)
 				{
-					return &Iter.Name;
+					return &Iter.m_Name;
 				}
 			}
 		}
@@ -126,9 +126,9 @@ const HAZE_STRING* HazeVM::GetModuleNameByCurrFunction()
 	return nullptr;
 }
 
-int HazeVM::GetFucntionIndexByName(const HAZE_STRING& Name)
+int HazeVM::GetFucntionIndexByName(const HAZE_STRING& m_Name)
 {
-	auto Iter = HashMap_FunctionTable.find(Name);
+	auto Iter = HashMap_FunctionTable.find(m_Name);
 	if (Iter == HashMap_FunctionTable.end())
 	{
 		return -1;
@@ -136,36 +136,36 @@ int HazeVM::GetFucntionIndexByName(const HAZE_STRING& Name)
 	return Iter->second;
 }
 
-const FunctionData& HazeVM::GetFunctionByName(const HAZE_STRING& Name)
+const FunctionData& HazeVM::GetFunctionByName(const HAZE_STRING& m_Name)
 {
-	int Index = GetFucntionIndexByName(Name);
+	int Index = GetFucntionIndexByName(m_Name);
 	return Vector_FunctionTable[Index];
 }
 
-void* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
+void* HazeVM::GetGlobalValue(const HAZE_STRING& m_Name)
 {
 	static HAZE_STRING ObjectName;
 	static HAZE_STRING MemberName;
 
-	auto Pos = Name.find(HAZE_CLASS_POINTER_ATTR);
+	auto Pos = m_Name.find(HAZE_CLASS_POINTER_ATTR);
 	if (Pos != HAZE_STRING::npos)
 	{
-		ObjectName = Name.substr(0, Pos);
-		MemberName = Name.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
+		ObjectName = m_Name.substr(0, Pos);
+		MemberName = m_Name.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
 
 		for (auto& Iter : Vector_GlobalData)
 		{
-			if (Iter.Name == ObjectName)
+			if (Iter.m_Name == ObjectName)
 			{
 				auto Class = FindClass(Iter.GetType().CustomName);
 				if (Class)
 				{
 					for (size_t i = 0; i < Class->Vector_Member.size(); i++)
 					{
-						if (Class->Vector_Member[i].Variable.Name == MemberName)
+						if (Class->Vector_Member[i].Variable.m_Name == MemberName)
 						{
 							uint64 Address = 0;
-							memcpy(&Address, Iter.Value.Value.Pointer, sizeof(Address));
+							memcpy(&Address, Iter.m_Value.m_Value.Pointer, sizeof(Address));
 							return (char*)(Address + Class->Vector_Member[i].Offset);
 						}
 					}
@@ -174,22 +174,22 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 		}
 	}
 
-	Pos = Name.find(HAZE_CLASS_ATTR);
+	Pos = m_Name.find(HAZE_CLASS_ATTR);
 	if (Pos != HAZE_STRING::npos)
 	{
-		ObjectName = Name.substr(0, Pos);
-		MemberName = Name.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
+		ObjectName = m_Name.substr(0, Pos);
+		MemberName = m_Name.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
 
 		for (auto& Iter : Vector_GlobalData)
 		{
-			if (Iter.Name == ObjectName)
+			if (Iter.m_Name == ObjectName)
 			{
 				auto Class = FindClass(Iter.GetType().CustomName);
 				if (Class)
 				{
 					for (size_t i = 0; i < Class->Vector_Member.size(); i++)
 					{
-						if (Class->Vector_Member[i].Variable.Name == MemberName)
+						if (Class->Vector_Member[i].Variable.m_Name == MemberName)
 						{
 							return (char*)Iter.Address + Class->Vector_Member[i].Offset;
 						}
@@ -202,9 +202,9 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& Name)
 	{
 		for (auto& Iter : Vector_GlobalData)
 		{
-			if (Iter.Name == Name)
+			if (Iter.m_Name == m_Name)
 			{
-				return &Iter.Value.Value;
+				return &Iter.m_Value.m_Value;
 			}
 		}
 	}
@@ -222,7 +222,7 @@ char* HazeVM::GetGlobalValueByIndex(uint32 Index)
 		}
 		else
 		{
-			return (char*)(&Vector_GlobalData[Index].Value);
+			return (char*)(&Vector_GlobalData[Index].m_Value);
 		}
 	}
 	return nullptr;
@@ -232,7 +232,7 @@ ClassData* HazeVM::FindClass(const HAZE_STRING& ClassName)
 {
 	for (auto& Iter : Vector_ClassTable)
 	{
-		if (Iter.Name == ClassName)
+		if (Iter.m_Name == ClassName)
 		{
 			return &Iter;
 		}

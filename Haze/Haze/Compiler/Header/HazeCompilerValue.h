@@ -25,7 +25,7 @@ public:
 
 	const HazeDefineType& GetValueType() const { return ValueType; }
 
-	const HazeValue& GetValue() const { return Value; }
+	const HazeValue& GetValue() const { return m_Value; }
 
 	HazeVariableScope GetVariableScope() const { return Scope; }
 
@@ -93,7 +93,7 @@ public:
 
 protected:
 	HazeDefineType ValueType;
-	HazeValue Value;
+	HazeValue m_Value;
 	HazeCompilerModule* Module;
 	HazeVariableScope Scope;
 	HazeDataDesc Desc;

@@ -204,7 +204,7 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Ta
 
 	for (auto& Iter : Table.Vector_Data)
 	{
-		BinaryString = WString2String(Iter.Name);
+		BinaryString = WString2String(Iter.m_Name);
 		UInt = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 		FileStream->write(BinaryString.c_str(), UInt);
@@ -228,7 +228,7 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Ta
 
 		if (!(Iter.Type.NeedCustomName() || Iter.Type.NeedSecondaryType()))
 		{
-			FileStream->write(GetBinaryPointer(Iter.Type.PrimaryType, Iter.Value), Iter.Size);
+			FileStream->write(GetBinaryPointer(Iter.Type.PrimaryType, Iter.m_Value), Iter.Size);
 		}
 	}
 }
@@ -258,7 +258,7 @@ void HazeExecuteFile::WriteClassTable(const ModuleUnit::ClassTable& Table)
 
 	for (auto& Iter : Table.Vector_Class)
 	{
-		BinaryString = WString2String(Iter.Name);
+		BinaryString = WString2String(Iter.m_Name);
 		UInt = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 		FileStream->write(BinaryString.data(), UInt);
@@ -270,7 +270,7 @@ void HazeExecuteFile::WriteClassTable(const ModuleUnit::ClassTable& Table)
 
 		for (size_t i = 0; i < Iter.Vector_Member.size(); i++)
 		{
-			BinaryString = WString2String(Iter.Vector_Member[i].Variable.Name);
+			BinaryString = WString2String(Iter.Vector_Member[i].Variable.m_Name);
 			UInt = (uint32)BinaryString.size();
 			FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 			FileStream->write(BinaryString.data(), UInt);
@@ -300,7 +300,7 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& Table)
 
 		for (auto& Function : Table.Vector_Function)
 		{
-			BinaryString = WString2String(Function.Name);
+			BinaryString = WString2String(Function.m_Name);
 			UInt = (uint32)BinaryString.size();
 			FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 			FileStream->write(BinaryString.data(), UInt);
@@ -312,7 +312,7 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& Table)
 			FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 			for (auto& Iter : Function.Vector_Param)
 			{
-				BinaryString = WString2String(Iter.Name);
+				BinaryString = WString2String(Iter.m_Name);
 				UInt = (uint32)BinaryString.size();
 				FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 				FileStream->write(BinaryString.c_str(), UInt);
@@ -325,11 +325,11 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& Table)
 				FileStream->write(BinaryString.c_str(), UInt);
 			}
 
-			UInt = (uint32)Function.Vector_Variable.size();
+			UInt = (uint32)Function.m_Vector_Variables.size();
 			FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
-			for (auto& Iter : Function.Vector_Variable)
+			for (auto& Iter : Function.m_Vector_Variables)
 			{
-				BinaryString = WString2String(Iter.Variable.Name);
+				BinaryString = WString2String(Iter.Variable.m_Name);
 				UInt = (uint32)BinaryString.size();
 				FileStream->write(HAZE_WRITE_AND_SIZE(UInt));
 				FileStream->write(BinaryString.c_str(), UInt);
@@ -384,7 +384,7 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& In
 
 	for (auto& Iter : Instruction.Operator)
 	{
-		BinaryString = WString2String(Iter.Variable.Name);
+		BinaryString = WString2String(Iter.Variable.m_Name);
 		Uint = (uint32)BinaryString.size();
 		FileStream->write(HAZE_WRITE_AND_SIZE(Uint));
 		FileStream->write(BinaryString.data(), Uint);											//²Ù×÷ÊýÃû×Ö
@@ -444,7 +444,7 @@ void HazeExecuteFile::ReadModule(HazeVM* VM)
 		InFileStream->read(HAZE_READ(Num));
 		BinaryString.resize(Num);
 		InFileStream->read(BinaryString.data(), Num);
-		VM->Vector_ModuleData[i].Name = String2WString(BinaryString);
+		VM->Vector_ModuleData[i].m_Name = String2WString(BinaryString);
 
 		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].GlobalDataIndex.first));
 		InFileStream->read(HAZE_READ(VM->Vector_ModuleData[i].GlobalDataIndex.second));
@@ -478,7 +478,7 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* VM)
 
 		BinaryString.resize(Num);
 		InFileStream->read(BinaryString.data(), Num);
-		VM->Vector_GlobalData[i].Name = String2WString(BinaryString);
+		VM->Vector_GlobalData[i].m_Name = String2WString(BinaryString);
 
 		int Size = 0;
 		InFileStream->read(HAZE_READ(Size));
@@ -499,7 +499,7 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* VM)
 
 		if (!(VM->Vector_GlobalData[i].Type.NeedCustomName() || VM->Vector_GlobalData[i].Type.NeedSecondaryType()))
 		{
-			InFileStream->read(GetBinaryPointer(VM->Vector_GlobalData[i].Type.PrimaryType, VM->Vector_GlobalData[i].Value), Size);
+			InFileStream->read(GetBinaryPointer(VM->Vector_GlobalData[i].Type.PrimaryType, VM->Vector_GlobalData[i].m_Value), Size);
 		}
 		else
 		{
@@ -539,7 +539,7 @@ void HazeExecuteFile::ReadClassTable(HazeVM* VM)
 		InFileStream->read(HAZE_READ(Num));
 		BinaryString.resize(Num);
 		InFileStream->read(BinaryString.data(), Num);
-		VM->Vector_ClassTable[i].Name = String2WString(BinaryString);
+		VM->Vector_ClassTable[i].m_Name = String2WString(BinaryString);
 
 		InFileStream->read(HAZE_READ(VM->Vector_ClassTable[i].Size));
 
@@ -551,7 +551,7 @@ void HazeExecuteFile::ReadClassTable(HazeVM* VM)
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
 			InFileStream->read(BinaryString.data(), Num);
-			VM->Vector_ClassTable[i].Vector_Member[j].Variable.Name = String2WString(BinaryString);
+			VM->Vector_ClassTable[i].Vector_Member[j].Variable.m_Name = String2WString(BinaryString);
 
 			InFileStream->read(HAZE_READ(VM->Vector_ClassTable[i].Vector_Member[j].Variable.Type.PrimaryType));
 			InFileStream->read(HAZE_READ(VM->Vector_ClassTable[i].Vector_Member[j].Variable.Type.SecondaryType));
@@ -595,7 +595,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
 			InFileStream->read(BinaryString.data(), Num);
-			VM->Vector_FunctionTable[i].Vector_Param[j].Name = String2WString(BinaryString);
+			VM->Vector_FunctionTable[i].Vector_Param[j].m_Name = String2WString(BinaryString);
 
 			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Param[j].Type.PrimaryType));
 			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Param[j].Type.SecondaryType));
@@ -607,26 +607,26 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* VM)
 		}
 
 		InFileStream->read(HAZE_READ(Num));
-		VM->Vector_FunctionTable[i].Vector_Variable.resize(Num);
+		VM->Vector_FunctionTable[i].m_Vector_Variables.resize(Num);
 
-		for (uint64 j = 0; j < VM->Vector_FunctionTable[i].Vector_Variable.size(); j++)
+		for (uint64 j = 0; j < VM->Vector_FunctionTable[i].m_Vector_Variables.size(); j++)
 		{
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
 			InFileStream->read(BinaryString.data(), Num);
-			VM->Vector_FunctionTable[i].Vector_Variable[j].Variable.Name = String2WString(BinaryString);
+			VM->Vector_FunctionTable[i].m_Vector_Variables[j].Variable.m_Name = String2WString(BinaryString);
 
-			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Variable.Type.PrimaryType));
-			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Variable.Type.SecondaryType));
+			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].m_Vector_Variables[j].Variable.Type.PrimaryType));
+			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].m_Vector_Variables[j].Variable.Type.SecondaryType));
 
 			InFileStream->read(HAZE_READ(Num));
 			BinaryString.resize(Num);
 			InFileStream->read(BinaryString.data(), Num);
-			VM->Vector_FunctionTable[i].Vector_Variable[j].Variable.Type.CustomName = String2WString(BinaryString);
+			VM->Vector_FunctionTable[i].m_Vector_Variables[j].Variable.Type.CustomName = String2WString(BinaryString);
 
-			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Offset));
-			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Size));
-			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].Vector_Variable[j].Line));
+			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].m_Vector_Variables[j].Offset));
+			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].m_Vector_Variables[j].Size));
+			InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].m_Vector_Variables[j].Line));
 		}
 
 		InFileStream->read(HAZE_READ(VM->Vector_FunctionTable[i].InstructionNum));
@@ -679,7 +679,7 @@ void HazeExecuteFile::ReadInstruction(Instruction& Instruction)
 		InFileStream->read(HAZE_READ(UnsignedInt));
 		BinaryString.resize(UnsignedInt);
 		InFileStream->read(BinaryString.data(), UnsignedInt);
-		Iter.Variable.Name = String2WString(BinaryString);
+		Iter.Variable.m_Name = String2WString(BinaryString);
 
 		InFileStream->read(HAZE_READ(Iter.Scope));
 		InFileStream->read(HAZE_READ(Iter.Desc));

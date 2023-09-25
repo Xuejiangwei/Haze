@@ -9,7 +9,7 @@ class HazeCompilerFunction;
 class HazeBaseBlock : public std::enable_shared_from_this<HazeBaseBlock>
 {
 public:
-	explicit HazeBaseBlock(const HAZE_STRING& Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock);
+	explicit HazeBaseBlock(const HAZE_STRING& m_Name, HazeCompilerFunction* ParentFunction, HazeBaseBlock* ParentBlock);
 
 	HazeBaseBlock(const HazeBaseBlock&) = delete;
 
@@ -18,7 +18,7 @@ public:
 	~HazeBaseBlock();
 
 	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define, int Line, int Count, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
-		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
+		std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeBaseBlock> GetShared() { return shared_from_this(); }
 
@@ -26,15 +26,15 @@ public:
 
 	HazeBaseBlock* GetParentBlock() const { return ParentBlock; }
 
-	const HAZE_STRING& GetName() const { return Name; }
+	const HAZE_STRING& GetName() const { return m_Name; }
 
 	uint64 GetIRCodeSize() { return Vector_IRCode.size() - 1; }
 
 	const std::vector<HAZE_STRING>& GetIRCode() const { return Vector_IRCode; }
 
-	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& m_Value, HAZE_STRING& OutName);
 
-	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const HazeCompilerValue* m_Value, HAZE_STRING& OutName);
 
 	void SetLoopEnd(HazeBaseBlock* Block) { LoopEndBlock = Block; }
 
@@ -55,12 +55,12 @@ public:
 	void ClearLocalVariable();
 
 public:
-	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock);
+	static std::shared_ptr<HazeBaseBlock> CreateBaseBlock(const HAZE_STRING& m_Name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> ParentBlock);
 
 	void PushIRCode(const HAZE_STRING& Code);
 
 private:
-	HAZE_STRING Name;
+	HAZE_STRING m_Name;
 	HazeCompilerFunction* ParentFunction;
 
 	HazeBaseBlock* ParentBlock;

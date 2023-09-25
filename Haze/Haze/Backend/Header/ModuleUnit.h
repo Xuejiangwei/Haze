@@ -6,7 +6,7 @@
 class ModuleUnit
 {
 public:
-	ModuleUnit(const HAZE_STRING& Name);
+	ModuleUnit(const HAZE_STRING& m_Name);
 	~ModuleUnit();
 
 public:
@@ -15,10 +15,10 @@ public:
 
 	struct GlobalData
 	{
-		HAZE_STRING Name;
+		HAZE_STRING m_Name;
 		uint32 Size;
 		HazeDefineType Type;
-		HazeValue Value;
+		HazeValue m_Value;
 	};
 
 	struct GlobalDataTable
@@ -32,11 +32,11 @@ public:
 			ClassObjectAllSize = 0;
 		}
 
-		int GetIndex(const HAZE_STRING& Name)
+		int GetIndex(const HAZE_STRING& m_Name)
 		{
 			for (uint64 i = 0; i < Vector_Data.size(); i++)
 			{
-				if (Vector_Data[i].Name == Name)
+				if (Vector_Data[i].m_Name == m_Name)
 				{
 					return (int)i;
 				}
@@ -73,7 +73,7 @@ public:
 
 	struct ClassTableData
 	{
-		HAZE_STRING Name;
+		HAZE_STRING m_Name;
 		uint32 Size;
 		std::vector<ClassMemberData> Vector_Member;
 	};
@@ -104,10 +104,10 @@ public:
 
 	struct FunctionTableData
 	{
-		HAZE_STRING Name;
+		HAZE_STRING m_Name;
 		HazeValueType Type;
 		std::vector<HazeDefineVariable> Vector_Param;
-		std::vector<HazeVariableData> Vector_Variable;
+		std::vector<HazeVariableData> m_Vector_Variables;
 		std::vector<FunctionBlock> Vector_Block;
 		std::vector<FunctionInstruction> Vector_Instruction;
 		InstructionFunctionType DescType;
@@ -140,7 +140,7 @@ public:
 private:
 	HazeLibraryType LibraryType;
 
-	HAZE_STRING Name;
+	HAZE_STRING m_Name;
 
 	GlobalDataTable Table_GlobalData;
 	StringTable Table_String;

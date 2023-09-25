@@ -22,14 +22,14 @@ public:
 	HazeLibraryManager();
 	~HazeLibraryManager();
 
-	void ExecuteDLLFunction(const HAZE_STRING& ModuleName, const HAZE_STRING& FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack, 
+	void ExecuteDLLFunction(const HAZE_STRING& m_ModuleName, const HAZE_STRING& FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack, 
 		void(*ExeHazeFunctionCall)(void*, void*, int, ...));
 
 	void LoadDLLLibrary(const HAZE_STRING& LibraryPath, const HAZE_STRING& FilePath);
 
 	void UnloadDLLLibrary(const HAZE_STRING& LibraryPath);
 
-	const HAZE_STRING* TryGetFilePath(const HAZE_STRING& ModuleName);
+	const HAZE_STRING* TryGetFilePath(const HAZE_STRING& m_ModuleName);
 
 	const void* GetExeAddress();
 

@@ -54,7 +54,7 @@ public:
 
 	void JmpTo(const InstructionData& Data);
 
-	HazeRegister* GetVirtualRegister(const HAZE_CHAR* Name);
+	HazeRegister* GetVirtualRegister(const HAZE_CHAR* m_Name);
 
 private:
 	void Run(bool IsHazeCall = false);

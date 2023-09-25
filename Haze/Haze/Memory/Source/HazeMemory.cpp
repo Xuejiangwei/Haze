@@ -167,15 +167,15 @@ void HazeMemory::Mark()
 	{
 		if (It.Type.PrimaryType == HazeValueType::PointerBase)
 		{
-			Vector_MarkAddressBase.push_back({ (uint64)It.Value.Value.Pointer, It.Type.SecondaryType });
+			Vector_MarkAddressBase.push_back({ (uint64)It.m_Value.m_Value.Pointer, It.Type.SecondaryType });
 		}
 		else if (It.Type.PrimaryType == HazeValueType::PointerClass)
 		{
-			Vector_MarkAddressClass.push_back({ (uint64)It.Value.Value.Pointer, VM->FindClass(It.Type.CustomName) });
+			Vector_MarkAddressClass.push_back({ (uint64)It.m_Value.m_Value.Pointer, VM->FindClass(It.Type.CustomName) });
 		}
 		else if (It.Type.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.Type, (char*)&It.Value);
+			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.Type, (char*)&It.m_Value);
 		}
 	}
 
@@ -205,7 +205,7 @@ void HazeMemory::Mark()
 
 	for (size_t i = 0; i < VM->VMStack->Stack_Frame.size(); i++)
 	{
-		for (auto& Var : VM->VMStack->Stack_Frame[i].FunctionInfo->Vector_Variable)
+		for (auto& Var : VM->VMStack->Stack_Frame[i].FunctionInfo->m_Vector_Variables)
 		{
 			if (Var.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 			{

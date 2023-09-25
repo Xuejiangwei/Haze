@@ -206,7 +206,7 @@ public:
 
 			if (Operator[0].Desc == HazeDataDesc::Constant)
 			{
-				int N = StringToStandardType<int>(Operator[0].Variable.Name);
+				int N = StringToStandardType<int>(Operator[0].Variable.m_Name);
 				memcpy(&Stack->Stack_Main[Stack->ESP], &N, Size);
 			}
 			else if (Operator[0].Desc == HazeDataDesc::Address)
@@ -702,14 +702,14 @@ public:
 
 			if (Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
 			{
-				void* Value = GetOperatorAddress(Stack, Operator[0]);
+				void* m_Value = GetOperatorAddress(Stack, Operator[0]);
 				uint64 FunctionAddress;
-				memcpy(&FunctionAddress, Value, sizeof(FunctionAddress));
+				memcpy(&FunctionAddress, m_Value, sizeof(FunctionAddress));
 				Stack->OnCall((FunctionData*)FunctionAddress, Operator[0].Extra.Call.ParamByteSize);
 			}
 			else
 			{
-				int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.Name);
+				int FunctionIndex = Stack->VM->GetFucntionIndexByName(Operator[0].Variable.m_Name);
 				auto& Function = Stack->VM->Vector_FunctionTable[FunctionIndex];
 
 				if (Function.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
@@ -738,7 +738,7 @@ public:
 						Address = (uint64)(&ExeHazePointerFunction);
 						memcpy(&Stack->Stack_Main[Stack->ESP + sizeof(Address)], &Address, sizeof(Address));
 
-						HazeLibManager->ExecuteDLLFunction(Operator[1].Variable.Name, Operator[0].Variable.Name,
+						HazeLibManager->ExecuteDLLFunction(Operator[1].Variable.m_Name, Operator[0].Variable.m_Name,
 							&Stack->Stack_Main[Stack->ESP - HAZE_ADDRESS_SIZE], RetRegister->Data.begin()._Unwrapped(),
 							Stack, &ExeHazePointerFunction);
 					}
@@ -1107,7 +1107,7 @@ private:
 		}
 		case InstructionAddressType::FunctionAddress:
 		{
-			TempAddress = (uint64)((void*)&Stack->VM->GetFunctionByName(Operator.Variable.Name));
+			TempAddress = (uint64)((void*)&Stack->VM->GetFunctionByName(Operator.Variable.m_Name));
 			Ret = &TempAddress;
 			return Ret;
 		}
@@ -1115,11 +1115,11 @@ private:
 		case InstructionAddressType::NullPtr:
 		{
 			auto& Type = const_cast<HazeDefineType&>(ConstantValue.GetType());
-			auto& Value = const_cast<HazeValue&>(ConstantValue.GetValue());
+			auto& m_Value = const_cast<HazeValue&>(ConstantValue.GetValue());
 
 			Type.PrimaryType = Operator.Variable.Type.PrimaryType;
-			StringToHazeValueNumber(Operator.Variable.Name, Type.PrimaryType, Value);
-			Ret = GetBinaryPointer(Type.PrimaryType, Value);
+			StringToHazeValueNumber(Operator.Variable.m_Name, Type.PrimaryType, m_Value);
+			Ret = GetBinaryPointer(Type.PrimaryType, m_Value);
 			return Ret;
 		}
 		case InstructionAddressType::ConstantString:
@@ -1129,7 +1129,7 @@ private:
 		}
 		case InstructionAddressType::Register:
 		{
-			HazeRegister* Register = Stack->GetVirtualRegister(Operator.Variable.Name.c_str());
+			HazeRegister* Register = Stack->GetVirtualRegister(Operator.Variable.m_Name.c_str());
 
 			if (Register->Type != Operator.Variable.Type)
 			{
@@ -1147,7 +1147,7 @@ private:
 
 	static void JmpToOperator(HazeStack* Stack, const InstructionData& Operator)
 	{
-		if (Operator.Variable.Name == HAZE_JMP_NULL)
+		if (Operator.Variable.m_Name == HAZE_JMP_NULL)
 		{
 		}
 		else
@@ -1187,20 +1187,20 @@ private:
 				}
 				else
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("Pointer binary operator error, %s %s operator %s do not support!\n"), Operator[0].Variable.Name.c_str(), Operator[1].Variable.Name.c_str(), GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
+					HAZE_LOG_ERR(HAZE_TEXT("Pointer binary operator error, %s %s operator %s do not support!\n"), Operator[0].Variable.m_Name.c_str(), Operator[1].Variable.m_Name.c_str(), GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
 				}
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("Binary operator error, %s %s operator %s!\n"), Operator[0].Variable.Name.c_str(), Operator[1].Variable.Name.c_str(), GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
+				HAZE_LOG_ERR(HAZE_TEXT("Binary operator error, %s %s operator %s!\n"), Operator[0].Variable.m_Name.c_str(), Operator[1].Variable.m_Name.c_str(), GetInstructionString(Stack->VM->Vector_Instruction[Stack->PC].InsCode));
 			}
 		}
 	}
 
-	static void ExeHazePointerFunction(void* StackPointer, void* Value, int ParamNum, ...)
+	static void ExeHazePointerFunction(void* StackPointer, void* m_Value, int ParamNum, ...)
 	{
 		HazeStack* Stack = (HazeStack*)StackPointer;
-		auto FuncData = (FunctionData*)Value;
+		auto FuncData = (FunctionData*)m_Value;
 
 		int Size = 0;
 		for (size_t i = 0; i < FuncData->Vector_Param.size(); i++)
@@ -1286,7 +1286,7 @@ private:
 		//New和Ret寄存器的type清空，防止没有垃圾回收掉
 		if (Operator.AddressType == InstructionAddressType::Register)
 		{
-			auto Register = Stack->GetVirtualRegister(Operator.Variable.Name.c_str());
+			auto Register = Stack->GetVirtualRegister(Operator.Variable.m_Name.c_str());
 			if (Register == Stack->GetVirtualRegister(NEW_REGISTER) || Register == Stack->GetVirtualRegister(RET_REGISTER))
 			{
 				Register->Type.Reset();

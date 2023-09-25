@@ -27,9 +27,9 @@ const HAZE_STRING& HazeCompilerClassValue::GetOwnerClassName()
 	return OwnerClass->GetName();
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HAZE_STRING& Name)
+std::shared_ptr<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HAZE_STRING& m_Name)
 {
-	auto Index = OwnerClass->GetMemberIndex(Name);
+	auto Index = OwnerClass->GetMemberIndex(m_Name);
 
 	for (size_t i = 0; i < Vector_Data.size(); i++)
 	{

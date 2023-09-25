@@ -17,53 +17,53 @@ HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& ClassName, const HAZE_ST
 	return ClassName + HAZE_CLASS_FUNCTION_CONBINE + FunctionName;
 }
 
-HAZE_STRING GetLocalVariableName(const HAZE_STRING& Name, std::shared_ptr<HazeCompilerValue> Value)
+HAZE_STRING GetLocalVariableName(const HAZE_STRING& m_Name, std::shared_ptr<HazeCompilerValue> m_Value)
 {
 	static HAZE_STRING_STREAM HSS;
 
 	HSS.str(HAZE_TEXT(""));
-	HSS << Name;
-	if (Value->GetCount() > 0)
+	HSS << m_Name;
+	if (m_Value->GetCount() > 0)
 	{
-		HSS << HAZE_LOCAL_VARIABLE_CONBINE << Value->GetCount();
+		HSS << HAZE_LOCAL_VARIABLE_CONBINE << m_Value->GetCount();
 	}
 
 	return HSS.str();
 }
 
-void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value, bool StreamValue)
+void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* m_Value, bool StreamValue)
 {
 	if (StreamValue)
 	{
-		const auto& V = Value->GetValue();
-		switch (Value->GetValueType().PrimaryType)
+		const auto& V = m_Value->GetValue();
+		switch (m_Value->GetValueType().PrimaryType)
 		{
 		case HazeValueType::Bool:
-			Stream << V.Value.Bool;
+			Stream << V.m_Value.Bool;
 			break;
 		case HazeValueType::Byte:
-			Stream << V.Value.Byte;
+			Stream << V.m_Value.Byte;
 			break;
 		case HazeValueType::Char:
-			Stream << V.Value.Char;
+			Stream << V.m_Value.Char;
 			break;
 		case HazeValueType::Int:
-			Stream << V.Value.Int;
+			Stream << V.m_Value.Int;
 			break;
 		case HazeValueType::Float:
-			Stream << V.Value.Float;
+			Stream << V.m_Value.Float;
 			break;
 		case HazeValueType::UnsignedInt:
-			Stream << V.Value.UnsignedInt;
+			Stream << V.m_Value.UnsignedInt;
 			break;
 		case HazeValueType::Long:
-			Stream << V.Value.Long;
+			Stream << V.m_Value.Long;
 			break;
 		case HazeValueType::Double:
-			Stream << V.Value.Double;
+			Stream << V.m_Value.Double;
 			break;
 		case HazeValueType::UnsignedLong:
-			Stream << V.Value.UnsignedLong;
+			Stream << V.m_Value.UnsignedLong;
 			break;
 		default:
 			break;
@@ -72,17 +72,17 @@ void HazeCompilerStream(HAZE_STRING_STREAM& Stream, HazeCompilerValue* Value, bo
 	else
 	{
 		Stream << " ";
-		Value->GetValueType().StringStreamTo(Stream);
+		m_Value->GetValueType().StringStreamTo(Stream);
 	}
 }
 
-void HazeCompilerStream(HAZE_STRING_STREAM& Stream, std::shared_ptr<HazeCompilerValue> Value, bool StreamValue)
+void HazeCompilerStream(HAZE_STRING_STREAM& Stream, std::shared_ptr<HazeCompilerValue> m_Value, bool StreamValue)
 {
-	HazeCompilerStream(Stream, Value.get(), StreamValue);
+	HazeCompilerStream(Stream, m_Value.get(), StreamValue);
 }
 
 std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
-	std::shared_ptr<HazeCompilerValue> AssignValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
+	std::shared_ptr<HazeCompilerValue> AssignValue, std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
 	switch (Type.PrimaryType)
 	{
@@ -102,7 +102,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module
 		return std::make_shared<HazeCompilerValue>(Module, Type, Scope, Desc, Count, AssignValue);
 	}
 	case HazeValueType::Array:
-		return std::make_shared<HazeCompilerArrayValue>(Module, Type, Scope, Desc, Count, ArraySize);
+		return std::make_shared<HazeCompilerArrayValue>(Module, Type, Scope, Desc, Count, m_ArraySize);
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerPointer:
@@ -110,7 +110,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module
 	case HazeValueType::PointerFunction:
 		return std::make_shared<HazeCompilerPointerFunction>(Module, Type, Scope, Desc, Count, Vector_Param ? *Vector_Param : std::vector<HazeDefineType>{});
 	case HazeValueType::PointerArray:
-		return std::make_shared<HazeCompilerPointerArray>(Module, Type, Scope, Desc, Count, ArraySize);
+		return std::make_shared<HazeCompilerPointerArray>(Module, Type, Scope, Desc, Count, m_ArraySize);
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
 		if (AssignValue)
@@ -132,9 +132,9 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module
 }
 
 std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* Module, const HazeDefineVariable& Var, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
-	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, std::vector<HazeDefineType>* Vector_Param)
+	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize, std::vector<HazeDefineType>* Vector_Param)
 {
-	return CreateVariableImpl(Module, Var.Type, Scope, Desc, Count, RefValue, ArraySize, Vector_Param);
+	return CreateVariableImpl(Module, Var.Type, Scope, Desc, Count, RefValue, m_ArraySize, Vector_Param);
 }
 
 std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> CreateVariableCopyClassMember(HazeCompilerModule* Module, HazeVariableScope Scope, HazeCompilerClass* Class)
@@ -163,10 +163,10 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValu
 //	return std::make_shared<HazeCompilerValue>(Var, Scope);
 //}
 
-void StreamPointerValue(HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue> Value)
+void StreamPointerValue(HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue> m_Value)
 {
-	auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(Value);
-	if (Value->GetValueType().PrimaryType == HazeValueType::PointerBase)
+	auto PointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(m_Value);
+	if (m_Value->GetValueType().PrimaryType == HazeValueType::PointerBase)
 	{
 		HSS << " " << (uint32)PointerValue->GetValueType().PrimaryType;
 	}
@@ -176,28 +176,28 @@ void StreamPointerValue(HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerVal
 	}
 }
 
-void StreamClassValue(HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue> Value)
+void StreamClassValue(HAZE_STRING_STREAM& HSS, std::shared_ptr<HazeCompilerValue> m_Value)
 {
-	auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(Value);
+	auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(m_Value);
 	HSS << " " << ClassValue->GetOwnerClassName();
 }
 
-void StreamCompilerValue(HAZE_STRING_STREAM& HSS, InstructionOpCode InsCode, std::shared_ptr<HazeCompilerValue> Value, const HAZE_CHAR* DefaultName)
+void StreamCompilerValue(HAZE_STRING_STREAM& HSS, InstructionOpCode InsCode, std::shared_ptr<HazeCompilerValue> m_Value, const HAZE_CHAR* DefaultName)
 {
-	HSS << GetInstructionString(InsCode) << " " << (uint32)Value->GetValueType().PrimaryType;
+	HSS << GetInstructionString(InsCode) << " " << (uint32)m_Value->GetValueType().PrimaryType;
 	if (DefaultName)
 	{
 		HSS << " " << DefaultName;
 	}
-	HSS << " " << (uint32)Value->GetVariableDesc();
+	HSS << " " << (uint32)m_Value->GetVariableDesc();
 
-	if (Value->IsPointer())
+	if (m_Value->IsPointer())
 	{
-		StreamPointerValue(HSS, Value);
+		StreamPointerValue(HSS, m_Value);
 	}
-	else if (Value->IsClass())
+	else if (m_Value->IsClass())
 	{
-		StreamClassValue(HSS, Value);
+		StreamClassValue(HSS, m_Value);
 	}
 
 	HSS << std::endl;
@@ -361,27 +361,27 @@ std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerVal
 	return { nullptr, nullptr };
 }
 
-bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>& Data, const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
+bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>& Data, const std::shared_ptr<HazeCompilerValue>& m_Value, HAZE_STRING& OutName)
 {
-	return TrtGetVariableName(Function, Data, Value.get(), OutName);
+	return TrtGetVariableName(Function, Data, m_Value.get(), OutName);
 }
 
-bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>& Data, const HazeCompilerValue* Value, HAZE_STRING& OutName)
+bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>& Data, const HazeCompilerValue* m_Value, HAZE_STRING& OutName)
 {
-	if (Data.second.get() == Value)
+	if (Data.second.get() == m_Value)
 	{
 		OutName = GetLocalVariableName(Data.first, Data.second);
 		return true;
 	}
 
-	if (Value->IsClassMember())
+	if (m_Value->IsClassMember())
 	{
 		if (Data.second->IsPointerClass())
 		{
 			if (Function)
 			{
 				auto Class = Function->GetModule()->GetClass(Data.second->GetValueType().CustomName);
-				Class->GetMemberName(Value, OutName);
+				Class->GetMemberName(m_Value, OutName);
 				if (!OutName.empty())
 				{
 					OutName = GetLocalVariableName(Data.first, Data.second) + HAZE_CLASS_POINTER_ATTR + OutName;
@@ -392,11 +392,11 @@ bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STR
 		else if (Data.second->IsClass())
 		{
 			auto Class = std::dynamic_pointer_cast<HazeCompilerClassValue>(Data.second);
-			Class->GetMemberName(Value, OutName);
+			Class->GetMemberName(m_Value, OutName);
 			if (!OutName.empty())
 			{
 				OutName = GetLocalVariableName(Data.first, Data.second) + HAZE_CLASS_ATTR + OutName;
-				if (!Value->IsClassPublicMember())
+				if (!m_Value->IsClassPublicMember())
 				{
 					HAZE_LOG_ERR(HAZE_TEXT("不能够访问类<%s>非公开成员变量<%s>!\n"), Class->GetOwnerClassName().c_str(), OutName.c_str());
 				}
@@ -404,9 +404,9 @@ bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STR
 			}
 		}
 	}
-	else if (Value->IsArrayElement())
+	else if (m_Value->IsArrayElement())
 	{
-		auto ArrayElement = static_cast<const HazeCompilerArrayElementValue*>(Value);
+		auto ArrayElement = static_cast<const HazeCompilerArrayElementValue*>(m_Value);
 		if (Data.second->IsArray() || Data.second->IsPointer())
 		{
 			if (ArrayElement->GetArray() == Data.second.get())
@@ -422,8 +422,8 @@ bool TrtGetVariableName(HazeCompilerFunction* Function, const std::pair<HAZE_STR
 
 std::shared_ptr<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* Module, std::shared_ptr<HazeCompilerValue> ElementValue, std::shared_ptr<HazeCompilerValue> MovToValue)
 {
-	auto Compiler = Module->GetCompiler();
-	auto ArrayPointer = Compiler->CreatePointerToArrayElement(ElementValue);
+	auto m_Compiler = Module->GetCompiler();
+	auto ArrayPointer = m_Compiler->CreatePointerToArrayElement(ElementValue);
 
-	return Compiler->CreateMovPV(MovToValue ? MovToValue : Compiler->GetTempRegister(), ArrayPointer);
+	return m_Compiler->CreateMovPV(MovToValue ? MovToValue : m_Compiler->GetTempRegister(), ArrayPointer);
 }

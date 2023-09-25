@@ -247,7 +247,7 @@ struct FunctionDescData
 
 struct ModuleData
 {
-	HAZE_STRING Name;
+	HAZE_STRING m_Name;
 	std::pair<uint32, uint32> GlobalDataIndex;
 	std::pair<uint32, uint32> StringIndex;
 	std::pair<uint32, uint32> ClassIndex;
@@ -255,7 +255,7 @@ struct ModuleData
 
 	ModuleData()
 	{
-		Name.clear();
+		m_Name.clear();
 		GlobalDataIndex = { 0, 0 };
 		StringIndex = { 0, 0 };
 		ClassIndex = { 0, 0 };
@@ -265,7 +265,7 @@ struct ModuleData
 
 struct ClassData
 {
-	HAZE_STRING Name;
+	HAZE_STRING m_Name;
 	unsigned int Size;
 	std::vector<HazeVariableData> Vector_Member;
 };
@@ -274,7 +274,7 @@ struct FunctionData
 {
 	HazeValueType Type;
 	std::vector<HazeDefineVariable> Vector_Param;
-	std::vector<HazeVariableData> Vector_Variable;
+	std::vector<HazeVariableData> m_Vector_Variables;
 	uint32 InstructionNum;
 
 	FunctionDescData FunctionDescData;

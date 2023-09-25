@@ -19,7 +19,7 @@ public:
 	friend class HazeCompiler;
 	friend class HazeCompilerModule;
 
-	HazeCompilerFunction(HazeCompilerModule* Module, const HAZE_STRING& Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class = nullptr);
+	HazeCompilerFunction(HazeCompilerModule* Module, const HAZE_STRING& m_Name, HazeDefineType& Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class = nullptr);
 
 	~HazeCompilerFunction();
 
@@ -27,7 +27,7 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& VariableName);
 
-	const HAZE_STRING& GetName() const { return Name; }
+	const HAZE_STRING& GetName() const { return m_Name; }
 
 	const HazeDefineType& GetFunctionType() const { return Type; }
 
@@ -57,17 +57,17 @@ public:
 
 	HAZE_STRING GenForStepBlockName();
 
-	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& m_Value, HAZE_STRING& OutName);
 
-	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const HazeCompilerValue* m_Value, HAZE_STRING& OutName);
 
-	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value, int Line);
+	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> m_Value, int Line);
 
 private:
 	void AddFunctionParam(const HazeDefineVariable& Variable);
 
 	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable, int Line, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
-		std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
+		std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& Data);
 
@@ -77,7 +77,7 @@ private:
 	HazeCompilerModule* Module;
 	HazeCompilerClass* OwnerClass;
 
-	HAZE_STRING Name;
+	HAZE_STRING m_Name;
 	HazeDefineType Type;
 
 	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> VectorParam; //从右到左加入参数

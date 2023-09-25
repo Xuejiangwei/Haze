@@ -18,11 +18,11 @@ HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefin
 {
 	if (AssignValue)
 	{
-		memcpy(&Value.Value, &AssignValue->GetValue(), sizeof(Value.Value));
+		memcpy(&m_Value.m_Value, &AssignValue->GetValue(), sizeof(m_Value.m_Value));
 	}
 	else
 	{
-		memset(&Value.Value, 0, sizeof(Value.Value));
+		memset(&m_Value.m_Value, 0, sizeof(m_Value.m_Value));
 	}
 }
 
@@ -48,7 +48,7 @@ void HazeCompilerValue::StoreValueType(std::shared_ptr<HazeCompilerValue> SrcVal
 
 void HazeCompilerValue::StoreValue(HazeValue& SrcValue)
 {
-	memcpy(&this->Value.Value, &SrcValue.Value, sizeof(this->Value.Value));
+	memcpy(&this->m_Value.m_Value, &SrcValue.m_Value, sizeof(this->m_Value.m_Value));
 }
 
 uint32 HazeCompilerValue::GetSize()

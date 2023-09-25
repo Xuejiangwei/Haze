@@ -69,8 +69,8 @@ private:
 	void SetJsonBreakFilePath(open::OpenJson& Json, HAZE_STRING Path)
 	{
 		ReplacePathSlash(Path);
-		auto Name = WString2String(Path);
-		Json["BreakPathFile"] = GB2312_2_UFT8(Name.c_str());
+		auto m_Name = WString2String(Path);
+		Json["BreakPathFile"] = GB2312_2_UFT8(m_Name.c_str());
 	}
 
 	void SetJsonBreakLine(open::OpenJson& Json, uint32 Line) { Json["BreakLine"] = Line; }

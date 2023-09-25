@@ -5,11 +5,11 @@
 class HazeCompilerPointerArray : public HazeCompilerPointerValue
 {
 public:
-	explicit HazeCompilerPointerArray(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize);
+	explicit HazeCompilerPointerArray(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize);
 
 	virtual ~HazeCompilerPointerArray() override;
 
-	uint32 GetSizeByLevel(uint32 Level);
+	uint32 GetSizeByLevel(uint32 m_Level);
 
 	const std::vector<std::shared_ptr<HazeCompilerValue>>& GetArraySize() const { return Vector_ArraySize; }
 

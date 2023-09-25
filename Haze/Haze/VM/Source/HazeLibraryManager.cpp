@@ -9,7 +9,7 @@
 #include <Windows.h>
 #define HAZE_LOAD_DLL(X) (void*)LoadLibrary(X)
 #define HAZE_UNLOAD_DLL(X) FreeLibrary((HINSTANCE)X)
-#define HAZE_GET_DLL_FUNCTION(X, Name) GetProcAddress((HINSTANCE)X, Name)
+#define HAZE_GET_DLL_FUNCTION(X, m_Name) GetProcAddress((HINSTANCE)X, m_Name)
 
 #endif // _WIN32
 
@@ -33,10 +33,10 @@ HazeLibraryManager::~HazeLibraryManager()
 	}
 }
 
-void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& ModuleName, const HAZE_STRING& FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack,
+void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& m_ModuleName, const HAZE_STRING& FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack,
 	void(*ExeHazeFunctionCall)(void*, void*, int, ...))
 {
-	auto Iter = HashMap_Library.find(ModuleName);
+	auto Iter = HashMap_Library.find(m_ModuleName);
 	if (Iter != HashMap_Library.end())
 	{
 		ExeFuncType Func = (ExeFuncType)HAZE_GET_DLL_FUNCTION(Iter->second.Address, "ExecuteFunction");
@@ -44,12 +44,12 @@ void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& ModuleName, const
 		{
 			if (Func(FunctionName.c_str(), ParamStartAddress, RetStartAddress, Stack, ExeHazeFunctionCall) == EXE_FUNC_ERR)
 			{
-				HAZE_LOG_ERR_W("执行三方库<%s>中函数<%s>返回错误代码!\n", ModuleName.c_str(), FunctionName.c_str());
+				HAZE_LOG_ERR_W("执行三方库<%s>中函数<%s>返回错误代码!\n", m_ModuleName.c_str(), FunctionName.c_str());
 			}
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("调用三方库<%s>中函数<%s>错误,未能找到!\n", ModuleName.c_str(), FunctionName.c_str());
+			HAZE_LOG_ERR_W("调用三方库<%s>中函数<%s>错误,未能找到!\n", m_ModuleName.c_str(), FunctionName.c_str());
 		}
 	}
 }
@@ -59,11 +59,11 @@ void HazeLibraryManager::LoadDLLLibrary(const HAZE_STRING& LibraryPath, const HA
 	auto Iter = HashMap_Library.find(LibraryPath);
 	if (Iter == HashMap_Library.end())
 	{
-		auto Name = GetModuleNameByFilePath(FilePath);
+		auto m_Name = GetModuleNameByFilePath(FilePath);
 		auto Address = HAZE_LOAD_DLL(LibraryPath.c_str());
 		if (Address != nullptr)
 		{
-			HashMap_Library[Name] = { LibraryLoadState::Load,  Address, std::move(LibraryPath), std::move(FilePath) };
+			HashMap_Library[m_Name] = { LibraryLoadState::Load,  Address, std::move(LibraryPath), std::move(FilePath) };
 		}
 		else
 		{
@@ -81,9 +81,9 @@ void HazeLibraryManager::UnloadDLLLibrary(const HAZE_STRING& LibraryPath)
 	}
 }
 
-const HAZE_STRING* HazeLibraryManager::TryGetFilePath(const HAZE_STRING& ModuleName)
+const HAZE_STRING* HazeLibraryManager::TryGetFilePath(const HAZE_STRING& m_ModuleName)
 {
-	auto Iter = HashMap_Library.find(ModuleName);
+	auto Iter = HashMap_Library.find(m_ModuleName);
 	if (Iter != HashMap_Library.end())
 	{
 		return &Iter->second.FilePath;

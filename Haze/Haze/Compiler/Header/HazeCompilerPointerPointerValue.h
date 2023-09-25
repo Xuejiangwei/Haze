@@ -5,12 +5,12 @@
 class HazeCompilerPointerPointerValue : public HazeCompilerValue
 {
 public:
-	explicit HazeCompilerPointerPointerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, int Level);
+	explicit HazeCompilerPointerPointerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, int m_Level);
 
 	virtual ~HazeCompilerPointerPointerValue() override;
 
-	int GetLevel() const { return Level; }
+	int GetLevel() const { return m_Level; }
 
 private:
-	int Level;
+	int m_Level;
 };

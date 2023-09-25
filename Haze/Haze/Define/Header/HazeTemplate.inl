@@ -45,13 +45,13 @@ T StringToStandardType(const std::string& String)
 }
 
 template <typename T>
-HAZE_BINARY_STRING ToString(T Value)
+HAZE_BINARY_STRING ToString(T m_Value)
 {
-	return HAZE_TO_STR(Value);
+	return HAZE_TO_STR(m_Value);
 }
 
 template <typename T>
-HAZE_STRING ToHazeString(T Value)
+HAZE_STRING ToHazeString(T m_Value)
 {
-	return HAZE_TO_HAZE_STR(Value);
+	return HAZE_TO_HAZE_STR(m_Value);
 }

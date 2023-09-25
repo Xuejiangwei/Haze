@@ -10,11 +10,11 @@
 #include "HazeLibraryType.h"
 #include "HazeInstruction.h"
 
-bool IsAndOrToken(HazeToken Token);
+bool IsAndOrToken(HazeToken m_Token);
 
-bool IsAndToken(HazeToken Token);
+bool IsAndToken(HazeToken m_Token);
 
-bool IsOrToken(HazeToken Token);
+bool IsOrToken(HazeToken m_Token);
 
 const HAZE_CHAR* GetGlobalDataHeaderString();
 
@@ -54,7 +54,7 @@ char* GB2312_2_UFT8(const char* gb2312);
 
 void ReplacePathSlash(HAZE_STRING& Path);
 
-HazeLibraryType GetHazeLibraryTypeByToken(HazeToken Token);
+HazeLibraryType GetHazeLibraryTypeByToken(HazeToken m_Token);
 
 InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType Type);
 
@@ -70,11 +70,11 @@ template <typename T>
 T StringToStandardType(const HAZE_CHAR* String);
 
 template <typename T>
-HAZE_BINARY_STRING ToString(T Value);
+HAZE_BINARY_STRING ToString(T m_Value);
 
-HAZE_BINARY_STRING ToString(void* Value);
+HAZE_BINARY_STRING ToString(void* m_Value);
 
 template <typename T>
-HAZE_STRING ToHazeString(T Value);
+HAZE_STRING ToHazeString(T m_Value);
 
 #include "HazeTemplate.inl"

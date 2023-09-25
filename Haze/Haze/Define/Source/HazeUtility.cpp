@@ -7,19 +7,19 @@
 #include <string>
 #include <regex>
 
-bool IsAndOrToken(HazeToken Token)
+bool IsAndOrToken(HazeToken m_Token)
 {
-	return Token == HazeToken::And || Token == HazeToken::Or;
+	return m_Token == HazeToken::And || m_Token == HazeToken::Or;
 }
 
-bool IsAndToken(HazeToken Token)
+bool IsAndToken(HazeToken m_Token)
 {
-	return Token == HazeToken::And;
+	return m_Token == HazeToken::And;
 }
 
-bool IsOrToken(HazeToken Token)
+bool IsOrToken(HazeToken m_Token)
 {
-	return Token == HazeToken::Or;
+	return m_Token == HazeToken::Or;
 }
 
 const HAZE_CHAR* GetGlobalDataHeaderString()
@@ -195,9 +195,9 @@ void ReplacePathSlash(HAZE_STRING& Path)
 	}
 }
 
-HazeLibraryType GetHazeLibraryTypeByToken(HazeToken Token)
+HazeLibraryType GetHazeLibraryTypeByToken(HazeToken m_Token)
 {
-	switch (Token)
+	switch (m_Token)
 	{
 	case HazeToken::StandardLibrary:
 		return HazeLibraryType::Standard;
@@ -243,9 +243,9 @@ HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& FilePath)
 	return HAZE_TEXT("None");
 }
 
-HAZE_BINARY_STRING ToString(void* Value)
+HAZE_BINARY_STRING ToString(void* m_Value)
 {
 	std::stringstream SS;
-	SS << Value;
+	SS << m_Value;
 	return SS.str();
 }

@@ -6,13 +6,13 @@
 #include "HazeStack.h"
 #include "HazeStream.h"
 
-static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> HashMap_Function =
+static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> m_HashMap_Functions =
 {
 	{ HAZE_TEXT("打印"), &HazeStream::HazePrintf },
 	{ HAZE_TEXT("输入"), &HazeStream::HazeScanf },
 };
 
-static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &HashMap_Function);
+static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &m_HashMap_Functions);
 
 static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form)
 {
@@ -34,7 +34,7 @@ static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form)
 
 void HazeStream::InitializeLib()
 {
-	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("标准流"), &HashMap_Function);
+	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("标准流"), &m_HashMap_Functions);
 }
 
 void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)

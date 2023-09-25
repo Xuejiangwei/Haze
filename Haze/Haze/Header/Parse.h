@@ -24,7 +24,7 @@ class ASTLibrary;
 class Parse
 {
 public:
-	Parse(HazeCompiler* Compiler);
+	Parse(HazeCompiler* m_Compiler);
 	~Parse();
 
 	void InitializeFile(const HAZE_STRING& FilePath);
@@ -39,7 +39,7 @@ public:
 
 	const HAZE_STRING& GetLookAtAheadChar() {}
 
-	static bool TokenIsNone(HazeToken Token) { return Token == HazeToken::None; }
+	static bool TokenIsNone(HazeToken m_Token) { return m_Token == HazeToken::None; }
 
 private:
 	std::unique_ptr<ASTBase> HandleParseExpression();
@@ -119,9 +119,9 @@ private:
 private:
 	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* ClassName = nullptr);
 
-	bool ExpectNextTokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
+	bool ExpectNextTokenIs(HazeToken m_Token, const HAZE_CHAR* ErrorInfo = nullptr);
 
-	bool TokenIs(HazeToken Token, const HAZE_CHAR* ErrorInfo = nullptr);
+	bool TokenIs(HazeToken m_Token, const HAZE_CHAR* ErrorInfo = nullptr);
 
 	bool IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, uint32 CharSize = 1);
 
@@ -132,7 +132,7 @@ private:
 	void IncLineCount(bool Insert = false);
 
 private:
-	HazeCompiler* Compiler;
+	HazeCompiler* m_Compiler;
 
 	HAZE_STRING CodeText;
 
@@ -143,7 +143,7 @@ private:
 
 	std::stack<HazeSectionSignal> StackSectionSignal;
 
-	HazeDefineVariable DefineVariable;
+	HazeDefineVariable m_DefineVariable;
 	HAZE_STRING CurrParseClass;
 
 	int LeftParenthesesExpressionCount;

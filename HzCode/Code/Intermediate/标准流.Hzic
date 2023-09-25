@@ -15,8 +15,6 @@ Variable ¼×$1 14 4 -12 8 5
 FunctionStart 0
 
 Block Entry
-LINE 5
-LINE 5
 
 FunctionEnd 0
 
@@ -28,8 +26,6 @@ Variable ¼×$1 14 4 -12 8 6
 FunctionStart 0
 
 Block Entry
-LINE 6
-LINE 6
 
 FunctionEnd 0
 
