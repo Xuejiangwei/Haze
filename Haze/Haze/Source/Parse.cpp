@@ -41,7 +41,7 @@ static std::unordered_map<HAZE_STRING, HazeToken> HashMap_Token =
 	{TOKEN_MAIN_FUNCTION, HazeToken::MainFunction},
 
 	{TOKEN_CLASS, HazeToken::Class},
-	{TOKEN_CLASS_DATA, HazeToken::ClassData},
+	{TOKEN_CLASS_DATA, HazeToken::m_ClassDatas},
 	{TOKEN_CLASS_DATA_PUBLIC, HazeToken::ClassPublic},
 	{TOKEN_CLASS_DATA_PRIVATE, HazeToken::ClassPrivate},
 	{TOKEN_CLASS_DATA_PROTECTED, HazeToken::ClassProtected},
@@ -210,7 +210,7 @@ static HAZE_STRING GetPointerClassType(const HAZE_STRING& Str)
 //	}
 //}
 
-Parse::Parse(HazeCompiler* m_Compiler) : m_Compiler(m_Compiler), CurrCode(nullptr), CurrToken(HazeToken::None), LeftParenthesesExpressionCount(0),
+Parse::Parse(HazeCompiler* m_Compiler) : m_Compiler(m_Compiler), m_CurrCode(nullptr), CurrToken(HazeToken::None), LeftParenthesesExpressionCount(0),
 LineCount(1), NeedParseNextStatement(false)
 {
 }
@@ -227,7 +227,7 @@ void Parse::InitializeFile(const HAZE_STRING& FilePath)
 	Content = UTF8_2_GB2312(Content.c_str());
 	CodeText = String2WString(Content);
 
-	CurrCode = CodeText.c_str();
+	m_CurrCode = CodeText.c_str();
 	FS.close();
 }
 
@@ -305,39 +305,39 @@ void Parse::ParseContent()
 HazeToken Parse::GetNextToken()
 {
 	bool NewLine = false;
-	while (HazeIsSpace(*CurrCode, &NewLine))
+	while (HazeIsSpace(*m_CurrCode, &NewLine))
 	{
 		if (NewLine)
 		{
 			IncLineCount();
 		}
-		CurrCode++;
+		m_CurrCode++;
 	}
 
-	if (HAZE_STRING(CurrCode) == HAZE_TEXT(""))
+	if (HAZE_STRING(m_CurrCode) == HAZE_TEXT(""))
 	{
 		IncLineCount();
 		CurrToken = HazeToken::None;
-		CurrLexeme = HAZE_TEXT("");
+		m_CurrLexeme = HAZE_TEXT("");
 		return HazeToken::None;
 	}
 
 	//Match Token
-	CurrLexeme.clear();
+	m_CurrLexeme.clear();
 	const HAZE_CHAR* Signal;
-	while (!HazeIsSpace(*CurrCode, &NewLine) || CurrToken == HazeToken::StringMatch)
+	while (!HazeIsSpace(*m_CurrCode, &NewLine) || CurrToken == HazeToken::StringMatch)
 	{
 		if (NewLine)
 		{
 			IncLineCount(true);
 		}
 
-		if (IsHazeSignalToken(CurrCode, Signal))
+		if (IsHazeSignalToken(m_CurrCode, Signal))
 		{
 			if (CurrToken == HazeToken::StringMatch)
 			{
 				static HAZE_STRING TempString;
-				TempString = *(CurrCode++);
+				TempString = *(m_CurrCode++);
 				auto Iter = HashMap_Token.find(TempString);
 				if (Iter != HashMap_Token.end() && Iter->second == HazeToken::StringMatch)
 				{
@@ -346,94 +346,94 @@ HazeToken Parse::GetNextToken()
 				}
 				else
 				{
-					CurrLexeme += TempString;
+					m_CurrLexeme += TempString;
 				}
 				continue;
 			}
 			else if (HAZE_STRING(Signal) == TOKEN_ARRAY_START)
 			{
-				if (CurrLexeme.empty())
+				if (m_CurrLexeme.empty())
 				{
-					CurrLexeme += *CurrCode++;
+					m_CurrLexeme += *m_CurrCode++;
 					CurrToken = HazeToken::Array;
 					return CurrToken;
 				}
 			}
-			else if (IsHazeSignalToken(CurrCode, Signal, 3))
+			else if (IsHazeSignalToken(m_CurrCode, Signal, 3))
 			{
 				if (CurrPreLexeme.first.empty())
 				{
-					CurrPreLexeme.first = CurrLexeme;
+					CurrPreLexeme.first = m_CurrLexeme;
 					CurrPreLexeme.second = 3;
-					CurrLexeme = Signal;
-					CurrCode += 3;
+					m_CurrLexeme = Signal;
+					m_CurrCode += 3;
 				}
 			}
-			else if (IsHazeSignalToken(CurrCode, Signal, 2))
+			else if (IsHazeSignalToken(m_CurrCode, Signal, 2))
 			{
 				if (CurrPreLexeme.first.empty())
 				{
-					CurrPreLexeme.first = CurrLexeme;
+					CurrPreLexeme.first = m_CurrLexeme;
 					CurrPreLexeme.second = 2;
-					CurrLexeme = Signal;
-					CurrCode += 2;
+					m_CurrLexeme = Signal;
+					m_CurrCode += 2;
 				}
 			}
-			else if (CurrLexeme.length() == 0 || IsPointerOrRef(CurrLexeme + *CurrCode, CurrToken)
-				|| IsHazeSignalToken(CurrCode - 1, Signal, 2))
+			else if (m_CurrLexeme.length() == 0 || IsPointerOrRef(m_CurrLexeme + *m_CurrCode, CurrToken)
+				|| IsHazeSignalToken(m_CurrCode - 1, Signal, 2))
 			{
-				CurrLexeme += *(CurrCode++);
+				m_CurrLexeme += *(m_CurrCode++);
 			}
 			break;
 		}
 
-		CurrLexeme += *(CurrCode++);
+		m_CurrLexeme += *(m_CurrCode++);
 	}
 
 	static HAZE_STRING Comment_Str;
-	Comment_Str = *CurrCode;
-	if (CurrLexeme == HAZE_SINGLE_COMMENT)
+	Comment_Str = *m_CurrCode;
+	if (m_CurrLexeme == HAZE_SINGLE_COMMENT)
 	{
 		while (Comment_Str != HAZE_TEXT("\n"))
 		{
-			CurrCode++;
-			Comment_Str = *CurrCode;
+			m_CurrCode++;
+			Comment_Str = *m_CurrCode;
 		}
 
 		return GetNextToken();
 	}
-	else if (CurrLexeme == HAZE_MULTI_COMMENT_START)
+	else if (m_CurrLexeme == HAZE_MULTI_COMMENT_START)
 	{
 		Comment_Str.resize(2);
 		while (Comment_Str != HAZE_MULTI_COMMENT_END)
 		{
-			CurrCode++;
-			memcpy(Comment_Str.data(), CurrCode, sizeof(HAZE_CHAR) * 2);
+			m_CurrCode++;
+			memcpy(Comment_Str.data(), m_CurrCode, sizeof(HAZE_CHAR) * 2);
 
-			HazeIsSpace(*CurrCode, &NewLine);
+			HazeIsSpace(*m_CurrCode, &NewLine);
 			if (NewLine)
 			{
 				IncLineCount();
 			}
 		}
 
-		CurrCode += 2;
+		m_CurrCode += 2;
 		return GetNextToken();
 	}
 
-	auto It = HashMap_Token.find(CurrLexeme);
+	auto It = HashMap_Token.find(m_CurrLexeme);
 	if (It != HashMap_Token.end())
 	{
 		CurrToken = It->second;
 	}
-	else if (IsNumber(CurrLexeme))
+	else if (IsNumber(m_CurrLexeme))
 	{
 		CurrToken = HazeToken::Number;
 	}
-	else if (IsPointerOrRef(CurrLexeme, CurrToken))
+	else if (IsPointerOrRef(m_CurrLexeme, CurrToken))
 	{
 	}
-	else if (m_Compiler->IsClass(CurrLexeme) || CurrParseClass == CurrLexeme)
+	else if (m_Compiler->IsClass(m_CurrLexeme) || CurrParseClass == m_CurrLexeme)
 	{
 		CurrToken = HazeToken::CustomClass;
 	}
@@ -629,7 +629,7 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 {
 	uint32 TempLineCount = LineCount;
 	std::unique_ptr<ASTBase> Ret = nullptr;
-	HAZE_STRING IdentiferName = CurrLexeme;
+	HAZE_STRING IdentiferName = m_CurrLexeme;
 	std::vector<std::unique_ptr<ASTBase>> IndexExpression;
 
 	if (GetNextToken() == HazeToken::LeftParentheses && LineCount == TempLineCount)
@@ -679,24 +679,24 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 {
 	uint32 TempLineCount = LineCount;
 	m_DefineVariable.m_Name.clear();
-	m_DefineVariable.Type.Reset();
+	m_DefineVariable.m_Type.Reset();
 
-	m_DefineVariable.Type.PrimaryType = GetValueTypeByToken(CurrToken);
+	m_DefineVariable.m_Type.PrimaryType = GetValueTypeByToken(CurrToken);
 
 	int m_PointerLevel = 1;
 	if (CurrToken == HazeToken::CustomClass)
 	{
-		m_DefineVariable.Type.CustomName = CurrLexeme;
+		m_DefineVariable.m_Type.CustomName = m_CurrLexeme;
 	}
 	else if (CurrToken == HazeToken::PointerBase || CurrToken == HazeToken::ReferenceBase)
 	{
-		m_DefineVariable.Type.SecondaryType = GetPointerBaseType(CurrLexeme);
-		m_DefineVariable.Type.CustomName = HAZE_TEXT("");
+		m_DefineVariable.m_Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
+		m_DefineVariable.m_Type.CustomName = HAZE_TEXT("");
 	}
 	else if (CurrToken == HazeToken::PointerClass || CurrToken == HazeToken::ReferenceClass)
 	{
-		m_DefineVariable.Type.SecondaryType = HazeValueType::Class;
-		m_DefineVariable.Type.CustomName = GetPointerClassType(CurrLexeme);
+		m_DefineVariable.m_Type.SecondaryType = HazeValueType::Class;
+		m_DefineVariable.m_Type.CustomName = GetPointerClassType(m_CurrLexeme);
 	}
 	else if (CurrToken == HazeToken::MultiVariable)
 	{
@@ -723,14 +723,14 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 	std::vector<std::unique_ptr<ASTBase>> m_ArraySize;
 	if (CurrToken == HazeToken::Identifier)
 	{
-		m_DefineVariable.m_Name = CurrLexeme;
+		m_DefineVariable.m_Name = m_CurrLexeme;
 
 		GetNextToken();
 
 		if (CurrToken == HazeToken::Array)
 		{
-			m_DefineVariable.Type.SecondaryType = m_DefineVariable.Type.PrimaryType;
-			m_DefineVariable.Type.PrimaryType = HazeValueType::Array;
+			m_DefineVariable.m_Type.SecondaryType = m_DefineVariable.m_Type.PrimaryType;
+			m_DefineVariable.m_Type.PrimaryType = HazeValueType::Array;
 
 			while (CurrToken == HazeToken::Array)
 			{
@@ -752,7 +752,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 			//函数调用
 			return std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(TempLineCount), StackSectionSignal.top(), m_DefineVariable, nullptr);
 		}
-		else if (m_DefineVariable.Type.PrimaryType == HazeValueType::Class)
+		else if (m_DefineVariable.m_Type.PrimaryType == HazeValueType::Class)
 		{
 			if (CurrToken == HazeToken::LeftParentheses)
 			{
@@ -787,34 +787,34 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		if (ExpectNextTokenIs(HazeToken::Mul) && ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("函数指针或者数组指针需要一个正确的名称")))
 		{
 			std::vector<HazeDefineType> Vector_ParamType;
-			Vector_ParamType.push_back(m_DefineVariable.Type);
+			Vector_ParamType.push_back(m_DefineVariable.m_Type);
 
-			m_DefineVariable.m_Name = CurrLexeme;
+			m_DefineVariable.m_Name = m_CurrLexeme;
 
 			if (ExpectNextTokenIs(HazeToken::RightParentheses))
 			{
 				if (ExpectNextTokenIs(HazeToken::LeftParentheses))
 				{
-					m_DefineVariable.Type.PrimaryType = HazeValueType::PointerFunction;
+					m_DefineVariable.m_Type.PrimaryType = HazeValueType::PointerFunction;
 					GetNextToken();
 					while (true)
 					{
-						HazeDefineType Type;
-						Type.PrimaryType = GetValueTypeByToken(CurrToken);
+						HazeDefineType m_Type;
+						m_Type.PrimaryType = GetValueTypeByToken(CurrToken);
 						if (CurrToken == HazeToken::PointerBase)
 						{
-							Type.SecondaryType = GetPointerBaseType(CurrLexeme);
+							m_Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
 						}
 						else if (CurrToken == HazeToken::PointerClass)
 						{
-							Type.CustomName = GetPointerClassType(CurrLexeme);
+							m_Type.CustomName = GetPointerClassType(m_CurrLexeme);
 						}
 						else if (CurrToken == HazeToken::Class)
 						{
-							Type.CustomName = CurrLexeme;
+							m_Type.CustomName = m_CurrLexeme;
 						}
 
-						Vector_ParamType.push_back(Type);
+						Vector_ParamType.push_back(m_Type);
 
 						if (ExpectNextTokenIs(HazeToken::RightParentheses))
 						{
@@ -837,8 +837,8 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 				}
 				else if (CurrToken == HazeToken::Array)
 				{
-					m_DefineVariable.Type.SecondaryType = m_DefineVariable.Type.PrimaryType;
-					m_DefineVariable.Type.PrimaryType = HazeValueType::PointerArray;
+					m_DefineVariable.m_Type.SecondaryType = m_DefineVariable.m_Type.PrimaryType;
+					m_DefineVariable.m_Type.PrimaryType = HazeValueType::PointerArray;
 
 					GetNextToken();
 					while (true)
@@ -871,7 +871,7 @@ std::unique_ptr<ASTBase> Parse::ParseStringText()
 {
 	uint32 TempLineCount = LineCount;
 	GetNextToken();
-	HAZE_STRING m_Text = CurrLexeme;
+	HAZE_STRING m_Text = m_CurrLexeme;
 
 	GetNextToken();
 	return std::make_unique<ASTStringText>(m_Compiler, SourceLocation(TempLineCount), m_Text);
@@ -880,23 +880,23 @@ std::unique_ptr<ASTBase> Parse::ParseStringText()
 std::unique_ptr<ASTBase> Parse::ParseBoolExpression()
 {
 	uint32 TempLineCount = LineCount;
-	HazeValue m_Value;
-	m_Value.m_Value.Bool = CurrLexeme == TOKEN_TRUE;
+	HazeValue Value;
+	Value.Value.Bool = m_CurrLexeme == TOKEN_TRUE;
 
 	GetNextToken();
-	return std::make_unique<ASTBool>(m_Compiler, SourceLocation(TempLineCount), m_Value);
+	return std::make_unique<ASTBool>(m_Compiler, SourceLocation(TempLineCount), Value);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseNumberExpression()
 {
 	uint32 TempLineCount = LineCount;
-	HazeValue m_Value;
-	HazeValueType Type = GetNumberDefaultType(CurrLexeme);
+	HazeValue Value;
+	HazeValueType m_Type = GetNumberDefaultType(m_CurrLexeme);
 
-	StringToHazeValueNumber(CurrLexeme, Type, m_Value);
+	StringToHazeValueNumber(m_CurrLexeme, m_Type, Value);
 
 	GetNextToken();
-	return std::make_unique<ASTNumber>(m_Compiler, SourceLocation(TempLineCount), Type, m_Value);
+	return std::make_unique<ASTNumber>(m_Compiler, SourceLocation(TempLineCount), m_Type, Value);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool Recursion)
@@ -1018,16 +1018,16 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 
 	HazeDefineVariable Define;
 
-	Define.Type.PrimaryType = GetValueTypeByToken(CurrToken);
-	if (Define.Type.PrimaryType == HazeValueType::Class)
+	Define.m_Type.PrimaryType = GetValueTypeByToken(CurrToken);
+	if (Define.m_Type.PrimaryType == HazeValueType::Class)
 	{
-		Define.Type.PrimaryType = HazeValueType::PointerClass;
-		Define.Type.CustomName = CurrLexeme;
+		Define.m_Type.PrimaryType = HazeValueType::PointerClass;
+		Define.m_Type.CustomName = m_CurrLexeme;
 	}
 	else
 	{
-		Define.Type.SecondaryType = Define.Type.PrimaryType;
-		Define.Type.PrimaryType = HazeValueType::PointerBase;
+		Define.m_Type.SecondaryType = Define.m_Type.PrimaryType;
+		Define.m_Type.PrimaryType = HazeValueType::PointerBase;
 	}
 
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("生成表达式 期望 (")))
@@ -1133,7 +1133,7 @@ std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 std::unique_ptr<ASTBase> Parse::ParsePointerValue()
 {
 	uint32 TempLineCount = LineCount;
-	int m_Level = (int)CurrLexeme.length();
+	int m_Level = (int)m_CurrLexeme.length();
 
 	GetNextToken();
 
@@ -1260,22 +1260,22 @@ std::unique_ptr<ASTFunctionSection> Parse::ParseFunctionSection()
 {
 	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数群期望 {")))
 	{
-		std::vector<std::unique_ptr<ASTFunction>> Functions;
+		std::vector<std::unique_ptr<ASTFunction>> m_Functions;
 
 		GetNextToken();
 		while (CurrToken != HazeToken::RightBrace)
 		{
-			Functions.push_back(ParseFunction());
+			m_Functions.push_back(ParseFunction());
 		}
 
 		GetNextToken();
-		return std::make_unique<ASTFunctionSection>(m_Compiler,/* SourceLocation(LineCount),*/ Functions);
+		return std::make_unique<ASTFunctionSection>(m_Compiler,/* SourceLocation(LineCount),*/ m_Functions);
 	}
 
 	return nullptr;
 }
 
-std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
+std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* m_ClassName)
 {
 	StackSectionSignal.push(HazeSectionSignal::Local);
 	uint32 TempLineCount = LineCount;
@@ -1285,33 +1285,33 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 	FuncType.PrimaryType = GetValueTypeByToken(CurrToken);
 	if (CurrToken == HazeToken::Identifier)
 	{
-		FuncType.CustomName = CurrLexeme;
+		FuncType.CustomName = m_CurrLexeme;
 	}
 
 	//获得函数名
 	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("函数命名错误")))
 	{
 		uint32 StartLineCount = LineCount;
-		HAZE_STRING FunctionName = CurrLexeme;
+		HAZE_STRING m_FunctionName = m_CurrLexeme;
 		if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
 		{
-			std::vector<std::unique_ptr<ASTBase>> Vector_Param;
+			std::vector<std::unique_ptr<ASTBase>> Params;
 
-			if (ClassName && !ClassName->empty())
+			if (m_ClassName && !m_ClassName->empty())
 			{
 				HazeDefineVariable ThisParam;
 				ThisParam.m_Name = HAZE_CLASS_THIS;
-				ThisParam.Type.PrimaryType = HazeValueType::PointerClass;
-				ThisParam.Type.CustomName = ClassName->c_str();
+				ThisParam.m_Type.PrimaryType = HazeValueType::PointerClass;
+				ThisParam.m_Type.CustomName = m_ClassName->c_str();
 
-				Vector_Param.push_back(std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(TempLineCount), HazeSectionSignal::Local, ThisParam, nullptr));
+				Params.push_back(std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(TempLineCount), HazeSectionSignal::Local, ThisParam, nullptr));
 			}
 			
 			GetNextToken();
 
 			while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
 			{
-				Vector_Param.push_back(ParseVariableDefine());
+				Params.push_back(ParseVariableDefine());
 				if (!TokenIs(HazeToken::Comma))
 				{
 					break;
@@ -1323,7 +1323,7 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
 			{
 				StartLineCount = LineCount;
-				std::unique_ptr<ASTBase> Body = ParseMultiExpression();
+				std::unique_ptr<ASTBase> m_Body = ParseMultiExpression();
 
 				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("函数体需要 }")))
 				{
@@ -1331,12 +1331,12 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 					TempLineCount = LineCount;
 
 					GetNextToken();
-					return std::make_unique<ASTFunction>(m_Compiler, SourceLocation(StartLineCount), SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body);
+					return std::make_unique<ASTFunction>(m_Compiler, SourceLocation(StartLineCount), SourceLocation(TempLineCount), StackSectionSignal.top(), m_FunctionName, FuncType, Params, m_Body);
 				}
 			}
 		}
 	}
-	else if (*ClassName == FuncType.CustomName)
+	else if (*m_ClassName == FuncType.CustomName)
 	{
 		HAZE_LOG_ERR_W("解析错误,暂时不支持定义类的构造函数!\n");
 		//类构造函数
@@ -1413,12 +1413,12 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* ClassName)
 std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 {
 	uint32 StartLineCount = LineCount;
-	HAZE_STRING FunctionName = CurrLexeme;
+	HAZE_STRING m_FunctionName = m_CurrLexeme;
 	StackSectionSignal.push(HazeSectionSignal::Local);
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数左边需要 (")))
 	{
 		//std::vector<HazeDefineVariable> Vector_Param;
-		std::vector<std::unique_ptr<ASTBase>> Vector_Param;
+		std::vector<std::unique_ptr<ASTBase>> Params;
 
 		while (!TokenIs(HazeToken::LeftBrace))
 		{
@@ -1449,7 +1449,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
 		{
 			StartLineCount = LineCount;
-			std::unique_ptr<ASTBase> Body = ParseMultiExpression();
+			std::unique_ptr<ASTBase> m_Body = ParseMultiExpression();
 
 			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("函数体需要 }")))
 			{
@@ -1458,7 +1458,7 @@ std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
 				uint32 TempLineCount = LineCount;
 				GetNextToken();
 				HazeDefineType DefineType = { HazeValueType::Void, HAZE_TEXT("") };
-				return std::make_unique<ASTFunction>(m_Compiler, SourceLocation(StartLineCount), SourceLocation(TempLineCount), StackSectionSignal.top(), FunctionName, DefineType, Vector_Param, Body);
+				return std::make_unique<ASTFunction>(m_Compiler, SourceLocation(StartLineCount), SourceLocation(TempLineCount), StackSectionSignal.top(), m_FunctionName, DefineType, Params, m_Body);
 			}
 		}
 	}
@@ -1470,7 +1470,7 @@ std::unique_ptr<ASTLibrary> Parse::ParseLibrary()
 {
 	HazeLibraryType LibType = GetHazeLibraryTypeByToken(CurrToken);
 	GetNextToken();
-	HAZE_STRING StandardLibraryName = CurrLexeme;
+	HAZE_STRING StandardLibraryName = m_CurrLexeme;
 
 	StackSectionSignal.push(HazeSectionSignal::Global);
 
@@ -1484,8 +1484,8 @@ std::unique_ptr<ASTLibrary> Parse::ParseLibrary()
 		{
 			if (CurrToken == HazeToken::Function)
 			{
-				auto Vector_Function = ParseLibrary_FunctionDefine();
-				for (auto& Iter : Vector_Function)
+				auto m_Functions = ParseLibrary_FunctionDefine();
+				for (auto& Iter : m_Functions)
 				{
 					Vector_FunctionDefine.push_back(std::move(Iter));
 				}
@@ -1507,7 +1507,7 @@ std::unique_ptr<ASTLibrary> Parse::ParseLibrary()
 
 std::unique_ptr<ASTClassDefine> Parse::ParseLibrary_ClassDefine()
 {
-	CurrParseClass = CurrLexeme;
+	CurrParseClass = m_CurrLexeme;
 	CurrParseClass.clear();
 	/*std::vector<std::vector<std::unique_ptr<ASTBase>>> Data;
 	std::vector<std::unique_ptr<ASTFunctionDefine>> Function;
@@ -1531,23 +1531,23 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefi
 			FuncType.PrimaryType = GetValueTypeByToken(CurrToken);
 			if (CurrToken == HazeToken::Identifier)
 			{
-				FuncType.CustomName = CurrLexeme;
+				FuncType.CustomName = m_CurrLexeme;
 			}
 
 			//获得函数名
 			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("库函数命名错误")))
 			{
-				HAZE_STRING FunctionName = CurrLexeme;
+				HAZE_STRING m_FunctionName = m_CurrLexeme;
 				if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
 				{
-					std::vector<std::unique_ptr<ASTBase>> Vector_Param;
+					std::vector<std::unique_ptr<ASTBase>> Params;
 
 					GetNextToken();
 
 					while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
 					{
-						Vector_Param.push_back(ParseVariableDefine());
-						if (!TokenIs(HazeToken::Comma) || Vector_Param.back()->GetDefine().Type.PrimaryType == HazeValueType::MultiVariable)
+						Params.push_back(ParseVariableDefine());
+						if (!TokenIs(HazeToken::Comma) || Params.back()->GetDefine().m_Type.PrimaryType == HazeValueType::MultiVariable)
 						{
 							break;
 						}
@@ -1556,7 +1556,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefi
 					}
 
 					StackSectionSignal.pop();
-					Vector_FunctionDefine.push_back(std::make_unique<ASTFunctionDefine>(m_Compiler, /*SourceLocation(LineCount),*/ FunctionName, FuncType, Vector_Param));
+					Vector_FunctionDefine.push_back(std::make_unique<ASTFunctionDefine>(m_Compiler, /*SourceLocation(LineCount),*/ m_FunctionName, FuncType, Params));
 					GetNextToken();
 				}
 			}
@@ -1573,12 +1573,12 @@ std::unique_ptr<ASTBase> Parse::ParseImportModule()
 {
 	if (ExpectNextTokenIs(HazeToken::Identifier))
 	{
-		HAZE_STRING m_Name = CurrLexeme;
+		HAZE_STRING m_Name = m_CurrLexeme;
 		return std::make_unique<ASTImportModule>(m_Compiler, SourceLocation(LineCount), m_Name);
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("解析错误: 引入模块<%s>错误! <%s>文件<%d>行!\n"), CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), LineCount);
+		HAZE_LOG_ERR(HAZE_TEXT("解析错误: 引入模块<%s>错误! <%s>文件<%d>行!\n"), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), LineCount);
 	}
 
 	return nullptr;
@@ -1588,8 +1588,8 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 {
 	if (ExpectNextTokenIs(HazeToken::Identifier))
 	{
-		CurrParseClass = CurrLexeme;
-		HAZE_STRING m_Name = CurrLexeme;
+		CurrParseClass = m_CurrLexeme;
+		HAZE_STRING m_Name = m_CurrLexeme;
 		std::vector<HAZE_STRING> Vector_ParentClass;
 
 		GetNextToken();
@@ -1599,7 +1599,7 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 			{
 				while (TokenIs(HazeToken::CustomClass))
 				{
-					Vector_ParentClass.push_back(CurrLexeme);
+					Vector_ParentClass.push_back(m_CurrLexeme);
 
 					GetNextToken();
 					if (TokenIs(HazeToken::Comma))
@@ -1612,13 +1612,13 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 					}
 					else
 					{
-						HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), m_Name.c_str(), CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), LineCount);
+						HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), m_Name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), LineCount);
 					}
 				}
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), m_Name.c_str(), CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), LineCount);
+				HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), m_Name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), LineCount);
 			}
 		}
 
@@ -1626,17 +1626,17 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 		{
 			StackSectionSignal.push(HazeSectionSignal::Class);
 
-			std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Vector_ClassData;
-			std::unique_ptr<ASTClassFunctionSection> ClassFunction;
+			std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> m_ClassDatas;
+			std::unique_ptr<ASTClassFunctionSection> m_ClassFunctions;
 
 			GetNextToken();
-			while (CurrToken == HazeToken::ClassData || CurrToken == HazeToken::Function)
+			while (CurrToken == HazeToken::m_ClassDatas || CurrToken == HazeToken::Function)
 			{
-				if (CurrToken == HazeToken::ClassData)
+				if (CurrToken == HazeToken::m_ClassDatas)
 				{
-					if (Vector_ClassData.size() == 0)
+					if (m_ClassDatas.size() == 0)
 					{
-						Vector_ClassData = ParseClassData();
+						m_ClassDatas = ParseClassData();
 					}
 					else
 					{
@@ -1645,7 +1645,7 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 				}
 				else if (CurrToken == HazeToken::Function)
 				{
-					ClassFunction = ParseClassFunction(m_Name);
+					m_ClassFunctions = ParseClassFunction(m_Name);
 				}
 			}
 
@@ -1654,12 +1654,12 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 			GetNextToken();
 
 			CurrParseClass.clear();
-			return std::make_unique<ASTClass>(m_Compiler, /*SourceLocation(LineCount),*/ m_Name, Vector_ParentClass, Vector_ClassData, ClassFunction);
+			return std::make_unique<ASTClass>(m_Compiler, /*SourceLocation(LineCount),*/ m_Name, Vector_ParentClass, m_ClassDatas, m_ClassFunctions);
 		}
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类名<%s>错误! <%s>文件<%d>行!"), CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), LineCount);
+		HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类名<%s>错误! <%s>文件<%d>行!"), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), LineCount);
 	}
 
 	return nullptr;
@@ -1667,13 +1667,13 @@ std::unique_ptr<ASTClass> Parse::ParseClass()
 
 std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Parse::ParseClassData()
 {
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Vector_ClassData;
+	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> m_ClassDatas;
 
-	auto HasData = [](decltype(Vector_ClassData)& Vector_Data, HazeDataDesc ScopeType) -> bool
+	auto HasData = [](decltype(m_ClassDatas)& m_Data, HazeDataDesc ScopeType) -> bool
 	{
-		for (size_t i = 0; i < Vector_Data.size(); i++)
+		for (size_t i = 0; i < m_Data.size(); i++)
 		{
-			if (Vector_Data[i].first == ScopeType)
+			if (m_Data[i].first == ScopeType)
 			{
 				return true;
 			}
@@ -1689,9 +1689,9 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 		{
 			if (CurrToken == HazeToken::ClassPublic)
 			{
-				if (!HasData(Vector_ClassData, HazeDataDesc::ClassMember_Local_Public))
+				if (!HasData(m_ClassDatas, HazeDataDesc::ClassMember_Local_Public))
 				{
-					Vector_ClassData.push_back(std::move(
+					m_ClassDatas.push_back(std::move(
 						std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>({ HazeDataDesc::ClassMember_Local_Public,
 						std::move(std::vector<std::unique_ptr<ASTBase>>{}) })));
 
@@ -1699,7 +1699,7 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 					GetNextToken();
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						Vector_ClassData.back().second.push_back(ParseVariableDefine());
+						m_ClassDatas.back().second.push_back(ParseVariableDefine());
 					}
 
 					GetNextToken();
@@ -1711,9 +1711,9 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 			}
 			else if (CurrToken == HazeToken::ClassPrivate)
 			{
-				if (!HasData(Vector_ClassData, HazeDataDesc::ClassMember_Local_Private))
+				if (!HasData(m_ClassDatas, HazeDataDesc::ClassMember_Local_Private))
 				{
-					Vector_ClassData.push_back(std::move(
+					m_ClassDatas.push_back(std::move(
 						std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>({ HazeDataDesc::ClassMember_Local_Private,
 						std::move(std::vector<std::unique_ptr<ASTBase>>{}) })));
 
@@ -1721,7 +1721,7 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 					GetNextToken();
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						Vector_ClassData.back().second.push_back(ParseVariableDefine());
+						m_ClassDatas.back().second.push_back(ParseVariableDefine());
 					}
 
 					GetNextToken();
@@ -1733,9 +1733,9 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 			}
 			else if (CurrToken == HazeToken::ClassProtected)
 			{
-				if (!HasData(Vector_ClassData, HazeDataDesc::ClassMember_Local_Protected))
+				if (!HasData(m_ClassDatas, HazeDataDesc::ClassMember_Local_Protected))
 				{
-					Vector_ClassData.push_back(std::move(
+					m_ClassDatas.push_back(std::move(
 						std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>({ HazeDataDesc::ClassMember_Local_Protected,
 						std::move(std::vector<std::unique_ptr<ASTBase>>{}) })));
 
@@ -1743,7 +1743,7 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 					GetNextToken();
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						Vector_ClassData.back().second.push_back(ParseVariableDefine());
+						m_ClassDatas.back().second.push_back(ParseVariableDefine());
 					}
 
 					GetNextToken();
@@ -1763,10 +1763,10 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Pars
 		GetNextToken();
 	}
 
-	return Vector_ClassData;
+	return m_ClassDatas;
 }
 
-std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_STRING& ClassName)
+std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_STRING& m_ClassName)
 {
 	if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("类函数定义需要 {")))
 	{
@@ -1775,11 +1775,11 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 		std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>> Vector_ClassFunction;
 		//	={ {HazeDataDesc::ClassFunction_Local_Public, {}} };
 
-		auto HasData = [](decltype(Vector_ClassFunction)& Vector_Function, HazeDataDesc ScopeType) -> bool
+		auto HasData = [](decltype(Vector_ClassFunction)& m_Functions, HazeDataDesc ScopeType) -> bool
 		{
-			for (size_t i = 0; i < Vector_Function.size(); i++)
+			for (size_t i = 0; i < m_Functions.size(); i++)
 			{
-				if (Vector_Function[i].first == ScopeType)
+				if (m_Functions[i].first == ScopeType)
 				{
 					return true;
 				}
@@ -1801,7 +1801,7 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 					GetNextToken();
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						Vector_ClassFunction.back().second.push_back(ParseFunction(&ClassName));
+						Vector_ClassFunction.back().second.push_back(ParseFunction(&m_ClassName));
 					}
 
 					GetNextToken();
@@ -1820,7 +1820,7 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						Vector_ClassFunction.back().second.push_back(ParseFunction(&ClassName));
+						Vector_ClassFunction.back().second.push_back(ParseFunction(&m_ClassName));
 					}
 
 					GetNextToken();
@@ -1839,7 +1839,7 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 
 					while (CurrToken != HazeToken::RightBrace)
 					{
-						Vector_ClassFunction.back().second.push_back(ParseFunction(&ClassName));
+						Vector_ClassFunction.back().second.push_back(ParseFunction(&m_ClassName));
 					}
 
 					GetNextToken();
@@ -1992,7 +1992,7 @@ void Parse::BackToPreLexemeAndNext()
 {
 	if (!CurrPreLexeme.first.empty())
 	{
-		CurrCode -= CurrPreLexeme.second + CurrPreLexeme.first.length();
+		m_CurrCode -= CurrPreLexeme.second + CurrPreLexeme.first.length();
 		GetNextToken();
 		CurrPreLexeme.first.clear();
 		CurrPreLexeme.second = 0;

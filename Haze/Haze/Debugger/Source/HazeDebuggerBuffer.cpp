@@ -32,7 +32,7 @@ HazeDebuggerBuffer::~HazeDebuggerBuffer()
 
 void HazeDebuggerBuffer::ReadBuffer(uint64 SocketClient)
 {
-	int Ret = recv(SocketClient, &TailNode->Data[CurrIndex], DEBUGGER_BUFFER_NODE_SIZE, MSG_PEEK);
+	int Ret = recv(SocketClient, &TailNode->m_Data[CurrIndex], DEBUGGER_BUFFER_NODE_SIZE, MSG_PEEK);
 	if (Ret > 0)
 	{
 		if (Ret < DEBUGGER_BUFFER_NODE_SIZE - CurrIndex)

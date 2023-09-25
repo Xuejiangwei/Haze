@@ -6,11 +6,11 @@
 //extern std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
 //	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param);
 
-HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count)
-	: HazeCompilerValue(Module, DefineType, Scope, Desc, Count)
+HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count)
+	: HazeCompilerValue(m_Module, DefineType, Scope, Desc, Count)
 {
-	OwnerClass = Module->GetClass(DefineType.CustomName).get();
-	Vector_Data = std::move(CreateVariableCopyClassMember(Module, Scope, OwnerClass));
+	OwnerClass = m_Module->GetClass(DefineType.CustomName).get();
+	m_Data = std::move(CreateVariableCopyClassMember(m_Module, Scope, OwnerClass));
 }
 
 HazeCompilerClassValue::~HazeCompilerClassValue()
@@ -31,13 +31,13 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HAZE_
 {
 	auto Index = OwnerClass->GetMemberIndex(m_Name);
 
-	for (size_t i = 0; i < Vector_Data.size(); i++)
+	for (size_t i = 0; i < m_Data.size(); i++)
 	{
-		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
+		for (size_t j = 0; j < m_Data[i].second.size(); j++)
 		{
 			if (Index == 0)
 			{
-				return Vector_Data[i].second[j];
+				return m_Data[i].second[j];
 			}
 			Index--;
 		}

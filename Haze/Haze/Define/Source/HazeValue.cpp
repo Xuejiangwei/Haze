@@ -7,9 +7,9 @@
 
 extern const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token();
 
-uint32 GetSizeByHazeType(HazeValueType Type)
+uint32 GetSizeByHazeType(HazeValueType m_Type)
 {
-	switch (Type)
+	switch (m_Type)
 	{
 	case HazeValueType::Bool:
 	case HazeValueType::Byte:
@@ -104,37 +104,37 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
 	return HazeValueType::Void;
 }
 
-bool IsVoidType(HazeValueType Type)
+bool IsVoidType(HazeValueType m_Type)
 {
-	return Type == HazeValueType::Void;
+	return m_Type == HazeValueType::Void;
 }
 
-bool IsHazeDefaultTypeAndVoid(HazeValueType Type)
+bool IsHazeDefaultTypeAndVoid(HazeValueType m_Type)
 {
-	return HazeValueType::Void <= Type && Type <= HazeValueType::UnsignedLong;
+	return HazeValueType::Void <= m_Type && m_Type <= HazeValueType::UnsignedLong;
 }
 
-bool IsHazeDefaultType(HazeValueType Type)
+bool IsHazeDefaultType(HazeValueType m_Type)
 {
-	return HazeValueType::Bool < Type && Type <= HazeValueType::UnsignedLong;
+	return HazeValueType::Bool < m_Type && m_Type <= HazeValueType::UnsignedLong;
 }
 
-bool IsIntegerType(HazeValueType Type)
+bool IsIntegerType(HazeValueType m_Type)
 {
-	return Type == HazeValueType::Int || Type == HazeValueType::Long || Type == HazeValueType::UnsignedInt || Type == HazeValueType::UnsignedLong;
+	return m_Type == HazeValueType::Int || m_Type == HazeValueType::Long || m_Type == HazeValueType::UnsignedInt || m_Type == HazeValueType::UnsignedLong;
 }
 
-bool IsPointerType(HazeValueType Type)
+bool IsPointerType(HazeValueType m_Type)
 {
-	return Type >= HazeValueType::PointerBase && Type <= HazeValueType::PointerPointer;
+	return m_Type >= HazeValueType::PointerBase && m_Type <= HazeValueType::PointerPointer;
 }
 
-bool IsPointerFunction(HazeValueType Type)
+bool IsPointerFunction(HazeValueType m_Type)
 {
-	return Type == HazeValueType::PointerFunction;
+	return m_Type == HazeValueType::PointerFunction;
 }
 
-bool IsNumberType(HazeValueType Type)
+bool IsNumberType(HazeValueType m_Type)
 {
 	static std::unordered_set<HazeValueType> HashSet_Table =
 	{
@@ -142,12 +142,12 @@ bool IsNumberType(HazeValueType Type)
 		HazeValueType::UnsignedInt, HazeValueType::UnsignedLong,
 	};
 
-	return HashSet_Table.find(Type) != HashSet_Table.end();
+	return HashSet_Table.find(m_Type) != HashSet_Table.end();
 }
 
-bool IsClassType(HazeValueType Type)
+bool IsClassType(HazeValueType m_Type)
 {
-	return Type == HazeValueType::Class;
+	return m_Type == HazeValueType::Class;
 }
 
 bool IsArrayType(HazeValueType type)
@@ -160,38 +160,38 @@ bool IsReferenceType(HazeValueType type)
 	return type == HazeValueType::ReferenceBase || type == HazeValueType::ReferenceClass;
 }
 
-void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& m_Value)
+void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType m_Type, HazeValue& Value)
 {
 	HAZE_STRING_STREAM WSS;
 	WSS << Str;
 
-	switch (Type)
+	switch (m_Type)
 	{
 	case HazeValueType::Float:
-		WSS >> m_Value.m_Value.Float;
+		WSS >> Value.Value.Float;
 		break;
 	case HazeValueType::Double:
-		WSS >> m_Value.m_Value.Double;
+		WSS >> Value.Value.Double;
 		break;
 	case HazeValueType::Bool:
 	case HazeValueType::Int:
-		WSS >> m_Value.m_Value.Int;
+		WSS >> Value.Value.Int;
 		break;
 	case HazeValueType::Long:
-		WSS >> m_Value.m_Value.Long;
+		WSS >> Value.Value.Long;
 		break;
 	case HazeValueType::UnsignedInt:
-		WSS >> m_Value.m_Value.UnsignedInt;
+		WSS >> Value.Value.UnsignedInt;
 		break;
 	case HazeValueType::UnsignedLong:
-		WSS >> m_Value.m_Value.UnsignedLong;
+		WSS >> Value.Value.UnsignedLong;
 		break;
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
 	case HazeValueType::PointerArray:
 	case HazeValueType::PointerPointer:
-		WSS >> m_Value.m_Value.UnsignedLong;
+		WSS >> Value.Value.UnsignedLong;
 		break;
 	default:
 		break;
@@ -207,7 +207,7 @@ void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeVal
 #define ASSIGN(TYPE) memcpy((void*)Target, &T, sizeof(TYPE))
 
 #define VARIABLE_COMPARE() bool CmpEqual = S == T; bool CmpGreater = S > T; bool CmpLess = S < T
-#define COMPARE_ASSIGN() Register->Data.resize(3); Register->Data[0] = CmpEqual; Register->Data[1] = CmpGreater; Register->Data[2] = CmpLess
+#define COMPARE_ASSIGN() Register->m_Data.resize(3); Register->m_Data[0] = CmpEqual; Register->m_Data[1] = CmpGreater; Register->m_Data[2] = CmpLess
 
 template<typename T>
 void CalculateValue(InstructionOpCode TypeCode, T& Target)
@@ -466,9 +466,9 @@ void CalculateValue(InstructionOpCode TypeCode, uint64& Source, uint64& Target)
 	}
 }
 
-void OperatorValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Target)
+void OperatorValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const void* Target)
 {
-	switch (Type)
+	switch (m_Type)
 	{
 		/*case HazeValueType::Bool:
 		{
@@ -524,9 +524,9 @@ void OperatorValueByType(HazeValueType Type, InstructionOpCode TypeCode, const v
 	}
 }
 
-void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Source, const void* Target)
+void CalculateValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const void* Source, const void* Target)
 {
-	switch (Type)
+	switch (m_Type)
 	{
 	case HazeValueType::Bool:
 	{
@@ -582,9 +582,9 @@ void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const 
 	}
 }
 
-void CompareValueByType(HazeValueType Type, HazeRegister* Register, const void* Source, const void* Target)
+void CompareValueByType(HazeValueType m_Type, HazeRegister* Register, const void* Source, const void* Target)
 {
-	switch (Type)
+	switch (m_Type)
 	{
 	case HazeValueType::Bool:
 	{
@@ -645,7 +645,7 @@ size_t GetHazeCharPointerLength(const HAZE_CHAR* Char)
 	return wcslen(Char);
 }
 
-const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type)
+const HAZE_CHAR* GetHazeValueTypeString(HazeValueType m_Type)
 {
 	static std::unordered_map<HazeValueType, const HAZE_CHAR*> HashMap_Code2String;
 
@@ -657,7 +657,7 @@ const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type)
 		}
 	}
 
-	auto iter = HashMap_Code2String.find(Type);
+	auto iter = HashMap_Code2String.find(m_Type);
 	if (iter != HashMap_Code2String.end())
 	{
 		return iter->second;
@@ -666,52 +666,52 @@ const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type)
 	return HAZE_TEXT("None");
 }
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, const HazeValue& m_Value)
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType m_Type, const HazeValue& Value)
 {
-	switch (Type)
+	switch (m_Type)
 	{
 	case HazeValueType::Bool:
-		return (HAZE_BINARY_CHAR*)&m_Value.m_Value.Bool;
+		return (HAZE_BINARY_CHAR*)&Value.Value.Bool;
 	case HazeValueType::Int:
-		return (HAZE_BINARY_CHAR*)&m_Value.m_Value.Int;
+		return (HAZE_BINARY_CHAR*)&Value.Value.Int;
 	case HazeValueType::Float:
-		return (HAZE_BINARY_CHAR*)&m_Value.m_Value.Float;
+		return (HAZE_BINARY_CHAR*)&Value.Value.Float;
 	case HazeValueType::UnsignedInt:
-		return (HAZE_BINARY_CHAR*)&m_Value.m_Value.UnsignedInt;
+		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedInt;
 	case HazeValueType::Long:
-		return (HAZE_BINARY_CHAR*)&m_Value.m_Value.Long;
+		return (HAZE_BINARY_CHAR*)&Value.Value.Long;
 	case HazeValueType::Double:
-		return (HAZE_BINARY_CHAR*)&m_Value.m_Value.Double;
+		return (HAZE_BINARY_CHAR*)&Value.Value.Double;
 	case HazeValueType::UnsignedLong:
-		return (HAZE_BINARY_CHAR*)&m_Value.m_Value.UnsignedLong;
+		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
 	case HazeValueType::PointerArray:
 	case HazeValueType::PointerPointer:
-		return (HAZE_BINARY_CHAR*)&m_Value.m_Value.UnsignedLong;
+		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
 	default:
 		break;
 	}
 	return nullptr;
 }
 
-HazeValue GetNegValue(HazeValueType Type, const HazeValue& m_Value)
+HazeValue GetNegValue(HazeValueType m_Type, const HazeValue& Value)
 {
 	HazeValue Ret;
-	switch (Type)
+	switch (m_Type)
 	{
 	case HazeValueType::Int:
-		Ret.m_Value.Int = -m_Value.m_Value.Int;
+		Ret.Value.Int = -Value.Value.Int;
 		break;
 	case HazeValueType::Float:
-		Ret.m_Value.Float = -m_Value.m_Value.Float;
+		Ret.Value.Float = -Value.Value.Float;
 		break;
 	case HazeValueType::Long:
-		Ret.m_Value.Long = -m_Value.m_Value.Long;
+		Ret.Value.Long = -Value.Value.Long;
 		break;
 	case HazeValueType::Double:
-		Ret.m_Value.Double = -m_Value.m_Value.Double;
+		Ret.Value.Double = -Value.Value.Double;
 		break;
 	default:
 		break;

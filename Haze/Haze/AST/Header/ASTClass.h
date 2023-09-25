@@ -9,31 +9,34 @@ class ASTFunctionDefine;
 class ASTClass
 {
 public:
-	ASTClass(HazeCompiler* m_Compiler, /*const SourceLocation& Location,*/ HAZE_STRING& m_Name, std::vector<HAZE_STRING>& ParentClass,
-		std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& Data, std::unique_ptr<ASTClassFunctionSection>& FunctionSection);
+	ASTClass(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HAZE_STRING& name, std::vector<HAZE_STRING>& parentClass,
+		std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& data, std::unique_ptr<ASTClassFunctionSection>& functionSection);
+	
 	~ASTClass();
 
 	void CodeGen();
 private:
 	HazeCompiler* m_Compiler;
 
-	HAZE_STRING ClassName;
-	std::vector<HAZE_STRING> ParentClass;
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> Vector_ClassData;
-	std::unique_ptr<ASTClassFunctionSection> ClassFunctionSection;
+	HAZE_STRING m_ClassName;
+	std::vector<HAZE_STRING> m_ParentClasses;
+	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> m_ClassDatas;
+	std::unique_ptr<ASTClassFunctionSection> m_ClassFunctionSection;
 };
 
 class ASTClassDefine
 {
 public:
-	ASTClassDefine(HazeCompiler* m_Compiler, /*const SourceLocation& Location,*/ HAZE_STRING& m_Name, std::vector<std::vector<std::unique_ptr<ASTBase>>>& Data, std::vector<std::unique_ptr<ASTFunctionDefine>>& Function);
+	ASTClassDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HAZE_STRING& name, 
+		std::vector<std::vector<std::unique_ptr<ASTBase>>>& data, std::vector<std::unique_ptr<ASTFunctionDefine>>& function);
+
 	~ASTClassDefine();
 
 	void CodeGen();
 private:
 	HazeCompiler* m_Compiler;
 
-	HAZE_STRING ClassName;
-	std::vector<std::vector<std::unique_ptr<ASTBase>>> ClassData;
-	std::vector<std::unique_ptr<ASTFunctionDefine>> ClassFunction;
+	HAZE_STRING m_ClassName;
+	std::vector<std::vector<std::unique_ptr<ASTBase>>> m_ClassDatas;
+	std::vector<std::unique_ptr<ASTFunctionDefine>> m_ClassFunctions;
 };

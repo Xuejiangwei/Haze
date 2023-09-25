@@ -27,105 +27,105 @@ static  HAZE_STRING GetFileModuleName(const HAZE_CHAR*& FilePath)
 	return GetModuleNameByFilePath(GetFileName(FilePath));
 }
 
-void HookCall(HazeVM* VM)
+void HookCall(HazeVM* m_VM)
 {
 }
 
-void GetHazeValueByBaseType(open::OpenJson& Json, const char* Address, HazeValueType Type)
+void GetHazeValueByBaseType(open::OpenJson& Json, const char* Address, HazeValueType m_Type)
 {
-	switch (Type)
+	switch (m_Type)
 	{
 	case HazeValueType::Bool:
 	{
-		bool m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		bool Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::Byte:
 	{
-		hbyte m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		hbyte Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::UnsignedByte:
 	{
-		uhbyte m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		uhbyte Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::Char:
 	{
-		char m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		char Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::Short:
 	{
-		short m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		short Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::UnsignedShort:
 	{
-		ushort m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		ushort Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::Int:
 	{
-		int m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		int Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::Float:
 	{
-		float m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		float Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::Long:
 	{
-		int64 m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		int64 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::Double:
 	{
-		double m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		double Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::UnsignedInt:
 	{
-		uint32 m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		uint32 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	case HazeValueType::UnsignedLong:
 	{
-		uint64 m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json = m_Value;
+		uint64 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json = Value;
 	}
 	break;
 	default:
-		HAZE_LOG_ERR_W("Debug 获得基础类型<%d>数据错误!\n", (uint32)Type);
+		HAZE_LOG_ERR_W("Debug 获得基础类型<%d>数据错误!\n", (uint32)m_Type);
 		break;
 	}
 }
 
-HazeDebugger::HazeDebugger(HazeVM* VM, void(*EndCall)()) : VM(VM), EndCall(EndCall), HookFunctionCall(&HookCall), HookType(DebuggerHookType::Line),
+HazeDebugger::HazeDebugger(HazeVM* m_VM, void(*EndCall)()) : m_VM(m_VM), EndCall(EndCall), HookFunctionCall(&HookCall), HookType(DebuggerHookType::Line),
 IsPause(true)
 {
 	HashMap_BreakPoint.clear();
@@ -141,10 +141,10 @@ HazeDebugger::~HazeDebugger()
 	}
 }
 
-void HazeDebugger::SetHook(void(*HookCall)(HazeVM* VM), uint32 Type)
+void HazeDebugger::SetHook(void(*HookCall)(HazeVM* m_VM), uint32 m_Type)
 {
 	HookFunctionCall = HookCall;
-	HookType = Type;
+	HookType = m_Type;
 }
 
 void HazeDebugger::AddBreakPoint(const char* Message)
@@ -228,7 +228,7 @@ void HazeDebugger::OnExecLine(uint32 Line)
 
 #endif // ENABLE_DEBUGGER_LOG
 
-	auto m_ModuleName = VM->GetModuleNameByCurrFunction();
+	auto m_ModuleName = m_VM->GetModuleNameByCurrFunction();
 	auto Iter = HashMap_BreakPoint.find(*m_ModuleName);
 	if (Iter != HashMap_BreakPoint.end())
 	{
@@ -239,7 +239,7 @@ void HazeDebugger::OnExecLine(uint32 Line)
 			{
 				if (HookFunctionCall)
 				{
-					HookFunctionCall(VM);
+					HookFunctionCall(m_VM);
 				}
 
 				CurrPauseModule = { Iter->first, Line };
@@ -299,12 +299,12 @@ void HazeDebugger::Start()
 
 void HazeDebugger::StepOver()
 {
-	HashMap_IsStepOver[*VM->GetModuleNameByCurrFunction()] = true;
+	HashMap_IsStepOver[*m_VM->GetModuleNameByCurrFunction()] = true;
 
 	if (IsPause)
 	{
 		IsPause = false;
-		CurrPauseModule.second = VM->GetNextLine(CurrPauseModule.second);
+		CurrPauseModule.second = m_VM->GetNextLine(CurrPauseModule.second);
 	}
 	else
 	{
@@ -329,14 +329,14 @@ void HazeDebugger::SetJsonLocalVariable(open::OpenJson& Json)
 {
 	auto& Info = Json["LocalVariable"];
 
-	auto& Frame = VM->VMStack->GetCurrFrame();
+	auto& Frame = m_VM->VMStack->GetCurrFrame();
 	if (Frame.FunctionInfo)
 	{
-		for (size_t i = 0; i < Frame.FunctionInfo->m_Vector_Variables.size(); i++)
+		for (size_t i = 0; i < Frame.FunctionInfo->Variables.size(); i++)
 		{
-			if (Frame.FunctionInfo->m_Vector_Variables[i].Line < CurrPauseModule.second)
+			if (Frame.FunctionInfo->Variables[i].Line < CurrPauseModule.second)
 			{
-				SetJsonVariableData(Info[i], Frame.FunctionInfo->m_Vector_Variables[i]);
+				SetJsonVariableData(Info[i], Frame.FunctionInfo->Variables[i]);
 			}
 		}
 	}
@@ -351,12 +351,12 @@ void HazeDebugger::SetJsonModuleGlobalVariable(open::OpenJson& Json)
 {
 	auto& Info = Json["GlobalVariable"];
 
-	auto& Frame = VM->VMStack->GetCurrFrame();
+	auto& Frame = m_VM->VMStack->GetCurrFrame();
 	if (Frame.FunctionInfo)
 	{
-		for (size_t i = 0; i < Frame.FunctionInfo->m_Vector_Variables.size(); i++)
+		for (size_t i = 0; i < Frame.FunctionInfo->Variables.size(); i++)
 		{
-			SetJsonVariableData(Info[i], Frame.FunctionInfo->m_Vector_Variables[i]);
+			SetJsonVariableData(Info[i], Frame.FunctionInfo->Variables[i]);
 		}
 	}
 }
@@ -365,7 +365,7 @@ void HazeDebugger::AddTempBreakPoint(uint32 Line)
 {
 	if (CurrModuleIsStepOver())
 	{
-		auto m_ModuleName = VM->GetModuleNameByCurrFunction();
+		auto m_ModuleName = m_VM->GetModuleNameByCurrFunction();
 		HashMap_TempBreakPoint[*m_ModuleName].first.insert(Line);
 	}
 }
@@ -380,7 +380,7 @@ void HazeDebugger::SendProgramEnd()
 
 bool HazeDebugger::CurrModuleIsStepOver()
 {
-	auto m_ModuleName = VM->GetModuleNameByCurrFunction();
+	auto m_ModuleName = m_VM->GetModuleNameByCurrFunction();
 	auto Iter = HashMap_IsStepOver.find(*m_ModuleName);
 	if (Iter != HashMap_IsStepOver.end())
 	{
@@ -414,65 +414,65 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 	String = WString2String(Variable.Variable.m_Name);
 	Json["Name"] = GB2312_2_UFT8(String.c_str());
 
-	auto DataAddress = isStack ? VM->VMStack->GetAddressByEBP(Variable.Offset) : Address;
+	auto DataAddress = isStack ? m_VM->VMStack->GetAddressByEBP(Variable.Offset) : Address;
 	if (Address)
 	{
 		DataAddress += Variable.Offset;
 	}
 
-	if (IsClassType(Variable.Variable.Type.PrimaryType))
+	if (IsClassType(Variable.Variable.m_Type.PrimaryType))
 	{
-		auto Class = VM->FindClass(Variable.Variable.Type.CustomName);
-		String = WString2String(Variable.Variable.Type.CustomName);
+		auto Class = m_VM->FindClass(Variable.Variable.m_Type.CustomName);
+		String = WString2String(Variable.Variable.m_Type.CustomName);
 		Json["Type"] = GB2312_2_UFT8(String.c_str());
 
-		for (size_t j = 0; j < Class->Vector_Member.size(); j++)
+		for (size_t j = 0; j < Class->Members.size(); j++)
 		{
-			SetJsonVariableData(Json["Value"][j], Class->Vector_Member[j], DataAddress);
+			SetJsonVariableData(Json["Value"][j], Class->Members[j], DataAddress);
 		}
 	}
-	else if (IsPointerType(Variable.Variable.Type.PrimaryType))
+	else if (IsPointerType(Variable.Variable.m_Type.PrimaryType))
 	{
 		String = WString2String(HAZE_TEXT("指针"));
 		Json["Type"] = GB2312_2_UFT8(String.c_str());
 
-		uint64 m_Value;
-		memcpy(&m_Value, DataAddress, sizeof(m_Value));
-		Json["Value"] = ToString((void*)m_Value);
+		uint64 Value;
+		memcpy(&Value, DataAddress, sizeof(Value));
+		Json["Value"] = ToString((void*)Value);
 
-		if (Variable.Variable.Type.NeedCustomName())
+		if (Variable.Variable.m_Type.NeedCustomName())
 		{
-			auto Class = VM->FindClass(Variable.Variable.Type.CustomName);
-			String = WString2String(Variable.Variable.Type.CustomName);
+			auto Class = m_VM->FindClass(Variable.Variable.m_Type.CustomName);
+			String = WString2String(Variable.Variable.m_Type.CustomName);
 			Json["TypeClass"] = GB2312_2_UFT8(String.c_str());
 
-			for (size_t j = 0; j < Class->Vector_Member.size(); j++)
+			for (size_t j = 0; j < Class->Members.size(); j++)
 			{
-				SetJsonVariableData(Json["PointerValue"][j], Class->Vector_Member[j], (const char*)m_Value, false);
+				SetJsonVariableData(Json["PointerValue"][j], Class->Members[j], (const char*)Value, false);
 			}
 		}
 
-		if (Variable.Variable.Type.NeedSecondaryType())
+		if (Variable.Variable.m_Type.NeedSecondaryType())
 		{
-			String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.SecondaryType));
+			String = WString2String(GetHazeValueTypeString(Variable.Variable.m_Type.SecondaryType));
 			Json["SubType"] = GB2312_2_UFT8(String.c_str());
 		}
 	}
-	else if (IsArrayType(Variable.Variable.Type.PrimaryType))
+	else if (IsArrayType(Variable.Variable.m_Type.PrimaryType))
 	{
-		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.PrimaryType));
+		String = WString2String(GetHazeValueTypeString(Variable.Variable.m_Type.PrimaryType));
 		Json["Type"] = GB2312_2_UFT8(String.c_str());
 		
-		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.SecondaryType));
+		String = WString2String(GetHazeValueTypeString(Variable.Variable.m_Type.SecondaryType));
 		Json["SubType"] = GB2312_2_UFT8(String.c_str());
 
-		int size = GetSizeByType(Variable.Variable.Type, VM);
+		int size = GetSizeByType(Variable.Variable.m_Type, m_VM);
 
-		if (Variable.Variable.Type.CustomName.empty())
+		if (Variable.Variable.m_Type.CustomName.empty())
 		{
 			for (int i = 0; i < Variable.Size / size; i++)
 			{
-				GetHazeValueByBaseType(Json["Value"][i], DataAddress + i * size, Variable.Variable.Type.SecondaryType);
+				GetHazeValueByBaseType(Json["Value"][i], DataAddress + i * size, Variable.Variable.m_Type.SecondaryType);
 			}
 
 		}
@@ -484,19 +484,19 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& Json, const HazeVariableD
 			}
 		}
 	}
-	else if (IsReferenceType(Variable.Variable.Type.PrimaryType))
+	else if (IsReferenceType(Variable.Variable.m_Type.PrimaryType))
 	{
-		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.PrimaryType));
+		String = WString2String(GetHazeValueTypeString(Variable.Variable.m_Type.PrimaryType));
 		Json["Type"] = GB2312_2_UFT8(String.c_str());
 
-		uint64 m_Value;
-		memcpy(&m_Value, Address, sizeof(m_Value));
-		Json["Value"] = m_Value;
+		uint64 Value;
+		memcpy(&Value, Address, sizeof(Value));
+		Json["Value"] = Value;
 	}
 	else
 	{
-		String = WString2String(GetHazeValueTypeString(Variable.Variable.Type.PrimaryType));
+		String = WString2String(GetHazeValueTypeString(Variable.Variable.m_Type.PrimaryType));
 		Json["Type"] = GB2312_2_UFT8(String.c_str());
-		GetHazeValueByBaseType(Json["Value"], DataAddress, Variable.Variable.Type.PrimaryType);
+		GetHazeValueByBaseType(Json["Value"], DataAddress, Variable.Variable.m_Type.PrimaryType);
 	}
 }

@@ -20,11 +20,11 @@ HazeBaseBlock::~HazeBaseBlock()
 {
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& m_Value, HAZE_STRING& OutName)
+bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {
 	for (auto& it : Vector_Alloca)
 	{
-		if (TrtGetVariableName(ParentFunction, it, m_Value, OutName))
+		if (TrtGetVariableName(ParentFunction, it, Value, OutName))
 		{
 			return true;
 		}
@@ -32,7 +32,7 @@ bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValu
 
 	for (auto& Iter : List_ChildBlock)
 	{
-		if (Iter->FindLocalVariableName(m_Value, OutName))
+		if (Iter->FindLocalVariableName(Value, OutName))
 		{
 			return true;
 		}
@@ -41,11 +41,11 @@ bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValu
 	return false;
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* m_Value, HAZE_STRING& OutName)
+bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName)
 {
 	for (auto& it : Vector_Alloca)
 	{
-		if (TrtGetVariableName(ParentFunction, it, m_Value, OutName))
+		if (TrtGetVariableName(ParentFunction, it, Value, OutName))
 		{
 			return true;
 		}
@@ -53,7 +53,7 @@ bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* m_Value, HAZE
 
 	for (auto& Iter : List_ChildBlock)
 	{
-		if (Iter->FindLocalVariableName(m_Value, OutName))
+		if (Iter->FindLocalVariableName(Value, OutName))
 		{
 			return true;
 		}
@@ -149,7 +149,7 @@ void HazeBaseBlock::PushIRCode(const HAZE_STRING& Code)
 }
 
 std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& Define, int Line, int Count, std::shared_ptr<HazeCompilerValue> RefValue,
-	std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize, std::vector<HazeDefineType>* Vector_Param)
+	std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize, std::vector<HazeDefineType>* Params)
 {
 	for (auto& Iter : Vector_Alloca)
 	{
@@ -161,7 +161,7 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 	}
 
 	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(ParentFunction->GetModule(), Define, HazeVariableScope::Local, HazeDataDesc::None, Count,
-		RefValue, m_ArraySize, Vector_Param);
+		RefValue, m_ArraySize, Params);
 	Vector_Alloca.push_back({ Define.m_Name, Alloce });
 
 	ParentFunction->AddLocalVariable(Alloce, Line);

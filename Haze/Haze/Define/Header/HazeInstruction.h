@@ -233,7 +233,7 @@ struct FunctionDescData
 {
 	using StdLibFunctionCall = void(*)(HAZE_STD_CALL_PARAM);
 
-	InstructionFunctionType Type;
+	InstructionFunctionType m_Type;
 
 	union
 	{
@@ -263,18 +263,18 @@ struct ModuleData
 	}
 };
 
-struct ClassData
+struct m_ClassDatas
 {
 	HAZE_STRING m_Name;
 	unsigned int Size;
-	std::vector<HazeVariableData> Vector_Member;
+	std::vector<HazeVariableData> Members;
 };
 
 struct FunctionData
 {
-	HazeValueType Type;
-	std::vector<HazeDefineVariable> Vector_Param;
-	std::vector<HazeVariableData> m_Vector_Variables;
+	HazeValueType m_Type;
+	std::vector<HazeDefineVariable> Params;
+	std::vector<HazeVariableData> Variables;
 	uint32 InstructionNum;
 
 	FunctionDescData FunctionDescData;
@@ -282,8 +282,8 @@ struct FunctionData
 
 struct HazeRegister
 {
-	std::vector<char> Data;
-	HazeDefineType Type;
+	std::vector<char> m_Data;
+	HazeDefineType m_Type;
 };
 
 struct HazeJmpData

@@ -6,7 +6,8 @@
 class ModuleUnit
 {
 public:
-	ModuleUnit(const HAZE_STRING& m_Name);
+	ModuleUnit(const HAZE_STRING& name);
+
 	~ModuleUnit();
 
 public:
@@ -17,26 +18,26 @@ public:
 	{
 		HAZE_STRING m_Name;
 		uint32 Size;
-		HazeDefineType Type;
-		HazeValue m_Value;
+		HazeDefineType m_Type;
+		HazeValue Value;
 	};
 
 	struct GlobalDataTable
 	{
-		std::vector<GlobalData> Vector_Data;
+		std::vector<GlobalData> m_Data;
 		uint32 ClassObjectAllSize;
 
 		GlobalDataTable()
 		{
-			Vector_Data.clear();
+			m_Data.clear();
 			ClassObjectAllSize = 0;
 		}
 
-		int GetIndex(const HAZE_STRING& m_Name)
+		int GetIndex(const HAZE_STRING& name)
 		{
-			for (uint64 i = 0; i < Vector_Data.size(); i++)
+			for (uint64 i = 0; i < m_Data.size(); i++)
 			{
-				if (Vector_Data[i].m_Name == m_Name)
+				if (m_Data[i].m_Name == name)
 				{
 					return (int)i;
 				}
@@ -55,11 +56,11 @@ public:
 
 	struct StringTable
 	{
-		std::vector<StringTableData> Vector_String;
+		std::vector<StringTableData> Strings;
 
 		StringTable()
 		{
-			Vector_String.clear();
+			Strings.clear();
 		}
 	};
 
@@ -75,12 +76,12 @@ public:
 	{
 		HAZE_STRING m_Name;
 		uint32 Size;
-		std::vector<ClassMemberData> Vector_Member;
+		std::vector<ClassMemberData> Members;
 	};
 
 	struct ClassTable
 	{
-		std::vector<ClassTableData> Vector_Class;
+		std::vector<ClassTableData> Classes;
 	};
 
 public:
@@ -105,11 +106,11 @@ public:
 	struct FunctionTableData
 	{
 		HAZE_STRING m_Name;
-		HazeValueType Type;
-		std::vector<HazeDefineVariable> Vector_Param;
-		std::vector<HazeVariableData> m_Vector_Variables;
-		std::vector<FunctionBlock> Vector_Block;
-		std::vector<FunctionInstruction> Vector_Instruction;
+		HazeValueType m_Type;
+		std::vector<HazeDefineVariable> Params;
+		std::vector<HazeVariableData> Variables;
+		std::vector<FunctionBlock> Blocks;
+		std::vector<FunctionInstruction> Instructions;
 		InstructionFunctionType DescType;
 		
 		uint32 StartLine;
@@ -117,10 +118,10 @@ public:
 
 		FunctionTableData()
 		{
-			Type = HazeValueType::Void;
-			Vector_Param.clear();
-			Vector_Block.clear();
-			Vector_Instruction.clear();
+			m_Type = HazeValueType::Void;
+			Params.clear();
+			Blocks.clear();
+			Instructions.clear();
 			DescType = InstructionFunctionType::HazeFunction;
 			StartLine = 0;
 			EndLine = 0;
@@ -129,21 +130,21 @@ public:
 
 	struct FunctionTable
 	{
-		std::vector<FunctionTableData> Vector_Function;
+		std::vector<FunctionTableData> m_Functions;
 
 		FunctionTable()
 		{
-			Vector_Function.clear();
+			m_Functions.clear();
 		}
 	};
 
 private:
-	HazeLibraryType LibraryType;
+	HazeLibraryType m_LibraryType;
 
 	HAZE_STRING m_Name;
 
-	GlobalDataTable Table_GlobalData;
-	StringTable Table_String;
-	ClassTable Table_Class;
-	FunctionTable Table_Function;
+	GlobalDataTable m_GlobalDataTable;
+	StringTable m_StringTable;
+	ClassTable m_ClassTable;
+	FunctionTable m_FunctionTable;
 };

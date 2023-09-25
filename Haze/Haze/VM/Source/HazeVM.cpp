@@ -160,13 +160,13 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& m_Name)
 				auto Class = FindClass(Iter.GetType().CustomName);
 				if (Class)
 				{
-					for (size_t i = 0; i < Class->Vector_Member.size(); i++)
+					for (size_t i = 0; i < Class->Members.size(); i++)
 					{
-						if (Class->Vector_Member[i].Variable.m_Name == MemberName)
+						if (Class->Members[i].Variable.m_Name == MemberName)
 						{
 							uint64 Address = 0;
-							memcpy(&Address, Iter.m_Value.m_Value.Pointer, sizeof(Address));
-							return (char*)(Address + Class->Vector_Member[i].Offset);
+							memcpy(&Address, Iter.Value.Value.Pointer, sizeof(Address));
+							return (char*)(Address + Class->Members[i].Offset);
 						}
 					}
 				}
@@ -187,11 +187,11 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& m_Name)
 				auto Class = FindClass(Iter.GetType().CustomName);
 				if (Class)
 				{
-					for (size_t i = 0; i < Class->Vector_Member.size(); i++)
+					for (size_t i = 0; i < Class->Members.size(); i++)
 					{
-						if (Class->Vector_Member[i].Variable.m_Name == MemberName)
+						if (Class->Members[i].Variable.m_Name == MemberName)
 						{
-							return (char*)Iter.Address + Class->Vector_Member[i].Offset;
+							return (char*)Iter.Address + Class->Members[i].Offset;
 						}
 					}
 				}
@@ -204,7 +204,7 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& m_Name)
 		{
 			if (Iter.m_Name == m_Name)
 			{
-				return &Iter.m_Value.m_Value;
+				return &Iter.Value.Value;
 			}
 		}
 	}
@@ -216,23 +216,23 @@ char* HazeVM::GetGlobalValueByIndex(uint32 Index)
 {
 	if (Index < Vector_GlobalData.size())
 	{
-		if (IsClassType(Vector_GlobalData[Index].Type.PrimaryType))
+		if (IsClassType(Vector_GlobalData[Index].m_Type.PrimaryType))
 		{
 			return (char*)Vector_GlobalData[Index].Address;
 		}
 		else
 		{
-			return (char*)(&Vector_GlobalData[Index].m_Value);
+			return (char*)(&Vector_GlobalData[Index].Value);
 		}
 	}
 	return nullptr;
 }
 
-ClassData* HazeVM::FindClass(const HAZE_STRING& ClassName)
+m_ClassDatas* HazeVM::FindClass(const HAZE_STRING& m_ClassName)
 {
 	for (auto& Iter : Vector_ClassTable)
 	{
-		if (Iter.m_Name == ClassName)
+		if (Iter.m_Name == m_ClassName)
 		{
 			return &Iter;
 		}
@@ -241,9 +241,9 @@ ClassData* HazeVM::FindClass(const HAZE_STRING& ClassName)
 	return nullptr;
 }
 
-uint32 HazeVM::GetClassSize(const HAZE_STRING& ClassName)
+uint32 HazeVM::GetClassSize(const HAZE_STRING& m_ClassName)
 {
-	auto Class = FindClass(ClassName);
+	auto Class = FindClass(m_ClassName);
 	return Class ? Class->Size : 0;
 }
 
@@ -273,9 +273,9 @@ uint32 HazeVM::GetNextLine(uint32 CurrLine)
 	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
 	for (size_t i = VMStack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
 	{
-		if (Vector_Instruction[i].InsCode == InstructionOpCode::LINE && Vector_Instruction[i].Operator[0].Extra.Line > CurrLine)
+		if (Instructions[i].InsCode == InstructionOpCode::LINE && Instructions[i].Operator[0].Extra.Line > CurrLine)
 		{
-			return Vector_Instruction[i].Operator[0].Extra.Line;
+			return Instructions[i].Operator[0].Extra.Line;
 		}
 	}
 
@@ -287,16 +287,16 @@ uint32 HazeVM::GetCurrCallFunctionLine()
 	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
 	for (size_t i = VMStack->GetCurrPC(); i >= StartAddress; i--)
 	{
-		if (Vector_Instruction[i].InsCode == InstructionOpCode::LINE)
+		if (Instructions[i].InsCode == InstructionOpCode::LINE)
 		{
-			return Vector_Instruction[i].Operator[0].Extra.Line;
+			return Instructions[i].Operator[0].Extra.Line;
 		}
 	}
 
 	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
-void HazeVM::Hook(HazeVM* VM)
-{
-	HAZE_LOG_INFO(HAZE_TEXT("已命中断点\n"));
-}
+//void HazeVM::Hook(HazeVM* m_VM)
+//{
+//	HAZE_LOG_INFO(HAZE_TEXT("已命中断点\n"));
+//}

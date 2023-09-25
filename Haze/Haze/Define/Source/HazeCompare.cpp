@@ -26,7 +26,7 @@ HazeCmpType GetHazeCmpTypeByToken(HazeToken m_Token)
 	return HazeCmpType::None;
 }
 
-InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType Type)
+InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType m_Type)
 {
 	static std::unordered_map<HazeCmpType, InstructionOpCode> HashMap =
 	{
@@ -41,7 +41,7 @@ InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType Type)
 		{HazeCmpType::Or, InstructionOpCode::JE},
 	};
 
-	auto Iter = HashMap.find(Type);
+	auto Iter = HashMap.find(m_Type);
 	if (Iter != HashMap.end())
 	{
 		return Iter->second;

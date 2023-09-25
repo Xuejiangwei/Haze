@@ -467,7 +467,7 @@ void HazeCompilerModule::GenIRCode_JmpTo(std::shared_ptr<HazeBaseBlock> block)
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, std::shared_ptr<HazeCompilerValue> refValue,
 	std::vector<std::shared_ptr<HazeCompilerValue>> arraySize, std::vector<HazeDefineType>* params)
 {
-	for (auto& it : m_Vector_Variables)
+	for (auto& it : Variables)
 	{
 		if (it.first == var.m_Name)
 		{
@@ -476,10 +476,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 		}
 	}
 
-	m_Vector_Variables.push_back({ var.m_Name,
+	Variables.push_back({ var.m_Name,
 		CreateVariable(this, var, HazeVariableScope::Global, HazeDataDesc::None, 0, refValue, arraySize, params) });
 
-	auto& retValue = m_Vector_Variables.back().second;
+	auto& retValue = Variables.back().second;
 
 	return retValue;
 }
@@ -693,13 +693,13 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetOrCreateGlobalStringVa
 	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = &it->first;
 
 	HazeDefineVariable defineVar;
-	defineVar.Type.PrimaryType = HazeValueType::PointerBase;
-	defineVar.Type.SecondaryType = HazeValueType::Char;
+	defineVar.m_Type.PrimaryType = HazeValueType::PointerBase;
+	defineVar.m_Type.SecondaryType = HazeValueType::Char;
 
 	it->second = CreateVariable(this, defineVar, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
 
 	HazeValue& hazeValue = const_cast<HazeValue&>(it->second->GetValue());
-	hazeValue.m_Value.Extra.StringTableIndex = (int)m_HashMap_StringMapping.size() - 1;
+	hazeValue.Value.Extra.StringTableIndex = (int)m_HashMap_StringMapping.size() - 1;
 
 	return it->second;
 }
@@ -725,7 +725,7 @@ uint32 HazeCompilerModule::GetGlobalStringIndex(std::shared_ptr<HazeCompilerValu
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const HAZE_STRING& name)
 {
-	for (auto& it : m_Vector_Variables)
+	for (auto& it : Variables)
 	{
 		if (it.first == name)
 		{
@@ -761,7 +761,7 @@ bool HazeCompilerModule::GetGlobalVariableName(const std::shared_ptr<HazeCompile
 		return true;
 	}
 
-	for (auto& it : m_Vector_Variables)
+	for (auto& it : Variables)
 	{
 		if (TrtGetVariableName(nullptr, it, value, outName))
 		{
@@ -791,7 +791,7 @@ bool HazeCompilerModule::GetGlobalVariableName(const std::shared_ptr<HazeCompile
 
 bool HazeCompilerModule::GetGlobalVariableName(const HazeCompilerValue* value, HAZE_STRING& outName)
 {
-	for (auto& it : m_Vector_Variables)
+	for (auto& it : Variables)
 	{
 		if (TrtGetVariableName(nullptr, it, value, outName))
 		{
@@ -1046,9 +1046,9 @@ void HazeCompilerModule::GenICode()
 	*				数据名 数据类型 数据
 	*/
 	hss << GetGlobalDataHeaderString() << std::endl;
-	hss << m_Vector_Variables.size() << std::endl;
+	hss << Variables.size() << std::endl;
 
-	for (auto& iter : m_Vector_Variables)
+	for (auto& iter : Variables)
 	{
 		hss << iter.first << " " << iter.second->GetSize() << " " << CAST_TYPE(iter.second->GetValueType().PrimaryType) << " ";
 

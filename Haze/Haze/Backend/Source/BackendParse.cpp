@@ -12,40 +12,41 @@
 
 static std::pair<bool, int> ParseStringCount = { false, 0 };
 
-static void FindObjectAndMemberName(const HAZE_STRING& InName, HAZE_STRING& OutObjectName, HAZE_STRING& OutMemberName, bool& ObjectIsPointer)
+static void FindObjectAndMemberName(const HAZE_STRING& inName, HAZE_STRING& outObjectName, 
+	HAZE_STRING& outMemberName, bool& objectIsPointer)
 {
-	size_t Pos = InName.find(HAZE_CLASS_POINTER_ATTR);
-	if (Pos != HAZE_STRING::npos)
+	size_t pos = inName.find(HAZE_CLASS_POINTER_ATTR);
+	if (pos != HAZE_STRING::npos)
 	{
-		OutObjectName = InName.substr(0, Pos);
-		OutMemberName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
-		ObjectIsPointer = true;
+		outObjectName = inName.substr(0, pos);
+		outMemberName = inName.substr(pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
+		objectIsPointer = true;
 	}
 	else
 	{
-		Pos = InName.find(HAZE_CLASS_ATTR);
-		if (Pos != HAZE_STRING::npos)
+		pos = inName.find(HAZE_CLASS_ATTR);
+		if (pos != HAZE_STRING::npos)
 		{
-			OutObjectName = InName.substr(0, Pos);
-			OutMemberName = InName.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
-			ObjectIsPointer = false;
+			outObjectName = inName.substr(0, pos);
+			outMemberName = inName.substr(pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
+			objectIsPointer = false;
 		}
 	}
 }
 
-static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& Ins)
+static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 {
-	if (Ins.InsCode == InstructionOpCode::LINE)
+	if (ins.InsCode == InstructionOpCode::LINE)
 	{
 		return true;
 	}
 
-	if (Ins.InsCode == InstructionOpCode::CALL && Ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::Function)
+	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.m_Type.PrimaryType == HazeValueType::Function)
 	{
 		return true;
 	}
 
-	if (Ins.InsCode == InstructionOpCode::RET && IsVoidType(Ins.Operator[0].Variable.Type.PrimaryType))
+	if (ins.InsCode == InstructionOpCode::RET && IsVoidType(ins.Operator[0].Variable.m_Type.PrimaryType))
 	{
 		return true;
 	}
@@ -53,41 +54,41 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& Ins)
 	return false;
 }
 
-static bool IsIgnoreFindAddress(InstructionData& Operator)
+static bool IsIgnoreFindAddress(InstructionData& operatorData)
 {
-	if (Operator.Desc == HazeDataDesc::Constant)
+	if (operatorData.Desc == HazeDataDesc::Constant)
 	{
-		Operator.AddressType = InstructionAddressType::Constant;
+		operatorData.AddressType = InstructionAddressType::Constant;
 		return true;
 	}
 
-	if (Operator.Desc == HazeDataDesc::ConstantString)
+	if (operatorData.Desc == HazeDataDesc::ConstantString)
 	{
-		Operator.AddressType = InstructionAddressType::ConstantString;
+		operatorData.AddressType = InstructionAddressType::ConstantString;
 		return true;
 	}
 
-	if (Operator.Desc == HazeDataDesc::CallFunctionModule)
+	if (operatorData.Desc == HazeDataDesc::CallFunctionModule)
 	{
 		return true;
 	}
 
-	if (Operator.Variable.m_Name == HAZE_CALL_PUSH_ADDRESS_NAME)
+	if (operatorData.Variable.m_Name == HAZE_CALL_PUSH_ADDRESS_NAME)
 	{
-		Operator.AddressType = InstructionAddressType::Local;
+		operatorData.AddressType = InstructionAddressType::Local;
 		return true;
 	}
 
-	if (IsRegisterDesc(Operator.Desc))
+	if (IsRegisterDesc(operatorData.Desc))
 	{
-		Operator.AddressType = InstructionAddressType::Register;
+		operatorData.AddressType = InstructionAddressType::Register;
 		return true;
 	}
 
 	return false;
 }
 
-BackendParse::BackendParse(HazeVM* VM) : VM(VM), CurrCode(nullptr)
+BackendParse::BackendParse(HazeVM* vm) : m_VM(vm), m_CurrCode(nullptr)
 {
 }
 
@@ -97,28 +98,28 @@ BackendParse::~BackendParse()
 
 void BackendParse::Parse()
 {
-	HAZE_STRING I_CodePath;
+	HAZE_STRING interCodePath;
 
-	auto& Modules = VM->GetReferenceModules();
+	auto& refModules = m_VM->GetReferenceModules();
 
-	HAZE_STRING CodeText;
+	HAZE_STRING codeText;
 
-	for (auto& Module : Modules)
+	for (auto& refModule : refModules)
 	{
-		CurrParseModule = std::make_shared<ModuleUnit>(Module);
-		HashMap_Modules[Module] = CurrParseModule;
+		m_CurrParseModule = std::make_shared<ModuleUnit>(refModule);
+		m_Modules[refModule] = m_CurrParseModule;
 
-		HAZE_IFSTREAM FS(GetIntermediateModuleFile(Module));
-		FS.imbue(std::locale("chs"));
+		HAZE_IFSTREAM fs(GetIntermediateModuleFile(refModule));
+		fs.imbue(std::locale("chs"));
 
-		HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(FS), {});
+		HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(fs), {});
 
-		CodeText = std::move(Content);
-		CurrCode = CodeText.c_str();
+		codeText = std::move(Content);
+		m_CurrCode = codeText.c_str();
 
 		Parse_I_Code();
 
-		FS.close();
+		fs.close();
 	}
 
 	GenOpCodeFile();
@@ -126,16 +127,16 @@ void BackendParse::Parse()
 
 void BackendParse::GetNextLexeme()
 {
-	CurrLexeme.clear();
-	while (HazeIsSpace(*CurrCode))
+	m_CurrLexeme.clear();
+	while (HazeIsSpace(*m_CurrCode))
 	{
-		CurrCode++;
+		m_CurrCode++;
 	}
 
-	CurrLexeme.clear();
-	while (!HazeIsSpace(*CurrCode) || (ParseStringCount.first && ParseStringCount.second > 0))
+	m_CurrLexeme.clear();
+	while (!HazeIsSpace(*m_CurrCode) || (ParseStringCount.first && ParseStringCount.second > 0))
 	{
-		CurrLexeme += *(CurrCode++);
+		m_CurrLexeme += *(m_CurrCode++);
 		ParseStringCount.second--;
 	}
 }
@@ -144,7 +145,7 @@ void BackendParse::Parse_I_Code()
 {
 	//Standard lib
 	GetNextLexeme();
-	CurrParseModule->LibraryType = (HazeLibraryType)StringToStandardType<uint32>(CurrLexeme);
+	m_CurrParseModule->m_LibraryType = (HazeLibraryType)StringToStandardType<uint32>(m_CurrLexeme);
 
 	//Global data
 	GetNextLexeme();
@@ -165,33 +166,33 @@ void BackendParse::Parse_I_Code()
 
 void BackendParse::Parse_I_Code_GlobalTable()
 {
-	if (CurrLexeme == GetGlobalDataHeaderString())
+	if (m_CurrLexeme == GetGlobalDataHeaderString())
 	{
 		GetNextLexeme();
-		uint32 Num = StringToStandardType<uint32>(CurrLexeme);
+		uint32 number = StringToStandardType<uint32>(m_CurrLexeme);
 
-		ModuleUnit::GlobalDataTable& Table = CurrParseModule->Table_GlobalData;
-		Table.Vector_Data.resize(Num);
+		ModuleUnit::GlobalDataTable& table = m_CurrParseModule->m_GlobalDataTable;
+		table.m_Data.resize(number);
 
-		for (size_t i = 0; i < Table.Vector_Data.size(); i++)
+		for (size_t i = 0; i < table.m_Data.size(); i++)
 		{
-			GetNextLexmeAssign_HazeString(Table.Vector_Data[i].m_Name);
+			GetNextLexmeAssign_HazeString(table.m_Data[i].m_Name);
 
-			GetNextLexmeAssign_StandardType(Table.Vector_Data[i].Size);
+			GetNextLexmeAssign_StandardType(table.m_Data[i].Size);
 
-			GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Data[i].Type.PrimaryType);
+			GetNextLexmeAssign_CustomType<uint32>(table.m_Data[i].m_Type.PrimaryType);
 
-			if (IsHazeDefaultType(Table.Vector_Data[i].Type.PrimaryType))
+			if (IsHazeDefaultType(table.m_Data[i].m_Type.PrimaryType))
 			{
 				GetNextLexeme();
-				StringToHazeValueNumber(CurrLexeme, Table.Vector_Data[i].Type.PrimaryType, Table.Vector_Data[i].m_Value);
+				StringToHazeValueNumber(m_CurrLexeme, table.m_Data[i].m_Type.PrimaryType, table.m_Data[i].Value);
 			}
 			else
 			{
-				if (IsClassType(Table.Vector_Data[i].Type.PrimaryType))
+				if (IsClassType(table.m_Data[i].m_Type.PrimaryType))
 				{
-					GetNextLexmeAssign_HazeString(Table.Vector_Data[i].Type.CustomName);
-					Table.ClassObjectAllSize += Table.Vector_Data[i].Size;
+					GetNextLexmeAssign_HazeString(table.m_Data[i].m_Type.CustomName);
+					table.ClassObjectAllSize += table.m_Data[i].Size;
 				}
 			}
 		}
@@ -200,19 +201,19 @@ void BackendParse::Parse_I_Code_GlobalTable()
 
 void BackendParse::Parse_I_Code_StringTable()
 {
-	if (CurrLexeme == GetStringTableHeaderString())
+	if (m_CurrLexeme == GetStringTableHeaderString())
 	{
-		uint32 Num;
-		GetNextLexmeAssign_StandardType(Num);
+		uint32 number;
+		GetNextLexmeAssign_StandardType(number);
 
-		ModuleUnit::StringTable& Table = CurrParseModule->Table_String;
-		Table.Vector_String.resize(Num);
+		ModuleUnit::StringTable& table = m_CurrParseModule->m_StringTable;
+		table.Strings.resize(number);
 
 		ParseStringCount.first = true;
-		for (size_t i = 0; i < Table.Vector_String.size(); i++)
+		for (size_t i = 0; i < table.Strings.size(); i++)
 		{
 			GetNextLexmeAssign_StandardType(ParseStringCount.second);
-			GetNextLexmeAssign_HazeString(Table.Vector_String[i].String);
+			GetNextLexmeAssign_HazeString(table.Strings[i].String);
 		}
 		ParseStringCount.first = false;
 	}
@@ -220,47 +221,47 @@ void BackendParse::Parse_I_Code_StringTable()
 
 void BackendParse::Parse_I_Code_ClassTable()
 {
-	if (CurrLexeme == GetClassTableHeaderString())
+	if (m_CurrLexeme == GetClassTableHeaderString())
 	{
-		uint32 Num;
-		GetNextLexmeAssign_StandardType(Num);
+		uint32 number;
+		GetNextLexmeAssign_StandardType(number);
 
-		ModuleUnit::ClassTable& Table = CurrParseModule->Table_Class;
-		Table.Vector_Class.resize(Num);
+		ModuleUnit::ClassTable& table = m_CurrParseModule->m_ClassTable;
+		table.Classes.resize(number);
 
-		for (size_t i = 0; i < Table.Vector_Class.size(); i++)
+		for (size_t i = 0; i < table.Classes.size(); i++)
 		{
 			GetNextLexeme();
 
-			if (CurrLexeme == GetClassLabelHeader())
+			if (m_CurrLexeme == GetClassLabelHeader())
 			{
-				auto& Class = Table.Vector_Class[i];
+				auto& classData = table.Classes[i];
 
-				GetNextLexmeAssign_HazeString(Class.m_Name);
-				GetNextLexmeAssign_StandardType(Class.Size);
-				GetNextLexmeAssign_StandardType(Num);
-				Class.Vector_Member.resize(Num);
+				GetNextLexmeAssign_HazeString(classData.m_Name);
+				GetNextLexmeAssign_StandardType(classData.Size);
+				GetNextLexmeAssign_StandardType(number);
+				classData.Members.resize(number);
 
-				for (size_t j = 0; j < Class.Vector_Member.size(); j++)
+				for (size_t j = 0; j < classData.Members.size(); j++)
 				{
-					auto& ClassMember = Class.Vector_Member[j];
+					auto& classMember = classData.Members[j];
 
-					GetNextLexmeAssign_HazeString(ClassMember.Variable.m_Name);
+					GetNextLexmeAssign_HazeString(classMember.Variable.m_Name);
 
-					GetNextLexmeAssign_CustomType<uint32>(ClassMember.Variable.Type.PrimaryType);
+					GetNextLexmeAssign_CustomType<uint32>(classMember.Variable.m_Type.PrimaryType);
 
-					if (ClassMember.Variable.Type.NeedSecondaryType())
+					if (classMember.Variable.m_Type.NeedSecondaryType())
 					{
-						GetNextLexmeAssign_CustomType<uint32>(ClassMember.Variable.Type.SecondaryType);
+						GetNextLexmeAssign_CustomType<uint32>(classMember.Variable.m_Type.SecondaryType);
 					}
 
-					if (ClassMember.Variable.Type.NeedCustomName())
+					if (classMember.Variable.m_Type.NeedCustomName())
 					{
-						GetNextLexmeAssign_HazeString(ClassMember.Variable.Type.CustomName);
+						GetNextLexmeAssign_HazeString(classMember.Variable.m_Type.CustomName);
 					}
 
-					GetNextLexmeAssign_CustomType<uint32>(ClassMember.Offset);
-					GetNextLexmeAssign_CustomType<uint32>(ClassMember.Size);
+					GetNextLexmeAssign_CustomType<uint32>(classMember.Offset);
+					GetNextLexmeAssign_CustomType<uint32>(classMember.Size);
 				}
 			}
 		}
@@ -269,81 +270,83 @@ void BackendParse::Parse_I_Code_ClassTable()
 
 void BackendParse::Parse_I_Code_FunctionTable()
 {
-	if (CurrLexeme == GetFucntionTableHeaderString())
+	if (m_CurrLexeme == GetFucntionTableHeaderString())
 	{
-		uint32 Num;
-		GetNextLexmeAssign_StandardType(Num);
+		uint32 number;
+		GetNextLexmeAssign_StandardType(number);
 
-		ModuleUnit::FunctionTable& Table = CurrParseModule->Table_Function;
-		Table.Vector_Function.resize(Num);
+		ModuleUnit::FunctionTable& table = m_CurrParseModule->m_FunctionTable;
+		table.m_Functions.resize(number);
 
-		for (size_t i = 0; i < Table.Vector_Function.size(); i++)
+		for (size_t i = 0; i < table.m_Functions.size(); i++)
 		{
 			GetNextLexeme();
 
-			if (CurrLexeme == GetFunctionLabelHeader())
+			if (m_CurrLexeme == GetFunctionLabelHeader())
 			{
-				Table.Vector_Function[i].DescType = GetFunctionTypeByLibraryType(CurrParseModule->LibraryType);
+				table.m_Functions[i].DescType = GetFunctionTypeByLibraryType(m_CurrParseModule->m_LibraryType);
 
-				GetNextLexmeAssign_HazeString(Table.Vector_Function[i].m_Name);
+				GetNextLexmeAssign_HazeString(table.m_Functions[i].m_Name);
 
-				GetNextLexmeAssign_CustomType<uint32>(Table.Vector_Function[i].Type);
+				GetNextLexmeAssign_CustomType<uint32>(table.m_Functions[i].m_Type);
 
 				GetNextLexeme();
-				while (CurrLexeme == GetFunctionParamHeader())
+				while (m_CurrLexeme == GetFunctionParamHeader())
 				{
-					HazeDefineVariable Param;
-					GetNextLexmeAssign_HazeString(Param.m_Name);
-					Param.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString, &BackendParse::GetNextLexmeAssign_CustomType<uint32>);
+					HazeDefineVariable param;
+					GetNextLexmeAssign_HazeString(param.m_Name);
+					param.m_Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
+						&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
-					Table.Vector_Function[i].Vector_Param.push_back(std::move(Param));
+					table.m_Functions[i].Params.push_back(std::move(param));
 
 					GetNextLexeme();
 				}
 
-				while (CurrLexeme == GetFunctionVariableHeader())
+				while (m_CurrLexeme == GetFunctionVariableHeader())
 				{
-					HazeVariableData Var;
-					GetNextLexmeAssign_HazeString(Var.Variable.m_Name);
+					HazeVariableData var;
+					GetNextLexmeAssign_HazeString(var.Variable.m_Name);
 
-					Var.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString, &BackendParse::GetNextLexmeAssign_CustomType<uint32>);
-					GetNextLexmeAssign_CustomType<int>(Var.Offset);
-					GetNextLexmeAssign_CustomType<uint32>(Var.Size);
-					GetNextLexmeAssign_CustomType<uint32>(Var.Line);
+					var.Variable.m_Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
+						&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
+					GetNextLexmeAssign_CustomType<int>(var.Offset);
+					GetNextLexmeAssign_CustomType<uint32>(var.Size);
+					GetNextLexmeAssign_CustomType<uint32>(var.Line);
 
-					Table.Vector_Function[i].m_Vector_Variables.push_back(std::move(Var));
+					table.m_Functions[i].Variables.push_back(std::move(var));
 					GetNextLexeme();
 				}
 
-				if (CurrLexeme == GetFunctionStartHeader())
+				if (m_CurrLexeme == GetFunctionStartHeader())
 				{
-					GetNextLexmeAssign_CustomType<int>(Table.Vector_Function[i].StartLine);
+					GetNextLexmeAssign_CustomType<int>(table.m_Functions[i].StartLine);
 
 					GetNextLexeme();
-					while (CurrLexeme == BLOCK_START)
+					while (m_CurrLexeme == BLOCK_START)
 					{
 						GetNextLexeme();
-						Table.Vector_Function[i].Vector_Block.push_back({ CurrLexeme, 0, (int)Table.Vector_Function[i].Vector_Instruction.size() });
-						auto& CurrBlock = Table.Vector_Function[i].Vector_Block.back();
+						table.m_Functions[i].Blocks.push_back({ m_CurrLexeme, 0, (int)table.m_Functions[i].Instructions.size() });
+						auto& CurrBlock = table.m_Functions[i].Blocks.back();
 
 						GetNextLexeme();
-						while (CurrLexeme != BLOCK_START && CurrLexeme != GetFunctionEndHeader())
+						while (m_CurrLexeme != BLOCK_START && m_CurrLexeme != GetFunctionEndHeader())
 						{
 							ModuleUnit::FunctionInstruction Instruction;
-							Instruction.InsCode = GetInstructionByString(CurrLexeme);
+							Instruction.InsCode = GetInstructionByString(m_CurrLexeme);
 
 							ParseInstruction(Instruction);
 
-							Table.Vector_Function[i].Vector_Instruction.push_back(Instruction);
+							table.m_Functions[i].Instructions.push_back(Instruction);
 
 							CurrBlock.InstructionNum++;
 
 							GetNextLexeme();
 						}
 
-						if (CurrLexeme == GetFunctionEndHeader())
+						if (m_CurrLexeme == GetFunctionEndHeader())
 						{
-							GetNextLexmeAssign_CustomType<int>(Table.Vector_Function[i].EndLine);
+							GetNextLexmeAssign_CustomType<int>(table.m_Functions[i].EndLine);
 							break;
 						}
 					}
@@ -353,24 +356,24 @@ void BackendParse::Parse_I_Code_FunctionTable()
 	}
 }
 
-void BackendParse::ParseInstructionData(InstructionData& Data)
+void BackendParse::ParseInstructionData(InstructionData& data)
 {
-	GetNextLexmeAssign_HazeString(Data.Variable.m_Name);
-	GetNextLexmeAssign_CustomType<uint32>(Data.Scope);
-	GetNextLexmeAssign_CustomType<uint32>(Data.Desc);
+	GetNextLexmeAssign_HazeString(data.Variable.m_Name);
+	GetNextLexmeAssign_CustomType<uint32>(data.Scope);
+	GetNextLexmeAssign_CustomType<uint32>(data.Desc);
 
-	Data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
+	data.Variable.m_Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
 		&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
-	if (Data.Desc == HazeDataDesc::ArrayElement || Data.Desc == HazeDataDesc::ConstantString)
+	if (data.Desc == HazeDataDesc::ArrayElement || data.Desc == HazeDataDesc::ConstantString)
 	{
-		GetNextLexmeAssign_CustomType<uint32>(Data.Extra.Index);
+		GetNextLexmeAssign_CustomType<uint32>(data.Extra.Index);
 	}
 }
 
-void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction)
+void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction)
 {
-	switch (Instruction.InsCode)
+	switch (instruction.InsCode)
 	{
 	case InstructionOpCode::NONE:
 		break;
@@ -401,13 +404,13 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::SHL_ASSIGN:
 	case InstructionOpCode::SHR_ASSIGN:
 	{
-		InstructionData OperatorOne;
-		InstructionData OperatorTwo;
+		InstructionData operatorOne;
+		InstructionData operatorTwo;
 
-		ParseInstructionData(OperatorOne);
-		ParseInstructionData(OperatorTwo);
+		ParseInstructionData(operatorOne);
+		ParseInstructionData(operatorTwo);
 
-		Instruction.Operator = { OperatorOne, OperatorTwo };
+		instruction.Operator = { operatorOne, operatorTwo };
 	}
 	break;
 	case InstructionOpCode::NEG:
@@ -418,63 +421,63 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::POP:
 	case InstructionOpCode::RET:
 	{
-		InstructionData OperatorOne;
-		ParseInstructionData(OperatorOne);
+		InstructionData operatorOne;
+		ParseInstructionData(operatorOne);
 
-		Instruction.Operator = { OperatorOne };
+		instruction.Operator = { operatorOne };
 	}
 	break;
 	case InstructionOpCode::CALL:
 	{
-		InstructionData OperatorOne;
-		InstructionData OperatorTwo;
+		InstructionData operatorOne;
+		InstructionData operatorTwo;
 
-		GetNextLexmeAssign_HazeString(OperatorOne.Variable.m_Name);
+		GetNextLexmeAssign_HazeString(operatorOne.Variable.m_Name);
 
-		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
+		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Variable.m_Type.PrimaryType);
 
-		if (IsPointerFunction(OperatorOne.Variable.Type.PrimaryType))
+		if (IsPointerFunction(operatorOne.Variable.m_Type.PrimaryType))
 		{
-			GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Scope);
-			GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Desc);
+			GetNextLexmeAssign_CustomType<uint32>(operatorOne.Scope);
+			GetNextLexmeAssign_CustomType<uint32>(operatorOne.Desc);
 		}
 
-		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamNum);
-		GetNextLexmeAssign_CustomType<int>(OperatorOne.Extra.Call.ParamByteSize);
+		GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
+		GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
 
-		GetNextLexmeAssign_HazeString(OperatorTwo.Variable.m_Name);
-		OperatorTwo.Desc = HazeDataDesc::CallFunctionModule;
+		GetNextLexmeAssign_HazeString(operatorTwo.Variable.m_Name);
+		operatorTwo.Desc = HazeDataDesc::CallFunctionModule;
 
-		Instruction.Operator = { OperatorOne, OperatorTwo };
+		instruction.Operator = { operatorOne, operatorTwo };
 	}
 	break;
 	case InstructionOpCode::NEW:
 	{
-		InstructionData OperatorOne;
+		InstructionData operatorOne;
 
-		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.PrimaryType);
+		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Variable.m_Type.PrimaryType);
 
-		if (OperatorOne.Variable.Type.PrimaryType == HazeValueType::PointerClass)
+		if (operatorOne.Variable.m_Type.PrimaryType == HazeValueType::PointerClass)
 		{
-			GetNextLexmeAssign_HazeString(OperatorOne.Variable.Type.CustomName);
+			GetNextLexmeAssign_HazeString(operatorOne.Variable.m_Type.CustomName);
 		}
 		else
 		{
-			GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Variable.Type.SecondaryType);
+			GetNextLexmeAssign_CustomType<uint32>(operatorOne.Variable.m_Type.SecondaryType);
 		}
 
-		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Scope);
-		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Desc);
+		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Scope);
+		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Desc);
 
-		Instruction.Operator = { OperatorOne };
+		instruction.Operator = { operatorOne };
 	}
 	break;
 	case InstructionOpCode::JMP:
 	{
-		InstructionData OperatorOne;
-		GetNextLexmeAssign_HazeString(OperatorOne.Variable.m_Name);
+		InstructionData operatorOne;
+		GetNextLexmeAssign_HazeString(operatorOne.Variable.m_Name);
 
-		Instruction.Operator = { OperatorOne };
+		instruction.Operator = { operatorOne };
 	}
 	break;
 	case InstructionOpCode::JNE:
@@ -484,22 +487,22 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 	case InstructionOpCode::JG:
 	case InstructionOpCode::JL:
 	{
-		InstructionData OperatorOne;
-		InstructionData OperatorTwo;
+		InstructionData operatorOne;
+		InstructionData operatorTwo;
 
-		GetNextLexmeAssign_HazeString(OperatorOne.Variable.m_Name);
+		GetNextLexmeAssign_HazeString(operatorOne.Variable.m_Name);
 
-		GetNextLexmeAssign_HazeString(OperatorTwo.Variable.m_Name);
+		GetNextLexmeAssign_HazeString(operatorTwo.Variable.m_Name);
 
-		Instruction.Operator = { OperatorOne, OperatorTwo };
+		instruction.Operator = { operatorOne, operatorTwo };
 	}
 	break;
 	case InstructionOpCode::LINE:
 	{
-		InstructionData OperatorOne;
-		GetNextLexmeAssign_CustomType<uint32>(OperatorOne.Extra.Line);
+		InstructionData operatorOne;
+		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Extra.Line);
 
-		Instruction.Operator = { OperatorOne };
+		instruction.Operator = { operatorOne };
 	}
 	break;
 	default:
@@ -509,238 +512,245 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& Instruction
 
 void BackendParse::GenOpCodeFile()
 {
-	HazeExecuteFile ExeFile(ExeFileType::Out);
+	HazeExecuteFile exeFile(ExeFileType::Out);
 
-	if (VM->IsDebug())
+	if (m_VM->IsDebug())
 	{
-		ExeFile.WriteModule(HashMap_Modules);
+		exeFile.WriteModule(m_Modules);
 	}
 
-	ModuleUnit::GlobalDataTable NewGlobalDataTable;
-	ModuleUnit::StringTable NewStringTable;
-	ModuleUnit::ClassTable NewClassTable;
-	ModuleUnit::FunctionTable NewFunctionTable;
+	ModuleUnit::GlobalDataTable newGlobalDataTable;
+	ModuleUnit::StringTable newStringTable;
+	ModuleUnit::ClassTable newClassTable;
+	ModuleUnit::FunctionTable newFunctionTable;
 
-	size_t FunctionCount = 0;
-	for (auto& Module : HashMap_Modules)
+	size_t functionCount = 0;
+	for (auto& iter : m_Modules)
 	{
-		NewFunctionTable.Vector_Function.insert(NewFunctionTable.Vector_Function.end(), Module.second->Table_Function.Vector_Function.begin(), Module.second->Table_Function.Vector_Function.end());
-		ReplaceStringIndex(NewStringTable, NewFunctionTable, FunctionCount);
+		newFunctionTable.m_Functions.insert(newFunctionTable.m_Functions.end(), 
+			iter.second->m_FunctionTable.m_Functions.begin(), iter.second->m_FunctionTable.m_Functions.end());
+		ReplaceStringIndex(newStringTable, newFunctionTable, functionCount);
 
-		NewGlobalDataTable.Vector_Data.insert(NewGlobalDataTable.Vector_Data.end(), Module.second->Table_GlobalData.Vector_Data.begin(), Module.second->Table_GlobalData.Vector_Data.end());
-		NewGlobalDataTable.ClassObjectAllSize += Module.second->Table_GlobalData.ClassObjectAllSize;
+		newGlobalDataTable.m_Data.insert(newGlobalDataTable.m_Data.end(), 
+			iter.second->m_GlobalDataTable.m_Data.begin(), iter.second->m_GlobalDataTable.m_Data.end());
+		newGlobalDataTable.ClassObjectAllSize += iter.second->m_GlobalDataTable.ClassObjectAllSize;
 
-		NewStringTable.Vector_String.insert(NewStringTable.Vector_String.end(), Module.second->Table_String.Vector_String.begin(), Module.second->Table_String.Vector_String.end());
-		NewClassTable.Vector_Class.insert(NewClassTable.Vector_Class.end(), Module.second->Table_Class.Vector_Class.begin(), Module.second->Table_Class.Vector_Class.end());
+		newStringTable.Strings.insert(newStringTable.Strings.end(), 
+			iter.second->m_StringTable.Strings.begin(), iter.second->m_StringTable.Strings.end());
+		newClassTable.Classes.insert(newClassTable.Classes.end(), iter.second->m_ClassTable.Classes.begin(), iter.second->m_ClassTable.Classes.end());
 	}
 
-	FindAddress(NewGlobalDataTable, NewFunctionTable);
+	FindAddress(newGlobalDataTable, newFunctionTable);
 
-	ExeFile.WriteExecuteFile(NewGlobalDataTable, NewStringTable, NewClassTable, NewFunctionTable);
+	exeFile.WriteExecuteFile(newGlobalDataTable, newStringTable, newClassTable, newFunctionTable);
 }
 
-void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& NewStringTable, ModuleUnit::FunctionTable& NewFunctionTable, size_t& FunctionCount)
+void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& newStringTable,
+	ModuleUnit::FunctionTable& newFunctionTable, size_t& functionCount)
 {
-	for (; FunctionCount < NewFunctionTable.Vector_Function.size(); FunctionCount++)
+	for (; functionCount < newFunctionTable.m_Functions.size(); functionCount++)
 	{
-		for (auto& Iter : NewFunctionTable.Vector_Function[FunctionCount].Vector_Instruction)
+		for (auto& iter : newFunctionTable.m_Functions[functionCount].Instructions)
 		{
-			for (auto& Operator : Iter.Operator)
+			for (auto& oper : iter.Operator)
 			{
-				if (Operator.Desc == HazeDataDesc::ConstantString)
+				if (oper.Desc == HazeDataDesc::ConstantString)
 				{
-					Operator.Extra.Index += (uint32)NewStringTable.Vector_String.size();
-					Operator.AddressType = InstructionAddressType::ConstantString;
+					oper.Extra.Index += (uint32)newStringTable.Strings.size();
+					oper.AddressType = InstructionAddressType::ConstantString;
 				}
 			}
 		}
 	}
 }
 
-void ResetFunctionBlockOffset(InstructionData& Operator, ModuleUnit::FunctionTableData& Function)
+void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::FunctionTableData& function)
 {
-	if (Operator.Variable.m_Name != HAZE_JMP_NULL)
+	if (operatorData.Variable.m_Name != HAZE_JMP_NULL)
 	{
-		for (size_t i = 0; i < Function.Vector_Block.size(); i++)
+		for (size_t i = 0; i < function.Blocks.size(); i++)
 		{
-			if (Operator.Variable.m_Name == Function.Vector_Block[i].BlockName)
+			if (operatorData.Variable.m_Name == function.Blocks[i].BlockName)
 			{
-				Operator.Extra.Jmp.StartAddress = Function.Vector_Block[i].StartAddress;
-				Operator.Extra.Jmp.InstructionNum = Function.Vector_Block[i].InstructionNum;
+				operatorData.Extra.Jmp.StartAddress = function.Blocks[i].StartAddress;
+				operatorData.Extra.Jmp.InstructionNum = function.Blocks[i].InstructionNum;
 				break;
 			}
 		}
 	}
 }
 
-inline void BackendParse::ResetLocalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable)
+inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData,ModuleUnit::FunctionTableData& function,
+	std::unordered_map<HAZE_STRING, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
-	HAZE_STRING ObjName;
-	HAZE_STRING MemberName;
-	bool IsPointer = false;
-	int Index = 0;
+	HAZE_STRING objName;
+	HAZE_STRING memberName;
+	bool isPointer = false;
+	int index = 0;
 
-	if (IsClassMember(Operator.Desc))
+	if (IsClassMember(operatorData.Desc))
 	{
-		FindObjectAndMemberName(Operator.Variable.m_Name, ObjName, MemberName, IsPointer);
-		for (uint32 i = 0; i < Function.m_Vector_Variables.size(); i++)
+		FindObjectAndMemberName(operatorData.Variable.m_Name, objName, memberName, isPointer);
+		for (uint32 i = 0; i < function.Variables.size(); i++)
 		{
-			if (Function.m_Vector_Variables[i].Variable.m_Name == ObjName)
+			if (function.Variables[i].Variable.m_Name == objName)
 			{
-				auto Class = GetClass(Function.m_Vector_Variables[i].Variable.Type.CustomName);
-				if (IsPointer)
+				auto classData = GetClass(function.Variables[i].Variable.m_Type.CustomName);
+				if (isPointer)
 				{
-					Operator.Extra.Address.BaseAddress = Function.m_Vector_Variables[i].Offset;
-					Operator.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
-					Operator.AddressType = InstructionAddressType::Local_BasePointer_Offset;
+					operatorData.Extra.Address.BaseAddress = function.Variables[i].Offset;
+					operatorData.Extra.Address.Offset = GetMemberOffset(*classData, memberName);
+					operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
 					break;
 				}
 				else
 				{
-					Operator.Extra.Address.BaseAddress = Function.m_Vector_Variables[i].Offset + GetMemberOffset(*Class, MemberName);
-					Operator.AddressType = InstructionAddressType::Local;
+					operatorData.Extra.Address.BaseAddress = function.Variables[i].Offset + GetMemberOffset(*classData, memberName);
+					operatorData.AddressType = InstructionAddressType::Local;
 					break;
 				}
 			}
 		}
 	}
-	else if (Operator.Desc == HazeDataDesc::ArrayElement)
+	else if (operatorData.Desc == HazeDataDesc::ArrayElement)
 	{
-		auto Iter_Index = HashMap_LocalVariable.find(Operator.Variable.m_Name);
-		if (Iter_Index != HashMap_LocalVariable.end())
+		auto iterIndex = localVariable.find(operatorData.Variable.m_Name);
+		if (iterIndex != localVariable.end())
 		{
 			//避免先把Index值替换掉
-			Operator.Extra.Address.Offset = Operator.Extra.Index * GetSizeByType(Operator.Variable.Type, this);
-			Operator.Extra.Address.BaseAddress = Function.m_Vector_Variables[Iter_Index->second].Offset;
-			Operator.AddressType = InstructionAddressType::Local_Base_Offset;
+			operatorData.Extra.Address.Offset = operatorData.Extra.Index * GetSizeByType(operatorData.Variable.m_Type, this);
+			operatorData.Extra.Address.BaseAddress = function.Variables[iterIndex->second].Offset;
+			operatorData.AddressType = InstructionAddressType::Local_Base_Offset;
 		}
-		else if (Function.m_Vector_Variables[0].Variable.m_Name.substr(0, 1) == HAZE_CLASS_THIS)
+		else if (function.Variables[0].Variable.m_Name.substr(0, 1) == HAZE_CLASS_THIS)
 		{
-			auto Class = GetClass(Function.m_Vector_Variables[0].Variable.Type.CustomName);
-			if (Class)
+			auto classData = GetClass(function.Variables[0].Variable.m_Type.CustomName);
+			if (classData)
 			{
-				Operator.Extra.Address.Offset = GetMemberOffset(*Class, Operator.Variable.m_Name) + Operator.Extra.Index * GetSizeByType(Operator.Variable.Type, this);
-				Operator.Extra.Address.BaseAddress = Function.m_Vector_Variables[0].Offset;
-				Operator.AddressType = InstructionAddressType::Local_BasePointer_Offset;
+				operatorData.Extra.Address.Offset = GetMemberOffset(*classData, operatorData.Variable.m_Name) + operatorData.Extra.Index * GetSizeByType(operatorData.Variable.m_Type, this);
+				operatorData.Extra.Address.BaseAddress = function.Variables[0].Offset;
+				operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
 			}
 			else
 			{
 				HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>,当前类<%s>未找到!\n",
-					Operator.Variable.m_Name.c_str(), Function.m_Name.c_str(), Function.m_Vector_Variables[0].Variable.Type.CustomName.c_str());
+					operatorData.Variable.m_Name.c_str(), function.m_Name.c_str(), function.Variables[0].Variable.m_Type.CustomName.c_str());
 			}
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>!\n", Operator.Variable.m_Name.c_str(), Function.m_Name.c_str());
+			HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>!\n", operatorData.Variable.m_Name.c_str(), function.m_Name.c_str());
 		}
 	}
 	else
 	{
-		auto Iter_Index = HashMap_LocalVariable.find(Operator.Variable.m_Name);
-		if (Iter_Index != HashMap_LocalVariable.end())
+		auto iterIndex = localVariable.find(operatorData.Variable.m_Name);
+		if (iterIndex != localVariable.end())
 		{
-			Operator.Extra.Address.BaseAddress = Function.m_Vector_Variables[Iter_Index->second].Offset;
-			Operator.AddressType = InstructionAddressType::Local;
+			operatorData.Extra.Address.BaseAddress = function.Variables[iterIndex->second].Offset;
+			operatorData.AddressType = InstructionAddressType::Local;
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("在函数<%s>中查找<%s>的偏移值失败!\n", Function.m_Name.c_str(), Operator.Variable.m_Name.c_str());
+			HAZE_LOG_ERR_W("在函数<%s>中查找<%s>的偏移值失败!\n", function.m_Name.c_str(), operatorData.Variable.m_Name.c_str());
 			return;
 		}
 	}
 }
 
-inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable)
+inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
+	std::unordered_map<HAZE_STRING, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
-	HAZE_STRING ObjName;
-	HAZE_STRING MemberName;
-	bool IsPointer = false;
-	int Index = 0;
+	HAZE_STRING objName;
+	HAZE_STRING memberName;
+	bool isPointer = false;
+	int index = 0;
 
-	if (IsClassMember(Operator.Desc))
+	if (IsClassMember(operatorData.Desc))
 	{
-		FindObjectAndMemberName(Operator.Variable.m_Name, ObjName, MemberName, IsPointer);
-		Index = (int)NewGlobalDataTable.GetIndex(ObjName);
-		if (Index >= 0)
+		FindObjectAndMemberName(operatorData.Variable.m_Name, objName, memberName, isPointer);
+		index = (int)newGlobalDataTable.GetIndex(objName);
+		if (index >= 0)
 		{
-			auto Class = GetClass(NewGlobalDataTable.Vector_Data[Index].Type.CustomName);
+			auto Class = GetClass(newGlobalDataTable.m_Data[index].m_Type.CustomName);
 			if (Class)
 			{
-				Operator.AddressType = InstructionAddressType::Global_Base_Offset;
-				Operator.Extra.Index = Index;
-				Operator.Extra.Address.Offset = GetMemberOffset(*Class, MemberName);
+				operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
+				operatorData.Extra.Index = index;
+				operatorData.Extra.Address.Offset = GetMemberOffset(*Class, memberName);
 			}
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("未能查找到全局变量类对象成员<%s>!\n", Operator.Variable.m_Name.c_str());
+			HAZE_LOG_ERR_W("未能查找到全局变量类对象成员<%s>!\n", operatorData.Variable.m_Name.c_str());
 			return;
 		}
 	}
-	else if (Operator.Desc == HazeDataDesc::ArrayElement)
+	else if (operatorData.Desc == HazeDataDesc::ArrayElement)
 	{
-		Index = (int)NewGlobalDataTable.GetIndex(Operator.Variable.m_Name);
-		if (Index >= 0)
+		index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.m_Name);
+		if (index >= 0)
 		{
 			//避免先把Index值替换掉
-			Operator.Extra.Address.Offset = Operator.Extra.Index * GetSizeByType(Operator.Variable.Type, this);
-			Operator.Extra.Index = Index;
-			Operator.AddressType = InstructionAddressType::Global_Base_Offset;
+			operatorData.Extra.Address.Offset = operatorData.Extra.Index * GetSizeByType(operatorData.Variable.m_Type, this);
+			operatorData.Extra.Index = index;
+			operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
 		}
 	}
 	else
 	{
-		Index = (int)NewGlobalDataTable.GetIndex(Operator.Variable.m_Name);
-		if (Index >= 0)
+		index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.m_Name);
+		if (index >= 0)
 		{
-			Operator.Extra.Index = Index;
-			Operator.AddressType = InstructionAddressType::Global;
+			operatorData.Extra.Index = index;
+			operatorData.AddressType = InstructionAddressType::Global;
 		}
 		else
 		{
-			if (Operator.Desc == HazeDataDesc::Constant)
+			if (operatorData.Desc == HazeDataDesc::Constant)
 			{
 				return;
 			}
 
-			HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", Operator.Variable.m_Name.c_str());
+			HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", operatorData.Variable.m_Name.c_str());
 			return;
 		}
 	}
 }
 
-void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::FunctionTable& NewFunctionTable)
+void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
+	ModuleUnit::FunctionTable& newFunctionTable)
 {
 	std::unordered_map<HAZE_STRING, size_t> HashMap_FunctionIndexAndAddress;
-	for (size_t i = 0; i < NewFunctionTable.Vector_Function.size(); i++)
+	for (size_t i = 0; i < newFunctionTable.m_Functions.size(); i++)
 	{
-		HashMap_FunctionIndexAndAddress[NewFunctionTable.Vector_Function[i].m_Name] = i;
+		HashMap_FunctionIndexAndAddress[newFunctionTable.m_Functions[i].m_Name] = i;
 	}
 
 	//替换变量为索引或相对函数起始偏移
-	for (size_t k = 0; k < NewFunctionTable.Vector_Function.size(); ++k)
+	for (size_t k = 0; k < newFunctionTable.m_Functions.size(); ++k)
 	{
 #if BACKEND_INSTRUCTION_LOG
 		std::wcout << NewFunctionTable.Vector_Function[k].Name << std::endl;
 #endif
-		auto& m_CurrFunction = NewFunctionTable.Vector_Function[k];
+		auto& m_CurrFunction = newFunctionTable.m_Functions[k];
 
-		std::unordered_map<HAZE_STRING, int> HashMap_LocalVariable;
-		for (size_t i = 0; i < m_CurrFunction.m_Vector_Variables.size(); i++)
+		std::unordered_map<HAZE_STRING, int> localVariables;
+		for (size_t i = 0; i < m_CurrFunction.Variables.size(); i++)
 		{
-			HashMap_LocalVariable[m_CurrFunction.m_Vector_Variables[i].Variable.m_Name] = (int)i;
+			localVariables[m_CurrFunction.Variables[i].Variable.m_Name] = (int)i;
 		}
 
-		for (size_t i = 0; i < m_CurrFunction.Vector_Instruction.size(); ++i)
+		for (size_t i = 0; i < m_CurrFunction.Instructions.size(); ++i)
 		{
-			if (IsJmpOpCode(m_CurrFunction.Vector_Instruction[i].InsCode))
+			if (IsJmpOpCode(m_CurrFunction.Instructions[i].InsCode))
 			{
 				//设置 Block块 偏移值
-				for (auto& Operator : m_CurrFunction.Vector_Instruction[i].Operator)
+				for (auto& operatorData : m_CurrFunction.Instructions[i].Operator)
 				{
-					if (Operator.Variable.m_Name != HAZE_JMP_NULL)
+					if (operatorData.Variable.m_Name != HAZE_JMP_NULL)
 					{
-						ResetFunctionBlockOffset(Operator, m_CurrFunction);
+						ResetFunctionBlockOffset(operatorData, m_CurrFunction);
 					}
 				}
 			}
@@ -765,39 +775,39 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 					}
 				}
 			}*/
-			else if (!IsIgnoreFindAddressInsCode(m_CurrFunction.Vector_Instruction[i]))
+			else if (!IsIgnoreFindAddressInsCode(m_CurrFunction.Instructions[i]))
 			{
-				HAZE_STRING ObjName;
-				HAZE_STRING MemberName;
-				bool IsPointer = false;
-				bool Find = false;
+				HAZE_STRING objName;
+				HAZE_STRING memberName;
+				bool isPointer = false;
+				bool find = false;
 
-				for (auto& Operator : m_CurrFunction.Vector_Instruction[i].Operator)
+				for (auto& operatorData : m_CurrFunction.Instructions[i].Operator)
 				{
-					if (!IsIgnoreFindAddress(Operator))
+					if (!IsIgnoreFindAddress(operatorData))
 					{
-						if (IS_SCOPE_LOCAL(Operator.Scope))
+						if (IS_SCOPE_LOCAL(operatorData.Scope))
 						{
-							ResetLocalOperatorAddress(Operator, m_CurrFunction, HashMap_LocalVariable, NewGlobalDataTable);
+							ResetLocalOperatorAddress(operatorData, m_CurrFunction, localVariables, newGlobalDataTable);
 						}
-						else if (IS_SCOPE_GLOBAL(Operator.Scope))
+						else if (IS_SCOPE_GLOBAL(operatorData.Scope))
 						{
-							ResetGlobalOperatorAddress(Operator, m_CurrFunction, HashMap_LocalVariable, NewGlobalDataTable);
+							ResetGlobalOperatorAddress(operatorData, m_CurrFunction, localVariables, newGlobalDataTable);
 						}
-						else if (IS_SCOPE_TEMP(Operator.Scope))
+						else if (IS_SCOPE_TEMP(operatorData.Scope))
 						{
-							if (Operator.Desc == HazeDataDesc::FunctionAddress)
+							if (operatorData.Desc == HazeDataDesc::FunctionAddress)
 							{
-								Operator.AddressType = InstructionAddressType::FunctionAddress;
+								operatorData.AddressType = InstructionAddressType::FunctionAddress;
 							}
 							else
 							{
-								HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", Operator.Variable.m_Name.c_str());
+								HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.m_Name.c_str());
 							}
 						}
 						else
 						{
-							HAZE_LOG_ERR_W("寻找变量<%s>的地址失败!\n", Operator.Variable.m_Name.c_str());
+							HAZE_LOG_ERR_W("寻找变量<%s>的地址失败!\n", operatorData.Variable.m_Name.c_str());
 						}
 					}
 				}
@@ -817,15 +827,15 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, 
 	}
 }
 
-const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING& ClassName)
+const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING& className)
 {
-	for (auto& Module : HashMap_Modules)
+	for (auto& iter : m_Modules)
 	{
-		for (auto& Class : Module.second->Table_Class.Vector_Class)
+		for (auto& classData : iter.second->m_ClassTable.Classes)
 		{
-			if (Class.m_Name == ClassName)
+			if (classData.m_Name == className)
 			{
-				return &Class;
+				return &classData;
 			}
 		}
 	}
@@ -833,23 +843,23 @@ const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING
 	return nullptr;
 }
 
-uint32 const BackendParse::GetClassSize(const HAZE_STRING& ClassName)
+uint32 const BackendParse::GetClassSize(const HAZE_STRING& className)
 {
-	auto Class = GetClass(ClassName);
-	if (Class)
+	auto classData = GetClass(className);
+	if (classData)
 	{
-		return Class->Size;
+		return classData->Size;
 	}
 	return 0;
 }
 
-uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName)
+uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HAZE_STRING& memberName)
 {
-	for (auto& Iter : Class.Vector_Member)
+	for (auto& iter : classData.Members)
 	{
-		if (Iter.Variable.m_Name == MemberName)
+		if (iter.Variable.m_Name == memberName)
 		{
-			return Iter.Offset;
+			return iter.Offset;
 		}
 	}
 

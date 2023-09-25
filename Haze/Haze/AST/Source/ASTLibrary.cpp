@@ -5,10 +5,10 @@
 #include "ASTClass.h"
 #include "ASTLibrary.h"
 
-ASTLibrary::ASTLibrary(HazeCompiler* m_Compiler, /*const SourceLocation& Location,*/ HAZE_STRING& m_Name, HazeLibraryType Type,
-	std::vector<std::unique_ptr<ASTFunctionDefine>>& Vector_FunctionExpression, std::vector<std::unique_ptr<ASTClassDefine>>& Vector_ClassExpression) :
-	m_Compiler(m_Compiler), m_Name(std::move(m_Name)), Type(Type), Vector_FunctionExpression(std::move(Vector_FunctionExpression)),
-	Vector_ClassExpression(std::move(Vector_ClassExpression))
+ASTLibrary::ASTLibrary(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HAZE_STRING& name, HazeLibraryType type,
+	std::vector<std::unique_ptr<ASTFunctionDefine>>& functionExpressions, std::vector<std::unique_ptr<ASTClassDefine>>& classExpressions) :
+	m_Compiler(compiler), m_Name(std::move(name)), m_Type(type), m_FunctionExpressions(std::move(functionExpressions)),
+	m_ClassExpressions(std::move(classExpressions))
 {
 }
 
@@ -18,13 +18,13 @@ ASTLibrary::~ASTLibrary()
 
 void ASTLibrary::CodeGen()
 {
-	m_Compiler->GetCurrModule()->MarkLibraryType(Type);
-	for (auto& Iter : Vector_FunctionExpression)
+	m_Compiler->GetCurrModule()->MarkLibraryType(m_Type);
+	for (auto& Iter : m_FunctionExpressions)
 	{
 		Iter->CodeGen();
 	}
 
-	for (auto& Iter : Vector_ClassExpression)
+	for (auto& Iter : m_ClassExpressions)
 	{
 		Iter->CodeGen();
 	}

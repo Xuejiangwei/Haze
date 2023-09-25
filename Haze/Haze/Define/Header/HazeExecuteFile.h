@@ -26,18 +26,18 @@ enum ExeFileType : uint8
 class HazeExecuteFile
 {
 public:
-	HazeExecuteFile(ExeFileType Type);
+	HazeExecuteFile(ExeFileType m_Type);
 	~HazeExecuteFile();
 
 public:
-	void WriteModule(const std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>>& Module);
+	void WriteModule(const std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>>& m_Module);
 
 	void WriteExecuteFile(const ModuleUnit::GlobalDataTable& GlobalDataTable, const ModuleUnit::StringTable& StringTable,
 		const ModuleUnit::ClassTable& ClassTable, const ModuleUnit::FunctionTable& FunctionTable);
 
-	void ReadExecuteFile(HazeVM* VM);
+	void ReadExecuteFile(HazeVM* m_VM);
 
-	void ReadModule(HazeVM* VM);
+	void ReadModule(HazeVM* m_VM);
 
 	void CheckAll();
 private:
@@ -54,15 +54,15 @@ private:
 	void WriteInstruction(const ModuleUnit::FunctionInstruction& Instruction);
 
 private:
-	void ReadGlobalDataTable(HazeVM* VM);
+	void ReadGlobalDataTable(HazeVM* m_VM);
 
-	void ReadStringTable(HazeVM* VM);
+	void ReadStringTable(HazeVM* m_VM);
 
-	void ReadClassTable(HazeVM* VM);
+	void ReadClassTable(HazeVM* m_VM);
 
-	void ReadFunctionTable(HazeVM* VM);
+	void ReadFunctionTable(HazeVM* m_VM);
 
-	void ReadFunctionInstruction(HazeVM* VM);
+	void ReadFunctionInstruction(HazeVM* m_VM);
 
 	void ReadInstruction(Instruction& Instruction);
 private:

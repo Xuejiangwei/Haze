@@ -42,7 +42,7 @@ public:
 
 	static void* Alloca(uint64 size);
 
-	void SetVM(HazeVM* vm) { VM = vm; }
+	void SetVM(HazeVM* vm) { m_VM = vm; }
 
 	void AddToRoot(void*);
 
@@ -54,14 +54,14 @@ public:
 
 private:
 	void MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& Vector_MarkAddressBase,
-		std::vector<std::pair<uint64, ClassData*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress);
+		std::vector<std::pair<uint64, m_ClassDatas*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress);
 
-	void MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index);
+	void MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, m_ClassDatas*>>& ArrayClass, uint64 Index);
 
-	void MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index);
+	void MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, m_ClassDatas*>>& ArrayClass, uint64 Index);
 
 private:
-	HazeVM* VM;
+	HazeVM* m_VM;
 	std::vector<void*> Vector_KeepMemory;
 	
 	std::unique_ptr<MemoryFreeList> m_FreeList[MAX_HAZE_ALLOC_SIZE / GRANULE];

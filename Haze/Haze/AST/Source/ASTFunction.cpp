@@ -8,10 +8,11 @@
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerModule.h"
 
-ASTFunction::ASTFunction(HazeCompiler* m_Compiler, const SourceLocation& StartLocation, const SourceLocation& EndLocation, HazeSectionSignal Section, HAZE_STRING& m_Name, 
-	HazeDefineType& Type, std::vector<std::unique_ptr<ASTBase>>& Param, std::unique_ptr<ASTBase>& Body) 
-	: m_Compiler(m_Compiler), StartLocation(StartLocation), EndLocation(EndLocation), Section(Section), FunctionName(std::move(m_Name)),FunctionType(std::move(Type)),
-	Vector_FunctionParam(std::move(Param)), Body(std::move(Body))
+ASTFunction::ASTFunction(HazeCompiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation,
+	HazeSectionSignal section, HAZE_STRING& name, HazeDefineType& type, std::vector<std::unique_ptr<ASTBase>>& params,
+	std::unique_ptr<ASTBase>& body) 
+	: m_Compiler(compiler), m_StartLocation(startLocation), m_EndLocation(endLocation), m_Section(section), m_FunctionName(std::move(name)),m_FunctionType(std::move(type)),
+	m_FunctionParams(std::move(params)), m_Body(std::move(body))
 {
 }
 
@@ -21,42 +22,42 @@ ASTFunction::~ASTFunction()
 
 HazeValue* ASTFunction::CodeGen()
 {
-	auto& Module = m_Compiler->GetCurrModule();
+	auto& currModule = m_Compiler->GetCurrModule();
 
-	std::shared_ptr<HazeCompilerFunction> CompilerFunction = nullptr;
-	std::shared_ptr<HazeCompilerClass> Class = nullptr;
+	std::shared_ptr<HazeCompilerFunction> compilerFunction = nullptr;
+	std::shared_ptr<HazeCompilerClass> currClass = nullptr;
 
-	std::vector<HazeDefineVariable> Vector_ParamDefine(Vector_FunctionParam.size());
-	for (size_t i = 0; i < Vector_FunctionParam.size(); i++)
+	std::vector<HazeDefineVariable> paramDefines(m_FunctionParams.size());
+	for (size_t i = 0; i < m_FunctionParams.size(); i++)
 	{
-		Vector_ParamDefine[i] = Vector_FunctionParam[i]->GetDefine();
+		paramDefines[i] = m_FunctionParams[i]->GetDefine();
 	}
 
-	if (Section == HazeSectionSignal::Global)
+	if (m_Section == HazeSectionSignal::Global)
 	{
-		CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_ParamDefine);
+		compilerFunction = currModule->CreateFunction(m_FunctionName, m_FunctionType, paramDefines);
 	}
-	else if (Section == HazeSectionSignal::Class)
+	else if (m_Section == HazeSectionSignal::Class)
 	{
-		Class = Module->GetClass(Vector_FunctionParam[0]->GetDefine().Type.CustomName);
-		CompilerFunction = Module->CreateFunction(Class, FunctionName, FunctionType, Vector_ParamDefine);
+		currClass = currModule->GetClass(m_FunctionParams[0]->GetDefine().m_Type.CustomName);
+		compilerFunction = currModule->CreateFunction(currClass, m_FunctionName, m_FunctionType, paramDefines);
 	}
-	CompilerFunction->SetStartEndLine(StartLocation.Line, EndLocation.Line);
-	m_Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
+	compilerFunction->SetStartEndLine(m_StartLocation.Line, m_EndLocation.Line);
+	m_Compiler->SetInsertBlock(compilerFunction->GetEntryBlock());
 
-	for (int i = (int)Vector_FunctionParam.size() - 1; i >= 0; i--)
+	for (int i = (int)m_FunctionParams.size() - 1; i >= 0; i--)
 	{
-		Vector_FunctionParam[i]->CodeGen();
-	}
-
-	if (Body)
-	{
-		Body->CodeGen();
+		m_FunctionParams[i]->CodeGen();
 	}
 
-	if (CompilerFunction)
+	if (m_Body)
 	{
-		CompilerFunction->FunctionFinish();
+		m_Body->CodeGen();
+	}
+
+	if (compilerFunction)
+	{
+		compilerFunction->FunctionFinish();
 	}
 
 	return nullptr;
@@ -64,29 +65,29 @@ HazeValue* ASTFunction::CodeGen()
 
 void ASTFunction::RegisterFunction()
 {
-	auto& Module = m_Compiler->GetCurrModule();
+	auto& currModule = m_Compiler->GetCurrModule();
 
-	std::shared_ptr<HazeCompilerClass> Class = nullptr;
+	std::shared_ptr<HazeCompilerClass> currClass = nullptr;
 
-	std::vector<HazeDefineVariable> Vector_ParamDefine(Vector_FunctionParam.size());
-	for (size_t i = 0; i < Vector_FunctionParam.size(); i++)
+	std::vector<HazeDefineVariable> paramDefines(m_FunctionParams.size());
+	for (size_t i = 0; i < m_FunctionParams.size(); i++)
 	{
-		Vector_ParamDefine[i] = Vector_FunctionParam[i]->GetDefine();
+		paramDefines[i] = m_FunctionParams[i]->GetDefine();
 	}
 
-	if (Section == HazeSectionSignal::Global)
+	if (m_Section == HazeSectionSignal::Global)
 	{
-		Module->CreateFunction(FunctionName, FunctionType, Vector_ParamDefine);
+		currModule->CreateFunction(m_FunctionName, m_FunctionType, paramDefines);
 	}
-	else if (Section == HazeSectionSignal::Class)
+	else if (m_Section == HazeSectionSignal::Class)
 	{
-		Class = Module->GetClass(Vector_FunctionParam[0]->GetDefine().Type.CustomName);
-		Module->CreateFunction(Class, FunctionName, FunctionType, Vector_ParamDefine);
+		currClass = currModule->GetClass(m_FunctionParams[0]->GetDefine().m_Type.CustomName);
+		currModule->CreateFunction(currClass, m_FunctionName, m_FunctionType, paramDefines);
 	}
 }
 
-ASTFunctionSection::ASTFunctionSection(HazeCompiler* m_Compiler,/* const SourceLocation& Location,*/ std::vector<std::unique_ptr<ASTFunction>>& Functions)
-	: m_Compiler(m_Compiler), Functions(std::move(Functions))
+ASTFunctionSection::ASTFunctionSection(HazeCompiler* compiler,/* const SourceLocation& Location,*/ std::vector<std::unique_ptr<ASTFunction>>& functions)
+	: m_Compiler(compiler), m_Functions(std::move(functions))
 {
 }
 
@@ -96,20 +97,20 @@ ASTFunctionSection::~ASTFunctionSection()
 
 void ASTFunctionSection::CodeGen()
 {
-	for (auto& Iter : Functions)
+	for (auto& iter : m_Functions)
 	{
-		Iter->RegisterFunction();
+		iter->RegisterFunction();
 	}
 
-	for (auto& Iter : Functions)
+	for (auto& iter : m_Functions)
 	{
-		Iter->CodeGen();
+		iter->CodeGen();
 	}
 }
 
-ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* m_Compiler, /*const SourceLocation& Location,*/ const HAZE_STRING& m_Name, HazeDefineType& Type, 
-	std::vector<std::unique_ptr<ASTBase>>& Param)
-	: m_Compiler(m_Compiler), FunctionName(m_Name), FunctionType(Type), Vector_FunctionParam(std::move(Param))
+ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ const HAZE_STRING& name, 
+	HazeDefineType& type, std::vector<std::unique_ptr<ASTBase>>& params)
+	: m_Compiler(compiler), m_FunctionName(name), m_FunctionType(type), m_FunctionParams(std::move(params))
 {
 }
 
@@ -119,26 +120,27 @@ ASTFunctionDefine::~ASTFunctionDefine()
 
 void ASTFunctionDefine::CodeGen()
 {
-	auto& Module = m_Compiler->GetCurrModule();
+	auto& currModule = m_Compiler->GetCurrModule();
 
-	std::vector<HazeDefineVariable> Vector_ParamDefine(Vector_FunctionParam.size());
-	for (size_t i = 0; i < Vector_FunctionParam.size(); i++)
+	std::vector<HazeDefineVariable> paramDefines(m_FunctionParams.size());
+	for (size_t i = 0; i < m_FunctionParams.size(); i++)
 	{
-		Vector_ParamDefine[i] = Vector_FunctionParam[i]->GetDefine();
+		paramDefines[i] = m_FunctionParams[i]->GetDefine();
 	}
 
-	std::shared_ptr<HazeCompilerFunction> CompilerFunction = Module->CreateFunction(FunctionName, FunctionType, Vector_ParamDefine);
+	std::shared_ptr<HazeCompilerFunction> CompilerFunction = currModule->CreateFunction(m_FunctionName, m_FunctionType, paramDefines);
 
 	m_Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
 
-	for (auto& Iter : Vector_FunctionParam)
+	for (auto& iter : m_FunctionParams)
 	{
-		Iter->CodeGen();
+		iter->CodeGen();
 	}
 }
 
-ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* m_Compiler, /*const SourceLocation& Location,*/ std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& Functions)
-	: m_Compiler(m_Compiler), Functions(std::move(Functions))
+ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* compiler, /*const SourceLocation& Location,*/ 
+	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& functions)
+	: m_Compiler(compiler), m_Functions(std::move(functions))
 {
 }
 
@@ -148,19 +150,19 @@ ASTClassFunctionSection::~ASTClassFunctionSection()
 
 void ASTClassFunctionSection::CodeGen()
 {
-	for (auto& Iter : Functions)
+	for (auto& iter : m_Functions)
 	{
-		for (auto& Function : Iter.second)
+		for (auto& function : iter.second)
 		{
-			Function->RegisterFunction();
+			function->RegisterFunction();
 		}
 	}
 
-	for (auto& Iter : Functions)
+	for (auto& iter : m_Functions)
 	{
-		for (auto& Function : Iter.second)
+		for (auto& function : iter.second)
 		{
-			Function->CodeGen();
+			function->CodeGen();
 		}
 	}
 }

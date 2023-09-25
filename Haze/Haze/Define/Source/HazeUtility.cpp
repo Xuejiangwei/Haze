@@ -211,9 +211,9 @@ HazeLibraryType GetHazeLibraryTypeByToken(HazeToken m_Token)
 	}
 }
 
-InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType Type)
+InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType m_Type)
 {
-	switch (Type)
+	switch (m_Type)
 	{
 	case HazeLibraryType::Normal:
 		return InstructionFunctionType::HazeFunction;
@@ -243,9 +243,9 @@ HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& FilePath)
 	return HAZE_TEXT("None");
 }
 
-HAZE_BINARY_STRING ToString(void* m_Value)
+HAZE_BINARY_STRING ToString(void* Value)
 {
 	std::stringstream SS;
-	SS << m_Value;
+	SS << Value;
 	return SS.str();
 }

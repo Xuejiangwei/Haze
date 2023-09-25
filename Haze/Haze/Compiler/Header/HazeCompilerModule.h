@@ -138,7 +138,7 @@ private:
 
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerEnum>> m_HashMap_Enums;
 
-	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> m_Vector_Variables; //这个是Symbol table(符号表)
+	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Variables; //这个是Symbol table(符号表)
 
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> m_HashMap_StringTable;
 	std::unordered_map<int, const HAZE_STRING*> m_HashMap_StringMapping;

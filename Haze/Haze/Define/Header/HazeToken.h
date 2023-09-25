@@ -31,7 +31,7 @@ enum class HazeToken : unsigned int
 	MainFunction,
 
 	Class,
-	ClassData,
+	m_ClassDatas,
 	ClassPublic,
 	ClassPrivate,
 	ClassProtected,

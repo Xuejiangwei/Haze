@@ -54,7 +54,7 @@ enum class ParamType
 	LoadLibrary,
 };
 
-uint32 GetParam(ParamType Type, char** ParamArray, int Length)
+uint32 GetParam(ParamType m_Type, char** ParamArray, int Length)
 {
 	std::unordered_map<ParamType, const char*> HashMap_Param =
 	{
@@ -63,7 +63,7 @@ uint32 GetParam(ParamType Type, char** ParamArray, int Length)
 		{ ParamType::LoadLibrary, "-ld" },
 	};
 
-	auto Iter = HashMap_Param.find(Type);
+	auto Iter = HashMap_Param.find(m_Type);
 	if (Iter != HashMap_Param.end())
 	{
 		for (size_t i = 0; i < Length; i++)
@@ -108,7 +108,7 @@ int HazeMain(int ArgCount, char* ArgValue[])
 		MainFilePath = ArgValue[GetParam(ParamType::MainFile, ArgValue, ArgCount)];
 	}
 
-	HazeRunType Type = GetParam(ParamType::DebugType, ArgValue, ArgCount) != 0 ?
+	HazeRunType m_Type = GetParam(ParamType::DebugType, ArgValue, ArgCount) != 0 ?
 		strcmp(ArgValue[GetParam(ParamType::DebugType, ArgValue, ArgCount)], "debug") == 0 ? HazeRunType::Debug : HazeRunType::Release : HazeRunType::Release;
 
 	std::filesystem::path MainFile(MainFilePath);
@@ -130,16 +130,16 @@ int HazeMain(int ArgCount, char* ArgValue[])
 		}
 	}
 
-	HazeVM VM(Type);
+	HazeVM m_VM(m_Type);
 
-	VM.InitVM({ { MainFile , MainFile.filename().wstring().substr(0, MainFile.filename().wstring().length() - 3) } });
+	m_VM.InitVM({ { MainFile , MainFile.filename().wstring().substr(0, MainFile.filename().wstring().length() - 3) } });
 
 	//VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Code\\HazeCode.hz"), HAZE_TEST_FILE} });
 	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
 
 	std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
 
-	VM.StartMainFunction();
+	m_VM.StartMainFunction();
 
 	HazeEnd();
 

@@ -38,6 +38,6 @@ enum class HazeOperatorAssign : uint32
 
 HazeCmpType GetHazeCmpTypeByToken(HazeToken m_Token);
 
-InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType Type);
+InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType m_Type);
 
 HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken m_Token);

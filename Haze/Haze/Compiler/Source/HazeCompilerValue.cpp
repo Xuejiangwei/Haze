@@ -13,16 +13,16 @@
 //{
 //}
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
-	std::shared_ptr<HazeCompilerValue> AssignValue) : Module(Module), ValueType(DefineType), Scope(Scope), Desc(Desc), Count(Count)
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
+	std::shared_ptr<HazeCompilerValue> AssignValue) : m_Module(m_Module), ValueType(DefineType), Scope(Scope), Desc(Desc), Count(Count)
 {
 	if (AssignValue)
 	{
-		memcpy(&m_Value.m_Value, &AssignValue->GetValue(), sizeof(m_Value.m_Value));
+		memcpy(&Value.Value, &AssignValue->GetValue(), sizeof(Value.Value));
 	}
 	else
 	{
-		memset(&m_Value.m_Value, 0, sizeof(m_Value.m_Value));
+		memset(&Value.Value, 0, sizeof(Value.Value));
 	}
 }
 
@@ -48,7 +48,7 @@ void HazeCompilerValue::StoreValueType(std::shared_ptr<HazeCompilerValue> SrcVal
 
 void HazeCompilerValue::StoreValue(HazeValue& SrcValue)
 {
-	memcpy(&this->m_Value.m_Value, &SrcValue.m_Value, sizeof(this->m_Value.m_Value));
+	memcpy(&this->Value.Value, &SrcValue.Value, sizeof(this->Value.Value));
 }
 
 uint32 HazeCompilerValue::GetSize()

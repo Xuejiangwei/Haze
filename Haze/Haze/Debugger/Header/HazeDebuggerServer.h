@@ -9,12 +9,12 @@ class HazeVM;
 class HazeDebuggerServer
 {
 public:
-	static void InitDebuggerServer(HazeVM* VM);
+	static void InitDebuggerServer(HazeVM* m_VM);
 
-	static void SendData(char* Data, int Length, int Flags = 0);
+	static void SendData(char* m_Data, int Length, int Flags = 0);
 
 private:
-	static void Start(HazeVM* VM);
+	static void Start(HazeVM* m_VM);
 
 	static void Recv();
 };

@@ -9,7 +9,7 @@
 extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor;
 extern std::unique_ptr<HazeDebugger> Debugger;
 
-HazeStack::HazeStack(HazeVM* VM) : VM(VM)
+HazeStack::HazeStack(HazeVM* m_VM) : m_VM(m_VM)
 {
 	PC = 0;
 	EBP = 0;
@@ -34,10 +34,10 @@ void HazeStack::Start(unsigned int Address)
 	GarbageCollection(true, true);
 }
 
-void HazeStack::JmpTo(const InstructionData& Data)
+void HazeStack::JmpTo(const InstructionData& m_Data)
 {
 	auto& Function = Stack_Frame.back().FunctionInfo;
-	int Address = Function->FunctionDescData.InstructionStartAddress + Data.Extra.Jmp.StartAddress;
+	int Address = Function->FunctionDescData.InstructionStartAddress + m_Data.Extra.Jmp.StartAddress;
 	memcpy(&PC, &Address, sizeof(PC));
 
 	PC--;
@@ -45,9 +45,9 @@ void HazeStack::JmpTo(const InstructionData& Data)
 
 void HazeStack::Run(bool IsHazeCall)
 {
-	while (PC < VM->Vector_Instruction.size())
+	while (PC < m_VM->Instructions.size())
 	{
-		while (VM->IsDebug())
+		while (m_VM->IsDebug())
 		{
 			if (!Debugger)
 			{
@@ -63,7 +63,7 @@ void HazeStack::Run(bool IsHazeCall)
 			}
 		}
 
-		auto Iter = HashMap_InstructionProcessor.find(VM->Vector_Instruction[PC].InsCode);
+		auto Iter = HashMap_InstructionProcessor.find(m_VM->Instructions[PC].InsCode);
 		if (Iter != HashMap_InstructionProcessor.end())
 		{
 			Iter->second(this);
@@ -98,7 +98,7 @@ void HazeStack::PreMainFunction()
 
 void HazeStack::PushMainFuntion()
 {
-	auto& MainFunction = VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
+	auto& MainFunction = m_VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
 	OnCall(&MainFunction, 0);
 	PCStepInc();
 
@@ -150,16 +150,16 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 {
 	if (Debugger)
 	{
-		Debugger->AddTempBreakPoint(VM->GetNextLine(VM->GetCurrCallFunctionLine()));
+		Debugger->AddTempBreakPoint(m_VM->GetNextLine(m_VM->GetCurrCallFunctionLine()));
 	}
 
-	RegisterData RegisterDara({ GetVirtualRegister(CMP_REGISTER)->Data });
+	RegisterData RegisterDara({ GetVirtualRegister(CMP_REGISTER)->m_Data });
 	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize), RegisterDara));
 
 	EBP = ESP;
-	if (Info->m_Vector_Variables.size() > Info->Vector_Param.size())
+	if (Info->Variables.size() > Info->Params.size())
 	{
-		ESP += Info->m_Vector_Variables.back().Offset + GetSizeByType(Info->m_Vector_Variables.back().Variable.Type, VM);
+		ESP += Info->Variables.back().Offset + GetSizeByType(Info->Variables.back().Variable.m_Type, m_VM);
 	}
 
 	PC = Info->FunctionDescData.InstructionStartAddress;
@@ -169,7 +169,7 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 
 	if (Debugger)
 	{
-		VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.StartLine);
+		m_VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.StartLine);
 	}
 }
 
@@ -177,7 +177,7 @@ void HazeStack::OnRet()
 {
 	if (Debugger)
 	{
-		VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.EndLine);
+		m_VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.EndLine);
 		while (Debugger->IsPause) 
 		{
 		}
@@ -187,7 +187,7 @@ void HazeStack::OnRet()
 	EBP = Stack_Frame.back().EBP;
 	ESP = Stack_Frame.back().ESP;
 
-	memcpy(GetVirtualRegister(CMP_REGISTER)->Data.begin()._Unwrapped(), Stack_Frame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
+	memcpy(GetVirtualRegister(CMP_REGISTER)->m_Data.begin()._Unwrapped(), Stack_Frame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
 		Stack_Frame.back().Register.Cmp_RegisterData.size());
 
 	Stack_Frame.pop_back();

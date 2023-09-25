@@ -1,11 +1,11 @@
 #include "HazeUtility.h"
 
 template <typename T>
-unsigned int GetSizeByType(HazeDefineType Type, T* This)
+unsigned int GetSizeByType(HazeDefineType m_Type, T* This)
 {
-	return Type.PrimaryType == HazeValueType::Class ? This->GetClassSize(Type.CustomName) :
-		Type.PrimaryType == HazeValueType::Array ? Type.SecondaryType == HazeValueType::Class ? This->GetClassSize(Type.CustomName) : GetSizeByHazeType(Type.SecondaryType) :
-		GetSizeByHazeType(Type.PrimaryType);
+	return m_Type.PrimaryType == HazeValueType::Class ? This->GetClassSize(m_Type.CustomName) :
+		m_Type.PrimaryType == HazeValueType::Array ? m_Type.SecondaryType == HazeValueType::Class ? This->GetClassSize(m_Type.CustomName) : GetSizeByHazeType(m_Type.SecondaryType) :
+		GetSizeByHazeType(m_Type.PrimaryType);
 }
 
 template <typename T>
@@ -45,13 +45,13 @@ T StringToStandardType(const std::string& String)
 }
 
 template <typename T>
-HAZE_BINARY_STRING ToString(T m_Value)
+HAZE_BINARY_STRING ToString(T Value)
 {
-	return HAZE_TO_STR(m_Value);
+	return HAZE_TO_STR(Value);
 }
 
 template <typename T>
-HAZE_STRING ToHazeString(T m_Value)
+HAZE_STRING ToHazeString(T Value)
 {
-	return HAZE_TO_HAZE_STR(m_Value);
+	return HAZE_TO_HAZE_STR(Value);
 }

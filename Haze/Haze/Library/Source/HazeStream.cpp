@@ -41,9 +41,9 @@ void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)
 {
 	int V = 0;
 	int Size = 0;
-	for (int i = (int)Data->Vector_Param.size() - 1; i >= 0; --i)
+	for (int i = (int)m_Data->Params.size() - 1; i >= 0; --i)
 	{
-		Size = GetSizeByHazeType(Data->Vector_Param[i].Type.PrimaryType);
+		Size = GetSizeByHazeType(m_Data->Params[i].m_Type.PrimaryType);
 		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
 	}
 
@@ -105,7 +105,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 			if (*Start == HAZE_CHAR('d'))
 			{
 				auto Ins = Stack->GetVM()->GetInstruction()[Stack->GetCurrPC() - ArgNum - 1];
-				int Size = GetSizeByType(Ins.Operator[0].Variable.Type, Stack->GetVM());
+				int Size = GetSizeByType(Ins.Operator[0].Variable.m_Type, Stack->GetVM());
 
 				Offset -= Size;
 				if (Size == 1)

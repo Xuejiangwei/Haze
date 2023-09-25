@@ -14,7 +14,7 @@ public:
 	friend class InstructionProcessor;
 	friend class HazeMemory;
 
-	HazeStack(HazeVM* VM);
+	HazeStack(HazeVM* m_VM);
 
 	~HazeStack();
 
@@ -23,7 +23,7 @@ public:
 public:
 	char* GetAddressByEBP(int Offset) { return &Stack_Main[(uint64)EBP + Offset]; }
 
-	HazeVM* GetVM() const { return VM; }
+	HazeVM* GetVM() const { return m_VM; }
 
 	int GetCurrPC() const { return PC; }
 
@@ -52,7 +52,7 @@ public:
 
 	bool FrameIsValid() { return Stack_Frame.size(); }
 
-	void JmpTo(const InstructionData& Data);
+	void JmpTo(const InstructionData& m_Data);
 
 	HazeRegister* GetVirtualRegister(const HAZE_CHAR* m_Name);
 
@@ -83,7 +83,7 @@ private:
 	void GarbageCollection(bool Force = false, bool CollectionAll = false);
 
 private:
-	HazeVM* VM;
+	HazeVM* m_VM;
 
 	std::vector<char> Stack_Main;
 	std::vector<HazeStackFrame> Stack_Frame;

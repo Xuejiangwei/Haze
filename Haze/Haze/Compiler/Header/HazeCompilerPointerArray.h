@@ -5,7 +5,7 @@
 class HazeCompilerPointerArray : public HazeCompilerPointerValue
 {
 public:
-	explicit HazeCompilerPointerArray(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize);
+	explicit HazeCompilerPointerArray(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize);
 
 	virtual ~HazeCompilerPointerArray() override;
 

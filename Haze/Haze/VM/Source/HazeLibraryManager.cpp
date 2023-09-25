@@ -33,7 +33,7 @@ HazeLibraryManager::~HazeLibraryManager()
 	}
 }
 
-void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& m_ModuleName, const HAZE_STRING& FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack,
+void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& m_ModuleName, const HAZE_STRING& m_FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack,
 	void(*ExeHazeFunctionCall)(void*, void*, int, ...))
 {
 	auto Iter = HashMap_Library.find(m_ModuleName);
@@ -42,14 +42,14 @@ void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& m_ModuleName, con
 		ExeFuncType Func = (ExeFuncType)HAZE_GET_DLL_FUNCTION(Iter->second.Address, "ExecuteFunction");
 		if (Func)
 		{
-			if (Func(FunctionName.c_str(), ParamStartAddress, RetStartAddress, Stack, ExeHazeFunctionCall) == EXE_FUNC_ERR)
+			if (Func(m_FunctionName.c_str(), ParamStartAddress, RetStartAddress, Stack, ExeHazeFunctionCall) == EXE_FUNC_ERR)
 			{
-				HAZE_LOG_ERR_W("执行三方库<%s>中函数<%s>返回错误代码!\n", m_ModuleName.c_str(), FunctionName.c_str());
+				HAZE_LOG_ERR_W("执行三方库<%s>中函数<%s>返回错误代码!\n", m_ModuleName.c_str(), m_FunctionName.c_str());
 			}
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("调用三方库<%s>中函数<%s>错误,未能找到!\n", m_ModuleName.c_str(), FunctionName.c_str());
+			HAZE_LOG_ERR_W("调用三方库<%s>中函数<%s>错误,未能找到!\n", m_ModuleName.c_str(), m_FunctionName.c_str());
 		}
 	}
 }

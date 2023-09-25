@@ -13,7 +13,7 @@ public:
 
 	//HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	HazeCompilerValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::shared_ptr<HazeCompilerValue> AssignValue = nullptr);
+	HazeCompilerValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::shared_ptr<HazeCompilerValue> AssignValue = nullptr);
 
 	virtual ~HazeCompilerValue();
 
@@ -25,7 +25,7 @@ public:
 
 	const HazeDefineType& GetValueType() const { return ValueType; }
 
-	const HazeValue& GetValue() const { return m_Value; }
+	const HazeValue& GetValue() const { return Value; }
 
 	HazeVariableScope GetVariableScope() const { return Scope; }
 
@@ -43,7 +43,7 @@ public:
 public:
 	bool IsRegister() const { return IsRegisterDesc(Desc); }
 
-	bool IsRegister(HazeDataDesc Type) const { return IsRegisterDesc(Desc) && Desc == Type; }
+	bool IsRegister(HazeDataDesc m_Type) const { return IsRegisterDesc(Desc) && Desc == m_Type; }
 
 	bool IsConstant() const { return Desc == HazeDataDesc::Constant; }
 
@@ -93,8 +93,8 @@ public:
 
 protected:
 	HazeDefineType ValueType;
-	HazeValue m_Value;
-	HazeCompilerModule* Module;
+	HazeValue Value;
+	HazeCompilerModule* m_Module;
 	HazeVariableScope Scope;
 	HazeDataDesc Desc;
 

@@ -37,7 +37,7 @@ public:
 
 	void LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath);
 
-	const std::vector<Instruction>& GetInstruction() const { return Vector_Instruction; }
+	const std::vector<Instruction>& GetInstruction() const { return Instructions; }
 
 	void StartMainFunction();
 
@@ -62,9 +62,9 @@ public:
 
 	char* GetGlobalValueByIndex(uint32 Index);
 
-	ClassData* FindClass(const HAZE_STRING& ClassName);
+	m_ClassDatas* FindClass(const HAZE_STRING& m_ClassName);
 
-	uint32 GetClassSize(const HAZE_STRING& ClassName);
+	uint32 GetClassSize(const HAZE_STRING& m_ClassName);
 
 private:
 	void OnExecLine(uint32 Line);
@@ -75,7 +75,7 @@ private:
 
 	uint32 GetCurrCallFunctionLine();
 
-	static void Hook(HazeVM* VM);
+	//static void Hook(HazeVM* m_VM);
 
 private:
 	std::unique_ptr<HazeCompiler> m_Compiler;
@@ -95,12 +95,12 @@ private:
 
 	std::vector<std::pair<HAZE_STRING, HAZE_STRING>> Vector_StringTable;
 
-	std::vector<ClassData> Vector_ClassTable;
+	std::vector<m_ClassDatas> Vector_ClassTable;
 
 	std::vector<FunctionData> Vector_FunctionTable;
 	std::unordered_map<HAZE_STRING, uint32> HashMap_FunctionTable;
 
-	std::vector<Instruction> Vector_Instruction;
+	std::vector<Instruction> Instructions;
 
 	std::vector<char> Vector_GlobalDataClassObjectMemory;
 

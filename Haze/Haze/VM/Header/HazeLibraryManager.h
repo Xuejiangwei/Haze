@@ -22,7 +22,7 @@ public:
 	HazeLibraryManager();
 	~HazeLibraryManager();
 
-	void ExecuteDLLFunction(const HAZE_STRING& m_ModuleName, const HAZE_STRING& FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack, 
+	void ExecuteDLLFunction(const HAZE_STRING& m_ModuleName, const HAZE_STRING& m_FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack, 
 		void(*ExeHazeFunctionCall)(void*, void*, int, ...));
 
 	void LoadDLLLibrary(const HAZE_STRING& LibraryPath, const HAZE_STRING& FilePath);

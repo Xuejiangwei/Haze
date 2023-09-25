@@ -13,7 +13,7 @@ public:
 	friend class HazeVM;
 	friend class HazeStack;
 
-	HazeDebugger(HazeVM* VM, void(*EndCall)());
+	HazeDebugger(HazeVM* m_VM, void(*EndCall)());
 	~HazeDebugger();
 
 	enum DebuggerHookType
@@ -23,7 +23,7 @@ public:
 		Function = 1 << 2,
 	};
 
-	void SetHook(void(*HookCall)(HazeVM* VM), uint32 Type);
+	void SetHook(void(*HookCall)(HazeVM* m_VM), uint32 m_Type);
 
 	void AddBreakPoint(const char* Message);
 
@@ -64,7 +64,7 @@ private:
 
 	bool CurrModuleIsStepOver();
 
-	void SetJsonType(open::OpenJson& Json, HazeDebugInfoType Type) { Json["Type"] = (int)Type; }
+	void SetJsonType(open::OpenJson& Json, HazeDebugInfoType m_Type) { Json["Type"] = (int)m_Type; }
 
 	void SetJsonBreakFilePath(open::OpenJson& Json, HAZE_STRING Path)
 	{
@@ -80,8 +80,8 @@ private:
 	void SetJsonVariableData(open::OpenJson& Json, const HazeVariableData& Variable, const char* Address = nullptr, bool isStack = true);
 
 private:
-	HazeVM* VM;
-	void(*HookFunctionCall)(HazeVM* VM);
+	HazeVM* m_VM;
+	void(*HookFunctionCall)(HazeVM* m_VM);
 	void(*EndCall)();
 	uint32 HookType;
 

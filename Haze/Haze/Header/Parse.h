@@ -35,7 +35,7 @@ public:
 
 	HazeToken GetNextToken();
 
-	const HAZE_STRING& GetCurrLexeme() const { return CurrLexeme; }
+	const HAZE_STRING& GetCurrLexeme() const { return m_CurrLexeme; }
 
 	const HAZE_STRING& GetLookAtAheadChar() {}
 
@@ -114,10 +114,10 @@ private:
 
 	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> ParseClassData();
 
-	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& ClassName);
+	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& m_ClassName);
 
 private:
-	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* ClassName = nullptr);
+	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* m_ClassName = nullptr);
 
 	bool ExpectNextTokenIs(HazeToken m_Token, const HAZE_CHAR* ErrorInfo = nullptr);
 
@@ -137,8 +137,8 @@ private:
 	HAZE_STRING CodeText;
 
 	HazeToken CurrToken;
-	const HAZE_CHAR* CurrCode;
-	HAZE_STRING CurrLexeme;
+	const HAZE_CHAR* m_CurrCode;
+	HAZE_STRING m_CurrLexeme;
 	std::pair<HAZE_STRING, int> CurrPreLexeme;		//LexemeString, skip char count
 
 	std::stack<HazeSectionSignal> StackSectionSignal;

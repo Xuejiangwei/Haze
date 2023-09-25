@@ -10,7 +10,7 @@ class HazeCompilerClassValue : public HazeCompilerValue
 public:
 	friend class HazeCompilerClass;
 
-	explicit HazeCompilerClassValue(HazeCompilerModule* Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count);
+	explicit HazeCompilerClassValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count);
 
 	virtual ~HazeCompilerClassValue() override;
 
@@ -29,5 +29,5 @@ public:
 private:
 	HazeCompilerClass* OwnerClass;
 
-	std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> Vector_Data;
+	std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> m_Data;
 };

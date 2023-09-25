@@ -18,7 +18,7 @@ public:
 	~HazeBaseBlock();
 
 	std::shared_ptr<HazeCompilerValue> CreateAlloce(const HazeDefineVariable& Define, int Line, int Count, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
-		std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize = {}, std::vector<HazeDefineType>* Vector_Param = nullptr);
+		std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize = {}, std::vector<HazeDefineType>* Params = nullptr);
 
 	std::shared_ptr<HazeBaseBlock> GetShared() { return shared_from_this(); }
 
@@ -32,9 +32,9 @@ public:
 
 	const std::vector<HAZE_STRING>& GetIRCode() const { return Vector_IRCode; }
 
-	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& m_Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
 
-	bool FindLocalVariableName(const HazeCompilerValue* m_Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
 
 	void SetLoopEnd(HazeBaseBlock* Block) { LoopEndBlock = Block; }
 

@@ -12,18 +12,18 @@ public:
 	HazeVariable();
 	~HazeVariable();
 
-	const HazeDefineType& GetType() const { return Type; }
+	const HazeDefineType& GetType() const { return m_Type; }
 
-	const HazeValue& GetValue() const { return m_Value; }
+	const HazeValue& GetValue() const { return Value; }
 
 private:
 	HAZE_STRING m_Name;
 
-	HazeDefineType Type;
+	HazeDefineType m_Type;
 
 	union
 	{
-		HazeValue m_Value;
+		HazeValue Value;
 		void* Address;
 	};
 };

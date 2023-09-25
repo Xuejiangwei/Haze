@@ -6,7 +6,7 @@
 
 struct DebuggerBufferNode
 {
-	char Data[DEBUGGER_BUFFER_NODE_SIZE];
+	char m_Data[DEBUGGER_BUFFER_NODE_SIZE];
 	DebuggerBufferNode* NextNode;
 };
 

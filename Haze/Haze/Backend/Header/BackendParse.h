@@ -11,35 +11,36 @@ class HazeExecuteFile;
 class BackendParse
 {
 public:
-	BackendParse(HazeVM* VM);
+	BackendParse(HazeVM* vm);
+
 	~BackendParse();
 
 	void Parse();
 
 public:
-	unsigned int const GetClassSize(const HAZE_STRING& ClassName);
+	unsigned int const GetClassSize(const HAZE_STRING& className);
 
 private:
 	void GetNextLexeme();
 
-	void GetNextLexmeAssign_HazeString(HAZE_STRING& Dst)
+	void GetNextLexmeAssign_HazeString(HAZE_STRING& dst)
 	{
 		GetNextLexeme();
-		Dst = CurrLexeme;
+		dst = m_CurrLexeme;
 	};
 
 	template<typename T>
-	void GetNextLexmeAssign_StandardType(T& Dst)
+	void GetNextLexmeAssign_StandardType(T& dst)
 	{
 		GetNextLexeme();
-		Dst = StringToStandardType<T>(CurrLexeme);
+		dst = StringToStandardType<T>(m_CurrLexeme);
 	};
 
-	template<typename Type, typename T>
-	void GetNextLexmeAssign_CustomType(T& Dst)
+	template<typename m_Type, typename T>
+	void GetNextLexmeAssign_CustomType(T& dst)
 	{
 		GetNextLexeme();
-		Dst = (T)StringToStandardType<Type>(CurrLexeme);
+		dst = (T)StringToStandardType<m_Type>(m_CurrLexeme);
 	};
 
 	void Parse_I_Code();
@@ -52,30 +53,33 @@ private:
 
 	void Parse_I_Code_FunctionTable();
 
-	void ParseInstructionData(InstructionData& Data);
+	void ParseInstructionData(InstructionData& data);
 
-	void ParseInstruction(ModuleUnit::FunctionInstruction& Instruction);
+	void ParseInstruction(ModuleUnit::FunctionInstruction& instruction);
 
 	void GenOpCodeFile();
 
-	void ReplaceStringIndex(ModuleUnit::StringTable& NewStringTable, ModuleUnit::FunctionTable& NewFunctionTable, size_t& FunctionCount);
+	void ReplaceStringIndex(ModuleUnit::StringTable& newStringTable, 
+		ModuleUnit::FunctionTable& newFunctionTable, size_t& functionCount);
 
-	inline void ResetLocalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable);
+	inline void ResetLocalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
+		std::unordered_map<HAZE_STRING, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable);
 
-	inline void ResetGlobalOperatorAddress(InstructionData& Operator, ModuleUnit::FunctionTableData& Function, std::unordered_map<HAZE_STRING, int>& HashMap_LocalVariable, ModuleUnit::GlobalDataTable& NewGlobalDataTable);
+	inline void ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
+		std::unordered_map<HAZE_STRING, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable);
 
-	void FindAddress(ModuleUnit::GlobalDataTable& NewGlobalDataTable, ModuleUnit::FunctionTable& NewFunctionTable);
+	void FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable, ModuleUnit::FunctionTable& newFunctionTable);
 
-	const ModuleUnit::ClassTableData* const GetClass(const HAZE_STRING& ClassName);
+	const ModuleUnit::ClassTableData* const GetClass(const HAZE_STRING& className);
 
-	uint32 GetMemberOffset(const ModuleUnit::ClassTableData& Class, const HAZE_STRING& MemberName);
+	uint32 GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HAZE_STRING& memberName);
 
 private:
-	HazeVM* VM;
+	HazeVM* m_VM;
 
-	const HAZE_CHAR* CurrCode;
-	HAZE_STRING CurrLexeme;
+	const HAZE_CHAR* m_CurrCode;
+	HAZE_STRING m_CurrLexeme;
 
-	std::shared_ptr<ModuleUnit> CurrParseModule;
-	std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>> HashMap_Modules;
+	std::shared_ptr<ModuleUnit> m_CurrParseModule;
+	std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>> m_Modules;
 };

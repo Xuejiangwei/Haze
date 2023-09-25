@@ -17,13 +17,13 @@
 ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location) : m_Compiler(compiler), m_Location(location)
 {
 	m_DefineVariable.m_Name = HAZE_TEXT("");
-	m_DefineVariable.Type = { HazeValueType::Void, HAZE_TEXT("") };
+	m_DefineVariable.m_Type = { HazeValueType::Void, HAZE_TEXT("") };
 }
 
 ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& var) 
 	: m_Compiler(compiler), m_DefineVariable(var), m_Location(location)
 {
-	memset(&m_Value.m_Value, 0, sizeof(m_Value.m_Value));
+	memset(&m_Value.Value, 0, sizeof(m_Value.Value));
 }
 
 ASTBase::~ASTBase()
@@ -33,7 +33,7 @@ ASTBase::~ASTBase()
 ASTBool::ASTBool(HazeCompiler* compiler, const SourceLocation& location, const HazeValue& value)
 	: ASTBase(compiler, location)
 {
-	m_DefineVariable.Type.PrimaryType = HazeValueType::Bool;
+	m_DefineVariable.m_Type.PrimaryType = HazeValueType::Bool;
 	m_Value = value;
 }
 
@@ -43,13 +43,13 @@ ASTBool::~ASTBool()
 
 std::shared_ptr<HazeCompilerValue> ASTBool::CodeGen()
 {
-	return m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
+	return m_Compiler->GenConstantValue(m_DefineVariable.m_Type.PrimaryType, m_Value);
 }
 
 ASTNumber::ASTNumber(HazeCompiler* compiler, const SourceLocation& location, HazeValueType type, const HazeValue& value) 
 	: ASTBase(compiler, location)
 {
-	m_DefineVariable.Type.PrimaryType = type;
+	m_DefineVariable.m_Type.PrimaryType = type;
 	m_Value = value;
 }
 
@@ -59,7 +59,7 @@ ASTNumber::~ASTNumber()
 
 std::shared_ptr<HazeCompilerValue> ASTNumber::CodeGen()
 {
-	return m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
+	return m_Compiler->GenConstantValue(m_DefineVariable.m_Type.PrimaryType, m_Value);
 }
 
 ASTStringText::ASTStringText(HazeCompiler* compiler, const SourceLocation& location, HAZE_STRING& text) 
@@ -244,7 +244,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	{
 		if (auto NullExpression = dynamic_cast<ASTNullPtr*>(m_Expression.get()))
 		{
-			NullExpression->SetDefineType(m_DefineVariable.Type);
+			NullExpression->SetDefineType(m_DefineVariable.m_Type);
 		}
 
 		exprValue = m_Expression->CodeGen();
@@ -254,7 +254,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		}
 	}
 
-	bool isRef = m_DefineVariable.Type.PrimaryType == HazeValueType::ReferenceBase || m_DefineVariable.Type.PrimaryType == HazeValueType::ReferenceClass;
+	bool isRef = m_DefineVariable.m_Type.PrimaryType == HazeValueType::ReferenceBase || m_DefineVariable.m_Type.PrimaryType == HazeValueType::ReferenceClass;
 
 	if (m_SectionSignal == HazeSectionSignal::Global)
 	{
@@ -327,7 +327,7 @@ ASTNew::~ASTNew()
 
 std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 {
-	return m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type);
+	return m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.m_Type);
 }
 
 ASTGetAddress::ASTGetAddress(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)
@@ -430,12 +430,12 @@ ASTNullPtr::~ASTNullPtr()
 
 std::shared_ptr<HazeCompilerValue> ASTNullPtr::CodeGen()
 {
-	return m_Compiler->GetNullPtr(m_DefineVariable.Type);
+	return m_Compiler->GetNullPtr(m_DefineVariable.m_Type);
 }
 
 void ASTNullPtr::SetDefineType(const HazeDefineType& type)
 {
-	m_DefineVariable.Type = type;
+	m_DefineVariable.m_Type = type;
 }
 
 ASTNot::ASTNot(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)
@@ -941,14 +941,14 @@ ASTInitializeList::~ASTInitializeList()
 
 std::shared_ptr<HazeCompilerValue> ASTInitializeList::CodeGen()
 {
-	std::vector<std::shared_ptr<HazeCompilerValue>> Vector_Value;
+	std::vector<std::shared_ptr<HazeCompilerValue>> values;
 	for (size_t i = 0; i < m_InitializeListExpression.size(); i++)
 	{
-		Vector_Value.push_back(m_InitializeListExpression[i]->CodeGen());
+		values.push_back(m_InitializeListExpression[i]->CodeGen());
 	}
 
 	auto InitilaizeListValue = HazeCompiler::GetInitializeListValue();
-	InitilaizeListValue->ResetInitializeList(Vector_Value);
+	InitilaizeListValue->ResetInitializeList(values);
 
 	return InitilaizeListValue;
 }

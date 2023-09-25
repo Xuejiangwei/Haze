@@ -23,19 +23,19 @@ void CloseServer()
 	WSACleanup();
 }
 
-void HazeDebuggerServer::InitDebuggerServer(HazeVM* VM)
+void HazeDebuggerServer::InitDebuggerServer(HazeVM* m_VM)
 {
-	std::thread LaunchDebuggerThread(HazeDebuggerServer::Start, VM);
+	std::thread LaunchDebuggerThread(HazeDebuggerServer::Start, m_VM);
 	DebuggerThreadId = LaunchDebuggerThread.get_id();
 	LaunchDebuggerThread.detach();
 }
 
-void HazeDebuggerServer::SendData(char* Data, int Length, int Flags)
+void HazeDebuggerServer::SendData(char* m_Data, int Length, int Flags)
 {
-	send(SocketClient, Data, Length, Flags);
+	send(SocketClient, m_Data, Length, Flags);
 }
 
-void HazeDebuggerServer::Start(HazeVM* VM)
+void HazeDebuggerServer::Start(HazeVM* m_VM)
 {
 	WORD sockVersion = MAKEWORD(2, 2);
 	WSADATA wsaData;
@@ -77,7 +77,7 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 
 	//循环接收数据
 
-	while (VM)
+	while (m_VM)
 	{
 		sockaddr_in remoteAddr;				//sockaddr_in常用于socket定义和赋值,sockaddr用于函数参数
 		int nAddrlen = sizeof(remoteAddr);
@@ -93,7 +93,7 @@ void HazeDebuggerServer::Start(HazeVM* VM)
 
 		if (!Debugger)
 		{
-			Debugger = std::make_unique<HazeDebugger>(VM, &CloseServer);
+			Debugger = std::make_unique<HazeDebugger>(m_VM, &CloseServer);
 		}
 		break;
 	}
@@ -107,9 +107,9 @@ static bool HandleMessage(char* Message)
 	Message = UTF8_2_GB2312(Message);
 	std::string Str;
 	Str += Message[0];
-	uint32 Type = StringToStandardType<uint32>(Str);
+	uint32 m_Type = StringToStandardType<uint32>(Str);
 	HAZE_LOG_INFO("handle message %s\n", Message);
-	switch ((HazeDebugOperatorType)Type)
+	switch ((HazeDebugOperatorType)m_Type)
 	{
 	case HazeDebugOperatorType::None:
 		HAZE_LOG_ERR(HAZE_TEXT("Haze调试接收到<空调试>操作\n"));

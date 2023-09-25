@@ -73,7 +73,7 @@ struct HazeValue
 			int MemorySize;
 			//const HAZE_STRING* StringPointer;
 		} Extra;
-	} m_Value;
+	} Value;
 
 public:
 	HazeValue& operator =(const HazeValue& V)
@@ -84,7 +84,7 @@ public:
 
 	HazeValue& operator =(int64_t V)
 	{
-		memcpy(&this->m_Value, &V, sizeof(V));
+		memcpy(&this->Value, &V, sizeof(V));
 		return *this;
 	}
 };
@@ -92,7 +92,7 @@ public:
 enum class InstructionOpCode : uint32;
 enum class HazeToken : uint32;
 
-uint32 GetSizeByHazeType(HazeValueType Type);
+uint32 GetSizeByHazeType(HazeValueType m_Type);
 
 HazeValueType GetValueTypeByToken(HazeToken m_Token);
 
@@ -118,18 +118,18 @@ bool IsArrayType(HazeValueType type);
 
 bool IsReferenceType(HazeValueType type);
 
-void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType Type, HazeValue& m_Value);
+void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType m_Type, HazeValue& Value);
 
-void OperatorValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Target);
+void OperatorValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const void* Target);
 
-void CalculateValueByType(HazeValueType Type, InstructionOpCode TypeCode, const void* Source, const void* Target);
+void CalculateValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const void* Source, const void* Target);
 
-void CompareValueByType(HazeValueType Type, struct HazeRegister* Register, const void* Source, const void* Target);
+void CompareValueByType(HazeValueType m_Type, struct HazeRegister* Register, const void* Source, const void* Target);
 
 size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
 
-const HAZE_CHAR* GetHazeValueTypeString(HazeValueType Type);
+const HAZE_CHAR* GetHazeValueTypeString(HazeValueType m_Type);
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType Type, const HazeValue& m_Value);
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType m_Type, const HazeValue& Value);
 
-HazeValue GetNegValue(HazeValueType Type, const HazeValue& m_Value);
+HazeValue GetNegValue(HazeValueType m_Type, const HazeValue& Value);

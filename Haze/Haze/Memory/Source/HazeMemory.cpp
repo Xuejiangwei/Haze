@@ -119,26 +119,26 @@ void HazeMemory::AddToRoot(void*)
 }
 
 void HazeMemory::MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& Vector_MarkAddressBase,
-	std::vector<std::pair<uint64, ClassData*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress)
+	std::vector<std::pair<uint64, m_ClassDatas*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress)
 {
 	uint64 Address = 0;
-	auto ClassData = VM->FindClass(VarType.CustomName);
-	for (size_t i = 0; i < ClassData->Vector_Member.size(); i++)
+	auto m_ClassDatas = m_VM->FindClass(VarType.CustomName);
+	for (size_t i = 0; i < m_ClassDatas->Members.size(); i++)
 	{
-		auto& Member = ClassData->Vector_Member[i];
-		if (Member.Variable.Type.PrimaryType == HazeValueType::PointerBase)
+		auto& Member = m_ClassDatas->Members[i];
+		if (Member.Variable.m_Type.PrimaryType == HazeValueType::PointerBase)
 		{
 			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
-			Vector_MarkAddressBase.push_back({ Address, Member.Variable.Type.SecondaryType });
+			Vector_MarkAddressBase.push_back({ Address, Member.Variable.m_Type.SecondaryType });
 		}
-		else if (Member.Variable.Type.PrimaryType == HazeValueType::PointerClass)
+		else if (Member.Variable.m_Type.PrimaryType == HazeValueType::PointerClass)
 		{
 			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
-			Vector_MarkAddressClass.push_back({ Address, VM->FindClass(Member.Variable.Type.CustomName) });
+			Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(Member.Variable.m_Type.CustomName) });
 		}
-		else if (Member.Variable.Type.PrimaryType == HazeValueType::Class)
+		else if (Member.Variable.m_Type.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.Variable.Type, BaseAddress + Member.Offset);
+			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.Variable.m_Type, BaseAddress + Member.Offset);
 		}
 	}
 }
@@ -160,66 +160,66 @@ void HazeMemory::Mark()
 
 	//根节点内存有 静态变量、栈、寄存器等
 	std::vector<std::pair<uint64, HazeValueType>> Vector_MarkAddressBase;
-	std::vector<std::pair<uint64, ClassData*>> Vector_MarkAddressClass;
+	std::vector<std::pair<uint64, m_ClassDatas*>> Vector_MarkAddressClass;
 	uint64 Address = 0;
 
-	for (auto& It : VM->Vector_GlobalData)
+	for (auto& It : m_VM->Vector_GlobalData)
 	{
-		if (It.Type.PrimaryType == HazeValueType::PointerBase)
+		if (It.m_Type.PrimaryType == HazeValueType::PointerBase)
 		{
-			Vector_MarkAddressBase.push_back({ (uint64)It.m_Value.m_Value.Pointer, It.Type.SecondaryType });
+			Vector_MarkAddressBase.push_back({ (uint64)It.Value.Value.Pointer, It.m_Type.SecondaryType });
 		}
-		else if (It.Type.PrimaryType == HazeValueType::PointerClass)
+		else if (It.m_Type.PrimaryType == HazeValueType::PointerClass)
 		{
-			Vector_MarkAddressClass.push_back({ (uint64)It.m_Value.m_Value.Pointer, VM->FindClass(It.Type.CustomName) });
+			Vector_MarkAddressClass.push_back({ (uint64)It.Value.Value.Pointer, m_VM->FindClass(It.m_Type.CustomName) });
 		}
-		else if (It.Type.PrimaryType == HazeValueType::Class)
+		else if (It.m_Type.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.Type, (char*)&It.m_Value);
+			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.m_Type, (char*)&It.Value);
 		}
 	}
 
-	auto NewRegister = VM->VMStack->GetVirtualRegister(NEW_REGISTER);
-	auto RetRegister = VM->VMStack->GetVirtualRegister(RET_REGISTER);
-	for (auto& It : VM->VMStack->HashMap_VirtualRegister)
+	auto NewRegister = m_VM->VMStack->GetVirtualRegister(NEW_REGISTER);
+	auto RetRegister = m_VM->VMStack->GetVirtualRegister(RET_REGISTER);
+	for (auto& It : m_VM->VMStack->HashMap_VirtualRegister)
 	{
 		if (&It.second == NewRegister || &It.second == RetRegister)
 		{
 			//New和Ret寄存器中存留的内存在赋值后不需要保留，考虑在赋值字节码执行中清除
-			if (It.second.Type.PrimaryType == HazeValueType::PointerBase)
+			if (It.second.m_Type.PrimaryType == HazeValueType::PointerBase)
 			{
-				memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
-				Vector_MarkAddressBase.push_back({ Address, It.second.Type.SecondaryType });
+				memcpy(&Address, It.second.m_Data.begin()._Unwrapped(), sizeof(Address));
+				Vector_MarkAddressBase.push_back({ Address, It.second.m_Type.SecondaryType });
 			}
-			else if (It.second.Type.PrimaryType == HazeValueType::PointerClass)
+			else if (It.second.m_Type.PrimaryType == HazeValueType::PointerClass)
 			{
-				memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
-				Vector_MarkAddressClass.push_back({ Address, VM->FindClass(It.second.Type.CustomName) });
+				memcpy(&Address, It.second.m_Data.begin()._Unwrapped(), sizeof(Address));
+				Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(It.second.m_Type.CustomName) });
 			}
-			else if (It.second.Type.PrimaryType == HazeValueType::Class)
+			else if (It.second.m_Type.PrimaryType == HazeValueType::Class)
 			{
-				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.second.Type, It.second.Data.begin()._Unwrapped());
+				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.second.m_Type, It.second.m_Data.begin()._Unwrapped());
 			}
 		}
 	}
 
-	for (size_t i = 0; i < VM->VMStack->Stack_Frame.size(); i++)
+	for (size_t i = 0; i < m_VM->VMStack->Stack_Frame.size(); i++)
 	{
-		for (auto& Var : VM->VMStack->Stack_Frame[i].FunctionInfo->m_Vector_Variables)
+		for (auto& Var : m_VM->VMStack->Stack_Frame[i].FunctionInfo->Variables)
 		{
-			if (Var.Variable.Type.PrimaryType == HazeValueType::PointerBase)
+			if (Var.Variable.m_Type.PrimaryType == HazeValueType::PointerBase)
 			{
-				memcpy(&Address, &VM->VMStack->Stack_Main[VM->VMStack->Stack_Frame[i].EBP + Var.Offset], sizeof(Address));
-				Vector_MarkAddressBase.push_back({ Address, Var.Variable.Type.SecondaryType });
+				memcpy(&Address, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset], sizeof(Address));
+				Vector_MarkAddressBase.push_back({ Address, Var.Variable.m_Type.SecondaryType });
 			}
-			else if (Var.Variable.Type.PrimaryType == HazeValueType::PointerClass)
+			else if (Var.Variable.m_Type.PrimaryType == HazeValueType::PointerClass)
 			{
-				memcpy(&Address, &VM->VMStack->Stack_Main[VM->VMStack->Stack_Frame[i].EBP + Var.Offset], sizeof(Address));
-				Vector_MarkAddressClass.push_back({ Address, VM->FindClass(Var.Variable.Type.CustomName) });
+				memcpy(&Address, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset], sizeof(Address));
+				Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(Var.Variable.m_Type.CustomName) });
 			}
-			else if (Var.Variable.Type.PrimaryType == HazeValueType::Class)
+			else if (Var.Variable.m_Type.PrimaryType == HazeValueType::Class)
 			{
-				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Var.Variable.Type, &VM->VMStack->Stack_Main[VM->VMStack->Stack_Frame[i].EBP + Var.Offset]);
+				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Var.Variable.m_Type, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset]);
 			}
 		}
 	}
@@ -292,10 +292,10 @@ void HazeMemory::ForceGC()
 	Sweep();
 }
 
-void HazeMemory::MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index)
+void HazeMemory::MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, m_ClassDatas*>>& ArrayClass, uint64 Index)
 {
 }
 
-void HazeMemory::MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index)
+void HazeMemory::MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, m_ClassDatas*>>& ArrayClass, uint64 Index)
 {
 }

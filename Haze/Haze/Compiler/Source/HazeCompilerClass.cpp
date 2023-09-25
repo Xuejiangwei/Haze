@@ -7,48 +7,48 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 
-HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* Module, const HAZE_STRING& m_Name, std::vector<HazeCompilerClass*>& ParentClass,
-	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& Data)
-	: Module(Module), m_Name(m_Name), ParentClass(std::move(ParentClass)), Vector_Data(std::move(Data))
+HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* compilerModule, const HAZE_STRING& name, std::vector<HazeCompilerClass*>& parentClass,
+	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& data)
+	: m_Module(compilerModule), m_Name(name), m_ParentClass(std::move(parentClass)), m_Data(std::move(data))
 {
-	DataSize = 0;
-	if (this->ParentClass.size() > 0)
+	m_DataSize = 0;
+	if (this->m_ParentClass.size() > 0)
 	{
-		for (size_t i = 0; i < this->ParentClass.size(); i++)
+		for (size_t i = 0; i < this->m_ParentClass.size(); i++)
 		{
-			DataSize += this->ParentClass[i]->GetDataSize();
+			m_DataSize += this->m_ParentClass[i]->GetDataSize();
 		}
 	}
 	
 	uint32 MemberNum = 0;
 	std::shared_ptr<HazeCompilerValue> LastMember = nullptr;
-	for (size_t i = 0; i < Vector_Data.size(); i++)
+	for (size_t i = 0; i < m_Data.size(); i++)
 	{
-		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
+		for (size_t j = 0; j < m_Data[i].second.size(); j++)
 		{
-			Vector_Data[i].second[j].second->Desc = Vector_Data[i].first;
+			m_Data[i].second[j].second->Desc = m_Data[i].first;
 			MemberNum++;
-			LastMember = Vector_Data[i].second[j].second;
+			LastMember = m_Data[i].second[j].second;
 		}
 	}
 
 	MemoryAlign(MemberNum);
 	uint32 AlignSize = GetAlignSize();
 	AlignSize = AlignSize > HAZE_ALIGN_BYTE ? AlignSize : HAZE_ALIGN_BYTE;
-	DataSize = LastMember ? HAZE_ALIGN(Vector_Offset.back() + LastMember->GetSize(), AlignSize) : 0;
-	HAZE_LOG_INFO(HAZE_TEXT("¿‡<%s> DataSize %d\n"), m_Name.c_str(), DataSize);
+	m_DataSize = LastMember ? HAZE_ALIGN(Vector_Offset.back() + LastMember->GetSize(), AlignSize) : 0;
+	HAZE_LOG_INFO(HAZE_TEXT("¿‡<%s> DataSize %d\n"), name.c_str(), m_DataSize);
 }
 
 HazeCompilerClass::~HazeCompilerClass()
 {
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::FindFunction(const HAZE_STRING& FunctionName)
+std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::FindFunction(const HAZE_STRING& m_FunctionName)
 {
-	auto Iter = m_HashMap_Functions.find(GetHazeClassFunctionName(m_Name, FunctionName));
+	auto Iter = m_HashMap_Functions.find(GetHazeClassFunctionName(m_Name, m_FunctionName));
 	if (Iter != m_HashMap_Functions.end())
 	{
-		return Vector_Function[Iter->second];
+		return m_Functions[Iter->second];
 	}
 
 	return nullptr;
@@ -59,34 +59,34 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared
 	auto Iter = m_HashMap_Functions.find(Function->GetName());
 	if (Iter == m_HashMap_Functions.end())
 	{
-		Vector_Function.push_back(Function);
-		m_HashMap_Functions[Function->GetName()] = (unsigned int)Vector_Function.size() - 1;
+		m_Functions.push_back(Function);
+		m_HashMap_Functions[Function->GetName()] = (unsigned int)m_Functions.size() - 1;
 
 		return Function;
 	}
 
-	return Vector_Function[Iter->second];
+	return m_Functions[Iter->second];
 }
 
 void HazeCompilerClass::InitThisValue()
 {
-	NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
+	NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
 		HAZE_TEXT("")), HazeVariableScope::None, HazeDataDesc::ClassThis, 0));
-	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
+	ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
 		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 
-	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, m_Name),
+	ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, m_Name),
 		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 }
 
 int HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 {
 	size_t Index = 0;
-	for (size_t i = 0; i < Vector_Data.size(); i++)
+	for (size_t i = 0; i < m_Data.size(); i++)
 	{
-		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
+		for (size_t j = 0; j < m_Data[i].second.size(); j++)
 		{
-			if (Vector_Data[i].second[j].first == MemberName)
+			if (m_Data[i].second[j].first == MemberName)
 			{
 				return (int)Index;
 			}
@@ -98,29 +98,29 @@ int HazeCompilerClass::GetMemberIndex(const HAZE_STRING& MemberName)
 	return -1;
 }
 
-bool HazeCompilerClass::GetMemberName(const std::shared_ptr<HazeCompilerValue>& m_Value, HAZE_STRING& OutName)
+bool HazeCompilerClass::GetMemberName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName)
 {
-	return GetMemberName(m_Value.get(), OutName);
+	return GetMemberName(Value.get(), OutName);
 }
 
-bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* m_Value, HAZE_STRING& OutName)
+bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* Value, HAZE_STRING& OutName)
 {
-	for (size_t i = 0; i < ThisClassValue->Vector_Data.size(); i++)
+	for (size_t i = 0; i < ThisClassValue->m_Data.size(); i++)
 	{
-		for (size_t j = 0; j < ThisClassValue->Vector_Data[i].second.size(); j++)
+		for (size_t j = 0; j < ThisClassValue->m_Data[i].second.size(); j++)
 		{
-			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].first, ThisClassValue->Vector_Data[i].second[j] }, m_Value, OutName))
+			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, ThisClassValue->m_Data[i].second[j] }, Value, OutName))
 			{
 				return true;
 			}
 		}
 	}
 
-	for (size_t i = 0; i < NewPointerToValue->Vector_Data.size(); i++)
+	for (size_t i = 0; i < NewPointerToValue->m_Data.size(); i++)
 	{
-		for (size_t j = 0; j < NewPointerToValue->Vector_Data[i].second.size(); j++)
+		for (size_t j = 0; j < NewPointerToValue->m_Data[i].second.size(); j++)
 		{
-			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].first, NewPointerToValue->Vector_Data[i].second[j] }, m_Value, OutName))
+			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, NewPointerToValue->m_Data[i].second[j] }, Value, OutName))
 			{
 				return true;
 			}
@@ -130,13 +130,13 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* m_Value, HAZE_STR
 	return false;
 }
 
-bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* ClassValue, const HazeCompilerValue* m_Value, HAZE_STRING& OutName)
+bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* ClassValue, const HazeCompilerValue* Value, HAZE_STRING& OutName)
 {
-	for (size_t i = 0; i < ClassValue->Vector_Data.size(); i++)
+	for (size_t i = 0; i < ClassValue->m_Data.size(); i++)
 	{
-		for (size_t j = 0; j < ClassValue->Vector_Data[i].second.size(); j++)
+		for (size_t j = 0; j < ClassValue->m_Data[i].second.size(); j++)
 		{
-			if (TrtGetVariableName(nullptr, { Vector_Data[i].second[j].first, ClassValue->Vector_Data[i].second[j] }, m_Value, OutName))
+			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, ClassValue->m_Data[i].second[j] }, Value, OutName))
 			{
 				return true;
 			}
@@ -151,7 +151,7 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& SStream)
 #if HAZE_I_CODE_ENABLE
 
 	size_t DataNum = 0;
-	for (auto& Datas : Vector_Data)
+	for (auto& Datas : m_Data)
 	{
 		DataNum += Datas.second.size();
 	}
@@ -159,21 +159,21 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& SStream)
 	SStream << GetClassLabelHeader() << " " << m_Name << " " << GetDataSize() << " " << DataNum << std::endl;
 
 	uint32 Index = 0;
-	for (size_t i = 0; i < Vector_Data.size(); ++i)
+	for (size_t i = 0; i < m_Data.size(); ++i)
 	{
-		for (size_t j = 0; j < Vector_Data[i].second.size(); j++)
+		for (size_t j = 0; j < m_Data[i].second.size(); j++)
 		{
-			SStream << Vector_Data[i].second[j].first << " " << CAST_TYPE(Vector_Data[i].second[j].second->GetValueType().PrimaryType);
-			if (Vector_Data[i].second[j].second->GetValueType().NeedSecondaryType())
+			SStream << m_Data[i].second[j].first << " " << CAST_TYPE(m_Data[i].second[j].second->GetValueType().PrimaryType);
+			if (m_Data[i].second[j].second->GetValueType().NeedSecondaryType())
 			{
-				SStream << " " << CAST_TYPE(Vector_Data[i].second[j].second->GetValueType().SecondaryType);
+				SStream << " " << CAST_TYPE(m_Data[i].second[j].second->GetValueType().SecondaryType);
 			}
-			else if (Vector_Data[i].second[j].second->GetValueType().NeedCustomName())
+			else if (m_Data[i].second[j].second->GetValueType().NeedCustomName())
 			{
-				SStream << " " << Vector_Data[i].second[j].second->GetValueType().CustomName;
+				SStream << " " << m_Data[i].second[j].second->GetValueType().CustomName;
 			}
 
-			SStream << " " << Vector_Offset[Index] << " " << Vector_Data[i].second[j].second->GetSize() << std::endl;
+			SStream << " " << Vector_Offset[Index] << " " << m_Data[i].second[j].second->GetSize() << std::endl;
 			Index++;
 		}
 	}
@@ -185,7 +185,7 @@ void HazeCompilerClass::GenClassFunction_I_Code(HAZE_STRING_STREAM& SStream)
 {
 #if HAZE_I_CODE_ENABLE
 
-	for (auto& Iter : Vector_Function)
+	for (auto& Iter : m_Functions)
 	{
 		Iter->GenI_Code(SStream);
 	}
@@ -195,23 +195,23 @@ void HazeCompilerClass::GenClassFunction_I_Code(HAZE_STRING_STREAM& SStream)
 
 uint32 HazeCompilerClass::GetDataSize()
 {
-	return DataSize;
+	return m_DataSize;
 }
 
 uint32 HazeCompilerClass::GetAlignSize()
 {
 	uint32 MaxMemberSize = 0;
 
-	for (size_t i = 0; i < ParentClass.size(); i++)
+	for (size_t i = 0; i < m_ParentClass.size(); i++)
 	{
-		uint32 ParentAlignSize = ParentClass[i]->GetAlignSize();
+		uint32 ParentAlignSize = m_ParentClass[i]->GetAlignSize();
 		if (ParentAlignSize > MaxMemberSize)
 		{
 			MaxMemberSize = ParentAlignSize;
 		}
 	}
 
-	for (auto& It : Vector_Data)
+	for (auto& It : m_Data)
 	{
 		for (auto& Iter : It.second)
 		{
@@ -248,12 +248,12 @@ void HazeCompilerClass::MemoryAlign(uint32 MemberNum)
 	uint32 Index = 0;
 
 	uint32 Size = 0;
-	for (size_t i = 0; i < ParentClass.size(); i++)
+	for (size_t i = 0; i < m_ParentClass.size(); i++)
 	{
-		Size += ParentClass[i]->GetDataSize();
+		Size += m_ParentClass[i]->GetDataSize();
 	}
 
-	for (auto& It : Vector_Data)
+	for (auto& It : m_Data)
 	{
 		for (auto& Iter : It.second)
 		{
