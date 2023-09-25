@@ -19,13 +19,13 @@ ASTLibrary::~ASTLibrary()
 void ASTLibrary::CodeGen()
 {
 	m_Compiler->GetCurrModule()->MarkLibraryType(m_Type);
-	for (auto& Iter : m_FunctionExpressions)
+	for (auto& iter : m_FunctionExpressions)
 	{
-		Iter->CodeGen();
+		iter->CodeGen();
 	}
 
-	for (auto& Iter : m_ClassExpressions)
+	for (auto& iter : m_ClassExpressions)
 	{
-		Iter->CodeGen();
+		iter->CodeGen();
 	}
 }
