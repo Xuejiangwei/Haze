@@ -16,8 +16,8 @@
 //Base
 ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location) : m_Compiler(compiler), m_Location(location)
 {
-	m_DefineVariable.m_Name = HAZE_TEXT("");
-	m_DefineVariable.m_Type = { HazeValueType::Void, HAZE_TEXT("") };
+	m_DefineVariable.Name = HAZE_TEXT("");
+	m_DefineVariable.Type = { HazeValueType::Void, HAZE_TEXT("") };
 }
 
 ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& var) 
@@ -33,7 +33,7 @@ ASTBase::~ASTBase()
 ASTBool::ASTBool(HazeCompiler* compiler, const SourceLocation& location, const HazeValue& value)
 	: ASTBase(compiler, location)
 {
-	m_DefineVariable.m_Type.PrimaryType = HazeValueType::Bool;
+	m_DefineVariable.Type.PrimaryType = HazeValueType::Bool;
 	m_Value = value;
 }
 
@@ -43,13 +43,13 @@ ASTBool::~ASTBool()
 
 std::shared_ptr<HazeCompilerValue> ASTBool::CodeGen()
 {
-	return m_Compiler->GenConstantValue(m_DefineVariable.m_Type.PrimaryType, m_Value);
+	return m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
 }
 
 ASTNumber::ASTNumber(HazeCompiler* compiler, const SourceLocation& location, HazeValueType type, const HazeValue& value) 
 	: ASTBase(compiler, location)
 {
-	m_DefineVariable.m_Type.PrimaryType = type;
+	m_DefineVariable.Type.PrimaryType = type;
 	m_Value = value;
 }
 
@@ -59,7 +59,7 @@ ASTNumber::~ASTNumber()
 
 std::shared_ptr<HazeCompilerValue> ASTNumber::CodeGen()
 {
-	return m_Compiler->GenConstantValue(m_DefineVariable.m_Type.PrimaryType, m_Value);
+	return m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
 }
 
 ASTStringText::ASTStringText(HazeCompiler* compiler, const SourceLocation& location, HAZE_STRING& text) 
@@ -80,7 +80,7 @@ ASTIdentifier::ASTIdentifier(HazeCompiler* compiler, const SourceLocation& locat
 	std::vector<std::unique_ptr<ASTBase>>& arrayIndexExpression)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_ArrayIndexExpression(std::move(arrayIndexExpression))
 {
-	m_DefineVariable.m_Name = std::move(name);
+	m_DefineVariable.Name = std::move(name);
 }
 
 ASTIdentifier::~ASTIdentifier()
@@ -94,17 +94,17 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 
 	if (m_SectionSignal == HazeSectionSignal::Global)
 	{
-		retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.m_Name);
+		retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
 
 		classMemberScope = HazeVariableScope::Global;
 	}
 	else if (m_SectionSignal == HazeSectionSignal::Local)
 	{
-		retValue = m_Compiler->GetLocalVariable(m_DefineVariable.m_Name);
+		retValue = m_Compiler->GetLocalVariable(m_DefineVariable.Name);
 		classMemberScope = HazeVariableScope::Local;
 		if (!retValue)
 		{
-			retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.m_Name);
+			retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
 			classMemberScope = HazeVariableScope::Global;
 		}
 	}
@@ -136,10 +136,10 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 	}
 	else
 	{
-		auto function = m_Compiler->GetCurrModule()->GetFunction(m_DefineVariable.m_Name);
+		auto function = m_Compiler->GetCurrModule()->GetFunction(m_DefineVariable.Name);
 		if (!function.first)
 		{
-			HAZE_LOG_ERR_W("未能找到变量<%s>,当前函数<%s>!\n", m_DefineVariable.m_Name.c_str(),
+			HAZE_LOG_ERR_W("未能找到变量<%s>,当前函数<%s>!\n", m_DefineVariable.Name.c_str(),
 				m_SectionSignal == HazeSectionSignal::Local ? m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
 			return nullptr;
 		}
@@ -233,7 +233,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n", m_DefineVariable.m_Name.c_str(),
+			HAZE_LOG_ERR_W("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n", m_DefineVariable.Name.c_str(),
 				m_SectionSignal == HazeSectionSignal::Local ? currModule->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
 			return nullptr;
 		}
@@ -244,7 +244,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	{
 		if (auto NullExpression = dynamic_cast<ASTNullPtr*>(m_Expression.get()))
 		{
-			NullExpression->SetDefineType(m_DefineVariable.m_Type);
+			NullExpression->SetDefineType(m_DefineVariable.Type);
 		}
 
 		exprValue = m_Expression->CodeGen();
@@ -254,7 +254,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		}
 	}
 
-	bool isRef = m_DefineVariable.m_Type.PrimaryType == HazeValueType::ReferenceBase || m_DefineVariable.m_Type.PrimaryType == HazeValueType::ReferenceClass;
+	bool isRef = m_DefineVariable.Type.PrimaryType == HazeValueType::ReferenceBase || m_DefineVariable.Type.PrimaryType == HazeValueType::ReferenceClass;
 
 	if (m_SectionSignal == HazeSectionSignal::Global)
 	{
@@ -327,7 +327,7 @@ ASTNew::~ASTNew()
 
 std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 {
-	return m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.m_Type);
+	return m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type);
 }
 
 ASTGetAddress::ASTGetAddress(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)
@@ -393,7 +393,7 @@ std::shared_ptr<HazeCompilerValue> ASTPointerValue::CodeGen()
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("未能获得<%s>指针指向的值!\n", m_DefineVariable.m_Name.c_str());
+		HAZE_LOG_ERR_W("未能获得<%s>指针指向的值!\n", m_DefineVariable.Name.c_str());
 	}
 
 	return nullptr;
@@ -430,12 +430,12 @@ ASTNullPtr::~ASTNullPtr()
 
 std::shared_ptr<HazeCompilerValue> ASTNullPtr::CodeGen()
 {
-	return m_Compiler->GetNullPtr(m_DefineVariable.m_Type);
+	return m_Compiler->GetNullPtr(m_DefineVariable.Type);
 }
 
 void ASTNullPtr::SetDefineType(const HazeDefineType& type)
 {
-	m_DefineVariable.m_Type = type;
+	m_DefineVariable.Type = type;
 }
 
 ASTNot::ASTNot(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)

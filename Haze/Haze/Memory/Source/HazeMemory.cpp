@@ -126,19 +126,20 @@ void HazeMemory::MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& 
 	for (size_t i = 0; i < m_ClassDatas->Members.size(); i++)
 	{
 		auto& Member = m_ClassDatas->Members[i];
-		if (Member.Variable.m_Type.PrimaryType == HazeValueType::PointerBase)
+		if (Member.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 		{
 			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
-			Vector_MarkAddressBase.push_back({ Address, Member.Variable.m_Type.SecondaryType });
+			Vector_MarkAddressBase.push_back({ Address, Member.Variable.Type.SecondaryType });
 		}
-		else if (Member.Variable.m_Type.PrimaryType == HazeValueType::PointerClass)
+		else if (Member.Variable.Type.PrimaryType == HazeValueType::PointerClass)
 		{
 			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
-			Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(Member.Variable.m_Type.CustomName) });
+			Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(Member.Variable.Type.CustomName) });
 		}
-		else if (Member.Variable.m_Type.PrimaryType == HazeValueType::Class)
+		else if (Member.Variable.Type.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.Variable.m_Type, BaseAddress + Member.Offset);
+			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.Variable.Type,
+				BaseAddress + Member.Offset);
 		}
 	}
 }
@@ -186,19 +187,19 @@ void HazeMemory::Mark()
 		if (&It.second == NewRegister || &It.second == RetRegister)
 		{
 			//New和Ret寄存器中存留的内存在赋值后不需要保留，考虑在赋值字节码执行中清除
-			if (It.second.m_Type.PrimaryType == HazeValueType::PointerBase)
+			if (It.second.Type.PrimaryType == HazeValueType::PointerBase)
 			{
-				memcpy(&Address, It.second.m_Data.begin()._Unwrapped(), sizeof(Address));
-				Vector_MarkAddressBase.push_back({ Address, It.second.m_Type.SecondaryType });
+				memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
+				Vector_MarkAddressBase.push_back({ Address, It.second.Type.SecondaryType });
 			}
-			else if (It.second.m_Type.PrimaryType == HazeValueType::PointerClass)
+			else if (It.second.Type.PrimaryType == HazeValueType::PointerClass)
 			{
-				memcpy(&Address, It.second.m_Data.begin()._Unwrapped(), sizeof(Address));
-				Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(It.second.m_Type.CustomName) });
+				memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
+				Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(It.second.Type.CustomName) });
 			}
-			else if (It.second.m_Type.PrimaryType == HazeValueType::Class)
+			else if (It.second.Type.PrimaryType == HazeValueType::Class)
 			{
-				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.second.m_Type, It.second.m_Data.begin()._Unwrapped());
+				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.second.Type, It.second.Data.begin()._Unwrapped());
 			}
 		}
 	}
@@ -207,19 +208,19 @@ void HazeMemory::Mark()
 	{
 		for (auto& Var : m_VM->VMStack->Stack_Frame[i].FunctionInfo->Variables)
 		{
-			if (Var.Variable.m_Type.PrimaryType == HazeValueType::PointerBase)
+			if (Var.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 			{
 				memcpy(&Address, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset], sizeof(Address));
-				Vector_MarkAddressBase.push_back({ Address, Var.Variable.m_Type.SecondaryType });
+				Vector_MarkAddressBase.push_back({ Address, Var.Variable.Type.SecondaryType });
 			}
-			else if (Var.Variable.m_Type.PrimaryType == HazeValueType::PointerClass)
+			else if (Var.Variable.Type.PrimaryType == HazeValueType::PointerClass)
 			{
 				memcpy(&Address, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset], sizeof(Address));
-				Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(Var.Variable.m_Type.CustomName) });
+				Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(Var.Variable.Type.CustomName) });
 			}
-			else if (Var.Variable.m_Type.PrimaryType == HazeValueType::Class)
+			else if (Var.Variable.Type.PrimaryType == HazeValueType::Class)
 			{
-				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Var.Variable.m_Type, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset]);
+				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Var.Variable.Type, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset]);
 			}
 		}
 	}

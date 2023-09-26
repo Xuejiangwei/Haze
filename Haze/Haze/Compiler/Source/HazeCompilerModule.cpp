@@ -469,14 +469,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 {
 	for (auto& it : m_Variables)
 	{
-		if (it.first == var.m_Name)
+		if (it.first == var.Name)
 		{
 			HAZE_LOG_ERR(HAZE_TEXT("编译器错误,添加全局变量重复\n"));
 			return nullptr;
 		}
 	}
 
-	m_Variables.push_back({ var.m_Name,
+	m_Variables.push_back({ var.Name,
 		CreateVariable(this, var, HazeVariableScope::Global, HazeDataDesc::None, 0, refValue, arraySize, params) });
 
 	auto& retValue = m_Variables.back().second;
@@ -693,8 +693,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetOrCreateGlobalStringVa
 	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = &it->first;
 
 	HazeDefineVariable defineVar;
-	defineVar.m_Type.PrimaryType = HazeValueType::PointerBase;
-	defineVar.m_Type.SecondaryType = HazeValueType::Char;
+	defineVar.Type.PrimaryType = HazeValueType::PointerBase;
+	defineVar.Type.SecondaryType = HazeValueType::Char;
 
 	it->second = CreateVariable(this, defineVar, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
 

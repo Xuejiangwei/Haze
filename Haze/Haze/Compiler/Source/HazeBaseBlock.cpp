@@ -153,16 +153,16 @@ std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineV
 {
 	for (auto& Iter : m_Allocas)
 	{
-		if (Iter.first == defineVar.m_Name)
+		if (Iter.first == defineVar.Name)
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("重复添加临时变量 %s !\n"), defineVar.m_Name.c_str());
+			HAZE_LOG_ERR(HAZE_TEXT("重复添加临时变量 %s !\n"), defineVar.Name.c_str());
 			return nullptr;
 		}
 	}
 
 	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar, HazeVariableScope::Local, HazeDataDesc::None, count,
 		refValue, arraySize, params);
-	m_Allocas.push_back({ defineVar.m_Name, Alloce });
+	m_Allocas.push_back({ defineVar.Name, Alloce });
 
 	m_ParentFunction->AddLocalVariable(Alloce, line);
 

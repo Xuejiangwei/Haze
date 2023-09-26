@@ -39,7 +39,7 @@ HazeValue* ASTFunction::CodeGen()
 	}
 	else if (m_Section == HazeSectionSignal::Class)
 	{
-		currClass = currModule->GetClass(m_FunctionParams[0]->GetDefine().m_Type.CustomName);
+		currClass = currModule->GetClass(m_FunctionParams[0]->GetDefine().Type.CustomName);
 		compilerFunction = currModule->CreateFunction(currClass, m_FunctionName, m_FunctionType, paramDefines);
 	}
 	compilerFunction->SetStartEndLine(m_StartLocation.Line, m_EndLocation.Line);
@@ -81,7 +81,7 @@ void ASTFunction::RegisterFunction()
 	}
 	else if (m_Section == HazeSectionSignal::Class)
 	{
-		currClass = currModule->GetClass(m_FunctionParams[0]->GetDefine().m_Type.CustomName);
+		currClass = currModule->GetClass(m_FunctionParams[0]->GetDefine().Type.CustomName);
 		currModule->CreateFunction(currClass, m_FunctionName, m_FunctionType, paramDefines);
 	}
 }

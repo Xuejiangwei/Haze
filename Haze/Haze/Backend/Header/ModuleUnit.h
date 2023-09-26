@@ -105,8 +105,8 @@ public:
 
 	struct FunctionTableData
 	{
-		HAZE_STRING m_Name;
-		HazeValueType m_Type;
+		HAZE_STRING Name;
+		HazeValueType Type;
 		std::vector<HazeDefineVariable> Params;
 		std::vector<HazeVariableData> Variables;
 		std::vector<FunctionBlock> Blocks;
@@ -118,7 +118,7 @@ public:
 
 		FunctionTableData()
 		{
-			m_Type = HazeValueType::Void;
+			Type = HazeValueType::Void;
 			Params.clear();
 			Blocks.clear();
 			Instructions.clear();

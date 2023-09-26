@@ -7,9 +7,9 @@
 
 extern const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token();
 
-uint32 GetSizeByHazeType(HazeValueType m_Type)
+uint32 GetSizeByHazeType(HazeValueType type)
 {
-	switch (m_Type)
+	switch (type)
 	{
 	case HazeValueType::Bool:
 	case HazeValueType::Byte:
@@ -37,9 +37,9 @@ uint32 GetSizeByHazeType(HazeValueType m_Type)
 	return 0;
 }
 
-HazeValueType GetValueTypeByToken(HazeToken m_Token)
+HazeValueType GetValueTypeByToken(HazeToken token)
 {
-	static std::unordered_map<HazeToken, HazeValueType> HashMap =
+	static std::unordered_map<HazeToken, HazeValueType> s_HashMap =
 	{
 		{ HazeToken::Void, HazeValueType::Void },
 		{ HazeToken::Bool, HazeValueType::Bool },
@@ -61,8 +61,8 @@ HazeValueType GetValueTypeByToken(HazeToken m_Token)
 		{ HazeToken::Array, HazeValueType::Array }
 	};
 
-	auto it = HashMap.find(m_Token);
-	if (it != HashMap.end())
+	auto it = s_HashMap.find(token);
+	if (it != s_HashMap.end())
 	{
 		return it->second;
 	}
@@ -70,9 +70,9 @@ HazeValueType GetValueTypeByToken(HazeToken m_Token)
 	return HazeValueType::Void;
 }
 
-HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
+HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2)
 {
-	static std::unordered_map<HazeValueType, std::set<HazeValueType>> HashMap_Table =
+	static std::unordered_map<HazeValueType, std::set<HazeValueType>> s_HashMap_Table =
 	{
 		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
 		{ HazeValueType::UnsignedInt, { HazeValueType::UnsignedLong } },
@@ -81,21 +81,21 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
 		{ HazeValueType::Char, { HazeValueType::Int, HazeValueType::UnsignedInt, HazeValueType::Long, HazeValueType::UnsignedLong } }
 	};
 
-	if (Type1 == Type2)
+	if (type1 == type2)
 	{
-		return Type1;
+		return type1;
 	}
 	else
 	{
-		auto it1 = HashMap_Table.find(Type1);
-		auto it2 = HashMap_Table.find(Type2);
-		if (it1 != HashMap_Table.end() && it1->second.find(Type2) != it1->second.end())
+		auto it1 = s_HashMap_Table.find(type1);
+		auto it2 = s_HashMap_Table.find(type2);
+		if (it1 != s_HashMap_Table.end() && it1->second.find(type2) != it1->second.end())
 		{
-			return Type2;
+			return type2;
 		}
-		else if (it2 != HashMap_Table.end() && it2->second.find(Type1) != it2->second.end())
+		else if (it2 != s_HashMap_Table.end() && it2->second.find(type1) != it2->second.end())
 		{
-			return Type1;
+			return type1;
 		}
 	}
 
@@ -104,37 +104,37 @@ HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2)
 	return HazeValueType::Void;
 }
 
-bool IsVoidType(HazeValueType m_Type)
+bool IsVoidType(HazeValueType type)
 {
-	return m_Type == HazeValueType::Void;
+	return type == HazeValueType::Void;
 }
 
-bool IsHazeDefaultTypeAndVoid(HazeValueType m_Type)
+bool IsHazeDefaultTypeAndVoid(HazeValueType type)
 {
-	return HazeValueType::Void <= m_Type && m_Type <= HazeValueType::UnsignedLong;
+	return HazeValueType::Void <= type && type <= HazeValueType::UnsignedLong;
 }
 
-bool IsHazeDefaultType(HazeValueType m_Type)
+bool IsHazeDefaultType(HazeValueType type)
 {
-	return HazeValueType::Bool < m_Type && m_Type <= HazeValueType::UnsignedLong;
+	return HazeValueType::Bool < type && type <= HazeValueType::UnsignedLong;
 }
 
-bool IsIntegerType(HazeValueType m_Type)
+bool IsIntegerType(HazeValueType type)
 {
-	return m_Type == HazeValueType::Int || m_Type == HazeValueType::Long || m_Type == HazeValueType::UnsignedInt || m_Type == HazeValueType::UnsignedLong;
+	return type == HazeValueType::Int || type == HazeValueType::Long || type == HazeValueType::UnsignedInt || type == HazeValueType::UnsignedLong;
 }
 
-bool IsPointerType(HazeValueType m_Type)
+bool IsPointerType(HazeValueType type)
 {
-	return m_Type >= HazeValueType::PointerBase && m_Type <= HazeValueType::PointerPointer;
+	return type >= HazeValueType::PointerBase && type <= HazeValueType::PointerPointer;
 }
 
-bool IsPointerFunction(HazeValueType m_Type)
+bool IsPointerFunction(HazeValueType type)
 {
-	return m_Type == HazeValueType::PointerFunction;
+	return type == HazeValueType::PointerFunction;
 }
 
-bool IsNumberType(HazeValueType m_Type)
+bool IsNumberType(HazeValueType type)
 {
 	static std::unordered_set<HazeValueType> HashSet_Table =
 	{
@@ -142,12 +142,12 @@ bool IsNumberType(HazeValueType m_Type)
 		HazeValueType::UnsignedInt, HazeValueType::UnsignedLong,
 	};
 
-	return HashSet_Table.find(m_Type) != HashSet_Table.end();
+	return HashSet_Table.find(type) != HashSet_Table.end();
 }
 
-bool IsClassType(HazeValueType m_Type)
+bool IsClassType(HazeValueType type)
 {
-	return m_Type == HazeValueType::Class;
+	return type == HazeValueType::Class;
 }
 
 bool IsArrayType(HazeValueType type)
@@ -160,163 +160,164 @@ bool IsReferenceType(HazeValueType type)
 	return type == HazeValueType::ReferenceBase || type == HazeValueType::ReferenceClass;
 }
 
-void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType m_Type, HazeValue& Value)
+void StringToHazeValueNumber(const HAZE_STRING& str, HazeValueType type, HazeValue& value)
 {
-	HAZE_STRING_STREAM WSS;
-	WSS << Str;
+	HAZE_STRING_STREAM wss;
+	wss << str;
 
-	switch (m_Type)
+	switch (type)
 	{
 	case HazeValueType::Float:
-		WSS >> Value.Value.Float;
+		wss >> value.Value.Float;
 		break;
 	case HazeValueType::Double:
-		WSS >> Value.Value.Double;
+		wss >> value.Value.Double;
 		break;
 	case HazeValueType::Bool:
 	case HazeValueType::Int:
-		WSS >> Value.Value.Int;
+		wss >> value.Value.Int;
 		break;
 	case HazeValueType::Long:
-		WSS >> Value.Value.Long;
+		wss >> value.Value.Long;
 		break;
 	case HazeValueType::UnsignedInt:
-		WSS >> Value.Value.UnsignedInt;
+		wss >> value.Value.UnsignedInt;
 		break;
 	case HazeValueType::UnsignedLong:
-		WSS >> Value.Value.UnsignedLong;
+		wss >> value.Value.UnsignedLong;
 		break;
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
 	case HazeValueType::PointerArray:
 	case HazeValueType::PointerPointer:
-		WSS >> Value.Value.UnsignedLong;
+		wss >> value.Value.UnsignedLong;
 		break;
 	default:
 		break;
 	}
 }
 
-#define VARIABLE_DEFINE_INIT(TYPE, TARGET) TYPE T; memcpy(&T, Target, sizeof(TYPE))
-#define TWO_VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, Source, sizeof(TYPE)); memcpy(&T, Target, sizeof(TYPE))
+#define VARIABLE_DEFINE_INIT(TYPE, TARGET) TYPE T; memcpy(&T, target, sizeof(TYPE))
+#define TWO_VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, source, sizeof(TYPE)); memcpy(&T, target, sizeof(TYPE))
 
 #define VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, T)
 #define TWO_VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, S, T)
 
-#define ASSIGN(TYPE) memcpy((void*)Target, &T, sizeof(TYPE))
+#define ASSIGN(TYPE) memcpy((void*)target, &T, sizeof(TYPE))
 
 #define VARIABLE_COMPARE() bool CmpEqual = S == T; bool CmpGreater = S > T; bool CmpLess = S < T
-#define COMPARE_ASSIGN() Register->m_Data.resize(3); Register->m_Data[0] = CmpEqual; Register->m_Data[1] = CmpGreater; Register->m_Data[2] = CmpLess
+#define COMPARE_ASSIGN() hazeRegister->Data.resize(3); hazeRegister->Data[0] = CmpEqual; \
+	hazeRegister->Data[1] = CmpGreater; hazeRegister->Data[2] = CmpLess
 
 template<typename T>
-void CalculateValue(InstructionOpCode TypeCode, T& Target)
+void CalculateValue(InstructionOpCode typeCode, T& target)
 {
-	switch (TypeCode)
+	switch (typeCode)
 	{
 	case InstructionOpCode::INC:
-		++Target;
+		++target;
 		break;
 	case InstructionOpCode::DEC:
-		--Target;
+		--target;
 		break;
 	default:
-		HAZE_LOG_ERR(HAZE_TEXT("<%s>操作不支持!"), WString2String(GetInstructionString(TypeCode)).c_str());
+		HAZE_LOG_ERR(HAZE_TEXT("<%s>操作不支持!"), WString2String(GetInstructionString(typeCode)).c_str());
 		break;
 	}
 }
 
 template<typename T>
-void CalculateValue(InstructionOpCode TypeCode, T& Source, T& Target)
+void CalculateValue(InstructionOpCode typeCode, T& source, T& target)
 {
-	switch (TypeCode)
+	switch (typeCode)
 	{
 	case InstructionOpCode::ADD:
 	case InstructionOpCode::ADD_ASSIGN:
-		Target += Source;
+		target += source;
 		break;
 	case InstructionOpCode::SUB:
 	case InstructionOpCode::SUB_ASSIGN:
-		Target -= Source;
+		target -= source;
 		break;
 	case InstructionOpCode::MUL:
 	case InstructionOpCode::MUL_ASSIGN:
-		Target *= Source;
+		target *= source;
 		break;
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::DIV_ASSIGN:
-		Target /= Source;
+		target /= source;
 		break;
 	default:
-		HAZE_LOG_ERR("Calculate error: operator %s  type %s\n", WString2String(GetInstructionString(TypeCode)).c_str(), typeid(T).name());
+		HAZE_LOG_ERR("Calculate error: operator %s  type %s\n", WString2String(GetInstructionString(typeCode)).c_str(), typeid(T).name());
 		break;
 	}
 }
 
 template<>
-void CalculateValue(InstructionOpCode TypeCode, bool& Source, bool& Target)
+void CalculateValue(InstructionOpCode typeCode, bool& source, bool& target)
 {
-	switch (TypeCode)
+	switch (typeCode)
 	{
 	case InstructionOpCode::NOT:
-		Target = !Source;
+		target = !source;
 		break;
 	default:
-		HAZE_LOG_ERR("Calculate error: bool value is not support operator %s!\n", WString2String(GetInstructionString(TypeCode)).c_str());
+		HAZE_LOG_ERR("Calculate error: bool value is not support operator %s!\n", WString2String(GetInstructionString(typeCode)).c_str());
 		break;
 	}
 }
 
 template<>
-void CalculateValue(InstructionOpCode TypeCode, int& Source, int& Target)
+void CalculateValue(InstructionOpCode typeCode, int& source, int& target)
 {
-	switch (TypeCode)
+	switch (typeCode)
 	{
 	case InstructionOpCode::ADD:
 	case InstructionOpCode::ADD_ASSIGN:
-		Target += Source;
+		target += source;
 		break;
 	case InstructionOpCode::SUB:
 	case InstructionOpCode::SUB_ASSIGN:
-		Target -= Source;
+		target -= source;
 		break;
 	case InstructionOpCode::MUL:
 	case InstructionOpCode::MUL_ASSIGN:
-		Target *= Source;
+		target *= source;
 		break;
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::DIV_ASSIGN:
-		Target /= Source;
+		target /= source;
 		break;
 	case InstructionOpCode::MOD:
 	case InstructionOpCode::MOD_ASSIGN:
-		Target %= Source;
+		target %= source;
 		break;
 	case InstructionOpCode::BIT_AND:
 	case InstructionOpCode::BIT_AND_ASSIGN:
-		Target &= Source;
+		target &= source;
 		break;
 	case InstructionOpCode::BIT_OR:
 	case InstructionOpCode::BIT_OR_ASSIGN:
-		Target |= Source;
+		target |= source;
 		break;
 	case InstructionOpCode::BIT_NEG:
-		Target = ~Source;
+		target = ~source;
 		break;
 	case InstructionOpCode::BIT_XOR:
 	case InstructionOpCode::BIT_XOR_ASSIGN:
-		Target ^= Source;
+		target ^= source;
 		break;
 	case InstructionOpCode::SHL:
 	case InstructionOpCode::SHL_ASSIGN:
-		Target <<= Source;
+		target <<= source;
 		break;
 	case InstructionOpCode::SHR:
 	case InstructionOpCode::SHR_ASSIGN:
-		Target >>= Source;
+		target >>= source;
 		break;
 	case InstructionOpCode::NEG:
-		Target = -Source;
+		target = -source;
 		break;
 	default:
 		break;
@@ -324,49 +325,49 @@ void CalculateValue(InstructionOpCode TypeCode, int& Source, int& Target)
 }
 
 template<>
-void CalculateValue(InstructionOpCode TypeCode, uint32& Source, uint32& Target)
+void CalculateValue(InstructionOpCode typeCode, uint32& source, uint32& target)
 {
-	switch (TypeCode)
+	switch (typeCode)
 	{
 	case InstructionOpCode::ADD:
 	case InstructionOpCode::ADD_ASSIGN:
-		Target += Source;
+		target += source;
 		break;
 	case InstructionOpCode::SUB:
 	case InstructionOpCode::SUB_ASSIGN:
-		Target -= Source;
+		target -= source;
 		break;
 	case InstructionOpCode::MUL:
 	case InstructionOpCode::MUL_ASSIGN:
-		Target *= Source;
+		target *= source;
 		break;
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::DIV_ASSIGN:
-		Target /= Source;
+		target /= source;
 		break;
 	case InstructionOpCode::MOD:
 	case InstructionOpCode::MOD_ASSIGN:
-		Target %= Source;
+		target %= source;
 		break;
 	case InstructionOpCode::BIT_AND:
 	case InstructionOpCode::BIT_AND_ASSIGN:
-		Target &= Source;
+		target &= source;
 		break;
 	case InstructionOpCode::BIT_OR:
 	case InstructionOpCode::BIT_OR_ASSIGN:
-		Target |= Source;
+		target |= source;
 		break;
 	case InstructionOpCode::BIT_XOR:
 	case InstructionOpCode::BIT_XOR_ASSIGN:
-		Target ^= Source;
+		target ^= source;
 		break;
 	case InstructionOpCode::SHL:
 	case InstructionOpCode::SHL_ASSIGN:
-		Target <<= Source;
+		target <<= source;
 		break;
 	case InstructionOpCode::SHR:
 	case InstructionOpCode::SHR_ASSIGN:
-		Target >>= Source;
+		target >>= source;
 		break;
 	default:
 		break;
@@ -374,52 +375,52 @@ void CalculateValue(InstructionOpCode TypeCode, uint32& Source, uint32& Target)
 }
 
 template<>
-void CalculateValue(InstructionOpCode TypeCode, int64& Source, int64& Target)
+void CalculateValue(InstructionOpCode typeCode, int64& source, int64& target)
 {
-	switch (TypeCode)
+	switch (typeCode)
 	{
 	case InstructionOpCode::ADD:
 	case InstructionOpCode::ADD_ASSIGN:
-		Target += Source;
+		target += source;
 		break;
 	case InstructionOpCode::SUB:
 	case InstructionOpCode::SUB_ASSIGN:
-		Target -= Source;
+		target -= source;
 		break;
 	case InstructionOpCode::MUL:
 	case InstructionOpCode::MUL_ASSIGN:
-		Target *= Source;
+		target *= source;
 		break;
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::DIV_ASSIGN:
-		Target /= Source;
+		target /= source;
 		break;
 	case InstructionOpCode::MOD:
 	case InstructionOpCode::MOD_ASSIGN:
-		Target %= Source;
+		target %= source;
 		break;
 	case InstructionOpCode::BIT_AND:
 	case InstructionOpCode::BIT_AND_ASSIGN:
-		Target &= Source;
+		target &= source;
 		break;
 	case InstructionOpCode::BIT_OR:
 	case InstructionOpCode::BIT_OR_ASSIGN:
-		Target |= Source;
+		target |= source;
 		break;
 	case InstructionOpCode::BIT_XOR:
 	case InstructionOpCode::BIT_XOR_ASSIGN:
-		Target ^= Source;
+		target ^= source;
 		break;
 	case InstructionOpCode::SHL:
 	case InstructionOpCode::SHL_ASSIGN:
-		Target <<= Source;
+		target <<= source;
 		break;
 	case InstructionOpCode::SHR:
 	case InstructionOpCode::SHR_ASSIGN:
-		Target >>= Source;
+		target >>= source;
 		break;
 	case InstructionOpCode::NEG:
-		Target = -Source;
+		target = -source;
 		break;
 	default:
 		break;
@@ -427,48 +428,48 @@ void CalculateValue(InstructionOpCode TypeCode, int64& Source, int64& Target)
 }
 
 template<>
-void CalculateValue(InstructionOpCode TypeCode, uint64& Source, uint64& Target)
+void CalculateValue(InstructionOpCode typeCode, uint64& source, uint64& target)
 {
-	switch (TypeCode)
+	switch (typeCode)
 	{
 	case InstructionOpCode::ADD:
-		Target += Source;
+		target += source;
 		break;
 	case InstructionOpCode::SUB:
-		Target -= Source;
+		target -= source;
 		break;
 	case InstructionOpCode::MUL:
-		Target *= Source;
+		target *= source;
 		break;
 	case InstructionOpCode::DIV:
-		Target /= Source;
+		target /= source;
 		break;
 	case InstructionOpCode::MOD:
-		Target %= Source;
+		target %= source;
 		break;
 	case InstructionOpCode::BIT_AND:
-		Target &= Source;
+		target &= source;
 		break;
 	case InstructionOpCode::BIT_OR:
-		Target |= Source;
+		target |= source;
 		break;
 	case InstructionOpCode::BIT_XOR:
-		Target ^= Source;
+		target ^= source;
 		break;
 	case InstructionOpCode::SHL:
-		Target <<= Source;
+		target <<= source;
 		break;
 	case InstructionOpCode::SHR:
-		Target >>= Source;
+		target >>= source;
 		break;
 	default:
 		break;
 	}
 }
 
-void OperatorValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const void* Target)
+void OperatorValueByType(HazeValueType type, InstructionOpCode typeCode, const void* target)
 {
-	switch (m_Type)
+	switch (type)
 	{
 		/*case HazeValueType::Bool:
 		{
@@ -479,43 +480,43 @@ void OperatorValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const
 		break;*/
 	case HazeValueType::Int:
 	{
-		VARIABLE_DEFINE_INIT(int, Target);
-		VARIABLE_CALCULATE(int, TypeCode);
+		VARIABLE_DEFINE_INIT(int, target);
+		VARIABLE_CALCULATE(int, typeCode);
 		ASSIGN(int);
 	}
 	break;
 	case HazeValueType::Float:
 	{
-		VARIABLE_DEFINE_INIT(float, Target);
-		VARIABLE_CALCULATE(float, TypeCode);
+		VARIABLE_DEFINE_INIT(float, target);
+		VARIABLE_CALCULATE(float, typeCode);
 		ASSIGN(float);
 	}
 	break;
 	case HazeValueType::Long:
 	{
-		VARIABLE_DEFINE_INIT(int64, Target);
-		VARIABLE_CALCULATE(int64, TypeCode);
+		VARIABLE_DEFINE_INIT(int64, target);
+		VARIABLE_CALCULATE(int64, typeCode);
 		ASSIGN(int64);
 	}
 	break;
 	case HazeValueType::Double:
 	{
-		VARIABLE_DEFINE_INIT(double, Target);
-		VARIABLE_CALCULATE(double, TypeCode);
+		VARIABLE_DEFINE_INIT(double, target);
+		VARIABLE_CALCULATE(double, typeCode);
 		ASSIGN(double);
 	}
 	break;
 	case HazeValueType::UnsignedInt:
 	{
-		VARIABLE_DEFINE_INIT(uint32, Target);
-		VARIABLE_CALCULATE(uint32, TypeCode);
+		VARIABLE_DEFINE_INIT(uint32, target);
+		VARIABLE_CALCULATE(uint32, typeCode);
 		ASSIGN(uint32);
 	}
 	break;
 	case HazeValueType::UnsignedLong:
 	{
-		VARIABLE_DEFINE_INIT(uint64, Target);
-		VARIABLE_CALCULATE(uint64, TypeCode);
+		VARIABLE_DEFINE_INIT(uint64, target);
+		VARIABLE_CALCULATE(uint64, typeCode);
 		ASSIGN(uint64);
 	}
 	break;
@@ -524,56 +525,56 @@ void OperatorValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const
 	}
 }
 
-void CalculateValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const void* Source, const void* Target)
+void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const void* source, const void* target)
 {
-	switch (m_Type)
+	switch (type)
 	{
 	case HazeValueType::Bool:
 	{
-		TWO_VARIABLE_DEFINE_INIT(bool, Source, Target);
-		TWO_VARIABLE_CALCULATE(bool, TypeCode);
+		TWO_VARIABLE_DEFINE_INIT(bool, source, target);
+		TWO_VARIABLE_CALCULATE(bool, typeCode);
 		ASSIGN(bool);
 	}
 	break;
 	case HazeValueType::Int:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int, Source, Target);
-		TWO_VARIABLE_CALCULATE(int, TypeCode);
+		TWO_VARIABLE_DEFINE_INIT(int, source, target);
+		TWO_VARIABLE_CALCULATE(int, typeCode);
 		ASSIGN(int);
 	}
 	break;
 	case HazeValueType::Float:
 	{
-		TWO_VARIABLE_DEFINE_INIT(float, Source, Target);
-		TWO_VARIABLE_CALCULATE(float, TypeCode);
+		TWO_VARIABLE_DEFINE_INIT(float, source, target);
+		TWO_VARIABLE_CALCULATE(float, typeCode);
 		ASSIGN(float);
 	}
 	break;
 	case HazeValueType::Long:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int64, Source, Target);
-		TWO_VARIABLE_CALCULATE(int64, TypeCode);
+		TWO_VARIABLE_DEFINE_INIT(int64, source, target);
+		TWO_VARIABLE_CALCULATE(int64, typeCode);
 		ASSIGN(int64);
 	}
 	break;
 	case HazeValueType::Double:
 	{
-		TWO_VARIABLE_DEFINE_INIT(double, Source, Target);
-		TWO_VARIABLE_CALCULATE(double, TypeCode);
+		TWO_VARIABLE_DEFINE_INIT(double, source, target);
+		TWO_VARIABLE_CALCULATE(double, typeCode);
 		ASSIGN(double);
 	}
 	break;
 	case HazeValueType::UnsignedInt:
 	{
-		TWO_VARIABLE_DEFINE_INIT(uint32, Source, Target);
-		TWO_VARIABLE_CALCULATE(uint32, TypeCode);
+		TWO_VARIABLE_DEFINE_INIT(uint32, source, target);
+		TWO_VARIABLE_CALCULATE(uint32, typeCode);
 		ASSIGN(uint32);
 	}
 	break;
 	case HazeValueType::UnsignedLong:
 	{
-		TWO_VARIABLE_DEFINE_INIT(uint64, Source, Target);
-		TWO_VARIABLE_CALCULATE(uint64, TypeCode);
+		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
+		TWO_VARIABLE_CALCULATE(uint64, typeCode);
 		ASSIGN(uint64);
 	}
 	break;
@@ -582,55 +583,55 @@ void CalculateValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, cons
 	}
 }
 
-void CompareValueByType(HazeValueType m_Type, HazeRegister* Register, const void* Source, const void* Target)
+void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const void* source, const void* target)
 {
-	switch (m_Type)
+	switch (type)
 	{
 	case HazeValueType::Bool:
 	{
-		TWO_VARIABLE_DEFINE_INIT(bool, Source, Target);
+		TWO_VARIABLE_DEFINE_INIT(bool, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::Int:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int, Source, Target);
+		TWO_VARIABLE_DEFINE_INIT(int, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::Float:
 	{
-		TWO_VARIABLE_DEFINE_INIT(float, Source, Target);
+		TWO_VARIABLE_DEFINE_INIT(float, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::Long:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int64, Source, Target);
+		TWO_VARIABLE_DEFINE_INIT(int64, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::Double:
 	{
-		TWO_VARIABLE_DEFINE_INIT(double, Source, Target);
+		TWO_VARIABLE_DEFINE_INIT(double, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::UnsignedInt:
 	{
-		TWO_VARIABLE_DEFINE_INIT(uint32, Source, Target);
+		TWO_VARIABLE_DEFINE_INIT(uint32, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::UnsignedLong:
 	{
-		TWO_VARIABLE_DEFINE_INIT(uint64, Source, Target);
+		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
@@ -640,25 +641,25 @@ void CompareValueByType(HazeValueType m_Type, HazeRegister* Register, const void
 	}
 }
 
-size_t GetHazeCharPointerLength(const HAZE_CHAR* Char)
+size_t GetHazeCharPointerLength(const HAZE_CHAR* hChar)
 {
-	return wcslen(Char);
+	return wcslen(hChar);
 }
 
-const HAZE_CHAR* GetHazeValueTypeString(HazeValueType m_Type)
+const HAZE_CHAR* GetHazeValueTypeString(HazeValueType type)
 {
-	static std::unordered_map<HazeValueType, const HAZE_CHAR*> HashMap_Code2String;
+	static std::unordered_map<HazeValueType, const HAZE_CHAR*> s_HashMap_Code2String;
 
-	if (HashMap_Code2String.size() <= 0)
+	if (s_HashMap_Code2String.size() <= 0)
 	{
 		for (auto& iter : GetHashMap_Token())
 		{
-			HashMap_Code2String[GetValueTypeByToken(iter.second)] = iter.first.c_str();
+			s_HashMap_Code2String[GetValueTypeByToken(iter.second)] = iter.first.c_str();
 		}
 	}
 
-	auto iter = HashMap_Code2String.find(m_Type);
-	if (iter != HashMap_Code2String.end())
+	auto iter = s_HashMap_Code2String.find(type);
+	if (iter != s_HashMap_Code2String.end())
 	{
 		return iter->second;
 	}
@@ -666,56 +667,56 @@ const HAZE_CHAR* GetHazeValueTypeString(HazeValueType m_Type)
 	return HAZE_TEXT("None");
 }
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType m_Type, const HazeValue& Value)
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value)
 {
-	switch (m_Type)
+	switch (type)
 	{
 	case HazeValueType::Bool:
-		return (HAZE_BINARY_CHAR*)&Value.Value.Bool;
+		return (HAZE_BINARY_CHAR*)&value.Value.Bool;
 	case HazeValueType::Int:
-		return (HAZE_BINARY_CHAR*)&Value.Value.Int;
+		return (HAZE_BINARY_CHAR*)&value.Value.Int;
 	case HazeValueType::Float:
-		return (HAZE_BINARY_CHAR*)&Value.Value.Float;
+		return (HAZE_BINARY_CHAR*)&value.Value.Float;
 	case HazeValueType::UnsignedInt:
-		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedInt;
+		return (HAZE_BINARY_CHAR*)&value.Value.UnsignedInt;
 	case HazeValueType::Long:
-		return (HAZE_BINARY_CHAR*)&Value.Value.Long;
+		return (HAZE_BINARY_CHAR*)&value.Value.Long;
 	case HazeValueType::Double:
-		return (HAZE_BINARY_CHAR*)&Value.Value.Double;
+		return (HAZE_BINARY_CHAR*)&value.Value.Double;
 	case HazeValueType::UnsignedLong:
-		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
+		return (HAZE_BINARY_CHAR*)&value.Value.UnsignedLong;
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
 	case HazeValueType::PointerArray:
 	case HazeValueType::PointerPointer:
-		return (HAZE_BINARY_CHAR*)&Value.Value.UnsignedLong;
+		return (HAZE_BINARY_CHAR*)&value.Value.UnsignedLong;
 	default:
 		break;
 	}
 	return nullptr;
 }
 
-HazeValue GetNegValue(HazeValueType m_Type, const HazeValue& Value)
+HazeValue GetNegValue(HazeValueType type, const HazeValue& value)
 {
-	HazeValue Ret;
-	switch (m_Type)
+	HazeValue ret;
+	switch (type)
 	{
 	case HazeValueType::Int:
-		Ret.Value.Int = -Value.Value.Int;
+		ret.Value.Int = -value.Value.Int;
 		break;
 	case HazeValueType::Float:
-		Ret.Value.Float = -Value.Value.Float;
+		ret.Value.Float = -value.Value.Float;
 		break;
 	case HazeValueType::Long:
-		Ret.Value.Long = -Value.Value.Long;
+		ret.Value.Long = -value.Value.Long;
 		break;
 	case HazeValueType::Double:
-		Ret.Value.Double = -Value.Value.Double;
+		ret.Value.Double = -value.Value.Double;
 		break;
 	default:
 		break;
 	}
 
-	return Ret;
+	return ret;
 }

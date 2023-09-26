@@ -1,6 +1,6 @@
 #include "HazeStandardLibraryBase.h"
 
-std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
+std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> g_Hash_MapStdLib;
 
 HazeStandardLibraryBase::HazeStandardLibraryBase()
 {
@@ -12,10 +12,10 @@ HazeStandardLibraryBase::~HazeStandardLibraryBase()
 
 bool HazeStandardLibraryBase::AddStdLib(HAZE_STRING LibName, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>* HashMap)
 {
-	auto Iter = Hash_MapStdLib.find(LibName);
-	if (Iter == Hash_MapStdLib.end())
+	auto Iter = g_Hash_MapStdLib.find(LibName);
+	if (Iter == g_Hash_MapStdLib.end())
 	{
-		Hash_MapStdLib[LibName] = HashMap;
+		g_Hash_MapStdLib[LibName] = HashMap;
 	}
 
 	return true;

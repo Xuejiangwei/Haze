@@ -10,11 +10,11 @@
 #include "HazeLibraryType.h"
 #include "HazeInstruction.h"
 
-bool IsAndOrToken(HazeToken m_Token);
+bool IsAndOrToken(HazeToken token);
 
-bool IsAndToken(HazeToken m_Token);
+bool IsAndToken(HazeToken token);
 
-bool IsOrToken(HazeToken m_Token);
+bool IsOrToken(HazeToken token);
 
 const HAZE_CHAR* GetGlobalDataHeaderString();
 
@@ -36,45 +36,45 @@ const HAZE_CHAR* GetFunctionStartHeader();
 
 const HAZE_CHAR* GetFunctionEndHeader();
 
-bool HazeIsSpace(HAZE_CHAR Char, bool* IsNewLine = nullptr);
+bool HazeIsSpace(HAZE_CHAR hChar, bool* isNewLine = nullptr);
 
-bool IsNumber(const HAZE_STRING& Str);
+bool IsNumber(const HAZE_STRING& str);
 
-HazeValueType GetNumberDefaultType(const HAZE_STRING& Str);
+HazeValueType GetNumberDefaultType(const HAZE_STRING& str);
 
-HAZE_STRING String2WString(const char* Str);
+HAZE_STRING String2WString(const char* str);
 
-HAZE_STRING String2WString(const HAZE_BINARY_STRING& Str);
+HAZE_STRING String2WString(const HAZE_BINARY_STRING& str);
 
-HAZE_BINARY_STRING WString2String(const HAZE_STRING& Str);
+HAZE_BINARY_STRING WString2String(const HAZE_STRING& str);
 
 char* UTF8_2_GB2312(const char* utf8);
 
 char* GB2312_2_UFT8(const char* gb2312);
 
-void ReplacePathSlash(HAZE_STRING& Path);
+void ReplacePathSlash(HAZE_STRING& path);
 
-HazeLibraryType GetHazeLibraryTypeByToken(HazeToken m_Token);
+HazeLibraryType GetHazeLibraryTypeByToken(HazeToken token);
 
-InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType m_Type);
+InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type);
 
-HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& FilePath);
-
-template <typename T>
-unsigned int GetSizeByType(HazeDefineType m_Type, T* This);
+HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& filePath);
 
 template <typename T>
-T StringToStandardType(const HAZE_STRING& String);
+unsigned int GetSizeByType(HazeDefineType type, T* This);
 
 template <typename T>
-T StringToStandardType(const HAZE_CHAR* String);
+T StringToStandardType(const HAZE_STRING& str);
 
 template <typename T>
-HAZE_BINARY_STRING ToString(T Value);
-
-HAZE_BINARY_STRING ToString(void* Value);
+T StringToStandardType(const HAZE_CHAR* str);
 
 template <typename T>
-HAZE_STRING ToHazeString(T Value);
+HAZE_BINARY_STRING ToString(T value);
+
+HAZE_BINARY_STRING ToString(void* value);
+
+template <typename T>
+HAZE_STRING ToHazeString(T value);
 
 #include "HazeTemplate.inl"

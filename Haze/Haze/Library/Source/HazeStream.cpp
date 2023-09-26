@@ -6,13 +6,13 @@
 #include "HazeStack.h"
 #include "HazeStream.h"
 
-static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> m_HashMap_Functions =
+static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
 	{ HAZE_TEXT("打印"), &HazeStream::HazePrintf },
 	{ HAZE_TEXT("输入"), &HazeStream::HazeScanf },
 };
 
-static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &m_HashMap_Functions);
+static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeStream"), &s_HashMap_Functions);
 
 static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form)
 {
@@ -34,124 +34,124 @@ static const HAZE_CHAR* GetFormat(const HAZE_CHAR* strfrmt, HAZE_CHAR* form)
 
 void HazeStream::InitializeLib()
 {
-	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("标准流"), &m_HashMap_Functions);
+	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("标准流"), &s_HashMap_Functions);
 }
 
 void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)
 {
 	int V = 0;
 	int Size = 0;
-	for (int i = (int)m_Data->Params.size() - 1; i >= 0; --i)
+	for (int i = (int)data->Params.size() - 1; i >= 0; --i)
 	{
-		Size = GetSizeByHazeType(m_Data->Params[i].m_Type.PrimaryType);
-		memcpy(&V, (void*)Stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
+		Size = GetSizeByHazeType(data->Params[i].Type.PrimaryType);
+		memcpy(&V, (void*)stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
 	}
 
 	HazePrintCall(V);
 }
 
-void HazeStream::HazePrintCall(int V)
+void HazeStream::HazePrintCall(int v)
 {
-	std::cout << V << std::endl;
+	std::cout << v << std::endl;
 }
 
 void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 {
 #define PRE_SIGN HAZE_CHAR('%')
 
-	uint64 V = 0;
+	uint64 v = 0;
 
-	int Offset = -(int)sizeof(V) - HAZE_ADDRESS_SIZE;
-	memcpy(&V, Stack->GetAddressByEBP(Offset), sizeof(V));
+	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE;
+	memcpy(&v, stack->GetAddressByEBP(offset), sizeof(v));
 
-	HAZE_STRING_STREAM HSS;
+	HAZE_STRING_STREAM hss;
 
-	int ArgNum = 1;
+	int argNum = 1;
 
-	const HAZE_STRING* String = (HAZE_STRING*)V;
-	auto Start = String->cbegin();
-	while (Start != String->cend())
+	const HAZE_STRING* str = (HAZE_STRING*)v;
+	auto start = str->cbegin();
+	while (start != str->cend())
 	{
-		if (*Start != PRE_SIGN)
+		if (*start != PRE_SIGN)
 		{
-			if (*Start == HAZE_CHAR('\\'))
+			if (*start == HAZE_CHAR('\\'))
 			{
-				if (*(++Start) == HAZE_CHAR('n'))
+				if (*(++start) == HAZE_CHAR('n'))
 				{
-					Start++;
-					HSS << std::endl;
+					start++;
+					hss << std::endl;
 				}
 			}
 			else
 			{
-				HSS << *(Start++);
+				hss << *(start++);
 			}
 		}
-		else if (*(++Start) == PRE_SIGN)
+		else if (*(++start) == PRE_SIGN)
 		{
-			HSS << *(Start++);
+			hss << *(start++);
 		}
 		else
 		{
-			if (++ArgNum > MultiParamNum) //入栈参数个数
+			if (++argNum > multiParamNum) //入栈参数个数
 			{
 				HAZE_LOG_ERR(HAZE_TEXT("调用<打印>函数参数个数错误!\n"));
 				return;
 			}
 			HAZE_CHAR Form[MAX_FORMAT];
-			Start._Seek_to(GetFormat(Start._Unwrapped(), Form));
+			start._Seek_to(GetFormat(start._Unwrapped(), Form));
 
-			Start++;
-			if (*Start == HAZE_CHAR('d'))
+			start++;
+			if (*start == HAZE_CHAR('d'))
 			{
-				auto Ins = Stack->GetVM()->GetInstruction()[Stack->GetCurrPC() - ArgNum - 1];
-				int Size = GetSizeByType(Ins.Operator[0].Variable.m_Type, Stack->GetVM());
+				auto ins = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - argNum - 1];
+				int size = GetSizeByType(ins.Operator[0].Variable.Type, stack->GetVM());
 
-				Offset -= Size;
-				if (Size == 1)
+				offset -= size;
+				if (size == 1)
 				{
 					char TempV;
-					char* Address = Stack->GetAddressByEBP(Offset);
-					memcpy(&TempV, Address, Size);
-					HSS << (int)TempV;
+					char* Address = stack->GetAddressByEBP(offset);
+					memcpy(&TempV, Address, size);
+					hss << (int)TempV;
 				}
 				else
 				{
 					int TempV;
-					char* Address = Stack->GetAddressByEBP(Offset);
-					memcpy(&TempV, Address, Size);
-					HSS << TempV;
+					char* Address = stack->GetAddressByEBP(offset);
+					memcpy(&TempV, Address, size);
+					hss << TempV;
 				}
 
-				Start++;
+				start++;
 			}
-			else if (*Start == HAZE_CHAR('f'))
+			else if (*start == HAZE_CHAR('f'))
 			{
-				Offset -= sizeof(float);
+				offset -= sizeof(float);
 
-				float TempV;
-				char* Address = Stack->GetAddressByEBP(Offset);
-				memcpy(&TempV, Address, sizeof(float));
-				HSS << TempV;
-				Start++;
+				float tempV;
+				char* address = stack->GetAddressByEBP(offset);
+				memcpy(&tempV, address, sizeof(float));
+				hss << tempV;
+				start++;
 			}
-			else if (*Start == HAZE_CHAR('s'))
+			else if (*start == HAZE_CHAR('s'))
 			{
-				uint64 TempAddress;
+				uint64 tempAddress;
 
-				Offset -= sizeof(TempAddress);
+				offset -= sizeof(tempAddress);
 
-				char* Address = Stack->GetAddressByEBP(Offset);
-				memcpy(&TempAddress, Address, sizeof(TempAddress));
+				char* Address = stack->GetAddressByEBP(offset);
+				memcpy(&tempAddress, Address, sizeof(tempAddress));
 
-				const HAZE_STRING* Str = (HAZE_STRING*)TempAddress;
-				HSS << *Str;
-				Start++;
+				const HAZE_STRING* tempStr = (HAZE_STRING*)tempAddress;
+				hss << *tempStr;
+				start++;
 			}
 		}
 	}
 
-	HazePrintfCall(HSS.str().c_str());
+	HazePrintfCall(hss.str().c_str());
 }
 
 void HazeStream::HazePrintfCall(const HAZE_CHAR* V)
@@ -166,7 +166,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 	uint64 V = 0;
 
 	int Offset = -(int)sizeof(V) - HAZE_ADDRESS_SIZE;
-	memcpy(&V, Stack->GetAddressByEBP(Offset), sizeof(V));
+	memcpy(&V, stack->GetAddressByEBP(Offset), sizeof(V));
 
 	HAZE_STRING_STREAM HSS;
 
@@ -203,7 +203,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 		}
 		else
 		{
-			if (++ArgNum > MultiParamNum) //入栈参数个数
+			if (++ArgNum > multiParamNum) //入栈参数个数
 			{
 				return;
 			}
@@ -218,7 +218,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				int TempV;
 				std::cin >> TempV;
 
-				char* Addr = Stack->GetAddressByEBP(Offset);
+				char* Addr = stack->GetAddressByEBP(Offset);
 				memcpy(&Address, Addr, sizeof(Address));
 				memcpy((char*)Address, &TempV, sizeof(TempV));
 
@@ -232,7 +232,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				float TempV;
 				std::cin >> TempV;
 
-				char* Addr = Stack->GetAddressByEBP(Offset);
+				char* Addr = stack->GetAddressByEBP(Offset);
 				memcpy(&Address, Addr, sizeof(Address));
 				memcpy((char*)Address, &TempV, sizeof(TempV));
 

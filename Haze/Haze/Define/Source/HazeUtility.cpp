@@ -7,19 +7,22 @@
 #include <string>
 #include <regex>
 
-bool IsAndOrToken(HazeToken m_Token)
+thread_local static HAZE_STRING s_HazeString;
+thread_local static HAZE_BINARY_STRING s_String;
+
+bool IsAndOrToken(HazeToken token)
 {
-	return m_Token == HazeToken::And || m_Token == HazeToken::Or;
+	return token == HazeToken::And || token == HazeToken::Or;
 }
 
-bool IsAndToken(HazeToken m_Token)
+bool IsAndToken(HazeToken token)
 {
-	return m_Token == HazeToken::And;
+	return token == HazeToken::And;
 }
 
-bool IsOrToken(HazeToken m_Token)
+bool IsOrToken(HazeToken token)
 {
-	return m_Token == HazeToken::Or;
+	return token == HazeToken::Or;
 }
 
 const HAZE_CHAR* GetGlobalDataHeaderString()
@@ -72,27 +75,28 @@ const HAZE_CHAR* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
-bool HazeIsSpace(HAZE_CHAR Char, bool* IsNewLine)
+bool HazeIsSpace(HAZE_CHAR hChar, bool* isNewLine)
 {
-	if (IsNewLine)
+	if (isNewLine)
 	{
-		*IsNewLine = Char == HAZE_CHAR('\n');
+		*isNewLine = hChar == HAZE_CHAR('\n');
 	}
 
-	return Char == HAZE_CHAR(' ') || Char == HAZE_CHAR('\n') || Char == HAZE_CHAR('\t') || Char == HAZE_CHAR('\v') || Char == HAZE_CHAR('\f') || Char == HAZE_CHAR('\r');
+	return hChar == HAZE_CHAR(' ') || hChar == HAZE_CHAR('\n') || hChar == HAZE_CHAR('\t') || hChar == HAZE_CHAR('\v') || hChar == HAZE_CHAR('\f') || hChar == HAZE_CHAR('\r');
 }
 
-bool IsNumber(const HAZE_STRING& Str)
+bool IsNumber(const HAZE_STRING& str)
 {
-	std::wregex Pattern(HAZE_TEXT("-[0-9]+(.[0-9]+)?|[0-9]+(.[0-9]+)?"));
-	return std::regex_match(Str, Pattern);
+	std::wregex pattern(HAZE_TEXT("-[0-9]+(.[0-9]+)?|[0-9]+(.[0-9]+)?"));
+	return std::regex_match(str, pattern);
 }
 
-HazeValueType GetNumberDefaultType(const HAZE_STRING& Str)
+HazeValueType GetNumberDefaultType(const HAZE_STRING& str)
 {
-	std::wregex Pattern(HAZE_TEXT("-?(([1-9]\\d*\\.\\d*)|(0\\.\\d*[1-9]\\d*))"));
-	bool IsFloat = std::regex_match(Str, Pattern);
-	if (IsFloat)
+	std::wregex pattern(HAZE_TEXT("-?(([1-9]\\d*\\.\\d*)|(0\\.\\d*[1-9]\\d*))"));
+	bool isFloat = std::regex_match(str, pattern);
+	
+	if (isFloat)
 	{
 		return HazeValueType::Float;
 	}
@@ -100,28 +104,26 @@ HazeValueType GetNumberDefaultType(const HAZE_STRING& Str)
 	{
 		return HazeValueType::Int;
 	}
+
 	return HazeValueType::Int;
 }
 
-HAZE_STRING String2WString(const char* Str)
+HAZE_STRING String2WString(const char* str)
 {
-	return String2WString(HAZE_BINARY_STRING(Str));
+	return String2WString(HAZE_BINARY_STRING(str));
 }
 
 HAZE_STRING String2WString(const HAZE_BINARY_STRING& str)
 {
-	HAZE_STRING result;
+	HAZE_STRING& result = s_HazeString;
 #ifdef _WIN32
 
-	//获取缓冲区大小，并申请空间，缓冲区大小按字符计算
+	//获取缓冲区大小
 	int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.size(), NULL, 0);
-	TCHAR* buffer = new TCHAR[len + 1];
+	result.resize(len);
+
 	//多字节编码转换成宽字节编码
-	MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.size(), buffer, len);
-	buffer[len] = '\0';             //添加字符串结尾
-	//删除缓冲区并返回值
-	result.append(buffer);
-	delete[] buffer;
+	MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.size(), result.data(), len);
 
 #endif // WIN32
 
@@ -130,19 +132,16 @@ HAZE_STRING String2WString(const HAZE_BINARY_STRING& str)
 
 HAZE_BINARY_STRING WString2String(const HAZE_STRING& wstr)
 {
-	HAZE_BINARY_STRING result;
+	HAZE_BINARY_STRING& result = s_String;
 
 #ifdef WIN32
 
-	//获取缓冲区大小，并申请空间，缓冲区大小事按字节计算的
+	//获取缓冲区大小
 	int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), (int)wstr.size(), NULL, 0, NULL, NULL);
-	char* buffer = new char[len + 1];
+	result.resize(len);
+
 	//宽字节编码转换成多字节编码
-	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), (int)wstr.size(), buffer, len, NULL, NULL);
-	buffer[len] = '\0';
-	//删除缓冲区并返回值
-	result.append(buffer);
-	delete[] buffer;
+	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), (int)wstr.size(), result.data(), len, NULL, NULL);
 
 #endif // WIN32
 
@@ -151,30 +150,47 @@ HAZE_BINARY_STRING WString2String(const HAZE_STRING& wstr)
 
 char* UTF8_2_GB2312(const char* utf8)
 {
+	HAZE_STRING& hazeString = s_HazeString;
+	HAZE_BINARY_STRING& result = s_String;
+
+#ifdef _WIN32
+
 	int len = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, NULL, 0);
-	wchar_t* wstr = new wchar_t[len + 1];
-	memset(wstr, 0, len + 1);
-	MultiByteToWideChar(CP_UTF8, 0, utf8, -1, wstr, len);
-	len = WideCharToMultiByte(CP_ACP, 0, wstr, -1, NULL, 0, NULL, NULL);
-	char* str = new char[len + 1];
-	memset(str, 0, len + 1);
-	WideCharToMultiByte(CP_ACP, 0, wstr, -1, str, len, NULL, NULL);
-	if (wstr) delete[] wstr;
-	return str;
+	hazeString.resize(len);
+	
+	MultiByteToWideChar(CP_UTF8, 0, utf8, -1, hazeString.data(), len);
+
+	len = WideCharToMultiByte(CP_ACP, 0, hazeString.data(), -1, NULL, 0, NULL, NULL);
+	result.resize(len);
+
+	WideCharToMultiByte(CP_ACP, 0, hazeString.data(), -1, result.data(), len, NULL, NULL);
+
+#endif
+
+	return result.data();
+
 }
 
 char* GB2312_2_UFT8(const char* gb2312)
 {
+	HAZE_STRING& hazeString = s_HazeString;
+	HAZE_BINARY_STRING& result = s_String;
+
+#ifdef _WIN32
+
 	int len = MultiByteToWideChar(CP_ACP, 0, gb2312, -1, NULL, 0);
-	wchar_t* wstr = new wchar_t[len + 1];
-	memset(wstr, 0, len + 1);
-	MultiByteToWideChar(CP_ACP, 0, gb2312, -1, wstr, len);
-	len = WideCharToMultiByte(CP_UTF8, 0, wstr, -1, NULL, 0, NULL, NULL);
-	char* str = new char[len + 1];
-	memset(str, 0, len + 1);
-	WideCharToMultiByte(CP_UTF8, 0, wstr, -1, str, len, NULL, NULL);
-	if (wstr) delete[] wstr;
-	return str;
+	hazeString.resize(len);
+
+	MultiByteToWideChar(CP_ACP, 0, gb2312, -1, hazeString.data(), len);
+
+	len = WideCharToMultiByte(CP_UTF8, 0, hazeString.data(), -1, NULL, 0, NULL, NULL);
+	result.resize(len);
+
+	WideCharToMultiByte(CP_UTF8, 0, hazeString.data(), -1, result.data(), len, NULL, NULL);
+
+#endif
+
+	return result.data();
 }
 
 void ReplacePathSlash(HAZE_STRING& Path)

@@ -92,7 +92,7 @@
 
 #define HAZE_CALL_PUSH_ADDRESS_NAME		HAZE_STRING(HAZE_TEXT("RetAddress"))
 
-#define HAZE_STD_CALL_PARAM class HazeStack* Stack, struct FunctionData* m_Data, int MultiParamNum
+#define HAZE_STD_CALL_PARAM class HazeStack* stack, struct FunctionData* data, int multiParamNum
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 20
 

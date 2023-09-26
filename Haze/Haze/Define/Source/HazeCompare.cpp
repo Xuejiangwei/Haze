@@ -2,9 +2,9 @@
 #include "Haze.h"
 #include <unordered_map>
 
-HazeCmpType GetHazeCmpTypeByToken(HazeToken m_Token)
+HazeCmpType GetHazeCmpTypeByToken(HazeToken token)
 {
-	static std::unordered_map<HazeToken, HazeCmpType> HashMap =
+	static std::unordered_map<HazeToken, HazeCmpType> s_HashMap =
 	{
 		{HazeToken::Equal, HazeCmpType::Equal},
 		{HazeToken::NotEqual, HazeCmpType::NotEqual},
@@ -17,18 +17,18 @@ HazeCmpType GetHazeCmpTypeByToken(HazeToken m_Token)
 		{HazeToken::Or, HazeCmpType::Or},
 	};
 
-	auto Iter = HashMap.find(m_Token);
-	if (Iter != HashMap.end())
+	auto iter = s_HashMap.find(token);
+	if (iter != s_HashMap.end())
 	{
-		return Iter->second;
+		return iter->second;
 	}
 
 	return HazeCmpType::None;
 }
 
-InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType m_Type)
+InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType type)
 {
-	static std::unordered_map<HazeCmpType, InstructionOpCode> HashMap =
+	static std::unordered_map<HazeCmpType, InstructionOpCode> s_HashMap =
 	{
 		{HazeCmpType::Equal, InstructionOpCode::JE},
 		{HazeCmpType::NotEqual, InstructionOpCode::JNE},
@@ -41,18 +41,18 @@ InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType m_Type)
 		{HazeCmpType::Or, InstructionOpCode::JE},
 	};
 
-	auto Iter = HashMap.find(m_Type);
-	if (Iter != HashMap.end())
+	auto iter = s_HashMap.find(type);
+	if (iter != s_HashMap.end())
 	{
-		return Iter->second;
+		return iter->second;
 	}
 
 	return InstructionOpCode::NONE;
 }
 
-HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken m_Token)
+HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken token)
 {
-	static std::unordered_map<HazeToken, HazeOperatorAssign> HashMap =
+	static std::unordered_map<HazeToken, HazeOperatorAssign> s_HashMap =
 	{
 		{HazeToken::AddAssign, HazeOperatorAssign::AddAssign},
 		{HazeToken::SubAssign, HazeOperatorAssign::SubAssign},
@@ -66,10 +66,10 @@ HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken m_Token)
 		{HazeToken::ShrAssign, HazeOperatorAssign::ShrAssign},
 	};
 
-	auto Iter = HashMap.find(m_Token);
-	if (Iter != HashMap.end())
+	auto iter = s_HashMap.find(token);
+	if (iter != s_HashMap.end())
 	{
-		return Iter->second;
+		return iter->second;
 	}
 
 	return HazeOperatorAssign::None;

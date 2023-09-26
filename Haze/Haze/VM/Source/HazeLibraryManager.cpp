@@ -13,7 +13,7 @@
 
 #endif // _WIN32
 
-extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> Hash_MapStdLib;
+extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> g_Hash_MapStdLib;
 
 std::unique_ptr<HazeLibraryManager> HazeLibManager = std::make_unique<HazeLibraryManager>();
 
@@ -100,7 +100,7 @@ const void* HazeLibraryManager::GetExeAddress()
 
 void HazeLibraryManager::LoadStdLibrary()
 {
-	if (Hash_MapStdLib.size() == 0)
+	if (g_Hash_MapStdLib.size() == 0)
 	{
 		HazeStream::InitializeLib();
 	}

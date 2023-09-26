@@ -36,8 +36,8 @@ enum class HazeOperatorAssign : uint32
 	ShrAssign
 };
 
-HazeCmpType GetHazeCmpTypeByToken(HazeToken m_Token);
+HazeCmpType GetHazeCmpTypeByToken(HazeToken token);
 
-InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType m_Type);
+InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType type);
 
-HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken m_Token);
+HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken token);

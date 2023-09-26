@@ -85,7 +85,7 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
-	virtual const HAZE_CHAR* GetName() { return m_DefineVariable.m_Name.c_str(); }
+	virtual const HAZE_CHAR* GetName() { return m_DefineVariable.Name.c_str(); }
 
 private:
 	HazeSectionSignal m_SectionSignal;
@@ -124,7 +124,7 @@ public:
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
-	virtual const HAZE_CHAR* GetName() { return m_DefineVariable.m_Name.c_str(); }
+	virtual const HAZE_CHAR* GetName() { return m_DefineVariable.Name.c_str(); }
 
 private:
 	HazeSectionSignal m_SectionSignal;

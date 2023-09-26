@@ -26,48 +26,51 @@ enum ExeFileType : uint8
 class HazeExecuteFile
 {
 public:
-	HazeExecuteFile(ExeFileType m_Type);
+	HazeExecuteFile(ExeFileType type);
+
 	~HazeExecuteFile();
 
 public:
-	void WriteModule(const std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>>& m_Module);
+	void WriteModule(const std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>>& moduleUnit);
 
-	void WriteExecuteFile(const ModuleUnit::GlobalDataTable& GlobalDataTable, const ModuleUnit::StringTable& StringTable,
-		const ModuleUnit::ClassTable& ClassTable, const ModuleUnit::FunctionTable& FunctionTable);
+	void WriteExecuteFile(const ModuleUnit::GlobalDataTable& globalDataTable, const ModuleUnit::StringTable& stringTable,
+		const ModuleUnit::ClassTable& classTable, const ModuleUnit::FunctionTable& functionTable);
 
-	void ReadExecuteFile(HazeVM* m_VM);
+	void ReadExecuteFile(HazeVM* vm);
 
-	void ReadModule(HazeVM* m_VM);
+	void ReadModule(HazeVM* vm);
 
 	void CheckAll();
-private:
-	void WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& Table);
-
-	void WriteStringTable(const ModuleUnit::StringTable& Table);
-
-	void WriteClassTable(const ModuleUnit::ClassTable& Table);
-
-	void WriteFunctionTable(const ModuleUnit::FunctionTable& Table);
-
-	void WriteFunctionInstruction(const ModuleUnit::FunctionTable& Table, uint32 Length);
-
-	void WriteInstruction(const ModuleUnit::FunctionInstruction& Instruction);
 
 private:
-	void ReadGlobalDataTable(HazeVM* m_VM);
+	void WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& table);
 
-	void ReadStringTable(HazeVM* m_VM);
+	void WriteStringTable(const ModuleUnit::StringTable& table);
 
-	void ReadClassTable(HazeVM* m_VM);
+	void WriteClassTable(const ModuleUnit::ClassTable& table);
 
-	void ReadFunctionTable(HazeVM* m_VM);
+	void WriteFunctionTable(const ModuleUnit::FunctionTable& table);
 
-	void ReadFunctionInstruction(HazeVM* m_VM);
+	void WriteFunctionInstruction(const ModuleUnit::FunctionTable& table, uint32 length);
 
-	void ReadInstruction(Instruction& Instruction);
+	void WriteInstruction(const ModuleUnit::FunctionInstruction& instruction);
+
 private:
-	std::unique_ptr<HAZE_BINARY_OFSTREAM> FileStream;
-	std::unique_ptr<HAZE_BINARY_IFSTREAM> InFileStream;
+	void ReadGlobalDataTable(HazeVM* vm);
 
-	bool State[HazeFileFormat::End];
+	void ReadStringTable(HazeVM* vm);
+
+	void ReadClassTable(HazeVM* vm);
+
+	void ReadFunctionTable(HazeVM* vm);
+
+	void ReadFunctionInstruction(HazeVM* vm);
+
+	void ReadInstruction(Instruction& instruction);
+
+private:
+	std::unique_ptr<HAZE_BINARY_OFSTREAM> m_FileStream;
+	std::unique_ptr<HAZE_BINARY_IFSTREAM> m_InFileStream;
+
+	bool m_States[HazeFileFormat::End];
 };

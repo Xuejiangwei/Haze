@@ -117,7 +117,7 @@ const HAZE_STRING* HazeVM::GetModuleNameByCurrFunction()
 			{
 				if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second)
 				{
-					return &Iter.m_Name;
+					return &Iter.Name;
 				}
 			}
 		}
@@ -162,7 +162,7 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& m_Name)
 				{
 					for (size_t i = 0; i < Class->Members.size(); i++)
 					{
-						if (Class->Members[i].Variable.m_Name == MemberName)
+						if (Class->Members[i].Variable.Name == MemberName)
 						{
 							uint64 Address = 0;
 							memcpy(&Address, Iter.Value.Value.Pointer, sizeof(Address));
@@ -189,7 +189,7 @@ void* HazeVM::GetGlobalValue(const HAZE_STRING& m_Name)
 				{
 					for (size_t i = 0; i < Class->Members.size(); i++)
 					{
-						if (Class->Members[i].Variable.m_Name == MemberName)
+						if (Class->Members[i].Variable.Name == MemberName)
 						{
 							return (char*)Iter.Address + Class->Members[i].Offset;
 						}
@@ -232,7 +232,7 @@ ClassData* HazeVM::FindClass(const HAZE_STRING& m_ClassName)
 {
 	for (auto& Iter : Vector_ClassTable)
 	{
-		if (Iter.m_Name == m_ClassName)
+		if (Iter.Name == m_ClassName)
 		{
 			return &Iter;
 		}

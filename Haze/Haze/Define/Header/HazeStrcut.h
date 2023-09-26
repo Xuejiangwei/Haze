@@ -155,11 +155,12 @@ struct HazeDefineTypeHashFunction
 
 struct HazeDefineVariable
 {
-	HazeDefineType m_Type;		//变量类型
-	HAZE_STRING m_Name;			//变量名
+	HazeDefineType Type;		//变量类型
+	HAZE_STRING Name;			//变量名
 
 	HazeDefineVariable() {}
-	HazeDefineVariable(const HazeDefineType& m_Type, const HAZE_STRING& m_Name) : m_Type(m_Type), m_Name(m_Name) {}
+	HazeDefineVariable(const HazeDefineType& type, const HAZE_STRING& name)
+		: Type(type), Name(name) {}
 };
 
 struct HazeVariableData

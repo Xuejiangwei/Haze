@@ -92,11 +92,11 @@ public:
 enum class InstructionOpCode : uint32;
 enum class HazeToken : uint32;
 
-uint32 GetSizeByHazeType(HazeValueType m_Type);
+uint32 GetSizeByHazeType(HazeValueType type);
 
-HazeValueType GetValueTypeByToken(HazeToken m_Token);
+HazeValueType GetValueTypeByToken(HazeToken token);
 
-HazeValueType GetStrongerType(HazeValueType Type1, HazeValueType Type2);
+HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2);
 
 bool IsVoidType(HazeValueType type);
 
@@ -118,18 +118,18 @@ bool IsArrayType(HazeValueType type);
 
 bool IsReferenceType(HazeValueType type);
 
-void StringToHazeValueNumber(const HAZE_STRING& Str, HazeValueType m_Type, HazeValue& Value);
+void StringToHazeValueNumber(const HAZE_STRING& str, HazeValueType type, HazeValue& value);
 
-void OperatorValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const void* Target);
+void OperatorValueByType(HazeValueType type, InstructionOpCode typeCode, const void* target);
 
-void CalculateValueByType(HazeValueType m_Type, InstructionOpCode TypeCode, const void* Source, const void* Target);
+void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const void* source, const void* target);
 
-void CompareValueByType(HazeValueType m_Type, struct HazeRegister* Register, const void* Source, const void* Target);
+void CompareValueByType(HazeValueType type, struct HazeRegister* hazeRegister, const void* source, const void* target);
 
-size_t GetHazeCharPointerLength(const HAZE_CHAR* Char);
+size_t GetHazeCharPointerLength(const HAZE_CHAR* hChar);
 
-const HAZE_CHAR* GetHazeValueTypeString(HazeValueType m_Type);
+const HAZE_CHAR* GetHazeValueTypeString(HazeValueType type);
 
-HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType m_Type, const HazeValue& Value);
+HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value);
 
-HazeValue GetNegValue(HazeValueType m_Type, const HazeValue& Value);
+HazeValue GetNegValue(HazeValueType type, const HazeValue& value);

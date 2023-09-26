@@ -233,7 +233,7 @@ struct FunctionDescData
 {
 	using StdLibFunctionCall = void(*)(HAZE_STD_CALL_PARAM);
 
-	InstructionFunctionType m_Type;
+	InstructionFunctionType Type;
 
 	union
 	{
@@ -247,7 +247,7 @@ struct FunctionDescData
 
 struct ModuleData
 {
-	HAZE_STRING m_Name;
+	HAZE_STRING Name;
 	std::pair<uint32, uint32> GlobalDataIndex;
 	std::pair<uint32, uint32> StringIndex;
 	std::pair<uint32, uint32> ClassIndex;
@@ -255,7 +255,7 @@ struct ModuleData
 
 	ModuleData()
 	{
-		m_Name.clear();
+		Name.clear();
 		GlobalDataIndex = { 0, 0 };
 		StringIndex = { 0, 0 };
 		ClassIndex = { 0, 0 };
@@ -265,14 +265,14 @@ struct ModuleData
 
 struct ClassData
 {
-	HAZE_STRING m_Name;
+	HAZE_STRING Name;
 	unsigned int Size;
 	std::vector<HazeVariableData> Members;
 };
 
 struct FunctionData
 {
-	HazeValueType m_Type;
+	HazeValueType Type;
 	std::vector<HazeDefineVariable> Params;
 	std::vector<HazeVariableData> Variables;
 	uint32 InstructionNum;
@@ -282,28 +282,28 @@ struct FunctionData
 
 struct HazeRegister
 {
-	std::vector<char> m_Data;
-	HazeDefineType m_Type;
+	std::vector<char> Data;
+	HazeDefineType Type;
 };
 
-struct HazeJmpData
-{
-	int CachePC;					//执行完需要跳转回的pc
-	//int BlockInstructionNum;		//跳转的block指令剩余数
-	//int SkipNum;					//跳转回PC时，因为比较为true时，没有block，所以需要加上为true时的block的指令个数
-};
+//struct HazeJmpData
+//{
+//	int CachePC;					//执行完需要跳转回的pc
+//	//int BlockInstructionNum;		//跳转的block指令剩余数
+//	//int SkipNum;					//跳转回PC时，因为比较为true时，没有block，所以需要加上为true时的block的指令个数
+//};
 
 struct HazFrameFunctionData
 {
-	std::vector<HazeDefineVariable*> Vector_LocalParam;
+	std::vector<HazeDefineVariable*> LocalParams;
 };
 
-bool IsRegisterDesc(HazeDataDesc Scope);
+bool IsRegisterDesc(HazeDataDesc scope);
 
-bool IsJmpOpCode(InstructionOpCode Code);
+bool IsJmpOpCode(InstructionOpCode code);
 
-bool IsClassMember(HazeDataDesc Scope);
+bool IsClassMember(HazeDataDesc scope);
 
-const HAZE_CHAR* GetInstructionString(InstructionOpCode Code);
+const HAZE_CHAR* GetInstructionString(InstructionOpCode code);
 
-InstructionOpCode GetInstructionByString(const HAZE_STRING& String);
+InstructionOpCode GetInstructionByString(const HAZE_STRING& str);

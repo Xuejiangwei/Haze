@@ -411,7 +411,7 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 {
 	static std::string s_String;
 
-	s_String = WString2String(variable.Variable.m_Name);
+	s_String = WString2String(variable.Variable.Name);
 	json["Name"] = GB2312_2_UFT8(s_String.c_str());
 
 	auto dataAddress = isStack ? m_VM->VMStack->GetAddressByEBP(variable.Offset) : address;
@@ -420,10 +420,10 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 		dataAddress += variable.Offset;
 	}
 
-	if (IsClassType(variable.Variable.m_Type.PrimaryType))
+	if (IsClassType(variable.Variable.Type.PrimaryType))
 	{
-		auto classData = m_VM->FindClass(variable.Variable.m_Type.CustomName);
-		s_String = WString2String(variable.Variable.m_Type.CustomName);
+		auto classData = m_VM->FindClass(variable.Variable.Type.CustomName);
+		s_String = WString2String(variable.Variable.Type.CustomName);
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
 
 		for (size_t j = 0; j < classData->Members.size(); j++)
@@ -431,7 +431,7 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 			SetJsonVariableData(json["Value"][j], classData->Members[j], dataAddress);
 		}
 	}
-	else if (IsPointerType(variable.Variable.m_Type.PrimaryType))
+	else if (IsPointerType(variable.Variable.Type.PrimaryType))
 	{
 		s_String = WString2String(HAZE_TEXT("Ö¸Õë"));
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
@@ -440,10 +440,10 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 		memcpy(&value, dataAddress, sizeof(value));
 		json["Value"] = ToString((void*)value);
 
-		if (variable.Variable.m_Type.NeedCustomName())
+		if (variable.Variable.Type.NeedCustomName())
 		{
-			auto classData = m_VM->FindClass(variable.Variable.m_Type.CustomName);
-			s_String = WString2String(variable.Variable.m_Type.CustomName);
+			auto classData = m_VM->FindClass(variable.Variable.Type.CustomName);
+			s_String = WString2String(variable.Variable.Type.CustomName);
 			json["TypeClass"] = GB2312_2_UFT8(s_String.c_str());
 
 			for (size_t j = 0; j < classData->Members.size(); j++)
@@ -452,27 +452,28 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 			}
 		}
 
-		if (variable.Variable.m_Type.NeedSecondaryType())
+		if (variable.Variable.Type.NeedSecondaryType())
 		{
-			s_String = WString2String(GetHazeValueTypeString(variable.Variable.m_Type.SecondaryType));
+			s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.SecondaryType));
 			json["SubType"] = GB2312_2_UFT8(s_String.c_str());
 		}
 	}
-	else if (IsArrayType(variable.Variable.m_Type.PrimaryType))
+	else if (IsArrayType(variable.Variable.Type.PrimaryType))
 	{
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.m_Type.PrimaryType));
+		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.PrimaryType));
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
 		
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.m_Type.SecondaryType));
+		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.SecondaryType));
 		json["SubType"] = GB2312_2_UFT8(s_String.c_str());
 
-		int size = GetSizeByType(variable.Variable.m_Type, m_VM);
+		int size = GetSizeByType(variable.Variable.Type, m_VM);
 
-		if (variable.Variable.m_Type.CustomName.empty())
+		if (variable.Variable.Type.CustomName.empty())
 		{
 			for (int i = 0; i < variable.Size / size; i++)
 			{
-				GetHazeValueByBaseType(json["Value"][i], dataAddress + i * size, variable.Variable.m_Type.SecondaryType);
+				GetHazeValueByBaseType(json["Value"][i], dataAddress + i * size,
+					variable.Variable.Type.SecondaryType);
 			}
 
 		}
@@ -484,9 +485,9 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 			}
 		}
 	}
-	else if (IsReferenceType(variable.Variable.m_Type.PrimaryType))
+	else if (IsReferenceType(variable.Variable.Type.PrimaryType))
 	{
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.m_Type.PrimaryType));
+		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.PrimaryType));
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
 
 		uint64 value;
@@ -495,8 +496,8 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 	}
 	else
 	{
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.m_Type.PrimaryType));
+		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.PrimaryType));
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-		GetHazeValueByBaseType(json["Value"], dataAddress, variable.Variable.m_Type.PrimaryType);
+		GetHazeValueByBaseType(json["Value"], dataAddress, variable.Variable.Type.PrimaryType);
 	}
 }

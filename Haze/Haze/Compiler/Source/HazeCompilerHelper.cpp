@@ -136,7 +136,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* compilerMo
 	HazeDataDesc desc, int count, std::shared_ptr<HazeCompilerValue> refValue, std::vector<std::shared_ptr<HazeCompilerValue>> arraySize,
 	std::vector<HazeDefineType>* params)
 {
-	return CreateVariableImpl(compilerModule, var.m_Type, scope, desc, count, refValue, arraySize, params);
+	return CreateVariableImpl(compilerModule, var.Type, scope, desc, count, refValue, arraySize, params);
 }
 
 std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> CreateVariableCopyClassMember(HazeCompilerModule* compilerModule,

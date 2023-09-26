@@ -239,7 +239,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType 
 	static HazeDefineVariable s_DefineVariable;
 
 	HazeValue& v = const_cast<HazeValue&>(var);
-	s_DefineVariable.m_Type.PrimaryType = type;
+	s_DefineVariable.Type.PrimaryType = type;
 
 	std::shared_ptr<HazeCompilerValue> ret = nullptr;
 	switch (type)

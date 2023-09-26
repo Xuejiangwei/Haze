@@ -153,13 +153,13 @@ void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
 		Debugger->AddTempBreakPoint(m_VM->GetNextLine(m_VM->GetCurrCallFunctionLine()));
 	}
 
-	RegisterData RegisterDara({ GetVirtualRegister(CMP_REGISTER)->m_Data });
+	RegisterData RegisterDara({ GetVirtualRegister(CMP_REGISTER)->Data });
 	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize), RegisterDara));
 
 	EBP = ESP;
 	if (Info->Variables.size() > Info->Params.size())
 	{
-		ESP += Info->Variables.back().Offset + GetSizeByType(Info->Variables.back().Variable.m_Type, m_VM);
+		ESP += Info->Variables.back().Offset + GetSizeByType(Info->Variables.back().Variable.Type, m_VM);
 	}
 
 	PC = Info->FunctionDescData.InstructionStartAddress;
@@ -187,7 +187,7 @@ void HazeStack::OnRet()
 	EBP = Stack_Frame.back().EBP;
 	ESP = Stack_Frame.back().ESP;
 
-	memcpy(GetVirtualRegister(CMP_REGISTER)->m_Data.begin()._Unwrapped(), Stack_Frame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
+	memcpy(GetVirtualRegister(CMP_REGISTER)->Data.begin()._Unwrapped(), Stack_Frame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
 		Stack_Frame.back().Register.Cmp_RegisterData.size());
 
 	Stack_Frame.pop_back();

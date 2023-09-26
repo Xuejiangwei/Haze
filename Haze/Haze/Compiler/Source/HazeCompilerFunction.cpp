@@ -262,5 +262,5 @@ void HazeCompilerFunction::AddLocalVariable(std::shared_ptr<HazeCompilerValue> v
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)
 {
-	m_Params.push_back({ variable.m_Name, CreateVariable(m_Module, variable, HazeVariableScope::Local, HazeDataDesc::None, 0) });
+	m_Params.push_back({ variable.Name, CreateVariable(m_Module, variable, HazeVariableScope::Local, HazeDataDesc::None, 0) });
 }
