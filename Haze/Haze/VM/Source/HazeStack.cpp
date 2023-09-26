@@ -55,7 +55,7 @@ void HazeStack::Run(bool IsHazeCall)
 			}
 			else
 			{
-				if (Debugger->IsPause)
+				if (Debugger->IsPause())
 				{
 					continue;
 				}
@@ -178,7 +178,7 @@ void HazeStack::OnRet()
 	if (Debugger)
 	{
 		m_VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.EndLine);
-		while (Debugger->IsPause) 
+		while (Debugger->IsPause()) 
 		{
 		}
 	}

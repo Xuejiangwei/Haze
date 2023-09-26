@@ -263,7 +263,7 @@ struct ModuleData
 	}
 };
 
-struct m_ClassDatas
+struct ClassData
 {
 	HAZE_STRING m_Name;
 	unsigned int Size;

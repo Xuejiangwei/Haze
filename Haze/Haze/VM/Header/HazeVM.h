@@ -62,7 +62,7 @@ public:
 
 	char* GetGlobalValueByIndex(uint32 Index);
 
-	m_ClassDatas* FindClass(const HAZE_STRING& m_ClassName);
+	ClassData* FindClass(const HAZE_STRING& m_ClassName);
 
 	uint32 GetClassSize(const HAZE_STRING& m_ClassName);
 
@@ -95,7 +95,7 @@ private:
 
 	std::vector<std::pair<HAZE_STRING, HAZE_STRING>> Vector_StringTable;
 
-	std::vector<m_ClassDatas> Vector_ClassTable;
+	std::vector<ClassData> Vector_ClassTable;
 
 	std::vector<FunctionData> Vector_FunctionTable;
 	std::unordered_map<HAZE_STRING, uint32> HashMap_FunctionTable;

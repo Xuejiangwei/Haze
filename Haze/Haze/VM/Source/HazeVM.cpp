@@ -228,7 +228,7 @@ char* HazeVM::GetGlobalValueByIndex(uint32 Index)
 	return nullptr;
 }
 
-m_ClassDatas* HazeVM::FindClass(const HAZE_STRING& m_ClassName)
+ClassData* HazeVM::FindClass(const HAZE_STRING& m_ClassName)
 {
 	for (auto& Iter : Vector_ClassTable)
 	{

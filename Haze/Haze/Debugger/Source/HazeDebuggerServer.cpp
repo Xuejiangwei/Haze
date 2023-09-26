@@ -3,7 +3,6 @@
 #include "HazeDebuggerServer.h"
 #include "HazeLog.h"
 #include "HazeDebugger.h"
-#include "HazeDebuggerBuffer.h"
 
 #include "OpenJson/openjson.h"
 

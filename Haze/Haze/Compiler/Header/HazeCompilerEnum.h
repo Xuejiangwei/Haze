@@ -1,3 +1,5 @@
+#pragma once
+
 #include "Haze.h"
 #include "HazeCompilerValue.h"
 

@@ -54,11 +54,11 @@ public:
 
 private:
 	void MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& Vector_MarkAddressBase,
-		std::vector<std::pair<uint64, m_ClassDatas*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress);
+		std::vector<std::pair<uint64, ClassData*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress);
 
-	void MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, m_ClassDatas*>>& ArrayClass, uint64 Index);
+	void MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index);
 
-	void MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, m_ClassDatas*>>& ArrayClass, uint64 Index);
+	void MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index);
 
 private:
 	HazeVM* m_VM;

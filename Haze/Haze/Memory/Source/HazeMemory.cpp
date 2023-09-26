@@ -119,7 +119,7 @@ void HazeMemory::AddToRoot(void*)
 }
 
 void HazeMemory::MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& Vector_MarkAddressBase,
-	std::vector<std::pair<uint64, m_ClassDatas*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress)
+	std::vector<std::pair<uint64, ClassData*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress)
 {
 	uint64 Address = 0;
 	auto m_ClassDatas = m_VM->FindClass(VarType.CustomName);
@@ -160,7 +160,7 @@ void HazeMemory::Mark()
 
 	//根节点内存有 静态变量、栈、寄存器等
 	std::vector<std::pair<uint64, HazeValueType>> Vector_MarkAddressBase;
-	std::vector<std::pair<uint64, m_ClassDatas*>> Vector_MarkAddressClass;
+	std::vector<std::pair<uint64, ClassData*>> Vector_MarkAddressClass;
 	uint64 Address = 0;
 
 	for (auto& It : m_VM->Vector_GlobalData)
@@ -292,10 +292,10 @@ void HazeMemory::ForceGC()
 	Sweep();
 }
 
-void HazeMemory::MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, m_ClassDatas*>>& ArrayClass, uint64 Index)
+void HazeMemory::MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index)
 {
 }
 
-void HazeMemory::MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, m_ClassDatas*>>& ArrayClass, uint64 Index)
+void HazeMemory::MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index)
 {
 }

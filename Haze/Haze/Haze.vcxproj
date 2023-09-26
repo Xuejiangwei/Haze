@@ -163,7 +163,6 @@
     <ClCompile Include="Compiler\Source\HazeCompilerTemplateFunction.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp" />
     <ClCompile Include="Debugger\Source\HazeDebugger.cpp" />
-    <ClCompile Include="Debugger\Source\HazeDebuggerBuffer.cpp" />
     <ClCompile Include="Debugger\Source\HazeDebuggerServer.cpp" />
     <ClCompile Include="Define\Source\HazeCompare.cpp" />
     <ClCompile Include="Define\Source\HazeExecuteFile.cpp" />
@@ -215,7 +214,6 @@
     <ClInclude Include="Compiler\Header\HazeCompilerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerPointerArray.h" />
     <ClInclude Include="Debugger\Header\HazeDebugger.h" />
-    <ClInclude Include="Debugger\Header\HazeDebuggerBuffer.h" />
     <ClInclude Include="Debugger\Header\HazeDebuggerServer.h" />
     <ClInclude Include="Debugger\Header\HazeDebugInfo.h" />
     <ClInclude Include="Define\Header\HazeCompare.h" />

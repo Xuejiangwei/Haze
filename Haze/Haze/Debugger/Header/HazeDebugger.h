@@ -13,7 +13,8 @@ public:
 	friend class HazeVM;
 	friend class HazeStack;
 
-	HazeDebugger(HazeVM* m_VM, void(*EndCall)());
+	HazeDebugger(HazeVM* vm, void(*endCall)());
+
 	~HazeDebugger();
 
 	enum DebuggerHookType
@@ -23,17 +24,17 @@ public:
 		Function = 1 << 2,
 	};
 
-	void SetHook(void(*HookCall)(HazeVM* m_VM), uint32 m_Type);
+	void SetHook(void(*hookCall)(HazeVM* vm), uint32 type);
 
-	void AddBreakPoint(const char* Message);
+	void AddBreakPoint(const char* message);
 
-	void DeleteBreakPoint(const char* Message);
+	void DeleteBreakPoint(const char* message);
 
-	void DeleteModuleAllBreakPoint(const char* Message);
+	void DeleteModuleAllBreakPoint(const char* message);
 
 	void DeleteAllBreakPoint();
 
-	void OnExecLine(uint32 Line);
+	void OnExecLine(uint32 line);
 
 	void Start();
 
@@ -45,51 +46,53 @@ public:
 
 	void Continue();
 
-	void SetJsonLocalVariable(open::OpenJson& Json);
+	void SetJsonLocalVariable(open::OpenJson& json);
 
-	void SetJsonModuleGlobalVariable(open::OpenJson& Json);
+	void SetJsonModuleGlobalVariable(open::OpenJson& json);
+
+	bool IsPause() const { return m_IsPause; }
 
 public:
-	void AddTempBreakPoint(uint32 Line);
+	void AddTempBreakPoint(uint32 line);
 
 	void SendProgramEnd();
 
 private:
 	void ClearCurrParseModuleData()
 	{
-		CurrPauseModule.first.clear();
-		CurrPauseModule.second = 0;
-		IsPause = false;
+		m_CurrPauseModule.first.clear();
+		m_CurrPauseModule.second = 0;
+		m_IsPause = false;
 	}
 
 	bool CurrModuleIsStepOver();
 
-	void SetJsonType(open::OpenJson& Json, HazeDebugInfoType m_Type) { Json["Type"] = (int)m_Type; }
+	void SetJsonType(open::OpenJson& json, HazeDebugInfoType type) { json["Type"] = (int)type; }
 
-	void SetJsonBreakFilePath(open::OpenJson& Json, HAZE_STRING Path)
+	void SetJsonBreakFilePath(open::OpenJson& json, HAZE_STRING path)
 	{
-		ReplacePathSlash(Path);
-		auto m_Name = WString2String(Path);
-		Json["BreakPathFile"] = GB2312_2_UFT8(m_Name.c_str());
+		ReplacePathSlash(path);
+		auto m_Name = WString2String(path);
+		json["BreakPathFile"] = GB2312_2_UFT8(m_Name.c_str());
 	}
 
-	void SetJsonBreakLine(open::OpenJson& Json, uint32 Line) { Json["BreakLine"] = Line; }
+	void SetJsonBreakLine(open::OpenJson& json, uint32 line) { json["BreakLine"] = line; }
 
 	void SendBreakInfo();
 
-	void SetJsonVariableData(open::OpenJson& Json, const HazeVariableData& Variable, const char* Address = nullptr, bool isStack = true);
+	void SetJsonVariableData(open::OpenJson& json, const HazeVariableData& variable, const char* address = nullptr, bool isStack = true);
 
 private:
 	HazeVM* m_VM;
-	void(*HookFunctionCall)(HazeVM* m_VM);
-	void(*EndCall)();
-	uint32 HookType;
+	void(*m_HookFunctionCall)(HazeVM* vm);
+	void(*m_EndCall)();
+	uint32 m_HookType;
 
-	std::unordered_map<HAZE_STRING, std::pair<std::unordered_set<uint32>, HAZE_STRING>> HashMap_BreakPoint;
-	std::unordered_map<HAZE_STRING, std::pair<std::unordered_set<uint32>, HAZE_STRING>> HashMap_TempBreakPoint;
+	std::unordered_map<HAZE_STRING, std::pair<std::unordered_set<uint32>, HAZE_STRING>> m_BreakPoints;
+	std::unordered_map<HAZE_STRING, std::pair<std::unordered_set<uint32>, HAZE_STRING>> m_TempBreakPoints;
 
-	std::pair<HAZE_STRING, uint32> CurrPauseModule;
-	bool IsPause;
+	std::pair<HAZE_STRING, uint32> m_CurrPauseModule;
+	bool m_IsPause;
 
-	std::unordered_map<HAZE_STRING, bool> HashMap_IsStepOver;
+	std::unordered_map<HAZE_STRING, bool> m_IsStepOvers;
 };

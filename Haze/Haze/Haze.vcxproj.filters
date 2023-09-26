@@ -150,9 +150,6 @@
     <ClCompile Include="ThirdParty\OpenJson\openjson.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\Source\HazeDebuggerBuffer.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="VM\Source\HazeLibraryManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -336,9 +333,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="ThirdParty\OpenJson\openjson.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Debugger\Header\HazeDebuggerBuffer.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="VM\Header\HazeLibraryManager.h">
