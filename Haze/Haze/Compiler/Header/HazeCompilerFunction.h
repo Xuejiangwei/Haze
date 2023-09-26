@@ -19,7 +19,8 @@ public:
 	friend class HazeCompiler;
 	friend class HazeCompilerModule;
 
-	HazeCompilerFunction(HazeCompilerModule* m_Module, const HAZE_STRING& m_Name, HazeDefineType& m_Type, std::vector<HazeDefineVariable>& Param, HazeCompilerClass* Class = nullptr);
+	HazeCompilerFunction(HazeCompilerModule* compilerModule, const HAZE_STRING& name, HazeDefineType& type,
+		std::vector<HazeDefineVariable>& params, HazeCompilerClass* compilerClass = nullptr);
 
 	~HazeCompilerFunction();
 
@@ -33,13 +34,13 @@ public:
 
 	HazeCompilerModule* GetModule() const { return m_Module; }
 
-	HazeCompilerClass* GetClass() const { return OwnerClass; }
+	HazeCompilerClass* GetClass() const { return m_OwnerClass; }
 
-	std::shared_ptr<HazeBaseBlock> GetEntryBlock() { return EntryBlock; }
+	std::shared_ptr<HazeBaseBlock> GetEntryBlock() { return m_EntryBlock; }
 
 	void FunctionFinish();
 
-	void GenI_Code(HAZE_STRING_STREAM& SStream);
+	void GenI_Code(HAZE_STRING_STREAM& hss);
 
 	HAZE_STRING GenDafaultBlockName();
 
@@ -57,37 +58,39 @@ public:
 
 	HAZE_STRING GenForStepBlockName();
 
-	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
 
-	bool FindLocalVariableName(const HazeCompilerValue* Value, HAZE_STRING& OutName);
+	bool FindLocalVariableName(const HazeCompilerValue* value, HAZE_STRING& outName);
 
-	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> Value, int Line);
+	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> value, int line);
 
 private:
-	void AddFunctionParam(const HazeDefineVariable& Variable);
+	void AddFunctionParam(const HazeDefineVariable& variable);
 
-	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& Variable, int Line, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
-		std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize = {}, std::vector<HazeDefineType>* Params = nullptr);
+	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line,
+		std::shared_ptr<HazeCompilerValue> refValue = nullptr,
+		std::vector<std::shared_ptr<HazeCompilerValue>> arraySize = {},
+		std::vector<HazeDefineType>* params = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& m_Data);
+	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& data);
 
-	void InitEntryBlock(std::shared_ptr<HazeBaseBlock> Block) { EntryBlock = Block; }
+	void InitEntryBlock(std::shared_ptr<HazeBaseBlock> block) { m_EntryBlock = block; }
 
 private:
 	HazeCompilerModule* m_Module;
-	HazeCompilerClass* OwnerClass;
+	HazeCompilerClass* m_OwnerClass;
 
 	HAZE_STRING m_Name;
 	HazeDefineType m_Type;
 
-	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> VectorParam; //从右到左加入参数
+	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> m_Params;	//从右到左加入参数
 
-	std::vector<std::pair<std::shared_ptr<HazeCompilerValue>, int>> Vector_LocalVariable;
+	std::vector<std::pair<std::shared_ptr<HazeCompilerValue>, int>> m_LocalVariables;
 
-	std::shared_ptr<HazeBaseBlock> EntryBlock;
+	std::shared_ptr<HazeBaseBlock> m_EntryBlock;
 
-	int CurrBlockCount;
-	int CurrVariableCount;
+	int m_CurrBlockCount;
+	int m_CurrVariableCount;
 	
 	uint32 m_StartLine;
 	uint32 m_EndLine;

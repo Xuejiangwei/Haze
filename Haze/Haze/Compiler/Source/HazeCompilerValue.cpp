@@ -13,16 +13,17 @@
 //{
 //}
 
-HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
-	std::shared_ptr<HazeCompilerValue> AssignValue) : m_Module(m_Module), ValueType(DefineType), Scope(Scope), Desc(Desc), Count(Count)
+HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+	HazeDataDesc desc, int count, std::shared_ptr<HazeCompilerValue> AssignValue)
+	: m_Module(compilerModule), m_ValueType(defineType), m_Scope(scope), m_Desc(desc), m_Count(count)
 {
 	if (AssignValue)
 	{
-		memcpy(&Value.Value, &AssignValue->GetValue(), sizeof(Value.Value));
+		memcpy(&m_Value.Value, &AssignValue->GetValue(), sizeof(m_Value.Value));
 	}
 	else
 	{
-		memset(&Value.Value, 0, sizeof(Value.Value));
+		memset(&m_Value.Value, 0, sizeof(m_Value.Value));
 	}
 }
 
@@ -30,42 +31,42 @@ HazeCompilerValue::~HazeCompilerValue()
 {
 }
 
-void HazeCompilerValue::StoreValueType(std::shared_ptr<HazeCompilerValue> SrcValue)
+void HazeCompilerValue::StoreValueType(std::shared_ptr<HazeCompilerValue> srcValue)
 {
 	if (IsRegister())
 	{
 		bool bPointer = IsPointer();
-		ValueType = SrcValue->GetValueType();
+		m_ValueType = srcValue->GetValueType();
 
-		if ((SrcValue->IsArray() || SrcValue->IsPointerArray()) && bPointer)
+		if ((srcValue->IsArray() || srcValue->IsPointerArray()) && bPointer)
 		{
-			ValueType.PrimaryType = ValueType.CustomName.empty() ? HazeValueType::PointerBase : HazeValueType::PointerClass;
+			m_ValueType.PrimaryType = m_ValueType.CustomName.empty() ? HazeValueType::PointerBase : HazeValueType::PointerClass;
 		}
 	}
 
 	//memcpy(&this->Value.Value, &SrcValue->Value.Value, sizeof(this->Value.Value));
 }
 
-void HazeCompilerValue::StoreValue(HazeValue& SrcValue)
+void HazeCompilerValue::StoreValue(HazeValue& srcValue)
 {
-	memcpy(&this->Value.Value, &SrcValue.Value, sizeof(this->Value.Value));
+	memcpy(&this->m_Value.Value, &srcValue.Value, sizeof(this->m_Value.Value));
 }
 
 uint32 HazeCompilerValue::GetSize()
 {
-	return GetSizeByHazeType(ValueType.PrimaryType);
+	return GetSizeByHazeType(m_ValueType.PrimaryType);
 }
 
-bool HazeCompilerValue::TryGetVariableName(HAZE_STRING& OutName)
+bool HazeCompilerValue::TryGetVariableName(HAZE_STRING& outName)
 {
-	bool Ret = false;
-	HAZE_STRING_STREAM HSS;
+	bool ret = false;
+	HAZE_STRING_STREAM hss;
 	if (IsConstant())
 	{
-		HazeCompilerStream(HSS, this);
-		OutName = HSS.str();
-		Ret = true;
+		HazeCompilerStream(hss, this);
+		outName = hss.str();
+		ret = true;
 	}
 
-	return Ret;
+	return ret;
 }

@@ -208,7 +208,7 @@ bool HazeCompiler::IsClass(const HAZE_STRING& name)
 	}
 	else
 	{
-		for (auto& Iter : currModule->m_Vector_ImportModules)
+		for (auto& Iter : currModule->m_ImportModules)
 		{
 			if (Iter->GetClass(name))
 			{
@@ -463,7 +463,7 @@ void HazeCompiler::ClearBlockPoint()
 
 void HazeCompiler::AddImportModuleToCurrModule(HazeCompilerModule* compilerModule)
 {
-	for (auto& iter : GetCurrModule()->m_Vector_ImportModules)
+	for (auto& iter : GetCurrModule()->m_ImportModules)
 	{
 		if (iter == compilerModule)
 		{
@@ -471,7 +471,7 @@ void HazeCompiler::AddImportModuleToCurrModule(HazeCompilerModule* compilerModul
 		}
 	}
 
-	GetCurrModule()->m_Vector_ImportModules.push_back(compilerModule);
+	GetCurrModule()->m_ImportModules.push_back(compilerModule);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLea(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value)

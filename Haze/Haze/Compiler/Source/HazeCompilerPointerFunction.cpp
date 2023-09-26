@@ -1,7 +1,8 @@
 #include "HazeCompilerPointerFunction.h"
 
-HazeCompilerPointerFunction::HazeCompilerPointerFunction(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::vector<HazeDefineType> Vector_ParamType)
-	: HazeCompilerPointerValue(m_Module, DefineType, Scope, Desc, Count), Vector_ParamType(Vector_ParamType)
+HazeCompilerPointerFunction::HazeCompilerPointerFunction(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
+	HazeVariableScope scope, HazeDataDesc desc, int count, std::vector<HazeDefineType>* paramTypes)
+	: HazeCompilerPointerValue(compilerModule, defineType, scope, desc, count), m_ParamTypes(std::move(*paramTypes))
 {
 }
 

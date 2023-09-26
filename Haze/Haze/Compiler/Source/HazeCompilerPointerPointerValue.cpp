@@ -3,8 +3,9 @@
 #include "HazeCompilerPointerPointerValue.h"
 #include "HazeLog.h"
 
-HazeCompilerPointerPointerValue::HazeCompilerPointerPointerValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, int m_Level)
-	: HazeCompilerValue(m_Module, DefineType, Scope, Desc, Count), m_Level(m_Level)
+HazeCompilerPointerPointerValue::HazeCompilerPointerPointerValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
+	HazeVariableScope scope, HazeDataDesc desc, int count, int level)
+	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_Level(level)
 {
 }
 

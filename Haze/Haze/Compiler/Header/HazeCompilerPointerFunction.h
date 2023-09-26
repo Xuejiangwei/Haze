@@ -5,12 +5,13 @@
 class HazeCompilerPointerFunction : public HazeCompilerPointerValue
 {
 public:
-	explicit HazeCompilerPointerFunction(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::vector<HazeDefineType> Vector_ParamType);
+	explicit HazeCompilerPointerFunction(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
+		HazeVariableScope scope, HazeDataDesc desc, int count, std::vector<HazeDefineType>* paramTypes);
 
 	virtual ~HazeCompilerPointerFunction() override;
 
-	const std::vector<HazeDefineType>& GetParamType() const { return Vector_ParamType; }
+	const std::vector<HazeDefineType>& GetParamTypes() const { return m_ParamTypes; }
 
 private:
-	std::vector<HazeDefineType> Vector_ParamType;
+	std::vector<HazeDefineType> m_ParamTypes;
 };

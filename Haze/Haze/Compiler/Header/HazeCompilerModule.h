@@ -44,9 +44,9 @@ public:
 
 	std::shared_ptr<HazeCompilerFunction> GetCurrFunction();
 
-	std::shared_ptr<HazeCompilerFunction> CreateFunction(const HAZE_STRING& name, HazeDefineType& type, std::vector<HazeDefineVariable>& param);
+	std::shared_ptr<HazeCompilerFunction> CreateFunction(const HAZE_STRING& name, HazeDefineType& type, std::vector<HazeDefineVariable>& params);
 
-	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> compilerClass, const HAZE_STRING& name, HazeDefineType& type, std::vector<HazeDefineVariable>& param);
+	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> compilerClass, const HAZE_STRING& name, HazeDefineType& type, std::vector<HazeDefineVariable>& params);
 
 	void FinishFunction();
 
@@ -117,7 +117,7 @@ private:
 	static void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const std::shared_ptr<HazeCompilerValue>& value, int index = -1);
 
 private:
-	void FunctionCall(HAZE_STRING_STREAM& sStream, const HAZE_STRING& callName, uint32& size, std::vector<std::shared_ptr<HazeCompilerValue>>& params, std::shared_ptr<HazeCompilerValue> thisPointerTo);
+	void FunctionCall(HAZE_STRING_STREAM& hss, const HAZE_STRING& callName, uint32& size, std::vector<std::shared_ptr<HazeCompilerValue>>& params, std::shared_ptr<HazeCompilerValue> thisPointerTo);
 
 	void GenCodeFile();
 
@@ -138,10 +138,10 @@ private:
 
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerEnum>> m_HashMap_Enums;
 
-	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> Variables; //这个是Symbol table(符号表)
+	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> m_Variables; //这个是Symbol table(符号表)
 
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> m_HashMap_StringTable;
 	std::unordered_map<int, const HAZE_STRING*> m_HashMap_StringMapping;
 
-	std::vector<HazeCompilerModule*> m_Vector_ImportModules;
+	std::vector<HazeCompilerModule*> m_ImportModules;
 };

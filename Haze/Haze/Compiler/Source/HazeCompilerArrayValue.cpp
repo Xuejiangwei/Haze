@@ -6,8 +6,10 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 
-HazeCompilerArrayElementValue::HazeCompilerArrayElementValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
-	HazeCompilerValue* Array, std::vector<HazeCompilerValue*> Index) : HazeCompilerValue(m_Module, DefineType, Scope, Desc, Count), ArrayOrPointer(Array), Index(Index)
+HazeCompilerArrayElementValue::HazeCompilerArrayElementValue(HazeCompilerModule* compilerModule, 
+	const HazeDefineType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count,
+	HazeCompilerValue* arrayValue, std::vector<HazeCompilerValue*> index) 
+	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayOrPointer(arrayValue), m_Index(index)
 {
 }
 
@@ -15,21 +17,21 @@ HazeCompilerArrayElementValue::~HazeCompilerArrayElementValue()
 {
 }
 
-HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
-	std::vector<std::shared_ptr<HazeCompilerValue>>& m_ArraySize)
-	: HazeCompilerValue(m_Module, DefineType, Scope, Desc, Count), ArrayLength(0), Size(0)
+HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+	HazeDataDesc desc, int count, std::vector<std::shared_ptr<HazeCompilerValue>>& arraySize)
+	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayLength(0), m_Size(0)
 {
-	if (m_ArraySize.size() > 0)
+	if (arraySize.size() > 0)
 	{
-		ArrayLength = 1;
-		for (auto& Iter : m_ArraySize)
+		m_ArrayLength = 1;
+		for (auto& iter : arraySize)
 		{
-			ArrayLength *= Iter->GetValueType().PrimaryType == HazeValueType::UnsignedLong || Iter->GetValueType().PrimaryType == HazeValueType::Long ?
-				(uint32)Iter->GetValue().Value.UnsignedLong : Iter->GetValue().Value.UnsignedInt;
-			Vector_Size.push_back(Iter);
+			m_ArrayLength *= iter->GetValueType().PrimaryType == HazeValueType::UnsignedLong || iter->GetValueType().PrimaryType == HazeValueType::Long ?
+				(uint32)iter->GetValue().Value.UnsignedLong : iter->GetValue().Value.UnsignedInt;
+			m_SizeValues.push_back(iter);
 		}
 
-		Size = ArrayLength * GetSizeByType(DefineType, m_Module);
+		m_Size = m_ArrayLength * GetSizeByType(defineType, compilerModule);
 	}
 }
 
@@ -37,18 +39,18 @@ HazeCompilerArrayValue::~HazeCompilerArrayValue()
 {
 }
 
-uint32 HazeCompilerArrayValue::GetSizeByLevel(uint32 m_Level)
+uint32 HazeCompilerArrayValue::GetSizeByLevel(uint32 level)
 {
-	uint32 Ret = 0;
-	if (m_Level + 1 < Vector_Size.size())
+	uint32 ret = 0;
+	if (level + 1 < m_SizeValues.size())
 	{
-		Ret = 1;
-		for (size_t i = m_Level + 1; i < Vector_Size.size(); i++)
+		ret = 1;
+		for (size_t i = level + 1; i < m_SizeValues.size(); i++)
 		{
-			Ret *= Vector_Size[i]->GetValueType().PrimaryType == HazeValueType::UnsignedLong || Vector_Size[i]->GetValueType().PrimaryType == HazeValueType::Long ?
-				(uint32)Vector_Size[i]->GetValue().Value.UnsignedLong : Vector_Size[i]->GetValue().Value.UnsignedInt;
+			ret *= m_SizeValues[i]->GetValueType().PrimaryType == HazeValueType::UnsignedLong || m_SizeValues[i]->GetValueType().PrimaryType == HazeValueType::Long ?
+				(uint32)m_SizeValues[i]->GetValue().Value.UnsignedLong : m_SizeValues[i]->GetValue().Value.UnsignedInt;
 		}
 	}
 
-	return Ret;
+	return ret;
 }

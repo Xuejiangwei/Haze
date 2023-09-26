@@ -13,90 +13,91 @@ public:
 
 	//HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	HazeCompilerValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::shared_ptr<HazeCompilerValue> AssignValue = nullptr);
+	HazeCompilerValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+		HazeDataDesc desc, int count, std::shared_ptr<HazeCompilerValue> assignValue = nullptr);
 
 	virtual ~HazeCompilerValue();
 
 	std::shared_ptr<HazeCompilerValue> GetShared() { return shared_from_this(); }
 
-	virtual void StoreValueType(std::shared_ptr<HazeCompilerValue> SrcValue);
+	virtual void StoreValueType(std::shared_ptr<HazeCompilerValue> srcValue);
 
-	virtual void StoreValue(HazeValue& SrcValue);
+	virtual void StoreValue(HazeValue& srcValue);
 
-	const HazeDefineType& GetValueType() const { return ValueType; }
+	const HazeDefineType& GetValueType() const { return m_ValueType; }
 
-	const HazeValue& GetValue() const { return Value; }
+	const HazeValue& GetValue() const { return m_Value; }
 
-	HazeVariableScope GetVariableScope() const { return Scope; }
+	HazeVariableScope GetVariableScope() const { return m_Scope; }
 
-	HazeDataDesc GetVariableDesc() const { return Desc; }
+	HazeDataDesc GetVariableDesc() const { return m_Desc; }
 
-	int GetCount() const { return Count; }
+	int GetCount() const { return m_Count; }
 
-	bool IsGlobalVariable() const { return Scope == HazeVariableScope::Global; }
+	bool IsGlobalVariable() const { return m_Scope == HazeVariableScope::Global; }
 
-	bool IsLocalVariable() const { return Scope == HazeVariableScope::Local; }
+	bool IsLocalVariable() const { return m_Scope == HazeVariableScope::Local; }
 
-	bool IsTempVariable() const { return Scope == HazeVariableScope::Temp; }
+	bool IsTempVariable() const { return m_Scope == HazeVariableScope::Temp; }
 
-	void SetScope(HazeVariableScope scope) { Scope = scope; }
+	void SetScope(HazeVariableScope scope) { m_Scope = scope; }
 public:
-	bool IsRegister() const { return IsRegisterDesc(Desc); }
+	bool IsRegister() const { return IsRegisterDesc(m_Desc); }
 
-	bool IsRegister(HazeDataDesc m_Type) const { return IsRegisterDesc(Desc) && Desc == m_Type; }
+	bool IsRegister(HazeDataDesc type) const { return IsRegisterDesc(m_Desc) && m_Desc == type; }
 
-	bool IsConstant() const { return Desc == HazeDataDesc::Constant; }
+	bool IsConstant() const { return m_Desc == HazeDataDesc::Constant; }
 
-	bool IsString() const { return Desc == HazeDataDesc::ConstantString; }
+	bool IsString() const { return m_Desc == HazeDataDesc::ConstantString; }
 
 	bool IsClassMember() const { return IsClassPublicMember() || IsClassPrivateMember() || IsClassProtectedMember(); }
 
-	bool IsClassPublicMember() const { return  Desc == HazeDataDesc::ClassMember_Local_Public; }
+	bool IsClassPublicMember() const { return  m_Desc == HazeDataDesc::ClassMember_Local_Public; }
 
-	bool IsClassPrivateMember() const { return  Desc == HazeDataDesc::ClassMember_Local_Private; }
+	bool IsClassPrivateMember() const { return  m_Desc == HazeDataDesc::ClassMember_Local_Private; }
 
-	bool IsClassProtectedMember() const { return  Desc == HazeDataDesc::ClassMember_Local_Protected; }
+	bool IsClassProtectedMember() const { return  m_Desc == HazeDataDesc::ClassMember_Local_Protected; }
 
-	bool IsArrayElement() const { return Desc == HazeDataDesc::ArrayElement; }
+	bool IsArrayElement() const { return m_Desc == HazeDataDesc::ArrayElement; }
 
-	bool IsCalssThis() const { return Desc == HazeDataDesc::ClassThis; }
+	bool IsCalssThis() const { return m_Desc == HazeDataDesc::ClassThis; }
 
-	bool IsNullPtr() const { return Desc == HazeDataDesc::NullPtr; }
+	bool IsNullPtr() const { return m_Desc == HazeDataDesc::NullPtr; }
 
 public:
-	bool IsPointer() const { return IsPointerType(ValueType.PrimaryType); }
+	bool IsPointer() const { return IsPointerType(m_ValueType.PrimaryType); }
 
-	bool IsPointerBase() const { return ValueType.PrimaryType == HazeValueType::PointerBase; }
+	bool IsPointerBase() const { return m_ValueType.PrimaryType == HazeValueType::PointerBase; }
 
-	bool IsPointerClass() const { return ValueType.PrimaryType == HazeValueType::PointerClass; }
+	bool IsPointerClass() const { return m_ValueType.PrimaryType == HazeValueType::PointerClass; }
 
-	bool IsPointerFunction() const { return ValueType.PrimaryType == HazeValueType::PointerFunction; }
+	bool IsPointerFunction() const { return m_ValueType.PrimaryType == HazeValueType::PointerFunction; }
 
-	bool IsPointerArray() const { return ValueType.PrimaryType == HazeValueType::PointerArray; }
+	bool IsPointerArray() const { return m_ValueType.PrimaryType == HazeValueType::PointerArray; }
 
-	bool IsPointerPointer() const { return ValueType.PrimaryType == HazeValueType::PointerPointer; }
+	bool IsPointerPointer() const { return m_ValueType.PrimaryType == HazeValueType::PointerPointer; }
 
-	bool IsRefBase() const { return ValueType.PrimaryType == HazeValueType::ReferenceBase; }
+	bool IsRefBase() const { return m_ValueType.PrimaryType == HazeValueType::ReferenceBase; }
 
-	bool IsRefClass() const { return ValueType.PrimaryType == HazeValueType::ReferenceClass; }
+	bool IsRefClass() const { return m_ValueType.PrimaryType == HazeValueType::ReferenceClass; }
 
 	bool IsRef() const { return IsRefBase() || IsRefClass(); }
 
-	bool IsArray() const { return ValueType.PrimaryType == HazeValueType::Array; }
+	bool IsArray() const { return m_ValueType.PrimaryType == HazeValueType::Array; }
 
-	bool IsClass() const { return ValueType.PrimaryType == HazeValueType::Class; }
+	bool IsClass() const { return m_ValueType.PrimaryType == HazeValueType::Class; }
 
 public:
 	virtual uint32 GetSize();
 
-	bool TryGetVariableName(HAZE_STRING& OutName);
+	bool TryGetVariableName(HAZE_STRING& outName);
 
 protected:
-	HazeDefineType ValueType;
-	HazeValue Value;
+	HazeDefineType m_ValueType;
+	HazeValue m_Value;
 	HazeCompilerModule* m_Module;
-	HazeVariableScope Scope;
-	HazeDataDesc Desc;
+	HazeVariableScope m_Scope;
+	HazeDataDesc m_Desc;
 
-	int Count;			//命名计数
+	int m_Count;			//命名计数
 };

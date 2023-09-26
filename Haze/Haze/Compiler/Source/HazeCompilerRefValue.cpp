@@ -1,7 +1,8 @@
 #include "HazeCompilerRefValue.h"
 
-HazeCompilerRefValue::HazeCompilerRefValue(HazeCompilerModule* m_Module, const HazeDefineType& DefineType, HazeVariableScope Scope, HazeDataDesc Desc, int Count, std::shared_ptr<HazeCompilerValue>& RefValue)
-	: HazeCompilerValue(m_Module, DefineType, Scope, Desc, Count), RefValue(RefValue)
+HazeCompilerRefValue::HazeCompilerRefValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
+	HazeVariableScope scope, HazeDataDesc desc, int count, std::shared_ptr<HazeCompilerValue>& refValue)
+	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_RefValue(refValue)
 {
 }
 
