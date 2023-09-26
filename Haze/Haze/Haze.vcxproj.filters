@@ -233,9 +233,6 @@
     <ClInclude Include="Define\Header\HazeDefine.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Header\HazeHeaderDefine.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Define\Header\HazeToken.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -300,9 +297,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Memory\Header\HazeMemory.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Memory\Header\Memory.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Memory\Header\MemoryHelper.h">

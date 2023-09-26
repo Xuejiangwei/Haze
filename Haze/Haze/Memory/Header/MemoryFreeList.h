@@ -16,21 +16,21 @@ public:
 
 	~MemoryFreeList();
 
-	void Push(void* Obj);
+	void Push(void* obj);
 
-	void PushRange(void* Start, void* End, uint64 Size);
+	void PushRange(void* start, void* end, uint64 size);
 
 	void* Pop();
 
-	void PopRange(void*& Start, void*& End, uint64 Num);
+	void PopRange(void*& start, void*& end, uint64 num);
 
-	bool Empty() const { return FreeList == nullptr; }
+	bool Empty() const { return m_FreeList == nullptr; }
 
 	void Clear();
 
-	bool HasMemory() { return Length > 0; }
+	bool HasMemory() { return m_Length > 0; }
 
 private:
-	void* FreeList;
-	uint64 Length;
+	void* m_FreeList;
+	uint64 m_Length;
 };

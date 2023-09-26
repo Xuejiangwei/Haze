@@ -9,6 +9,7 @@ class HazeClass
 {
 public:
 	HazeClass();
+
 	~HazeClass();
 
 	void AddMemberData();

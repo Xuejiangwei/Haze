@@ -168,7 +168,6 @@ char* UTF8_2_GB2312(const char* utf8)
 #endif
 
 	return result.data();
-
 }
 
 char* GB2312_2_UFT8(const char* gb2312)
@@ -193,16 +192,16 @@ char* GB2312_2_UFT8(const char* gb2312)
 	return result.data();
 }
 
-void ReplacePathSlash(HAZE_STRING& Path)
+void ReplacePathSlash(HAZE_STRING& path)
 {
 	static HAZE_STRING WindowsPathSlash(HAZE_TEXT("\\"));
 	static HAZE_STRING PathSlash(HAZE_TEXT("/"));
 
 	for (HAZE_STRING::size_type pos(0); pos != HAZE_STRING::npos; pos += PathSlash.length())
 	{
-		if ((pos = Path.find(WindowsPathSlash, pos)) != HAZE_STRING::npos)
+		if ((pos = path.find(WindowsPathSlash, pos)) != HAZE_STRING::npos)
 		{
-			Path.replace(pos, WindowsPathSlash.length(), PathSlash);
+			path.replace(pos, WindowsPathSlash.length(), PathSlash);
 		}
 		else
 		{
@@ -211,9 +210,9 @@ void ReplacePathSlash(HAZE_STRING& Path)
 	}
 }
 
-HazeLibraryType GetHazeLibraryTypeByToken(HazeToken m_Token)
+HazeLibraryType GetHazeLibraryTypeByToken(HazeToken token)
 {
-	switch (m_Token)
+	switch (token)
 	{
 	case HazeToken::StandardLibrary:
 		return HazeLibraryType::Standard;
@@ -227,9 +226,9 @@ HazeLibraryType GetHazeLibraryTypeByToken(HazeToken m_Token)
 	}
 }
 
-InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType m_Type)
+InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type)
 {
-	switch (m_Type)
+	switch (type)
 	{
 	case HazeLibraryType::Normal:
 		return InstructionFunctionType::HazeFunction;
@@ -242,26 +241,27 @@ InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType m_Type)
 	}
 }
 
-HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& FilePath)
+HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& filePath)
 {
-	auto Index = FilePath.find_last_of(HAZE_TEXT("\\"));
+	auto Index = filePath.find_last_of(HAZE_TEXT("\\"));
 	if (Index != HAZE_STRING::npos)
 	{
-		return FilePath.substr(Index + 1, FilePath.length() - Index - 1 - 3);
+		return filePath.substr(Index + 1, filePath.length() - Index - 1 - 3);
 	}
 
-	Index = FilePath.find_last_of(HAZE_TEXT("/"));
+	Index = filePath.find_last_of(HAZE_TEXT("/"));
 	if (Index != HAZE_STRING::npos)
 	{
-		return FilePath.substr(Index + 1, FilePath.length() - Index - 1 - 3);
+		return filePath.substr(Index + 1, filePath.length() - Index - 1 - 3);
 	}
 
 	return HAZE_TEXT("None");
 }
 
-HAZE_BINARY_STRING ToString(void* Value)
+HAZE_BINARY_STRING ToString(void* value)
 {
-	std::stringstream SS;
-	SS << Value;
-	return SS.str();
+	std::stringstream ss;
+	ss << value;
+
+	return ss.str();
 }

@@ -12,7 +12,7 @@
 #include "HazeStack.h"
 #include "HazeMemory.h"
 
-extern std::unique_ptr<HazeDebugger> Debugger;
+extern std::unique_ptr<HazeDebugger> g_Debugger;
 
 HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
@@ -249,9 +249,9 @@ uint32 HazeVM::GetClassSize(const HAZE_STRING& m_ClassName)
 
 void HazeVM::OnExecLine(uint32 Line)
 {
-	if (Debugger)
+	if (g_Debugger)
 	{
-		Debugger->OnExecLine(Line);
+		g_Debugger->OnExecLine(Line);
 	}
 }
 

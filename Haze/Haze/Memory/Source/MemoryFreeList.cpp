@@ -1,6 +1,6 @@
 #include "MemoryFreeList.h"
 
-MemoryFreeList::MemoryFreeList() : FreeList(nullptr), Length(0)
+MemoryFreeList::MemoryFreeList() : m_FreeList(nullptr), m_Length(0)
 {
 }
 
@@ -8,43 +8,43 @@ MemoryFreeList::~MemoryFreeList()
 {
 }
 
-void MemoryFreeList::Push(void* Obj)
+void MemoryFreeList::Push(void* obj)
 {
-	NextObj(Obj) = FreeList;
-	FreeList = Obj;
-	++Length;
+	NextObj(obj) = m_FreeList;
+	m_FreeList = obj;
+	++m_Length;
 }
 
-void MemoryFreeList::PushRange(void* Start, void* End, uint64 Size)
+void MemoryFreeList::PushRange(void* start, void* end, uint64 size)
 {
-	NextObj(End) = FreeList;
-	FreeList = Start;
-	Length += Size;
+	NextObj(end) = m_FreeList;
+	m_FreeList = start;
+	m_Length += size;
 }
 
 void* MemoryFreeList::Pop()
 {
-	void* obj = FreeList;
-	FreeList = NextObj(obj);
-	--Length;
+	void* obj = m_FreeList;
+	m_FreeList = NextObj(obj);
+	--m_Length;
 	return obj;
 }
 
-void MemoryFreeList::PopRange(void*& Start, void*& End, uint64 Num)
+void MemoryFreeList::PopRange(void*& start, void*& end, uint64 num)
 {
-	Start = FreeList;
-	End = Start;
-	for (size_t i = 0; i < Num - 1; i++)
+	start = m_FreeList;
+	end = start;
+	for (size_t i = 0; i < num - 1; i++)
 	{
-		End = NextObj(End);
+		end = NextObj(end);
 	}
-	FreeList = NextObj(End);
-	Length -= Num;
-	NextObj(End) = nullptr;
+	m_FreeList = NextObj(end);
+	m_Length -= num;
+	NextObj(end) = nullptr;
 }
 
 void MemoryFreeList::Clear()
 {
-	FreeList = nullptr;
-	Length = 0;
+	m_FreeList = nullptr;
+	m_Length = 0;
 }

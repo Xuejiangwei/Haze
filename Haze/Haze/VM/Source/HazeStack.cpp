@@ -6,15 +6,13 @@
 
 #include "HazeDebugger.h"
 
-extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> HashMap_InstructionProcessor;
-extern std::unique_ptr<HazeDebugger> Debugger;
+extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> g_InstructionProcessor;
+extern std::unique_ptr<HazeDebugger> g_Debugger;
 
-HazeStack::HazeStack(HazeVM* m_VM) : m_VM(m_VM)
+HazeStack::HazeStack(HazeVM* vm) 
+	: m_VM(vm), m_PC(0), m_EBP(0), m_ESP(0)
 {
-	PC = 0;
-	EBP = 0;
-
-	Stack_Main.resize(HAZE_VM_STACK_SIZE);
+	m_StackMain.resize(HAZE_VM_STACK_SIZE);
 	InitStackRegister();
 }
 
@@ -22,40 +20,40 @@ HazeStack::~HazeStack()
 {
 }
 
-void HazeStack::Start(unsigned int Address)
+void HazeStack::Start(uint32 address)
 {
-	PC = Address;
+	m_PC = address;
 	PreMainFunction();
 	PushMainFuntion();
 
 	Run();
 
-	Debugger->SendProgramEnd();
+	g_Debugger->SendProgramEnd();
 	GarbageCollection(true, true);
 }
 
-void HazeStack::JmpTo(const InstructionData& m_Data)
+void HazeStack::JmpTo(const InstructionData& data)
 {
-	auto& Function = Stack_Frame.back().FunctionInfo;
-	int Address = Function->FunctionDescData.InstructionStartAddress + m_Data.Extra.Jmp.StartAddress;
-	memcpy(&PC, &Address, sizeof(PC));
+	auto& function = m_StackFrame.back().FunctionInfo;
+	int address = function->FunctionDescData.InstructionStartAddress + data.Extra.Jmp.StartAddress;
+	memcpy(&m_PC, &address, sizeof(m_PC));
 
-	PC--;
+	m_PC--;
 }
 
-void HazeStack::Run(bool IsHazeCall)
+void HazeStack::Run(bool isHazeCall)
 {
-	while (PC < m_VM->Instructions.size())
+	while (m_PC < m_VM->Instructions.size())
 	{
 		while (m_VM->IsDebug())
 		{
-			if (!Debugger)
+			if (!g_Debugger)
 			{
 				continue;
 			}
 			else
 			{
-				if (Debugger->IsPause())
+				if (g_Debugger->IsPause())
 				{
 					continue;
 				}
@@ -63,17 +61,17 @@ void HazeStack::Run(bool IsHazeCall)
 			}
 		}
 
-		auto Iter = HashMap_InstructionProcessor.find(m_VM->Instructions[PC].InsCode);
-		if (Iter != HashMap_InstructionProcessor.end())
+		auto iter = g_InstructionProcessor.find(m_VM->Instructions[m_PC].InsCode);
+		if (iter != g_InstructionProcessor.end())
 		{
-			Iter->second(this);
+			iter->second(this);
 		}
 		else
 		{
 			return;
 		}
 
-		if (IsHazeCall && Vector_CallHazeStack.size() == 0)
+		if (isHazeCall && m_CallHazeStack.size() == 0)
 		{
 			return;
 		}
@@ -84,22 +82,22 @@ void HazeStack::Run(bool IsHazeCall)
 
 void HazeStack::PCStepInc()
 {
-	++PC;
+	++m_PC;
 }
 
 void HazeStack::PreMainFunction()
 {
 	//0-4存储FaultPC,Main函数return后读取此PC,然后退出循环
-	int FaultPC = -2;
-	memcpy(&Stack_Main[ESP], &FaultPC, HAZE_ADDRESS_SIZE);
-	ESP = HAZE_ADDRESS_SIZE;
-	EBP = 0;
+	int faultPC = -2;
+	memcpy(&m_StackMain[m_ESP], &faultPC, HAZE_ADDRESS_SIZE);
+	m_ESP = HAZE_ADDRESS_SIZE;
+	m_EBP = 0;
 }
 
 void HazeStack::PushMainFuntion()
 {
-	auto& MainFunction = m_VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
-	OnCall(&MainFunction, 0);
+	auto& mainFunction = m_VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
+	OnCall(&mainFunction, 0);
 	PCStepInc();
 
 	/*ESP -= HAZE_ADDRESS_SIZE;
@@ -111,19 +109,19 @@ void HazeStack::PushMainFuntion()
 	}*/
 }
 
-HazeRegister* HazeStack::GetVirtualRegister(const HAZE_CHAR* m_Name)
+HazeRegister* HazeStack::GetVirtualRegister(const HAZE_CHAR* name)
 {
-	auto Iter = HashMap_VirtualRegister.find(m_Name);
-	if (Iter != HashMap_VirtualRegister.end())
+	auto iter = m_VirtualRegister.find(name);
+	if (iter != m_VirtualRegister.end())
 	{
-		return &Iter->second;
+		return &iter->second;
 	}
 	return nullptr;
 }
 
 void HazeStack::InitStackRegister()
 {
-	HashMap_VirtualRegister =
+	m_VirtualRegister =
 	{
 		//{ADD_REGISTER, nullptr},
 		//{SUB_REGISTER, nullptr},
@@ -146,93 +144,93 @@ void HazeStack::InitStackRegister()
 	};
 }
 
-void HazeStack::OnCall(const FunctionData* Info, int ParamSize)
+void HazeStack::OnCall(const FunctionData* info, int paramSize)
 {
-	if (Debugger)
+	if (g_Debugger)
 	{
-		Debugger->AddTempBreakPoint(m_VM->GetNextLine(m_VM->GetCurrCallFunctionLine()));
+		g_Debugger->AddTempBreakPoint(m_VM->GetNextLine(m_VM->GetCurrCallFunctionLine()));
 	}
 
-	RegisterData RegisterDara({ GetVirtualRegister(CMP_REGISTER)->Data });
-	Stack_Frame.push_back(HazeStackFrame(Info, ParamSize, EBP, ESP - (HAZE_ADDRESS_SIZE + ParamSize), RegisterDara));
+	RegisterData registerDara({ GetVirtualRegister(CMP_REGISTER)->Data });
+	m_StackFrame.push_back(HazeStackFrame(info, paramSize, m_EBP, m_ESP - (HAZE_ADDRESS_SIZE + paramSize), registerDara));
 
-	EBP = ESP;
-	if (Info->Variables.size() > Info->Params.size())
+	m_EBP = m_ESP;
+	if (info->Variables.size() > info->Params.size())
 	{
-		ESP += Info->Variables.back().Offset + GetSizeByType(Info->Variables.back().Variable.Type, m_VM);
+		m_ESP += info->Variables.back().Offset + GetSizeByType(info->Variables.back().Variable.Type, m_VM);
 	}
 
-	PC = Info->FunctionDescData.InstructionStartAddress;
-	--PC;
+	m_PC = info->FunctionDescData.InstructionStartAddress;
+	--m_PC;
 
 	AddCallHazeTimes();
 
-	if (Debugger)
+	if (g_Debugger)
 	{
-		m_VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.StartLine);
+		m_VM->OnExecLine(m_StackFrame.back().FunctionInfo->FunctionDescData.StartLine);
 	}
 }
 
 void HazeStack::OnRet()
 {
-	if (Debugger)
+	if (g_Debugger)
 	{
-		m_VM->OnExecLine(Stack_Frame.back().FunctionInfo->FunctionDescData.EndLine);
-		while (Debugger->IsPause()) 
+		m_VM->OnExecLine(m_StackFrame.back().FunctionInfo->FunctionDescData.EndLine);
+		while (g_Debugger->IsPause()) 
 		{
 		}
 	}
 
-	memcpy(&PC, &(Stack_Main[EBP - HAZE_ADDRESS_SIZE]), HAZE_ADDRESS_SIZE);
-	EBP = Stack_Frame.back().EBP;
-	ESP = Stack_Frame.back().ESP;
+	memcpy(&m_PC, &(m_StackMain[m_EBP - HAZE_ADDRESS_SIZE]), HAZE_ADDRESS_SIZE);
+	m_EBP = m_StackFrame.back().EBP;
+	m_ESP = m_StackFrame.back().ESP;
 
-	memcpy(GetVirtualRegister(CMP_REGISTER)->Data.begin()._Unwrapped(), Stack_Frame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
-		Stack_Frame.back().Register.Cmp_RegisterData.size());
+	memcpy(GetVirtualRegister(CMP_REGISTER)->Data.begin()._Unwrapped(), m_StackFrame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
+		m_StackFrame.back().Register.Cmp_RegisterData.size());
 
-	Stack_Frame.pop_back();
+	m_StackFrame.pop_back();
 
 	SubCallHazeTimes();
 }
 
 void HazeStack::ResetCallHaze()
 {
-	Vector_CallHazeStack.clear();
-	Vector_CallHazeStack.push_back(1);
+	m_CallHazeStack.clear();
+	m_CallHazeStack.push_back(1);
 
 	Run(true);
 }
 
 void HazeStack::AddCallHazeTimes()
 {
-	if (Vector_CallHazeStack.size() > 0)
+	if (m_CallHazeStack.size() > 0)
 	{
-		Vector_CallHazeStack.push_back(1);
+		m_CallHazeStack.push_back(1);
 	}
 }
 
 void HazeStack::SubCallHazeTimes()
 {
-	if (Vector_CallHazeStack.size() > 0)
+	if (m_CallHazeStack.size() > 0)
 	{
-		Vector_CallHazeStack.pop_back();
+		m_CallHazeStack.pop_back();
 	}
 }
 
-void* HazeStack::Alloca(uint32 Size)
+void* HazeStack::Alloca(uint32 size)
 {
-	void* Ret = HazeMemory::Alloca(Size); //Pool->Alloca(Size);
-	if (Ret == nullptr)
+	void* ret = HazeMemory::Alloca(size); //Pool->Alloca(Size);
+	if (ret == nullptr)
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("Memory pool alloca failed!\n"));
 	}
 
-	return Ret;
+	return ret;
 }
 
-void HazeStack::GarbageCollection(bool Force, bool CollectionAll)
+void HazeStack::GarbageCollection(bool force, bool collectionAll)
 {
-	if (Force && CollectionAll)
+	if (force && collectionAll)
 	{
 		HazeMemory::GetMemory()->ForceGC();
 	}

@@ -6,18 +6,15 @@
 
 #define PAGE_BASE_SIZE  4 * 4
 
-
-static GC_Array GC_Arrays;
-
 HazeMemory::HazeMemory()
 {
 }
 
 HazeMemory::~HazeMemory()
 {
-	for (int i = 0; i < _countof(m_MemoryBlock); i++)
+	for (int i = 0; i < _countof(m_MemoryBlocks); i++)
 	{
-		auto block = m_MemoryBlock[i];
+		auto block = m_MemoryBlocks[i];
 		while (block)
 		{
 			auto nextBlock = block->GetNext();
@@ -29,19 +26,19 @@ HazeMemory::~HazeMemory()
 
 HazeMemory* HazeMemory::GetMemory()
 {
-	static std::unique_ptr<HazeMemory> Memory = std::make_unique<HazeMemory>();
-	return Memory.get();
+	static std::unique_ptr<HazeMemory> s_Memory = std::make_unique<HazeMemory>();
+	return s_Memory.get();
 }
 
 void* HazeMemory::Alloca(uint64 size)
 {
-	void* Ret = nullptr;
+	void* ret = nullptr;
 	size = RoundUp(size);
 	
 	if (size <= MAX_HAZE_ALLOC_SIZE)
 	{
 		uint32 offset = size % GRANULE == 0 ? -1 : 1;
-		uint32 index = size / GRANULE + offset;
+		uint32 index = (uint32)size / GRANULE + offset;
 		
 		auto memoryIns = GetMemory();
 		if (!memoryIns->m_FreeList[index])
@@ -53,18 +50,16 @@ void* HazeMemory::Alloca(uint64 size)
 
 		if (freeList->HasMemory())
 		{
-			Ret = freeList->Pop();
+			ret = freeList->Pop();
 		}
 		else
 		{
-			index = size / PAGE_UNIT;
+			index = (uint32)size / PAGE_UNIT;
 			
-			void* mallocStart = nullptr;
-			void* mallocEnd = nullptr;
 			MemoryBlock* block = nullptr;
-			if (memoryIns->m_MemoryBlock[index])
+			if (memoryIns->m_MemoryBlocks[index])
 			{
-				block = memoryIns->m_MemoryBlock[index];
+				block = memoryIns->m_MemoryBlocks[index];
 				MemoryBlock* prevBlock = nullptr;
 				while (block && block->IsUsed())
 				{
@@ -74,72 +69,72 @@ void* HazeMemory::Alloca(uint64 size)
 				
 				if (block)
 				{
-					uint32 Length = sizeof(block->m_Memory) / block->BlockInfo.UnitSize;
-					char* Address = block->m_Memory;
-					while (Length-- > 0)
+					uint32 length = sizeof(block->m_Memory) / block->m_BlockInfo.UnitSize;
+					char* address = block->m_Memory;
+					while (length-- > 0)
 					{
-						freeList->Push(Address);
-						Address += block->BlockInfo.UnitSize;
+						freeList->Push(address);
+						address += block->m_BlockInfo.UnitSize;
 					}
 				}
 				else
 				{
-					block = new MemoryBlock(size);
+					block = new MemoryBlock((uint32)size);
 					prevBlock->SetNext(block);
 				}
 			}
 			else
 			{
-				block = new MemoryBlock(size);
-				memoryIns->m_MemoryBlock[index] = block;
+				block = new MemoryBlock((uint32)size);
+				memoryIns->m_MemoryBlocks[index] = block;
 			}
 
-			uint32 Length = sizeof(block->m_Memory) / block->BlockInfo.UnitSize;
-			char* Address = block->m_Memory;
-			while (Length-- > 0)
+			uint32 length = sizeof(block->m_Memory) / block->m_BlockInfo.UnitSize;
+			char* address = block->m_Memory;
+			while (length-- > 0)
 			{
-				freeList->Push(Address);
-				Address += block->BlockInfo.UnitSize;
+				freeList->Push(address);
+				address += block->m_BlockInfo.UnitSize;
 			}
 
-			Ret = freeList->Pop();
+			ret = freeList->Pop();
 		}
 	}
 	else
 	{
-		Ret = malloc(size);
-		GetMemory()->HashMap_BigMemory[Ret] = { GC_State::Black, Ret };
+		ret = malloc(size);
+		GetMemory()->m_BigMemorys[ret] = { GC_State::Black, ret };
 	}
 
-	return Ret;
+	return ret;
 }
 
 void HazeMemory::AddToRoot(void*)
 {
 }
 
-void HazeMemory::MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& Vector_MarkAddressBase,
-	std::vector<std::pair<uint64, ClassData*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress)
+void HazeMemory::MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& markAddressBases,
+	std::vector<std::pair<uint64, ClassData*>>& markAddressClasses, const HazeDefineType& varType, char* baseAddress)
 {
-	uint64 Address = 0;
-	auto m_ClassDatas = m_VM->FindClass(VarType.CustomName);
-	for (size_t i = 0; i < m_ClassDatas->Members.size(); i++)
+	uint64 address = 0;
+	auto classDatas = m_VM->FindClass(varType.CustomName);
+	for (size_t i = 0; i < classDatas->Members.size(); i++)
 	{
-		auto& Member = m_ClassDatas->Members[i];
-		if (Member.Variable.Type.PrimaryType == HazeValueType::PointerBase)
+		auto& member = classDatas->Members[i];
+		if (member.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 		{
-			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
-			Vector_MarkAddressBase.push_back({ Address, Member.Variable.Type.SecondaryType });
+			memcpy(&address, baseAddress + member.Offset, sizeof(address));
+			markAddressBases.push_back({ address, member.Variable.Type.SecondaryType });
 		}
-		else if (Member.Variable.Type.PrimaryType == HazeValueType::PointerClass)
+		else if (member.Variable.Type.PrimaryType == HazeValueType::PointerClass)
 		{
-			memcpy(&Address, BaseAddress + Member.Offset, sizeof(Address));
-			Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(Member.Variable.Type.CustomName) });
+			memcpy(&address, baseAddress + member.Offset, sizeof(address));
+			markAddressClasses.push_back({ address, m_VM->FindClass(member.Variable.Type.CustomName) });
 		}
-		else if (Member.Variable.Type.PrimaryType == HazeValueType::Class)
+		else if (member.Variable.Type.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Member.Variable.Type,
-				BaseAddress + Member.Offset);
+			MarkClassMember(markAddressBases, markAddressClasses, member.Variable.Type,
+				baseAddress + member.Offset);
 		}
 	}
 }
@@ -149,9 +144,9 @@ void HazeMemory::Mark()
 	auto memoryIns = HazeMemory::GetMemory();
 
 	//将所有颜色设置为白色
-	for (auto& Iter : memoryIns->m_MemoryBlock)
+	for (auto& iter : memoryIns->m_MemoryBlocks)
 	{
-		auto block = Iter;
+		auto block = iter;
 		while (block && block->IsUsed())
 		{
 			block->SetAllWhite();
@@ -160,96 +155,97 @@ void HazeMemory::Mark()
 	}
 
 	//根节点内存有 静态变量、栈、寄存器等
-	std::vector<std::pair<uint64, HazeValueType>> Vector_MarkAddressBase;
-	std::vector<std::pair<uint64, ClassData*>> Vector_MarkAddressClass;
+	std::vector<std::pair<uint64, HazeValueType>> markAddressBases;
+	std::vector<std::pair<uint64, ClassData*>> markAddressClasses;
 	uint64 Address = 0;
 
-	for (auto& It : m_VM->Vector_GlobalData)
+	for (auto& it : m_VM->Vector_GlobalData)
 	{
-		if (It.m_Type.PrimaryType == HazeValueType::PointerBase)
+		if (it.m_Type.PrimaryType == HazeValueType::PointerBase)
 		{
-			Vector_MarkAddressBase.push_back({ (uint64)It.Value.Value.Pointer, It.m_Type.SecondaryType });
+			markAddressBases.push_back({ (uint64)it.Value.Value.Pointer, it.m_Type.SecondaryType });
 		}
-		else if (It.m_Type.PrimaryType == HazeValueType::PointerClass)
+		else if (it.m_Type.PrimaryType == HazeValueType::PointerClass)
 		{
-			Vector_MarkAddressClass.push_back({ (uint64)It.Value.Value.Pointer, m_VM->FindClass(It.m_Type.CustomName) });
+			markAddressClasses.push_back({ (uint64)it.Value.Value.Pointer, m_VM->FindClass(it.m_Type.CustomName) });
 		}
-		else if (It.m_Type.PrimaryType == HazeValueType::Class)
+		else if (it.m_Type.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.m_Type, (char*)&It.Value);
+			MarkClassMember(markAddressBases, markAddressClasses, it.m_Type, (char*)&it.Value);
 		}
 	}
 
-	auto NewRegister = m_VM->VMStack->GetVirtualRegister(NEW_REGISTER);
-	auto RetRegister = m_VM->VMStack->GetVirtualRegister(RET_REGISTER);
-	for (auto& It : m_VM->VMStack->HashMap_VirtualRegister)
+	auto newRegister = m_VM->VMStack->GetVirtualRegister(NEW_REGISTER);
+	auto retRegister = m_VM->VMStack->GetVirtualRegister(RET_REGISTER);
+	for (auto& it : m_VM->VMStack->m_VirtualRegister)
 	{
-		if (&It.second == NewRegister || &It.second == RetRegister)
+		if (&it.second == newRegister || &it.second == retRegister)
 		{
 			//New和Ret寄存器中存留的内存在赋值后不需要保留，考虑在赋值字节码执行中清除
-			if (It.second.Type.PrimaryType == HazeValueType::PointerBase)
+			if (it.second.Type.PrimaryType == HazeValueType::PointerBase)
 			{
-				memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
-				Vector_MarkAddressBase.push_back({ Address, It.second.Type.SecondaryType });
+				memcpy(&Address, it.second.Data.begin()._Unwrapped(), sizeof(Address));
+				markAddressBases.push_back({ Address, it.second.Type.SecondaryType });
 			}
-			else if (It.second.Type.PrimaryType == HazeValueType::PointerClass)
+			else if (it.second.Type.PrimaryType == HazeValueType::PointerClass)
 			{
-				memcpy(&Address, It.second.Data.begin()._Unwrapped(), sizeof(Address));
-				Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(It.second.Type.CustomName) });
+				memcpy(&Address, it.second.Data.begin()._Unwrapped(), sizeof(Address));
+				markAddressClasses.push_back({ Address, m_VM->FindClass(it.second.Type.CustomName) });
 			}
-			else if (It.second.Type.PrimaryType == HazeValueType::Class)
+			else if (it.second.Type.PrimaryType == HazeValueType::Class)
 			{
-				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, It.second.Type, It.second.Data.begin()._Unwrapped());
+				MarkClassMember(markAddressBases, markAddressClasses, it.second.Type, it.second.Data.begin()._Unwrapped());
 			}
 		}
 	}
 
-	for (size_t i = 0; i < m_VM->VMStack->Stack_Frame.size(); i++)
+	for (size_t i = 0; i < m_VM->VMStack->m_StackFrame.size(); i++)
 	{
-		for (auto& Var : m_VM->VMStack->Stack_Frame[i].FunctionInfo->Variables)
+		for (auto& var : m_VM->VMStack->m_StackFrame[i].FunctionInfo->Variables)
 		{
-			if (Var.Variable.Type.PrimaryType == HazeValueType::PointerBase)
+			if (var.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 			{
-				memcpy(&Address, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset], sizeof(Address));
-				Vector_MarkAddressBase.push_back({ Address, Var.Variable.Type.SecondaryType });
+				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
+				markAddressBases.push_back({ Address, var.Variable.Type.SecondaryType });
 			}
-			else if (Var.Variable.Type.PrimaryType == HazeValueType::PointerClass)
+			else if (var.Variable.Type.PrimaryType == HazeValueType::PointerClass)
 			{
-				memcpy(&Address, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset], sizeof(Address));
-				Vector_MarkAddressClass.push_back({ Address, m_VM->FindClass(Var.Variable.Type.CustomName) });
+				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
+				markAddressClasses.push_back({ Address, m_VM->FindClass(var.Variable.Type.CustomName) });
 			}
-			else if (Var.Variable.Type.PrimaryType == HazeValueType::Class)
+			else if (var.Variable.Type.PrimaryType == HazeValueType::Class)
 			{
-				MarkClassMember(Vector_MarkAddressBase, Vector_MarkAddressClass, Var.Variable.Type, &m_VM->VMStack->Stack_Main[m_VM->VMStack->Stack_Frame[i].EBP + Var.Offset]);
+				MarkClassMember(markAddressBases, markAddressClasses, var.Variable.Type,
+					&m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset]);
 			}
 		}
 	}
 
 	//遍历完根节点后，再遍历 Vector_MarkAddress
-	uint64 BaseIndex = 0;
-	uint64 ClassIndex = 0;
-	while (BaseIndex < Vector_MarkAddressBase.size() || ClassIndex < Vector_MarkAddressClass.size())
+	uint64 baseIndex = 0;
+	uint64 classIndex = 0;
+	while (baseIndex < markAddressBases.size() || classIndex < markAddressClasses.size())
 	{
-		if (BaseIndex < Vector_MarkAddressBase.size())
+		if (baseIndex < markAddressBases.size())
 		{
-			MarkArrayBaseIndex(Vector_MarkAddressBase, Vector_MarkAddressClass, BaseIndex++);
+			MarkArrayBaseIndex(markAddressBases, markAddressClasses, baseIndex++);
 		}
 
-		if (ClassIndex < Vector_MarkAddressClass.size())
+		if (classIndex < markAddressClasses.size())
 		{
-			MarkArrayClassIndex(Vector_MarkAddressBase, Vector_MarkAddressClass, ClassIndex++);
+			MarkArrayClassIndex(markAddressBases, markAddressClasses, classIndex++);
 		}
 	}
 
-	Vector_KeepMemory.clear();
-	for (size_t i = 0; i < Vector_MarkAddressBase.size(); i++)
+	m_KeepMemorys.clear();
+	for (size_t i = 0; i < markAddressBases.size(); i++)
 	{
-		Vector_KeepMemory.push_back((void*)Vector_MarkAddressBase[i].first);
+		m_KeepMemorys.push_back((void*)markAddressBases[i].first);
 	}
 
-	for (size_t i = 0; i < Vector_MarkAddressClass.size(); i++)
+	for (size_t i = 0; i < markAddressClasses.size(); i++)
 	{
-		Vector_KeepMemory.push_back((void*)Vector_MarkAddressClass[i].first);
+		m_KeepMemorys.push_back((void*)markAddressClasses[i].first);
 	}
 }
 
@@ -266,19 +262,17 @@ void HazeMemory::Sweep()
 		}
 	}
 
-	std::vector<void*> KeepMemory;
-
-	for (auto& Iter : memoryIns->m_MemoryBlock)
+	for (auto& iter : memoryIns->m_MemoryBlocks)
 	{
-		auto block = Iter;
+		auto block = iter;
 		while (block && block->IsUsed())
 		{
-			for (size_t i = 0; i < Vector_KeepMemory.size(); i++)
+			for (size_t i = 0; i < m_KeepMemorys.size(); i++)
 			{
-				if (Vector_KeepMemory[i] && block->IsInBlock(Vector_KeepMemory[i]))
+				if (m_KeepMemorys[i] && block->IsInBlock(m_KeepMemorys[i]))
 				{
-					block->MarkBlack(Vector_KeepMemory[i]);
-					Vector_KeepMemory[i] = nullptr;
+					block->MarkBlack(m_KeepMemorys[i]);
+					m_KeepMemorys[i] = nullptr;
 				}
 			}
 
@@ -293,10 +287,12 @@ void HazeMemory::ForceGC()
 	Sweep();
 }
 
-void HazeMemory::MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index)
+void HazeMemory::MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& arrayBase, 
+	std::vector<std::pair<uint64, ClassData*>>& arrayClass, uint64 index)
 {
 }
 
-void HazeMemory::MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index)
+void HazeMemory::MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& arrayBase,
+	std::vector<std::pair<uint64, ClassData*>>& arrayClass, uint64 index)
 {
 }

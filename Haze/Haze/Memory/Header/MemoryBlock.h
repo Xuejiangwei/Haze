@@ -38,11 +38,11 @@ public:
 
 	void MarkBlack(void* address);
 
-	bool IsUsed() const { return BlockInfo.State == MemoryBlockState::Used; }
+	bool IsUsed() const { return m_BlockInfo.State == MemoryBlockState::Used; }
 
-	MemoryBlock* GetNext() { return BlockInfo.Next; }
+	MemoryBlock* GetNext() { return m_BlockInfo.Next; }
 
-	void SetNext(MemoryBlock* block) { BlockInfo.Next = block; block->BlockInfo.Prev = this; }
+	void SetNext(MemoryBlock* block) { m_BlockInfo.Next = block; block->m_BlockInfo.Prev = this; }
 
 	bool IsInBlock(void* address);
 
@@ -52,5 +52,5 @@ public:
 
 private:
 	char m_Memory[4096];
-	MemoryBlockInfo BlockInfo;
+	MemoryBlockInfo m_BlockInfo;
 };

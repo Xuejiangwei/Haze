@@ -5,20 +5,20 @@
 #include "HazeLog.h"
 #include "HazeCompilerValue.h"
 
-HazeModule::HazeModule(const HAZE_STRING& OpFile)
+HazeModule::HazeModule(const HAZE_STRING& opFile)
 {
-	ParseOpFile(OpFile);
+	ParseOpFile(opFile);
 }
 
 HazeModule::~HazeModule()
 {
 }
 
-void HazeModule::ParseOpFile(const HAZE_STRING& OpFile)
+void HazeModule::ParseOpFile(const HAZE_STRING& opFile)
 {
-	HAZE_IFSTREAM FS(OpFile);
+	HAZE_IFSTREAM fs(opFile);
 	//FS.imbue(std::locale("chs"));
-	HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(FS), {});
+	HAZE_STRING content(std::istreambuf_iterator<HAZE_CHAR>(fs), {});
 
 	/*Content
 

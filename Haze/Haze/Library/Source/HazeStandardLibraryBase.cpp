@@ -10,12 +10,12 @@ HazeStandardLibraryBase::~HazeStandardLibraryBase()
 {
 }
 
-bool HazeStandardLibraryBase::AddStdLib(HAZE_STRING LibName, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>* HashMap)
+bool HazeStandardLibraryBase::AddStdLib(HAZE_STRING libName, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>* hashMap)
 {
-	auto Iter = g_Hash_MapStdLib.find(LibName);
+	auto Iter = g_Hash_MapStdLib.find(libName);
 	if (Iter == g_Hash_MapStdLib.end())
 	{
-		g_Hash_MapStdLib[LibName] = HashMap;
+		g_Hash_MapStdLib[libName] = hashMap;
 	}
 
 	return true;

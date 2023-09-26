@@ -10,4 +10,4 @@
 #include "HazeCompare.h"
 #include "HazeLibraryType.h"
 
-int HazeMain(int ArgCount, char* ArgValue[]);
+int HazeMain(int argCount, char* argValue[]);

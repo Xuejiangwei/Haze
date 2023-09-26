@@ -10,6 +10,7 @@ public:
 	friend class HazeMemory;
 
 	HazeVariable();
+
 	~HazeVariable();
 
 	const HazeDefineType& GetType() const { return m_Type; }

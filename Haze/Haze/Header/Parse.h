@@ -8,28 +8,25 @@
 class HazeCompiler;
 
 class ASTBase;
-
 class ASTVariableDefine;
-
 class ASTClass;
 class ASTClassDefine;
-
 class ASTFunction;
 class ASTFunctionSection;
 class ASTFunctionDefine;
 class ASTClassFunctionSection;
-
 class ASTLibrary;
 
 class Parse
 {
 public:
-	Parse(HazeCompiler* m_Compiler);
+	Parse(HazeCompiler* compiler);
+
 	~Parse();
 
-	void InitializeFile(const HAZE_STRING& FilePath);
+	void InitializeFile(const HAZE_STRING& filePath);
 
-	void InitializeString(const HAZE_STRING& String);
+	void InitializeString(const HAZE_STRING& str);
 
 	void ParseContent();
 
@@ -37,18 +34,16 @@ public:
 
 	const HAZE_STRING& GetCurrLexeme() const { return m_CurrLexeme; }
 
-	const HAZE_STRING& GetLookAtAheadChar() {}
-
-	static bool TokenIsNone(HazeToken m_Token) { return m_Token == HazeToken::None; }
+	static bool TokenIsNone(HazeToken token) { return token == HazeToken::None; }
 
 private:
 	std::unique_ptr<ASTBase> HandleParseExpression();
 
-	std::unique_ptr<ASTBase> ParseExpression(int Prec = 0);
+	std::unique_ptr<ASTBase> ParseExpression(int prec = 0);
 
 	std::unique_ptr<ASTBase> ParseUnaryExpression();
 
-	std::unique_ptr<ASTBase> ParseBinaryOperateExpression(int Prec, std::unique_ptr<ASTBase> Left);
+	std::unique_ptr<ASTBase> ParseBinaryOperateExpression(int prec, std::unique_ptr<ASTBase> left);
 
 	std::unique_ptr<ASTBase> ParsePrimary();
 
@@ -62,7 +57,7 @@ private:
 
 	std::unique_ptr<ASTBase> ParseNumberExpression();
 
-	std::unique_ptr<ASTBase> ParseIfExpression(bool Recursion = false);
+	std::unique_ptr<ASTBase> ParseIfExpression(bool recursion = false);
 
 	std::unique_ptr<ASTBase> ParseForExpression();
 
@@ -94,7 +89,7 @@ private:
 
 	std::unique_ptr<ASTBase> ParseDec();
 
-	std::unique_ptr<ASTBase> ParseThreeOperator(std::unique_ptr<ASTBase> Condition);
+	std::unique_ptr<ASTBase> ParseThreeOperator(std::unique_ptr<ASTBase> condition);
 
 	std::unique_ptr<ASTBase> ParseMultiExpression();
 
@@ -114,40 +109,38 @@ private:
 
 	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> ParseClassData();
 
-	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& m_ClassName);
+	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& className);
 
 private:
-	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* m_ClassName = nullptr);
+	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* className = nullptr);
 
-	bool ExpectNextTokenIs(HazeToken m_Token, const HAZE_CHAR* ErrorInfo = nullptr);
+	bool ExpectNextTokenIs(HazeToken token, const HAZE_CHAR* errorInfo = nullptr);
 
-	bool TokenIs(HazeToken m_Token, const HAZE_CHAR* ErrorInfo = nullptr);
+	bool TokenIs(HazeToken token, const HAZE_CHAR* errorInfo = nullptr);
 
-	bool IsHazeSignalToken(const HAZE_CHAR* Char, const HAZE_CHAR*& OutChar, uint32 CharSize = 1);
+	bool IsHazeSignalToken(const HAZE_CHAR* hChar, const HAZE_CHAR*& outChar, uint32 charSize = 1);
 
-	bool IsPointerOrRef(const HAZE_STRING& Str, HazeToken& OutToken);
+	bool IsPointerOrRef(const HAZE_STRING& str, HazeToken& outToken);
 
 	void BackToPreLexemeAndNext();
 
-	void IncLineCount(bool Insert = false);
+	void IncLineCount(bool insert = false);
 
 private:
 	HazeCompiler* m_Compiler;
 
-	HAZE_STRING CodeText;
-
-	HazeToken CurrToken;
+	HazeToken m_CurrToken;
 	const HAZE_CHAR* m_CurrCode;
+	HAZE_STRING m_CodeText;
 	HAZE_STRING m_CurrLexeme;
-	std::pair<HAZE_STRING, int> CurrPreLexeme;		//LexemeString, skip char count
+	std::pair<HAZE_STRING, int> m_CurrPreLexeme;		//LexemeString, skip char count
 
-	std::stack<HazeSectionSignal> StackSectionSignal;
+	std::stack<HazeSectionSignal> m_StackSectionSignal;
 
 	HazeDefineVariable m_DefineVariable;
-	HAZE_STRING CurrParseClass;
+	HAZE_STRING m_CurrParseClass;
 
-	int LeftParenthesesExpressionCount;
-
-	uint32 LineCount;
-	bool NeedParseNextStatement;
+	int m_LeftParenthesesExpressionCount;
+	uint32 m_LineCount;
+	bool m_NeedParseNextStatement;
 };

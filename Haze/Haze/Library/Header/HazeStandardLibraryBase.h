@@ -12,9 +12,10 @@ class HazeStandardLibraryBase
 {
 public:
 	HazeStandardLibraryBase();
+
 	~HazeStandardLibraryBase();
 
-	static bool AddStdLib(HAZE_STRING LibName, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>* HashMap);
+	static bool AddStdLib(HAZE_STRING libName, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>* hashMap);
 
 	static void InitializeStdLibs();
 

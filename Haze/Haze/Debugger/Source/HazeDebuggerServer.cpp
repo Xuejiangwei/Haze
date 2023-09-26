@@ -11,27 +11,27 @@
 #pragma comment(lib,"ws2_32.lib")
 #endif
 
-std::unique_ptr<HazeDebugger> Debugger;
-uint64 SocketServer;
-uint64 SocketClient;
-std::thread::id DebuggerThreadId;
+std::unique_ptr<HazeDebugger> g_Debugger;
+uint64 g_SocketServer;
+uint64 g_SocketClient;
+std::thread::id g_DebuggerThreadId;
 
 void CloseServer()
 {
-	closesocket(SocketServer);
+	closesocket(g_SocketServer);
 	WSACleanup();
 }
 
 void HazeDebuggerServer::InitDebuggerServer(HazeVM* m_VM)
 {
 	std::thread LaunchDebuggerThread(HazeDebuggerServer::Start, m_VM);
-	DebuggerThreadId = LaunchDebuggerThread.get_id();
+	g_DebuggerThreadId = LaunchDebuggerThread.get_id();
 	LaunchDebuggerThread.detach();
 }
 
 void HazeDebuggerServer::SendData(char* m_Data, int Length, int Flags)
 {
-	send(SocketClient, m_Data, Length, Flags);
+	send(g_SocketClient, m_Data, Length, Flags);
 }
 
 void HazeDebuggerServer::Start(HazeVM* m_VM)
@@ -47,8 +47,8 @@ void HazeDebuggerServer::Start(HazeVM* m_VM)
 	}
 
 	//创建套接字
-	SocketServer = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (SocketServer == INVALID_SOCKET)
+	g_SocketServer = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (g_SocketServer == INVALID_SOCKET)
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("Haze调试器Socket创建失败!\n"));
 		return;
@@ -61,14 +61,14 @@ void HazeDebuggerServer::Start(HazeVM* m_VM)
 	sin.sin_addr.S_un.S_addr = INADDR_ANY;	//IP地址设置成INADDR_ANY，让系统自动获取本机的IP地址
 	
 	//bind函数把一个地址族中的特定地址赋给scket。
-	if (bind(SocketServer, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
+	if (bind(g_SocketServer, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("Haze调试器Socket绑定失败!\n"));
 		return;
 	}
 
 	//开始监听
-	if (listen(SocketServer, 5) == SOCKET_ERROR)
+	if (listen(g_SocketServer, 5) == SOCKET_ERROR)
 	{
 		HAZE_LOG_ERR(HAZE_TEXT("Haze调试器Socket监听失败!\n"));
 		return;
@@ -82,17 +82,17 @@ void HazeDebuggerServer::Start(HazeVM* m_VM)
 		int nAddrlen = sizeof(remoteAddr);
 
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试器等待Socket连接...\n"));
-		SocketClient = accept(SocketServer, (sockaddr*)&remoteAddr, &nAddrlen);
-		if (SocketClient == INVALID_SOCKET)
+		g_SocketClient = accept(g_SocketServer, (sockaddr*)&remoteAddr, &nAddrlen);
+		if (g_SocketClient == INVALID_SOCKET)
 		{
 			HAZE_LOG_INFO(HAZE_TEXT("Haze调试器Socket连接失败!\n"));
 			break;
 		}
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试器接收到一个连接<%s>!\n"), String2WString(inet_ntoa(remoteAddr.sin_addr)).c_str());
 
-		if (!Debugger)
+		if (!g_Debugger)
 		{
-			Debugger = std::make_unique<HazeDebugger>(m_VM, &CloseServer);
+			g_Debugger = std::make_unique<HazeDebugger>(m_VM, &CloseServer);
 		}
 		break;
 	}
@@ -115,46 +115,46 @@ static bool HandleMessage(char* Message)
 		return false;
 	case HazeDebugOperatorType::Start:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<开始>操作\n"));
-		Debugger->Start();
+		g_Debugger->Start();
 		return true;
 	case HazeDebugOperatorType::StepOver:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<单步断点>操作\n"));
-		Debugger->StepOver();
+		g_Debugger->StepOver();
 		return true;
 	case HazeDebugOperatorType::StepIn:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<单步进入>操作\n"));
-		Debugger->StepIn();
+		g_Debugger->StepIn();
 		return true;
 	case HazeDebugOperatorType::StepInstruction:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<单步指令>操作\n"));
-		Debugger->StepInstruction();
+		g_Debugger->StepInstruction();
 		return true;
 	case HazeDebugOperatorType::AddBreakPoint:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<添加断点>操作\n"));
-		Debugger->AddBreakPoint(Message + 1);
+		g_Debugger->AddBreakPoint(Message + 1);
 		return true;
 	case HazeDebugOperatorType::DeleteBreakPoint:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<删除断点>操作\n"));
-		Debugger->DeleteBreakPoint(Message + 1);
+		g_Debugger->DeleteBreakPoint(Message + 1);
 		return true;
 	case HazeDebugOperatorType::DeleteModuleAllBreakPoint:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<删除模块所有断点>操作\n"));
-		Debugger->DeleteModuleAllBreakPoint(Message + 1);
+		g_Debugger->DeleteModuleAllBreakPoint(Message + 1);
 		return true;
 	case HazeDebugOperatorType::DeleteAllBreakPoint:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<删除所有断点>操作\n"));
-		Debugger->DeleteAllBreakPoint();
+		g_Debugger->DeleteAllBreakPoint();
 		return true;
 	case HazeDebugOperatorType::Continue:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<继续>操作\n"));
-		Debugger->Continue();
+		g_Debugger->Continue();
 		return true;
 	case HazeDebugOperatorType::GetLocalVariable:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<请求临时变量数据>操作\n"));
 		{
 			open::OpenJson json;
 			json["Type"] = (int)HazeDebugOperatorType::GetLocalVariable;
-			Debugger->SetJsonLocalVariable(json);
+			g_Debugger->SetJsonLocalVariable(json);
 			auto data = json.encode();
 			HazeDebuggerServer::SendData(data.data(), data.length());
 		}
@@ -170,9 +170,9 @@ void HazeDebuggerServer::Recv()
 {
 	char RecvData[1024];
 	char TempRecvData[1024];
-	while (Debugger)
+	while (g_Debugger)
 	{
-		int Ret = recv(SocketClient, TempRecvData, 1024, MSG_PEEK);
+		int Ret = recv(g_SocketClient, TempRecvData, 1024, MSG_PEEK);
 		if (Ret > 0)
 		{
 			if (Ret < 1024)
@@ -189,7 +189,7 @@ void HazeDebuggerServer::Recv()
 
 					if (index < Ret && TempRecvData[index] == 13)
 					{
-						recv(SocketClient, RecvData, index + 1 - preIndex, 0);
+						recv(g_SocketClient, RecvData, index + 1 - preIndex, 0);
 						RecvData[index - preIndex] = 0x00;
 						preIndex = index + 1;
 						HandleMessage(RecvData);
@@ -206,13 +206,13 @@ void HazeDebuggerServer::Recv()
 		else
 		{
 			in_addr Addr;
-			Addr.S_un.S_addr = SocketClient;
+			Addr.S_un.S_addr = g_SocketClient;
 			HAZE_LOG_INFO(HAZE_TEXT("关闭调试器Socket<%s>!\n"), String2WString(inet_ntoa(Addr)).c_str());
 			break;
 		}
 		//发送数据
 	}
 
-	closesocket(SocketClient);
+	closesocket(g_SocketClient);
 	WSACleanup();
 }

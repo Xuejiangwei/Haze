@@ -4,11 +4,11 @@
 
 #ifndef HAZE
 
-extern "C" __declspec(dllexport) int ExecuteFunction(const wchar_t* FunctionName, char* ParamStartAddress, char* RetStartAddress, void* Stack, \
-	void(*ExeHazeFunction)(void*, void*, int, ...));
+extern "C" __declspec(dllexport) int ExecuteFunction(const wchar_t* functionName, char* paramStartAddress, char* retStartAddress, void* stack, \
+	void(*exeHazeFunction)(void*, void*, int, ...));
 
 #define HAZE_CALL_NULL_PARAM nullptr, nullptr, nullptr, nullptr
-#define HAZE_CALL_FUNC_PARAM char* ParamStartAddress, char* RetStartAddress, void* Stack, void(*ExeHazeFunction)(void*, void*, int, ...)
+#define HAZE_CALL_FUNC_PARAM char* paramStartAddress, char* retStartAddress, void* stack, void(*exeHazeFunction)(void*, void*, int, ...)
 #define ARG_T(ARGS) ARGS																	//解决VC编译错误
 #define ARG_N(A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15,A16,N,...)  N				//截取并返回第16个参数，这里限制了可变参数计算的范围［1，16］
 #define ARG_N_HELPER(...)  ARG_T(ARG_N(__VA_ARGS__))										//辅助宏

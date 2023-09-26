@@ -2,4 +2,4 @@
 
 #include "Haze.h"
 
-int64 RoundUp(int64 ByteSize);
+int64 RoundUp(int64 byteSize);

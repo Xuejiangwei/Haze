@@ -24,10 +24,6 @@ enum class GC_State : uint8
 	Black,			//Reserve
 };
 
-struct GC_Array
-{
-};
-
 //申请内存时从block中的freelist中申请，若没有多余内存，再从page中申请一个block,若page中没有，则从操作系统申请page
 //最后一个Page表，里面的page大小不一定相同
 
@@ -53,18 +49,20 @@ public:
 	void ForceGC();
 
 private:
-	void MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& Vector_MarkAddressBase,
-		std::vector<std::pair<uint64, ClassData*>>& Vector_MarkAddressClass, const HazeDefineType& VarType, char* BaseAddress);
+	void MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& markAddressBases,
+		std::vector<std::pair<uint64, ClassData*>>& markAddressClass, const HazeDefineType& varType, char* baseAddress);
 
-	void MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index);
+	void MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& arrayBase, 
+		std::vector<std::pair<uint64, ClassData*>>& arrayClass, uint64 index);
 
-	void MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& ArrayBase, std::vector<std::pair<uint64, ClassData*>>& ArrayClass, uint64 Index);
+	void MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& arrayBase, 
+		std::vector<std::pair<uint64, ClassData*>>& arrayClass, uint64 index);
 
 private:
 	HazeVM* m_VM;
-	std::vector<void*> Vector_KeepMemory;
+	std::vector<void*> m_KeepMemorys;
 	
 	std::unique_ptr<MemoryFreeList> m_FreeList[MAX_HAZE_ALLOC_SIZE / GRANULE];
-	MemoryBlock* m_MemoryBlock[PAGE_NUM];
-	std::unordered_map<void*, std::pair<GC_State, void*>> HashMap_BigMemory;
+	MemoryBlock* m_MemoryBlocks[PAGE_NUM];
+	std::unordered_map<void*, std::pair<GC_State, void*>> m_BigMemorys;
 };

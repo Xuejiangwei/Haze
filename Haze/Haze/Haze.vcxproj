@@ -227,7 +227,6 @@
     <ClInclude Include="Define\Header\HazeValue.h" />
     <ClInclude Include="Header\Haze.h" />
     <ClInclude Include="Define\Header\HazeDefine.h" />
-    <ClInclude Include="Header\HazeHeaderDefine.h" />
     <ClInclude Include="HazeLog\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeFilePathHelper.h" />
     <ClInclude Include="Library\Header\HazeLibraryDefine.h" />
@@ -238,7 +237,6 @@
     <ClInclude Include="Header\Parse.h" />
     <ClInclude Include="Define\Header\HazeStrcut.h" />
     <ClInclude Include="Memory\Header\HazeMemory.h" />
-    <ClInclude Include="Memory\Header\Memory.h" />
     <ClInclude Include="Memory\Header\MemoryHelper.h" />
     <ClInclude Include="Memory\Header\MemoryBlock.h" />
     <ClInclude Include="MetaData\Header\HazeClass.h" />

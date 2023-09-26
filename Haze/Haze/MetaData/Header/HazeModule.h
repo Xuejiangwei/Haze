@@ -34,11 +34,12 @@
 class HazeModule
 {
 public:
-	HazeModule(const HAZE_STRING& OpFile);
+	HazeModule(const HAZE_STRING& opFile);
+
 	~HazeModule();
 
 private:
-	void ParseOpFile(const HAZE_STRING& OpFile);
+	void ParseOpFile(const HAZE_STRING& opFile);
 
 private:
 
