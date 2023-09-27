@@ -4,7 +4,7 @@
 #include "HazeLog.h"
 #include "HazeDebugger.h"
 
-#include "OpenJson/openjson.h"
+#include "HazeJson.h"
 
 #ifdef _WIN32
 #include <winsock.h>
@@ -152,11 +152,11 @@ static bool HandleMessage(char* Message)
 	case HazeDebugOperatorType::GetLocalVariable:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<请求临时变量数据>操作\n"));
 		{
-			open::OpenJson json;
+			HazeJson json;
 			json["Type"] = (int)HazeDebugOperatorType::GetLocalVariable;
 			g_Debugger->SetJsonLocalVariable(json);
-			auto data = json.encode();
-			HazeDebuggerServer::SendData(data.data(), data.length());
+			auto data = json.Encode();
+			HazeDebuggerServer::SendData(data.data(), (int)data.length());
 		}
 		return true;
 	default:
@@ -206,7 +206,7 @@ void HazeDebuggerServer::Recv()
 		else
 		{
 			in_addr Addr;
-			Addr.S_un.S_addr = g_SocketClient;
+			Addr.S_un.S_addr = (decltype(Addr.S_un.S_addr))g_SocketClient;
 			HAZE_LOG_INFO(HAZE_TEXT("关闭调试器Socket<%s>!\n"), String2WString(inet_ntoa(Addr)).c_str());
 			break;
 		}

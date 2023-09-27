@@ -17,7 +17,6 @@ include_directories(Header
 					Library/Header
 					MetaData/Header
 					VM/Header
-					ThirdParty
 					)
 
 aux_source_directory(AST/Source SRC_AST)

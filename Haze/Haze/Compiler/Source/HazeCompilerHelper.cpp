@@ -11,6 +11,7 @@
 #include "HazeCompilerPointerFunction.h"
 #include "HazeCompilerRefValue.h"
 #include "HazeCompilerClassValue.h"
+#include "HazeCompilerEnumValue.h"
 
 HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& className, const HAZE_STRING& functionName)
 {
@@ -125,6 +126,8 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* compil
 		}
 	case HazeValueType::Class:
 		return std::make_shared<HazeCompilerClassValue>(compilerModule, type, scope, desc, count);
+	case HazeValueType::Enum:
+		return std::make_shared<HazeCompilerEnumValue>(compilerModule, type, scope, desc, count);
 	default:
 		break;
 	}

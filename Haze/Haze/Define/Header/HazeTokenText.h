@@ -35,6 +35,8 @@
 
 #define TOKEN_MAIN_FUNCTION				HAZE_MAIN_FUNCTION_TEXT
 
+#define TOKEN_ENUM						HAZE_TEXT("枚举")
+
 #define TOKEN_TRUE						HAZE_TEXT("真")
 #define TOKEN_FALSE						HAZE_TEXT("假")
 
@@ -114,3 +116,5 @@
 #define TOKEN_NEW						HAZE_TEXT("生成")
 
 #define TOKEN_NULL_PTR					HAZE_TEXT("空指针")
+
+#define TOKEN_TEMPLATE					HAZE_TEXT("模板")

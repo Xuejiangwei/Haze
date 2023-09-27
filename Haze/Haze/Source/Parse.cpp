@@ -40,6 +40,8 @@ static std::unordered_map<HAZE_STRING, HazeToken> s_HashMap_Token =
 
 	{TOKEN_MAIN_FUNCTION, HazeToken::MainFunction},
 
+	{TOKEN_ENUM, HazeToken::Enum},
+
 	{TOKEN_CLASS, HazeToken::Class},
 	{TOKEN_CLASS_DATA, HazeToken::m_ClassDatas},
 	{TOKEN_CLASS_DATA_PUBLIC, HazeToken::ClassPublic},
@@ -124,6 +126,8 @@ static std::unordered_map<HAZE_STRING, HazeToken> s_HashMap_Token =
 	{TOKEN_QUESTIOB_COLON, HazeToken::Colon},
 
 	{TOKEN_NULL_PTR, HazeToken::NullPtr},
+
+	{TOKEN_TEMPLATE, HazeToken::Template},
 };
 
 const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token()

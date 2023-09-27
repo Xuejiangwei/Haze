@@ -147,13 +147,10 @@
     <ClCompile Include="Debugger\Source\HazeDebuggerServer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ThirdParty\OpenJson\openjson.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="VM\Source\HazeLibraryManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="ThirdParty\HazeJson.cpp">
+    <ClCompile Include="Debugger\Source\HazeJson.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Debugger\Source\HazeDebugger.cpp">
@@ -168,10 +165,13 @@
     <ClCompile Include="Compiler\Source\HazeCompilerTemplateClass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerEnum.cpp">
+    <ClCompile Include="Compiler\Source\HazeCompilerEnumValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Header\HazeCompilerEnum.h">
+    <ClCompile Include="AST\Source\ASTEnum.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Compiler\Source\HazeCompilerEnum.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -326,9 +326,6 @@
     <ClInclude Include="Debugger\Header\HazeDebuggerServer.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\OpenJson\openjson.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="VM\Header\HazeLibraryManager.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -338,10 +335,19 @@
     <ClInclude Include="Library\Header\HazeLibraryDefine.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="ThirdParty\HazeJson.h">
+    <ClInclude Include="Debugger\Header\HazeJson.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerTemplateClass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerEnumValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AST\Header\ASTEnum.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerEnum.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

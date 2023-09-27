@@ -22,16 +22,16 @@ static HAZE_STRING GetFileName(const HAZE_CHAR*& msg)
 	return FileName;
 }
 
-static  HAZE_STRING GetFileModuleName(const HAZE_CHAR*& filePath)
-{
-	return GetModuleNameByFilePath(GetFileName(filePath));
-}
+//static  HAZE_STRING GetFileModuleName(const HAZE_CHAR*& filePath)
+//{
+//	return GetModuleNameByFilePath(GetFileName(filePath));
+//}
 
 void HookCall(HazeVM* vm)
 {
 }
 
-void GetHazeValueByBaseType(open::OpenJson& json, const char* address, HazeValueType type)
+void GetHazeValueByBaseType(HazeJson& json, const char* address, HazeValueType type)
 {
 	switch (type)
 	{
@@ -325,7 +325,7 @@ void HazeDebugger::Continue()
 	ClearCurrParseModuleData();
 }
 
-void HazeDebugger::SetJsonLocalVariable(open::OpenJson& json)
+void HazeDebugger::SetJsonLocalVariable(HazeJson& json)
 {
 	auto& info = json["LocalVariable"];
 
@@ -341,13 +341,13 @@ void HazeDebugger::SetJsonLocalVariable(open::OpenJson& json)
 		}
 	}
 
-	if (info.empty())
+	if (info.Empty())
 	{
 		info = "";
 	}
 }
 
-void HazeDebugger::SetJsonModuleGlobalVariable(open::OpenJson& json)
+void HazeDebugger::SetJsonModuleGlobalVariable(HazeJson& json)
 {
 	auto& info = json["GlobalVariable"];
 
@@ -372,10 +372,10 @@ void HazeDebugger::AddTempBreakPoint(uint32 line)
 
 void HazeDebugger::SendProgramEnd()
 {
-	open::OpenJson json;
+	HazeJson json;
 	json["Type"] = (int)HazeDebugInfoType::ProgramEnd;
-	auto& data = json.encode();
-	HazeDebuggerServer::SendData(const_cast<char*>(data.data()), data.length());
+	auto& data = json.Encode();
+	HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
 }
 
 bool HazeDebugger::CurrModuleIsStepOver()
@@ -395,19 +395,19 @@ void HazeDebugger::SendBreakInfo()
 	auto iter = m_BreakPoints.find(m_CurrPauseModule.first);
 	if (iter != m_BreakPoints.end())
 	{
-		open::OpenJson json;
+		HazeJson json;
 		SetJsonType(json, HazeDebugInfoType::BreakInfo);
 		SetJsonBreakFilePath(json, iter->second.second);
 		SetJsonBreakLine(json, m_CurrPauseModule.second);
 		SetJsonLocalVariable(json);
 		//SetJsonModuleGlobalVariable(Json);
 
-		auto& data = json.encode();
-		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), data.length());
+		auto& data = json.Encode();
+		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
 	}
 }
 
-void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableData& variable, const char* address, bool isStack)
+void HazeDebugger::SetJsonVariableData(HazeJson& json, const HazeVariableData& variable, const char* address, bool isStack)
 {
 	static std::string s_String;
 
@@ -470,7 +470,7 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 
 		if (variable.Variable.Type.CustomName.empty())
 		{
-			for (int i = 0; i < variable.Size / size; i++)
+			for (int i = 0; i < (int)variable.Size / size; i++)
 			{
 				GetHazeValueByBaseType(json["Value"][i], dataAddress + i * size,
 					variable.Variable.Type.SecondaryType);
@@ -479,7 +479,7 @@ void HazeDebugger::SetJsonVariableData(open::OpenJson& json, const HazeVariableD
 		}
 		else
 		{
-			for (int i = 0; i < variable.Size / size; i++)
+			for (int i = 0; i < (int)variable.Size / size; i++)
 			{
 				SetJsonVariableData(json["Value"][i], variable, dataAddress + size * i);
 			}

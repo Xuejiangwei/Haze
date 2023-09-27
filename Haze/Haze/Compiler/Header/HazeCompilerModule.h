@@ -36,6 +36,9 @@ public:
 	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& name, std::vector<HazeCompilerClass*>& parentClass,
 		std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& classData);
 
+	std::shared_ptr<HazeCompilerEnum> CreateEnum(const HAZE_STRING& name, HazeValueType parentType,
+		std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& enumValues);
+
 	void FinishCreateClass();
 
 	std::shared_ptr<HazeCompilerClass> GetClass(const HAZE_STRING& className);
@@ -51,6 +54,8 @@ public:
 	void FinishFunction();
 
 	std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetFunction(const HAZE_STRING& name);
+
+	std::shared_ptr<HazeCompilerEnum> GetEnum(const HAZE_STRING& name);
 
 	std::shared_ptr<HazeCompilerValue> GetOrCreateGlobalStringVariable(const HAZE_STRING& str);
 

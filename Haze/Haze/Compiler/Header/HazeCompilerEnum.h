@@ -1,16 +1,24 @@
 #pragma once
 
 #include "Haze.h"
-#include "HazeCompilerValue.h"
+
+class HazeCompilerValue;
+class HazeCompilerModule;
 
 class HazeCompilerEnum
 {
 public:
-	HazeCompilerEnum();
+	HazeCompilerEnum(HazeCompilerModule* compilerModule, HazeValueType parentType);
 
 	~HazeCompilerEnum();
 
-private:
-	std::vector<std::shared_ptr<HazeCompilerValue>> m_EnumValues;
-};
+	void InitEnumValues(std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& values);
 
+	std::shared_ptr<HazeCompilerValue> GetEnumValue(const HAZE_STRING& name);
+
+private:
+	HazeValueType m_ParentType;
+	HazeCompilerModule* m_Module;
+
+	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> m_EnumValues;
+};

@@ -586,7 +586,6 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 	HAZE_STRING objName;
 	HAZE_STRING memberName;
 	bool isPointer = false;
-	int index = 0;
 
 	if (IsClassMember(operatorData.Desc))
 	{
@@ -783,8 +782,6 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 			{
 				HAZE_STRING objName;
 				HAZE_STRING memberName;
-				bool isPointer = false;
-				bool find = false;
 
 				for (auto& operatorData : m_CurrFunction.Instructions[i].Operator)
 				{

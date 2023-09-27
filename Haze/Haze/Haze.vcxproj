@@ -136,15 +136,16 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AST\Source\ASTEnum.cpp" />
     <ClCompile Include="AST\Source\ASTLibrary.cpp" />
     <ClCompile Include="AST\Source\ASTBase.cpp" />
     <ClCompile Include="AST\Source\ASTClass.cpp" />
     <ClCompile Include="AST\Source\ASTFunction.cpp" />
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
-    <ClCompile Include="Compiler\Header\HazeCompilerEnum.h" />
     <ClCompile Include="Compiler\Header\HazeCompilerTemplateFunction.h" />
     <ClCompile Include="Compiler\Source\HazeCompilerEnum.cpp" />
+    <ClCompile Include="Compiler\Source\HazeCompilerEnumValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerInitListValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeBaseBlock.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompiler.cpp" />
@@ -179,8 +180,7 @@
     <ClCompile Include="Source\Haze.cpp" />
     <ClCompile Include="HazeLog\Source\HazeLog.cpp" />
     <ClCompile Include="Source\HazeFilePathHelper.cpp" />
-    <ClCompile Include="ThirdParty\HazeJson.cpp" />
-    <ClCompile Include="ThirdParty\OpenJson\openjson.cpp" />
+    <ClCompile Include="Debugger\Source\HazeJson.cpp" />
     <ClCompile Include="VM\Source\HazeLibraryManager.cpp" />
     <ClCompile Include="VM\Source\HazeStack.cpp" />
     <ClCompile Include="Source\Main.cpp" />
@@ -193,6 +193,7 @@
   <ItemGroup>
     <ClInclude Include="AST\Header\ASTBase.h" />
     <ClInclude Include="AST\Header\ASTClass.h" />
+    <ClInclude Include="AST\Header\ASTEnum.h" />
     <ClInclude Include="AST\Header\ASTFunction.h" />
     <ClInclude Include="AST\Header\ASTLibrary.h" />
     <ClInclude Include="Backend\Header\BackendParse.h" />
@@ -201,6 +202,8 @@
     <ClInclude Include="Compiler\Header\HazeCompiler.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerArrayValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerClassValue.h" />
+    <ClInclude Include="Compiler\Header\HazeCompilerEnum.h" />
+    <ClInclude Include="Compiler\Header\HazeCompilerEnumValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerFunction.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerClass.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerHelper.h" />
@@ -230,8 +233,7 @@
     <ClInclude Include="HazeLog\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeFilePathHelper.h" />
     <ClInclude Include="Library\Header\HazeLibraryDefine.h" />
-    <ClInclude Include="ThirdParty\HazeJson.h" />
-    <ClInclude Include="ThirdParty\OpenJson\openjson.h" />
+    <ClInclude Include="Debugger\Header\HazeJson.h" />
     <ClInclude Include="VM\Header\HazeLibraryManager.h" />
     <ClInclude Include="VM\Header\HazeStack.h" />
     <ClInclude Include="Header\Parse.h" />

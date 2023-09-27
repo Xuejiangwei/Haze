@@ -40,6 +40,8 @@ enum class HazeValueType : uint32
 	Class,
 	Function,
 
+	Enum,
+
 	MultiVariable,
 };
 

@@ -15,6 +15,7 @@
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
+#include "HazeCompilerEnum.h"
 
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName)
 	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal)
@@ -68,7 +69,7 @@ void HazeCompilerModule::GenCodeFile()
 std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_STRING& name, std::vector<HazeCompilerClass*>& parentClass,
 	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& classData)
 {
-	std::shared_ptr<HazeCompilerClass> compilerClass = GetClass(name);
+	auto compilerClass = GetClass(name);
 	if (!compilerClass)
 	{
 		m_HashMap_Classes[name] = std::make_shared<HazeCompilerClass>(this, name, parentClass, classData);
@@ -78,6 +79,20 @@ std::shared_ptr<HazeCompilerClass> HazeCompilerModule::CreateClass(const HAZE_ST
 
 	m_CurrClass = name;
 	return compilerClass;
+}
+
+std::shared_ptr<HazeCompilerEnum> HazeCompilerModule::CreateEnum(const HAZE_STRING& name, HazeValueType parentType, 
+	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& enumValues)
+{
+	std::shared_ptr<HazeCompilerEnum> compilerEnum = GetEnum(name);
+	if (!compilerEnum)
+	{
+		compilerEnum = std::make_shared<HazeCompilerEnum>(this, parentType);
+		m_HashMap_Enums[name] = compilerEnum;
+		compilerEnum->InitEnumValues(enumValues);
+	}
+
+	return compilerEnum;
 }
 
 void HazeCompilerModule::FinishCreateClass()
@@ -123,6 +138,26 @@ std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerVal
 	}
 
 	return { nullptr, nullptr };
+}
+
+std::shared_ptr<HazeCompilerEnum> HazeCompilerModule::GetEnum(const HAZE_STRING& name)
+{
+	auto iter = m_HashMap_Enums.find(name);
+	if (iter != m_HashMap_Enums.end())
+	{
+		return iter->second;
+	}
+
+	for (auto& it : m_ImportModules)
+	{
+		auto ret = it->GetEnum(name);
+		if (ret)
+		{
+			return ret;
+		}
+	}
+
+	return nullptr;
 }
 
 std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::CreateFunction(const HAZE_STRING& name, HazeDefineType& type, std::vector<HazeDefineVariable>& params)

@@ -37,24 +37,6 @@ void HazeStream::InitializeLib()
 	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("±ê×¼Á÷"), &s_HashMap_Functions);
 }
 
-void HazeStream::HazePrint(HAZE_STD_CALL_PARAM)
-{
-	int V = 0;
-	int Size = 0;
-	for (int i = (int)data->Params.size() - 1; i >= 0; --i)
-	{
-		Size = GetSizeByHazeType(data->Params[i].Type.PrimaryType);
-		memcpy(&V, (void*)stack->GetAddressByEBP(-Size - HAZE_ADDRESS_SIZE), Size);
-	}
-
-	HazePrintCall(V);
-}
-
-void HazeStream::HazePrintCall(int v)
-{
-	std::cout << v << std::endl;
-}
-
 void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 {
 #define PRE_SIGN HAZE_CHAR('%')
