@@ -3,10 +3,12 @@
 #include "MemoryHelper.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
+#include <chrono>
 
 #define PAGE_BASE_SIZE  4 * 4
 
-HazeMemory::HazeMemory()
+HazeMemory::HazeMemory(uint64 maxMarkTime)
+	: m_IsForceGC(false), m_MaxMarkTime(maxMarkTime), m_MarkStage(MarkStage::Ready)
 {
 }
 
@@ -113,28 +115,25 @@ void HazeMemory::AddToRoot(void*)
 {
 }
 
-void HazeMemory::MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& markAddressBases,
-	std::vector<std::pair<uint64, ClassData*>>& markAddressClasses, const HazeDefineType& varType, char* baseAddress)
+void HazeMemory::MarkClassMember(ClassData* classData, char* baseAddress)
 {
 	uint64 address = 0;
-	auto classDatas = m_VM->FindClass(varType.CustomName);
-	for (size_t i = 0; i < classDatas->Members.size(); i++)
+	for (size_t i = 0; i < classData->Members.size(); i++)
 	{
-		auto& member = classDatas->Members[i];
+		auto& member = classData->Members[i];
 		if (member.Variable.Type.PrimaryType == HazeValueType::PointerBase)
 		{
 			memcpy(&address, baseAddress + member.Offset, sizeof(address));
-			markAddressBases.push_back({ address, member.Variable.Type.SecondaryType });
+			m_MarkAddressBases.push_back({ { address, member.Variable.Type.SecondaryType }, GC_State::Gray });
 		}
 		else if (member.Variable.Type.PrimaryType == HazeValueType::PointerClass)
 		{
 			memcpy(&address, baseAddress + member.Offset, sizeof(address));
-			markAddressClasses.push_back({ address, m_VM->FindClass(member.Variable.Type.CustomName) });
+			m_MarkAddressClasses.push_back({{ address, m_VM->FindClass(member.Variable.Type.CustomName) }, GC_State::Gray });
 		}
 		else if (member.Variable.Type.PrimaryType == HazeValueType::Class)
 		{
-			MarkClassMember(markAddressBases, markAddressClasses, member.Variable.Type,
-				baseAddress + member.Offset);
+			MarkClassMember(m_VM->FindClass(member.Variable.Type.CustomName), baseAddress + member.Offset);
 		}
 	}
 }
@@ -143,109 +142,123 @@ void HazeMemory::Mark()
 {
 	auto memoryIns = HazeMemory::GetMemory();
 
-	//将所有颜色设置为白色
-	for (auto& iter : memoryIns->m_MemoryBlocks)
+	if (m_MarkStage == MarkStage::Ready)
 	{
-		auto block = iter;
-		while (block && block->IsUsed())
+		m_MarkStage = MarkStage::Running_MarkRoot;
+		m_CurrMarkBaseIndex = 0;
+		m_CurrMarkClassIndex = 0;
+
+		m_MarkStartTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::system_clock::now().time_since_epoch()).count();
+
+		//将所有颜色设置为白色
+		for (auto& iter : memoryIns->m_MemoryBlocks)
 		{
-			block->SetAllWhite();
-			block = block->GetNext();
+			auto block = iter;
+			while (block && block->IsUsed())
+			{
+				block->SetAllWhite();
+				block = block->GetNext();
+			}
+		}
+
+		//根节点内存有 静态变量、栈、寄存器等
+		uint64 Address = 0;
+
+		for (auto& it : m_VM->Vector_GlobalData)
+		{
+			if (it.m_Type.PrimaryType == HazeValueType::PointerBase)
+			{
+				m_MarkAddressBases.push_back({ { (uint64)it.Value.Value.Pointer, it.m_Type.SecondaryType }, GC_State::Gray });
+			}
+			else if (it.m_Type.PrimaryType == HazeValueType::PointerClass)
+			{
+				m_MarkAddressClasses.push_back({ { (uint64)it.Value.Value.Pointer, m_VM->FindClass(it.m_Type.CustomName) } 
+				, GC_State::Gray });
+			}
+			else if (it.m_Type.PrimaryType == HazeValueType::Class)
+			{
+				MarkClassMember(m_VM->FindClass(it.m_Type.CustomName), (char*)&it.Value);
+			}
+		}
+
+		auto newRegister = m_VM->VMStack->GetVirtualRegister(NEW_REGISTER);
+		auto retRegister = m_VM->VMStack->GetVirtualRegister(RET_REGISTER);
+		for (auto& it : m_VM->VMStack->m_VirtualRegister)
+		{
+			if (&it.second == newRegister || &it.second == retRegister)
+			{
+				//New和Ret寄存器中存留的内存在赋值后不需要保留，考虑在赋值字节码执行中清除
+				if (it.second.Type.PrimaryType == HazeValueType::PointerBase)
+				{
+					memcpy(&Address, it.second.Data.begin()._Unwrapped(), sizeof(Address));
+					m_MarkAddressBases.push_back({ { Address, it.second.Type.SecondaryType }, GC_State::Gray });
+				}
+				else if (it.second.Type.PrimaryType == HazeValueType::PointerClass)
+				{
+					memcpy(&Address, it.second.Data.begin()._Unwrapped(), sizeof(Address));
+					m_MarkAddressClasses.push_back({ { Address, m_VM->FindClass(it.second.Type.CustomName) }, GC_State::Gray });
+				}
+				else if (it.second.Type.PrimaryType == HazeValueType::Class)
+				{
+					MarkClassMember(m_VM->FindClass(it.second.Type.CustomName), it.second.Data.begin()._Unwrapped());
+				}
+			}
+		}
+
+		for (size_t i = 0; i < m_VM->VMStack->m_StackFrame.size(); i++)
+		{
+			for (auto& var : m_VM->VMStack->m_StackFrame[i].FunctionInfo->Variables)
+			{
+				if (var.Variable.Type.PrimaryType == HazeValueType::PointerBase)
+				{
+					memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
+					m_MarkAddressBases.push_back({ { Address, var.Variable.Type.SecondaryType }, GC_State::Gray });
+				}
+				else if (var.Variable.Type.PrimaryType == HazeValueType::PointerClass)
+				{
+					memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
+					m_MarkAddressClasses.push_back({ { Address, m_VM->FindClass(var.Variable.Type.CustomName) }, GC_State::Gray });
+				}
+				else if (var.Variable.Type.PrimaryType == HazeValueType::Class)
+				{
+					MarkClassMember(m_VM->FindClass(var.Variable.Type.CustomName),
+						&m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset]);
+				}
+			}
 		}
 	}
-
-	//根节点内存有 静态变量、栈、寄存器等
-	std::vector<std::pair<uint64, HazeValueType>> markAddressBases;
-	std::vector<std::pair<uint64, ClassData*>> markAddressClasses;
-	uint64 Address = 0;
-
-	for (auto& it : m_VM->Vector_GlobalData)
+	else
 	{
-		if (it.m_Type.PrimaryType == HazeValueType::PointerBase)
-		{
-			markAddressBases.push_back({ (uint64)it.Value.Value.Pointer, it.m_Type.SecondaryType });
-		}
-		else if (it.m_Type.PrimaryType == HazeValueType::PointerClass)
-		{
-			markAddressClasses.push_back({ (uint64)it.Value.Value.Pointer, m_VM->FindClass(it.m_Type.CustomName) });
-		}
-		else if (it.m_Type.PrimaryType == HazeValueType::Class)
-		{
-			MarkClassMember(markAddressBases, markAddressClasses, it.m_Type, (char*)&it.Value);
-		}
+		m_MarkStartTimestamp = std::chrono::duration_cast<std::chrono::milliseconds>(
+			std::chrono::system_clock::now().time_since_epoch()).count();
 	}
 
-	auto newRegister = m_VM->VMStack->GetVirtualRegister(NEW_REGISTER);
-	auto retRegister = m_VM->VMStack->GetVirtualRegister(RET_REGISTER);
-	for (auto& it : m_VM->VMStack->m_VirtualRegister)
-	{
-		if (&it.second == newRegister || &it.second == retRegister)
-		{
-			//New和Ret寄存器中存留的内存在赋值后不需要保留，考虑在赋值字节码执行中清除
-			if (it.second.Type.PrimaryType == HazeValueType::PointerBase)
-			{
-				memcpy(&Address, it.second.Data.begin()._Unwrapped(), sizeof(Address));
-				markAddressBases.push_back({ Address, it.second.Type.SecondaryType });
-			}
-			else if (it.second.Type.PrimaryType == HazeValueType::PointerClass)
-			{
-				memcpy(&Address, it.second.Data.begin()._Unwrapped(), sizeof(Address));
-				markAddressClasses.push_back({ Address, m_VM->FindClass(it.second.Type.CustomName) });
-			}
-			else if (it.second.Type.PrimaryType == HazeValueType::Class)
-			{
-				MarkClassMember(markAddressBases, markAddressClasses, it.second.Type, it.second.Data.begin()._Unwrapped());
-			}
-		}
-	}
-
-	for (size_t i = 0; i < m_VM->VMStack->m_StackFrame.size(); i++)
-	{
-		for (auto& var : m_VM->VMStack->m_StackFrame[i].FunctionInfo->Variables)
-		{
-			if (var.Variable.Type.PrimaryType == HazeValueType::PointerBase)
-			{
-				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
-				markAddressBases.push_back({ Address, var.Variable.Type.SecondaryType });
-			}
-			else if (var.Variable.Type.PrimaryType == HazeValueType::PointerClass)
-			{
-				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
-				markAddressClasses.push_back({ Address, m_VM->FindClass(var.Variable.Type.CustomName) });
-			}
-			else if (var.Variable.Type.PrimaryType == HazeValueType::Class)
-			{
-				MarkClassMember(markAddressBases, markAddressClasses, var.Variable.Type,
-					&m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset]);
-			}
-		}
-	}
+	m_MarkStage = MarkStage::Running_MarkList;
 
 	//遍历完根节点后，再遍历 Vector_MarkAddress
-	uint64 baseIndex = 0;
-	uint64 classIndex = 0;
-	while (baseIndex < markAddressBases.size() || classIndex < markAddressClasses.size())
+	while (m_CurrMarkBaseIndex < m_MarkAddressBases.size() || m_CurrMarkClassIndex < m_MarkAddressClasses.size())
 	{
-		if (baseIndex < markAddressBases.size())
+		if (m_CurrMarkBaseIndex < m_MarkAddressBases.size())
 		{
-			MarkArrayBaseIndex(markAddressBases, markAddressClasses, baseIndex++);
+			MarkArrayBaseIndex();
 		}
 
-		if (classIndex < markAddressClasses.size())
+		if (m_CurrMarkClassIndex < m_MarkAddressClasses.size())
 		{
-			MarkArrayClassIndex(markAddressBases, markAddressClasses, classIndex++);
+			MarkArrayClassIndex();
 		}
 	}
 
 	m_KeepMemorys.clear();
-	for (size_t i = 0; i < markAddressBases.size(); i++)
+	for (size_t i = 0; i < m_MarkAddressBases.size(); i++)
 	{
-		m_KeepMemorys.push_back((void*)markAddressBases[i].first);
+		m_KeepMemorys.push_back((void*)m_MarkAddressBases[i].first.first);
 	}
 
-	for (size_t i = 0; i < markAddressClasses.size(); i++)
+	for (size_t i = 0; i < m_MarkAddressClasses.size(); i++)
 	{
-		m_KeepMemorys.push_back((void*)markAddressClasses[i].first);
+		m_KeepMemorys.push_back((void*)m_MarkAddressClasses[i].first.first);
 	}
 }
 
@@ -262,6 +275,7 @@ void HazeMemory::Sweep()
 		}
 	}
 
+	//标记为黑色
 	for (auto& iter : memoryIns->m_MemoryBlocks)
 	{
 		auto block = iter;
@@ -279,20 +293,80 @@ void HazeMemory::Sweep()
 			block = block->GetNext();
 		}
 	}
+
+	//清除并且回收到freelist
+	for (auto& iter : memoryIns->m_MemoryBlocks)
+	{
+		auto block = iter;
+		while (block && block->IsUsed())
+		{
+			uint32 unitSize = block->m_BlockInfo.UnitSize;
+			uint32 offset = unitSize % GRANULE == 0 ? -1 : 1;
+			uint32 index = unitSize / GRANULE + offset;
+
+			uint32 unitCount = block->m_BlockInfo.MarkCount;
+			for (size_t i = 0; i < unitCount; i++)
+			{
+				if (block->m_BlockInfo.Mark[i] == (uint8)GC_State::White)
+				{
+					if (memoryIns->m_FreeList[index])
+					{
+						memoryIns->m_FreeList[index]->Push(&block->m_Memory[unitSize * i]);
+					}
+					else
+					{
+						memoryIns->m_FreeList[index] = std::make_unique<MemoryFreeList>();
+						memoryIns->m_FreeList[index]->Push(&block->m_Memory[unitSize * i]);
+					}
+				}
+			}
+
+			block = block->GetNext();
+		}
+	}
 }
 
 void HazeMemory::ForceGC()
 {
+	m_IsForceGC = true;
 	Mark();
 	Sweep();
+
+	m_IsForceGC = false;
 }
 
-void HazeMemory::MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& arrayBase, 
-	std::vector<std::pair<uint64, ClassData*>>& arrayClass, uint64 index)
+inline bool HazeMemory::MarkArrayBaseIndex()
 {
+	if (m_MarkStage != MarkStage::Running_MarkList)
+	{
+		return true;
+	}
+
+	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+	if (time.count() - m_MarkStartTimestamp > m_MaxMarkTime)
+	{
+		m_MarkStartTimestamp = time.count();
+	}
+
+	return m_MarkStartTimestamp = time.count();
 }
 
-void HazeMemory::MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& arrayBase,
-	std::vector<std::pair<uint64, ClassData*>>& arrayClass, uint64 index)
+inline bool HazeMemory::MarkArrayClassIndex()
 {
+	if (m_MarkStage != MarkStage::Running_MarkList)
+	{
+		return true;
+	}
+
+	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+	if (time.count() - m_MarkStartTimestamp > m_MaxMarkTime)
+	{
+		m_MarkStartTimestamp = time.count();
+	}
+
+	auto markClass = m_MarkAddressClasses[m_CurrMarkClassIndex++];
+	MarkClassMember(markClass.first.second, (char*)markClass.first.first);
+	markClass.second = GC_State::Black;
+
+	return m_MarkStartTimestamp = time.count();
 }

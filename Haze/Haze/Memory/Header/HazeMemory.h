@@ -30,7 +30,7 @@ enum class GC_State : uint8
 class HazeMemory
 {
 public:
-	HazeMemory();
+	HazeMemory(uint64 maxMarkTime = 500);
 
 	~HazeMemory();
 
@@ -48,21 +48,35 @@ public:
 
 	void ForceGC();
 
+	enum class MarkStage
+	{
+		Ready,
+		Running_MarkRoot,
+		Running_MarkList
+	};
+
 private:
-	void MarkClassMember(std::vector<std::pair<uint64, HazeValueType>>& markAddressBases,
-		std::vector<std::pair<uint64, ClassData*>>& markAddressClass, const HazeDefineType& varType, char* baseAddress);
+	void MarkClassMember(ClassData* classData, char* baseAddress);
 
-	void MarkArrayBaseIndex(std::vector<std::pair<uint64, HazeValueType>>& arrayBase, 
-		std::vector<std::pair<uint64, ClassData*>>& arrayClass, uint64 index);
+	inline bool MarkArrayBaseIndex();
 
-	void MarkArrayClassIndex(std::vector<std::pair<uint64, HazeValueType>>& arrayBase, 
-		std::vector<std::pair<uint64, ClassData*>>& arrayClass, uint64 index);
+	inline bool MarkArrayClassIndex();
 
 private:
 	HazeVM* m_VM;
-	std::vector<void*> m_KeepMemorys;
-	
+	bool m_IsForceGC;
+	MarkStage m_MarkStage;
+	uint64 m_MarkStartTimestamp;
+	uint64 m_MaxMarkTime;		//∫¡√Î
+
 	std::unique_ptr<MemoryFreeList> m_FreeList[MAX_HAZE_ALLOC_SIZE / GRANULE];
 	MemoryBlock* m_MemoryBlocks[PAGE_NUM];
 	std::unordered_map<void*, std::pair<GC_State, void*>> m_BigMemorys;
+
+	uint64 m_CurrMarkBaseIndex;
+	uint64 m_CurrMarkClassIndex;
+
+	std::vector<void*> m_KeepMemorys;
+	std::vector<std::pair<std::pair<uint64, HazeValueType>, GC_State>> m_MarkAddressBases;
+	std::vector< std::pair<std::pair<uint64, ClassData*>, GC_State>> m_MarkAddressClasses;
 };

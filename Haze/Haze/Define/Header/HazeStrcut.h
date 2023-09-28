@@ -28,26 +28,26 @@ struct HazeDefineType
 	{
 	}
 
-	HazeDefineType(HazeValueType m_Type, const HAZE_STRING& CustomName) : PrimaryType(m_Type), SecondaryType(HazeValueType::Void)
+	HazeDefineType(HazeValueType type, const HAZE_STRING& customName) : PrimaryType(type), SecondaryType(HazeValueType::Void)
 	{
-		this->CustomName = CustomName;
+		this->CustomName = customName;
 	}
 
-	HazeDefineType(HazeValueType m_Type, const HAZE_CHAR* CustomName) : PrimaryType(m_Type), SecondaryType(HazeValueType::Void)
+	HazeDefineType(HazeValueType type, const HAZE_CHAR* customName) : PrimaryType(type), SecondaryType(HazeValueType::Void)
 	{
-		this->CustomName = CustomName;
+		this->CustomName = customName;
 	}
 
-	bool operator==(const HazeDefineType& InType) const
+	bool operator==(const HazeDefineType& type) const
 	{
-		return PrimaryType == InType.PrimaryType && SecondaryType == InType.SecondaryType
-			&& CustomName == InType.CustomName;
+		return PrimaryType == type.PrimaryType && SecondaryType == type.SecondaryType
+			&& CustomName == type.CustomName;
 	}
 
-	bool operator!=(const HazeDefineType& InType)
+	bool operator!=(const HazeDefineType& type)
 	{
-		return PrimaryType != InType.PrimaryType || SecondaryType != InType.SecondaryType
-			|| CustomName != InType.CustomName;
+		return PrimaryType != type.PrimaryType || SecondaryType != type.SecondaryType
+			|| CustomName != type.CustomName;
 	}
 
 	void Reset()
@@ -63,49 +63,49 @@ struct HazeDefineType
 
 	bool HasCustomName() const { return HasCustomName(*this); }
 
-	bool StringStreamTo(HAZE_STRING_STREAM& SStream) const { return StringStreamTo(SStream, *this); }
+	bool StringStreamTo(HAZE_STRING_STREAM& hss) const { return StringStreamTo(hss, *this); }
 
 	template<typename Class>
-	void StringStream(Class* This, void(Class::* StringCall)(HAZE_STRING&), void(Class::* TypeCall)(uint32&)) { StringStream(This, StringCall, TypeCall, *this); }
+	void StringStream(Class* pThis, void(Class::* stringCall)(HAZE_STRING&), void(Class::* typeCall)(uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
 
-	static bool NeedSecondaryType(const HazeDefineType& m_Type)
+	static bool NeedSecondaryType(const HazeDefineType& type)
 	{
-		return m_Type.PrimaryType == HazeValueType::Array || m_Type.PrimaryType == HazeValueType::PointerBase ||
-			m_Type.PrimaryType == HazeValueType::PointerFunction || m_Type.PrimaryType == HazeValueType::PointerArray ||
-			m_Type.PrimaryType == HazeValueType::PointerPointer || m_Type.PrimaryType == HazeValueType::ReferenceBase;
+		return type.PrimaryType == HazeValueType::Array || type.PrimaryType == HazeValueType::PointerBase ||
+			type.PrimaryType == HazeValueType::PointerFunction || type.PrimaryType == HazeValueType::PointerArray ||
+			type.PrimaryType == HazeValueType::PointerPointer || type.PrimaryType == HazeValueType::ReferenceBase;
 	}
 
-	static bool NeedCustomName(const HazeDefineType& m_Type)
+	static bool NeedCustomName(const HazeDefineType& type)
 	{
-		return m_Type.PrimaryType == HazeValueType::Class || m_Type.PrimaryType == HazeValueType::PointerClass ||
-			m_Type.SecondaryType == HazeValueType::Class || m_Type.SecondaryType == HazeValueType::PointerClass ||
-			m_Type.PrimaryType == HazeValueType::ReferenceClass;
+		return type.PrimaryType == HazeValueType::Class || type.PrimaryType == HazeValueType::PointerClass ||
+			type.SecondaryType == HazeValueType::Class || type.SecondaryType == HazeValueType::PointerClass ||
+			type.PrimaryType == HazeValueType::ReferenceClass;
 	}
 
-	static bool HasCustomName(const HazeDefineType& m_Type)
+	static bool HasCustomName(const HazeDefineType& type)
 	{
-		return !m_Type.CustomName.empty();
+		return !type.CustomName.empty();
 	}
 
-	static bool StringStreamTo(HAZE_STRING_STREAM& SStream, const HazeDefineType& m_Type)
+	static bool StringStreamTo(HAZE_STRING_STREAM& hss, const HazeDefineType& type)
 	{
-		SStream << CAST_TYPE(m_Type.PrimaryType);
+		hss << CAST_TYPE(type.PrimaryType);
 
 		/*if (Type.PrimaryType == HazeValueType::MultiVariable)
 		{
 			HazeLog::LogInfo(HazeLog::Error, L"%s\n", L"Haze to do : " L"暂时只读多参数的基本类型");
 		}*/
 
-		if (m_Type.NeedSecondaryType())
+		if (type.NeedSecondaryType())
 		{
-			SStream << " " << CAST_TYPE(m_Type.SecondaryType);
+			hss << " " << CAST_TYPE(type.SecondaryType);
 		}
 
-		if (m_Type.NeedCustomName())
+		if (type.NeedCustomName())
 		{
-			if (m_Type.HasCustomName())
+			if (type.HasCustomName())
 			{
-				SStream << " " << m_Type.CustomName;
+				hss << " " << type.CustomName;
 			}
 			else
 			{
@@ -117,38 +117,38 @@ struct HazeDefineType
 	}
 
 	template<typename Class>
-	static void StringStream(Class* This, void(Class::* StringCall)(HAZE_STRING&), void(Class::* TypeCall)(uint32&), HazeDefineType& m_Type)
+	static void StringStream(Class* pThis, void(Class::* stringCall)(HAZE_STRING&), void(Class::* typeCall)(uint32&), HazeDefineType& type)
 	{
-		(This->*TypeCall)((uint32&)m_Type.PrimaryType);
+		(pThis->*typeCall)((uint32&)type.PrimaryType);
 
 		/*if (Type.PrimaryType == HazeValueType::MultiVariable)
 		{
 			HazeLog::LogInfo(HazeLog::Error, L"%s\n", L"Haze to do : " L"暂时只写多参数的基本类型");
 		}*/
 
-		if (m_Type.NeedSecondaryType())
+		if (type.NeedSecondaryType())
 		{
-			(This->*TypeCall)((uint32&)m_Type.SecondaryType);
+			(pThis->*typeCall)((uint32&)type.SecondaryType);
 		}
 
-		if (m_Type.NeedCustomName())
+		if (type.NeedCustomName())
 		{
-			(This->*StringCall)(m_Type.CustomName);
+			(pThis->*stringCall)(type.CustomName);
 		}
 	}
 };
 
 struct HazeDefineTypeHashFunction
 {
-	uint64 operator()(const HazeDefineType& m_Type) const
+	uint64 operator()(const HazeDefineType& type) const
 	{
-		if (!m_Type.CustomName.empty())
+		if (!type.CustomName.empty())
 		{
-			return std::hash<HAZE_STRING>()(m_Type.CustomName);
+			return std::hash<HAZE_STRING>()(type.CustomName);
 		}
 		else
 		{
-			return (uint64)m_Type.PrimaryType * 100 + (uint64)m_Type.SecondaryType * 10;
+			return (uint64)type.PrimaryType * 100 + (uint64)type.SecondaryType * 10;
 		}
 	}
 };
@@ -173,5 +173,5 @@ struct HazeVariableData
 
 struct HazeClassData
 {
-	std::vector<HazeDefineVariable> m_Data;
+	std::vector<HazeDefineVariable> Data;
 };
