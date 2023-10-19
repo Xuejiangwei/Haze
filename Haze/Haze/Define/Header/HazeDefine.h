@@ -105,7 +105,7 @@
 #define HAZE_NEW_ALIGN(X) ((X + HAZE_NEW_ALIGN_BYTE -1) & ~(HAZE_NEW_ALIGN_BYTE -1))
 
 using uint8 = unsigned char;
-
+using uchar = unsigned char;
 using hbyte = HAZE_BYTE;
 using uhbyte = unsigned HAZE_BYTE;
 using hchar = HAZE_CHAR;
@@ -113,3 +113,4 @@ using ushort = unsigned short;
 using uint32 = unsigned int;
 using int64 = long long;
 using uint64 = unsigned long long;
+using usize = size_t;

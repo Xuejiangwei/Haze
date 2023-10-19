@@ -26,11 +26,11 @@ private:
 
 		bool Empty() { return m_Childs.empty(); }
 		
-		size_t Size() { return m_Childs.size(); }
+		uint64 Size() { return m_Childs.size(); }
 		
 		void Add(std::unique_ptr<HazeJson>& node) { m_Childs.push_back(std::move(node)); }
 
-		HazeJson* operator[](size_t idx) { return m_Childs[idx].get(); }
+		HazeJson* operator[](uint64 idx) { return m_Childs[idx].get(); }
 		
 		bool Remove(HazeJson* node)
 		{
@@ -50,63 +50,71 @@ private:
 		std::vector<std::unique_ptr<HazeJson>> m_Childs;
 	};
 
-	class Context
+	class JsonBuffer
 	{
 		friend class HazeJson;
+	public:
+		JsonBuffer() : m_Root(nullptr), m_Offset(0), m_Data(nullptr), m_Size(0)
+		{}
+		
+		~JsonBuffer() {}
+
+		void StartRead();
+		
+		void StartWrite();
+
+	private:
+		HazeJson* m_Root;
 
 		char* m_Data;
 		size_t m_Size;
 		size_t m_Offset;
 
-		HazeJson* m_Root;
 		std::string m_ReadBuffer;
 		std::string m_WriteBuffer;
-
-		std::string stringNull_;
-	public:
-		Context() : m_Root(nullptr), m_Offset(0), m_Data(nullptr), m_Size(0)
-		{}
-		
-		~Context() {}
-
-		void StartRead();
-		
-		void StartWrite();
 	};
 
-	class Segment
+	class JsonNodeData
 	{
+		friend class HazeJson;
 	public:
-		enum class SegmentType
+		enum class DataType
 		{
 			None = 0,
 			Bool,
 			Int32,
+			UInt32,
 			Int64,
+			UInt64,
+			Float,
 			Double,
 			String
 		};
-		
-		SegmentType m_Type;
-		std::string m_Content;
 
-		union 
-		{
-			bool bool_;
-			int32_t int32_;
-			int64_t int64_;
-			double double_;
-		} m_Value;
+		JsonNodeData(DataType type = DataType::None);
 
-		Segment(SegmentType type = SegmentType::None);
-
-		~Segment();
+		~JsonNodeData();
 
 		void Clear();
 		
 		void ToString();
 		
-		void SetType(SegmentType type);
+		void SetType(DataType type);
+
+	private:
+		union
+		{
+			bool BoolValue;
+			int IntValue;
+			uint32 UIntValue;
+			int64 Int64Value;
+			uint64 UInt64Value;
+			float FloatValue;
+			double DoubleValue;
+		} m_Value;
+
+		DataType m_Type;
+		std::string m_Content;
 	};
 
 public:
@@ -116,14 +124,16 @@ public:
 
 	void operator=(bool val);
 	
-	void operator=(int32_t val);
+	void operator=(int val);
 	
-	void operator=(uint32_t val);
+	void operator=(uint32 val);
 	
-	void operator=(int64_t val);
+	void operator=(int64 val);
 	
-	void operator=(uint64_t val);
+	void operator=(uint64 val);
 	
+	void operator=(float val);
+
 	void operator=(double val);
 	
 	void operator=(const char* val);
@@ -138,38 +148,38 @@ public:
 
 	HazeJson& operator[](const std::string& str) { return SetObject(str.c_str()); }
 
-	size_t Size() { return m_Box ? m_Box->Size() : 0; }
+	size_t Size() { return m_JsonValue ? m_JsonValue->Size() : 0; }
 
-	bool Empty() { return m_Box ? m_Box->Empty() : true; }
+	bool Empty() { return m_JsonValue ? m_JsonValue->Empty() : true; }
 
-	std::unique_ptr<HazeJson> CreateNode(uint8 code);
+	std::unique_ptr<HazeJson> CreateNode(char code);
 
 	void AddNode(std::unique_ptr<HazeJson>& node);
 
 	void TrimSpace();
 
-	uint8 GetCharCode();
+	char GetCharCode();
 
-	uint8 GetChar();
+	char GetChar();
 
-	uint8 CheckCode(uint8 charCode);
+	char CheckCode(char charCode);
 
-	uint64 SearchCode(uint8 code);
+	usize SearchCode(char code);
 
-	JsonType CodeToType(uint8 code);
+	JsonType CodeToType(char code);
 	
-	const char* SegmentString();
+	const char* NodeDataString();
 
-	const char* KeyName();
+	const char* KeyNodeName();
 	
-	const char* data();
+	const char* Data();
 
 	const std::string& Encode();
 
 	bool Decode(const std::string& buffer);
 
 private:
-	void Read(std::shared_ptr<Context> context, bool isRoot = false);
+	void Read(std::shared_ptr<JsonBuffer> context, bool isRoot = false);
 
 	void ReadNumber();
 	
@@ -179,7 +189,7 @@ private:
 	
 	void ReadArray();
 
-	void Write(std::shared_ptr<Context> context, bool isRoot = false);
+	void Write(std::shared_ptr<JsonBuffer> context, bool isRoot = false);
 
 	void WriteNumber();
 	
@@ -189,19 +199,19 @@ private:
 	
 	void WriteArray();
 
-	HazeJson& SetArray(uint64 idx);
+	HazeJson& SetArray(usize idx);
 
 	HazeJson& SetObject(const char* str);
 
-	static void Log(const char* format, ...);
 private:
 	JsonType m_Type;
-	std::unique_ptr<HazeJsonList> m_Box;
-	std::unique_ptr<HazeJson> m_KeyName;
-	std::unique_ptr<Segment> m_JsonSegment;
+	usize m_ReadIndex;
+	usize m_Length;
 
-	std::shared_ptr<Context> m_Context;
-	std::shared_ptr<Context> m_Writecontext;
-	size_t m_Index;
-	size_t m_Length;
+	std::unique_ptr<HazeJson> m_KeyNameNode;
+	std::unique_ptr<HazeJsonList> m_JsonValue;
+	std::unique_ptr<JsonNodeData> m_NodeData;
+
+	std::shared_ptr<JsonBuffer> m_DecodeContext;
+	std::shared_ptr<JsonBuffer> m_Encodecontext;
 };

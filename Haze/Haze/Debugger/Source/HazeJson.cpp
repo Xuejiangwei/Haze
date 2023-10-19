@@ -1,9 +1,12 @@
 #include "HazeJson.h"
+#include "HazeLog.h"
+#include "HazeUtility.h"
+
 #include <stdarg.h>
 
 static HazeJson s_NodeNull;
 
-inline int SNPRINTF(char* buffer, size_t size, const char* format, ...)
+inline int JsonSnprintf(char* buffer, usize size, const char* format, ...)
 {
 	va_list va;
 	va_start(va, format);
@@ -12,147 +15,204 @@ inline int SNPRINTF(char* buffer, size_t size, const char* format, ...)
 	return result;
 }
 
-static inline void doubleToStr(double v, char* buffer, int size)
+static inline void DoubleToStringBuffer(double v, char* buffer, int size)
 {
 	double tmp = floor(v);
 	if (tmp == v)
-		SNPRINTF(buffer, size, "%ld", (long)v);
+	{
+		JsonSnprintf(buffer, size, "%ld", (long)v);
+	}
 	else
-		SNPRINTF(buffer, size, "%g", v);
+	{
+		JsonSnprintf(buffer, size, "%g", v);
+	}
 }
 
-static void int32ToStr(int32_t n, char* str, size_t size)
+template<typename T>
+static void IntToStringBuffer(T intValue, char* str, usize size)
 {
-	if (str == 0 || size < 1) return;
-	str[size - 1] = 0;
-	if (size < 2) return;
-	if (n == 0)
+	if (str == 0 || size < 2)
+	{
+		return;
+	}
+
+	//str[size - 1] = '\0';
+
+	if (intValue == 0)
 	{
 		str[0] = '0';
 		return;
 	}
-	size_t i = 0;
+
+	usize i = 0;
 	char buf[128] = { 0 };
-	int32_t tmp = n < 0 ? -n : n;
+
+	T tmp = intValue < 0 ? -intValue : intValue;
+	
 	while (tmp && i < 128)
 	{
 		buf[i++] = (tmp % 10) + '0';
 		tmp = tmp / 10;
 	}
-	size_t len = n < 0 ? ++i : i;
-	if (len > size)
+
+	usize needStrLen = intValue < 0 ? ++i : i;
+	if (needStrLen > size)
 	{
-		len = size;
-		i = len - 1;
+		needStrLen = size;
+		i = needStrLen - 1;
 	}
+
 	str[i] = 0;
-	while (1)
+	while (true)
 	{
 		--i;
-		if (i < 0 || buf[len - i - 1] == 0) break;
-		str[i] = buf[len - i - 1];
+		if (i < 0 || buf[needStrLen - i - 1] == 0)
+		{
+			break;
+		}
+
+		str[i] = buf[needStrLen - i - 1];
 	}
-	if (i == 0) str[i] = '-';
+
+	if (i == 0)
+	{
+		str[i] = '-';
+	}
 }
 
-static void int64ToStr(int64_t n, char* str, size_t size)
+template<typename T>
+static void UIntToStringBuffer(T intValue, char* str, usize size)
 {
-	if (str == 0 || size < 1) return;
-	str[size - 1] = 0;
-	if (size < 2) return;
-	if (n == 0)
+	if (str == 0 || size < 2)
+	{
+		return;
+	}
+
+	//str[size - 1] = '\0';
+
+	if (intValue == 0)
 	{
 		str[0] = '0';
 		return;
 	}
-	size_t i = 0;
+
+	usize i = 0;
 	char buf[128] = { 0 };
-	int64_t tmp = n < 0 ? -n : n;
+
+	T tmp = intValue;
+
 	while (tmp && i < 128)
 	{
 		buf[i++] = (tmp % 10) + '0';
 		tmp = tmp / 10;
 	}
-	size_t len = n < 0 ? ++i : i;
-	if (len > size)
+
+	usize needStrLen = intValue < 0 ? ++i : i;
+	if (needStrLen > size)
 	{
-		len = size;
-		i = len - 1;
+		needStrLen = size;
+		i = needStrLen - 1;
 	}
+
 	str[i] = 0;
-	while (1)
+	while (true)
 	{
 		--i;
-		if (i < 0 || buf[len - i - 1] == 0) break;
-		str[i] = buf[len - i - 1];
+		if (i < 0 || buf[needStrLen - i - 1] == 0)
+		{
+			break;
+		}
+
+		str[i] = buf[needStrLen - i - 1];
 	}
-	if (i == 0) str[i] = '-';
+
+	if (i == 0)
+	{
+		str[i] = '-';
+	}
 }
 
-void HazeJson::Context::StartRead()
+void HazeJson::JsonBuffer::StartRead()
 {
 	m_Size = m_ReadBuffer.size();
 	m_Data = (char*)m_ReadBuffer.data();
 	m_Offset = 0;
 }
 
-void HazeJson::Context::StartWrite()
+void HazeJson::JsonBuffer::StartWrite()
 {
 	m_WriteBuffer.clear();
 }
 
-HazeJson::Segment::Segment(SegmentType type)
+HazeJson::JsonNodeData::JsonNodeData(DataType type)
 {
 	SetType(type);
 }
 
-HazeJson::Segment::~Segment()
+HazeJson::JsonNodeData::~JsonNodeData()
 {
 }
 
-void HazeJson::Segment::SetType(SegmentType type)
+void HazeJson::JsonNodeData::SetType(DataType type)
 {
 	m_Type = type;
-	m_Value.int64_ = 0;
+	m_Value.Int64Value = 0;
 }
 
-void HazeJson::Segment::Clear()
+void HazeJson::JsonNodeData::Clear()
 {
-	m_Value.int64_ = 0;
+	m_Value.Int64Value = 0;
 }
 
-void HazeJson::Segment::ToString()
+void HazeJson::JsonNodeData::ToString()
 {
+	char buffer[64] = { 0 };
 	switch (m_Type)
 	{
-	case SegmentType::None:
-		m_Content = "null";
+	case DataType::None:
+		m_Content = "Null";
 		break;
-	case SegmentType::Bool:
-		m_Content = m_Value.bool_ ? "true" : "false";
+	case DataType::Bool:
+		m_Content = m_Value.BoolValue ? "true" : "false";
 		break;
-	case SegmentType::Int32:
+	case DataType::Int32:
 	{
-		char buffer[64] = { 0 };
-		int32ToStr(m_Value.int32_, buffer, sizeof(buffer));
+		IntToStringBuffer(m_Value.IntValue, buffer, sizeof(buffer));
 		m_Content = buffer;
 	}
 	break;
-	case SegmentType::Int64:
+	case DataType::UInt32:
 	{
-		char buffer[64] = { 0 };
-		int64ToStr(m_Value.int64_, buffer, sizeof(buffer));
+		UIntToStringBuffer(m_Value.UIntValue, buffer, sizeof(buffer));
 		m_Content = buffer;
 	}
 	break;
-	case SegmentType::Double:
+	case DataType::Int64:
 	{
-		char buffer[64] = { 0 };
-		doubleToStr(m_Value.double_, buffer, sizeof(buffer));
+		IntToStringBuffer(m_Value.Int64Value, buffer, sizeof(buffer));
 		m_Content = buffer;
 	}
 	break;
-	case SegmentType::String:
+	case DataType::UInt64:
+	{
+		UIntToStringBuffer(m_Value.UInt64Value, buffer, sizeof(buffer));
+		m_Content = buffer;
+	}
+	break;
+	case DataType::Float:
+	{
+		
+		DoubleToStringBuffer(m_Value.FloatValue, buffer, sizeof(buffer));
+		m_Content = buffer;
+	}
+	break;
+	case DataType::Double:
+	{
+		DoubleToStringBuffer(m_Value.DoubleValue, buffer, sizeof(buffer));
+		m_Content = buffer;
+	}
+	break;
+	case DataType::String:
 		break;
 	default:
 		m_Content.clear();
@@ -161,7 +221,7 @@ void HazeJson::Segment::ToString()
 }
 
 HazeJson::HazeJson(JsonType type)
-	: m_Type(type), m_Index(0), m_Length(0)
+	: m_Type(type), m_ReadIndex(0), m_Length(0)
 {
 }
 
@@ -169,164 +229,191 @@ HazeJson::~HazeJson()
 {
 }
 
-void HazeJson::Log(const char* format, ...)
-{
-	va_list ap;
-	va_start(ap, format);
-	char tmp[1024] = { 0 };
-	vsnprintf(tmp, sizeof(tmp), format, ap);
-	va_end(ap);
-	printf("HazeJson WARN:%s\n", tmp);
-}
-
 void HazeJson::operator=(bool val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
 	{
-		//Log("JsonNode is a container, not element");
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
+	
 	if (m_Type != JsonType::Number)
 	{
 		m_Type = JsonType::Number;
 	}
-	if (!m_JsonSegment)
+	
+	if (!m_NodeData)
 	{
-		m_JsonSegment = std::make_unique<Segment>();
+		m_NodeData = std::make_unique<JsonNodeData>();
 	}
 
-	m_JsonSegment->SetType(Segment::SegmentType::Bool);
-	m_JsonSegment->m_Value.bool_ = val;
+	m_NodeData->SetType(JsonNodeData::DataType::Bool);
+	m_NodeData->m_Value.BoolValue = val;
 }
 
-void HazeJson::operator=(int32_t val)
+void HazeJson::operator=(int val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
 	{
-		Log("JsonNode is a container, not element");
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
+
 	if (m_Type != JsonType::Number)
 	{
 		m_Type = JsonType::Number;
 	}
-	if (!m_JsonSegment)
+	
+	if (!m_NodeData)
 	{
-		m_JsonSegment = std::make_unique<Segment>();
+		m_NodeData = std::make_unique<JsonNodeData>();
 	}
 
-	m_JsonSegment->SetType(Segment::SegmentType::Int32);
-	m_JsonSegment->m_Value.int32_ = val;
+	m_NodeData->SetType(JsonNodeData::DataType::Int32);
+	m_NodeData->m_Value.IntValue = val;
 }
 
-void HazeJson::operator=(uint32_t val)
+void HazeJson::operator=(uint32 val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
 	{
-		Log("JsonNode is a container, not element");
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
+
 	if (m_Type != JsonType::Number)
 	{
 		m_Type = JsonType::Number;
 	}
-	if (!m_JsonSegment)
+
+	if (!m_NodeData)
 	{
-		m_JsonSegment = std::make_unique<Segment>();
+		m_NodeData = std::make_unique<JsonNodeData>();
 	}
 
-	m_JsonSegment->SetType(Segment::SegmentType::Int32);
-	m_JsonSegment->m_Value.int32_ = val;
+	m_NodeData->SetType(JsonNodeData::DataType::UInt32);
+	m_NodeData->m_Value.UIntValue = val;
 }
 
-void HazeJson::operator=(int64_t val)
+void HazeJson::operator=(int64 val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
 	{
-		Log("JsonNode is a container, not element");
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
+
 	if (m_Type != JsonType::Number)
 	{
 		m_Type = JsonType::Number;
 	}
-	if (!m_JsonSegment)
+
+	if (!m_NodeData)
 	{
-		m_JsonSegment = std::make_unique<Segment>();
+		m_NodeData = std::make_unique<JsonNodeData>();
 	}
 
-	m_JsonSegment->SetType(Segment::SegmentType::Int64);
-	m_JsonSegment->m_Value.int64_ = val;
+	m_NodeData->SetType(JsonNodeData::DataType::Int64);
+	m_NodeData->m_Value.Int64Value = val;
 }
 
-void HazeJson::operator=(uint64_t val)
+void HazeJson::operator=(uint64 val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
 	{
-		Log("JsonNode is a container, not element");
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
+
 	if (m_Type != JsonType::Number)
 	{
 		m_Type = JsonType::Number;
 	}
-	if (!m_JsonSegment)
+
+	if (!m_NodeData)
 	{
-		m_JsonSegment = std::make_unique<Segment>();
+		m_NodeData = std::make_unique<JsonNodeData>();
 	}
 
-	m_JsonSegment->SetType(Segment::SegmentType::Int64);
-	m_JsonSegment->m_Value.int64_ = val;
+	m_NodeData->SetType(JsonNodeData::DataType::UInt64);
+	m_NodeData->m_Value.UInt64Value = val;
+}
+
+void HazeJson::operator=(float val)
+{
+	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	{
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		return;
+	}
+
+	if (m_Type != JsonType::Number)
+	{
+		m_Type = JsonType::Number;
+	}
+
+	if (!m_NodeData)
+	{
+		m_NodeData = std::make_unique<JsonNodeData>();
+	}
+
+	m_NodeData->SetType(JsonNodeData::DataType::Float);
+	m_NodeData->m_Value.FloatValue = val;
 }
 
 void HazeJson::operator=(double val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
 	{
-		Log("JsonNode is a container, not element");
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
+
 	if (m_Type != JsonType::Number)
 	{
 		m_Type = JsonType::Number;
 	}
-	if (!m_JsonSegment)
+
+	if (!m_NodeData)
 	{
-		m_JsonSegment = std::make_unique<Segment>();
+		m_NodeData = std::make_unique<JsonNodeData>();
 	}
 
-	m_JsonSegment->SetType(Segment::SegmentType::Double);
-	m_JsonSegment->m_Value.double_ = val;
+	m_NodeData->SetType(JsonNodeData::DataType::Double);
+	m_NodeData->m_Value.DoubleValue = val;
 }
 
 void HazeJson::operator=(const char* val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
 	{
-		Log("JsonNode is a container, not element");
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
+
 	if (m_Type != JsonType::String)
 	{
 		m_Type = JsonType::String;
 	}
-	if (!m_JsonSegment)
+
+	if (!m_NodeData)
 	{
-		m_JsonSegment = std::make_unique<Segment>();
+		m_NodeData = std::make_unique<JsonNodeData>();
 	}
 
-	m_JsonSegment->SetType(Segment::SegmentType::String);
-	m_JsonSegment->m_Content.clear();
+	m_NodeData->SetType(JsonNodeData::DataType::String);
+	m_NodeData->m_Content.clear();
 
-	const char* ptr = 0;
-	for (size_t i = 0; i < strlen(val); ++i)
+	const char* ptr = nullptr;
+	for (usize i = 0; i < strlen(val); ++i)
 	{
 		ptr = val + i;
 		if (*ptr == '"' || *ptr == '\'')
 		{
-			m_JsonSegment->m_Content.push_back('\\');
+			m_NodeData->m_Content.push_back('\\');
 		}
-		m_JsonSegment->m_Content.push_back(*ptr);
+
+		m_NodeData->m_Content.push_back(*ptr);
 	}
 }
 
@@ -335,35 +422,35 @@ void HazeJson::operator=(const std::string& val)
 	operator=(val.c_str());
 }
 
-HazeJson& HazeJson::SetArray(uint64 idx)
+HazeJson& HazeJson::SetArray(usize idx)
 {
 	if (m_Type != JsonType::Array)
 	{
 		if (m_Type == JsonType::Object)
 		{
-			//Log("JsonNode must be ARRAY, not OBJECT");
+			HAZE_LOG_INFO(HAZE_TEXT("Json节点是数组类型，不能接受对象!\n"));
 		}
 		m_Type = JsonType::Array;
 	}
 	else
 	{
-		assert(m_Box);
+		assert(m_JsonValue);
 	}
-	if (!m_Box)
+	if (!m_JsonValue)
 	{
-		m_Box = std::make_unique<HazeJsonList>();
+		m_JsonValue = std::make_unique<HazeJsonList>();
 	}
 	
-	if (idx >= m_Box->m_Childs.size())
+	if (idx >= m_JsonValue->m_Childs.size())
 	{
-		m_Box->m_Childs.resize(idx + 1);
+		m_JsonValue->m_Childs.resize(idx + 1);
 	}
 	
-	auto& child = m_Box->m_Childs[idx];
+	auto& child = m_JsonValue->m_Childs[idx];
 	if (!child)
 	{
 		child = std::make_unique<HazeJson>();
-		m_Box->m_Childs[idx] = std::move(child);
+		m_JsonValue->m_Childs[idx] = std::move(child);
 	}
 
 	return *child;
@@ -375,67 +462,75 @@ HazeJson& HazeJson::SetObject(const char* str)
 	{
 		return s_NodeNull;
 	}
+
 	if (m_Type != JsonType::Object)
 	{
 		if (m_Type == JsonType::Array)
 		{
-			//Log("JsonNode must be OBJECT, not ARRAY");
+			HAZE_LOG_INFO(HAZE_TEXT("Json节点是对象类型，不能接受数组!\n"));
 		}
 		m_Type = JsonType::Object;
 	}
-	else
+	
+	if (!m_JsonValue)
 	{
-		assert(m_Box);
+		m_JsonValue = std::make_unique<HazeJsonList>();
 	}
-	if (!m_Box) m_Box = std::make_unique<HazeJsonList>();
 
 	HazeJson* child = nullptr;
-	for (size_t i = 0; i < m_Box->m_Childs.size(); ++i)
+	for (usize i = 0; i < m_JsonValue->m_Childs.size(); ++i)
 	{
-		child = m_Box->m_Childs[i].get();
-		if (!child) continue;
-		if (strcmp(child->KeyName(), str) == 0)
+		child = m_JsonValue->m_Childs[i].get();
+		if (!child)
+		{
+			continue;
+		}
+		
+		if (strcmp(child->KeyNodeName(), str) == 0)
 		{
 			return *child;
 		}
 	}
+
 	auto keyNode = std::make_unique<HazeJson>(JsonType::String);
 	*keyNode = str;
 	auto newChild = std::make_unique<HazeJson>();
 	child = newChild.get();
-	child->m_KeyName = std::move(keyNode);
+	child->m_KeyNameNode = std::move(keyNode);
 
-	size_t i = 0;
-	for (; i < m_Box->m_Childs.size(); ++i)
+	usize i = 0;
+	for (; i < m_JsonValue->m_Childs.size(); ++i)
 	{
-		if (!m_Box->m_Childs[i])
+		if (!m_JsonValue->m_Childs[i])
 		{
-			m_Box->m_Childs[i] = std::move(newChild);
+			m_JsonValue->m_Childs[i] = std::move(newChild);
 			break;
 		}
 	}
 
-	if (i >= m_Box->m_Childs.size())
+	if (i >= m_JsonValue->m_Childs.size())
 	{
-		m_Box->m_Childs.push_back(std::move(newChild));
+		m_JsonValue->m_Childs.push_back(std::move(newChild));
 	}
+
 	return *child;
 }
 
-const char* HazeJson::data()
+const char* HazeJson::Data()
 {
-	if (m_Context && m_Context->m_Data)
+	if (m_DecodeContext && m_DecodeContext->m_Data)
 	{
-		if (m_Index < m_Context->m_Size)
+		if (m_ReadIndex < m_DecodeContext->m_Size)
 		{
-			return m_Context->m_Data + m_Index;
+			return m_DecodeContext->m_Data + m_ReadIndex;
 		}
 	}
-	Log("JsonNode is Empty");
+
+	HAZE_LOG_INFO(HAZE_TEXT("Json节点为空，没有数据!\n"));
 	return nullptr;
 }
 
-std::unique_ptr<HazeJson> HazeJson::CreateNode(uint8 code)
+std::unique_ptr<HazeJson> HazeJson::CreateNode(char code)
 {
 	JsonType ctype = JsonType::None;
 	switch (code)
@@ -455,52 +550,58 @@ std::unique_ptr<HazeJson> HazeJson::CreateNode(uint8 code)
 
 void HazeJson::AddNode(std::unique_ptr<HazeJson>& node)
 {
-	if (!node) return;
-
-	if (m_Type != JsonType::Object && m_Type != JsonType::Array)
+	if (node)
 	{
-		Log("JsonNode must be OBJECT or ARRAY");
-		m_Type = node->m_KeyName ? JsonType::Object : JsonType::Array;
-	}
+		if (m_Type != JsonType::Object && m_Type != JsonType::Array)
+		{
+			HAZE_LOG_INFO(HAZE_TEXT("Json节点必须为对象或数组类型才能添加节点!\n"));
+			m_Type = node->m_KeyNameNode ? JsonType::Object : JsonType::Array;
+		}
 
-	if (!m_Box) m_Box = std::make_unique<HazeJsonList>();
-	m_Box->Add(node);
+		if (!m_JsonValue)
+		{
+			m_JsonValue = std::make_unique<HazeJsonList>();
+		}
+
+		m_JsonValue->Add(node);
+	}
 }
 
 void HazeJson::TrimSpace()
 {
-	if (!m_Context)
+	if (!m_DecodeContext)
 	{
 		return;
 	}
 	
 	char code = 0;
-	for (size_t i = m_Index; i < m_Context->m_Size; ++i)
+	for (usize i = m_ReadIndex; i < m_DecodeContext->m_Size; ++i)
 	{
-		code = m_Context->m_Data[i];
+		code = m_DecodeContext->m_Data[i];
 		if (code > ' ')
 		{
-			m_Index = i; break;
+			m_ReadIndex = i;
+			break;
 		}
 	}
 }
 
-uint8 HazeJson::GetCharCode()
+char HazeJson::GetCharCode()
 {
-	if (!m_Context)
+	if (!m_DecodeContext)
 	{
 		return 0;
 	}
 	
-	if (m_Index < m_Context->m_Size)
+	if (m_ReadIndex < m_DecodeContext->m_Size)
 	{
-		return (uint8)m_Context->m_Data[m_Index];
+		return m_DecodeContext->m_Data[m_ReadIndex];
 	}
 
 	return 0;
 }
 
-uint8 HazeJson::GetChar()
+char HazeJson::GetChar()
 {
 	uint8 code = GetCharCode();
 	if (code <= ' ')
@@ -511,34 +612,39 @@ uint8 HazeJson::GetChar()
 	return code;
 }
 
-uint8 HazeJson::CheckCode(uint8 charCode)
+char HazeJson::CheckCode(char charCode)
 {
-	uint8 code = GetCharCode();
+	char code = GetCharCode();
 	if (code != charCode)
 	{
 		TrimSpace();
 		code = GetCharCode();
 		if (code != charCode) return 0;
 	}
-	++m_Index;
+
+	++m_ReadIndex;
+
 	return code;
 }
 
-uint64 HazeJson::SearchCode(uint8 code)
+usize HazeJson::SearchCode(char code)
 {
-	char* data = m_Context->m_Data;
-	for (size_t i = m_Index; i < m_Context->m_Size; i++)
+	char* data = m_DecodeContext->m_Data;
+	for (size_t i = m_ReadIndex; i < m_DecodeContext->m_Size; i++)
 	{
 		if (data[i] == code)
 		{
-			if (i > 0 && data[i - 1] != '\\') return i;
+			if (i > 0 && data[i - 1] != '\\')
+			{
+				return i;
+			}
 		}
 	}
 
-	return (uint64)-1;
+	return (usize)-1;
 }
 
-JsonType HazeJson::CodeToType(uint8 code)
+JsonType HazeJson::CodeToType(char code)
 {
 	JsonType ctype = JsonType::None;
 	switch (code)
@@ -556,55 +662,59 @@ JsonType HazeJson::CodeToType(uint8 code)
 	return ctype;
 }
 
-const char* HazeJson::SegmentString()
+const char* HazeJson::NodeDataString()
 {
 	if (m_Type == JsonType::String)
 	{
-		if (!m_JsonSegment)
+		if (!m_NodeData)
 		{
-			m_JsonSegment = std::make_unique<Segment>(Segment::SegmentType::String);
-			m_JsonSegment->m_Content = data();
+			m_NodeData = std::make_unique<JsonNodeData>(JsonNodeData::DataType::String);
+			m_NodeData->m_Content = Data();
 		}
-		if (m_JsonSegment->m_Type == Segment::SegmentType::String)
+
+		if (m_NodeData->m_Type == JsonNodeData::DataType::String)
 		{
-			return m_JsonSegment->m_Content.c_str();
+			return m_NodeData->m_Content.c_str();
 		}
-		m_JsonSegment->ToString();
-		return m_JsonSegment->m_Content.c_str();
+
+		m_NodeData->ToString();
+		return m_NodeData->m_Content.c_str();
 	}
 	else if (m_Type == JsonType::Number)
 	{
-		if (!m_JsonSegment)
+		if (!m_NodeData)
 		{
-			if (!m_Context || !m_Context->m_Data || m_Length < 1)
+			if (!m_DecodeContext || !m_DecodeContext->m_Data || m_Length < 1)
 			{
 				return nullptr;
 			}
-			m_JsonSegment = std::make_unique<Segment>(Segment::SegmentType::None);
-			m_JsonSegment->m_Content = data();
-			return m_JsonSegment->m_Content.c_str();
+
+			m_NodeData = std::make_unique<JsonNodeData>(JsonNodeData::DataType::None);
+			m_NodeData->m_Content = Data();
+			return m_NodeData->m_Content.c_str();
 		}
-		if (m_JsonSegment)
+		if (m_NodeData)
 		{
-			if (m_JsonSegment->m_Type != Segment::SegmentType::None)
+			if (m_NodeData->m_Type != JsonNodeData::DataType::None)
 			{
-				m_JsonSegment->ToString();
+				m_NodeData->ToString();
 			}
-			return m_JsonSegment->m_Content.c_str();
+			return m_NodeData->m_Content.c_str();
 		}
 	}
 	else
 	{
-		//Log("JsonNode is no STRING");
+		HAZE_LOG_INFO(HAZE_TEXT("Json节点类型不是字符串类型!\n"));
 	}
+
 	return nullptr;
 }
 
-const char* HazeJson::KeyName()
+const char* HazeJson::KeyNodeName()
 {
-	if (m_KeyName)
+	if (m_KeyNameNode)
 	{
-		return m_KeyName->SegmentString();
+		return m_KeyNameNode->NodeDataString();
 	}
 
 	return "";
@@ -612,65 +722,75 @@ const char* HazeJson::KeyName()
 
 const std::string& HazeJson::Encode()
 {
-	if (!m_Writecontext)
+	if (!m_Encodecontext)
 	{
-		m_Writecontext = std::make_shared<Context>();
-		m_Writecontext->m_Root = this;
+		m_Encodecontext = std::make_shared<JsonBuffer>();
+		m_Encodecontext->m_Root = this;
 	}
 
-	m_Writecontext->StartWrite();
-	Write(m_Writecontext, true);
-	return m_Writecontext->m_WriteBuffer;
+	m_Encodecontext->StartWrite();
+	Write(m_Encodecontext, true);
+	return m_Encodecontext->m_WriteBuffer;
 }
 
 bool HazeJson::Decode(const std::string& buffer)
 {
 	//if (!makeRContext()) return false;
-	m_Context->m_ReadBuffer = buffer;
-	m_Context->StartRead();
+	m_DecodeContext->m_ReadBuffer = buffer;
+	m_DecodeContext->StartRead();
 	m_Type = CodeToType(GetChar());
+
 	try 
 	{
-		Read(m_Context, true);
+		Read(m_DecodeContext, true);
 	}
 	catch (const char* error) 
 	{
-		printf("HazeJson warn:decode catch exception %s", error);
+		auto wError = String2WString(error);
+		HAZE_LOG_ERR_W("解码Json错误 <%s>!\n", wError.c_str());
 	}
+
 	return true;
 }
 
-void HazeJson::Read(std::shared_ptr<Context> context, bool isRoot)
+void HazeJson::Read(std::shared_ptr<JsonBuffer> context, bool isRoot)
 {
-	if (m_Context)
+	if (m_DecodeContext)
 	{
 		if (isRoot)
 		{
-			assert(m_Context == context);
-			assert(m_Context->m_Root == this);
+			assert(m_DecodeContext == context);
+			assert(m_DecodeContext->m_Root == this);
 		}
 		else
 		{
-			assert(m_Context->m_Root != this);
-			if (m_Context->m_Root == this) return;
+			assert(m_DecodeContext->m_Root != this);
+			if (m_DecodeContext->m_Root == this)
+			{
+				return;
+			}
 		}
 	}
 
 	m_Length = 0;
-	m_Context = context;
-	m_Index = context->m_Offset;
+	m_DecodeContext = context;
+	m_ReadIndex = context->m_Offset;
 	switch (m_Type)
 	{
 	case JsonType::None:
 		break;
 	case JsonType::String:
-		ReadString(); break;
+		ReadString(); 
+		break;
 	case JsonType::Number:
-		ReadNumber(); break;
+		ReadNumber(); 
+		break;
 	case JsonType::Object:
-		ReadObject(); break;
+		ReadObject(); 
+		break;
 	case JsonType::Array:
-		ReadArray(); break;
+		ReadArray(); 
+		break;
 	default:
 		break;
 	}
@@ -679,28 +799,28 @@ void HazeJson::Read(std::shared_ptr<Context> context, bool isRoot)
 void HazeJson::ReadNumber()
 {
 	assert(m_Type == JsonType::Number);
-	unsigned char code = 0;
-	size_t sidx = m_Index;
-	size_t len = m_Context->m_Size;
-	char* data = m_Context->m_Data;
+	char code = 0;
+	usize sidx = m_ReadIndex;
+	usize len = m_DecodeContext->m_Size;
+	char* data = m_DecodeContext->m_Data;
 
-	for (; m_Index < len; m_Index++)
+	for (; m_ReadIndex < len; m_ReadIndex++)
 	{
-		code = data[m_Index];
+		code = data[m_ReadIndex];
 		if (code == ',' || code == '}' || code == ']')
 		{
-			m_Index--;
+			m_ReadIndex--;
 			break;
 		}
 	}
 
-	if (m_Index < sidx)
+	if (m_ReadIndex < sidx)
 	{
-		//throwError("lost number value");
+		HAZE_LOG_ERR_W("丢失数字类型值!\n");
 		return;
 	}
-	m_Length = m_Index - sidx + 1;
-	m_Index = sidx;
+	m_Length = m_ReadIndex - sidx + 1;
+	m_ReadIndex = sidx;
 }
 
 void HazeJson::ReadString()
@@ -712,81 +832,87 @@ void HazeJson::ReadString()
 		code = '\'';
 		if (!CheckCode(code))
 		{
-			//throwError("lost '\"' or \"'\"");
+			HAZE_LOG_ERR_W("丢失<'\"'>或<\"'\">!\n");
 			return;
 		}
 	}
-	size_t sidx = m_Index;
+	size_t sidx = m_ReadIndex;
 	size_t eidx = SearchCode(code);
 	if (eidx < 0)
 	{
-		//throwError("lost '\"' or \"'\"");
+		HAZE_LOG_ERR_W("丢失<'\"'>或<\"'\">!\n");
 		return;
 	}
-	m_Index = sidx;
+	m_ReadIndex = sidx;
 	m_Length = eidx - sidx + 1;
-	m_Context->m_Data[eidx] = 0;
+	m_DecodeContext->m_Data[eidx] = 0;
 }
 
 void HazeJson::ReadObject()
 {
 	assert(m_Type == JsonType::Object);
+
 	if (!CheckCode('{'))
 	{
-		//throwError("lost '{'");
+		HAZE_LOG_ERR_W("丢失<'{'>!\n");
 		return;
 	}
-	unsigned char code = 0;
-	size_t oidx = m_Index;
-	while (m_Index < m_Context->m_Size)
+	
+	char code = 0;
+	usize oidx = m_ReadIndex;
+	while (m_ReadIndex < m_DecodeContext->m_Size)
 	{
 		code = GetChar();
 		if (code == 0)
 		{
-			//throwError("lost '}'");
+			HAZE_LOG_ERR_W("丢失<'}'>!\n");
 			return;
 		}
 		
-		if (CheckCode('}')) break;
+		if (CheckCode('}'))
+		{
+			break;
+		}
 
 		auto keyNode = CreateNode(code);
 		if (keyNode->m_Type != JsonType::String)
 		{
-			//throwError("lost key");
+			HAZE_LOG_ERR_W("丢失Json的Key!\n");
 			return;
 		}
-		m_Context->m_Offset = m_Index;
-		keyNode->Read(m_Context);
-		m_Index = keyNode->m_Index + keyNode->m_Length;
+		m_DecodeContext->m_Offset = m_ReadIndex;
+		keyNode->Read(m_DecodeContext);
+		m_ReadIndex = keyNode->m_ReadIndex + keyNode->m_Length;
+
 		if (!CheckCode(':'))
 		{
-			//throwError("lost ':'");
+			HAZE_LOG_ERR_W("丢失Json的<':'>!\n");
 			return;
 		}
 
 		code = GetChar();
 		auto valNode = CreateNode(code);
-		valNode->m_KeyName = std::move(keyNode);
-		m_Context->m_Offset = m_Index;
-		valNode->Read(m_Context);
-		m_Index = valNode->m_Index + valNode->m_Length;
+		valNode->m_KeyNameNode = std::move(keyNode);
+		m_DecodeContext->m_Offset = m_ReadIndex;
+		valNode->Read(m_DecodeContext);
+		m_ReadIndex = valNode->m_ReadIndex + valNode->m_Length;
 		AddNode(valNode);
 
 		if (CheckCode('}'))
 		{
-			m_Context->m_Data[m_Index - 1] = 0;
+			m_DecodeContext->m_Data[m_ReadIndex - 1] = 0;
 			break;
 		}
 		if (!CheckCode(','))
 		{
-			//throwError("lost ','");
+			HAZE_LOG_ERR_W("丢失Json的<','>!\n");
 			return;
 		}
-		m_Context->m_Data[m_Index - 1] = 0;
+		m_DecodeContext->m_Data[m_ReadIndex - 1] = 0;
 	}
 
-	m_Length = m_Index - oidx;
-	m_Index = oidx;
+	m_Length = m_ReadIndex - oidx;
+	m_ReadIndex = oidx;
 }
 
 void HazeJson::ReadArray()
@@ -794,74 +920,81 @@ void HazeJson::ReadArray()
 	assert(m_Type == JsonType::Array);
 	if (!CheckCode('['))
 	{
-		//throwError("lost '['");
+		HAZE_LOG_ERR_W("丢失数组类型的<'['>!\n");
 		return;
 	}
 	uint8 code = 0;
-	size_t oidx = m_Index;
-	while (m_Index < m_Context->m_Size)
+	size_t oidx = m_ReadIndex;
+	while (m_ReadIndex < m_DecodeContext->m_Size)
 	{
 		code = GetChar();
 		if (code == 0)
 		{
-			//throwError("lost ']'");
+			HAZE_LOG_ERR_W("丢失数组类型的<']'>!\n");
 			return;
 		}
 		if (CheckCode(']')) break;
 		auto valNode = CreateNode(code);
-		m_Context->m_Offset = m_Index;
-		valNode->Read(m_Context);
-		m_Index = valNode->m_Index + valNode->m_Length;
+		m_DecodeContext->m_Offset = m_ReadIndex;
+		valNode->Read(m_DecodeContext);
+		m_ReadIndex = valNode->m_ReadIndex + valNode->m_Length;
 		AddNode(valNode);
 
 		if (CheckCode(']'))
 		{
-			m_Context->m_Data[m_Index - 1] = 0;
+			m_DecodeContext->m_Data[m_ReadIndex - 1] = 0;
 			break;
 		}
 		if (!CheckCode(','))
 		{
-			//throwError("lost ','");
+			HAZE_LOG_ERR_W("丢失Json的<','>!\n");
 			return;
 		}
-		m_Context->m_Data[m_Index - 1] = 0;
+		m_DecodeContext->m_Data[m_ReadIndex - 1] = 0;
 	}
 
-	m_Length = m_Index - oidx;
-	m_Index = oidx;
+	m_Length = m_ReadIndex - oidx;
+	m_ReadIndex = oidx;
 }
 
 
-void HazeJson::Write(std::shared_ptr<Context> context, bool isRoot)
+void HazeJson::Write(std::shared_ptr<JsonBuffer> context, bool isRoot)
 {
-	if (m_Writecontext)
+	if (m_Encodecontext)
 	{
 		if (isRoot)
 		{
-			assert(m_Writecontext == context);
-			assert(m_Writecontext->m_Root == this);
+			assert(m_Encodecontext == context);
+			assert(m_Encodecontext->m_Root == this);
 		}
 		else
 		{
-			assert(m_Writecontext->m_Root != this);
-			if (m_Writecontext->m_Root == this) return;
+			assert(m_Encodecontext->m_Root != this);
+			if (m_Encodecontext->m_Root == this)
+			{
+				return;
+			}
 		}
 	}
 
-	m_Writecontext = context;
+	m_Encodecontext = context;
 
 	switch (m_Type)
 	{
 	case JsonType::None:
 		break;
 	case JsonType::String:
-		WriteString(); break;
+		WriteString();
+		break;
 	case JsonType::Number:
-		WriteNumber(); break;
+		WriteNumber(); 
+		break;
 	case JsonType::Object:
-		WriteObject(); break;
+		WriteObject(); 
+		break;
 	case JsonType::Array:
-		WriteArray(); break;
+		WriteArray(); 
+		break;
 	default:
 		break;
 	}
@@ -871,18 +1004,18 @@ void HazeJson::WriteNumber()
 {
 	assert(m_Type == JsonType::Number);
 
-	if (m_KeyName)
+	if (m_KeyNameNode)
 	{
-		m_Writecontext->m_WriteBuffer.append(std::string("\"") + KeyName() + "\":");
+		m_Encodecontext->m_WriteBuffer.append(std::string("\"") + KeyNodeName() + "\":");
 	}
-	if (m_JsonSegment)
+	if (m_NodeData)
 	{
-		m_JsonSegment->ToString();
-		m_Writecontext->m_WriteBuffer.append(m_JsonSegment->m_Content);
+		m_NodeData->ToString();
+		m_Encodecontext->m_WriteBuffer.append(m_NodeData->m_Content);
 	}
 	else
 	{
-		m_Writecontext->m_WriteBuffer.append(data());
+		m_Encodecontext->m_WriteBuffer.append(Data());
 	}
 }
 
@@ -890,73 +1023,73 @@ void HazeJson::WriteString()
 {
 	assert(m_Type == JsonType::String);
 
-	if (m_KeyName)
+	if (m_KeyNameNode)
 	{
-		m_Writecontext->m_WriteBuffer.append(std::string("\"") + KeyName() + "\":");
+		m_Encodecontext->m_WriteBuffer.append(std::string("\"") + KeyNodeName() + "\":");
 	}
-	m_Writecontext->m_WriteBuffer.append(std::string("\"") + SegmentString() + "\"");
+	m_Encodecontext->m_WriteBuffer.append(std::string("\"") + NodeDataString() + "\"");
 }
 
 void HazeJson::WriteObject()
 {
 	assert(m_Type == JsonType::Object);
 
-	if (m_KeyName)
+	if (m_KeyNameNode)
 	{
-		m_Writecontext->m_WriteBuffer.append(std::string("\"") + KeyName() + "\":{");
+		m_Encodecontext->m_WriteBuffer.append(std::string("\"") + KeyNodeName() + "\":{");
 	}
 	else
 	{
-		m_Writecontext->m_WriteBuffer.append("{");
+		m_Encodecontext->m_WriteBuffer.append("{");
 	}
 
-	if (m_Box != 0)
+	if (m_JsonValue != 0)
 	{
 		size_t idx = 0;
-		size_t size = m_Box->Size();
+		size_t size = m_JsonValue->Size();
 		for (size_t i = 0; i < size; ++i)
 		{
-			if (!(*m_Box)[i]) continue;
+			if (!(*m_JsonValue)[i]) continue;
 			if (idx > 0)
 			{
-				m_Writecontext->m_WriteBuffer.append(",");
+				m_Encodecontext->m_WriteBuffer.append(",");
 			}
-			(*m_Box)[i]->Write(m_Writecontext);
+			(*m_JsonValue)[i]->Write(m_Encodecontext);
 			++idx;
 		}
 	}
 
-	m_Writecontext->m_WriteBuffer.append("}");
+	m_Encodecontext->m_WriteBuffer.append("}");
 }
 
 void HazeJson::WriteArray()
 {
 	assert(m_Type == JsonType::Array);
 
-	if (m_KeyName)
+	if (m_KeyNameNode)
 	{
-		m_Writecontext->m_WriteBuffer.append(std::string("\"") + KeyName() + "\":[");
+		m_Encodecontext->m_WriteBuffer.append(std::string("\"") + KeyNodeName() + "\":[");
 	}
 	else
 	{
-		m_Writecontext->m_WriteBuffer.append("[");
+		m_Encodecontext->m_WriteBuffer.append("[");
 	}
 
-	if (m_Box != 0)
+	if (m_JsonValue != 0)
 	{
 		size_t idx = 0;
-		size_t size = m_Box->Size();
+		size_t size = m_JsonValue->Size();
 		for (size_t i = 0; i < size; ++i)
 		{
-			if (!(*m_Box)[i]) continue;
+			if (!(*m_JsonValue)[i]) continue;
 			if (idx > 0)
 			{
-				m_Writecontext->m_WriteBuffer.append(",");
+				m_Encodecontext->m_WriteBuffer.append(",");
 			}
-			(*m_Box)[i]->Write(m_Writecontext);
+			(*m_JsonValue)[i]->Write(m_Encodecontext);
 			++idx;
 		}
 	}
 
-	m_Writecontext->m_WriteBuffer.append("]");
+	m_Encodecontext->m_WriteBuffer.append("]");
 }

@@ -9,7 +9,7 @@
 HazeCompilerArrayElementValue::HazeCompilerArrayElementValue(HazeCompilerModule* compilerModule, 
 	const HazeDefineType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count,
 	HazeCompilerValue* arrayValue, std::vector<HazeCompilerValue*> index) 
-	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayOrPointer(arrayValue), m_Index(index)
+	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayOrPointer(arrayValue), m_ArrayIndex(index)
 {
 }
 

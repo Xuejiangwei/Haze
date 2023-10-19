@@ -12,11 +12,11 @@ public:
 
 	HazeCompilerValue* GetArray() const { return m_ArrayOrPointer; }
 
-	const std::vector<HazeCompilerValue*>& GetIndex() const { return m_Index; }
+	const std::vector<HazeCompilerValue*>& GetIndex() const { return m_ArrayIndex; }
 
 private:
 	HazeCompilerValue* m_ArrayOrPointer;			//数组或者指针
-	std::vector<HazeCompilerValue*> m_Index;
+	std::vector<HazeCompilerValue*> m_ArrayIndex;
 };
 
 class HazeCompilerArrayValue : public HazeCompilerValue
