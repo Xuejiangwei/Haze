@@ -30,7 +30,7 @@ void HazePreInit()
 void HazeEnd()
 {
 	g_IsHazeEnd = true;
-	std::cout << std::endl << "Haze End!" << std::endl;
+	std::cout << std::endl << std::endl << "Haze End!" << std::endl;
 	system("pause");
 }
 

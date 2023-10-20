@@ -545,93 +545,135 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		leftExp->SetLeftAndRightBlock(m_LeftBlock, m_RightBlock);
 	}
 
-	auto leftValue = m_LeftAST->CodeGen();
-	auto rightValue = m_RightAST->CodeGen();
-
 	switch (m_OperatorToken)
 	{
 	case HazeToken::Add:
-		return m_Compiler->CreateAdd(leftValue, rightValue);
+		return m_Compiler->CreateAdd(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::Sub:
-		return m_Compiler->CreateSub(leftValue, rightValue);
+		return m_Compiler->CreateSub(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::Mul:
-		return m_Compiler->CreateMul(leftValue, rightValue);
+		return m_Compiler->CreateMul(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::Div:
-		return m_Compiler->CreateDiv(leftValue, rightValue);
+		return m_Compiler->CreateDiv(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::Mod:
-		return m_Compiler->CreateMod(leftValue, rightValue);
+		return m_Compiler->CreateMod(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::Not:
+		return m_Compiler->CreateNot(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::Shl:
+		return m_Compiler->CreateShl(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::Shr:
+		return m_Compiler->CreateShr(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::Assign:
+		return m_Compiler->CreateMov(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::BitAnd:
+		return m_Compiler->CreateBitAnd(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::BitOr:
+		return m_Compiler->CreateBitOr(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::BitXor:
+		return m_Compiler->CreateBitXor(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::AddAssign:
+		return m_Compiler->CreateAdd(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::SubAssign:
+		return m_Compiler->CreateSub(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::MulAssign:
+		return m_Compiler->CreateMul(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::DivAssign:
+		return m_Compiler->CreateDiv(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::ModAssign:
+		return m_Compiler->CreateMod(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::BitAndAssign:
+		return m_Compiler->CreateBitAnd(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::BitOrAssign:
+		return m_Compiler->CreateBitOr(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::BitXorAssign:
+		return m_Compiler->CreateBitXor(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::ShlAssign:
+		return m_Compiler->CreateShl(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
+	case HazeToken::ShrAssign:
+		return m_Compiler->CreateShr(m_LeftAST->CodeGen(), m_RightAST->CodeGen(), true);
 	case HazeToken::And:
 	{
-		auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
+		auto leftValue = m_LeftAST->CodeGen();
 		if (!leftExp)
 		{
-			m_Compiler->CreateBoolCmp(leftValue);
+			m_Compiler->CreateBoolCmp(m_LeftAST->CodeGen());
+		}
+		else
+		{
+			m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(leftExp->m_OperatorToken), m_RightAST ? nullptr : m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+				m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
 		}
 
 		if (rightExp)
 		{
-			m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(m_OperatorToken), nullptr,
-				m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-
-			m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-				m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-		}
-		else
-		{
-			m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal, nullptr, m_RightBlock->GetShared());
-			m_Compiler->CreateBoolCmp(rightValue);
-			m_Compiler->CreateCompareJmp(HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-				m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-		}
-		return leftValue;
-	}
-	case HazeToken::Or:
-	{
-		auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
-
-		auto retValue = m_LeftAST->CodeGen();
-
-		if (leftExp && IsAndToken(leftExp->m_OperatorToken))
-		{
-			auto block = HazeBaseBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, m_Compiler->GetInsertBlock());
-			m_DefaultBlock = block.get();
-			leftExp->SetLeftAndRightBlock(m_LeftBlock, m_DefaultBlock);
-		}
-
-		if (m_DefaultBlock)
-		{
-			m_Compiler->SetInsertBlock(m_DefaultBlock->GetShared());
+			m_RightAST->CodeGen();
+			if (!dynamic_cast<ASTBinaryExpression*>(rightExp->m_RightAST.get()))
+			{
+				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(rightExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+					m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
+			}
 		}
 		else
 		{
 			if (!leftExp)
 			{
-				m_Compiler->CreateBoolCmp(retValue);
+				m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal,
+					nullptr, m_RightBlock->GetShared());
+			}
+
+			auto rightValue = m_RightAST->CodeGen();
+			m_Compiler->CreateBoolCmp(rightValue);
+			m_Compiler->CreateCompareJmp(HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+				m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
+		}
+
+		return leftValue;
+	}
+	case HazeToken::Or:
+	{
+		auto leftValue = m_LeftAST->CodeGen();
+		/*if (m_DefaultBlock)
+		{
+			m_Compiler->SetInsertBlock(m_DefaultBlock->GetShared());
+		}
+		else*/
+		{
+			if (!leftExp)
+			{
+				m_Compiler->CreateBoolCmp(leftValue);
 			}
 			else
 			{
-				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
+				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(leftExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
+			}
+
+			if (rightExp)
+			{
+				m_RightAST->CodeGen();
+				if (!dynamic_cast<ASTBinaryExpression*>(rightExp->m_RightAST.get()))
+				{
+					m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(rightExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+						m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
+				}
+			}
+			else
+			{
+				if (!leftExp)
+				{
+					m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal,
+						m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+						m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
+				}
+
+				auto rightValue = m_RightAST->CodeGen();
+				m_Compiler->CreateBoolCmp(rightValue);
+				m_Compiler->CreateCompareJmp(HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+					m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
 			}
 		}
 
-		rightValue;
-
-		return retValue;
+		return leftValue;
 	}
-	case HazeToken::Not:
-		return m_Compiler->CreateNot(leftValue, rightValue);
-	case HazeToken::Shl:
-		return m_Compiler->CreateShl(leftValue, rightValue);
-	case HazeToken::Shr:
-		return m_Compiler->CreateShr(leftValue, rightValue);
-	case HazeToken::Assign:
-		return m_Compiler->CreateMov(leftValue, rightValue);
-	case HazeToken::BitAnd:
-		return m_Compiler->CreateBitAnd(leftValue, rightValue);
-	case HazeToken::BitOr:
-		return m_Compiler->CreateBitOr(leftValue, rightValue);
-	case HazeToken::BitXor:
-		return m_Compiler->CreateBitXor(leftValue, rightValue);
 	case HazeToken::Equal:
 	case HazeToken::NotEqual:
 	case HazeToken::Greater:
@@ -639,7 +681,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	case HazeToken::Less:
 	case HazeToken::LessEqual:
 	{
-		auto retValue = m_Compiler->CreateIntCmp(leftValue, rightValue);
+		auto retValue = m_Compiler->CreateIntCmp(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 		if (m_LeftBlock || m_RightBlock)
 		{
 			m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
@@ -648,26 +690,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 
 		return retValue;
 	}
-	case HazeToken::AddAssign:
-		return m_Compiler->CreateAdd(leftValue, rightValue, true);
-	case HazeToken::SubAssign:
-		return m_Compiler->CreateSub(leftValue, rightValue, true);
-	case HazeToken::MulAssign:
-		return m_Compiler->CreateMul(leftValue, rightValue, true);
-	case HazeToken::DivAssign:
-		return m_Compiler->CreateDiv(leftValue, rightValue, true);
-	case HazeToken::ModAssign:
-		return m_Compiler->CreateMod(leftValue, rightValue, true);
-	case HazeToken::BitAndAssign:
-		return m_Compiler->CreateBitAnd(leftValue, rightValue, true);
-	case HazeToken::BitOrAssign:
-		return m_Compiler->CreateBitOr(leftValue, rightValue, true);
-	case HazeToken::BitXorAssign:
-		return m_Compiler->CreateBitXor(leftValue, rightValue, true);
-	case HazeToken::ShlAssign:
-		return m_Compiler->CreateShl(leftValue, rightValue, true);
-	case HazeToken::ShrAssign:
-		return m_Compiler->CreateShr(leftValue, rightValue, true);
+	
 	default:
 		break;
 	}

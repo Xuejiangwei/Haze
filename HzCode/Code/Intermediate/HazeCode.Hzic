@@ -13,24 +13,16 @@ ClassTable
 FunctionTable
 1
 Function 主函数 0
-Variable 甲$1 15 对象 0 8 13
-Variable 我的五子棋$2 21 五子棋 8 4612 18
-Variable 甲$3 7 4620 4 24
-Variable 乙$4 7 4624 4 25
+Variable 我的五子棋$1 21 五子棋 0 4616 18
+Variable 甲$2 7 4616 4 24
+Variable 乙$3 7 4620 4 25
 FunctionStart 12
 
 Block Entry
-NEW 15 对象 2 5
-MOV 甲$1 2 0 15 对象 New_R 1 5 15 对象
-MOV 甲$1指之身份证号 2 14 7 100 1 1 7
-MOV 甲$1指之性别 2 14 7 5 1 1 7
-PUSH 甲$1 2 12 15 对象
-PUSH RetAddress 0 9 7
-CALL 对象@打印对象 22 0 8 对象
 PUSH 常字符串指针 1 2 14 4 0
 PUSH RetAddress 0 9 7
 CALL 打印 22 1 8 标准流
-PUSH 我的五子棋$2 2 11 15 五子棋
+PUSH 我的五子棋$1 2 11 15 五子棋
 PUSH RetAddress 0 9 7
 CALL 五子棋@开始游戏 22 0 8 五子棋
 MOV Temp_R0 1 7 1 1 1 1 1
@@ -39,23 +31,23 @@ CMP Temp_R0 1 7 1 1 1 1 1
 JE WhileBlock1 WhileBlock2
 
 Block WhileBlock1
-MOV 甲$3 2 0 7 100 1 1 7
-MOV 乙$4 2 0 7 99 1 1 7
-LEA Temp_R0 1 7 14 7 乙$4 2 0 7
-LEA Temp_R1 1 7 14 7 甲$3 2 0 7
+MOV 甲$2 2 0 7 100 1 1 7
+MOV 乙$3 2 0 7 99 1 1 7
+LEA Temp_R0 1 7 14 7 乙$3 2 0 7
+LEA Temp_R1 1 7 14 7 甲$2 2 0 7
 PUSH Temp_R0 1 7 14 7
 PUSH Temp_R1 1 7 14 7
 PUSH 常字符串指针 1 2 14 4 1
 PUSH RetAddress 0 9 7
 CALL 输入 22 3 24 标准流
 PUSH 玩家默认颜色 1 0 7
-PUSH 乙$4 2 0 7
-PUSH 甲$3 2 0 7
-PUSH 我的五子棋$2 2 11 15 五子棋
+PUSH 乙$3 2 0 7
+PUSH 甲$2 2 0 7
+PUSH 我的五子棋$1 2 11 15 五子棋
 PUSH RetAddress 0 9 7
 CALL 五子棋@放子 22 3 20 五子棋
 PUSH 玩家默认颜色 1 0 7
-PUSH 我的五子棋$2 2 11 15 五子棋
+PUSH 我的五子棋$1 2 11 15 五子棋
 PUSH RetAddress 0 9 7
 CALL 五子棋@是否胜利 22 1 12 五子棋
 CMP Ret_R 1 4 1 1 1 1 1
@@ -69,22 +61,22 @@ JMP WhileBlock2
 JMP DefaultBlock4
 
 Block DefaultBlock4
-LEA Temp_R0 1 7 14 7 乙$4 2 0 7
-LEA Temp_R1 1 7 14 7 甲$3 2 0 7
+LEA Temp_R0 1 7 14 7 乙$3 2 0 7
+LEA Temp_R1 1 7 14 7 甲$2 2 0 7
 PUSH AI默认颜色 1 0 7
 PUSH Temp_R0 1 7 14 7
 PUSH Temp_R1 1 7 14 7
-PUSH 我的五子棋$2 2 11 15 五子棋
+PUSH 我的五子棋$1 2 11 15 五子棋
 PUSH RetAddress 0 9 7
 CALL 五子棋@模拟计算AI放子 22 3 28 五子棋
 PUSH AI默认颜色 1 0 7
-PUSH 乙$4 2 0 7
-PUSH 甲$3 2 0 7
-PUSH 我的五子棋$2 2 11 15 五子棋
+PUSH 乙$3 2 0 7
+PUSH 甲$2 2 0 7
+PUSH 我的五子棋$1 2 11 15 五子棋
 PUSH RetAddress 0 9 7
 CALL 五子棋@放子 22 3 20 五子棋
 PUSH AI默认颜色 1 0 7
-PUSH 我的五子棋$2 2 11 15 五子棋
+PUSH 我的五子棋$1 2 11 15 五子棋
 PUSH RetAddress 0 9 7
 CALL 五子棋@是否胜利 22 1 12 五子棋
 CMP Ret_R 1 4 1 1 1 1 1
@@ -106,5 +98,5 @@ PUSH RetAddress 0 9 7
 CALL 打印 22 1 8 标准流
 RET Void 0 0 0
 
-FunctionEnd 45
+FunctionEnd 61
 

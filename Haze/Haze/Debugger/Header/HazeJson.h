@@ -2,6 +2,7 @@
 
 #include "Haze.h"
 
+//ÐÞ¸Ä×ÔOpenJson
 enum class JsonType
 {
 	None,
