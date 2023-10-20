@@ -1,5 +1,7 @@
-#include "HomeDecoration/GfGobangBoard.h"
-#include "ClientObject/NpcData/GfNpcCuriosityGobangData.h"
+#include "Gobang.h"
+#include <xutility>
+#include <random>
+#include <iostream>
 
 namespace GameFramework
 {
@@ -20,9 +22,9 @@ namespace GameFramework
 
 	void GfGobangBoard::ClearBoard()
 	{
-		for (int32_t i = 0; i < GobangSize; i++)
+		for (int i = 0; i < GobangSize; i++)
 		{
-			for (int32_t j = 0; j < GobangSize; j++)
+			for (int j = 0; j < GobangSize; j++)
 			{
 				m_nBoard[i][j] = EGfGobangColor::None;
 				m_nBlackScore[i][j] = EGfGobangScore::Minimum;
@@ -31,13 +33,13 @@ namespace GameFramework
 		}
 	}
 
-	int32_t GfGobangBoard::GetPieceCount()
+	int GfGobangBoard::GetPieceCount()
 	{
 		return m_nPieceCount;
 	}
 
-	//ÊäÈëÁ¬³ÉµÄÊýÁ¿£¬¼°Á½±ßÊÇ·ñÓÐ×èµ²£¬»ñµÃÏàÓ¦µÄ·ÖÊý
-	EGfGobangScore GfGobangBoard::GetScore(int32_t num, bool block1, bool block2)
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½èµ²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó¦ï¿½Ä·ï¿½ï¿½ï¿½
+	EGfGobangScore GfGobangBoard::GetScore(int num, bool block1, bool block2)
 	{
 		if (num >= 5)
 		{
@@ -95,20 +97,20 @@ namespace GameFramework
 		return EGfGobangScore::Zero;
 	}
 
-	EGfGobangScore GfGobangBoard::GetLineMaxScore(int32_t inX, int32_t inY, EGfGobangColor color)
+	EGfGobangScore GfGobangBoard::GetLineMaxScore(int inX, int inY, EGfGobangColor color)
 	{
 		if (color == EGfGobangColor::None)
 		{
 			return EGfGobangScore::Zero;
 		}
 
-		int32_t len = GobangSize;
-		int32_t colCount = 1;
+		int len = GobangSize;
+		int colCount = 1;
 		bool block1 = false;
 		bool block2 = false;
 
-		//ÅÐ¶Ï×ÝÏòÁ¬³ÉµÄÊýÁ¿¼°ÊÇ·ñÓÐ×èµ²
-		for (int32_t i = inY + 1; true; i++)
+		//ï¿½Ð¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½èµ²
+		for (int i = inY + 1; true; i++)
 		{
 			if (i >= len)
 			{
@@ -131,7 +133,7 @@ namespace GameFramework
 		}
 
 
-		for (int32_t i = inY - 1; true; i--)
+		for (int i = inY - 1; true; i--)
 		{
 			if (i < 0)
 			{
@@ -155,17 +157,17 @@ namespace GameFramework
 
 		EGfGobangScore colScore = GetScore(colCount, block1, block2);
 
-		if ((int32_t)colScore >= (int32_t)EGfGobangScore::Five)
+		if ((int)colScore >= (int)EGfGobangScore::Five)
 		{
 			return colScore;
 		}
 
-		int32_t rowCount = 1;
+		int rowCount = 1;
 		block1 = false;
 		block2 = false;
 
-		//ÅÐ¶ÏºáÏòÁ¬³ÉµÄÊýÁ¿¼°ÊÇ·ñÓÐ×èµ²
-		for (int32_t i = inX + 1; true; i++)
+		//ï¿½Ð¶Ïºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½èµ²
+		for (int i = inX + 1; true; i++)
 		{
 			if (i >= len)
 			{
@@ -186,7 +188,7 @@ namespace GameFramework
 			rowCount++;
 		}
 
-		for (int32_t i = inX - 1; true; i--)
+		for (int i = inX - 1; true; i--)
 		{
 			if (i < 0)
 			{
@@ -209,19 +211,19 @@ namespace GameFramework
 
 		EGfGobangScore rowScore = GetScore(rowCount, block1, block2);
 
-		if ((int32_t)rowScore >= (int32_t)EGfGobangScore::Five)
+		if ((int)rowScore >= (int)EGfGobangScore::Five)
 		{
 			return rowScore;
 		}
 
-		int32_t obliqueCount1 = 1;
+		int obliqueCount1 = 1;
 		block1 = false;
 		block2 = false;
 
-		//ÅÐ¶Ï·´Ð±ÏòÁ¬³ÉµÄÊýÁ¿¼°ÊÇ·ñÓÐ×èµ²
-		for (int32_t i = 1; true; i++)
+		//ï¿½Ð¶Ï·ï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½èµ²
+		for (int i = 1; true; i++)
 		{
-			int32_t tx = inX + i, ty = inY + i;
+			int tx = inX + i, ty = inY + i;
 			if (tx >= len || ty >= len)
 			{
 				block1 = true;
@@ -242,9 +244,9 @@ namespace GameFramework
 			obliqueCount1++;
 		}
 
-		for (int32_t i = 1; true; i++)
+		for (int i = 1; true; i++)
 		{
-			int32_t tx = inX - i, ty = inY - i;
+			int tx = inX - i, ty = inY - i;
 			if (tx < 0 || ty < 0)
 			{
 				block2 = true;
@@ -267,19 +269,19 @@ namespace GameFramework
 
 		EGfGobangScore obliqueScore1 = GetScore(obliqueCount1, block1, block2);
 
-		if ((int32_t)obliqueScore1 >= (int32_t)EGfGobangScore::Five)
+		if ((int)obliqueScore1 >= (int)EGfGobangScore::Five)
 		{
 			return obliqueScore1;
 		}
 
-		int32_t obliqueCount2 = 1;
+		int obliqueCount2 = 1;
 		block1 = false;
 		block2 = false;
 
-		//ÅÐ¶ÏÕýÐ±ÏòÁ¬³ÉµÄÊýÁ¿¼°ÊÇ·ñÓÐ×èµ²
-		for (int32_t i = 1; true; i++)
+		//ï¿½Ð¶ï¿½ï¿½ï¿½Ð±ï¿½ï¿½ï¿½ï¿½ï¿½Éµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ï¿½ï¿½ï¿½èµ²
+		for (int i = 1; true; i++)
 		{
-			int32_t tx = inX + i, ty = inY - i;
+			int tx = inX + i, ty = inY - i;
 			if (tx < 0 || ty < 0 || tx >= len || ty >= len)
 			{
 				block1 = true;
@@ -300,9 +302,9 @@ namespace GameFramework
 			obliqueCount2++;
 		}
 
-		for (int32_t i = 1; true; i++)
+		for (int i = 1; true; i++)
 		{
-			int32_t tx = inX - i, ty = inY + i;
+			int tx = inX - i, ty = inY + i;
 			if (tx < 0 || ty < 0 || tx >= len || ty >= len)
 			{
 				block2 = true;
@@ -325,20 +327,20 @@ namespace GameFramework
 
 		EGfGobangScore obliqueScore2 = GetScore(obliqueCount2, block1, block2);
 
-		if ((int32_t)obliqueScore2 >= (int32_t)EGfGobangScore::Five)
+		if ((int)obliqueScore2 >= (int)EGfGobangScore::Five)
 		{
 			return obliqueScore2;
 		}
 
-		return (EGfGobangScore)std::max(std::max((int32_t)colScore, (int32_t)rowScore), std::max((int32_t)obliqueScore1, (int32_t)obliqueScore2));
+		return (EGfGobangScore)std::max(std::max((int)colScore, (int)rowScore), std::max((int)obliqueScore1, (int)obliqueScore2));
 	}
 
-	void GfGobangBoard::GetAIPutPos(int32_t& outX, int32_t& outY, EGfGobangColor color)
+	void GfGobangBoard::GetAIPutPos(int& outX, int& outY, EGfGobangColor color)
 	{
 		if (m_nPieceCount < 2)
 		{
-			int32_t x = GobangSize / 2;
-			int32_t y = x;
+			int x = GobangSize / 2;
+			int y = x;
 			if (m_nBoard[x][y] == EGfGobangColor::None)
 			{
 				outX = x;
@@ -346,9 +348,9 @@ namespace GameFramework
 			}
 			else
 			{
-				int32_t temp = GobangSize / 4;
-				x += ((GfHelper::GfRandom::Next(0, 2) % 2 == 0 ? -1 : 1)* temp);
-				y += ((GfHelper::GfRandom::Next(0, 2) % 2 == 0 ? -1 : 1)* temp);
+				int temp = GobangSize / 4;
+				x += ((std::rand() % 2 == 0 ? -1 : 1) * temp);
+				y += ((std::rand() % 2 == 0 ? -1 : 1) * temp);
 
 				outX = x;
 				outY = y;
@@ -358,11 +360,11 @@ namespace GameFramework
 		}
 
 		EGfGobangScore(*pScore)[GobangSize] = (color == EGfGobangColor::Black) ? m_nBlackScore : m_nWhiteScore;
-		//»ñµÃµÃ·Ö×î´óµÄµãÓë·ÖÊý
+		//ï¿½ï¿½ÃµÃ·ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		EGfGobangScore aiScore = EGfGobangScore::Minimum;
-		for (int32_t i = m_nLeftBoundary; i < m_nRightBoundary; i++)
+		for (int i = m_nLeftBoundary; i <= m_nRightBoundary; i++)
 		{
-			for (int32_t j = m_nTopBoundary; j < m_nBottomBoundary; j++)
+			for (int j = m_nTopBoundary; j <= m_nBottomBoundary; j++)
 			{
 				if (m_nBoard[i][j] == EGfGobangColor::None)
 				{
@@ -372,13 +374,13 @@ namespace GameFramework
 						tempScore = GetLineMaxScore(i, j, color);
 					}
 
-					if ((int32_t)tempScore > (int32_t)aiScore)
+					if ((int)tempScore > (int)aiScore)
 					{
 						aiScore = tempScore;
 						outX = i;
 						outY = j;
 
-						if ((int32_t)aiScore >= (int32_t)EGfGobangScore::Five)
+						if ((int)aiScore >= (int)EGfGobangScore::Five)
 						{
 							return;
 						}
@@ -386,14 +388,14 @@ namespace GameFramework
 				}
 			}
 		}
-
-		EGfGobangColor opponentColor = (color == EGfGobangColor::Black) ? EGfGobangColor::White:EGfGobangColor::Black;
+		std::cout << "AI score " << (int)aiScore << std::endl;
+		EGfGobangColor opponentColor = (color == EGfGobangColor::Black) ? EGfGobangColor::White : EGfGobangColor::Black;
 		pScore = (opponentColor == EGfGobangColor::Black) ? m_nBlackScore : m_nWhiteScore;
-		//»ñµÃÍæ¼ÒµÃ·Ö×î´óµÄµãÓë·ÖÊý
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÃ·ï¿½ï¿½ï¿½ï¿½Äµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		EGfGobangScore playerScore = EGfGobangScore::Minimum;
-		for (int32_t i = m_nLeftBoundary; i < m_nRightBoundary; i++)
+		for (int i = m_nLeftBoundary; i <= m_nRightBoundary; i++)
 		{
-			for (int32_t j = m_nTopBoundary; j < m_nBottomBoundary; j++)
+			for (int j = m_nTopBoundary; j <= m_nBottomBoundary; j++)
 			{
 				if (m_nBoard[i][j] == EGfGobangColor::None)
 				{
@@ -402,18 +404,19 @@ namespace GameFramework
 					{
 						tempScore = GetLineMaxScore(i, j, opponentColor);
 					}
-
-					if ((int32_t)tempScore > (int32_t)playerScore)
+					std::cout << "player smulation score " << (int)tempScore << " " << (int)playerScore
+						<< " " << i << " " << j << std::endl;
+					if ((int)tempScore > (int)playerScore)
 					{
 						playerScore = tempScore;
-						if ((int32_t)playerScore > (int32_t)aiScore)
+						if ((int)playerScore > (int)aiScore)
 						{
-							//Èç¹ûÍæ¼ÒµÃ·Ö¸ßÓÚai×î¸ß·Ö£¬Ñ¡ÔòÕ¼ÓÃ´Ëµã
+							//ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÃ·Ö¸ï¿½ï¿½ï¿½aiï¿½ï¿½ß·Ö£ï¿½Ñ¡ï¿½ï¿½Õ¼ï¿½Ã´Ëµï¿½
 							outX = i;
 							outY = j;
-							if ((int32_t)playerScore >= (int32_t)EGfGobangScore::Five)
+							if ((int)playerScore >= (int)EGfGobangScore::Five)
 							{
-								//Èç¹ûÍæ¼ÒµÃ·Ö´óÓÚµÈÓÚÁ¬³ÉÎå×ÓµÄµÃ·Ö£¬Ñ¡ÔòÕ¼ÓÃ´Ëµã£¬²¢return
+								//ï¿½ï¿½ï¿½ï¿½ï¿½ÒµÃ·Ö´ï¿½ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÓµÄµÃ·Ö£ï¿½Ñ¡ï¿½ï¿½Õ¼ï¿½Ã´Ëµã£¬ï¿½ï¿½return
 								return;
 							}
 						}
@@ -423,7 +426,7 @@ namespace GameFramework
 		}
 	}
 
-	EGfGobangColor GfGobangBoard::GetColorByPos(int32_t inX, int32_t inY)
+	EGfGobangColor GfGobangBoard::GetColorByPos(int inX, int inY)
 	{
 		if (inX < GobangSize && inY < GobangSize)
 		{
@@ -443,7 +446,7 @@ namespace GameFramework
 		return m_eTInviteeColor;
 	}
 
-	void GfGobangBoard::PutPiece(int32_t inX, int32_t inY, EGfGobangColor color)
+	void GfGobangBoard::PutPiece(int inX, int inY, EGfGobangColor color)
 	{
 		if (inX < GobangSize && inY < GobangSize)
 		{
@@ -454,7 +457,7 @@ namespace GameFramework
 		}
 	}
 
-	void GfGobangBoard::StartGame(EGfGobangColor inviterColor, EGfGobangColor targetColor, int32_t updateScoreRange)
+	void GfGobangBoard::StartGame(EGfGobangColor inviterColor, EGfGobangColor targetColor, int updateScoreRange)
 	{
 		m_nPieceCount = 0;
 		m_nTopBoundary = GobangSize / 2;
@@ -467,8 +470,116 @@ namespace GameFramework
 		ClearBoard();
 	}
 
-	void GfGobangBoard::UpdateBoundary(int32_t x, int32_t y)
+	EGfGobangColor GfGobangBoard::IsEnd()
 	{
+		for (size_t i = 0; i < GobangSize; i++)
+		{
+			for (size_t j = 0; j < GobangSize; j++) 
+			{
+				if (m_nBlackScore[i][j] > EGfGobangScore::Five)
+				{
+					return EGfGobangColor::Black;
+				}
+			}
+		}
+
+		for (size_t i = 0; i < GobangSize; i++)
+		{
+			for (size_t j = 0; j < GobangSize; j++)
+			{
+				if (m_nWhiteScore[i][j] > EGfGobangScore::Five)
+				{
+					return EGfGobangColor::White;
+				}
+			}
+		}
+
+		return EGfGobangColor::None;
+	}
+
+	void GfGobangBoard::PrintBoard()
+	{
+		std::cout << "Print board" << std::endl<<"    ";
+
+		for (size_t i = 0; i < GobangSize; i++)
+		{
+			if (i < 10)
+			{
+				std::cout << i << "  ";
+			}
+			else
+			{
+				std::cout << i << " ";
+			}
+		}
+		std::cout << std::endl;
+
+		for(size_t i = 0; i < GobangSize; i++)
+		{
+			if (i < 10)
+			{
+				std::cout << i << "  ";
+			}
+			else
+			{
+				std::cout << i << " ";
+			}
+			for (size_t j = 0; j < GobangSize; j++)
+			{
+				if (m_nBoard[j][i] == EGfGobangColor::None)
+				{
+					std::cout << "  X";
+				}
+				else if (m_nBoard[j][i] == EGfGobangColor::Black)
+				{
+					std::cout << "  B";
+				}
+				else if (m_nBoard[j][i] == EGfGobangColor::White)
+				{
+					std::cout << "  W";
+				}
+			}
+			std::cout << std::endl;
+		}
+	}
+
+	void GfGobangBoard::PrintScore(EGfGobangColor color)
+	{
+		std::cout << "Print Score "<< (int)color << std::endl << "    ";
+		for (size_t i = 0; i < GobangSize; i++)
+		{
+			if (i < 10)
+			{
+				std::cout << i << "  ";
+			}
+			else
+			{
+				std::cout << i << " ";
+			}
+		}
+		std::cout << std::endl;
+		EGfGobangScore(*pScore)[GobangSize] = (color == EGfGobangColor::Black) ? m_nBlackScore : m_nWhiteScore;
+		for (size_t i = 0; i < GobangSize; i++)
+		{
+			if (i < 10)
+			{
+				std::cout << i << "  ";
+			}
+			else
+			{
+				std::cout << i << " ";
+			}
+			for (size_t j = 0; j < GobangSize; j++)
+			{
+				std::cout << "  " << (int)pScore[j][i];
+			}
+			std::cout << std::endl;
+		}
+	}
+
+	void GfGobangBoard::UpdateBoundary(int x, int y)
+	{
+		std::swap(x, y);
 		if (x <= m_nTopBoundary)
 		{
 			m_nTopBoundary = x;
@@ -506,16 +617,16 @@ namespace GameFramework
 		}
 	}
 
-	void GfGobangBoard::UpdateScore(int32_t x, int32_t y)
+	void GfGobangBoard::UpdateScore(int x, int y)
 	{
-		int32_t minRangeX = x - m_nUpdateScoreRange >= 0 ? x - m_nUpdateScoreRange : 0;
-		int32_t maxRangeX = x + m_nUpdateScoreRange < GobangSize ? y + m_nUpdateScoreRange : GobangSize;
-		int32_t minRangeY = y - m_nUpdateScoreRange >= 0 ? y - m_nUpdateScoreRange : 0;
-		int32_t maxRangeY = y + m_nUpdateScoreRange < GobangSize ? y + m_nUpdateScoreRange : GobangSize;
+		int minRangeX = x - m_nUpdateScoreRange >= 0 ? x - m_nUpdateScoreRange : 0;
+		int maxRangeX = x + m_nUpdateScoreRange < GobangSize ? y + m_nUpdateScoreRange : GobangSize;
+		int minRangeY = y - m_nUpdateScoreRange >= 0 ? y - m_nUpdateScoreRange : 0;
+		int maxRangeY = y + m_nUpdateScoreRange < GobangSize ? y + m_nUpdateScoreRange : GobangSize;
 
-		for (int32_t i = minRangeX; i < maxRangeX; i++)
+		for (int i = minRangeX; i < maxRangeX; i++)
 		{
-			for (int32_t j = minRangeY; j < maxRangeY; j++)
+			for (int j = minRangeY; j < maxRangeY; j++)
 			{
 				if (m_nBoard[i][j] == EGfGobangColor::None)
 				{

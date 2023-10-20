@@ -1,6 +1,41 @@
 #pragma once
-#include "../../Common/GfCommon.h"
 
+//Main 
+/*
+#include <iostream>
+#include "Gobang.h"
+using namespace GameFramework;
+
+int main()
+{
+    GfGobangBoard board;
+    board.StartGame(EGfGobangColor::Black, EGfGobangColor::White, 19);
+
+	while (true)
+	{
+		int x, y;
+		std::cout << "Player" << std::endl;
+		std::cin >> x >> y;
+		board.PutPiece(x, y, board.GetInviterColor());
+		board.PrintBoard();
+		board.PrintScore(board.GetInviterColor());
+		if (board.IsEnd() != EGfGobangColor::None)
+		{
+			break;
+		}
+
+		board.GetAIPutPos(x, y, board.GetInviteeColor());
+		std::cout << "AI" << std::endl << x << std::endl << y << std::endl;
+		board.PutPiece(x, y, board.GetInviteeColor());
+		board.PrintBoard();
+		board.PrintScore(board.GetInviteeColor());
+		if (board.IsEnd() != EGfGobangColor::None)
+		{
+			break;
+		}
+	}
+}
+*/
 namespace GameFramework
 {
 
@@ -8,7 +43,7 @@ namespace GameFramework
 #define GobangSize 19
 #endif
 
-	enum class EGfGobangScore : int32_t
+	enum class EGfGobangScore : int
 	{
 		Minimum,
 		Zero,
@@ -23,7 +58,12 @@ namespace GameFramework
 		Five,
 	};
 
-	enum class EGfGobangColor;
+	enum class EGfGobangColor : int
+	{
+		None,
+		Black,
+		White
+	};
 
 	class GfGobangBoard
 	{
@@ -32,19 +72,25 @@ namespace GameFramework
 		~GfGobangBoard();
 
 		void ClearBoard();
-		int32_t GetPieceCount();
-		EGfGobangScore GetScore(int32_t num, bool block1, bool block2);
-		EGfGobangScore GetLineMaxScore(int32_t inX, int32_t inY, EGfGobangColor color);
-		void GetAIPutPos(int32_t& outX, int32_t& outY, EGfGobangColor color);
-		EGfGobangColor GetColorByPos(int32_t inX, int32_t inY);
+		int GetPieceCount();
+		EGfGobangScore GetScore(int num, bool block1, bool block2);
+		EGfGobangScore GetLineMaxScore(int inX, int inY, EGfGobangColor color);
+		void GetAIPutPos(int& outX, int& outY, EGfGobangColor color);
+		EGfGobangColor GetColorByPos(int inX, int inY);
 		EGfGobangColor GetInviterColor();
 		EGfGobangColor GetInviteeColor();
-		void PutPiece(int32_t inX, int32_t inY, EGfGobangColor color);
-		void StartGame(EGfGobangColor inviterColor, EGfGobangColor targetColor, int32_t updateScoreRange);
+		void PutPiece(int inX, int inY, EGfGobangColor color);
+		void StartGame(EGfGobangColor inviterColor, EGfGobangColor targetColor, int updateScoreRange);
+
+		EGfGobangColor IsEnd();
+
+		void PrintBoard();
+
+		void PrintScore(EGfGobangColor color);
 
 	private:
-		void UpdateBoundary(int32_t x, int32_t y);
-		void UpdateScore(int32_t x, int32_t y);
+		void UpdateBoundary(int x, int y);
+		void UpdateScore(int x, int y);
 
 	private:
 		EGfGobangColor m_nBoard[GobangSize][GobangSize];
@@ -52,11 +98,11 @@ namespace GameFramework
 		EGfGobangScore m_nWhiteScore[GobangSize][GobangSize];
 		EGfGobangColor m_eInviterColor;
 		EGfGobangColor m_eTInviteeColor;
-		int32_t m_nPieceCount;
-		int32_t m_nTopBoundary;
-		int32_t m_nBottomBoundary;
-		int32_t m_nLeftBoundary;
-		int32_t m_nRightBoundary;
-		int32_t m_nUpdateScoreRange;
+		int m_nPieceCount;
+		int m_nTopBoundary;
+		int m_nBottomBoundary;
+		int m_nLeftBoundary;
+		int m_nRightBoundary;
+		int m_nUpdateScoreRange;
 	};
 }
