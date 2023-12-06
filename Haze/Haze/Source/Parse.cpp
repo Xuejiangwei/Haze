@@ -926,17 +926,20 @@ std::unique_ptr<ASTBase> Parse::ParseIfExpression(bool recursion)
 		{
 			GetNextToken();
 			bool nextNotIf = m_CurrToken != HazeToken::If;
+			bool nextIfHasElseExpression = false;
 
 			if (nextNotIf)
 			{
 				elseExpression = ParseMultiExpression();
+				nextIfHasElseExpression = true;
 			}
 			else
 			{
 				elseExpression = ParseIfExpression(true);
+				nextIfHasElseExpression = dynamic_cast<ASTIfExpression*>(elseExpression.get())->HasElseExpression();
 			}
 
-			if (!recursion)
+			if (!recursion && nextIfHasElseExpression)
 			{
 				GetNextToken();
 			}

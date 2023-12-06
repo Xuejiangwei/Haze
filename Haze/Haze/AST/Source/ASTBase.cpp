@@ -849,6 +849,19 @@ std::shared_ptr<HazeCompilerValue> ASTIfExpression::CodeGen()
 	return nullptr;
 }
 
+bool ASTIfExpression::HasElseExpression() const
+{
+	auto ifExp = dynamic_cast<ASTIfExpression*>(m_ElseExpression.get());
+	if (ifExp)
+	{
+		return ifExp->HasElseExpression();
+	}
+	else
+	{
+		return m_ElseExpression != nullptr;
+	}
+}
+
 ASTWhileExpression::ASTWhileExpression(HazeCompiler* compiler, const SourceLocation& location, 
 	std::unique_ptr<ASTBase>& condition, std::unique_ptr<ASTBase>& multiExpression)
 	:ASTBase(compiler, location), m_Condition(std::move(condition)), m_MultiExpression(std::move(multiExpression))

@@ -398,6 +398,8 @@ public:
 
 	virtual bool IsBlock() const { return true; }
 
+	bool HasElseExpression() const;
+
 private:
 	std::unique_ptr<ASTBase> m_Condition;
 	std::unique_ptr<ASTBase> m_IfExpression;
