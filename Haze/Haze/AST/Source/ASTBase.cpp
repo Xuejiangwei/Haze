@@ -661,8 +661,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 				if (!leftExp)
 				{
 					m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal,
-						m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-						m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
+						m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
 				}
 
 				auto rightValue = m_RightAST->CodeGen();
