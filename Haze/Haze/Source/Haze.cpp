@@ -13,6 +13,9 @@ extern std::unique_ptr<HazeLibraryManager> g_HazeLibManager;
 
 bool g_IsHazeEnd = false;
 std::wstring g_rootCodePath;
+int g_ClassInheritLimit = 2;
+int g_ClassInheritLevelLimit = 2;
+
 
 void HazeNewHandler()
 {
@@ -52,6 +55,8 @@ enum class ParamType
 	MainFile,
 	DebugType,
 	LoadLibrary,
+	ClassInherit,
+	ClassInheritLevel,
 };
 
 uint32 GetParam(ParamType type, char** paramArray, int length)
@@ -61,6 +66,8 @@ uint32 GetParam(ParamType type, char** paramArray, int length)
 		{ ParamType::MainFile, "-m" },
 		{ ParamType::DebugType, "-d" },
 		{ ParamType::LoadLibrary, "-ld" },
+		{ ParamType::ClassInherit, "-ci" },
+		{ ParamType::ClassInheritLevel, "-cil" },
 	};
 
 	auto Iter = HashMap_Param.find(type);
@@ -109,7 +116,18 @@ int HazeMain(int argCount, char* argValue[])
 	}
 
 	HazeRunType runType = GetParam(ParamType::DebugType, argValue, argCount) != 0 ?
-		strcmp(argValue[GetParam(ParamType::DebugType, argValue, argCount)], "debug") == 0 ? HazeRunType::Debug : HazeRunType::Release : HazeRunType::Release;
+		strcmp(argValue[GetParam(ParamType::DebugType, argValue, argCount)], "debug") == 0 ? 
+		HazeRunType::Debug : HazeRunType::Release : HazeRunType::Release;
+
+	if (GetParam(ParamType::ClassInherit, argValue, argCount) > 0)
+	{
+		g_ClassInheritLimit = std::stoi(argValue[GetParam(ParamType::ClassInherit, argValue, argCount)]);
+	}
+
+	if (GetParam(ParamType::ClassInheritLevel, argValue, argCount) > 0)
+	{
+		g_ClassInheritLevelLimit = std::stoi(argValue[GetParam(ParamType::ClassInheritLevel, argValue, argCount)]);
+	}
 
 	std::filesystem::path mainFile(mainFilePath);
 	g_rootCodePath = mainFile.parent_path().wstring() + HAZE_TEXT("\\");

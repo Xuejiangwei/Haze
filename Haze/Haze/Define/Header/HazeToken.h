@@ -110,6 +110,9 @@ enum class HazeToken : unsigned int
 
 	Cast,
 
+	VirtualFunction,
+	PureVirtualFunction,
+
 	ReferenceBase,
 	ReferenceClass,
 

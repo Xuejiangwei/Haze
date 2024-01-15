@@ -112,6 +112,9 @@ static std::unordered_map<HAZE_STRING, HazeToken> s_HashMap_Token =
 
 	{TOKEN_CAST, HazeToken::Cast},
 
+	{TOKEN_VIRTUAL, HazeToken::VirtualFunction},
+	{TOKEN_PUREVIRTUAL, HazeToken::PureVirtualFunction},
+
 	{TOKEN_DEFINE, HazeToken::Define},
 
 	{TOKEN_STANDARD_LIBRARY, HazeToken::StandardLibrary},

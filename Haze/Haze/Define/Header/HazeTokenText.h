@@ -105,6 +105,9 @@
 
 #define TOKEN_CAST						HAZE_TEXT("转")
 
+#define TOKEN_VIRTUAL					HAZE_TEXT("重载")
+#define TOKEN_PUREVIRTUAL				HAZE_TEXT("必重载")
+
 #define TOKEN_DEFINE					HAZE_TEXT("定义")
 
 #define TOKEN_STANDARD_LIBRARY			HAZE_TEXT("标准库")

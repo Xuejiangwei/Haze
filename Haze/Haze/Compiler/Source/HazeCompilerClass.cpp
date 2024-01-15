@@ -242,6 +242,22 @@ uint32 HazeCompilerClass::GetOffset(uint32 index, std::shared_ptr<HazeCompilerVa
 	return index * member->GetSize();
 }
 
+int HazeCompilerClass::GetClassInheritLevel() const
+{
+	uint32 maxLevel = 0;
+	uint32 inheritLevel = 0;
+	for (auto& parentClass : m_ParentClass)
+	{
+		auto inheritLevel = parentClass->GetClassInheritLevel() + 1;
+		if (inheritLevel > maxLevel)
+		{
+			maxLevel = inheritLevel;
+		}
+	}
+
+	return maxLevel;
+}
+
 void HazeCompilerClass::MemoryAlign(uint32 memberNum)
 {
 	m_Offsets.resize(memberNum);

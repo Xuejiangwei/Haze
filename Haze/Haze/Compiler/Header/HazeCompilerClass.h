@@ -54,6 +54,8 @@ public:
 
 	uint32 GetOffset(uint32 index, std::shared_ptr<HazeCompilerValue> member);
 
+	int GetClassInheritLevel() const;
+
 private:
 	void MemoryAlign(uint32 memberNum);
 
