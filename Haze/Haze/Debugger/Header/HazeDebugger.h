@@ -46,9 +46,9 @@ public:
 
 	void Continue();
 
-	void SetJsonLocalVariable(HazeJson& json);
+	void SetJsonLocalVariable(XJson& json);
 
-	void SetJsonModuleGlobalVariable(HazeJson& json);
+	void SetJsonModuleGlobalVariable(XJson& json);
 
 	bool IsPause() const { return m_IsPause; }
 
@@ -67,20 +67,20 @@ private:
 
 	bool CurrModuleIsStepOver();
 
-	void SetJsonType(HazeJson& json, HazeDebugInfoType type) { json["Type"] = (int)type; }
+	void SetJsonType(XJson& json, HazeDebugInfoType type) { json["Type"] = (int)type; }
 
-	void SetJsonBreakFilePath(HazeJson& json, HAZE_STRING path)
+	void SetJsonBreakFilePath(XJson& json, HAZE_STRING path)
 	{
 		ReplacePathSlash(path);
 		auto m_Name = WString2String(path);
 		json["BreakPathFile"] = GB2312_2_UFT8(m_Name.c_str());
 	}
 
-	void SetJsonBreakLine(HazeJson& json, uint32 line) { json["BreakLine"] = line; }
+	void SetJsonBreakLine(XJson& json, uint32 line) { json["BreakLine"] = line; }
 
 	void SendBreakInfo();
 
-	void SetJsonVariableData(HazeJson& json, const HazeVariableData& variable, const char* address = nullptr, bool isStack = true);
+	void SetJsonVariableData(XJson& json, const HazeVariableData& variable, const char* address = nullptr, bool isStack = true);
 
 private:
 	HazeVM* m_VM;

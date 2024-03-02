@@ -1,6 +1,7 @@
 #pragma once
-
-#include "Haze.h"
+#include <vector>
+#include <memory>
+#include <string>
 
 //ÐÞ¸Ä×ÔOpenJson
 enum class JsonType
@@ -12,12 +13,14 @@ enum class JsonType
 	Array,
 };
 
-class HazeJson
+class XJson
 {
+	using int64 = long long;
+
 private:
 	class HazeJsonList
 	{
-		friend class HazeJson;
+		friend class XJson;
 	public:
 		HazeJsonList() {}
 
@@ -27,13 +30,13 @@ private:
 
 		bool Empty() { return m_Childs.empty(); }
 		
-		uint64 Size() { return m_Childs.size(); }
+		unsigned long long Size() { return m_Childs.size(); }
 		
-		void Add(std::unique_ptr<HazeJson>& node) { m_Childs.push_back(std::move(node)); }
+		void Add(std::unique_ptr<XJson>& node) { m_Childs.push_back(std::move(node)); }
 
-		HazeJson* operator[](uint64 idx) { return m_Childs[idx].get(); }
+		XJson* operator[](unsigned long long idx) { return m_Childs[idx].get(); }
 		
-		bool Remove(HazeJson* node)
+		bool Remove(XJson* node)
 		{
 			for (auto iter = m_Childs.begin(); iter != m_Childs.end(); iter++)
 			{
@@ -48,12 +51,12 @@ private:
 		}
 
 	private:
-		std::vector<std::unique_ptr<HazeJson>> m_Childs;
+		std::vector<std::unique_ptr<XJson>> m_Childs;
 	};
 
 	class JsonBuffer
 	{
-		friend class HazeJson;
+		friend class XJson;
 	public:
 		JsonBuffer() : m_Root(nullptr), m_Offset(0), m_Data(nullptr), m_Size(0)
 		{}
@@ -65,11 +68,11 @@ private:
 		void StartWrite();
 
 	private:
-		HazeJson* m_Root;
+		XJson* m_Root;
 
 		char* m_Data;
-		size_t m_Size;
-		size_t m_Offset;
+		unsigned long long m_Size;
+		unsigned long long m_Offset;
 
 		std::string m_ReadBuffer;
 		std::string m_WriteBuffer;
@@ -77,7 +80,7 @@ private:
 
 	class JsonNodeData
 	{
-		friend class HazeJson;
+		friend class XJson;
 	public:
 		enum class DataType
 		{
@@ -107,9 +110,9 @@ private:
 		{
 			bool BoolValue;
 			int IntValue;
-			uint32 UIntValue;
+			unsigned int UIntValue;
 			int64 Int64Value;
-			uint64 UInt64Value;
+			unsigned long long UInt64Value;
 			float FloatValue;
 			double DoubleValue;
 		} m_Value;
@@ -119,19 +122,19 @@ private:
 	};
 
 public:
-	HazeJson(JsonType type = JsonType::None);
+	XJson(JsonType type = JsonType::None);
 
-	~HazeJson();
+	~XJson();
 
 	void operator=(bool val);
 	
 	void operator=(int val);
 	
-	void operator=(uint32 val);
+	void operator=(unsigned int val);
 	
 	void operator=(int64 val);
 	
-	void operator=(uint64 val);
+	void operator=(unsigned long long val);
 	
 	void operator=(float val);
 
@@ -141,21 +144,21 @@ public:
 	
 	void operator=(const std::string& val);
 
-	HazeJson& operator[](int idx) { return SetArray(idx); }
+	XJson& operator[](int idx) { return SetArray(idx); }
 
-	HazeJson& operator[](uint64 idx) { return SetArray(idx); }
+	XJson& operator[](unsigned long long idx) { return SetArray(idx); }
 
-	HazeJson& operator[](const char* str) { return SetObject(str); }
+	XJson& operator[](const char* str) { return SetObject(str); }
 
-	HazeJson& operator[](const std::string& str) { return SetObject(str.c_str()); }
+	XJson& operator[](const std::string& str) { return SetObject(str.c_str()); }
 
 	size_t Size() { return m_JsonValue ? m_JsonValue->Size() : 0; }
 
 	bool Empty() { return m_JsonValue ? m_JsonValue->Empty() : true; }
 
-	std::unique_ptr<HazeJson> CreateNode(char code);
+	std::unique_ptr<XJson> CreateNode(char code);
 
-	void AddNode(std::unique_ptr<HazeJson>& node);
+	void AddNode(std::unique_ptr<XJson>& node);
 
 	void TrimSpace();
 
@@ -165,7 +168,7 @@ public:
 
 	char CheckCode(char charCode);
 
-	usize SearchCode(char code);
+	unsigned long long SearchCode(char code);
 
 	JsonType CodeToType(char code);
 	
@@ -200,16 +203,16 @@ private:
 	
 	void WriteArray();
 
-	HazeJson& SetArray(usize idx);
+	XJson& SetArray(unsigned long long idx);
 
-	HazeJson& SetObject(const char* str);
+	XJson& SetObject(const char* str);
 
 private:
 	JsonType m_Type;
-	usize m_ReadIndex;
-	usize m_Length;
+	unsigned long long m_ReadIndex;
+	unsigned long long m_Length;
 
-	std::unique_ptr<HazeJson> m_KeyNameNode;
+	std::unique_ptr<XJson> m_KeyNameNode;
 	std::unique_ptr<HazeJsonList> m_JsonValue;
 	std::unique_ptr<JsonNodeData> m_NodeData;
 

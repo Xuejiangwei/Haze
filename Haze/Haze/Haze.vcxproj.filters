@@ -150,7 +150,7 @@
     <ClCompile Include="VM\Source\HazeLibraryManager.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Debugger\Source\HazeJson.cpp">
+    <ClCompile Include="XJson\XJson.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Debugger\Source\HazeDebugger.cpp">
@@ -335,7 +335,7 @@
     <ClInclude Include="Library\Header\HazeLibraryDefine.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Debugger\Header\HazeJson.h">
+    <ClInclude Include="XJson\XJson.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerTemplateClass.h">

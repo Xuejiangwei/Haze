@@ -152,7 +152,7 @@ static bool HandleMessage(char* Message)
 	case HazeDebugOperatorType::GetLocalVariable:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<请求临时变量数据>操作\n"));
 		{
-			HazeJson json;
+			XJson json;
 			json["Type"] = (int)HazeDebugOperatorType::GetLocalVariable;
 			g_Debugger->SetJsonLocalVariable(json);
 			auto data = json.Encode();
