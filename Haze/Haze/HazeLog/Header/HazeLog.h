@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 class HazeLog
 {

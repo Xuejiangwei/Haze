@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 enum class LibraryLoadState
 {
@@ -20,6 +20,7 @@ class HazeLibraryManager
 {
 public:
 	HazeLibraryManager();
+
 	~HazeLibraryManager();
 
 	void ExecuteDLLFunction(const HAZE_STRING& moduleName, const HAZE_STRING& functionName, char* paramStartAddress, char* retStartAddress, void* stack, 

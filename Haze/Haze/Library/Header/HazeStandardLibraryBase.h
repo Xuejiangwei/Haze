@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 #define HAZE_STD_LIB_FUNCTION(TYPE, NAME, ...) \
 	static TYPE NAME(HAZE_STD_CALL_PARAM); \
@@ -19,5 +19,10 @@ public:
 
 	static void InitializeStdLibs();
 
+	static const std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*>& GetStdLib();
+
+	static int GetStdLibSize();
+
 private:
+	static std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> s_Hash_MapStdLib;
 };

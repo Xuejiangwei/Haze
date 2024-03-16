@@ -1,7 +1,7 @@
 #include <unordered_set>
 #include <set>
 #include "HazeValue.h"
-#include "Haze.h"
+#include "HazeHeader.h"
 #include "HazeInstruction.h"
 #include "HazeLog.h"
 

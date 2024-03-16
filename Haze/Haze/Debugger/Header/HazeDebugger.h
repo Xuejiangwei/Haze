@@ -3,7 +3,7 @@
 #include "HazeDebugInfo.h"
 #include <unordered_set>
 
-#include "HazeJson.h"
+#include "XJson.h"
 
 class HazeVM;
 

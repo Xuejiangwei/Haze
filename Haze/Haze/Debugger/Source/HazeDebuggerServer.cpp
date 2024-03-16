@@ -4,7 +4,7 @@
 #include "HazeLog.h"
 #include "HazeDebugger.h"
 
-#include "HazeJson.h"
+#include "XJson.h"
 
 #ifdef _WIN32
 #include <winsock.h>

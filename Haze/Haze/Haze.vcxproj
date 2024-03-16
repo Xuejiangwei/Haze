@@ -41,7 +41,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>Makefile</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty;$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\Library\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Xjson;$(ProjectDir)\ThirdParty;$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\Library\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -232,6 +232,7 @@
     <ClInclude Include="Define\Header\HazeDefine.h" />
     <ClInclude Include="HazeLog\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeFilePathHelper.h" />
+    <ClInclude Include="Header\HazeHeader.h" />
     <ClInclude Include="Library\Header\HazeLibraryDefine.h" />
     <ClInclude Include="XJson\XJson.h" />
     <ClInclude Include="VM\Header\HazeLibraryManager.h" />

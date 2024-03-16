@@ -2,7 +2,7 @@
 
 #include <vector>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 struct HazeRegister;
 
@@ -18,7 +18,7 @@ public:
 
 	~HazeStack();
 
-	void Start(uint32 address);
+	void Start(const HAZE_CHAR* functionName, uint32 address);
 
 public:
 	char* GetAddressByEBP(int offset) { return &m_StackMain[(uint64)m_EBP + offset]; }
@@ -61,9 +61,9 @@ private:
 
 	void PCStepInc();
 
-	void PreMainFunction();
+	void PreStartFunction();
 
-	void PushMainFuntion();
+	void PushStartFuntion(const HAZE_CHAR* functionName);
 
 	void InitStackRegister();
 

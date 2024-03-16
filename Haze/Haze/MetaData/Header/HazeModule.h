@@ -2,7 +2,7 @@
 
 #include <unordered_map>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 //class HazeClass;
 //class HazeFunction;

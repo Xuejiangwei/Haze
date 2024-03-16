@@ -2,7 +2,7 @@
 
 #include <fstream>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 #include "ModuleUnit.h"
 
 class HazeVM;

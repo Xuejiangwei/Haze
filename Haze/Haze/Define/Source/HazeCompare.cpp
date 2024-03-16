@@ -1,5 +1,5 @@
 #include "HazeCompare.h"
-#include "Haze.h"
+#include "HazeHeader.h"
 #include <unordered_map>
 
 HazeCmpType GetHazeCmpTypeByToken(HazeToken token)

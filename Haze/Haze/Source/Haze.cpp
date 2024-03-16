@@ -1,9 +1,13 @@
 #include <iostream>
 #include <filesystem>
 
+#include <unordered_map>
+#include <assert.h>
+
+#include "HazeHeader.h"
 #include "Haze.h"
+#include "HazeHeader.h"
 #include "HazeLog.h"
-#include "HazeVM.h"
 
 #include "HazeLibraryManager.h"
 #include "HazeDebugger.h"
@@ -86,7 +90,7 @@ uint32 GetParam(ParamType type, char** paramArray, int length)
 }
 
 //解析文本  --->  生成字节码   --->  用虚拟机解析字节码，并执行
-int HazeMain(int argCount, char* argValue[])
+HazeVM* HazeMain(int argCount, char* argValue[])
 {
 	atexit(HazeExit);
 
@@ -148,18 +152,20 @@ int HazeMain(int argCount, char* argValue[])
 		}
 	}
 
-	HazeVM vm(runType);
+	auto vm = new HazeVM(runType);
 
-	vm.InitVM({ { mainFile , mainFile.filename().wstring().substr(0, mainFile.filename().wstring().length() - 3) } });
+	vm->InitVM({ { mainFile , mainFile.filename().wstring().substr(0, mainFile.filename().wstring().length() - 3) } });
 
 	//VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Code\\HazeCode.hz"), HAZE_TEST_FILE} });
 	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
 
-	std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
+	if (vm->HasMainFunction()) 
+	{
+		std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
+		vm->StartFunction(HAZE_MAIN_FUNCTION_TEXT);
+		HazeEnd();
+	}
 
-	vm.StartMainFunction();
 
-	HazeEnd();
-
-	return 0;
+	return vm;
 }

@@ -3,7 +3,7 @@
 #include <vector>
 #include <memory>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 #include "HazeDebugInfo.h"
 
 class HazeCompiler;

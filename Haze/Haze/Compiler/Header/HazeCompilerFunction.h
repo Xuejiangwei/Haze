@@ -6,7 +6,7 @@
 #include <unordered_map>
 #include <fstream>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 #include "HazeCompilerValue.h"
 
 class HazeCompilerModule;

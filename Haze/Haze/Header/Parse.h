@@ -3,7 +3,7 @@
 #include <stack>
 #include <string>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 class HazeCompiler;
 

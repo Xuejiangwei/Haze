@@ -1,13 +1,4 @@
 ﻿#pragma once
+#include "HazeVM.h"
 
-#include <unordered_map>
-#include <assert.h>
-
-#include "HazeDebugDefine.h"
-#include "HazeToken.h"
-#include "HazeUtility.h"
-#include "HazeInstruction.h"
-#include "HazeCompare.h"
-#include "HazeLibraryType.h"
-
-int HazeMain(int argCount, char* argValue[]);
+HazeVM* HazeMain(int argCount, char* argValue[]);

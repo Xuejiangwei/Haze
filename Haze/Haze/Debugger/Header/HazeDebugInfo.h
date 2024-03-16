@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 enum class HazeDebugOperatorType : uint8
 {

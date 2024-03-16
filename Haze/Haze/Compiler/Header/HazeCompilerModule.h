@@ -3,7 +3,7 @@
 #include <unordered_map>
 #include <fstream>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 class HazeCompiler;
 class HazeCompilerValue;

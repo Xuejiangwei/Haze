@@ -1,5 +1,5 @@
 #pragma once
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 int64 RoundUp(int64 byteSize);

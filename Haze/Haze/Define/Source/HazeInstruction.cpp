@@ -1,4 +1,4 @@
-#include "Haze.h"
+#include "HazeHeader.h"
 #include "HazeLog.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
@@ -9,7 +9,6 @@
 
 #define HAZE_CALL_LOG				0
 
-extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> g_Hash_MapStdLib;
 extern std::unique_ptr<HazeLibraryManager> g_HazeLibManager;
 
 static std::unordered_map<HAZE_STRING, InstructionOpCode> s_HashMap_String2Code =

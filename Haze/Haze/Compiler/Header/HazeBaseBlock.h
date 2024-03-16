@@ -1,7 +1,7 @@
 #pragma once
 
 #include <memory>
-#include "Haze.h"
+#include "HazeHeader.h"
 
 class HazeCompilerValue;
 class HazeCompilerFunction;

@@ -248,7 +248,7 @@ int HazeCompilerClass::GetClassInheritLevel() const
 	uint32 inheritLevel = 0;
 	for (auto& parentClass : m_ParentClass)
 	{
-		auto inheritLevel = parentClass->GetClassInheritLevel() + 1;
+		inheritLevel = parentClass->GetClassInheritLevel() + 1;
 		if (inheritLevel > maxLevel)
 		{
 			maxLevel = inheritLevel;

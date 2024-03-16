@@ -1,4 +1,5 @@
 #include "HazeVM.h"
+#include "HazeHeader.h"
 #include "HazeLog.h"
 
 #include "Parse.h"
@@ -61,22 +62,26 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 		//VMDebugger = std::make_unique<HazeDebugger>(this);
 		//VMDebugger->SetHook(&HazeVM::Hook, HazeDebugger::DebuggerHookType::Instruction | HazeDebugger::DebuggerHookType::Line);
 	}
+
+	HazeMemory::GetMemory()->SetVM(this);
+}
+
+bool HazeVM::HasMainFunction() const
+{
+	return HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT) != HashMap_FunctionTable.end();
 }
 
 void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
 {
 }
 
-void HazeVM::StartMainFunction()
+void HazeVM::StartFunction(const HAZE_CHAR* functionName)
 {
 	//VMDebugger->AddBreakPoint(HAZE_TEXT("Îå×ÓÆå"), 68);
-
-	HazeMemory::GetMemory()->SetVM(this);
-
-	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
+	auto Iter = HashMap_FunctionTable.find(functionName);
 	if (Iter != HashMap_FunctionTable.end())
 	{
-		VMStack->Start(Vector_FunctionTable[Iter->second].FunctionDescData.InstructionStartAddress);
+		VMStack->Start(functionName, Vector_FunctionTable[Iter->second].FunctionDescData.InstructionStartAddress);
 	}
 }
 

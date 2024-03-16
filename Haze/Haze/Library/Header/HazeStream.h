@@ -1,7 +1,7 @@
 #pragma once
 
 #include "HazeStandardLibraryBase.h"
-#include "Haze.h"
+#include "HazeHeader.h"
 
 class HazeStream : public HazeStandardLibraryBase
 {

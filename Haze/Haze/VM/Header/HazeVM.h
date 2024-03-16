@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Haze.h"
 //#include <memory>
 #include <unordered_set>
 #include "HazeVariable.h"
@@ -35,11 +34,13 @@ public:
 
 	bool IsDebug() const { return GenType == HazeRunType::Debug; }
 
+	bool HasMainFunction() const;
+
 	void LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath);
 
 	const std::vector<Instruction>& GetInstruction() const { return Instructions; }
 
-	void StartMainFunction();
+	void StartFunction(const HAZE_CHAR* functionName);
 
 	//void ParseString(const HAZE_STRING& String);
 

@@ -3,7 +3,7 @@
 #include <memory>
 #include <unordered_map>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 class HazeVM;
 

@@ -23,7 +23,7 @@ void MemoryBlock::SetAllWhite()
 void MemoryBlock::MarkBlack(void* address)
 {
 	uint64 Index = ((uint64)address - (uint64)m_Memory) / m_BlockInfo.UnitSize;
-	assert(Index < m_BlockInfo.MarkCount);
+	//assert(Index < m_BlockInfo.MarkCount);
 	m_BlockInfo.Mark[Index] = (int)GC_State::Black;
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName);
 

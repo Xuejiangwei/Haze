@@ -20,11 +20,11 @@ HazeStack::~HazeStack()
 {
 }
 
-void HazeStack::Start(uint32 address)
+void HazeStack::Start(const HAZE_CHAR* functionName, uint32 address)
 {
 	m_PC = address;
-	PreMainFunction();
-	PushMainFuntion();
+	PreStartFunction();
+	PushStartFuntion(functionName);
 
 	Run();
 
@@ -85,7 +85,7 @@ void HazeStack::PCStepInc()
 	++m_PC;
 }
 
-void HazeStack::PreMainFunction()
+void HazeStack::PreStartFunction()
 {
 	//0-4存储FaultPC,Main函数return后读取此PC,然后退出循环
 	int faultPC = -2;
@@ -94,10 +94,10 @@ void HazeStack::PreMainFunction()
 	m_EBP = 0;
 }
 
-void HazeStack::PushMainFuntion()
+void HazeStack::PushStartFuntion(const HAZE_CHAR* functionName)
 {
-	auto& mainFunction = m_VM->GetFunctionByName(HAZE_MAIN_FUNCTION_TEXT);
-	OnCall(&mainFunction, 0);
+	auto& function = m_VM->GetFunctionByName(functionName);
+	OnCall(&function, 0);
 	PCStepInc();
 
 	/*ESP -= HAZE_ADDRESS_SIZE;

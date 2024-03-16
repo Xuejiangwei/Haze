@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Haze.h"
+#include "HazeHeader.h"
 
 //https://juejin.cn/post/6966954993869914119
 //https://juejin.cn/post/6968400262629163038

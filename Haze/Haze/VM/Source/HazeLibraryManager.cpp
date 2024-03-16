@@ -12,8 +12,6 @@
 	#define HAZE_GET_DLL_FUNCTION(X, m_Name) GetProcAddress((HINSTANCE)X, m_Name)
 #endif // _WIN32
 
-extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> g_Hash_MapStdLib;
-
 std::unique_ptr<HazeLibraryManager> g_HazeLibManager = std::make_unique<HazeLibraryManager>();
 
 void ExeFunc()
@@ -99,7 +97,7 @@ const void* HazeLibraryManager::GetExeAddress()
 
 void HazeLibraryManager::LoadStdLibrary()
 {
-	if (g_Hash_MapStdLib.size() == 0)
+	if (HazeStandardLibraryBase::GetStdLibSize() == 0)
 	{
 		HazeStream::InitializeLib();
 	}

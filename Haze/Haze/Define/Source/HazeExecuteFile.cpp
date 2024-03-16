@@ -2,14 +2,12 @@
 #include <fstream>
 
 #include "HazeExecuteFile.h"
-
+#include "HazeStandardLibraryBase.h"
 #include "HazeVM.h"
 #include "HazeFilePathHelper.h"
 #include "HazeLog.h"
 
 #define HAZE_INS_LOG			0
-
-extern std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> g_Hash_MapStdLib;
 
 thread_local static HAZE_BINARY_STRING s_BinaryString;
 
@@ -651,12 +649,13 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 	}
 
 	//重新指认std lib 函数指针
+	auto& stdLib = HazeStandardLibraryBase::GetStdLib();
 	for (auto& iter : vm->HashMap_FunctionTable)
 	{
 		auto& function = vm->Vector_FunctionTable[iter.second];
 		if (function.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
 		{
-			for (auto& lib : g_Hash_MapStdLib)
+			for (auto& lib : stdLib)
 			{
 				auto pointer = lib.second->find(iter.first);
 				if (pointer != lib.second->end())

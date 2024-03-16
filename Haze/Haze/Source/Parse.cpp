@@ -1,7 +1,7 @@
 ﻿#include <cctype>
 #include <fstream>
 
-#include "Haze.h"
+#include "HazeHeader.h"
 #include "HazeVM.h"
 #include "Parse.h"
 #include "ASTBase.h"
