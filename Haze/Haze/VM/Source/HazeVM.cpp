@@ -12,6 +12,7 @@
 
 #include "HazeStack.h"
 #include "HazeMemory.h"
+#include <cstdarg>
 
 extern std::unique_ptr<HazeDebugger> g_Debugger;
 
@@ -75,14 +76,24 @@ void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
 {
 }
 
-void HazeVM::StartFunction(const HAZE_CHAR* functionName)
+void HazeVM::StartMainFunction()
 {
 	//VMDebugger->AddBreakPoint(HAZE_TEXT("Îå×ÓÆå"), 68);
-	auto Iter = HashMap_FunctionTable.find(functionName);
+	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
 	if (Iter != HashMap_FunctionTable.end())
 	{
-		VMStack->Start(functionName, Vector_FunctionTable[Iter->second].FunctionDescData.InstructionStartAddress);
+		VMStack->StartMain(Vector_FunctionTable[Iter->second].FunctionDescData.InstructionStartAddress);
 	}
+}
+
+void HazeVM::CallFunction(const HAZE_CHAR* functionName, ...)
+{
+	auto function = GetFunctionByName(functionName);
+	va_list args;
+	va_start(args, function.Params.size());
+	extern void CallHazeFunction(HazeStack * stack, FunctionData * funcData, va_list & args);
+	CallHazeFunction(VMStack.get(), &function, args);
+	va_end(args);
 }
 
 //void HazeVM::ParseString(const HAZE_STRING& String)

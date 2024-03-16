@@ -162,7 +162,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	if (vm->HasMainFunction()) 
 	{
 		std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
-		vm->StartFunction(HAZE_MAIN_FUNCTION_TEXT);
+		vm->StartMainFunction();
 		HazeEnd();
 	}
 

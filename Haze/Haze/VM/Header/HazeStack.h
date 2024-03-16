@@ -18,7 +18,7 @@ public:
 
 	~HazeStack();
 
-	void Start(const HAZE_CHAR* functionName, uint32 address);
+	void StartMain(uint32 address);
 
 public:
 	char* GetAddressByEBP(int offset) { return &m_StackMain[(uint64)m_EBP + offset]; }
@@ -61,9 +61,9 @@ private:
 
 	void PCStepInc();
 
-	void PreStartFunction();
+	void PreMainFunction();
 
-	void PushStartFuntion(const HAZE_CHAR* functionName);
+	void PushMainFuntion();
 
 	void InitStackRegister();
 

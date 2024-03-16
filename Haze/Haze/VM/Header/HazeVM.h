@@ -26,6 +26,7 @@ public:
 	friend class HazeExecuteFile;
 
 	HazeVM(HazeRunType GenType);
+
 	~HazeVM();
 
 	using ModulePair = std::pair<HAZE_STRING, HAZE_STRING>;
@@ -40,7 +41,9 @@ public:
 
 	const std::vector<Instruction>& GetInstruction() const { return Instructions; }
 
-	void StartFunction(const HAZE_CHAR* functionName);
+	void StartMainFunction();
+
+	void CallFunction(const HAZE_CHAR* functionName, ...);
 
 	//void ParseString(const HAZE_STRING& String);
 

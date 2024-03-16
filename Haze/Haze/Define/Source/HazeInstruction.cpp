@@ -113,8 +113,11 @@ bool IsClassMember(HazeDataDesc desc)
 	return desc >= HazeDataDesc::ClassMember_Local_Public && desc <= HazeDataDesc::ClassMember_Local_Protected;
 }
 
+void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
+
 class InstructionProcessor
 {
+	friend void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
 public:
 	static void Mov(HazeStack* stack)
 	{
@@ -1221,9 +1224,14 @@ private:
 
 	static void ExeHazePointerFunction(void* stackPointer, void* value, int paramNum, ...)
 	{
-		HazeStack* stack = (HazeStack*)stackPointer;
-		auto funcData = (FunctionData*)value;
+		va_list args;
+		va_start(args, paramNum);
+		CallHazeFunction((HazeStack*)stackPointer, (FunctionData*)value, paramNum, args);
+		va_end(args);
+	}
 
+	static void CallHazeFunction(HazeStack* stack, FunctionData* funcData, int paramNum, va_list& args)
+	{
 		int size = 0;
 		for (size_t i = 0; i < funcData->Params.size(); i++)
 		{
@@ -1231,19 +1239,15 @@ private:
 		}
 		stack->m_ESP += size;
 
-		va_list args;
-		va_start(args, paramNum);
 		for (size_t i = 0; i < funcData->Params.size(); i++)
 		{
 			PushParam(stack, args, funcData->Params[i].Type);
 		}
 		stack->m_ESP += size;
-		
-		va_end(args);
 
 		memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, HAZE_ADDRESS_SIZE);
 		stack->m_ESP += HAZE_ADDRESS_SIZE;
-		
+
 		stack->OnCall(funcData, size);
 		stack->m_PC++;
 		stack->ResetCallHaze();
@@ -1316,6 +1320,11 @@ private:
 		}
 	}
 };
+
+void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args)
+{
+	InstructionProcessor::CallHazeFunction(stack, funcData, (int)funcData->Params.size(), args);
+}
 
 //可以考虑将HashMap改为使用数组
 std::unordered_map<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
