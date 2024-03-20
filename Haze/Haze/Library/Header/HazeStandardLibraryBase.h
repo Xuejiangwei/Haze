@@ -3,7 +3,7 @@
 #include "HazeHeader.h"
 
 #define HAZE_STD_LIB_FUNCTION(TYPE, NAME, ...) \
-	static TYPE NAME(HAZE_STD_CALL_PARAM); \
+	static void NAME(HAZE_STD_CALL_PARAM); \
 	static TYPE NAME##Call(__VA_ARGS__);
 
 #define HAZE_INIT_STANDARD_LIB() static void InitializeLib()
@@ -24,5 +24,5 @@ public:
 	static int GetStdLibSize();
 
 private:
-	static std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*> s_Hash_MapStdLib;
+	static std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*>* s_Hash_MapStdLib;
 };

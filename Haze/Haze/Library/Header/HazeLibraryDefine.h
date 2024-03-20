@@ -21,6 +21,12 @@ extern "C" __declspec(dllexport) int ExecuteFunction(const wchar_t* functionName
 #define SET_HAZE_RET_TO_RET() 0
 #define SET_HAZE_CALL_PARAM(...) COUNT_ARG(__VA_ARGS__), __VA_ARGS__
 
+#define SET_RET_BY_TYPE(TYPE, V) \
+	HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER); \
+	retRegister->Type.PrimaryType = TYPE; \
+	retRegister->Data.resize(GetSizeByType(retRegister->Type, stack->GetVM())); \
+	SET_RET(V, retRegister->Data.begin()._Unwrapped())
+
 #else
 
 using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, void*, int, ...));

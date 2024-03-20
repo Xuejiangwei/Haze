@@ -23,6 +23,8 @@ public:
 public:
 	char* GetAddressByEBP(int offset) { return &m_StackMain[(uint64)m_EBP + offset]; }
 
+	char* GetAddressByESP(int offset) { return &m_StackMain[(uint64)m_ESP - offset]; }
+
 	HazeVM* GetVM() const { return m_VM; }
 
 	int GetCurrPC() const { return m_PC; }
