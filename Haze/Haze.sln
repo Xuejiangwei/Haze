@@ -5,6 +5,11 @@ VisualStudioVersion = 17.4.33103.184
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Haze", "Haze\Haze.vcxproj", "{F9E7CC42-BC39-4735-9040-5B1F7B756D81}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HazeLaunch", "..\HazeLaunch\HazeLaunch.vcxproj", "{F8FABDA0-C17D-4B99-BDE6-62480386E31B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F9E7CC42-BC39-4735-9040-5B1F7B756D81} = {F9E7CC42-BC39-4735-9040-5B1F7B756D81}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +26,14 @@ Global
 		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.Release|x64.Build.0 = Release|x64
 		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.Release|x86.ActiveCfg = Release|Win32
 		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.Release|x86.Build.0 = Release|Win32
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Debug|x64.ActiveCfg = Debug|x64
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Debug|x64.Build.0 = Debug|x64
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Debug|x86.ActiveCfg = Debug|Win32
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Debug|x86.Build.0 = Debug|Win32
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x64.ActiveCfg = Release|x64
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x64.Build.0 = Release|x64
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x86.ActiveCfg = Release|Win32
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

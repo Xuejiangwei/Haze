@@ -183,7 +183,6 @@
     <ClCompile Include="XJson\XJson.cpp" />
     <ClCompile Include="VM\Source\HazeLibraryManager.cpp" />
     <ClCompile Include="VM\Source\HazeStack.cpp" />
-    <ClCompile Include="Source\Main.cpp" />
     <ClCompile Include="Source\Parse.cpp" />
     <ClCompile Include="Library\Source\HazeStandardLibraryBase.cpp" />
     <ClCompile Include="Library\Source\HazeStream.cpp" />

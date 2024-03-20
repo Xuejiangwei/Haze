@@ -1230,6 +1230,7 @@ private:
 		va_end(args);
 	}
 
+	//只能C++多参数函数调用
 	static void CallHazeFunction(HazeStack* stack, FunctionData* funcData, int paramNum, va_list& args)
 	{
 		int size = 0;
@@ -1264,19 +1265,37 @@ private:
 			case HazeValueType::Bool:
 				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, bool), size);
 				break;
+			//在可变长参数中，会被扩展成int
 			case HazeValueType::Byte:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, hbyte), size);
+				{
+					hbyte v = va_arg(Args, int);
+					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+				}
 				break;
 			case HazeValueType::UnsignedByte:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, uhbyte), size);
+				{
+					uhbyte v = va_arg(Args, int);
+					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+				}
 				break;
 			case HazeValueType::Char:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, hchar), size);
+				{
+					hchar v = va_arg(Args, int);
+					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+				}
 				break;
 			case HazeValueType::Short:
+				{
+					short v = va_arg(Args, int);
+					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+				}
 				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, short), size);
 				break;
 			case HazeValueType::UnsignedShort:
+				{
+					ushort v = va_arg(Args, int);
+					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+				}
 				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, ushort), size);
 				break;
 			case HazeValueType::Int:
@@ -1285,6 +1304,13 @@ private:
 			case HazeValueType::Long:
 				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, int64), size);
 				break;
+			//在可变长参数中，float会被扩展成double
+			case HazeValueType::Float:
+				{
+					float v = va_arg(Args, double);
+					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+				}
+				break; 
 			case HazeValueType::Double:
 				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, double), size);
 				break;
