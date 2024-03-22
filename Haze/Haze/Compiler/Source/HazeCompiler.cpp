@@ -511,6 +511,13 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 	}
 	else
 	{
+		if (!allocaValue->GetValueType().NeedSecondaryType() && IsHazeDefaultType(allocaValue->GetValueType().PrimaryType) && 
+			!value->GetValueType().NeedSecondaryType() && IsHazeDefaultType(value->GetValueType().PrimaryType)
+			&& allocaValue->GetValueType() != value->GetValueType())
+		{
+			value = CreateCVT(allocaValue, value);
+		}
+
 		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOV);
 	}
 
@@ -577,21 +584,25 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeC
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign)
 {
+	ReplaceConstantValueByStrongerType(left, right);
 	return GetCurrModule()->CreateAdd(left, right, isAssign);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign)
 {
+	ReplaceConstantValueByStrongerType(left, right);
 	return GetCurrModule()->CreateSub(left, right, isAssign);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMul(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign)
 {
+	ReplaceConstantValueByStrongerType(left, right);
 	return GetCurrModule()->CreateMul(left, right, isAssign);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateDiv(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign)
 {
+	ReplaceConstantValueByStrongerType(left, right);
 	return GetCurrModule()->CreateDiv(left, right, isAssign);
 }
 
@@ -807,6 +818,15 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 	return function->CreateNew(data);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateCVT(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right)
+{
+	auto tempReg = GetTempRegister();
+	tempReg->StoreValueType(left);
+	GetCurrModule()->GenIRCode_BinaryOperater(tempReg, right, InstructionOpCode::CVT);
+
+	return tempReg;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNeg(std::shared_ptr<HazeCompilerValue> value)
 {
 	return GetCurrModule()->CreateNeg(value);
@@ -859,6 +879,33 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBoolCmp(std::shared_ptr<H
 	{
 		return CreateIntCmp(value, GenConstantValueBool(true));
 	}
+}
+
+void HazeCompiler::ReplaceConstantValueByStrongerType(std::shared_ptr<HazeCompilerValue>& left, std::shared_ptr<HazeCompilerValue>& right)
+{
+	if (left->GetValueType().PrimaryType != right->GetValueType().PrimaryType)
+	{
+		auto strongerType = GetStrongerType(left->GetValueType().PrimaryType, right->GetValueType().PrimaryType);
+		if (left->GetValueType().PrimaryType == strongerType)
+		{
+			if (right->IsConstant())
+			{
+				HazeValue v;
+				ConvertBaseTypeValue(strongerType, v, right->GetValueType().PrimaryType, right->GetValue());
+				right = GenConstantValue(strongerType, v);
+			}
+		}
+		else
+		{
+			if (left->IsConstant())
+			{
+				HazeValue v;
+				ConvertBaseTypeValue(strongerType, v, left->GetValueType().PrimaryType, left->GetValue());
+				left = GenConstantValue(strongerType, v);
+			}
+		}
+	}
+	
 }
 
 void HazeCompiler::CreateCompareJmp(HazeCmpType cmpType, std::shared_ptr<HazeBaseBlock> ifJmpBlock, std::shared_ptr<HazeBaseBlock> elseJmpBlock)

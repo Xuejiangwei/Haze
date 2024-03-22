@@ -44,7 +44,7 @@ struct HazeDefineType
 			&& CustomName == type.CustomName;
 	}
 
-	bool operator!=(const HazeDefineType& type)
+	bool operator!=(const HazeDefineType& type) const
 	{
 		return PrimaryType != type.PrimaryType || SecondaryType != type.SecondaryType
 			|| CustomName != type.CustomName;

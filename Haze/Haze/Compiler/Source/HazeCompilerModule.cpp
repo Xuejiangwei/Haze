@@ -381,6 +381,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 		InstructionOpCode::BIT_XOR_ASSIGN,
 		InstructionOpCode::SHL_ASSIGN,
 		InstructionOpCode::SHR_ASSIGN,
+		InstructionOpCode::CVT,
 	};
 
 	std::shared_ptr<HazeCompilerValue> retValue = left;

@@ -265,3 +265,146 @@ HAZE_BINARY_STRING ToString(void* value)
 
 	return ss.str();
 }
+
+void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2)
+{
+	switch (type1)
+	{
+	case HazeValueType::Int:
+	{
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+			v1.Value.Int = v2.Value.UnsignedInt;
+			break;
+		case HazeValueType::Float:
+			v1.Value.Int = v2.Value.Float;
+			break;
+		case HazeValueType::Double:
+			v1.Value.Int = v2.Value.Double;
+			break;
+		case HazeValueType::Long:
+			v1.Value.Int = v2.Value.Long;
+			break;
+		case HazeValueType::UnsignedLong:
+			v1.Value.Int = v2.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+	}
+		break;
+	case HazeValueType::Float:
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+			v1.Value.Float = v2.Value.UnsignedInt;
+			break;
+		case HazeValueType::Int:
+			v1.Value.Float = v2.Value.Int;
+			break;
+		case HazeValueType::Double:
+			v1.Value.Float = v2.Value.Double;
+			break;
+		case HazeValueType::Long:
+			v1.Value.Float = v2.Value.Long;
+			break;
+		case HazeValueType::UnsignedLong:
+			v1.Value.Float = v2.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+		break;
+	case HazeValueType::Long:
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+			v1.Value.Long = v2.Value.UnsignedInt;
+			break;
+		case HazeValueType::Int:
+			v1.Value.Long = v2.Value.Int;
+			break;
+		case HazeValueType::Float:
+			v1.Value.Long = v2.Value.Float;
+			break;
+		case HazeValueType::Double:
+			v1.Value.Long = v2.Value.Double;
+			break;
+		case HazeValueType::UnsignedLong:
+			v1.Value.Long = v2.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+		break;
+	case HazeValueType::Double:
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+			v1.Value.Double = v2.Value.UnsignedInt;
+			break;
+		case HazeValueType::Int:
+			v1.Value.Double = v2.Value.Int;
+			break;
+		case HazeValueType::Float:
+			v1.Value.Double = v2.Value.Float;
+			break;
+		case HazeValueType::Long:
+			v1.Value.Double = v2.Value.Long;
+			break;
+		case HazeValueType::UnsignedLong:
+			v1.Value.Double = v2.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+		break;
+	case HazeValueType::UnsignedInt:
+		switch (type2)
+		{
+		case HazeValueType::Int:
+			v1.Value.UnsignedInt = v2.Value.Int;
+			break;
+		case HazeValueType::Float:
+			v1.Value.UnsignedInt = v2.Value.Float;
+			break;
+		case HazeValueType::Double:
+			v1.Value.UnsignedInt = v2.Value.Double;
+			break;
+		case HazeValueType::Long:
+			v1.Value.UnsignedInt = v2.Value.Long;
+			break;
+		case HazeValueType::UnsignedLong:
+			v1.Value.UnsignedInt = v2.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+		break;
+	case HazeValueType::UnsignedLong:
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+			v1.Value.UnsignedLong = v2.Value.UnsignedInt;
+			break;
+		case HazeValueType::Int:
+			v1.Value.UnsignedLong = v2.Value.Int;
+			break;
+		case HazeValueType::Float:
+			v1.Value.UnsignedLong = v2.Value.Float;
+			break;
+		case HazeValueType::Double:
+			v1.Value.UnsignedLong = v2.Value.Double;
+			break;
+		case HazeValueType::Long:
+			v1.Value.UnsignedLong = v2.Value.Long;
+			break;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+}

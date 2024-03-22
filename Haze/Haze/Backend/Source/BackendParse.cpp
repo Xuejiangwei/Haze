@@ -403,6 +403,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	case InstructionOpCode::BIT_XOR_ASSIGN:
 	case InstructionOpCode::SHL_ASSIGN:
 	case InstructionOpCode::SHR_ASSIGN:
+	case InstructionOpCode::CVT:
 	{
 		InstructionData operatorOne;
 		InstructionData operatorTwo;

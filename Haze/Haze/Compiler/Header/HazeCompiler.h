@@ -135,6 +135,8 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data);
 
+	std::shared_ptr<HazeCompilerValue> CreateCVT(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right);
+
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> function, std::vector<std::shared_ptr<HazeCompilerValue>>& param, std::shared_ptr<HazeCompilerValue> thisPointerTo = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerValue> pointerFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& param, std::shared_ptr<HazeCompilerValue> thisPointerTo = nullptr);
@@ -165,6 +167,8 @@ public:
 	std::shared_ptr<HazeCompilerValue> CreateIntCmp(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right);
 
 	std::shared_ptr<HazeCompilerValue> CreateBoolCmp(std::shared_ptr<HazeCompilerValue> value);
+
+	void ReplaceConstantValueByStrongerType(std::shared_ptr<HazeCompilerValue>& left, std::shared_ptr<HazeCompilerValue>& right);
 
 public:
 	void InsertLineCount(int64 lineCount);

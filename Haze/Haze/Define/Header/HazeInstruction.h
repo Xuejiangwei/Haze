@@ -138,6 +138,8 @@ enum class InstructionOpCode : uint32
 	SHL_ASSIGN,
 	SHR_ASSIGN,
 
+	CVT,			//基本类型转换
+
 	LINE,			//调试用
 };
 

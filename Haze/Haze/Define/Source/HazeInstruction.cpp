@@ -63,6 +63,8 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> s_HashMap_String2Code 
 	{HAZE_TEXT("JG"), InstructionOpCode::JG },
 	{HAZE_TEXT("JL"), InstructionOpCode::JL },
 
+	{HAZE_TEXT("CVT"), InstructionOpCode::CVT },
+
 	{HAZE_TEXT("LINE"), InstructionOpCode::LINE },
 };
 
@@ -208,8 +210,22 @@ public:
 
 			if (oper[0].Desc == HazeDataDesc::Constant)
 			{
-				int number = StringToStandardType<int>(oper[0].Variable.Name);
-				memcpy(&stack->m_StackMain[stack->m_ESP], &number, size);
+				switch (oper[0].Variable.Type.PrimaryType)
+				{
+					case HazeValueType::Float:
+					{
+						float number = StringToStandardType<float>(oper[0].Variable.Name);
+						memcpy(&stack->m_StackMain[stack->m_ESP], &number, size);
+					}
+					break;
+					default:
+					{
+						int number = StringToStandardType<int>(oper[0].Variable.Name);
+						memcpy(&stack->m_StackMain[stack->m_ESP], &number, size);
+					}
+					break;
+				}
+				
 			}
 			else if (oper[0].Desc == HazeDataDesc::Address)
 			{
@@ -997,6 +1013,34 @@ public:
 #endif
 	}
 
+	static void CVT(HazeStack* stack)
+	{
+		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		if (oper.size() == 2)
+		{
+			if (IsNumberType(oper[0].Variable.Type.PrimaryType) && IsNumberType(oper[1].Variable.Type.PrimaryType))
+			{
+				HazeValue v1, v2;
+				auto address = GetOperatorAddress(stack, oper[0]);
+
+				memcpy(&v1, address, GetSizeByHazeType(oper[0].Variable.Type.PrimaryType));
+				memcpy(&v2, GetOperatorAddress(stack, oper[1]), GetSizeByHazeType(oper[1].Variable.Type.PrimaryType));
+				ConvertBaseTypeValue(oper[0].Variable.Type.PrimaryType, v1, oper[1].Variable.Type.PrimaryType, v2);
+				memcpy(address, &v1, GetSizeByHazeType(oper[0].Variable.Type.PrimaryType));
+			}
+			else
+			{
+				HAZE_LOG_ERR("<%s>转换为<%s>的类型时错误!\n", oper[1].Variable.Name.c_str(), oper[0].Variable.Name.c_str());
+			}
+		}
+
+#if HAZE_DEBUG_ENABLE
+
+		stack->m_VM->InstructionExecPost();
+
+#endif
+	}
+
 	static void Line(HazeStack* stack)
 	{
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
@@ -1407,6 +1451,8 @@ std::unordered_map<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionPr
 	{InstructionOpCode::JE, &InstructionProcessor::Je},
 	{InstructionOpCode::JG, &InstructionProcessor::Jg},
 	{InstructionOpCode::JL, &InstructionProcessor::Jl},
+
+	{InstructionOpCode::CVT, &InstructionProcessor::CVT},
 
 	{InstructionOpCode::LINE, &InstructionProcessor::Line},
 };
