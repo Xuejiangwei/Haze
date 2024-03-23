@@ -16,6 +16,7 @@ class ASTFunctionSection;
 class ASTFunctionDefine;
 class ASTClassFunctionSection;
 class ASTLibrary;
+class ASTTemplateBase;
 
 class Parse
 {
@@ -111,6 +112,14 @@ private:
 
 	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& className);
 
+	std::unique_ptr<ASTBase> ParseEnum();
+
+	std::unique_ptr<ASTTemplateBase> ParseTemplate();
+
+	std::unique_ptr<ASTTemplateBase> ParseTemplateClass(std::vector<HAZE_STRING>& templateTypes);
+
+	std::unique_ptr<ASTTemplateBase> ParseTemplateFunction(std::vector<HAZE_STRING>& templateTypes);
+
 private:
 	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* className = nullptr);
 
@@ -139,6 +148,7 @@ private:
 
 	HazeDefineVariable m_DefineVariable;
 	HAZE_STRING m_CurrParseClass;
+	std::vector<HAZE_STRING> m_CurrParseTemplateTypes;
 
 	int m_LeftParenthesesExpressionCount;
 	uint32 m_LineCount;

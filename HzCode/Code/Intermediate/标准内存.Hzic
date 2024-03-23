@@ -1,0 +1,22 @@
+1
+GlobalDataTable
+0
+StringTable
+0
+ClassTable
+0
+FunctionTable
+1
+Function 内存复制 0
+Param 目标地址 14 0
+Param 源地址 14 0
+Param 字节大小 9
+Variable 字节大小$3 9 -12 8 5
+Variable 源地址$2 14 0 -20 8 5
+Variable 目标地址$1 14 0 -28 8 5
+FunctionStart 0
+
+Block Entry
+
+FunctionEnd 0
+

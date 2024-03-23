@@ -171,6 +171,12 @@
     <ClCompile Include="Compiler\Source\HazeCompilerEnum.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="AST\Source\ASTTemplateClass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="AST\Source\ASTTemplateBase.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -348,6 +354,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Header\HazeHeader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AST\Header\ASTTemplateClass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="AST\Header\ASTTemplateBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

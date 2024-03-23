@@ -8,6 +8,7 @@
 #include "ASTFunction.h"
 #include "ASTClass.h"
 #include "ASTLibrary.h"
+#include "ASTTemplateClass.h"
 
 #include "HazeCompiler.h"
 
@@ -286,6 +287,18 @@ void Parse::ParseContent()
 		case HazeToken::MainFunction:
 		{
 			auto ast = ParseMainFunction();
+			ast->CodeGen();
+		}
+		break;
+		case HazeToken::Enum:
+		{
+			auto ast = ParseEnum();
+			ast->CodeGen();
+		}
+		break;
+		case HazeToken::Template:
+		{
+			auto ast = ParseTemplate();
 			ast->CodeGen();
 		}
 		break;
@@ -1872,6 +1885,118 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 	}
 
 	return nullptr;
+}
+
+std::unique_ptr<ASTBase> Parse::ParseEnum()
+{
+	return std::unique_ptr<ASTBase>();
+}
+
+std::unique_ptr<ASTTemplateBase> Parse::ParseTemplate()
+{
+	if (ExpectNextTokenIs(HazeToken::Less))
+	{
+		std::vector<HAZE_STRING> templateTypes;
+		while (TokenIs(HazeToken::Comma))
+		{
+			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("模板类型名定义错误")))
+			{
+				templateTypes.push_back(m_CurrLexeme);
+			}
+		}
+
+		if (ExpectNextTokenIs(HazeToken::Greater))
+		{
+			m_CurrParseTemplateTypes = templateTypes;
+			if (ExpectNextTokenIs(HazeToken::Class))
+			{
+				return ParseTemplateClass(templateTypes);
+			}
+			else
+			{
+				return ParseTemplateFunction(templateTypes);
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<ASTTemplateBase> Parse::ParseTemplateClass(std::vector<HAZE_STRING>& templateTypes)
+{
+	m_CurrParseClass = m_CurrLexeme;
+	HAZE_STRING name = m_CurrLexeme;
+	std::vector<HAZE_STRING> parentClasses;
+
+	GetNextToken();
+	if (TokenIs(HazeToken::Colon))
+	{
+		//暂时不支持继承模板类
+		if (ExpectNextTokenIs(HazeToken::CustomClass))
+		{
+			while (TokenIs(HazeToken::CustomClass))
+			{
+				parentClasses.push_back(m_CurrLexeme);
+
+				GetNextToken();
+				if (TokenIs(HazeToken::Comma))
+				{
+					GetNextToken();
+				}
+				else if (TokenIs(HazeToken::LeftBrace))
+				{
+					break;
+				}
+				else
+				{
+					HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+				}
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+		}
+	}
+
+	if (TokenIs(HazeToken::LeftBrace))
+	{
+		m_StackSectionSignal.push(HazeSectionSignal::Class);
+
+		std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> classDatas;
+		std::unique_ptr<ASTClassFunctionSection> classFunctions;
+
+		GetNextToken();
+		while (m_CurrToken == HazeToken::m_ClassDatas || m_CurrToken == HazeToken::Function)
+		{
+			if (m_CurrToken == HazeToken::m_ClassDatas)
+			{
+				if (classDatas.size() == 0)
+				{
+					classDatas = ParseClassData();
+				}
+				else
+				{
+					HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!"), name.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+				}
+			}
+			else if (m_CurrToken == HazeToken::Function)
+			{
+				classFunctions = ParseClassFunction(name);
+			}
+		}
+
+		m_StackSectionSignal.pop();
+
+		GetNextToken();
+
+		m_CurrParseClass.clear();
+		return nullptr; //return std::make_unique<ASTTemplateClass>(m_Compiler, /*SourceLocation(m_LineCount),*/ name, parentClasses, classDatas, classFunctions);
+	}
+}
+std::unique_ptr<ASTTemplateBase> Parse::ParseTemplateFunction(std::vector<HAZE_STRING>& templateTypes)
+{
+	return std::unique_ptr<ASTTemplateBase>();
 }
 
 bool Parse::ExpectNextTokenIs(HazeToken token, const HAZE_CHAR* errorInfo)

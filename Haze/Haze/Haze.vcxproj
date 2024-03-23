@@ -141,6 +141,8 @@
     <ClCompile Include="AST\Source\ASTBase.cpp" />
     <ClCompile Include="AST\Source\ASTClass.cpp" />
     <ClCompile Include="AST\Source\ASTFunction.cpp" />
+    <ClCompile Include="AST\Source\ASTTemplateBase.cpp" />
+    <ClCompile Include="AST\Source\ASTTemplateClass.cpp" />
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
     <ClCompile Include="Compiler\Header\HazeCompilerTemplateFunction.h" />
@@ -195,6 +197,8 @@
     <ClInclude Include="AST\Header\ASTEnum.h" />
     <ClInclude Include="AST\Header\ASTFunction.h" />
     <ClInclude Include="AST\Header\ASTLibrary.h" />
+    <ClInclude Include="AST\Header\ASTTemplateBase.h" />
+    <ClInclude Include="AST\Header\ASTTemplateClass.h" />
     <ClInclude Include="Backend\Header\BackendParse.h" />
     <ClInclude Include="Backend\Header\ModuleUnit.h" />
     <ClInclude Include="Compiler\Header\HazeBaseBlock.h" />
