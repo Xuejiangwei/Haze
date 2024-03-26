@@ -470,7 +470,10 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Scope);
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Desc);
 
-		instruction.Operator = { operatorOne };
+		InstructionData operatorTwo;
+		ParseInstructionData(operatorTwo);
+
+		instruction.Operator = { operatorOne, operatorTwo };
 	}
 	break;
 	case InstructionOpCode::JMP:

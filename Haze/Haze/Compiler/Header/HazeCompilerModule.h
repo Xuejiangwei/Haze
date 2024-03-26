@@ -16,8 +16,8 @@ class HazeCompilerTemplateClass;
 
 class HazeCompilerModule
 {
-public:
 	friend class HazeCompiler;
+public:
 
 	HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName);
 
@@ -51,9 +51,21 @@ public:
 
 	std::shared_ptr<HazeCompilerFunction> CreateFunction(std::shared_ptr<HazeCompilerClass> compilerClass, const HAZE_STRING& name, HazeDefineType& type, std::vector<HazeDefineVariable>& params);
 
+	void BeginCreateFunctionParamVariable() { m_IsBeginCreateFunctionVariable = true; }
+
+	void EndCreateFunctionParamVariable() { m_IsBeginCreateFunctionVariable = false; }
+
+	bool IsBeginCreateFunctionVariable() const { return m_IsBeginCreateFunctionVariable; }
+
 	void FinishFunction();
 
 	std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetFunction(const HAZE_STRING& name);
+
+	void StartCacheTemplate(HAZE_STRING& templateName, HAZE_STRING& templateText, std::vector<HAZE_STRING>& templateTypes);
+
+	bool IsTemplateClass(const HAZE_STRING& name);
+
+	bool ResetTemplateClassRealName(HAZE_STRING& inName, const std::vector<HazeDefineType>& templateTypes);
 
 	std::shared_ptr<HazeCompilerEnum> GetEnum(const HAZE_STRING& name);
 
@@ -69,6 +81,8 @@ public:
 	bool GetGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
 
 	bool GetGlobalVariableName(const HazeCompilerValue* value, HAZE_STRING& outName);
+
+	static void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const std::shared_ptr<HazeCompilerValue>& value, int index = -1);
 
 private:
 	std::shared_ptr<HazeCompilerValue> CreateAdd(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
@@ -119,8 +133,6 @@ private:
 
 	//static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const std::shared_ptr<HazeCompilerValue>& Value, int Index = -1);
 
-	static void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const std::shared_ptr<HazeCompilerValue>& value, int index = -1);
-
 private:
 	void FunctionCall(HAZE_STRING_STREAM& hss, const HAZE_STRING& callName, uint32& size, std::vector<std::shared_ptr<HazeCompilerValue>>& params, std::shared_ptr<HazeCompilerValue> thisPointerTo);
 
@@ -148,5 +160,9 @@ private:
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> m_HashMap_StringTable;
 	std::unordered_map<int, const HAZE_STRING*> m_HashMap_StringMapping;
 
+	std::unordered_map<HAZE_STRING, std::pair<HAZE_STRING, std::vector<HAZE_STRING>>> m_HashMap_TemplateText;
+
 	std::vector<HazeCompilerModule*> m_ImportModules;
+
+	bool m_IsBeginCreateFunctionVariable;
 };

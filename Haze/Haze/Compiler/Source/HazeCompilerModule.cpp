@@ -1,6 +1,7 @@
 #include <filesystem>
 #include <unordered_set>
 
+#include "Parse.h"
 #include "HazeLog.h"
 #include "HazeFilePathHelper.h"
 
@@ -17,8 +18,9 @@
 #include "HazeCompilerClass.h"
 #include "HazeCompilerEnum.h"
 
+
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName)
-	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal)
+	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_IsBeginCreateFunctionVariable(false)
 {
 #if HAZE_I_CODE_ENABLE
 
@@ -138,6 +140,94 @@ std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerVal
 	}
 
 	return { nullptr, nullptr };
+}
+
+void HazeCompilerModule::StartCacheTemplate(HAZE_STRING& templateName, HAZE_STRING& templateText, std::vector<HAZE_STRING>& templateTypes)
+{
+	auto iter = m_HashMap_TemplateText.find(templateName);
+	if (iter == m_HashMap_TemplateText.end())
+	{
+		m_HashMap_TemplateText.insert({ std::move(templateName), { std::move(templateText), std::move(templateTypes) } });
+	}
+}
+
+bool HazeCompilerModule::IsTemplateClass(const HAZE_STRING& name)
+{
+	auto iter = m_HashMap_TemplateText.find(name);
+	if (iter != m_HashMap_TemplateText.end())
+	{
+		return true;
+	}
+
+	for (auto& it : m_ImportModules)
+	{
+		if (it->IsTemplateClass(name))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool HazeCompilerModule::ResetTemplateClassRealName(HAZE_STRING& inName, const std::vector<HazeDefineType>& templateTypes)
+{
+	for (auto& templateText : m_HashMap_TemplateText)
+	{
+		if (templateText.first == inName)
+		{
+			if (templateTypes.size() != templateText.second.second.size())
+			{
+				HAZE_LOG_ERR_W("生成模板<%s>错误, 类型数应为%d, 实际为%d!\n", inName.c_str(), templateText.second.second.size(), 
+					templateTypes.size());
+				return false;
+			}
+
+			HAZE_STRING className = inName;
+			for (auto& type : templateTypes)
+			{
+				if (type.HasCustomName())
+				{
+					inName += (HAZE_TEXT("&") + type.CustomName);
+					if (IsPointerType(type.SecondaryType))
+					{
+						inName += HAZE_TEXT("*");
+					}
+				}
+				else
+				{
+					inName += (HAZE_STRING(HAZE_TEXT("&")) + GetHazeValueTypeString(type.PrimaryType));
+					if (IsPointerType(type.SecondaryType))
+					{
+						inName += HAZE_TEXT("*");
+					}
+				}
+			}
+
+			for (auto& compilerClass : m_HashMap_Classes)
+			{
+				if (compilerClass.first == inName)
+				{
+					return true;
+				}
+			}
+
+			Parse p(m_Compiler);
+			p.InitializeString(templateText.second.first);
+			p.ParseTemplateContent(inName, templateText.second.second, templateTypes);
+			return true;
+		}
+	}
+
+	for (auto& m : m_ImportModules)
+	{
+		if (m->ResetTemplateClassRealName(inName, templateTypes))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 std::shared_ptr<HazeCompilerEnum> HazeCompilerModule::GetEnum(const HAZE_STRING& name)

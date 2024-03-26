@@ -31,6 +31,8 @@ public:
 
 	void ParseContent();
 
+	void ParseTemplateContent(const HAZE_STRING& templateName, const std::vector<HAZE_STRING>& templateTypes, const std::vector<HazeDefineType>& templateRealTypes);
+
 	HazeToken GetNextToken();
 
 	const HAZE_STRING& GetCurrLexeme() const { return m_CurrLexeme; }
@@ -114,7 +116,7 @@ private:
 
 	std::unique_ptr<ASTBase> ParseEnum();
 
-	std::unique_ptr<ASTTemplateBase> ParseTemplate();
+	void ParseTemplate();
 
 	std::unique_ptr<ASTTemplateBase> ParseTemplateClass(std::vector<HAZE_STRING>& templateTypes);
 
@@ -130,6 +132,10 @@ private:
 	bool IsHazeSignalToken(const HAZE_CHAR* hChar, const HAZE_CHAR*& outChar, uint32 charSize = 1);
 
 	bool IsPointerOrRef(const HAZE_STRING& str, HazeToken& outToken);
+
+	const HazeDefineType* GetTemplateRealValueType(const HAZE_STRING& str, bool isPointer = false);
+
+	HazeToken GetTokenByTemplateType(const HAZE_STRING& str);
 
 	void BackToPreLexemeAndNext();
 
@@ -148,9 +154,12 @@ private:
 
 	HazeDefineVariable m_DefineVariable;
 	HAZE_STRING m_CurrParseClass;
-	std::vector<HAZE_STRING> m_CurrParseTemplateTypes;
 
 	int m_LeftParenthesesExpressionCount;
 	uint32 m_LineCount;
 	bool m_NeedParseNextStatement;
+
+	bool m_IsParseTemplate;
+	const std::vector<HAZE_STRING>* m_TemplateTypes;
+	const std::vector<HazeDefineType>* m_TemplateRealTypes;
 };

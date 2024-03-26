@@ -7,6 +7,28 @@
 
 extern const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token();
 
+static std::unordered_map<HazeToken, HazeValueType> s_HashMap_Types =
+{
+	{ HazeToken::Void, HazeValueType::Void },
+	{ HazeToken::Bool, HazeValueType::Bool },
+	{ HazeToken::Byte, HazeValueType::Byte },
+	{ HazeToken::Char, HazeValueType::Char },
+	{ HazeToken::Int, HazeValueType::Int },
+	{ HazeToken::Float, HazeValueType::Float },
+	{ HazeToken::Long, HazeValueType::Long },
+	{ HazeToken::Double, HazeValueType::Double },
+	{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
+	{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
+	{ HazeToken::CustomClass, HazeValueType::Class},
+	{ HazeToken::ReferenceBase, HazeValueType::ReferenceBase},
+	{ HazeToken::ReferenceClass, HazeValueType::ReferenceClass},
+	{ HazeToken::PointerBase, HazeValueType::PointerBase},
+	{ HazeToken::PointerClass, HazeValueType::PointerClass},
+	{ HazeToken::PointerPointer, HazeValueType::PointerPointer},
+	{ HazeToken::MultiVariable, HazeValueType::MultiVariable},
+	{ HazeToken::Array, HazeValueType::Array }
+};
+
 uint32 GetSizeByHazeType(HazeValueType type)
 {
 	switch (type)
@@ -37,32 +59,30 @@ uint32 GetSizeByHazeType(HazeValueType type)
 	return 0;
 }
 
+HazeToken GetTokenByValueType(HazeValueType type)
+{
+	static std::unordered_map<HazeValueType, HazeToken> s_HashMap_Tokens;
+	if (s_HashMap_Tokens.size() <= 0)
+	{
+		for (auto& iter : s_HashMap_Types)
+		{
+			s_HashMap_Tokens[iter.second] = iter.first;
+		}
+	}
+
+	auto it = s_HashMap_Tokens.find(type);
+	if (it != s_HashMap_Tokens.end())
+	{
+		return it->second;
+	}
+
+	return HazeToken::Identifier;
+}
+
 HazeValueType GetValueTypeByToken(HazeToken token)
 {
-	static std::unordered_map<HazeToken, HazeValueType> s_HashMap =
-	{
-		{ HazeToken::Void, HazeValueType::Void },
-		{ HazeToken::Bool, HazeValueType::Bool },
-		{ HazeToken::Byte, HazeValueType::Byte },
-		{ HazeToken::Char, HazeValueType::Char },
-		{ HazeToken::Int, HazeValueType::Int },
-		{ HazeToken::Float, HazeValueType::Float },
-		{ HazeToken::Long, HazeValueType::Long },
-		{ HazeToken::Double, HazeValueType::Double },
-		{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
-		{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
-		{ HazeToken::CustomClass, HazeValueType::Class},
-		{ HazeToken::ReferenceBase, HazeValueType::ReferenceBase},
-		{ HazeToken::ReferenceClass, HazeValueType::ReferenceClass},
-		{ HazeToken::PointerBase, HazeValueType::PointerBase},
-		{ HazeToken::PointerClass, HazeValueType::PointerClass},
-		{ HazeToken::PointerPointer, HazeValueType::PointerPointer},
-		{ HazeToken::MultiVariable, HazeValueType::MultiVariable},
-		{ HazeToken::Array, HazeValueType::Array }
-	};
-
-	auto it = s_HashMap.find(token);
-	if (it != s_HashMap.end())
+	auto it = s_HashMap_Types.find(token);
+	if (it != s_HashMap_Types.end())
 	{
 		return it->second;
 	}

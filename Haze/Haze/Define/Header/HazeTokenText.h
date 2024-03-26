@@ -120,4 +120,5 @@
 
 #define TOKEN_NULL_PTR					HAZE_TEXT("空指针")
 
+#define TOKEN_TYPENAME					HAZE_TEXT("类型")
 #define TOKEN_TEMPLATE					HAZE_TEXT("模板")

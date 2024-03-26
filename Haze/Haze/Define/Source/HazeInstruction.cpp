@@ -813,12 +813,18 @@ public:
 	static void New(HazeStack* stack)
 	{
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 1)
+		if (oper.size() == 2)
 		{
 			HazeRegister* newRegister = stack->GetVirtualRegister(NEW_REGISTER);
 			newRegister->Type = oper[0].Variable.Type;
 
-			int size = GetSizeByType(newRegister->Type, stack->m_VM);
+			uint64 size = GetSizeByType(newRegister->Type, stack->m_VM);
+
+			if (IsIntegerType(oper[1].Variable.Type.PrimaryType))
+			{
+				CalculateValueByType(HazeValueType::UnsignedLong, InstructionOpCode::MUL,
+					GetOperatorAddress(stack, oper[1]), &size);
+			}
 
 			uint64 address = (uint64)stack->Alloca(size);
 

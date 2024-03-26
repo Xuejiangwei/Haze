@@ -96,6 +96,8 @@ enum class HazeToken : uint32;
 
 uint32 GetSizeByHazeType(HazeValueType type);
 
+HazeToken GetTokenByValueType(HazeValueType type);
+
 HazeValueType GetValueTypeByToken(HazeToken token);
 
 HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2);

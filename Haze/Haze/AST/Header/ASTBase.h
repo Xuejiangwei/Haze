@@ -132,7 +132,11 @@ private:
 	std::vector<std::unique_ptr<ASTBase>> m_ArraySize;
 	int m_PointerLevel;
 
-	std::vector<HazeDefineType> m_Vector_PointerFunctionParamType;
+	union
+	{
+		std::vector<HazeDefineType> m_Vector_PointerFunctionParamType;
+		std::vector<HazeDefineType> m_Vector_ClassTemplateType;
+	};
 };
 
 //返回
@@ -153,11 +157,14 @@ private:
 class ASTNew : public ASTBase
 {
 public:
-	ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar);
+	ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, std::unique_ptr<ASTBase> countExpression = nullptr);
 	
 	virtual ~ASTNew() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
+
+private:
+	std::unique_ptr<ASTBase> m_CountExpression;
 };
 
 //获得地址

@@ -217,7 +217,7 @@ void HazeStack::SubCallHazeTimes()
 	}
 }
 
-void* HazeStack::Alloca(uint32 size)
+void* HazeStack::Alloca(uint64 size)
 {
 	void* ret = HazeMemory::Alloca(size); //Pool->Alloca(Size);
 	if (ret == nullptr)

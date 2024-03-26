@@ -267,7 +267,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	}
 	else if (m_SectionSignal == HazeSectionSignal::Class)
 	{
-		retValue = m_Compiler->CreateClassVariable(currModule, m_DefineVariable, exprValue, sizeValue, &m_Vector_PointerFunctionParamType);
+		retValue = m_Compiler->CreateClassVariable(currModule, m_DefineVariable, exprValue, sizeValue, &m_Vector_ClassTemplateType);
 	}
 
 	if (retValue && exprValue)
@@ -316,8 +316,8 @@ std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 	return nullptr;
 }
 
-ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar) 
-	: ASTBase(compiler, location, DefineVar)
+ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar, std::unique_ptr<ASTBase> countExpression)
+	: ASTBase(compiler, location, DefineVar), m_CountExpression(std::move(countExpression))
 {
 }
 
@@ -327,7 +327,13 @@ ASTNew::~ASTNew()
 
 std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 {
-	return m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type);
+	auto countValue = m_Compiler->GetConstantValueInt(1);
+	if (m_CountExpression)
+	{
+		countValue = m_CountExpression->CodeGen();
+	}
+
+	return m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type, countValue);
 }
 
 ASTGetAddress::ASTGetAddress(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)

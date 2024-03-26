@@ -80,7 +80,7 @@ private:
 	void SubCallHazeTimes();
 
 private:
-	void* Alloca(uint32 size);
+	void* Alloca(uint64 size);
 
 	void GarbageCollection(bool force = false, bool collectionAll = false);
 

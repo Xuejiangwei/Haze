@@ -115,7 +115,7 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* compil
 		return std::make_shared<HazeCompilerPointerArray>(compilerModule, type, scope, desc, count, arraySize);
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
-		if (assignValue)
+		if (assignValue || compilerModule->IsBeginCreateFunctionVariable())
 		{
 			return std::make_shared<HazeCompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
 		}
@@ -125,7 +125,17 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* compil
 			return nullptr;
 		}
 	case HazeValueType::Class:
-		return std::make_shared<HazeCompilerClassValue>(compilerModule, type, scope, desc, count);
+	{
+		if (params)
+		{
+			compilerModule->ResetTemplateClassRealName(const_cast<HAZE_STRING&>(type.CustomName), *params);
+			return std::make_shared<HazeCompilerClassValue>(compilerModule, type, scope, desc, count);
+		}
+		else
+		{
+			return std::make_shared<HazeCompilerClassValue>(compilerModule, type, scope, desc, count);
+		}
+	}
 	case HazeValueType::Enum:
 		return std::make_shared<HazeCompilerEnumValue>(compilerModule, type, scope, desc, count);
 	default:

@@ -32,7 +32,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 	return block->CreateAlloce(Variable, line, ++m_CurrVariableCount, refValue, arraySize, params);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& data)
+std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& data, std::shared_ptr<HazeCompilerValue> countValue)
 {
 	HAZE_STRING_STREAM hss;
 	hss << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)data.PrimaryType;
@@ -41,7 +41,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDef
 		hss << " " << data.CustomName;
 	}
 
-	hss<< " "<< CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << std::endl;
+	hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
+	HazeCompilerModule::GenVariableHzic(m_Module, hss, countValue);
+	hss << std::endl;
 	
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	block->PushIRCode(hss.str());

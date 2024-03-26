@@ -47,6 +47,8 @@ public:
 
 	const HAZE_CHAR* GetClassName(const HAZE_STRING& name);
 
+	bool IsTemplateClass(const HAZE_STRING& name);
+
 	std::shared_ptr<HazeCompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var);
 
 	std::shared_ptr<HazeCompilerValue> GenStringVariable(HAZE_STRING& str);
@@ -133,7 +135,7 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> CreateDec(std::shared_ptr<HazeCompilerValue> value, bool isPreDec);
 
-	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data);
+	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data, std::shared_ptr<HazeCompilerValue> countValue);
 
 	std::shared_ptr<HazeCompilerValue> CreateCVT(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right);
 

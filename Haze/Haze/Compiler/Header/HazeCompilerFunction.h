@@ -72,7 +72,7 @@ private:
 		std::vector<std::shared_ptr<HazeCompilerValue>> arraySize = {},
 		std::vector<HazeDefineType>* params = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& data);
+	std::shared_ptr<HazeCompilerValue> CreateNew(const HazeDefineType& data, std::shared_ptr<HazeCompilerValue> countValue);
 
 	void InitEntryBlock(std::shared_ptr<HazeBaseBlock> block) { m_EntryBlock = block; }
 

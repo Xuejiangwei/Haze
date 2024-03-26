@@ -47,7 +47,9 @@ HazeValue* ASTFunction::CodeGen()
 
 	for (int i = (int)m_FunctionParams.size() - 1; i >= 0; i--)
 	{
+		currModule->BeginCreateFunctionParamVariable();
 		m_FunctionParams[i]->CodeGen();
+		currModule->EndCreateFunctionParamVariable();
 	}
 
 	if (m_Body)

@@ -234,6 +234,27 @@ const HAZE_CHAR* HazeCompiler::GetClassName(const HAZE_STRING& name)
 	return nullptr;
 }
 
+bool HazeCompiler::IsTemplateClass(const HAZE_STRING& name)
+{
+	auto& currModule = GetCurrModule();
+	if (currModule->IsTemplateClass(name))
+	{
+		return true;
+	}
+	else
+	{
+		for (auto& Iter : currModule->m_ImportModules)
+		{
+			if (Iter->IsTemplateClass(name))
+			{
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType type, const HazeValue& var)
 {
 	static HazeDefineVariable s_DefineVariable;
@@ -813,9 +834,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(std::sh
 		HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::FunctionAddress, 0);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data,
+	std::shared_ptr<HazeCompilerValue> countValue)
 {
-	return function->CreateNew(data);
+	return function->CreateNew(data, countValue);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateCVT(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right)
