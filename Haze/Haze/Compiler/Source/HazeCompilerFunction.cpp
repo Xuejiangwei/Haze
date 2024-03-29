@@ -35,10 +35,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& data, std::shared_ptr<HazeCompilerValue> countValue)
 {
 	HAZE_STRING_STREAM hss;
-	hss << GetInstructionString(InstructionOpCode::NEW) << " " << (unsigned int)data.PrimaryType;
-	if (!data.CustomName.empty())
+	hss << GetInstructionString(InstructionOpCode::NEW) << " " << CAST_TYPE(data.PrimaryType) << " ";
+	if (data.CustomName.empty())
 	{
-		hss << " " << data.CustomName;
+		hss << CAST_TYPE(data.SecondaryType);
+	}
+	else
+	{
+		hss << data.CustomName;
 	}
 
 	hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
@@ -264,5 +268,7 @@ void HazeCompilerFunction::AddLocalVariable(std::shared_ptr<HazeCompilerValue> v
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)
 {
+	m_Module->BeginCreateFunctionParamVariable();
 	m_Params.push_back({ variable.Name, CreateVariable(m_Module, variable, HazeVariableScope::Local, HazeDataDesc::None, 0) });
+	m_Module->EndCreateFunctionParamVariable();
 }

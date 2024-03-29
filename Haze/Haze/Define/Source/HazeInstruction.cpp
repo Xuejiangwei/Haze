@@ -818,7 +818,7 @@ public:
 			HazeRegister* newRegister = stack->GetVirtualRegister(NEW_REGISTER);
 			newRegister->Type = oper[0].Variable.Type;
 
-			uint64 size = GetSizeByType(newRegister->Type, stack->m_VM);
+			uint64 size = GetNewAllocSizeByType(newRegister->Type, stack->m_VM);
 
 			if (IsIntegerType(oper[1].Variable.Type.PrimaryType))
 			{
@@ -1233,7 +1233,8 @@ private:
 		const auto& oper = instruction.Operator;
 		if (oper.size() == 2)
 		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
+			if (IsNumberType(oper[0].Variable.Type.PrimaryType) || 
+				(IsPointerType(oper[0].Variable.Type.PrimaryType) && oper[0].Variable.Type == oper[1].Variable.Type && instruction.InsCode == InstructionOpCode::SUB))
 			{
 				CalculateValueByType(oper[0].Variable.Type.PrimaryType, instruction.InsCode, 
 					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
@@ -1266,7 +1267,7 @@ private:
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("Binary operator error, %s %s operator %s!\n"), oper[0].Variable.Name.c_str(),
+				HAZE_LOG_ERR(HAZE_TEXT("二元计算错误,<%s> <%s> 操作符<%s>!\n"), oper[0].Variable.Name.c_str(),
 					oper[1].Variable.Name.c_str(), GetInstructionString(stack->m_VM->Instructions[stack->m_PC].InsCode));
 			}
 		}

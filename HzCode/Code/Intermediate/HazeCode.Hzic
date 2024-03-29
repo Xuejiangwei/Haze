@@ -1,0 +1,135 @@
+0
+GlobalDataTable
+0
+StringTable
+1
+4 乙 %d
+ClassTable
+1
+Class 列表&整数 24 3
+开始地址 14 7 0 8
+结束地址 14 7 8 8
+容器结束地址 14 7 16 8
+FunctionTable
+4
+Function 列表&整数@获得长度 9
+Param 己 15 列表&整数
+Variable 己$1 15 列表&整数 -12 8 17
+FunctionStart 18
+
+Block Entry
+MOV Temp_R0 1 7 14 7 己$1指之结束地址 2 15 14 7
+SUB Temp_R0 1 7 14 7 己$1指之开始地址 2 15 14 7
+RET Temp_R0 1 7 9
+
+FunctionEnd 20
+
+Function 列表&整数@添加 0
+Param 己 15 列表&整数
+Param 值 7
+Variable 己$2 15 列表&整数 -12 8 22
+Variable 值$1 7 -16 4 22
+Variable 长度$3 9 0 8 31
+Variable 新长度$4 9 8 8 32
+Variable 临时地址$5 14 7 16 8 38
+FunctionStart 23
+
+Block Entry
+CMP 己$2指之结束地址 2 15 14 7 己$2指之容器结束地址 2 15 14 7
+JL IfThenBlock1 ElseBlock2
+
+Block IfThenBlock1
+MOVTOPV 己$2指之结束地址 2 15 14 7 值$1 2 0 7
+INC 己$2指之结束地址 2 15 14 7
+JMP DefaultBlock3
+
+Block ElseBlock2
+PUSH 己$2 2 0 15 列表&整数
+PUSH RetAddress 0 9 7
+CALL 列表&整数@获得长度 22 1 8 HazeCode
+MOV 长度$3 2 0 9 Ret_R 1 4 9
+MOV Temp_R0 1 7 9 长度$3 2 0 9
+MUL Temp_R0 1 7 9 2 1 1 9
+MOV 新长度$4 2 0 9 Temp_R0 1 7 9
+CMP 新长度$4 2 0 9 0 1 1 7
+JE IfThenBlock4 DefaultBlock5
+
+Block IfThenBlock4
+CVT Temp_R0 1 7 9 1 1 1 7
+MOV 新长度$4 2 0 9 Temp_R0 1 7 9
+JMP DefaultBlock5
+
+Block DefaultBlock5
+NEW 14 7 2 5 新长度$4 2 0 9
+MOV 临时地址$5 2 0 14 7 New_R 1 5 14 7
+CMP 长度$3 2 0 9 0 1 1 7
+JG IfThenBlock6 DefaultBlock7
+
+Block IfThenBlock6
+PUSH 长度$3 2 0 9
+PUSH 己$2指之开始地址 2 15 14 7
+PUSH 临时地址$5 2 0 14 7
+PUSH RetAddress 0 9 7
+CALL 内存复制 22 3 24 标准内存
+JMP DefaultBlock7
+
+Block DefaultBlock7
+MOV 己$2指之开始地址 2 15 14 7 临时地址$5 2 0 14 7
+MOV Temp_R0 1 7 14 7 己$2指之开始地址 2 15 14 7
+ADD Temp_R0 1 7 14 7 长度$3 2 0 9
+MOV 己$2指之结束地址 2 15 14 7 Temp_R0 1 7 14 7
+MOV Temp_R0 1 7 14 7 己$2指之开始地址 2 15 14 7
+ADD Temp_R0 1 7 14 7 新长度$4 2 0 9
+MOV 己$2指之容器结束地址 2 15 14 7 Temp_R0 1 7 14 7
+PUSH 值$1 2 0 7
+PUSH 己$2 2 0 15 列表&整数
+PUSH RetAddress 0 9 7
+CALL 列表&整数@添加 22 2 12 HazeCode
+JMP DefaultBlock3
+
+Block DefaultBlock3
+RET Void 0 0 0
+
+FunctionEnd 50
+
+Function 列表&整数@获得 7
+Param 己 15 列表&整数
+Param 索引 7
+Variable 己$2 15 列表&整数 -12 8 52
+Variable 索引$1 7 -16 4 52
+FunctionStart 53
+
+Block Entry
+MOV Temp_R0 1 7 7 索引$1 2 0 7
+MUL Temp_R0 1 7 7 4 1 1 7
+ADD 己$2指之开始地址 2 15 14 7 Temp_R0 1 7 7
+MOVPV Temp_R0 1 7 7 己$2指之开始地址 2 15 14 7
+RET Temp_R0 1 7 7
+
+FunctionEnd 55
+
+Function 主函数 0
+Variable 甲$1 21 列表&整数 0 24 14
+Variable 丙$2 7 24 4 15
+Variable 乙$3 7 28 4 17
+FunctionStart 13
+
+Block Entry
+MOV 丙$2 2 0 7 2 1 1 7
+PUSH 丙$2 2 0 7
+PUSH 甲$1 2 11 15 列表&整数
+PUSH RetAddress 0 9 7
+CALL 列表&整数@添加 22 1 12 HazeCode
+PUSH 0 1 1 7
+PUSH 甲$1 2 11 15 列表&整数
+PUSH RetAddress 0 9 7
+CALL 列表&整数@获得 22 1 12 HazeCode
+MOV 乙$3 2 0 7 Ret_R 1 4 7
+PUSH 乙$3 2 0 7
+PUSH 常字符串指针 1 2 14 4 0
+PUSH RetAddress 0 9 7
+CALL 打印 22 2 12 标准流
+RET Void 0 0 0
+
+FunctionEnd 68
+

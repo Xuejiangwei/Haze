@@ -329,6 +329,7 @@ void Parse::ParseContent()
 
 void Parse::ParseTemplateContent(const HAZE_STRING& templateName, const std::vector<HAZE_STRING>& templateTypes, const std::vector<HazeDefineType>& templateRealTypes)
 {
+	m_Compiler->MarkParseTemplate(true);
 	m_IsParseTemplate = true;
 	m_TemplateTypes = &templateTypes;
 	m_TemplateRealTypes = &templateRealTypes;
@@ -404,7 +405,8 @@ void Parse::ParseTemplateContent(const HAZE_STRING& templateName, const std::vec
 
 	m_IsParseTemplate = false;
 	m_TemplateTypes = nullptr;
-	m_TemplateRealTypes = nullptr;	
+	m_TemplateRealTypes = nullptr;
+	m_Compiler->MarkParseTemplate(false);
 }
 
 HazeToken Parse::GetNextToken()

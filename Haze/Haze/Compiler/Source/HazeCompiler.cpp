@@ -57,7 +57,7 @@ bool HazeCompiler::InitializeCompiler(const HAZE_STRING& moduleName)
 	}
 
 	m_ModuleNameStack.push_back(moduleName);
-	m_CompilerModules[GetCurrModuleName()] = std::make_unique<HazeCompilerModule>(this, moduleName);
+	m_CompilerModules[moduleName] = std::make_unique<HazeCompilerModule>(this, moduleName);
 	return true;
 }
 
@@ -253,6 +253,25 @@ bool HazeCompiler::IsTemplateClass(const HAZE_STRING& name)
 	}
 
 	return false;
+}
+
+void HazeCompiler::MarkParseTemplate(bool begin)
+{
+	static HAZE_STRING cacheFunctionName;
+	static std::shared_ptr<HazeBaseBlock> cacheInsertBlock;
+
+	if (begin)
+	{
+		cacheFunctionName = GetCurrModule()->m_CurrFunction;
+		cacheInsertBlock = m_InsertBaseBlock;
+	}
+	else
+	{
+		GetCurrModule()->m_CurrFunction = cacheFunctionName;
+		m_InsertBaseBlock = cacheInsertBlock;
+		cacheFunctionName.clear();
+		cacheInsertBlock = nullptr;
+	}
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType type, const HazeValue& var)
@@ -612,7 +631,16 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeC
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign)
 {
 	ReplaceConstantValueByStrongerType(left, right);
-	return GetCurrModule()->CreateSub(left, right, isAssign);
+	auto value = GetCurrModule()->CreateSub(left, right, isAssign);
+	if (left->IsPointer() && right->IsPointer())
+	{
+		auto& valueType = const_cast<HazeDefineType&>(value->GetValueType());
+		valueType.PrimaryType = HazeValueType::Long;
+		valueType.SecondaryType = HazeValueType::Void;
+		valueType.CustomName.clear();
+	}
+
+	return value;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMul(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign)

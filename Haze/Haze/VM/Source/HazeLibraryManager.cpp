@@ -3,6 +3,7 @@
 #include "HazeLog.h"
 
 #include "HazeStream.h"
+#include "HazeMemoryLib.h"
 
 #ifdef _WIN32
 
@@ -100,5 +101,6 @@ void HazeLibraryManager::LoadStdLibrary()
 	if (HazeStandardLibraryBase::GetStdLibSize() == 0)
 	{
 		HazeStream::InitializeLib();
+		HazeMemoryLib::InitializeLib();
 	}
 }

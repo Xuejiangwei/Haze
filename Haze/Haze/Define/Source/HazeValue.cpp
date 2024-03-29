@@ -656,7 +656,20 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 		COMPARE_ASSIGN();
 	}
 	break;
+	case HazeValueType::PointerBase:
+	case HazeValueType::PointerClass:
+	case HazeValueType::PointerFunction:
+	case HazeValueType::PointerArray:
+	case HazeValueType::PointerPointer:
+	{
+		uint64 s = *(uint64*)source, t = *(uint64*)target;
+		TWO_VARIABLE_DEFINE_INIT(uint64, s, t);
+		VARIABLE_COMPARE();
+		COMPARE_ASSIGN();
+	}
+	break;
 	default:
+		HAZE_LOG_ERR_W("类型比较错误!\n");
 		break;
 	}
 }

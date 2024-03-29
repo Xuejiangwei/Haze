@@ -1,0 +1,31 @@
+1
+GlobalDataTable
+0
+StringTable
+0
+ClassTable
+0
+FunctionTable
+2
+Function 打印 0
+Param 甲 14 4
+Param 多参数 24
+Variable 多参数$2 24 -4 0 5
+Variable 甲$1 14 4 -12 8 5
+FunctionStart 0
+
+Block Entry
+
+FunctionEnd 0
+
+Function 输入 0
+Param 甲 14 4
+Param 多参数 24
+Variable 多参数$2 24 -4 0 6
+Variable 甲$1 14 4 -12 8 6
+FunctionStart 0
+
+Block Entry
+
+FunctionEnd 0
+

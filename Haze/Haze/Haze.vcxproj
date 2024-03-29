@@ -172,6 +172,7 @@
     <ClCompile Include="Define\Source\HazeUtility.cpp" />
     <ClCompile Include="Define\Source\HazeValue.cpp" />
     <ClCompile Include="Define\Source\HazeInstruction.cpp" />
+    <ClCompile Include="Library\Source\HazeMemoryLib.cpp" />
     <ClCompile Include="Memory\Source\HazeMemory.cpp" />
     <ClCompile Include="Memory\Source\MemoryBlock.cpp" />
     <ClCompile Include="Memory\Source\MemoryHelper.cpp" />
@@ -237,6 +238,7 @@
     <ClInclude Include="Header\HazeFilePathHelper.h" />
     <ClInclude Include="Header\HazeHeader.h" />
     <ClInclude Include="Library\Header\HazeLibraryDefine.h" />
+    <ClInclude Include="Library\Header\HazeMemoryLib.h" />
     <ClInclude Include="XJson\XJson.h" />
     <ClInclude Include="VM\Header\HazeLibraryManager.h" />
     <ClInclude Include="VM\Header\HazeStack.h" />

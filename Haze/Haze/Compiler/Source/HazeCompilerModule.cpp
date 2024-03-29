@@ -112,7 +112,14 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
 	auto iter = m_HashMap_Functions.find(m_CurrFunction);
 	if (iter == m_HashMap_Functions.end())
 	{
-		return GetClass(m_CurrClass)->FindFunction(m_CurrFunction);
+		if (m_CurrClass.empty())
+		{
+			return nullptr;
+		}
+		else
+		{
+			return GetClass(m_CurrClass)->FindFunction(m_CurrFunction);
+		}
 	}
 
 	return iter->second;

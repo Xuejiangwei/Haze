@@ -49,6 +49,8 @@ public:
 
 	bool IsTemplateClass(const HAZE_STRING& name);
 
+	void MarkParseTemplate(bool begin);
+
 	std::shared_ptr<HazeCompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var);
 
 	std::shared_ptr<HazeCompilerValue> GenStringVariable(HAZE_STRING& str);

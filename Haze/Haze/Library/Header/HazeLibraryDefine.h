@@ -7,6 +7,12 @@
 extern "C" __declspec(dllexport) int ExecuteFunction(const wchar_t* functionName, char* paramStartAddress, char* retStartAddress, void* stack, \
 	void(*exeHazeFunction)(void*, void*, int, ...));
 
+#else
+
+using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, void*, int, ...));
+
+#endif // HAZE
+
 #define HAZE_CALL_NULL_PARAM nullptr, nullptr, nullptr, nullptr
 #define HAZE_CALL_FUNC_PARAM char* paramStartAddress, char* retStartAddress, void* stack, void(*exeHazeFunction)(void*, void*, int, ...)
 #define ARG_T(ARGS) ARGS																	//½â¾öVC±àÒë´íÎó
@@ -26,9 +32,3 @@ extern "C" __declspec(dllexport) int ExecuteFunction(const wchar_t* functionName
 	retRegister->Type.PrimaryType = TYPE; \
 	retRegister->Data.resize(GetSizeByType(retRegister->Type, stack->GetVM())); \
 	SET_RET(V, retRegister->Data.begin()._Unwrapped())
-
-#else
-
-using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, void*, int, ...));
-
-#endif // HAZE

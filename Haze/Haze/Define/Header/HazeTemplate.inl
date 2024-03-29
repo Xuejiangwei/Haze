@@ -9,6 +9,13 @@ unsigned int GetSizeByType(HazeDefineType type, T* This)
 }
 
 template <typename T>
+unsigned int GetNewAllocSizeByType(HazeDefineType type, T* This)
+{
+	return type.PrimaryType == HazeValueType::PointerClass ? This->GetClassSize(type.CustomName) :
+		GetSizeByHazeType(type.SecondaryType);
+}
+
+template <typename T>
 T StringToStandardType(const HAZE_STRING& str)
 {
 	HAZE_STRING_STREAM wss;

@@ -64,6 +64,9 @@ template <typename T>
 unsigned int GetSizeByType(HazeDefineType type, T* This);
 
 template <typename T>
+unsigned int GetNewAllocSizeByType(HazeDefineType type, T* This);
+
+template <typename T>
 T StringToStandardType(const HAZE_STRING& str);
 
 template <typename T>
