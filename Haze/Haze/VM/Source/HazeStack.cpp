@@ -222,7 +222,7 @@ void* HazeStack::Alloca(uint64 size)
 	void* ret = HazeMemory::Alloca(size); //Pool->Alloca(Size);
 	if (ret == nullptr)
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("Memory pool alloca failed!\n"));
+		HAZE_LOG_ERR_W("ƒ⁄¥Ê∑÷≈‰ ß∞‹!\n");
 	}
 
 	return ret;

@@ -631,13 +631,50 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateAdd(std::shared_ptr<HazeC
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign)
 {
 	ReplaceConstantValueByStrongerType(left, right);
-	auto value = GetCurrModule()->CreateSub(left, right, isAssign);
+
+	std::shared_ptr<HazeCompilerValue> value = nullptr;
 	if (left->IsPointer() && right->IsPointer())
 	{
-		auto& valueType = const_cast<HazeDefineType&>(value->GetValueType());
-		valueType.PrimaryType = HazeValueType::Long;
-		valueType.SecondaryType = HazeValueType::Void;
-		valueType.CustomName.clear();
+		auto register1 = GetTempRegister();
+		auto& valueType1 = const_cast<HazeDefineType&>(register1->GetValueType());
+		valueType1.PrimaryType = HazeValueType::Long;
+		valueType1.SecondaryType = HazeValueType::Void;
+		valueType1.CustomName.clear();
+
+		auto register2 = GetTempRegister();
+		auto& valueType2 = const_cast<HazeDefineType&>(register2->GetValueType());
+		valueType2.PrimaryType = HazeValueType::Long;
+		valueType2.SecondaryType = HazeValueType::Void;
+		valueType2.CustomName.clear();
+
+		GetCurrModule()->GenIRCode_BinaryOperater(register1, left, InstructionOpCode::MOV);
+		GetCurrModule()->GenIRCode_BinaryOperater(register2, right, InstructionOpCode::MOV);
+		value = CreateSub(register1, register2, isAssign);
+		
+		if (left->GetValueType() == right->GetValueType())
+		{
+			auto& type = left->GetValueType();
+			auto size = type.HasCustomName() ? GetCurrModule()->GetClassSize(type.CustomName) : GetSizeByHazeType(type.SecondaryType);
+			if (size > 1)
+			{
+				if ((size & (size - 1)) == 0)
+				{
+					value = CreateShr(value, GetConstantValueInt(Log2(size)));
+				}
+				else
+				{
+					HAZE_LOG_ERR_W("生成<SUB>错误, 指针指向的类型的字节大小应为2的幂次方!\n");
+				}
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("生成<SUB>错误, 两个指针的类型应该相同!\n");
+		}
+	}
+	else
+	{
+		value = GetCurrModule()->CreateSub(left, right, isAssign);
 	}
 
 	return value;
@@ -866,6 +903,17 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeC
 	std::shared_ptr<HazeCompilerValue> countValue)
 {
 	return function->CreateNew(data, countValue);
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateCast(const HazeDefineType& type, std::shared_ptr<HazeCompilerValue> value)
+{
+	auto reg = GetTempRegister();
+	auto& valueType1 = const_cast<HazeDefineType&>(reg->GetValueType());
+	valueType1 = type;
+
+	GetCurrModule()->GenIRCode_BinaryOperater(reg, value, InstructionOpCode::MOV);
+
+	return reg;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateCVT(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right)

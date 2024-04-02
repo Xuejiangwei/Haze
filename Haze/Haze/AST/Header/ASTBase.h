@@ -466,3 +466,17 @@ public:
 private:
 	std::vector<std::unique_ptr<ASTBase>> m_InitializeListExpression;
 };
+
+//ǿת
+class ASTCast : public ASTBase
+{
+public:
+	ASTCast(HazeCompiler* compiler, const SourceLocation& location, HazeDefineType& type, std::unique_ptr<ASTBase>& expression);
+
+	virtual ~ASTCast() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen();
+
+private:
+	std::unique_ptr<ASTBase> m_Expression;
+};

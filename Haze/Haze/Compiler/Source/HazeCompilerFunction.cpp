@@ -35,7 +35,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(con
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& data, std::shared_ptr<HazeCompilerValue> countValue)
 {
 	HAZE_STRING_STREAM hss;
-	hss << GetInstructionString(InstructionOpCode::NEW) << " " << CAST_TYPE(data.PrimaryType) << " ";
+	hss << GetInstructionString(InstructionOpCode::NEW) << " " << NEW_REGISTER << " " << CAST_TYPE(data.PrimaryType) << " ";
 	if (data.CustomName.empty())
 	{
 		hss << CAST_TYPE(data.SecondaryType);

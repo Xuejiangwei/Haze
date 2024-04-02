@@ -801,7 +801,15 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 	{
 		if (m_IsParseTemplate)
 		{
-			m_DefineVariable.Type.SecondaryType = GetTemplateRealValueType(m_CurrLexeme, true)->PrimaryType;
+			auto realType = GetTemplateRealValueType(m_CurrLexeme, true);
+			if (realType)
+			{
+				m_DefineVariable.Type.SecondaryType = realType->PrimaryType;
+			}
+			else
+			{
+				m_DefineVariable.Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
+			}
 		}
 		else
 		{
@@ -1304,19 +1312,55 @@ std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 {
 	m_LeftParenthesesExpressionCount++;
 	GetNextToken();
-	auto expression = ParseExpression();
-	if (m_CurrToken == HazeToken::RightParentheses || m_LeftParenthesesExpressionCount == 0)
+
+	std::unique_ptr<ASTBase> expression = nullptr;
+	if (IsCanCastToken(m_CurrToken))
 	{
-		if (m_LeftParenthesesExpressionCount > 0)
+		HazeDefineType type;
+		type.PrimaryType = GetValueTypeByToken(m_CurrToken);
+		if (m_CurrToken == HazeToken::PointerBase)
 		{
-			m_LeftParenthesesExpressionCount--;
-			GetNextToken();
+			type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
 		}
-		return expression;
+		else if (m_CurrToken == HazeToken::PointerClass)
+		{
+			type.CustomName = GetPointerClassType(m_CurrLexeme);
+		}
+		else if (m_CurrToken == HazeToken::Class)
+		{
+			type.CustomName = m_CurrLexeme;
+		}
+
+		if (ExpectNextTokenIs(HazeToken::RightParentheses))
+		{
+
+			if (ExpectNextTokenIs(HazeToken::LeftParentheses))
+			{
+				expression = ParseExpression();
+			}
+			else
+			{
+				expression = ParseUnaryExpression();
+			}
+			return std::make_unique<ASTCast>(m_Compiler, m_LineCount, type, expression);
+		}
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("Parse left parentheses error, expect right parentheses\n"));
+		expression = ParseExpression();
+		if (m_CurrToken == HazeToken::RightParentheses || m_LeftParenthesesExpressionCount == 0)
+		{
+			if (m_LeftParenthesesExpressionCount > 0)
+			{
+				m_LeftParenthesesExpressionCount--;
+				GetNextToken();
+			}
+			return expression;
+		}
+		else
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("Parse left parentheses error, expect right parentheses\n"));
+		}
 	}
 
 	return nullptr;

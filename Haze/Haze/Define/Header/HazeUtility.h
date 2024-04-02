@@ -16,6 +16,10 @@ bool IsAndToken(HazeToken token);
 
 bool IsOrToken(HazeToken token);
 
+bool IsCanCastToken(HazeToken token);
+
+int Log2(int n);
+
 const HAZE_CHAR* GetGlobalDataHeaderString();
 
 const HAZE_CHAR* GetStringTableHeaderString();

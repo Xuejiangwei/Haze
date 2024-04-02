@@ -273,14 +273,6 @@ void HazeVM::OnExecLine(uint32 Line)
 
 void HazeVM::InstructionExecPost()
 {
-#define HAZE_INS_LOG 0
-
-#if HAZE_INS_LOG
-
-	HAZE_LOG_INFO(HAZE_TEXT("÷¥––÷∏¡Ó<%s> <%s>\n"), GetInstructionString(Vector_Instruction[VMStack->GetCurrPC()].InsCode),
-		Vector_Instruction[VMStack->GetCurrPC()].Operator[0].Variable.Name.c_str());
-
-#endif
 }
 
 uint32 HazeVM::GetNextLine(uint32 CurrLine)

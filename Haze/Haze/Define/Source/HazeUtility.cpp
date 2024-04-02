@@ -25,6 +25,50 @@ bool IsOrToken(HazeToken token)
 	return token == HazeToken::Or;
 }
 
+bool IsCanCastToken(HazeToken token)
+{
+	switch (token)
+	{
+	case HazeToken::Bool:
+	case HazeToken::Byte:
+	case HazeToken::Char:
+	case HazeToken::Int:
+	case HazeToken::Float:
+	case HazeToken::Long:
+	case HazeToken::Double:
+	case HazeToken::UnsignedInt:
+	case HazeToken::UnsignedLong:
+	case HazeToken::Enum:
+	case HazeToken::ReferenceBase:
+	case HazeToken::ReferenceClass:
+	case HazeToken::PointerBase:
+	case HazeToken::PointerClass:
+	case HazeToken::PointerFunction:
+	case HazeToken::PointerPointer:
+		return true;
+	default:
+		break;
+	}
+	return false;
+}
+
+int Log2(int n)
+{
+	int count = 0;
+	if (n == 1)
+	{
+		return 0;
+	}
+
+	while (n > 1)
+	{
+		n = n >> 1;
+		count++;
+	}
+
+	return count;
+}
+
 const HAZE_CHAR* GetGlobalDataHeaderString()
 {
 	return HEADER_STRING_GLOBAL_DATA;

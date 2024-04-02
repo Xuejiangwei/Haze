@@ -455,6 +455,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	case InstructionOpCode::NEW:
 	{
 		InstructionData operatorOne;
+		GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
 
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Variable.Type.PrimaryType);
 

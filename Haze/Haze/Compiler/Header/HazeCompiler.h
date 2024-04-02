@@ -139,6 +139,8 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data, std::shared_ptr<HazeCompilerValue> countValue);
 
+	std::shared_ptr<HazeCompilerValue> CreateCast(const HazeDefineType& type, std::shared_ptr<HazeCompilerValue> value);
+
 	std::shared_ptr<HazeCompilerValue> CreateCVT(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right);
 
 	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> function, std::vector<std::shared_ptr<HazeCompilerValue>>& param, std::shared_ptr<HazeCompilerValue> thisPointerTo = nullptr);

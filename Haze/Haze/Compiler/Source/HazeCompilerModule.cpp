@@ -498,7 +498,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 			}
 			else
 			{
-				if (right->IsRegister(HazeDataDesc::RegisterTemp) && right->GetValueType() == left->GetValueType())
+				if (right->IsRegister(HazeDataDesc::RegisterTemp) && right->GetValueType() == left->GetValueType()
+					&& !left->IsRegister(HazeDataDesc::RegisterTemp))
 				{
 					retValue = right;
 					right = left;

@@ -993,3 +993,18 @@ std::shared_ptr<HazeCompilerValue> ASTInitializeList::CodeGen()
 
 	return InitilaizeListValue;
 }
+
+ASTCast::ASTCast(HazeCompiler* compiler, const SourceLocation& location, HazeDefineType& type, std::unique_ptr<ASTBase>& expression)
+	: ASTBase(compiler, location), m_Expression(std::move(expression))
+{
+	m_DefineVariable.Type = type;
+}
+
+ASTCast::~ASTCast()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTCast::CodeGen()
+{
+	return m_Compiler->CreateCast(m_DefineVariable.Type, m_Expression->CodeGen());
+}

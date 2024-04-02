@@ -1,4 +1,5 @@
 #include "HazeHeader.h"
+#include "HazeDebugDefine.h"
 #include "HazeLog.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
@@ -8,6 +9,11 @@
 #include <Windows.h>
 
 #define HAZE_CALL_LOG				0
+
+#define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); auto size = GetSizeByHazeType(OPER[0].Variable.Type.SecondaryType); \
+				uint64 address; auto operAddress = GetOperatorAddress(STACK, OPER[0]); memcpy(&address, operAddress, sizeof(operAddress)); \
+				if (INS == InstructionOpCode::SUB) address -= size * v; else address += size * v; \
+				memcpy(operAddress, &address, sizeof(operAddress));
 
 extern std::unique_ptr<HazeLibraryManager> g_HazeLibManager;
 
@@ -120,9 +126,58 @@ void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
 class InstructionProcessor
 {
 	friend void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
+
+#if HAZE_DEBUG_ENABLE
+	struct DataDebugScope
+	{
+		DataDebugScope(HazeStack* stack, const std::vector<InstructionData>& data, InstructionOpCode opCode)
+			: Stack(stack), Data(data)
+		{
+			memcpy(&Address, GetOperatorAddress(Stack, Data[0]), 8);
+
+			if (Data.size() == 2)
+			{
+				HAZE_LOG_ERR_W("开始 操作数一地址<%p> 操作数二地址<%p>\n", (char*)Address, GetOperatorAddress(stack, Data[1]));
+				
+				HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s> <%s>\n"), GetInstructionString(opCode),
+					Data[0].Variable.Name.c_str(), Data[1].Variable.Name.c_str());
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("开始 操作数一地址<%p>\n", (char*)Address);
+
+				HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s> \n"), GetInstructionString(opCode),
+					Data[0].Variable.Name.c_str());
+			}
+		}
+
+		~DataDebugScope()
+		{
+			memcpy(&Address, GetOperatorAddress(Stack, Data[0]), 8);
+			if (Data.size() == 2)
+			{
+				HAZE_LOG_ERR_W("结束 操作数一地址<%p> 操作数二地址<%p>\n\n", (char*)Address, GetOperatorAddress(Stack, Data[1]));
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("结束 操作数一地址<%p>\n\n", (char*)Address);
+			}
+		}
+
+	private:
+		const std::vector<InstructionData>& Data;
+		uint64 Address;
+		HazeStack* Stack;
+	};
+	#define INSTRUCTION_DATA_DEBUG DataDebugScope debugScope(stack, stack->m_VM->Instructions[stack->m_PC].Operator, stack->m_VM->Instructions[stack->m_PC].InsCode)
+#else
+	#define INSTRUCTION_DATA_DEBUG
+#endif
+
 public:
 	static void Mov(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -133,15 +188,13 @@ public:
 			ClearRegisterType(stack, oper[1]);
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void MovPV(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -155,15 +208,13 @@ public:
 			ClearRegisterType(stack, oper[1]);
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void MovToPV(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -177,15 +228,13 @@ public:
 			ClearRegisterType(stack, oper[1]);
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Lea(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -194,15 +243,13 @@ public:
 			memcpy(dst, &address, GetSizeByType(oper[0].Variable.Type, stack->m_VM));
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Push(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
@@ -252,74 +299,62 @@ public:
 			stack->m_ESP += size;
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Pop(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
 			stack->m_ESP -= GetSizeByType(oper[0].Variable.Type, stack->m_VM);
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Add(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		BinaryOperator(stack);
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Sub(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+	
 		BinaryOperator(stack);
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Mul(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		BinaryOperator(stack);
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Div(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		BinaryOperator(stack);
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Mod(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -330,15 +365,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Neg(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
@@ -349,15 +382,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Not(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -367,15 +398,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Inc(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
@@ -383,17 +412,49 @@ public:
 			{
 				OperatorValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::INC, GetOperatorAddress(stack, oper[0]));
 			}
+			else if (IsPointerType(oper[0].Variable.Type.PrimaryType) && !IsPointerFunction(oper[0].Variable.Type.PrimaryType))
+			{
+				const auto& instruction = stack->m_VM->Instructions[stack->m_PC];
+				const auto& oper = instruction.Operator;
+
+				uint32 size = 0;
+				if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerBase)
+				{
+					size = GetSizeByHazeType(oper[0].Variable.Type.SecondaryType);
+				}
+				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerClass)
+				{
+					size =	stack->m_VM->GetClassSize(oper[0].Variable.Type.CustomName);
+				}
+				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerPointer)
+				{
+					size = sizeof(char**);
+				}
+				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerArray)
+				{
+					size = 0;
+					HAZE_LOG_ERR_W("<Inc>指针数组暂不支持\n!");
+				}
+
+				auto address = (char*)GetOperatorAddress(stack, oper[0]);
+				uint64 pointerAddressValue;
+				memcpy(&pointerAddressValue, address, sizeof(address));
+				pointerAddressValue += size;
+				memcpy(address, &pointerAddressValue, sizeof(address));
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("<Inc>操作错误\n!");
+			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Dec(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
@@ -402,17 +463,46 @@ public:
 				OperatorValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::DEC,
 					GetOperatorAddress(stack, oper[0]));
 			}
+			else if (IsPointerType(oper[0].Variable.Type.PrimaryType) && !IsPointerFunction(oper[0].Variable.Type.PrimaryType))
+			{
+				uint32 size = 0;
+				if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerBase)
+				{
+					size = GetSizeByHazeType(oper[0].Variable.Type.SecondaryType);
+				}
+				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerClass)
+				{
+					size = stack->m_VM->GetClassSize(oper[0].Variable.Type.CustomName);
+				}
+				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerPointer)
+				{
+					size = sizeof(char**);
+				}
+				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerArray)
+				{
+					size = 0;
+					HAZE_LOG_ERR_W("<Dec>指针数组暂不支持\n!");
+				}
+
+				auto address = (char*)GetOperatorAddress(stack, oper[0]);
+				uint64 pointerAddressValue;
+				memcpy(&pointerAddressValue, address, sizeof(address));
+				pointerAddressValue -= size;
+				memcpy(address, &pointerAddressValue, sizeof(address));
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("<Dec>操作错误\n!");
+			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Bit_And(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -423,15 +513,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Bit_Or(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -442,15 +530,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Bit_Xor(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+	
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -461,15 +547,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Add_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -480,15 +564,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Sub_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -499,15 +581,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Mul_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -518,15 +598,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Div_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -537,15 +615,15 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
+
 
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Mod_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -556,15 +634,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Bit_And_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -575,15 +651,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Bit_Or_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -594,15 +668,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Bit_Neg(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG; 
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
@@ -617,15 +689,13 @@ public:
 			HAZE_LOG_ERR(HAZE_TEXT("bir neg operator error!\n"));
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Bit_Xor_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG; 
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -636,15 +706,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Shl_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -655,15 +723,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Shr_Assign(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -674,15 +740,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Shl(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -693,15 +757,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Shr(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -712,27 +774,18 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Call(HazeStack* stack)
 	{
-		//EBP = PC;
+		INSTRUCTION_DATA_DEBUG;
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() >= 1)
 		{
 #if HAZE_CALL_LOG
 			HAZE_LOG_INFO(HAZE_TEXT("调用函数<%s>\n"), oper[0].Variable.Name.c_str());
-#endif
-
-#if HAZE_DEBUG_ENABLE
-
-			stack->m_VM->InstructionExecPost();
-
 #endif
 
 			memcpy(&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], &stack->m_PC, HAZE_ADDRESS_SIZE);
@@ -785,15 +838,13 @@ public:
 				}
 			}
 		}
+
+		stack->m_VM->InstructionExecPost();
 	}
 
 	static void Ret(HazeStack* stack)
 	{
-#if HAZE_DEBUG_ENABLE
-
-		stack->m_VM->InstructionExecPost();
-
-#endif
+		INSTRUCTION_DATA_DEBUG;
 
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
@@ -806,16 +857,19 @@ public:
 			retRegister->Data.resize(size);
 			memcpy(retRegister->Data.begin()._Unwrapped(), GetOperatorAddress(stack, oper[0]), size);
 		}
-
 		stack->OnRet();
+
+		stack->m_VM->InstructionExecPost();
 	}
 
 	static void New(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			HazeRegister* newRegister = stack->GetVirtualRegister(NEW_REGISTER);
+			HazeRegister* newRegister = stack->GetVirtualRegister(oper[0].Variable.Name.c_str());
 			newRegister->Type = oper[0].Variable.Type;
 
 			uint64 size = GetNewAllocSizeByType(newRegister->Type, stack->m_VM);
@@ -828,19 +882,17 @@ public:
 
 			uint64 address = (uint64)stack->Alloca(size);
 
-			newRegister->Data.resize(size);
-			memcpy(newRegister->Data.begin()._Unwrapped(), &address, size);
+			newRegister->Data.resize(sizeof(void*));
+			memcpy(newRegister->Data.begin()._Unwrapped(), &address, newRegister->Data.size());
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Cmp(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -849,30 +901,26 @@ public:
 				cmpRegister, GetOperatorAddress(stack, oper[0]), GetOperatorAddress(stack, oper[1]));
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Jmp(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
 			JmpToOperator(stack, oper[0]);
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Jne(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 #define REGISTER_EQUAL(R) R->Data[0] == 1
 #define REGISTER_GREATER(R) R->Data[1] == 1
 #define REGISTER_LESS(R) R->Data[2] == 1
@@ -892,15 +940,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Jng(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -916,15 +962,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Jnl(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -940,15 +984,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Je(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -964,15 +1006,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Jg(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -988,15 +1028,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Jl(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -1012,15 +1050,13 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void CVT(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
+		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -1040,26 +1076,19 @@ public:
 			}
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 	static void Line(HazeStack* stack)
 	{
+		INSTRUCTION_DATA_DEBUG;
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
 			stack->m_VM->OnExecLine(oper[0].Extra.Line);
 		}
 
-#if HAZE_DEBUG_ENABLE
-
 		stack->m_VM->InstructionExecPost();
-
-#endif
 	}
 
 private:
@@ -1233,11 +1262,44 @@ private:
 		const auto& oper = instruction.Operator;
 		if (oper.size() == 2)
 		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType) || 
-				(IsPointerType(oper[0].Variable.Type.PrimaryType) && oper[0].Variable.Type == oper[1].Variable.Type && instruction.InsCode == InstructionOpCode::SUB))
+			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.PrimaryType, instruction.InsCode, 
 					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
+			}
+			else if (IsPointerType(oper[0].Variable.Type.PrimaryType) && 
+				(oper[0].Variable.Type == oper[1].Variable.Type && instruction.InsCode == InstructionOpCode::SUB))
+			{
+
+			}
+			else if (IsPointerType(oper[0].Variable.Type.PrimaryType) && (IsIntegerType(oper[1].Variable.Type.PrimaryType) 
+				&& (instruction.InsCode == InstructionOpCode::SUB || instruction.InsCode == InstructionOpCode::ADD)))
+			{
+				switch (oper[1].Variable.Type.PrimaryType)
+				{
+					case HazeValueType::Int:
+					{
+						POINTER_ADD_SUB(int, GetOperatorAddress(stack, oper[1]), stack, oper, instruction.InsCode);
+					}
+					break;
+					case HazeValueType::UnsignedInt:
+					{
+						POINTER_ADD_SUB(uint32, GetOperatorAddress(stack, oper[1]), stack, oper, instruction.InsCode);
+					}
+					break;
+					case HazeValueType::Long:
+					{
+						POINTER_ADD_SUB(int64, GetOperatorAddress(stack, oper[1]), stack, oper, instruction.InsCode);
+					}
+					break;
+					case HazeValueType::UnsignedLong:
+					{
+						POINTER_ADD_SUB(uint64, GetOperatorAddress(stack, oper[1]), stack, oper, instruction.InsCode);
+					}
+					break;
+					default:
+						break;
+				}
 			}
 			else if (IsRegisterDesc(oper[0].Desc) && IsIntegerType(oper[1].Variable.Type.PrimaryType))
 			{
