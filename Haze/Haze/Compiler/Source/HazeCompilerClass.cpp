@@ -1,5 +1,4 @@
 #include "HazeLog.h"
-
 #include "HazeCompilerClass.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerFunction.h"
@@ -149,8 +148,6 @@ bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* classValue, const 
 
 void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)
 {
-#if HAZE_I_CODE_ENABLE
-
 	size_t dataNum = 0;
 	for (auto& Datas : m_Data)
 	{
@@ -178,20 +175,14 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)
 			index++;
 		}
 	}
-
-#endif //HAZE_I_CODE_ENABLE
 }
 
 void HazeCompilerClass::GenClassFunction_I_Code(HAZE_STRING_STREAM& hss)
 {
-#if HAZE_I_CODE_ENABLE
-
 	for (auto& iter : m_Functions)
 	{
 		iter->GenI_Code(hss);
 	}
-
-#endif //HAZE_I_CODE_ENABLE
 }
 
 uint32 HazeCompilerClass::GetDataSize()

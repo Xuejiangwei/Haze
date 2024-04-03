@@ -327,9 +327,9 @@ void Parse::ParseContent()
 	m_StackSectionSignal.pop();
 }
 
-void Parse::ParseTemplateContent(const HAZE_STRING& templateName, const std::vector<HAZE_STRING>& templateTypes, const std::vector<HazeDefineType>& templateRealTypes)
+void Parse::ParseTemplateContent(const HAZE_STRING& moduleName, const HAZE_STRING& templateName, const std::vector<HAZE_STRING>& templateTypes, const std::vector<HazeDefineType>& templateRealTypes)
 {
-	m_Compiler->MarkParseTemplate(true);
+	m_Compiler->MarkParseTemplate(true, &moduleName);
 	m_IsParseTemplate = true;
 	m_TemplateTypes = &templateTypes;
 	m_TemplateRealTypes = &templateRealTypes;

@@ -117,7 +117,6 @@ void HazeCompilerFunction::FunctionFinish()
 
 void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 {
-#if HAZE_I_CODE_ENABLE
 	hss << GetFunctionLabelHeader() << " " << m_Name << " ";
 
 	if (!m_Type.StringStreamTo(hss))
@@ -147,7 +146,11 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 	{
-		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);
+		if (!FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName))
+		{
+			HAZE_LOG_ERR_W("函数<%s>生成中间代码错误，未能找到参数临时变量!\n", m_Name.c_str());
+			return;
+		}
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 
@@ -173,8 +176,6 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	hss << std::endl << GetFunctionEndHeader() << " " << m_EndLine << std::endl << std::endl;
 
 	m_EntryBlock->ClearLocalVariable();
-
-#endif // HAZE_ASS_ENABLE
 }
 
 HAZE_STRING HazeCompilerFunction::GenDafaultBlockName()

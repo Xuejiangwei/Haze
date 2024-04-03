@@ -31,6 +31,8 @@ public:
 
 	void MarkLibraryType(HazeLibraryType type);
 
+	void RestartTemplateModule(const HAZE_STRING& moduleName);
+
 	void FinishModule();
 
 	std::shared_ptr<HazeCompilerClass> CreateClass(const HAZE_STRING& name, std::vector<HazeCompilerClass*>& parentClass,
@@ -165,4 +167,5 @@ private:
 	std::vector<HazeCompilerModule*> m_ImportModules;
 
 	bool m_IsBeginCreateFunctionVariable;
+	bool m_IsGenTemplateCode;
 };

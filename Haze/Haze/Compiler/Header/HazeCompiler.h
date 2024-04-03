@@ -23,6 +23,8 @@ public:
 
 	bool InitializeCompiler(const HAZE_STRING& moduleName);
 
+	void FinishParse();
+
 	HazeCompilerModule* ParseModule(const HAZE_STRING& moduleName);
 
 	void FinishModule();
@@ -49,7 +51,7 @@ public:
 
 	bool IsTemplateClass(const HAZE_STRING& name);
 
-	void MarkParseTemplate(bool begin);
+	void MarkParseTemplate(bool begin, const HAZE_STRING* moduleName = nullptr);
 
 	std::shared_ptr<HazeCompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var);
 

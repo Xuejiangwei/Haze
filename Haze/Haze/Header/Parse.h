@@ -31,7 +31,7 @@ public:
 
 	void ParseContent();
 
-	void ParseTemplateContent(const HAZE_STRING& templateName, const std::vector<HAZE_STRING>& templateTypes, const std::vector<HazeDefineType>& templateRealTypes);
+	void ParseTemplateContent(const HAZE_STRING& moduleName, const HAZE_STRING& templateName, const std::vector<HAZE_STRING>& templateTypes, const std::vector<HazeDefineType>& templateRealTypes);
 
 	HazeToken GetNextToken();
 

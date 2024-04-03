@@ -2,6 +2,7 @@
 #include <unordered_set>
 
 #include "Parse.h"
+#include "HazeDebugDefine.h"
 #include "HazeLog.h"
 #include "HazeFilePathHelper.h"
 
@@ -20,7 +21,8 @@
 
 
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName)
-	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_IsBeginCreateFunctionVariable(false)
+	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_IsBeginCreateFunctionVariable(false),
+	 m_IsGenTemplateCode(false)
 {
 #if HAZE_I_CODE_ENABLE
 
@@ -48,6 +50,20 @@ void HazeCompilerModule::MarkLibraryType(HazeLibraryType type)
 	m_ModuleLibraryType = type;
 }
 
+void HazeCompilerModule::RestartTemplateModule(const HAZE_STRING& moduleName)
+{
+#if HAZE_I_CODE_ENABLE
+	
+	if (!m_IsGenTemplateCode)
+	{
+		m_FS_I_Code.imbue(std::locale("chs"));
+		m_FS_I_Code.open(GetIntermediateModuleFile(moduleName));
+		m_IsGenTemplateCode = true;
+	}
+
+#endif
+}
+
 void HazeCompilerModule::FinishModule()
 {
 	m_CurrFunction.clear();
@@ -58,7 +74,7 @@ void HazeCompilerModule::GenCodeFile()
 {
 #if HAZE_I_CODE_ENABLE
 
-	//生成中间代码先不需要计算symbol table表中的偏移，等统一生成字节码时在进行替换
+	//生成中间代码先不需要计算symbol table表中的偏移，等统一生成字节码时在进行替换，模板会重新打开文件流。
 	if (m_FS_I_Code.is_open())
 	{
 		GenICode();
@@ -221,7 +237,7 @@ bool HazeCompilerModule::ResetTemplateClassRealName(HAZE_STRING& inName, const s
 
 			Parse p(m_Compiler);
 			p.InitializeString(templateText.second.first);
-			p.ParseTemplateContent(inName, templateText.second.second, templateTypes);
+			p.ParseTemplateContent(GetName(), inName, templateText.second.second, templateTypes);
 			return true;
 		}
 	}
@@ -1255,4 +1271,9 @@ void HazeCompilerModule::GenICode()
 	}
 
 	m_FS_I_Code << hss.str();
+
+	if (m_IsGenTemplateCode)
+	{
+		m_IsGenTemplateCode = false;
+	}
 }

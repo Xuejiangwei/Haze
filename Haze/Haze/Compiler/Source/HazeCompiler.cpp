@@ -61,6 +61,14 @@ bool HazeCompiler::InitializeCompiler(const HAZE_STRING& moduleName)
 	return true;
 }
 
+void HazeCompiler::FinishParse()
+{
+	for (auto& m : m_CompilerModules)
+	{
+		m.second->FinishModule();
+	}
+}
+
 HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& moduleName)
 {
 	m_VM->ParseFile(GetModuleFilePath(moduleName), moduleName);
@@ -255,7 +263,7 @@ bool HazeCompiler::IsTemplateClass(const HAZE_STRING& name)
 	return false;
 }
 
-void HazeCompiler::MarkParseTemplate(bool begin)
+void HazeCompiler::MarkParseTemplate(bool begin, const HAZE_STRING* moduleName)
 {
 	static HAZE_STRING cacheFunctionName;
 	static std::shared_ptr<HazeBaseBlock> cacheInsertBlock;
@@ -264,9 +272,12 @@ void HazeCompiler::MarkParseTemplate(bool begin)
 	{
 		cacheFunctionName = GetCurrModule()->m_CurrFunction;
 		cacheInsertBlock = m_InsertBaseBlock;
+		m_ModuleNameStack.push_back(*moduleName);
+		GetCurrModule()->RestartTemplateModule(*moduleName);
 	}
 	else
 	{
+		m_ModuleNameStack.pop_back();
 		GetCurrModule()->m_CurrFunction = cacheFunctionName;
 		m_InsertBaseBlock = cacheInsertBlock;
 		cacheFunctionName.clear();
