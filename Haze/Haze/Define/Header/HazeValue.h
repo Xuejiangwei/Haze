@@ -114,6 +114,8 @@ bool IsPointerType(HazeValueType type);
 
 bool IsPointerFunction(HazeValueType type);
 
+bool IsPointerPointer(HazeValueType type);
+
 bool IsNumberType(HazeValueType type);
 
 bool IsClassType(HazeValueType type);

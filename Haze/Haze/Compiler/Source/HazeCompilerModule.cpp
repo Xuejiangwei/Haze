@@ -211,7 +211,7 @@ bool HazeCompilerModule::ResetTemplateClassRealName(HAZE_STRING& inName, const s
 			{
 				if (type.HasCustomName())
 				{
-					inName += (HAZE_TEXT("&") + type.CustomName);
+					inName += (HAZE_TEXT("__") + type.CustomName);
 					if (IsPointerType(type.SecondaryType))
 					{
 						inName += HAZE_TEXT("*");
@@ -219,11 +219,16 @@ bool HazeCompilerModule::ResetTemplateClassRealName(HAZE_STRING& inName, const s
 				}
 				else
 				{
-					inName += (HAZE_STRING(HAZE_TEXT("&")) + GetHazeValueTypeString(type.PrimaryType));
-					if (IsPointerType(type.SecondaryType))
+					if (IsPointerType(type.PrimaryType))
 					{
+						inName += (HAZE_STRING(HAZE_TEXT("__")) + GetHazeValueTypeString(type.SecondaryType));
 						inName += HAZE_TEXT("*");
 					}
+					else
+					{
+						inName += (HAZE_STRING(HAZE_TEXT("__")) + GetHazeValueTypeString(type.PrimaryType));
+					}
+					
 				}
 			}
 

@@ -242,11 +242,13 @@ void HazeMemory::Mark()
 		if (m_CurrMarkBaseIndex < m_MarkAddressBases.size())
 		{
 			MarkArrayBaseIndex();
+			m_CurrMarkBaseIndex++;
 		}
 
 		if (m_CurrMarkClassIndex < m_MarkAddressClasses.size())
 		{
 			MarkArrayClassIndex();
+			m_CurrMarkClassIndex++;
 		}
 	}
 

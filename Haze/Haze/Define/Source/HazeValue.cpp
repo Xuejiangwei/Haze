@@ -154,6 +154,11 @@ bool IsPointerFunction(HazeValueType type)
 	return type == HazeValueType::PointerFunction;
 }
 
+bool IsPointerPointer(HazeValueType type)
+{
+	return type == HazeValueType::PointerPointer;
+}
+
 bool IsNumberType(HazeValueType type)
 {
 	static std::unordered_set<HazeValueType> HashSet_Table =

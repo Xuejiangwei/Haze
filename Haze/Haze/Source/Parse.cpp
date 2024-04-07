@@ -792,6 +792,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 
 	m_DefineVariable.Type.PrimaryType = GetValueTypeByToken(m_CurrToken);
 
+	bool templateStrPointer = false;
 	int pointerLevel = 1;
 	if (m_CurrToken == HazeToken::CustomClass)
 	{
@@ -801,10 +802,17 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 	{
 		if (m_IsParseTemplate)
 		{
-			auto realType = GetTemplateRealValueType(m_CurrLexeme, true);
+			auto realType = GetTemplateRealValueType(m_CurrLexeme, templateStrPointer, true);
 			if (realType)
 			{
-				m_DefineVariable.Type.SecondaryType = realType->PrimaryType;
+				if (templateStrPointer)
+				{
+					m_DefineVariable.Type.SecondaryType = realType->PrimaryType;
+				}
+				else
+				{
+					m_DefineVariable.Type.SecondaryType = realType->SecondaryType;
+				}
 			}
 			else
 			{
@@ -822,11 +830,46 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		m_DefineVariable.Type.SecondaryType = HazeValueType::Class;
 		if (m_IsParseTemplate)
 		{
-			m_DefineVariable.Type.CustomName = GetTemplateRealValueType(m_CurrLexeme, true)->CustomName;
+			m_DefineVariable.Type.CustomName = GetTemplateRealValueType(m_CurrLexeme, templateStrPointer, true)->CustomName;
 		}
 		else
 		{
 			m_DefineVariable.Type.CustomName = GetPointerClassType(m_CurrLexeme);
+		}
+	}
+	else if (m_CurrToken == HazeToken::PointerPointer)
+	{
+		if (m_IsParseTemplate)
+		{
+			auto realType = GetTemplateRealValueType(m_CurrLexeme, templateStrPointer, true);
+			if (realType)
+			{
+				m_DefineVariable.Type.SecondaryType = realType->SecondaryType;
+				m_DefineVariable.Type.CustomName = realType->CustomName;
+			}
+			else
+			{
+				auto type = GetPointerBaseType(m_CurrLexeme);
+				if (type != HazeValueType::Void)
+				{
+					m_DefineVariable.Type.SecondaryType = type;
+				}
+				else
+				{
+					if (m_Compiler->IsClass(m_CurrLexeme))
+					{
+						m_DefineVariable.Type.CustomName = m_CurrLexeme;
+					}
+					else
+					{
+						HAZE_LOG_ERR_W("指向指针的指针解析错误，未能找到类型<%s>!\n", m_CurrLexeme.c_str());
+					}
+				}
+			}
+		}
+		else
+		{
+			m_DefineVariable.Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
 		}
 	}
 	else if (m_CurrToken == HazeToken::MultiVariable)
@@ -1211,7 +1254,7 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 		defineVar.Type.PrimaryType = HazeValueType::PointerBase;
 	}
 
-	if (IsHazeDefaultType(defineVar.Type.SecondaryType))
+	if (IsHazeDefaultType(defineVar.Type.SecondaryType) || IsPointerFunction)
 	{
 		GetNextToken();
 		if (TokenIs(HazeToken::Array))
@@ -2362,14 +2405,14 @@ bool Parse::IsPointerOrRef(const HAZE_STRING& str, HazeToken& outToken)
 						{
 							if (m_Compiler->IsClass(realType.CustomName))
 							{
-								outToken = HazeToken::PointerClass;
+								outToken = HazeToken::Class;
 								return true;
 							}
 						}
-						else if (realType.SecondaryType != HazeValueType::Void)
+						else if (IsPointerType(realType.PrimaryType))
 						{
-							HAZE_LOG_ERR_W("生成模板时,类型匹配错误\n");
-							return false;
+							outToken = HazeToken::PointerPointer;
+							return true;
 						}
 						else
 						{
@@ -2377,6 +2420,11 @@ bool Parse::IsPointerOrRef(const HAZE_STRING& str, HazeToken& outToken)
 							{
 								outToken = HazeToken::PointerBase;
 								return true;
+							}
+							else
+							{
+								HAZE_LOG_ERR_W("生成模板时,类型匹配错误\n");
+								return false;
 							}
 						}
 					}
@@ -2457,20 +2505,41 @@ bool Parse::IsPointerOrRef(const HAZE_STRING& str, HazeToken& outToken)
 	return false;
 }
 
-const HazeDefineType* Parse::GetTemplateRealValueType(const HAZE_STRING& str, bool isPointer)
+const HazeDefineType* Parse::GetTemplateRealValueType(const HAZE_STRING& str, bool& isStrPointer, bool isPointer)
 {
 	if (m_IsParseTemplate)
 	{
 		if (isPointer)
 		{
-			HAZE_STRING typeName = str.substr(0, str.length() - 1);
-			for (size_t i = 0; i < m_TemplateTypes->size(); i++)
+			HAZE_STRING pointerChar = str.substr(str.length() - 1, 1);
+
+			if (pointerChar == TOKEN_MUL)
 			{
-				if (m_TemplateTypes->at(i) == typeName)
+				isStrPointer = true;
+				HAZE_STRING typeName = str.substr(0, str.length() - 1);
+
+				for (size_t i = 0; i < m_TemplateTypes->size(); i++)
 				{
-					return &m_TemplateRealTypes->at(i);
+					if (m_TemplateTypes->at(i) == typeName)
+					{
+						return &m_TemplateRealTypes->at(i);
+					}
 				}
 			}
+			else
+			{
+				isStrPointer = false;
+				for (size_t i = 0; i < m_TemplateTypes->size(); i++)
+				{
+					if (m_TemplateTypes->at(i) == str)
+					{
+						return &m_TemplateRealTypes->at(i);
+					}
+				}
+
+				HAZE_LOG_ERR_W("模板未能找到<%s>的真正类型!\n", str.c_str());
+			}
+			
 		}
 		else
 		{
@@ -2489,7 +2558,8 @@ const HazeDefineType* Parse::GetTemplateRealValueType(const HAZE_STRING& str, bo
 
 HazeToken Parse::GetTokenByTemplateType(const HAZE_STRING& str)
 {
-	auto type = GetTemplateRealValueType(str);
+	bool templateStrPointer = false;
+	auto type = GetTemplateRealValueType(str, templateStrPointer);
 	if (type)
 	{
 		if (type->HasCustomName())
@@ -2499,16 +2569,13 @@ HazeToken Parse::GetTokenByTemplateType(const HAZE_STRING& str)
 				return HazeToken::CustomClass;
 			}
 		}
-		else if (type->SecondaryType != HazeValueType::Void)
+		else if (IsPointerType(type->PrimaryType) || IsHazeDefaultTypeAndVoid(type->PrimaryType))
 		{
-			HAZE_LOG_ERR_W("生成模板时,类型匹配错误\n");
+			return GetTokenByValueType(type->PrimaryType);
 		}
 		else
 		{
-			if (IsHazeDefaultTypeAndVoid(type->PrimaryType))
-			{
-				return GetTokenByValueType(type->PrimaryType);
-			}
+			HAZE_LOG_ERR_W("生成模板时,类型匹配错误\n");
 		}
 	}
 

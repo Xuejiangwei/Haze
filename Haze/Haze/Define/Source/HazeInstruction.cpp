@@ -800,42 +800,49 @@ public:
 			else
 			{
 				int functionIndex = stack->m_VM->GetFucntionIndexByName(oper[0].Variable.Name);
-				auto& function = stack->m_VM->Vector_FunctionTable[functionIndex];
-
-				if (function.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
+				if (functionIndex >= 0)
 				{
-					stack->OnCall(&function, oper[0].Extra.Call.ParamByteSize);
+					auto& function = stack->m_VM->Vector_FunctionTable[functionIndex];
+					if (function.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
+					{
+						stack->OnCall(&function, oper[0].Extra.Call.ParamByteSize);
+					}
+					else
+					{
+						uint32 tempEBP = stack->m_EBP;
+						stack->m_EBP = stack->m_ESP;
+
+						if (function.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
+						{
+							function.FunctionDescData.StdLibFunction(stack, &function, oper[0].Extra.Call.ParamNum);
+						}
+						else if (function.FunctionDescData.Type == InstructionFunctionType::DLLLibFunction)
+						{
+							HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER);
+							retRegister->Type.PrimaryType = function.Type;
+							int size = GetSizeByType(retRegister->Type, stack->m_VM);
+							retRegister->Data.resize(size);
+
+							uint64 address = (uint64)(stack);
+							memcpy(&stack->m_StackMain[stack->m_ESP], &address, sizeof(address));
+
+							address = (uint64)(&ExeHazePointerFunction);
+							memcpy(&stack->m_StackMain[stack->m_ESP + sizeof(address)], &address, sizeof(address));
+
+							g_HazeLibManager->ExecuteDLLFunction(oper[1].Variable.Name, oper[0].Variable.Name,
+								&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], retRegister->Data.begin()._Unwrapped(),
+								stack, &ExeHazePointerFunction);
+						}
+
+						stack->m_ESP -= (oper[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
+						stack->m_EBP = tempEBP;
+					}
 				}
 				else
 				{
-					uint32 tempEBP = stack->m_EBP;
-					stack->m_EBP = stack->m_ESP;
-
-					if (function.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
-					{
-						function.FunctionDescData.StdLibFunction(stack, &function, oper[0].Extra.Call.ParamNum);
-					}
-					else if (function.FunctionDescData.Type == InstructionFunctionType::DLLLibFunction)
-					{
-						HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER);
-						retRegister->Type.PrimaryType = function.Type;
-						int size = GetSizeByType(retRegister->Type, stack->m_VM);
-						retRegister->Data.resize(size);
-
-						uint64 address = (uint64)(stack);
-						memcpy(&stack->m_StackMain[stack->m_ESP], &address, sizeof(address));
-
-						address = (uint64)(&ExeHazePointerFunction);
-						memcpy(&stack->m_StackMain[stack->m_ESP + sizeof(address)], &address, sizeof(address));
-
-						g_HazeLibManager->ExecuteDLLFunction(oper[1].Variable.Name, oper[0].Variable.Name,
-							&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], retRegister->Data.begin()._Unwrapped(),
-							stack, &ExeHazePointerFunction);
-					}
-
-					stack->m_ESP -= (oper[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
-					stack->m_EBP = tempEBP;
+					HAZE_LOG_ERR_W("调用函数<%s>错误，未能找到!\n", oper[0].Variable.Name.c_str());
 				}
+				
 			}
 		}
 

@@ -133,7 +133,7 @@ private:
 
 	bool IsPointerOrRef(const HAZE_STRING& str, HazeToken& outToken);
 
-	const HazeDefineType* GetTemplateRealValueType(const HAZE_STRING& str, bool isPointer = false);
+	const HazeDefineType* GetTemplateRealValueType(const HAZE_STRING& str, bool& isStrPointer, bool isPointer = false);
 
 	HazeToken GetTokenByTemplateType(const HAZE_STRING& str);
 
