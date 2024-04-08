@@ -534,7 +534,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 {
 	allocaValue->StoreValueType(value);
 
-	if ((allocaValue->IsPointer() && !value->IsPointer()) || (allocaValue->IsPointerPointer() && value->IsPointer()))
+	if ((allocaValue->IsPointer() && !value->IsPointer()) || (allocaValue->IsPointerPointer() && value->IsPointer() && !value->IsPointerPointer()))
 	{
 		CreateLea(allocaValue, value);
 	}
@@ -594,10 +594,28 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMovPV(std::shared_ptr<Haz
 		HazeDefineType& allocaValueType = const_cast<HazeDefineType&>(allocaValue->GetValueType());
 		auto& ValueValueType = value->GetValueType();
 
-		allocaValueType.PrimaryType = ValueValueType.SecondaryType;
-		allocaValueType.CustomName = ValueValueType.CustomName;
+		if (IsPointerPointer(value->GetValueType().PrimaryType))
+		{
+			if (ValueValueType.HasCustomName())
+			{
+				allocaValueType.PrimaryType = HazeValueType::PointerClass;
+				allocaValueType.CustomName = ValueValueType.CustomName;
+				allocaValueType.SecondaryType = HazeValueType::Void;
+			}
+			else
+			{
+				allocaValueType.PrimaryType = HazeValueType::PointerBase;
+				allocaValueType.CustomName = ValueValueType.CustomName;
+				allocaValueType.SecondaryType = ValueValueType.SecondaryType;
+			}
+		}
+		else
+		{
+			allocaValueType.PrimaryType = ValueValueType.SecondaryType;
+			allocaValueType.CustomName = ValueValueType.CustomName;
 
-		allocaValueType.SecondaryType = HazeValueType::Void;
+			allocaValueType.SecondaryType = HazeValueType::Void;
+		}
 
 		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOVPV);
 	}
@@ -665,7 +683,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateSub(std::shared_ptr<HazeC
 		if (left->GetValueType() == right->GetValueType())
 		{
 			auto& type = left->GetValueType();
-			auto size = type.HasCustomName() ? GetCurrModule()->GetClassSize(type.CustomName) : GetSizeByHazeType(type.SecondaryType);
+			auto size = type.HasCustomName() ? GetCurrModule()->GetClassSize(type.CustomName) : 
+				IsPointerPointer(type.PrimaryType) ? GetSizeByHazeType(type.PrimaryType) : GetSizeByHazeType(type.SecondaryType);
 			if (size > 1)
 			{
 				if ((size & (size - 1)) == 0)

@@ -10,7 +10,9 @@
 
 #define HAZE_CALL_LOG				0
 
-#define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); auto size = GetSizeByHazeType(OPER[0].Variable.Type.SecondaryType); \
+#define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); \
+				auto type = IsPointerPointer(OPER[0].Variable.Type.PrimaryType) ? OPER[0].Variable.Type.PrimaryType : OPER[0].Variable.Type.SecondaryType; \
+				auto size = GetSizeByHazeType(type); \
 				uint64 address; auto operAddress = GetOperatorAddress(STACK, OPER[0]); memcpy(&address, operAddress, sizeof(operAddress)); \
 				if (INS == InstructionOpCode::SUB) address -= size * v; else address += size * v; \
 				memcpy(operAddress, &address, sizeof(operAddress));
@@ -137,14 +139,14 @@ class InstructionProcessor
 
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("开始 操作数一地址<%p> 操作数二地址<%p>\n", (char*)Address, GetOperatorAddress(stack, Data[1]));
-				
+				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p> 操作数二地址<%p>\n", (char*)Address, GetOperatorAddress(stack, Data[1]));
+
 				HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s> <%s>\n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str(), Data[1].Variable.Name.c_str());
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("开始 操作数一地址<%p>\n", (char*)Address);
+				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p>\n", (char*)Address);
 
 				HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s> \n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str());
@@ -156,11 +158,11 @@ class InstructionProcessor
 			memcpy(&Address, GetOperatorAddress(Stack, Data[0]), 8);
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("结束 操作数一地址<%p> 操作数二地址<%p>\n\n", (char*)Address, GetOperatorAddress(Stack, Data[1]));
+				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p> 操作数二地址<%p>\n\n", (char*)Address, GetOperatorAddress(Stack, Data[1]));
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("结束 操作数一地址<%p>\n\n", (char*)Address);
+				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p>\n\n", (char*)Address);
 			}
 		}
 
@@ -819,7 +821,7 @@ public:
 						else if (function.FunctionDescData.Type == InstructionFunctionType::DLLLibFunction)
 						{
 							HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER);
-							retRegister->Type.PrimaryType = function.Type;
+							retRegister->Type = function.Type;
 							int size = GetSizeByType(retRegister->Type, stack->m_VM);
 							retRegister->Data.resize(size);
 

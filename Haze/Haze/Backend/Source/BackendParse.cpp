@@ -288,7 +288,8 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 				GetNextLexmeAssign_HazeString(table.m_Functions[i].Name);
 
-				GetNextLexmeAssign_CustomType<uint32>(table.m_Functions[i].Type);
+				table.m_Functions[i].Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
+					&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 				GetNextLexeme();
 				while (m_CurrLexeme == GetFunctionParamHeader())

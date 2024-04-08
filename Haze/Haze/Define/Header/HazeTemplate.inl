@@ -11,7 +11,8 @@ unsigned int GetSizeByType(HazeDefineType type, T* This)
 template <typename T>
 unsigned int GetNewAllocSizeByType(HazeDefineType type, T* This)
 {
-	return type.PrimaryType == HazeValueType::PointerClass ? This->GetClassSize(type.CustomName) :
+	return type.PrimaryType == HazeValueType::PointerClass ? This->GetClassSize(type.CustomName) : 
+		type.PrimaryType == HazeValueType::PointerPointer ? GetSizeByHazeType(type.PrimaryType) :
 		GetSizeByHazeType(type.SecondaryType);
 }
 

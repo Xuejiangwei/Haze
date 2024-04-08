@@ -22,6 +22,7 @@ struct HazeDefineType
 	HazeDefineType() : PrimaryType(HazeValueType::Void)
 	{
 		SecondaryType = HazeValueType::Void;
+		CustomName.clear();
 	}
 
 	~HazeDefineType()

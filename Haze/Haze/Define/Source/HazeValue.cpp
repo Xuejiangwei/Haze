@@ -119,8 +119,7 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2)
 		}
 	}
 
-	static_assert(true, "Not find stronger type!");
-
+	HAZE_LOG_ERR_W("获得更强类型错误，<%s> <%s>!\n", GetHazeValueTypeString(type1), GetHazeValueTypeString(type2));
 	return HazeValueType::Void;
 }
 

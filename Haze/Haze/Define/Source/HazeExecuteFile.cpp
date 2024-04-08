@@ -303,7 +303,13 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& table)
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 			m_FileStream->write(s_BinaryString.data(), number);
 
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(function.Type));
+			m_FileStream->write(HAZE_WRITE_AND_SIZE(function.Type.PrimaryType));
+			m_FileStream->write(HAZE_WRITE_AND_SIZE(function.Type.SecondaryType));
+			s_BinaryString = WString2String(function.Type.CustomName);
+			number = (uint32)s_BinaryString.size();
+			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+			m_FileStream->write(s_BinaryString.c_str(), number);
+
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(function.DescType));
 
 			number = (uint32)function.Params.size();
@@ -582,7 +588,13 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* vm)
 		m_InFileStream->read(s_BinaryString.data(), number);
 		vm->HashMap_FunctionTable[String2WString(s_BinaryString)] = (uint32)i;
 
-		m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Type));
+		m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Type.PrimaryType));
+		m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Type.SecondaryType));
+		m_InFileStream->read(HAZE_READ(number));
+		s_BinaryString.resize(number);
+		m_InFileStream->read(s_BinaryString.data(), number);
+		vm->Vector_FunctionTable[i].Type.CustomName = String2WString(s_BinaryString);
+
 		m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].FunctionDescData.Type));
 
 		m_InFileStream->read(HAZE_READ(number));
