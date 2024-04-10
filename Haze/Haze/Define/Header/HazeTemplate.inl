@@ -4,7 +4,7 @@ template <typename T>
 unsigned int GetSizeByType(HazeDefineType type, T* This)
 {
 	return type.PrimaryType == HazeValueType::Class ? This->GetClassSize(type.CustomName) :
-		type.PrimaryType == HazeValueType::Array ? type.SecondaryType == HazeValueType::Class ? This->GetClassSize(type.CustomName) : GetSizeByHazeType(type.SecondaryType) :
+		IsArrayType(type.PrimaryType) ? type.SecondaryType == HazeValueType::Class ? This->GetClassSize(type.CustomName) : GetSizeByHazeType(type.SecondaryType) :
 		GetSizeByHazeType(type.PrimaryType);
 }
 

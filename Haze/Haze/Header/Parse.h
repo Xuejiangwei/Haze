@@ -133,11 +133,15 @@ private:
 
 	bool IsPointerOrRef(const HAZE_STRING& str, HazeToken& outToken);
 
-	const HazeDefineType* GetTemplateRealValueType(const HAZE_STRING& str, bool& isStrPointer, bool isPointer = false);
+	void GetValueType(HazeDefineType& inType);
 
-	HazeToken GetTokenByTemplateType(const HAZE_STRING& str);
+	void ResetArrayVariableType(HazeDefineType& inType);
+
+	void GetTemplateRealValueType(const HAZE_STRING& str, HazeDefineType& inType);
 
 	void BackToPreLexemeAndNext();
+
+	void ParseVariableType();
 
 	void IncLineCount(bool insert = false);
 

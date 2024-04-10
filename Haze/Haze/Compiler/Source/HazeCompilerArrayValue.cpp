@@ -5,6 +5,7 @@
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
+#include "HazeLogDefine.h"
 
 HazeCompilerArrayElementValue::HazeCompilerArrayElementValue(HazeCompilerModule* compilerModule, 
 	const HazeDefineType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count,
@@ -32,6 +33,14 @@ HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* compilerModul
 		}
 
 		m_Size = m_ArrayLength * GetSizeByType(defineType, compilerModule);
+	}
+	else if (IsArrayPointerType(defineType.PrimaryType))
+	{
+		m_Size = GetSizeByHazeType(defineType.PrimaryType);
+	}
+	else
+	{
+		COMPILER_ERR_W("生成数组变量错误!");
 	}
 }
 

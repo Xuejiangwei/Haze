@@ -228,6 +228,7 @@
     <ClInclude Include="Define\Header\HazeExecuteFile.h" />
     <ClInclude Include="Define\Header\HazeInstruction.h" />
     <ClInclude Include="Define\Header\HazeLibraryType.h" />
+    <ClInclude Include="Define\Header\HazeLogDefine.h" />
     <ClInclude Include="Define\Header\HazeToken.h" />
     <ClInclude Include="Define\Header\HazeTokenText.h" />
     <ClInclude Include="Define\Header\HazeUtility.h" />

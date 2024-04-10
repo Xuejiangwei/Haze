@@ -1,6 +1,5 @@
 #include "HazeCompilerHelper.h"
 
-#include "HazeLog.h"
 #include "HazeCompiler.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerClass.h"
@@ -12,6 +11,7 @@
 #include "HazeCompilerRefValue.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerEnumValue.h"
+#include "HazeLogDefine.h"
 
 HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& className, const HAZE_STRING& functionName)
 {
@@ -103,7 +103,9 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* compil
 	{
 		return std::make_shared<HazeCompilerValue>(compilerModule, type, scope, desc, count, assignValue);
 	}
-	case HazeValueType::Array:
+	case HazeValueType::ArrayBase:
+	case HazeValueType::ArrayClass:
+	case HazeValueType::ArrayPointer:
 		return std::make_shared<HazeCompilerArrayValue>(compilerModule, type, scope, desc, count, arraySize);
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
@@ -299,7 +301,8 @@ std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule
 				}
 				else
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("函数<%s>中未能找到类对象<%s>!\n"), compilerModule->GetCurrFunction()->GetName().c_str(), outObjectName.c_str());
+					COMPILER_ERR_MODULE_W("函数<%s>中未能找到类对象<%s>!", compilerModule->GetCurrFunction()->GetName().c_str(), outObjectName.c_str(),
+						compilerModule->GetName().c_str());
 				}
 			}
 		}

@@ -319,19 +319,19 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		switch (type2)
 		{
 		case HazeValueType::UnsignedInt:
-			v1.Value.Int = v2.Value.UnsignedInt;
+			v1.Value.Int = (int)v2.Value.UnsignedInt;
 			break;
 		case HazeValueType::Float:
-			v1.Value.Int = v2.Value.Float;
+			v1.Value.Int = (int)v2.Value.Float;
 			break;
 		case HazeValueType::Double:
-			v1.Value.Int = v2.Value.Double;
+			v1.Value.Int = (int)v2.Value.Double;
 			break;
 		case HazeValueType::Long:
-			v1.Value.Int = v2.Value.Long;
+			v1.Value.Int = (int)v2.Value.Long;
 			break;
 		case HazeValueType::UnsignedLong:
-			v1.Value.Int = v2.Value.UnsignedLong;
+			v1.Value.Int = (int)v2.Value.UnsignedLong;
 			break;
 		default:
 			break;
@@ -342,19 +342,19 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		switch (type2)
 		{
 		case HazeValueType::UnsignedInt:
-			v1.Value.Float = v2.Value.UnsignedInt;
+			v1.Value.Float = (float)v2.Value.UnsignedInt;
 			break;
 		case HazeValueType::Int:
-			v1.Value.Float = v2.Value.Int;
+			v1.Value.Float = (float)v2.Value.Int;
 			break;
 		case HazeValueType::Double:
-			v1.Value.Float = v2.Value.Double;
+			v1.Value.Float = (float)v2.Value.Double;
 			break;
 		case HazeValueType::Long:
-			v1.Value.Float = v2.Value.Long;
+			v1.Value.Float = (float)v2.Value.Long;
 			break;
 		case HazeValueType::UnsignedLong:
-			v1.Value.Float = v2.Value.UnsignedLong;
+			v1.Value.Float = (float)v2.Value.UnsignedLong;
 			break;
 		default:
 			break;
@@ -364,19 +364,19 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		switch (type2)
 		{
 		case HazeValueType::UnsignedInt:
-			v1.Value.Long = v2.Value.UnsignedInt;
+			v1.Value.Long = (int64)v2.Value.UnsignedInt;
 			break;
 		case HazeValueType::Int:
-			v1.Value.Long = v2.Value.Int;
+			v1.Value.Long = (int64)v2.Value.Int;
 			break;
 		case HazeValueType::Float:
-			v1.Value.Long = v2.Value.Float;
+			v1.Value.Long = (int64)v2.Value.Float;
 			break;
 		case HazeValueType::Double:
-			v1.Value.Long = v2.Value.Double;
+			v1.Value.Long = (int64)v2.Value.Double;
 			break;
 		case HazeValueType::UnsignedLong:
-			v1.Value.Long = v2.Value.UnsignedLong;
+			v1.Value.Long = (int64)v2.Value.UnsignedLong;
 			break;
 		default:
 			break;
@@ -386,19 +386,19 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		switch (type2)
 		{
 		case HazeValueType::UnsignedInt:
-			v1.Value.Double = v2.Value.UnsignedInt;
+			v1.Value.Double = (double)v2.Value.UnsignedInt;
 			break;
 		case HazeValueType::Int:
-			v1.Value.Double = v2.Value.Int;
+			v1.Value.Double = (double)v2.Value.Int;
 			break;
 		case HazeValueType::Float:
-			v1.Value.Double = v2.Value.Float;
+			v1.Value.Double = (double)v2.Value.Float;
 			break;
 		case HazeValueType::Long:
-			v1.Value.Double = v2.Value.Long;
+			v1.Value.Double = (double)v2.Value.Long;
 			break;
 		case HazeValueType::UnsignedLong:
-			v1.Value.Double = v2.Value.UnsignedLong;
+			v1.Value.Double = (double)v2.Value.UnsignedLong;
 			break;
 		default:
 			break;
@@ -408,19 +408,19 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		switch (type2)
 		{
 		case HazeValueType::Int:
-			v1.Value.UnsignedInt = v2.Value.Int;
+			v1.Value.UnsignedInt = (uint32)v2.Value.Int;
 			break;
 		case HazeValueType::Float:
-			v1.Value.UnsignedInt = v2.Value.Float;
+			v1.Value.UnsignedInt = (uint32)v2.Value.Float;
 			break;
 		case HazeValueType::Double:
-			v1.Value.UnsignedInt = v2.Value.Double;
+			v1.Value.UnsignedInt = (uint32)v2.Value.Double;
 			break;
 		case HazeValueType::Long:
-			v1.Value.UnsignedInt = v2.Value.Long;
+			v1.Value.UnsignedInt = (uint32)v2.Value.Long;
 			break;
 		case HazeValueType::UnsignedLong:
-			v1.Value.UnsignedInt = v2.Value.UnsignedLong;
+			v1.Value.UnsignedInt = (uint32)v2.Value.UnsignedLong;
 			break;
 		default:
 			break;
@@ -430,19 +430,19 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		switch (type2)
 		{
 		case HazeValueType::UnsignedInt:
-			v1.Value.UnsignedLong = v2.Value.UnsignedInt;
+			v1.Value.UnsignedLong = (uint64)v2.Value.UnsignedInt;
 			break;
 		case HazeValueType::Int:
-			v1.Value.UnsignedLong = v2.Value.Int;
+			v1.Value.UnsignedLong = (uint64)v2.Value.Int;
 			break;
 		case HazeValueType::Float:
-			v1.Value.UnsignedLong = v2.Value.Float;
+			v1.Value.UnsignedLong = (uint64)v2.Value.Float;
 			break;
 		case HazeValueType::Double:
-			v1.Value.UnsignedLong = v2.Value.Double;
+			v1.Value.UnsignedLong = (uint64)v2.Value.Double;
 			break;
 		case HazeValueType::Long:
-			v1.Value.UnsignedLong = v2.Value.Long;
+			v1.Value.UnsignedLong = (uint64)v2.Value.Long;
 			break;
 		default:
 			break;

@@ -26,7 +26,7 @@ static std::unordered_map<HazeToken, HazeValueType> s_HashMap_Types =
 	{ HazeToken::PointerClass, HazeValueType::PointerClass},
 	{ HazeToken::PointerPointer, HazeValueType::PointerPointer},
 	{ HazeToken::MultiVariable, HazeValueType::MultiVariable},
-	{ HazeToken::Array, HazeValueType::Array }
+	//{ HazeToken::Array, HazeValueType::Array }
 };
 
 uint32 GetSizeByHazeType(HazeValueType type)
@@ -52,6 +52,7 @@ uint32 GetSizeByHazeType(HazeValueType type)
 	case HazeValueType::PointerPointer:
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
+	case HazeValueType::ArrayPointer:
 		return 8;
 	default:
 		break;
@@ -87,7 +88,7 @@ HazeValueType GetValueTypeByToken(HazeToken token)
 		return it->second;
 	}
 
-	return HazeValueType::Void;
+	return HazeValueType::None;
 }
 
 HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2)
@@ -123,6 +124,11 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2)
 	return HazeValueType::Void;
 }
 
+bool IsNoneType(HazeValueType type)
+{
+	return type == HazeValueType::None;
+}
+
 bool IsVoidType(HazeValueType type)
 {
 	return type == HazeValueType::Void;
@@ -146,6 +152,11 @@ bool IsIntegerType(HazeValueType type)
 bool IsPointerType(HazeValueType type)
 {
 	return type >= HazeValueType::PointerBase && type <= HazeValueType::PointerPointer;
+}
+
+bool IsOneLevelPointerType(HazeValueType type)
+{
+	return type >= HazeValueType::PointerBase && type <= HazeValueType::PointerArray;
 }
 
 bool IsPointerFunction(HazeValueType type)
@@ -176,7 +187,12 @@ bool IsClassType(HazeValueType type)
 
 bool IsArrayType(HazeValueType type)
 {
-	return type == HazeValueType::Array;
+	return type >= HazeValueType::ArrayBase && type <= HazeValueType::ArrayPointer;
+}
+
+bool IsArrayPointerType(HazeValueType type)
+{
+	return type == HazeValueType::ArrayPointer;
 }
 
 bool IsReferenceType(HazeValueType type)

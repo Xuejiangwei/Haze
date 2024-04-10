@@ -1,5 +1,3 @@
-#include "HazeLog.h"
-
 #include "HazeCompiler.h"
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"

@@ -1,6 +1,4 @@
 #include <filesystem>
-
-#include "HazeLog.h"
 #include "HazeFilePathHelper.h"
 #include "HazeLibraryManager.h"
 

@@ -83,7 +83,7 @@ public:
 
 	bool IsRef() const { return IsRefBase() || IsRefClass(); }
 
-	bool IsArray() const { return m_ValueType.PrimaryType == HazeValueType::Array; }
+	bool IsArray() const { return IsArrayType(m_ValueType.PrimaryType); }
 
 	bool IsClass() const { return m_ValueType.PrimaryType == HazeValueType::Class; }
 

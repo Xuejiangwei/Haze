@@ -82,6 +82,8 @@ public:
 
 	static std::shared_ptr<HazeCompilerInitListValue> GetInitializeListValue();
 
+	static constexpr int GetMaxPointerLevel() { return 2; }
+
 public:
 	void SetInsertBlock(std::shared_ptr<HazeBaseBlock> block);
 

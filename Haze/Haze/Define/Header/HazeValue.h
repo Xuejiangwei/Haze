@@ -7,6 +7,8 @@
 
 enum class HazeValueType : uint32
 {
+	None,
+
 	Void,
 	Bool,
 
@@ -26,7 +28,9 @@ enum class HazeValueType : uint32
 	UnsignedInt,
 	UnsignedLong,
 
-	Array,
+	ArrayBase,
+	ArrayClass,
+	ArrayPointer, //普通类型的指针数组和指向指针的指针数组都用这个类型，若是指向指针的指针，则只需要在生成AST->CodeGen阶段判断是否是同一类型
 
 	PointerBase,
 	PointerClass,
@@ -61,7 +65,7 @@ struct HazeValue
 
 		int Int;
 		float Float;
-		long long Long;
+		int64 Long;
 		double Double;
 
 		uint32 UnsignedInt;
@@ -102,6 +106,8 @@ HazeValueType GetValueTypeByToken(HazeToken token);
 
 HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2);
 
+bool IsNoneType(HazeValueType type);
+
 bool IsVoidType(HazeValueType type);
 
 bool IsHazeDefaultTypeAndVoid(HazeValueType type);
@@ -112,6 +118,8 @@ bool IsIntegerType(HazeValueType type);
 
 bool IsPointerType(HazeValueType type);
 
+bool IsOneLevelPointerType(HazeValueType type);
+
 bool IsPointerFunction(HazeValueType type);
 
 bool IsPointerPointer(HazeValueType type);
@@ -121,6 +129,8 @@ bool IsNumberType(HazeValueType type);
 bool IsClassType(HazeValueType type);
 
 bool IsArrayType(HazeValueType type);
+
+bool IsArrayPointerType(HazeValueType type);
 
 bool IsReferenceType(HazeValueType type);
 

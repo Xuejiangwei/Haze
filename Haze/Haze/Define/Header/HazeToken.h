@@ -23,6 +23,7 @@ enum class HazeToken : unsigned int
 	UnsignedLong,
 
 	Array,
+	ArrayDefineEnd,
 
 	StringMatch,
 
