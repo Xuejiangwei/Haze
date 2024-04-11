@@ -63,6 +63,8 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> GetConstantValueInt(int v);
 
+	std::shared_ptr<HazeCompilerValue> GetConstantValueUint64(uint64 v);
+
 	std::shared_ptr<HazeCompilerValue> GenConstantValueBool(bool isTrue);
 
 	std::shared_ptr<HazeCompilerValue> GetNullPtr(const HazeDefineType& type);
@@ -157,6 +159,8 @@ public:
 	std::shared_ptr<HazeCompilerValue> CreateArrayElement(std::shared_ptr<HazeCompilerValue> value, std::vector<uint32> index);
 
 	std::shared_ptr<HazeCompilerValue> CreateArrayElement(std::shared_ptr<HazeCompilerValue> value, std::vector<std::shared_ptr<HazeCompilerValue>> indices);
+
+	std::shared_ptr<HazeCompilerValue> CreateGetArrayLength(std::shared_ptr<HazeCompilerValue> value);
 
 public:
 	std::shared_ptr<HazeCompilerValue> CreatePointerToValue(std::shared_ptr<HazeCompilerValue> value);

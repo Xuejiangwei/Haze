@@ -82,6 +82,8 @@ private:
 private:
 	void* Alloca(uint64 size);
 
+	void RegisterArray(uint64 address, uint64 length);
+
 	void GarbageCollection(bool force = false, bool collectionAll = false);
 
 private:

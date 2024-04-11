@@ -1,7 +1,7 @@
 #include <filesystem>
 
 #include "HazeVM.h"
-#include "HazeLog.h"
+#include "HazeLogDefine.h"
 #include "HazeFilePathHelper.h"
 
 #include "HazeCompiler.h"
@@ -9,7 +9,6 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerArrayValue.h"
-#include "HazeCompilerPointerArray.h"
 #include "HazeCompilerInitListValue.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
@@ -470,6 +469,14 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetConstantValueInt(int v)
 	return GenConstantValue(HazeValueType::Int, Value);
 }
 
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetConstantValueUint64(uint64 v)
+{
+	HazeValue Value;
+	Value.Value.UnsignedLong = v;
+
+	return GenConstantValue(HazeValueType::UnsignedLong, Value);
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GenConstantValueBool(bool isTrue)
 {
 	HazeValue Value;
@@ -647,6 +654,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateClassVariable(std::unique
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateRet(std::shared_ptr<HazeCompilerValue> value)
 {
+	if (value->IsArrayElement())
+	{
+		value = GetArrayElementToValue(GetCurrModule().get(), value);
+	}
 	GetCurrModule()->GenIRCode_Ret(value);
 	return value;
 }
@@ -802,8 +813,27 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_
 	if (value->IsArray())
 	{
 		auto arrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(value);
-		return std::make_shared<HazeCompilerArrayElementValue>(GetCurrModule().get(), HazeDefineType(arrayValue->GetValueType().SecondaryType,
-			arrayValue->GetValueType().CustomName), value->GetVariableScope(), HazeDataDesc::ArrayElement, 0, value.get(), values);
+
+		HazeDefineType type(arrayValue->GetValueType().SecondaryType, arrayValue->GetValueType().CustomName);
+		if (IsArrayPointerType(arrayValue->GetValueType().PrimaryType))
+		{
+			if (type.HasCustomName())
+			{
+				type.PrimaryType = HazeValueType::PointerClass;
+			}
+			else if (IsHazeDefaultTypeAndVoid(type.PrimaryType))
+			{
+				type.SecondaryType = type.PrimaryType;
+				type.PrimaryType = HazeValueType::PointerBase;
+			}
+			else
+			{
+				COMPILER_ERR_MODULE_W("创建数组错误", GetCurrModuleName().c_str());
+			}
+		}
+
+		return std::make_shared<HazeCompilerArrayElementValue>(GetCurrModule().get(), type, value->GetVariableScope(),
+			HazeDataDesc::ArrayElement, 0, value.get(), values);
 	}
 	else if (value->IsPointer())
 	{
@@ -812,11 +842,20 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_
 		{
 			return std::make_shared<HazeCompilerArrayElementValue>(GetCurrModule().get(), HazeDefineType(pointerValue->GetValueType().SecondaryType,
 				pointerValue->GetValueType().CustomName), value->GetVariableScope(), HazeDataDesc::ArrayElement, 0, value.get(), values);
-			//return CreateMovPV(GetTempRegister(), CreateAdd(CreateMov(GetTempRegister(), Value), Index));
 		}
 	}
 
 	return nullptr;
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGetArrayLength(std::shared_ptr<HazeCompilerValue> value)
+{
+	auto sizeValue = GetTempRegister();
+	auto& type = const_cast<HazeDefineType&>(sizeValue->GetValueType());
+	type = HazeDefineType(HazeValueType::UnsignedLong);
+	GetCurrModule()->GenIRCode_BinaryOperater(sizeValue, value, InstructionOpCode::ARRAY_LENGTH);
+
+	return sizeValue;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToValue(std::shared_ptr<HazeCompilerValue> value)
@@ -844,9 +883,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArray(std::share
 	auto pointer = GetTempRegister();
 
 	auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
-	type.PrimaryType = HazeValueType::PointerBase;
-	type.SecondaryType = arrValue->GetValueType().SecondaryType;
-	type.CustomName = arrValue->GetValueType().CustomName;
+	type.PointerTo(arrValue->GetValueType());
 
 	auto ret = CreateMov(pointer, arrValue);
 	if (index)
@@ -861,25 +898,17 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArrayElement(std
 {
 	auto arrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(elementValue);
 	auto arrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(arrayElementValue->GetArray()->GetShared());
-	auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerArray>(arrayElementValue->GetArray()->GetShared());
 
-	if (arrayValue || pointerValue)
+	if (arrayValue)
 	{
 		auto tempRegister = GetTempRegister();
 		std::shared_ptr<HazeCompilerValue> arrayPointer;
-		if (arrayValue)
-		{
-			arrayPointer = CreatePointerToArray(arrayValue);
-		}
-		else
-		{
-			arrayPointer = CreatePointerToPointerArray(pointerValue);
-		}
+		arrayPointer = CreatePointerToArray(arrayValue);
 
 		for (size_t i = 0; i < arrayElementValue->GetIndex().size(); i++)
 		{
-			uint32 size = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetValue().Value.Int :
-				(arrayValue ? arrayValue->GetSizeByLevel((uint32)i) : pointerValue->GetSizeByLevel((uint32)i));
+			uint32 size = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetValue().Value.Int
+				: arrayValue->GetSizeByLevel((uint32)i);
 			std::shared_ptr<HazeCompilerValue> sizeValue = nullptr;
 
 			if (arrayElementValue->GetIndex()[i]->IsConstant())
@@ -1011,6 +1040,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateBoolCmp(std::shared_ptr<H
 
 void HazeCompiler::ReplaceConstantValueByStrongerType(std::shared_ptr<HazeCompilerValue>& left, std::shared_ptr<HazeCompilerValue>& right)
 {
+	if (IsPointerType(left->GetValueType().PrimaryType) || IsPointerType(right->GetValueType().PrimaryType)
+		|| (IsArrayType(left->GetValueType().PrimaryType) && IsNumberType(right->GetValueType().PrimaryType)))
+	{
+		return;
+	}
+
 	if (left->GetValueType().PrimaryType != right->GetValueType().PrimaryType)
 	{
 		auto strongerType = GetStrongerType(left->GetValueType().PrimaryType, right->GetValueType().PrimaryType);

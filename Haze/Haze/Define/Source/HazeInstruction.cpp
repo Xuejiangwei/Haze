@@ -1,6 +1,6 @@
 #include "HazeHeader.h"
 #include "HazeDebugDefine.h"
-#include "HazeLog.h"
+#include "HazeLogDefine.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
 
@@ -432,10 +432,10 @@ public:
 				{
 					size = sizeof(char**);
 				}
-				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerArray)
+				else
 				{
 					size = 0;
-					HAZE_LOG_ERR_W("<Inc>指针数组暂不支持\n!");
+					INS_ERR_W("错误的指针类型");
 				}
 
 				auto address = (char*)GetOperatorAddress(stack, oper[0]);
@@ -446,7 +446,7 @@ public:
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("<Inc>操作错误\n!");
+				INS_ERR_W("操作错误");
 			}
 		}
 
@@ -480,10 +480,10 @@ public:
 				{
 					size = sizeof(char**);
 				}
-				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerArray)
+				else
 				{
 					size = 0;
-					HAZE_LOG_ERR_W("<Dec>指针数组暂不支持\n!");
+					INS_ERR_W("错误的指针类型");
 				}
 
 				auto address = (char*)GetOperatorAddress(stack, oper[0]);
@@ -494,7 +494,7 @@ public:
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("<Dec>操作错误\n!");
+				INS_ERR_W("操作错误");
 			}
 		}
 
@@ -882,14 +882,35 @@ public:
 			newRegister->Type = oper[0].Variable.Type;
 
 			uint64 size = GetNewAllocSizeByType(newRegister->Type, stack->m_VM);
-
-			if (IsIntegerType(oper[1].Variable.Type.PrimaryType))
+			uint64 newSize = 0;
+			bool isRegister = true;
+			auto countAddress = GetOperatorAddress(stack, oper[1]);
+			
+			if (oper[1].AddressType == InstructionAddressType::Constant)
+			{
+				if (*((uint64*)countAddress) > 0)
+				{
+					CalculateValueByType(HazeValueType::UnsignedLong, InstructionOpCode::MUL,
+						countAddress, &newSize);
+				}
+				else
+				{
+					newSize = size;
+					isRegister = false;
+				}
+			}
+			else
 			{
 				CalculateValueByType(HazeValueType::UnsignedLong, InstructionOpCode::MUL,
-					GetOperatorAddress(stack, oper[1]), &size);
+					countAddress, &newSize);
 			}
+			
 
 			uint64 address = (uint64)stack->Alloca(size);
+			if (isRegister)
+			{
+				stack->RegisterArray(address, newSize / size);
+			}
 
 			newRegister->Data.resize(sizeof(void*));
 			memcpy(newRegister->Data.begin()._Unwrapped(), &address, newRegister->Data.size());
@@ -1065,7 +1086,7 @@ public:
 	static void CVT(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
-		
+
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
@@ -1081,7 +1102,33 @@ public:
 			}
 			else
 			{
-				HAZE_LOG_ERR("<%s>转换为<%s>的类型时错误!\n", oper[1].Variable.Name.c_str(), oper[0].Variable.Name.c_str());
+				INS_ERR_W("<%s>转换为<%s>的类型时错误!", oper[1].Variable.Name.c_str(), oper[0].Variable.Name.c_str());
+			}
+		}
+
+		stack->m_VM->InstructionExecPost();
+	}
+
+	static void ArrayLength(HazeStack* stack)
+	{
+		INSTRUCTION_DATA_DEBUG;
+
+		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		if (oper.size() == 2)
+		{
+			if (IsUnsignedLongType(oper[0].Variable.Type.PrimaryType) && IsArrayPointerType(oper[1].Variable.Type.PrimaryType))
+			{
+				HazeValue v1, v2;
+				auto address = GetOperatorAddress(stack, oper[0]);
+
+				memcpy(&v1, address, GetSizeByHazeType(oper[0].Variable.Type.PrimaryType));
+				memcpy(&v2, GetOperatorAddress(stack, oper[1]), GetSizeByHazeType(oper[1].Variable.Type.PrimaryType));
+				ConvertBaseTypeValue(oper[0].Variable.Type.PrimaryType, v1, oper[1].Variable.Type.PrimaryType, v2);
+				memcpy(address, &v1, GetSizeByHazeType(oper[0].Variable.Type.PrimaryType));
+			}
+			else
+			{
+				INS_ERR_W("<%s>获取数组时错误", oper[1].Variable.Name.c_str());
 			}
 		}
 
@@ -1531,6 +1578,7 @@ std::unordered_map<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionPr
 	{InstructionOpCode::JL, &InstructionProcessor::Jl},
 
 	{InstructionOpCode::CVT, &InstructionProcessor::CVT},
+	{InstructionOpCode::ARRAY_LENGTH, &InstructionProcessor::ArrayLength},
 
 	{InstructionOpCode::LINE, &InstructionProcessor::Line},
 };

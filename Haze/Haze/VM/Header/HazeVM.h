@@ -108,5 +108,7 @@ private:
 
 	std::vector<char> Vector_GlobalDataClassObjectMemory;
 
+	std::unordered_map<uint64, uint64> Vector_ArrayCache;
+
 	HazeRunType GenType;
 };

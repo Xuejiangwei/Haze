@@ -48,10 +48,11 @@ uint32 GetSizeByHazeType(HazeValueType type)
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerArray:
 	case HazeValueType::PointerPointer:
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
+	case HazeValueType::ArrayBase:
+	case HazeValueType::ArrayClass:
 	case HazeValueType::ArrayPointer:
 		return 8;
 	default:
@@ -95,7 +96,7 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2)
 {
 	static std::unordered_map<HazeValueType, std::set<HazeValueType>> s_HashMap_Table =
 	{
-		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::Float, HazeValueType::Double } },
+		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::UnsignedLong, HazeValueType::Float, HazeValueType::Double } },
 		{ HazeValueType::UnsignedInt, { HazeValueType::UnsignedLong } },
 		{ HazeValueType::Float, { HazeValueType::Double} },
 		{ HazeValueType::Bool, { HazeValueType::Char, HazeValueType::Int, HazeValueType::UnsignedInt, HazeValueType::Long, HazeValueType::UnsignedLong } },
@@ -149,6 +150,11 @@ bool IsIntegerType(HazeValueType type)
 	return type == HazeValueType::Int || type == HazeValueType::Long || type == HazeValueType::UnsignedInt || type == HazeValueType::UnsignedLong;
 }
 
+bool IsUnsignedLongType(HazeValueType type)
+{
+	return type == HazeValueType::UnsignedLong;
+}
+
 bool IsPointerType(HazeValueType type)
 {
 	return type >= HazeValueType::PointerBase && type <= HazeValueType::PointerPointer;
@@ -156,7 +162,7 @@ bool IsPointerType(HazeValueType type)
 
 bool IsOneLevelPointerType(HazeValueType type)
 {
-	return type >= HazeValueType::PointerBase && type <= HazeValueType::PointerArray;
+	return type >= HazeValueType::PointerBase && type <= HazeValueType::PointerFunction;
 }
 
 bool IsPointerFunction(HazeValueType type)
@@ -229,7 +235,6 @@ void StringToHazeValueNumber(const HAZE_STRING& str, HazeValueType type, HazeVal
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerArray:
 	case HazeValueType::PointerPointer:
 		wss >> value.Value.UnsignedLong;
 		break;
@@ -679,7 +684,6 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerArray:
 	case HazeValueType::PointerPointer:
 	{
 		uint64 s = *(uint64*)source, t = *(uint64*)target;
@@ -741,7 +745,6 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value)
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerArray:
 	case HazeValueType::PointerPointer:
 		return (HAZE_BINARY_CHAR*)&value.Value.UnsignedLong;
 	default:

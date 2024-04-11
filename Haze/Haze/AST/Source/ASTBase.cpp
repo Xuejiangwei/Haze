@@ -1,5 +1,5 @@
 #include "ASTBase.h"
-#include "HazeLog.h"
+#include "HazeLogDefine.h"
 
 #include "HazeCompilerHelper.h"
 #include "HazeCompiler.h"
@@ -116,22 +116,15 @@ std::shared_ptr<HazeCompilerValue> ASTIdentifier::CodeGen()
 			retValue->SetScope(classMemberScope);
 		}
 
-		if (retValue->IsArray() || retValue->IsPointerArray())
+		if (retValue->IsArray() && m_ArrayIndexExpression.size() > 0)
 		{
-			if (m_ArrayIndexExpression.size() > 0)
+			std::vector<std::shared_ptr<HazeCompilerValue>> indexValue;
+			for (size_t i = 0; i < m_ArrayIndexExpression.size(); i++)
 			{
-				std::vector<std::shared_ptr<HazeCompilerValue>> indexValue;
-				for (size_t i = 0; i < m_ArrayIndexExpression.size(); i++)
-				{
-					indexValue.push_back(m_ArrayIndexExpression[i]->CodeGen());
-				}
+				indexValue.push_back(m_ArrayIndexExpression[i]->CodeGen());
+			}
 
-				retValue = m_Compiler->CreateArrayElement(retValue, indexValue);
-			}
-			else
-			{
-				retValue = m_Compiler->CreatePointerToArray(retValue);
-			}
+			retValue = m_Compiler->CreateArrayElement(retValue, indexValue);
 		}
 	}
 	else
@@ -311,7 +304,7 @@ std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("返回值类型错误! <%s>文件<%s>函数<%d>行\n", m_Compiler->GetCurrModuleName().c_str(), m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), m_Location.Line);
+		AST_ERR_W("返回值类型错误");
 	}
 
 	return nullptr;
@@ -1008,4 +1001,32 @@ ASTCast::~ASTCast()
 std::shared_ptr<HazeCompilerValue> ASTCast::CodeGen()
 {
 	return m_Compiler->CreateCast(m_DefineVariable.Type, m_Expression->CodeGen());
+}
+
+ASTArrayLength::ASTArrayLength(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)
+	: ASTBase(compiler, location), m_Expression(std::move(expression))
+{
+}
+
+ASTArrayLength::~ASTArrayLength()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTArrayLength::CodeGen()
+{
+	return m_Compiler->CreateGetArrayLength(m_Expression->CodeGen());
+}
+
+ASTSizeOf::ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)
+	: ASTBase(compiler, location), m_Expression(std::move(expression))
+{
+}
+
+ASTSizeOf::~ASTSizeOf()
+{
+}
+
+std::shared_ptr<HazeCompilerValue> ASTSizeOf::CodeGen()
+{
+	return m_Compiler->GetConstantValueUint64(m_Expression->CodeGen()->GetSize());
 }

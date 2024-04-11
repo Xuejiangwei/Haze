@@ -23,11 +23,11 @@
 
 #define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
 
-#define HAZE_STANDARD_FOLDER			HAZE_TEXT("\\标准库\\")
+#define HAZE_STANDARD_FOLDER			HAZE_TEXT("标准库\\")
 #define HAZE_FILE_SUFFIX				HAZE_TEXT(".hz")
 #define HAZE_FILE_INTER_SUFFIX			HAZE_TEXT(".Hzic")
-#define HAZE_FILE_INTER					HAZE_TEXT("\\Intermediate\\")
-#define HAZE_FILE_PATH_BIN				HAZE_TEXT("\\Bin\\")
+#define HAZE_FILE_INTER					HAZE_TEXT("Intermediate\\")
+#define HAZE_FILE_PATH_BIN				HAZE_TEXT("Bin\\")
 #define HAZE_FILE_MAIN_BIN				HAZE_TEXT("Main.Hzb")
 
 #define HAZE_CLASS_THIS					HAZE_TEXT("己")

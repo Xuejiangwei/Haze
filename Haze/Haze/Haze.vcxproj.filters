@@ -135,9 +135,6 @@
     <ClCompile Include="Source\HazeFilePathHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerPointerArray.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Define\Source\HazeExecuteFile.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -312,9 +309,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Header\HazeFilePathHelper.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerPointerArray.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Define\Header\HazeTokenText.h">

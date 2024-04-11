@@ -1,0 +1,46 @@
+0
+GlobalDataTable
+0
+StringTable
+1
+11 丁 %d 乙 %d\n
+ClassTable
+0
+FunctionTable
+1
+Function 主函数 1
+Variable 甲$1 23 列表__整数 0 16 22
+Variable 丙$2 8 16 4 24
+Variable 丁$3 8 20 4 32
+Variable 乙$4 8 24 4 33
+FunctionStart 15
+
+Block Entry
+MOV 丙$2 2 0 8 2 1 1 8
+PUSH 丙$2 2 0 8
+PUSH 甲$1 2 11 18 列表__整数
+PUSH RetAddress 0 9 8
+CALL 列表__整数@添加 24 1 12 列表
+PUSH 1225 1 1 8
+PUSH 甲$1 2 11 18 列表__整数
+PUSH RetAddress 0 9 8
+CALL 列表__整数@添加 24 1 12 列表
+PUSH 0 1 1 8
+PUSH 甲$1 2 11 18 列表__整数
+PUSH RetAddress 0 9 8
+CALL 列表__整数@获得 24 1 12 列表
+MOV 丁$3 2 0 8 Ret_R 1 4 8
+PUSH 1 1 1 8
+PUSH 甲$1 2 11 18 列表__整数
+PUSH RetAddress 0 9 8
+CALL 列表__整数@获得 24 1 12 列表
+MOV 乙$4 2 0 8 Ret_R 1 4 8
+PUSH 乙$4 2 0 8
+PUSH 丁$3 2 0 8
+PUSH 常字符串指针 1 2 17 5 0
+PUSH RetAddress 0 9 8
+CALL 打印 24 3 16 标准流
+RET Void 0 0 1
+
+FunctionEnd 94
+

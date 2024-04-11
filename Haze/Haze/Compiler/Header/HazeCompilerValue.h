@@ -73,8 +73,6 @@ public:
 
 	bool IsPointerFunction() const { return m_ValueType.PrimaryType == HazeValueType::PointerFunction; }
 
-	bool IsPointerArray() const { return m_ValueType.PrimaryType == HazeValueType::PointerArray; }
-
 	bool IsPointerPointer() const { return m_ValueType.PrimaryType == HazeValueType::PointerPointer; }
 
 	bool IsRefBase() const { return m_ValueType.PrimaryType == HazeValueType::ReferenceBase; }

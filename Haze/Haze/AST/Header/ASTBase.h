@@ -480,3 +480,31 @@ public:
 private:
 	std::unique_ptr<ASTBase> m_Expression;
 };
+
+//获得数组长度
+class ASTArrayLength : public ASTBase
+{
+public:
+	ASTArrayLength(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression);
+
+	virtual ~ASTArrayLength() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen();
+
+private:
+	std::unique_ptr<ASTBase> m_Expression;
+};
+
+//获得字节大小
+class ASTSizeOf : public ASTBase
+{
+public:
+	ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression);
+
+	virtual ~ASTSizeOf() override;
+
+	virtual std::shared_ptr<HazeCompilerValue> CodeGen();
+
+private:
+	std::unique_ptr<ASTBase> m_Expression;
+};

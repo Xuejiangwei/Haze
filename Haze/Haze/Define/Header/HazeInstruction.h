@@ -139,6 +139,7 @@ enum class InstructionOpCode : uint32
 	SHR_ASSIGN,
 
 	CVT,			//基本类型转换
+	ARRAY_LENGTH,	//数组长度
 
 	LINE,			//调试用
 };

@@ -38,7 +38,7 @@ void HazeCompilerValue::StoreValueType(std::shared_ptr<HazeCompilerValue> srcVal
 		bool bPointer = IsPointer();
 		m_ValueType = srcValue->GetValueType();
 
-		if ((srcValue->IsArray() || srcValue->IsPointerArray()) && bPointer)
+		if (srcValue->IsArray() && bPointer)
 		{
 			m_ValueType.PrimaryType = m_ValueType.CustomName.empty() ? HazeValueType::PointerBase : HazeValueType::PointerClass;
 		}

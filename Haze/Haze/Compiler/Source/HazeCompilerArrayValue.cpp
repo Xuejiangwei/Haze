@@ -32,15 +32,11 @@ HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* compilerModul
 			m_SizeValues.push_back(iter);
 		}
 
-		m_Size = m_ArrayLength * GetSizeByType(defineType, compilerModule);
+		//m_Size = m_ArrayLength * GetSizeByType(defineType, compilerModule);
 	}
 	else if (IsArrayPointerType(defineType.PrimaryType))
 	{
-		m_Size = GetSizeByHazeType(defineType.PrimaryType);
-	}
-	else
-	{
-		COMPILER_ERR_W("生成数组变量错误!");
+		//m_Size = GetSizeByHazeType(defineType.PrimaryType);
 	}
 }
 

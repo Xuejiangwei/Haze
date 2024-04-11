@@ -29,7 +29,7 @@ void HazeStack::StartMain(uint32 address)
 	Run();
 
 	g_Debugger->SendProgramEnd();
-	GarbageCollection(true, true);
+	//GarbageCollection(true, true);
 }
 
 void HazeStack::JmpTo(const InstructionData& data)
@@ -226,6 +226,11 @@ void* HazeStack::Alloca(uint64 size)
 	}
 
 	return ret;
+}
+
+void HazeStack::RegisterArray(uint64 address, uint64 length)
+{
+	m_VM->Vector_ArrayCache[address] = length;
 }
 
 void HazeStack::GarbageCollection(bool force, bool collectionAll)

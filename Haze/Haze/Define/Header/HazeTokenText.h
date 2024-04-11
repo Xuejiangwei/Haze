@@ -19,7 +19,6 @@
 #define TOKEN_UNSIGNED_INT				HAZE_TEXT("正整数")
 #define TOKEN_UNSIGNED_LONG				HAZE_TEXT("正长整数")
 
-#define TOKEN_ARRAY						HAZE_TEXT("数组")
 #define TOKEN_ARRAY_START				HAZE_TEXT("[")
 #define TOKEN_ARRAY_END					HAZE_TEXT("]")
 
@@ -122,3 +121,6 @@
 
 #define TOKEN_TYPENAME					HAZE_TEXT("类型")
 #define TOKEN_TEMPLATE					HAZE_TEXT("模板")
+
+#define TOkEN_ARRAY_LENGTH				HAZE_TEXT("数组长度")
+#define TOKEN_SIZE_OF					HAZE_TEXT("字节数")

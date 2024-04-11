@@ -114,6 +114,10 @@ private:
 
 	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& className);
 
+	std::unique_ptr<ASTBase> ParseArrayLength();
+
+	std::unique_ptr<ASTBase> ParseSizeOf();
+
 	std::unique_ptr<ASTBase> ParseEnum();
 
 	void ParseTemplate();
@@ -141,7 +145,7 @@ private:
 
 	void BackToPreLexemeAndNext();
 
-	void ParseVariableType();
+	//void ParseVariableType();
 
 	void IncLineCount(bool insert = false);
 

@@ -2,6 +2,7 @@
 #include <unordered_set>
 
 #include "Parse.h"
+#include "HazeTokenText.h"
 #include "HazeDebugDefine.h"
 #include "HazeLog.h"
 #include "HazeFilePathHelper.h"

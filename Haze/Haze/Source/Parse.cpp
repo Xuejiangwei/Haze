@@ -24,118 +24,122 @@ static HAZE_STRING MUL_STR = TOKEN_MUL;
 
 static std::unordered_map<HAZE_STRING, HazeToken> s_HashMap_Token =
 {
-	{TOKEN_VOID, HazeToken::Void},
-	{TOKEN_BOOL, HazeToken::Bool},
-	{TOKEN_BYTE, HazeToken::Byte},
-	{TOKEN_CHAR, HazeToken::Char},
-	{TOKEN_INT, HazeToken::Int},
-	{TOKEN_FLOAT, HazeToken::Float},
-	{TOKEN_LONG, HazeToken::Long},
-	{TOKEN_DOUBLE, HazeToken::Double},
+	{ TOKEN_VOID, HazeToken::Void },
+	{ TOKEN_BOOL, HazeToken::Bool },
+	{ TOKEN_BYTE, HazeToken::Byte },
+	{ TOKEN_CHAR, HazeToken::Char },
+	{ TOKEN_INT, HazeToken::Int },
+	{ TOKEN_FLOAT, HazeToken::Float },
+	{ TOKEN_LONG, HazeToken::Long },
+	{ TOKEN_DOUBLE, HazeToken::Double },
 
-	{TOKEN_UNSIGNED_INT, HazeToken::UnsignedInt},
-	{TOKEN_UNSIGNED_LONG, HazeToken::UnsignedLong},
+	{ TOKEN_UNSIGNED_INT, HazeToken::UnsignedInt },
+	{ TOKEN_UNSIGNED_LONG, HazeToken::UnsignedLong },
 
-	{TOKEN_ARRAY, HazeToken::Array},
+	{ TOKEN_ARRAY_START, HazeToken::Array },
+	{ TOKEN_ARRAY_END, HazeToken::ArrayDefineEnd },
+	{ TOkEN_ARRAY_LENGTH, HazeToken::ArrayLength },
 
-	{TOKEN_STRING_MATCH, HazeToken::StringMatch},
+	{ TOKEN_STRING_MATCH, HazeToken::StringMatch },
 
-	{TOKEN_FUNCTION, HazeToken::Function},
+	{ TOKEN_FUNCTION, HazeToken::Function },
 
-	{TOKEN_MAIN_FUNCTION, HazeToken::MainFunction},
+	{ TOKEN_MAIN_FUNCTION, HazeToken::MainFunction },
 
-	{TOKEN_ENUM, HazeToken::Enum},
+	{ TOKEN_ENUM, HazeToken::Enum },
 
-	{TOKEN_CLASS, HazeToken::Class},
-	{TOKEN_CLASS_DATA, HazeToken::m_ClassDatas},
-	{TOKEN_CLASS_DATA_PUBLIC, HazeToken::ClassPublic},
-	{TOKEN_CLASS_DATA_PRIVATE, HazeToken::ClassPrivate},
-	{TOKEN_CLASS_DATA_PROTECTED, HazeToken::ClassProtected},
+	{ TOKEN_CLASS, HazeToken::Class },
+	{ TOKEN_CLASS_DATA, HazeToken::m_ClassDatas },
+	{ TOKEN_CLASS_DATA_PUBLIC, HazeToken::ClassPublic },
+	{ TOKEN_CLASS_DATA_PRIVATE, HazeToken::ClassPrivate },
+	{ TOKEN_CLASS_DATA_PROTECTED, HazeToken::ClassProtected },
 
-	{TOKEN_TRUE, HazeToken::True},
-	{TOKEN_FALSE, HazeToken::False},
+	{ TOKEN_TRUE, HazeToken::True },
+	{ TOKEN_FALSE, HazeToken::False },
 
-	{TOKEN_ADD, HazeToken::Add},
-	{TOKEN_SUB, HazeToken::Sub},
-	{TOKEN_MUL, HazeToken::Mul},
-	{TOKEN_DIV, HazeToken::Div},
-	{TOKEN_MOD, HazeToken::Mod},
+	{ TOKEN_ADD, HazeToken::Add },
+	{ TOKEN_SUB, HazeToken::Sub },
+	{ TOKEN_MUL, HazeToken::Mul },
+	{ TOKEN_DIV, HazeToken::Div },
+	{ TOKEN_MOD, HazeToken::Mod },
 
-	{TOKEN_AND, HazeToken::And},
-	{TOKEN_OR, HazeToken::Or},
-	{TOKEN_NOT, HazeToken::Not},
+	{ TOKEN_AND, HazeToken::And },
+	{ TOKEN_OR, HazeToken::Or },
+	{ TOKEN_NOT, HazeToken::Not },
 
-	{TOKEN_BIT_AND, HazeToken::BitAnd},
-	{TOKEN_BIT_OR, HazeToken::BitOr},
-	{TOKEN_BIT_NEG, HazeToken::BitNeg},
-	{TOKEN_BIT_XOR, HazeToken::BitXor},
+	{ TOKEN_BIT_AND, HazeToken::BitAnd },
+	{ TOKEN_BIT_OR, HazeToken::BitOr },
+	{ TOKEN_BIT_NEG, HazeToken::BitNeg },
+	{ TOKEN_BIT_XOR, HazeToken::BitXor },
 
-	{TOKEN_LEFT_MOVE, HazeToken::Shl},
-	{TOKEN_RIGHT_MOVE, HazeToken::Shr},
+	{ TOKEN_LEFT_MOVE, HazeToken::Shl },
+	{ TOKEN_RIGHT_MOVE, HazeToken::Shr },
 
-	{TOKEN_ASSIGN, HazeToken::Assign},
-	{TOKEN_EQUAL, HazeToken::Equal},
-	{TOKEN_NOT_EQUAL, HazeToken::NotEqual},
-	{TOKEN_GREATER, HazeToken::Greater},
-	{TOKEN_GREATER_EQUAL, HazeToken::GreaterEqual},
-	{TOKEN_LESS, HazeToken::Less},
-	{TOKEN_LESS_EQUAL, HazeToken::LessEqual},
+	{ TOKEN_ASSIGN, HazeToken::Assign },
+	{ TOKEN_EQUAL, HazeToken::Equal },
+	{ TOKEN_NOT_EQUAL, HazeToken::NotEqual },
+	{ TOKEN_GREATER, HazeToken::Greater },
+	{ TOKEN_GREATER_EQUAL, HazeToken::GreaterEqual },
+	{ TOKEN_LESS, HazeToken::Less },
+	{ TOKEN_LESS_EQUAL, HazeToken::LessEqual },
 
-	{TOKEN_INC, HazeToken::Inc},
-	{TOKEN_DEC, HazeToken::Dec},
-	{TOKEN_ADD_ASSIGN, HazeToken::AddAssign},
-	{TOKEN_SUB_ASSIGN, HazeToken::SubAssign},
-	{TOKEN_MUL_ASSIGN, HazeToken::MulAssign},
-	{TOKEN_DIV_ASSIGN, HazeToken::DivAssign},
-	{TOKEN_MOD_ASSIGN, HazeToken::ModAssign},
-	{TOKEN_SHL_ASSIGN, HazeToken::ShlAssign},
-	{TOKEN_SHR_ASSIGN, HazeToken::ShrAssign},
-	{TOKEN_BIT_AND_ASSIGN, HazeToken::BitAndAssign},
-	{TOKEN_BIT_OR_ASSIGN, HazeToken::BitOrAssign},
-	{TOKEN_BIT_XOR_ASSIGN, HazeToken::BitXorAssign},
+	{ TOKEN_INC, HazeToken::Inc },
+	{ TOKEN_DEC, HazeToken::Dec },
+	{ TOKEN_ADD_ASSIGN, HazeToken::AddAssign },
+	{ TOKEN_SUB_ASSIGN, HazeToken::SubAssign },
+	{ TOKEN_MUL_ASSIGN, HazeToken::MulAssign },
+	{ TOKEN_DIV_ASSIGN, HazeToken::DivAssign },
+	{ TOKEN_MOD_ASSIGN, HazeToken::ModAssign },
+	{ TOKEN_SHL_ASSIGN, HazeToken::ShlAssign },
+	{ TOKEN_SHR_ASSIGN, HazeToken::ShrAssign },
+	{ TOKEN_BIT_AND_ASSIGN, HazeToken::BitAndAssign },
+	{ TOKEN_BIT_OR_ASSIGN, HazeToken::BitOrAssign },
+	{ TOKEN_BIT_XOR_ASSIGN, HazeToken::BitXorAssign },
 
-	{TOKEN_LEFT_PARENTHESES, HazeToken::LeftParentheses},
-	{TOKEN_RIGHT_PARENTHESES, HazeToken::RightParentheses},
+	{ TOKEN_LEFT_PARENTHESES, HazeToken::LeftParentheses },
+	{ TOKEN_RIGHT_PARENTHESES, HazeToken::RightParentheses },
 
-	{TOKEN_COMMA, HazeToken::Comma},
+	{ TOKEN_COMMA, HazeToken::Comma },
 
-	{TOKEN_LEFT_BRACE, HazeToken::LeftBrace},
-	{TOKEN_RIGHT_BRACE, HazeToken::RightBrace},
+	{ TOKEN_LEFT_BRACE, HazeToken::LeftBrace },
+	{ TOKEN_RIGHT_BRACE, HazeToken::RightBrace },
 
-	{TOKEN_IF, HazeToken::If},
-	{TOKEN_ELSE, HazeToken::Else},
+	{ TOKEN_IF, HazeToken::If },
+	{ TOKEN_ELSE, HazeToken::Else },
 
-	{TOKEN_FOR, HazeToken::For},
-	{TOKEN_FOR_STEP, HazeToken::ForStep},
+	{ TOKEN_FOR, HazeToken::For },
+	{ TOKEN_FOR_STEP, HazeToken::ForStep },
 
-	{TOKEN_BREAK, HazeToken::Break},
-	{TOKEN_CONTINUE, HazeToken::Continue},
-	{TOKEN_RETURN, HazeToken::Return},
+	{ TOKEN_BREAK, HazeToken::Break },
+	{ TOKEN_CONTINUE, HazeToken::Continue },
+	{ TOKEN_RETURN, HazeToken::Return },
 
-	{TOKEN_WHILE, HazeToken::While},
+	{ TOKEN_WHILE, HazeToken::While },
 
-	{TOKEN_CAST, HazeToken::Cast},
+	{ TOKEN_CAST, HazeToken::Cast },
 
-	{TOKEN_VIRTUAL, HazeToken::VirtualFunction},
-	{TOKEN_PUREVIRTUAL, HazeToken::PureVirtualFunction},
+	{ TOKEN_VIRTUAL, HazeToken::VirtualFunction },
+	{ TOKEN_PUREVIRTUAL, HazeToken::PureVirtualFunction },
 
-	{TOKEN_DEFINE, HazeToken::Define},
+	{ TOKEN_DEFINE, HazeToken::Define },
 
-	{TOKEN_STANDARD_LIBRARY, HazeToken::StandardLibrary},
-	{TOKEN_DLL_LIBRARY, HazeToken::DLLLibrary},
-	{TOKEN_IMPORT_MODULE, HazeToken::ImportModule},
+	{ TOKEN_STANDARD_LIBRARY, HazeToken::StandardLibrary },
+	{ TOKEN_DLL_LIBRARY, HazeToken::DLLLibrary },
+	{ TOKEN_IMPORT_MODULE, HazeToken::ImportModule },
 
-	{TOKEN_MULTI_VARIABLE, HazeToken::MultiVariable},
+	{ TOKEN_MULTI_VARIABLE, HazeToken::MultiVariable },
 
-	{TOKEN_NEW, HazeToken::New},
+	{ TOKEN_NEW, HazeToken::New },
 
-	{TOKEN_QUESTION_MARK, HazeToken::ThreeOperatorStart},
-	{TOKEN_QUESTIOB_COLON, HazeToken::Colon},
+	{ TOKEN_QUESTION_MARK, HazeToken::ThreeOperatorStart },
+	{ TOKEN_QUESTIOB_COLON, HazeToken::Colon },
 
-	{TOKEN_NULL_PTR, HazeToken::NullPtr},
+	{ TOKEN_NULL_PTR, HazeToken::NullPtr },
 
-	{TOKEN_TYPENAME, HazeToken::TypeName},
-	{TOKEN_TEMPLATE, HazeToken::Template},
+	{ TOKEN_TYPENAME, HazeToken::TypeName },
+	{ TOKEN_TEMPLATE, HazeToken::Template },
+
+	{ TOKEN_SIZE_OF, HazeToken::SizeOf },
 };
 
 const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token()
@@ -470,9 +474,11 @@ HazeToken Parse::GetNextToken()
 			}
 			else if (m_CurrToken == HazeToken::Array && HAZE_STRING(signal) == TOKEN_ARRAY_END)
 			{
-				m_CurrLexeme += *m_CurrCode++;
-				m_CurrToken = HazeToken::ArrayDefineEnd;
-				return m_CurrToken;
+				if (m_CurrLexeme.empty())
+				{
+					m_CurrLexeme += *m_CurrCode++;
+				}
+				break;
 			}
 			else if (IsHazeSignalToken(m_CurrCode, signal, 3))
 			{
@@ -584,8 +590,7 @@ std::unique_ptr<ASTBase> Parse::ParseExpression(int prec)
 
 std::unique_ptr<ASTBase> Parse::ParseUnaryExpression()
 {
-	auto it = s_HashMap_OperatorPriority.find(m_CurrToken);
-	if (it == s_HashMap_OperatorPriority.end())
+	if (s_HashMap_OperatorPriority.find(m_CurrToken) == s_HashMap_OperatorPriority.end())
 	{
 		return ParsePrimary();
 	}
@@ -691,6 +696,8 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::PointerFunction:
 	case HazeToken::PointerPointer:
 		return ParseVariableDefine();
+	case HazeToken::Identifier:
+		return ParseIdentifer();
 	case HazeToken::Number:
 		return ParseNumberExpression();
 	case HazeToken::StringMatch:
@@ -698,8 +705,6 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 	case HazeToken::True:
 	case HazeToken::False:
 		return ParseBoolExpression();
-	case HazeToken::Identifier:
-		return ParseIdentifer();
 	case HazeToken::If:
 		return ParseIfExpression();
 	case HazeToken::While:
@@ -732,6 +737,10 @@ std::unique_ptr<ASTBase> Parse::ParsePrimary()
 		return ParseNeg();
 	case HazeToken::NullPtr:
 		return ParseNullPtr();
+	case HazeToken::ArrayLength:
+		return ParseArrayLength();
+	case HazeToken::SizeOf:
+		return ParseSizeOf();
 	default:
 		break;
 	}
@@ -770,13 +779,26 @@ std::unique_ptr<ASTBase> Parse::ParseIdentifer()
 	}
 	else if (m_CurrToken == HazeToken::Array)
 	{
-		while (m_CurrToken == HazeToken::Array)
+		auto cacheToken = m_CurrToken;
+		if (ExpectNextTokenIs(HazeToken::ArrayDefineEnd))
 		{
+			m_CurrCode -= (m_CurrLexeme.length() * 2 + identiferName.length());
 			GetNextToken();
-			indexExpression.push_back(ParseExpression());
-
-			GetNextToken();
+			return ParseVariableDefine();
 		}
+		else
+		{
+			m_CurrToken = cacheToken;
+			m_CurrCode -= m_CurrLexeme.length();
+			while (m_CurrToken == HazeToken::Array)
+			{
+				GetNextToken();
+				indexExpression.push_back(ParseExpression());
+
+				GetNextToken();
+			}
+		}
+		
 
 		ret = std::make_unique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), identiferName, indexExpression);
 	}
@@ -829,7 +851,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 
 		if (m_CurrToken == HazeToken::Assign)
 		{
-			GetNextToken();		//吃掉赋值符号
+			GetNextToken();//吃掉赋值符号
 			std::unique_ptr<ASTBase> expression = ParseExpression();
 
 			return std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount),m_StackSectionSignal.top(),
@@ -864,18 +886,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 				{
 					HazeDefineType type;
 					type.PrimaryType = GetValueTypeByToken(m_CurrToken);
-					if (m_CurrToken == HazeToken::PointerBase)
-					{
-						type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
-					}
-					else if (m_CurrToken == HazeToken::PointerClass)
-					{
-						type.CustomName = GetPointerClassType(m_CurrLexeme);
-					}
-					else if (m_CurrToken == HazeToken::Class)
-					{
-						type.CustomName = m_CurrLexeme;
-					}
+					GetValueType(type);
 
 					templateTypes.push_back(type);
 
@@ -933,18 +944,7 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 					{
 						HazeDefineType type;
 						type.PrimaryType = GetValueTypeByToken(m_CurrToken);
-						if (m_CurrToken == HazeToken::PointerBase)
-						{
-							type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
-						}
-						else if (m_CurrToken == HazeToken::PointerClass)
-						{
-							type.CustomName = GetPointerClassType(m_CurrLexeme);
-						}
-						else if (m_CurrToken == HazeToken::Class)
-						{
-							type.CustomName = m_CurrLexeme;
-						}
+						GetValueType(type);
 
 						paramTypes.push_back(type);
 
@@ -967,33 +967,16 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 						return std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), m_DefineVariable, std::move(expression), std::move(arraySize), pointerLevel);
 					}
 				}
-				else if (m_CurrToken == HazeToken::Array)
+				else
 				{
-					m_DefineVariable.Type.SecondaryType = m_DefineVariable.Type.PrimaryType;
-					m_DefineVariable.Type.PrimaryType = HazeValueType::PointerArray;
-
-					GetNextToken();
-					while (true)
-					{
-						arraySize.push_back(ParseExpression());
-
-						if (!ExpectNextTokenIs(HazeToken::Array))
-						{
-							break;
-						}
-					}
-
-					if (m_CurrToken == HazeToken::Assign)
-					{
-						GetNextToken();
-
-						std::unique_ptr<ASTBase> expression = ParseExpression();
-
-						return std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), m_DefineVariable, std::move(expression), std::move(arraySize), pointerLevel);
-					}
+					PARSE_ERR_W("指针变量<%s>定义错误", m_DefineVariable.Name.c_str());
 				}
 			}
 		}
+	}
+	else if (m_DefineVariable.Name.empty())
+	{
+		PARSE_ERR_W("变量定义错误");
 	}
 
 	return std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(m_LineCount), m_StackSectionSignal.top(), m_DefineVariable, nullptr, std::move(arraySize), pointerLevel);;
@@ -1155,25 +1138,16 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	defineVar.Type.PrimaryType = GetValueTypeByToken(m_CurrToken);
 	GetValueType(defineVar.Type);
 
-	if (IsHazeDefaultType(defineVar.Type.SecondaryType) || IsPointerFunction(defineVar.Type.SecondaryType))
+	if (ExpectNextTokenIs(HazeToken::Array))
 	{
 		GetNextToken();
-		if (TokenIs(HazeToken::Array))
-		{
-			GetNextToken();
-			auto countAst = ParseExpression();
-			GetNextToken();
-			return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, std::move(countAst));
-		}
-		else
-		{
-			GetNextToken();
-			return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, nullptr);
-		}
+		auto countAst = ParseExpression();
+		GetNextToken();
+		return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, std::move(countAst));
 	}
 	else
 	{
-		if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("生成表达式 期望 (")))
+		if (TokenIs(HazeToken::LeftParentheses, HAZE_TEXT("生成表达式 期望 (")))
 		{
 			if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("生成表达式 期望 )")))
 			{
@@ -1262,18 +1236,7 @@ std::unique_ptr<ASTBase> Parse::ParseLeftParentheses()
 	{
 		HazeDefineType type;
 		type.PrimaryType = GetValueTypeByToken(m_CurrToken);
-		if (m_CurrToken == HazeToken::PointerBase)
-		{
-			type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
-		}
-		else if (m_CurrToken == HazeToken::PointerClass)
-		{
-			type.CustomName = GetPointerClassType(m_CurrLexeme);
-		}
-		else if (m_CurrToken == HazeToken::Class)
-		{
-			type.CustomName = m_CurrLexeme;
-		}
+		GetValueType(type);
 
 		if (ExpectNextTokenIs(HazeToken::RightParentheses))
 		{
@@ -2039,6 +2002,40 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 	return nullptr;
 }
 
+std::unique_ptr<ASTBase> Parse::ParseArrayLength()
+{
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("获得数组长度需要 （")))
+	{
+		GetNextToken();
+		auto variable = ParseExpression();
+
+		if (TokenIs(HazeToken::RightParentheses, HAZE_TEXT("获得数组长度需要 )")))
+		{
+			GetNextToken();
+			return std::make_unique<ASTArrayLength>(m_Compiler, m_LineCount, variable);
+		}
+	}
+
+	return nullptr;
+}
+
+std::unique_ptr<ASTBase> Parse::ParseSizeOf()
+{
+	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("获得字节大小需要 （")))
+	{
+		GetNextToken();
+		auto variable = ParseExpression();
+
+		if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("获得字节大小需要 )")))
+		{
+			GetNextToken();
+			return std::make_unique<ASTSizeOf>(m_Compiler, m_LineCount, variable);
+		}
+	}
+
+	return nullptr;
+}
+
 std::unique_ptr<ASTBase> Parse::ParseEnum()
 {
 	return std::unique_ptr<ASTBase>();
@@ -2212,7 +2209,7 @@ bool Parse::ExpectNextTokenIs(HazeToken token, const HAZE_CHAR* errorInfo)
 	{
 		if (errorInfo)
 		{
-			PARSE_ERR_W("%s!\n", errorInfo);
+			PARSE_ERR_W("%s", errorInfo);
 		}
 		return false;
 	}
@@ -2226,7 +2223,7 @@ bool Parse::TokenIs(HazeToken token, const HAZE_CHAR* errorInfo)
 	{
 		if (errorInfo)
 		{
-			HAZE_LOG_ERR(errorInfo);
+			PARSE_ERR_W("%s", errorInfo);
 		}
 		return false;
 	}
@@ -2419,28 +2416,28 @@ void Parse::GetValueType(HazeDefineType& inType)
 		m_DefineVariable.Name = HAZE_MULTI_PARAM_NAME;
 		break;
 	case HazeToken::CustomClass:
-		m_DefineVariable.Type.CustomName = m_CurrLexeme;
+		inType.CustomName = m_CurrLexeme;
 		break;
 	case HazeToken::ReferenceBase:
 	case HazeToken::PointerBase:
 	{
-		m_DefineVariable.Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
-		m_DefineVariable.Type.CustomName.clear();
+		inType.SecondaryType = GetPointerBaseType(m_CurrLexeme);
+		inType.CustomName.clear();
 	}
 		break;
 	case HazeToken::ReferenceClass:
 	case HazeToken::PointerClass:
 	{
-		m_DefineVariable.Type.SecondaryType = HazeValueType::Class;
-		m_DefineVariable.Type.CustomName = GetPointerClassType(m_CurrLexeme);
+		inType.SecondaryType = HazeValueType::Class;
+		inType.CustomName = GetPointerClassType(m_CurrLexeme);
 	}
 		break;
 	case HazeToken::PointerPointer:
 	{
-		m_DefineVariable.Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
-		if (IsNoneType(m_DefineVariable.Type.SecondaryType))
+		inType.SecondaryType = GetPointerBaseType(m_CurrLexeme);
+		if (IsNoneType(inType.SecondaryType))
 		{
-			m_DefineVariable.Type.CustomName = m_CurrLexeme;
+			inType.CustomName = m_CurrLexeme;
 		}
 	}
 		break;
@@ -2456,7 +2453,7 @@ void Parse::GetValueType(HazeDefineType& inType)
 	case HazeToken::UnsignedLong:
 		return;
 	default:
-		PARSE_ERR_W("获得变量类型错误!");
+		PARSE_ERR_W("获得变量类型错误");
 		break;
 	}
 }
@@ -2474,16 +2471,25 @@ void Parse::ResetArrayVariableType(HazeDefineType& inType)
 	case HazeValueType::Double:
 	case HazeValueType::UnsignedInt:
 	case HazeValueType::UnsignedLong:
+	{
+		inType.SecondaryType = inType.PrimaryType;
 		inType.PrimaryType = HazeValueType::ArrayBase;
+	}
 		break;
 	case HazeValueType::Class:
+	{
+		inType.SecondaryType = inType.PrimaryType;
 		inType.PrimaryType = HazeValueType::ArrayClass;
+	}
 		break;
 	case HazeValueType::PointerBase:
+	{
+		inType.SecondaryType = inType.PrimaryType;
 		inType.PrimaryType = HazeValueType::ArrayPointer;
+	}
 		break;
 	default:
-		PARSE_ERR_W("数组变量类型定义错误!");
+		PARSE_ERR_W("数组变量类型定义错误");
 		break;
 	}
 }
@@ -2576,70 +2582,70 @@ void Parse::BackToPreLexemeAndNext()
 	}
 }
 
-void Parse::ParseVariableType()
-{
-	int pointerLevel = 1;
-	if (TokenIs(HazeToken::CustomClass))
-	{
-		m_DefineVariable.Type.CustomName = m_CurrLexeme;
-	}
-	else if (TokenIs(HazeToken::PointerBase) || TokenIs(HazeToken::ReferenceBase))
-	{
-		if (m_IsParseTemplate)
-		{
-			GetTemplateRealValueType(m_CurrLexeme, m_DefineVariable.Type);
-		}
-		else
-		{
-			m_DefineVariable.Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
-		}
-		m_DefineVariable.Type.CustomName = HAZE_TEXT("");
-	}
-	else if (m_CurrToken == HazeToken::PointerClass || m_CurrToken == HazeToken::ReferenceClass)
-	{
-		m_DefineVariable.Type.SecondaryType = HazeValueType::Class;
-		if (m_IsParseTemplate)
-		{
-			GetTemplateRealValueType(m_CurrLexeme, m_DefineVariable.Type);
-		}
-		else
-		{
-			m_DefineVariable.Type.CustomName = GetPointerClassType(m_CurrLexeme);
-		}
-	}
-	else if (m_CurrToken == HazeToken::PointerPointer)
-	{
-		if (m_IsParseTemplate)
-		{
-			GetTemplateRealValueType(m_CurrLexeme, m_DefineVariable.Type);
-		}
-		else
-		{
-			m_DefineVariable.Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
-		}
-	}
-	else if (TokenIs(HazeToken::MultiVariable))
-	{
-		m_DefineVariable.Name = HAZE_MULTI_PARAM_NAME;
-	}
-
-	if (TokenIs(HazeToken::PointerBase) || TokenIs(HazeToken::PointerClass))
-	{
-		while (GetNextToken() == HazeToken::Mul)
-		{
-			pointerLevel += 1;
-		}
-
-		if (pointerLevel > 1)
-		{
-			HAZE_TO_DO(Parse pointer pointer !);
-		}
-	}
-	else
-	{
-		GetNextToken();
-	}
-}
+//void Parse::ParseVariableType()
+//{
+//	int pointerLevel = 1;
+//	if (TokenIs(HazeToken::CustomClass))
+//	{
+//		m_DefineVariable.Type.CustomName = m_CurrLexeme;
+//	}
+//	else if (TokenIs(HazeToken::PointerBase) || TokenIs(HazeToken::ReferenceBase))
+//	{
+//		if (m_IsParseTemplate)
+//		{
+//			GetTemplateRealValueType(m_CurrLexeme, m_DefineVariable.Type);
+//		}
+//		else
+//		{
+//			m_DefineVariable.Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
+//		}
+//		m_DefineVariable.Type.CustomName = HAZE_TEXT("");
+//	}
+//	else if (m_CurrToken == HazeToken::PointerClass || m_CurrToken == HazeToken::ReferenceClass)
+//	{
+//		m_DefineVariable.Type.SecondaryType = HazeValueType::Class;
+//		if (m_IsParseTemplate)
+//		{
+//			GetTemplateRealValueType(m_CurrLexeme, m_DefineVariable.Type);
+//		}
+//		else
+//		{
+//			m_DefineVariable.Type.CustomName = GetPointerClassType(m_CurrLexeme);
+//		}
+//	}
+//	else if (m_CurrToken == HazeToken::PointerPointer)
+//	{
+//		if (m_IsParseTemplate)
+//		{
+//			GetTemplateRealValueType(m_CurrLexeme, m_DefineVariable.Type);
+//		}
+//		else
+//		{
+//			m_DefineVariable.Type.SecondaryType = GetPointerBaseType(m_CurrLexeme);
+//		}
+//	}
+//	else if (TokenIs(HazeToken::MultiVariable))
+//	{
+//		m_DefineVariable.Name = HAZE_MULTI_PARAM_NAME;
+//	}
+//
+//	if (TokenIs(HazeToken::PointerBase) || TokenIs(HazeToken::PointerClass))
+//	{
+//		while (GetNextToken() == HazeToken::Mul)
+//		{
+//			pointerLevel += 1;
+//		}
+//
+//		if (pointerLevel > 1)
+//		{
+//			HAZE_TO_DO(Parse pointer pointer !);
+//		}
+//	}
+//	else
+//	{
+//		GetNextToken();
+//	}
+//}
 
 void Parse::IncLineCount(bool insert)
 {

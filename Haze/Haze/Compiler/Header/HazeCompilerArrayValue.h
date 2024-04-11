@@ -27,7 +27,7 @@ public:
 
 	virtual ~HazeCompilerArrayValue() override;
 
-	virtual uint32 GetSize() override { return m_Size; }
+	//virtual uint32 GetSize() override { return m_Size; }
 
 	uint32 GetArrayLength() { return m_ArrayLength; }
 

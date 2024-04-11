@@ -6,7 +6,6 @@
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerPointerValue.h"
-#include "HazeCompilerPointerArray.h"
 #include "HazeCompilerPointerFunction.h"
 #include "HazeCompilerRefValue.h"
 #include "HazeCompilerClassValue.h"
@@ -113,8 +112,6 @@ std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* compil
 		return std::make_shared<HazeCompilerPointerValue>(compilerModule, type, scope, desc, count);
 	case HazeValueType::PointerFunction:
 		return std::make_shared<HazeCompilerPointerFunction>(compilerModule, type, scope, desc, count, params ? params : nullptr);
-	case HazeValueType::PointerArray:
-		return std::make_shared<HazeCompilerPointerArray>(compilerModule, type, scope, desc, count, arraySize);
 	case HazeValueType::ReferenceBase:
 	case HazeValueType::ReferenceClass:
 		if (assignValue || compilerModule->IsBeginCreateFunctionVariable())
@@ -167,8 +164,8 @@ std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValu
 			auto& var = it.second[i].second;
 			members.back().second[i] = CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0,
 				var->IsRef() ? std::dynamic_pointer_cast<HazeCompilerRefValue>(var)->GetRefValue() : var,
-				var->IsArray() ? std::dynamic_pointer_cast<HazeCompilerArrayValue>(var)->GetArraySize() : var->IsPointerArray() ?
-				std::dynamic_pointer_cast<HazeCompilerPointerArray>(var)->GetArraySize() : std::vector<std::shared_ptr<HazeCompilerValue>>{},
+				var->IsArray() ? std::dynamic_pointer_cast<HazeCompilerArrayValue>(var)->GetArraySize() :
+				std::vector<std::shared_ptr<HazeCompilerValue>>{},
 				var->IsPointerFunction() ? &const_cast<std::vector<HazeDefineType>&>(std::dynamic_pointer_cast<HazeCompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
 		}
 	}
@@ -301,8 +298,8 @@ std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule
 				}
 				else
 				{
-					COMPILER_ERR_MODULE_W("函数<%s>中未能找到类对象<%s>!", compilerModule->GetCurrFunction()->GetName().c_str(), outObjectName.c_str(),
-						compilerModule->GetName().c_str());
+					COMPILER_ERR_MODULE_W("函数<%s>中未能找到类对象<%s>", compilerModule->GetName().c_str(),
+						compilerModule->GetCurrFunction()->GetName().c_str(), outObjectName.c_str());
 				}
 			}
 		}

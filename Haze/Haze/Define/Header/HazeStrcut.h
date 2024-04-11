@@ -29,12 +29,27 @@ struct HazeDefineType
 	{
 	}
 
-	HazeDefineType(HazeValueType type, const HAZE_STRING& customName) : PrimaryType(type), SecondaryType(HazeValueType::Void)
+	HazeDefineType(HazeValueType type) : PrimaryType(type), SecondaryType(HazeValueType::None)
+	{
+		this->CustomName.clear();
+	}
+
+	HazeDefineType(HazeValueType type, const HAZE_STRING& customName) : PrimaryType(type), SecondaryType(HazeValueType::None)
 	{
 		this->CustomName = customName;
 	}
 
-	HazeDefineType(HazeValueType type, const HAZE_CHAR* customName) : PrimaryType(type), SecondaryType(HazeValueType::Void)
+	HazeDefineType(HazeValueType type, const HAZE_CHAR* customName) : PrimaryType(type), SecondaryType(HazeValueType::None)
+	{
+		this->CustomName = customName;
+	}
+
+	HazeDefineType(HazeValueType type, HazeValueType type2, const HAZE_STRING& customName) : PrimaryType(type), SecondaryType(type2)
+	{
+		this->CustomName = customName;
+	}
+
+	HazeDefineType(HazeValueType type, HazeValueType type2, const HAZE_CHAR* customName) : PrimaryType(type), SecondaryType(type2)
 	{
 		this->CustomName = customName;
 	}
@@ -53,8 +68,8 @@ struct HazeDefineType
 
 	void Reset()
 	{
-		PrimaryType = HazeValueType::Void;
-		SecondaryType = HazeValueType::Void;
+		PrimaryType = HazeValueType::None;
+		SecondaryType = HazeValueType::None;
 		CustomName.clear();
 	}
 
@@ -78,18 +93,48 @@ struct HazeDefineType
 			SecondaryType = type.SecondaryType;
 			CustomName = type.CustomName;
 		}
+		else if (IsArrayType(type.PrimaryType))
+		{
+			switch (type.PrimaryType)
+			{
+			case HazeValueType::ArrayBase:
+				PrimaryType = HazeValueType::PointerBase;
+				break;
+			case HazeValueType::ArrayClass:
+				PrimaryType = HazeValueType::PointerClass;
+			case HazeValueType::ArrayPointer:
+				PrimaryType = HazeValueType::PointerPointer;
+				break;
+			default:
+				break;
+			}
+			if (IsHazeDefaultTypeAndVoid(type.SecondaryType))
+			{
+				SecondaryType = type.SecondaryType;
+				CustomName.clear();
+			}
+			else if (IsClassType(type.SecondaryType))
+			{
+				SecondaryType = HazeValueType::Class;
+				CustomName = type.CustomName;
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("类型指向数组类型错误!\n");
+			}
+		}
 		else
 		{
 			if (IsHazeDefaultTypeAndVoid(type.PrimaryType))
 			{
 				PrimaryType = HazeValueType::PointerBase;
-				PrimaryType = type.PrimaryType;
+				SecondaryType = type.PrimaryType;
 				CustomName.clear();
 			}
 			else if (IsClassType(type.PrimaryType))
 			{
 				PrimaryType = HazeValueType::PointerClass;
-				SecondaryType = HazeValueType::Void;
+				SecondaryType = HazeValueType::None;
 				CustomName = type.CustomName;
 			}
 			else
@@ -105,7 +150,7 @@ struct HazeDefineType
 	static bool NeedSecondaryType(const HazeDefineType& type)
 	{
 		return IsArrayType(type.PrimaryType) || type.PrimaryType == HazeValueType::PointerBase ||
-			type.PrimaryType == HazeValueType::PointerFunction || type.PrimaryType == HazeValueType::PointerArray ||
+			type.PrimaryType == HazeValueType::PointerFunction ||
 			type.PrimaryType == HazeValueType::PointerPointer || type.PrimaryType == HazeValueType::ReferenceBase;
 	}
 

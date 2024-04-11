@@ -44,7 +44,15 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDef
 	}
 
 	hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
-	HazeCompilerModule::GenVariableHzic(m_Module, hss, countValue);
+	if (countValue)
+	{
+		HazeCompilerModule::GenVariableHzic(m_Module, hss, countValue);
+	}
+	else
+	{
+		HazeCompilerModule::GenVariableHzic(m_Module, hss, m_Module->GetCompiler()->GetConstantValueUint64(0));
+	}
+
 	hss << std::endl;
 	
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
