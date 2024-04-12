@@ -143,8 +143,6 @@ private:
 
 	void GetTemplateRealValueType(const HAZE_STRING& str, HazeDefineType& inType);
 
-	void BackToPreLexemeAndNext();
-
 	//void ParseVariableType();
 
 	void IncLineCount(bool insert = false);

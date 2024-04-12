@@ -3,18 +3,16 @@
 template <typename T>
 unsigned int GetSizeByType(HazeDefineType type, T* This)
 {
-	return type.PrimaryType == HazeValueType::Class ? This->GetClassSize(type.CustomName) :
-		IsArrayType(type.PrimaryType) ? type.SecondaryType == HazeValueType::Class ? This->GetClassSize(type.CustomName) : GetSizeByHazeType(type.SecondaryType) :
-		GetSizeByHazeType(type.PrimaryType);
+	return type.PrimaryType == HazeValueType::Class ? This->GetClassSize(type.CustomName) : GetSizeByHazeType(type.PrimaryType);
 }
 
-template <typename T>
-unsigned int GetNewAllocSizeByType(HazeDefineType type, T* This)
-{
-	return type.PrimaryType == HazeValueType::PointerClass ? This->GetClassSize(type.CustomName) : 
-		type.PrimaryType == HazeValueType::PointerPointer ? GetSizeByHazeType(type.PrimaryType) :
-		GetSizeByHazeType(type.SecondaryType);
-}
+//template <typename T>
+//unsigned int GetNewAllocSizeByType(HazeDefineType type, T* This)
+//{
+//	return type.PrimaryType == HazeValueType::PointerClass ? This->GetClassSize(type.CustomName) : 
+//		type.PrimaryType == HazeValueType::PointerPointer ? GetSizeByHazeType(type.PrimaryType) :
+//		GetSizeByHazeType(type.SecondaryType);
+//}
 
 template <typename T>
 T StringToStandardType(const HAZE_STRING& str)

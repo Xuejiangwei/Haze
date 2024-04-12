@@ -84,6 +84,8 @@ private:
 
 	void RegisterArray(uint64 address, uint64 length);
 
+	uint64 GetRegisterArrayLength(uint64 address);
+
 	void GarbageCollection(bool force = false, bool collectionAll = false);
 
 private:

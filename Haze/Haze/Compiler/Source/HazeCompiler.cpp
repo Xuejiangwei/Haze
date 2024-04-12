@@ -541,7 +541,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 {
 	allocaValue->StoreValueType(value);
 
-	if ((allocaValue->IsPointer() && !value->IsPointer()) || (allocaValue->IsPointerPointer() && value->IsPointer() && !value->IsPointerPointer()))
+	if ((allocaValue->IsPointer() && !value->IsPointer() && !value->IsArray()) || (allocaValue->IsPointerPointer() && value->IsPointer() && !value->IsPointerPointer()))
 	{
 		CreateLea(allocaValue, value);
 	}
@@ -905,19 +905,19 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArrayElement(std
 		std::shared_ptr<HazeCompilerValue> arrayPointer;
 		arrayPointer = CreatePointerToArray(arrayValue);
 
-		for (size_t i = 0; i < arrayElementValue->GetIndex().size(); i++)
+		for (uint64 i = 0; i < arrayElementValue->GetIndex().size(); i++)
 		{
-			uint32 size = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetValue().Value.Int
-				: arrayValue->GetSizeByLevel((uint32)i);
+			uint64 size = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetValue().Value.UnsignedLong
+				: arrayValue->GetSizeByLevel((uint64)i);
 			std::shared_ptr<HazeCompilerValue> sizeValue = nullptr;
 
 			if (arrayElementValue->GetIndex()[i]->IsConstant())
 			{
-				sizeValue = GetConstantValueInt(size);
+				sizeValue = GetConstantValueUint64(size);
 			}
 			else
 			{
-				sizeValue = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetShared() : GetConstantValueInt(size);
+				sizeValue = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetShared() : GetConstantValueUint64(size);
 			}
 
 			CreateMov(tempRegister, sizeValue);

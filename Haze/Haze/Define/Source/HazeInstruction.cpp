@@ -72,6 +72,7 @@ static std::unordered_map<HAZE_STRING, InstructionOpCode> s_HashMap_String2Code 
 	{HAZE_TEXT("JL"), InstructionOpCode::JL },
 
 	{HAZE_TEXT("CVT"), InstructionOpCode::CVT },
+	{HAZE_TEXT("ARRAY_LENGTH"), InstructionOpCode::ARRAY_LENGTH},
 
 	{HAZE_TEXT("LINE"), InstructionOpCode::LINE },
 };
@@ -99,6 +100,7 @@ const HAZE_CHAR* GetInstructionString(InstructionOpCode code)
 		return iter->second;
 	}
 
+	HAZE_LOG_ERR_W("未能找到字节码操作符名称<%d>!\n", (int)code);
 	return HAZE_TEXT("None");
 }
 
@@ -110,6 +112,7 @@ InstructionOpCode GetInstructionByString(const HAZE_STRING& str)
 		return iter->second;
 	}
 
+	HAZE_LOG_ERR_W("未能找到名称对应字节码操作符<%s>!\n", str.c_str());
 	return InstructionOpCode::NONE;
 }
 
@@ -881,8 +884,8 @@ public:
 			HazeRegister* newRegister = stack->GetVirtualRegister(oper[0].Variable.Name.c_str());
 			newRegister->Type = oper[0].Variable.Type;
 
-			uint64 size = GetNewAllocSizeByType(newRegister->Type, stack->m_VM);
-			uint64 newSize = 0;
+			uint64 size = GetSizeByType(newRegister->Type, stack->m_VM);
+			uint64 newSize = size;
 			bool isRegister = true;
 			auto countAddress = GetOperatorAddress(stack, oper[1]);
 			
@@ -895,7 +898,6 @@ public:
 				}
 				else
 				{
-					newSize = size;
 					isRegister = false;
 				}
 			}
@@ -906,7 +908,7 @@ public:
 			}
 			
 
-			uint64 address = (uint64)stack->Alloca(size);
+			uint64 address = (uint64)stack->Alloca(newSize);
 			if (isRegister)
 			{
 				stack->RegisterArray(address, newSize / size);
@@ -1116,15 +1118,18 @@ public:
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			if (IsUnsignedLongType(oper[0].Variable.Type.PrimaryType) && IsArrayPointerType(oper[1].Variable.Type.PrimaryType))
+			if (IsUnsignedLongType(oper[0].Variable.Type.PrimaryType) && IsArrayType(oper[1].Variable.Type.PrimaryType))
 			{
-				HazeValue v1, v2;
-				auto address = GetOperatorAddress(stack, oper[0]);
+				auto arrayAddress = GetOperatorAddress(stack, oper[1]);
+				uint64 address = 0;
+				if (arrayAddress)
+				{
+					memcpy(&address, arrayAddress, sizeof(arrayAddress));
+				}
 
-				memcpy(&v1, address, GetSizeByHazeType(oper[0].Variable.Type.PrimaryType));
-				memcpy(&v2, GetOperatorAddress(stack, oper[1]), GetSizeByHazeType(oper[1].Variable.Type.PrimaryType));
-				ConvertBaseTypeValue(oper[0].Variable.Type.PrimaryType, v1, oper[1].Variable.Type.PrimaryType, v2);
-				memcpy(address, &v1, GetSizeByHazeType(oper[0].Variable.Type.PrimaryType));
+				uint64 length = stack->GetRegisterArrayLength(address);
+
+				memcpy(GetOperatorAddress(stack, oper[0]), &length, sizeof(length));
 			}
 			else
 			{

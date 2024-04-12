@@ -555,6 +555,10 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 		return m_Compiler->CreateMul(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::Div:
 		return m_Compiler->CreateDiv(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+	case HazeToken::Inc:
+		return m_Compiler->CreateInc(m_LeftAST->CodeGen(), false);
+	case HazeToken::Dec:
+		return m_Compiler->CreateDec(m_LeftAST->CodeGen(), false);
 	case HazeToken::Mod:
 		return m_Compiler->CreateMod(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::Not:

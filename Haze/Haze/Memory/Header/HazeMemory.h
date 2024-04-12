@@ -56,11 +56,15 @@ public:
 	};
 
 private:
+	void MarkVariable(const HazeDefineType& type, uint64 startAddress, char* classAddress);
+
 	void MarkClassMember(ClassData* classData, char* baseAddress);
 
 	inline bool MarkArrayBaseIndex();
 
 	inline bool MarkArrayClassIndex();
+
+	inline bool MarkArrayArrayIndex();
 
 private:
 	HazeVM* m_VM;
@@ -75,8 +79,10 @@ private:
 
 	uint64 m_CurrMarkBaseIndex;
 	uint64 m_CurrMarkClassIndex;
+	uint64 m_CurrMarkArrayIndex;
 
 	std::vector<void*> m_KeepMemorys;
 	std::vector<std::pair<std::pair<uint64, HazeValueType>, GC_State>> m_MarkAddressBases;
-	std::vector< std::pair<std::pair<uint64, ClassData*>, GC_State>> m_MarkAddressClasses;
+	std::vector<std::pair<std::pair<uint64, ClassData*>, GC_State>> m_MarkAddressClasses;
+	std::vector<std::pair<std::pair<uint64, uint64>, GC_State>> m_MarkAddressArrays;
 };

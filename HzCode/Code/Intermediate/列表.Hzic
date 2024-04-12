@@ -5,100 +5,103 @@ StringTable
 0
 ClassTable
 1
-Class 列表__整数 16 2
-列表数组 14 8 0 8
-容量 13 8 8
+Class 列表__整数* 24 3
+列表数组 16 8 0 8
+长度 13 8 8
+容量 13 16 8
 FunctionTable
 3
-Function 列表__整数@获得长度 13
-Param 己 18 列表__整数
-Variable 己$1 18 列表__整数 -12 8 19
-FunctionStart 20
+Function 列表__整数*@获得长度 13
+Param 己 18 列表__整数*
+Variable 己$1 18 列表__整数* -12 8 20
+FunctionStart 21
 
 Block Entry
-None Temp_R0 1 7 13 己$1指之列表数组 2 15 14 8
-RET Temp_R0 1 7 13
+MOV Temp_R0 1 7 13 己$1指之长度 2 15 13
+INC 己$1指之长度 2 15 13
+RET 己$1指之长度 2 15 13
 
-FunctionEnd 23
+FunctionEnd 25
 
-Function 列表__整数@添加 1
-Param 己 18 列表__整数
-Param 值 8
-Variable 己$2 18 列表__整数 -12 8 25
-Variable 值$1 8 -16 4 25
-Variable 长度$3 13 0 8 55
-Variable 新容量$4 13 8 8 58
-Variable 新列表数组$5 14 8 16 8 64
-FunctionStart 26
+Function 列表__整数*@添加 1
+Param 己 18 列表__整数*
+Param 值 17 8
+Variable 己$2 18 列表__整数* -12 8 27
+Variable 值$1 17 8 -20 8 27
+Variable 新容量$3 13 0 8 59
+Variable 新列表数组$4 16 8 8 8 65
+FunctionStart 28
 
 Block Entry
-None Temp_R0 1 7 13 己$2指之列表数组 2 15 14 8
-MOV 长度$3 2 0 13 Temp_R0 1 7 13
-CMP 长度$3 2 0 13 己$2指之容量 2 15 13
+CMP 己$2指之长度 2 15 13 己$2指之容量 2 15 13
 JNL IfThenBlock1 ElseBlock2
 
 Block IfThenBlock1
 MOV Temp_R0 1 7 13 己$2指之容量 2 15 13
 MUL Temp_R0 1 7 13 2 1 1 13
-MOV 新容量$4 2 0 13 Temp_R0 1 7 13
-CMP 新容量$4 2 0 13 0 1 1 8
+MOV 新容量$3 2 0 13 Temp_R0 1 7 13
+CMP 新容量$3 2 0 13 0 1 1 8
 JE IfThenBlock4 DefaultBlock5
 
 Block IfThenBlock4
 CVT Temp_R0 1 7 13 2 1 1 8
-MOV 新容量$4 2 0 13 Temp_R0 1 7 13
+MOV 新容量$3 2 0 13 Temp_R0 1 7 13
 JMP DefaultBlock5
 
 Block DefaultBlock5
-NEW New_R 8 0 2 5 新容量$4 2 0 13
-MOV 新列表数组$5 2 0 14 8 New_R 1 5 8
+NEW New_R 17 8 2 5 新容量$3 2 0 13
+MOV 新列表数组$4 2 0 16 8 New_R 1 5 17 8
 CMP 己$2指之容量 2 15 13 0 1 1 8
 JG IfThenBlock6 DefaultBlock7
 
 Block IfThenBlock6
-MOV Temp_R0 1 7 13 长度$3 2 0 13
+MOV Temp_R0 1 7 13 己$2指之长度 2 15 13
 MUL Temp_R0 1 7 13 8 1 1 13
 PUSH Temp_R0 1 7 13
-PUSH 己$2指之列表数组 2 15 14 8
-PUSH 新列表数组$5 2 0 14 8
+PUSH 己$2指之列表数组 2 15 16 8
+PUSH 新列表数组$4 2 0 16 8
 PUSH RetAddress 0 9 8
 CALL 内存复制 24 3 24 标准内存
 JMP DefaultBlock7
 
 Block DefaultBlock7
-MOV 己$2指之容量 2 15 13 新容量$4 2 0 13
-MOV 己$2指之列表数组 2 15 14 8 新列表数组$5 2 0 14 8
-LEA Temp_R1 1 7 17 8 己$2指之列表数组 2 15 14 8
-MOV Temp_R0 1 7 13 长度$3 2 0 13
-ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
-MOVTOPV Temp_R1 1 7 17 8 值$1 2 0 8
+MOV 己$2指之容量 2 15 13 新容量$3 2 0 13
+MOV 己$2指之列表数组 2 15 16 8 新列表数组$4 2 0 16 8
+MOV Temp_R1 1 7 20 8 己$2指之列表数组 2 15 16 8
+MOV Temp_R0 1 7 13 己$2指之长度 2 15 13
+ADD Temp_R1 1 7 20 8 Temp_R0 1 7 13
+MOVTOPV Temp_R1 1 7 20 8 值$1 2 0 17 8
+MOV Temp_R0 1 7 13 己$2指之长度 2 15 13
+INC 己$2指之长度 2 15 13
 JMP DefaultBlock3
 
 Block ElseBlock2
-LEA Temp_R1 1 7 17 8 己$2指之列表数组 2 15 14 8
-MOV Temp_R0 1 7 13 长度$3 2 0 13
-ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
-MOVTOPV Temp_R1 1 7 17 8 值$1 2 0 8
+MOV Temp_R1 1 7 20 8 己$2指之列表数组 2 15 16 8
+MOV Temp_R0 1 7 13 己$2指之长度 2 15 13
+ADD Temp_R1 1 7 20 8 Temp_R0 1 7 13
+MOVTOPV Temp_R1 1 7 20 8 值$1 2 0 17 8
+MOV Temp_R0 1 7 13 己$2指之长度 2 15 13
+INC 己$2指之长度 2 15 13
 JMP DefaultBlock3
 
 Block DefaultBlock3
 RET Void 0 0 1
 
-FunctionEnd 80
+FunctionEnd 83
 
-Function 列表__整数@获得 8
-Param 己 18 列表__整数
+Function 列表__整数*@获得 17 8
+Param 己 18 列表__整数*
 Param 索引 8
-Variable 己$2 18 列表__整数 -12 8 82
-Variable 索引$1 8 -16 4 82
-FunctionStart 83
+Variable 己$2 18 列表__整数* -12 8 85
+Variable 索引$1 8 -16 4 85
+FunctionStart 86
 
 Block Entry
-LEA Temp_R1 1 7 17 8 己$2指之列表数组 2 15 14 8
+MOV Temp_R1 1 7 20 8 己$2指之列表数组 2 15 16 8
 MOV Temp_R0 1 7 8 索引$1 2 0 8
-ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
-MOVPV Temp_R0 1 7 8 Temp_R1 1 7 17 8
-RET Temp_R0 1 7 8
+ADD Temp_R1 1 7 20 8 Temp_R0 1 7 8
+MOVPV Temp_R0 1 7 17 8 Temp_R1 1 7 20 8
+RET Temp_R0 1 7 17 8
 
-FunctionEnd 86
+FunctionEnd 89
 

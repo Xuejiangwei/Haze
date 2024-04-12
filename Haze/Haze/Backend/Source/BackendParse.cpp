@@ -405,6 +405,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	case InstructionOpCode::SHL_ASSIGN:
 	case InstructionOpCode::SHR_ASSIGN:
 	case InstructionOpCode::CVT:
+	case InstructionOpCode::ARRAY_LENGTH:
 	{
 		InstructionData operatorOne;
 		InstructionData operatorTwo;

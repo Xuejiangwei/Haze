@@ -102,12 +102,14 @@ struct HazeDefineType
 				break;
 			case HazeValueType::ArrayClass:
 				PrimaryType = HazeValueType::PointerClass;
+				break;
 			case HazeValueType::ArrayPointer:
 				PrimaryType = HazeValueType::PointerPointer;
 				break;
 			default:
 				break;
 			}
+
 			if (IsHazeDefaultTypeAndVoid(type.SecondaryType))
 			{
 				SecondaryType = type.SecondaryType;

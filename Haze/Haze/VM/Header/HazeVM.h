@@ -79,7 +79,7 @@ private:
 
 	uint32 GetCurrCallFunctionLine();
 
-	//static void Hook(HazeVM* m_VM);
+	uint64 GetRegisterArrayLength(uint64 address);
 
 private:
 	std::unique_ptr<HazeCompiler> m_Compiler;

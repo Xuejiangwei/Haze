@@ -306,6 +306,17 @@ uint32 HazeVM::GetCurrCallFunctionLine()
 	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
+uint64 HazeVM::GetRegisterArrayLength(uint64 address)
+{
+	auto iter = Vector_ArrayCache.find(address);
+	if (iter != Vector_ArrayCache.end())
+	{
+		return iter->second;
+	}
+
+	return 0;
+}
+
 //void HazeVM::Hook(HazeVM* m_VM)
 //{
 //	HAZE_LOG_INFO(HAZE_TEXT("ÒÑÃüÖÐ¶Ïµã\n"));

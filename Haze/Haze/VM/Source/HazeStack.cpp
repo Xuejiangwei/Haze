@@ -29,7 +29,7 @@ void HazeStack::StartMain(uint32 address)
 	Run();
 
 	g_Debugger->SendProgramEnd();
-	//GarbageCollection(true, true);
+	GarbageCollection(true, true);
 }
 
 void HazeStack::JmpTo(const InstructionData& data)
@@ -191,6 +191,8 @@ void HazeStack::OnRet()
 	m_StackFrame.pop_back();
 
 	SubCallHazeTimes();
+
+	GarbageCollection();
 }
 
 void HazeStack::ResetCallHaze()
@@ -233,8 +235,15 @@ void HazeStack::RegisterArray(uint64 address, uint64 length)
 	m_VM->Vector_ArrayCache[address] = length;
 }
 
+uint64 HazeStack::GetRegisterArrayLength(uint64 address)
+{
+	return m_VM->GetRegisterArrayLength(address);
+}
+
 void HazeStack::GarbageCollection(bool force, bool collectionAll)
 {
+	//防止虚拟寄存器中的引用被GC，只在函数返回时进行GC，并且此时只用Ret虚拟寄存器可能有引用。
+
 	if (force && collectionAll)
 	{
 		HazeMemory::GetMemory()->ForceGC();

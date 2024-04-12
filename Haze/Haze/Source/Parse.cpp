@@ -194,7 +194,8 @@ static std::unordered_map<HazeToken, int> s_HashMap_OperatorPriority =
 	{ HazeToken::GetAddress, 7000 },
 
 	//{ HazeToken::Not, 7000 },
-	//{ HazeToken::Inc, 9000 },				//后置++
+	{ HazeToken::Inc, 9000 },
+	{ HazeToken::Dec, 9000 },
 
 	//{ HazeToken::LeftParentheses, 10000 },
 };
@@ -482,20 +483,16 @@ HazeToken Parse::GetNextToken()
 			}
 			else if (IsHazeSignalToken(m_CurrCode, signal, 3))
 			{
-				if (m_CurrPreLexeme.first.empty())
+				if (m_CurrLexeme.empty())
 				{
-					m_CurrPreLexeme.first = m_CurrLexeme;
-					m_CurrPreLexeme.second = 3;
 					m_CurrLexeme = signal;
 					m_CurrCode += 3;
 				}
 			}
 			else if (IsHazeSignalToken(m_CurrCode, signal, 2))
 			{
-				if (m_CurrPreLexeme.first.empty())
+				if (m_CurrLexeme.empty())
 				{
-					m_CurrPreLexeme.first = m_CurrLexeme;
-					m_CurrPreLexeme.second = 2;
 					m_CurrLexeme = signal;
 					m_CurrCode += 2;
 				}
@@ -635,6 +632,10 @@ std::unique_ptr<ASTBase> Parse::ParseBinaryOperateExpression(int prec, std::uniq
 		std::unique_ptr<ASTBase> right = nullptr;
 		if (m_CurrToken == HazeToken::ThreeOperatorStart)
 		{
+		}
+		else if (TokenIs(HazeToken::Inc) || TokenIs(HazeToken::Dec))
+		{
+			GetNextToken();
 		}
 		else
 		{
@@ -829,15 +830,15 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 
 		while (m_CurrToken == HazeToken::Array)
 		{
-			if (ExpectNextTokenIs(HazeToken::Identifier))
-			{
-				arraySize.push_back(ParseExpression());
-				GetNextToken();
-			}
-			else if (TokenIs(HazeToken::ArrayDefineEnd))
+			if (ExpectNextTokenIs(HazeToken::ArrayDefineEnd))
 			{
 				GetNextToken();
 				break;
+			}
+			else
+			{
+				arraySize.push_back(ParseExpression());
+				GetNextToken();
 			}
 		}
 	}
@@ -1163,41 +1164,21 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 std::unique_ptr<ASTBase> Parse::ParseInc()
 {
 	uint32 tempLineCount = m_LineCount;
-	bool isPre = m_CurrPreLexeme.first.empty();
-	std::unique_ptr<ASTBase> expression;
-	if (isPre)
-	{
-		GetNextToken();
-		expression = ParseExpression();
-	}
-	else
-	{
-		BackToPreLexemeAndNext();
-		expression = ParseExpression();
-		GetNextToken();
-	}
 
-	return std::make_unique<ASTInc>(m_Compiler, SourceLocation(tempLineCount), expression, isPre);
+	GetNextToken();
+	auto expression = ParseExpression();
+
+	return std::make_unique<ASTInc>(m_Compiler, SourceLocation(tempLineCount), expression, true);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseDec()
 {
 	uint32 tempLineCount = m_LineCount;
-	bool isPre = m_CurrPreLexeme.first.empty();
-	std::unique_ptr<ASTBase> expression;
-	if (isPre)
-	{
-		GetNextToken();
-		expression = ParseExpression();
-	}
-	else
-	{
-		BackToPreLexemeAndNext();
-		expression = ParseExpression();
-		GetNextToken();
-	}
 
-	return std::make_unique<ASTDec>(m_Compiler, SourceLocation(tempLineCount), expression, isPre);
+	GetNextToken();
+	auto expression = ParseExpression();
+
+	return std::make_unique<ASTDec>(m_Compiler, SourceLocation(tempLineCount), expression, true);
 }
 
 std::unique_ptr<ASTBase> Parse::ParseThreeOperator(std::unique_ptr<ASTBase> Condition)
@@ -2095,8 +2076,6 @@ void Parse::ParseTemplate()
 					
 					if (TokenIs(HazeToken::LeftBrace))
 					{
-						const HAZE_CHAR* end = m_CurrCode;
-
 						std::vector<uint32> stack(1);
 						while (stack.size() > 0)
 						{
@@ -2478,13 +2457,11 @@ void Parse::ResetArrayVariableType(HazeDefineType& inType)
 		break;
 	case HazeValueType::Class:
 	{
-		inType.SecondaryType = inType.PrimaryType;
 		inType.PrimaryType = HazeValueType::ArrayClass;
 	}
 		break;
 	case HazeValueType::PointerBase:
 	{
-		inType.SecondaryType = inType.PrimaryType;
 		inType.PrimaryType = HazeValueType::ArrayPointer;
 	}
 		break;
@@ -2569,17 +2546,6 @@ void Parse::GetTemplateRealValueType(const HAZE_STRING& str, HazeDefineType& inT
 	}
 
 	return;
-}
-
-void Parse::BackToPreLexemeAndNext()
-{
-	if (!m_CurrPreLexeme.first.empty())
-	{
-		m_CurrCode -= m_CurrPreLexeme.second + m_CurrPreLexeme.first.length();
-		GetNextToken();
-		m_CurrPreLexeme.first.clear();
-		m_CurrPreLexeme.second = 0;
-	}
 }
 
 //void Parse::ParseVariableType()
