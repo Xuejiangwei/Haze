@@ -150,6 +150,11 @@ bool IsIntegerType(HazeValueType type)
 	return type == HazeValueType::Int || type == HazeValueType::Long || type == HazeValueType::UnsignedInt || type == HazeValueType::UnsignedLong;
 }
 
+bool IsFloatingType(HazeValueType type)
+{
+	return type == HazeValueType::Float || type == HazeValueType::Double;
+}
+
 bool IsUnsignedLongType(HazeValueType type)
 {
 	return type == HazeValueType::UnsignedLong;
@@ -756,6 +761,7 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value)
 HazeValue GetNegValue(HazeValueType type, const HazeValue& value)
 {
 	HazeValue ret;
+	ret = 0;
 	switch (type)
 	{
 	case HazeValueType::Int:
@@ -775,4 +781,95 @@ HazeValue GetNegValue(HazeValueType type, const HazeValue& value)
 	}
 
 	return ret;
+}
+
+bool CanCVT(HazeValueType type1, HazeValueType type2)
+{
+	switch (type1)
+	{
+	case HazeValueType::Int:
+	{
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+		case HazeValueType::Float:
+		case HazeValueType::Double:
+		case HazeValueType::Long:
+		case HazeValueType::UnsignedLong:
+			return true;
+		default:
+			break;
+		}
+	}
+	break;
+	case HazeValueType::Float:
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+		case HazeValueType::Int:
+		case HazeValueType::Double:
+		case HazeValueType::Long:
+		case HazeValueType::UnsignedLong:
+			return true;
+		default:
+			break;
+		}
+		break;
+	case HazeValueType::Long:
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+		case HazeValueType::Int:
+		case HazeValueType::Float:
+		case HazeValueType::Double:
+		case HazeValueType::UnsignedLong:
+			return true;
+		default:
+			break;
+		}
+		break;
+	case HazeValueType::Double:
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+		case HazeValueType::Int:
+		case HazeValueType::Float:
+		case HazeValueType::Long:
+		case HazeValueType::UnsignedLong:
+			return true;
+		default:
+			break;
+		}
+		break;
+	case HazeValueType::UnsignedInt:
+		switch (type2)
+		{
+		case HazeValueType::Int:
+		case HazeValueType::Float:
+		case HazeValueType::Double:
+		case HazeValueType::Long:
+		case HazeValueType::UnsignedLong:
+			return true;
+		default:
+			break;
+		}
+		break;
+	case HazeValueType::UnsignedLong:
+		switch (type2)
+		{
+		case HazeValueType::UnsignedInt:
+		case HazeValueType::Int:
+		case HazeValueType::Float:
+		case HazeValueType::Double:
+		case HazeValueType::Long:
+			return true;
+		default:
+			break;
+		}
+		break;
+	default:
+		break;
+	}
+
+	return false;
 }

@@ -69,23 +69,8 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 	HazeMemory::GetMemory()->SetVM(this);
 }
 
-bool HazeVM::HasMainFunction() const
-{
-	return HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT) != HashMap_FunctionTable.end();
-}
-
 void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
 {
-}
-
-void HazeVM::StartMainFunction()
-{
-	//VMDebugger->AddBreakPoint(HAZE_TEXT("Îå×ÓÆå"), 68);
-	auto Iter = HashMap_FunctionTable.find(HAZE_MAIN_FUNCTION_TEXT);
-	if (Iter != HashMap_FunctionTable.end())
-	{
-		VMStack->StartMain(Vector_FunctionTable[Iter->second].FunctionDescData.InstructionStartAddress);
-	}
 }
 
 void HazeVM::CallFunction(const HAZE_CHAR* functionName, ...)

@@ -131,7 +131,7 @@ void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
 class InstructionProcessor
 {
 	friend void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
-
+#define HAZE_DEBUG_ENABLE 0
 #if HAZE_DEBUG_ENABLE
 	struct DataDebugScope
 	{
@@ -142,7 +142,9 @@ class InstructionProcessor
 
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p> 操作数二地址<%p>\n", (char*)Address, GetOperatorAddress(stack, Data[1]));
+				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p> 操作数二地址<%p>", (char*)Address, GetOperatorAddress(stack, Data[1]));
+				ShowData2();
+				HAZE_LOG_ERR_W("\n");
 
 				HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s> <%s>\n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str(), Data[1].Variable.Name.c_str());
@@ -161,11 +163,50 @@ class InstructionProcessor
 			memcpy(&Address, GetOperatorAddress(Stack, Data[0]), 8);
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p> 操作数二地址<%p>\n\n", (char*)Address, GetOperatorAddress(Stack, Data[1]));
+				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p> 操作数二地址<%p>", (char*)Address, GetOperatorAddress(Stack, Data[1]));
+				ShowData2();
+				HAZE_LOG_ERR_W("\n\n");
 			}
 			else
 			{
 				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p>\n\n", (char*)Address);
+			}
+		}
+
+		void ShowData2()
+		{
+			switch (Data[1].Variable.Type.PrimaryType)
+			{
+			case HazeValueType::Int:
+			{
+				int v;
+				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(int));
+				HAZE_LOG_ERR_W(" 值<%d>", v);
+			}
+			break;
+			case HazeValueType::Long:
+			{
+				int64 v;
+				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(int64));
+				HAZE_LOG_ERR_W(" 值<%d>", v);
+			}
+			break;
+			case HazeValueType::UnsignedInt:
+			{
+				uint32 v;
+				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(uint32));
+				HAZE_LOG_ERR_W(" 值<%d>", v);
+			}
+			break;
+			case HazeValueType::UnsignedLong:
+			{
+				uint64 v;
+				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(uint64));
+				HAZE_LOG_ERR_W(" 值<%d>", v);
+			}
+			break;
+			default:
+				break;
 			}
 		}
 
@@ -1323,7 +1364,7 @@ private:
 		const auto& oper = instruction.Operator;
 		if (oper.size() == 2)
 		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
+			if (IsNumberType(oper[0].Variable.Type.PrimaryType) && oper[0].Variable.Type == oper[1].Variable.Type)
 			{
 				CalculateValueByType(oper[0].Variable.Type.PrimaryType, instruction.InsCode, 
 					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
@@ -1383,15 +1424,12 @@ private:
 				}
 				else
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("Pointer binary operator error, %s %s operator %s do not support!\n"),
-						oper[0].Variable.Name.c_str(), oper[1].Variable.Name.c_str(), 
-						GetInstructionString(stack->m_VM->Instructions[stack->m_PC].InsCode));
+					INS_ERR_W("二元计算指针类型错误");
 				}
 			}
 			else
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("二元计算错误,<%s> <%s> 操作符<%s>!\n"), oper[0].Variable.Name.c_str(),
-					oper[1].Variable.Name.c_str(), GetInstructionString(stack->m_VM->Instructions[stack->m_PC].InsCode));
+				INS_ERR_W("二元计算错误, <%s> <%s>", oper[0].Variable.Name.c_str(),oper[1].Variable.Name.c_str());
 			}
 		}
 	}

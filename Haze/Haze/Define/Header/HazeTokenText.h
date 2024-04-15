@@ -32,8 +32,6 @@
 
 #define TOKEN_FUNCTION					HAZE_TEXT("º¯Êý")
 
-#define TOKEN_MAIN_FUNCTION				HAZE_MAIN_FUNCTION_TEXT
-
 #define TOKEN_ENUM						HAZE_TEXT("Ã¶¾Ù")
 
 #define TOKEN_TRUE						HAZE_TEXT("Õæ")

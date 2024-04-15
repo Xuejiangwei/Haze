@@ -1,0 +1,2114 @@
+0
+GlobalDataTable
+17
+棋盘长度 4 8 19
+棋子空 4 8 0
+棋子黑 4 8 1
+棋子白 4 8 2
+最小分 4 8 0
+零分 4 8 1
+阻挡一分 4 8 2
+一分 4 8 3
+阻挡二分 4 8 4
+二分 4 8 5
+阻挡三分 4 8 6
+三分 4 8 7
+阻挡四分 4 8 8
+四分 4 8 9
+五分 4 8 10
+玩家默认颜色 4 8 1
+AI默认颜色 4 8 2
+StringTable
+28
+22 开始游戏 横坐标方向向右 竖坐标方向向下\n
+14 已经获得胜利 %d %d\n
+7 未获得胜利\n
+4 ----
+6 %d    
+5 %d   
+2 \n
+4 %d  
+1 黑
+5 %s   
+1 白
+1 口
+4 \n\n
+6 打印得分\n
+32 放子数 %d  横坐标 %d 纵坐标 %d 颜色 %d %d\n
+42 打印得分 最小横坐标 %d 最大横坐标 %d 最小纵坐标 %d 最大纵坐标 %d\n
+51 更新边界 开始 上边界 %d 下边界 %d 左边界 %d 右边界 %d 横坐标 %d 纵坐标 %d\n
+37 更新边界 结束 上边界 %d 下边界 %d 左边界 %d 右边界 %d\n
+19 获得连线最大分 横 %d 纵 %d\n
+29 算分1 %d %d 分数 %d 颜色 %d 计数 %d\n
+23 算分2 %d %d 分数 %d 计数 %d\n
+23 算分3 %d %d 分数 %d 计数 %d\n
+23 算分4 %d %d 分数 %d 计数 %d\n
+25 AI模拟得分 %d 横坐标 %d 纵坐标 %d\n
+37 玩家模拟得分 临时分 %d 对手得分 %d 横坐标 %d 纵坐标 %d\n
+14 更新对手得分 %d %d\n
+14 获得新坐标 %d %d \n
+14 AI模拟 对手得分 %d\n
+ClassTable
+1
+Class 五子棋 56 10
+棋盘 14 8 0 8
+黑棋得分 14 8 8 8
+白棋得分 14 8 16 8
+上边界 8 24 4
+下边界 8 28 4
+左边界 8 32 4
+右边界 8 36 4
+棋子范围 8 40 4
+放子计数 8 44 4
+打印连线 8 48 4
+FunctionTable
+12
+Function 五子棋@五子棋 1
+Param 己 18 五子棋
+Variable 己$1 18 五子棋 -12 8 52
+FunctionStart 53
+
+Block Entry
+MOV Temp_R0 1 7 13 1 1 1 13
+MUL Temp_R0 1 7 13 19 1 1 13
+MUL Temp_R0 1 7 13 19 1 1 13
+NEW New_R 8 0 2 5 Temp_R0 1 7 13
+MOV 己$1指之棋盘 2 14 14 8 New_R 1 5 8
+MOV Temp_R0 1 7 13 1 1 1 13
+MUL Temp_R0 1 7 13 19 1 1 13
+MUL Temp_R0 1 7 13 19 1 1 13
+NEW New_R 8 0 2 5 Temp_R0 1 7 13
+MOV 己$1指之黑棋得分 2 14 14 8 New_R 1 5 8
+MOV Temp_R0 1 7 13 1 1 1 13
+MUL Temp_R0 1 7 13 19 1 1 13
+MUL Temp_R0 1 7 13 19 1 1 13
+NEW New_R 8 0 2 5 Temp_R0 1 7 13
+MOV 己$1指之白棋得分 2 14 14 8 New_R 1 5 8
+RET Void 0 0 1
+
+FunctionEnd 57
+
+Function 五子棋@清除 1
+Param 己 18 五子棋
+Variable 己$1 18 五子棋 -12 8 59
+Variable 甲$2 8 0 4 61
+Variable 乙$3 8 4 4 63
+FunctionStart 60
+
+Block Entry
+MOV 甲$2 2 0 8 0 1 1 8
+JMP ForConditionBlock1
+
+Block ForConditionBlock1
+CMP 甲$2 2 0 8 棋盘长度 1 0 8
+JL LoopBlock2 DefaultBlock4
+
+Block LoopBlock2
+MOV 乙$3 2 0 8 0 1 1 8
+JMP ForConditionBlock5
+
+Block ForConditionBlock5
+CMP 乙$3 2 0 8 棋盘长度 1 0 8
+JL LoopBlock6 DefaultBlock8
+
+Block LoopBlock6
+MOV Temp_R1 1 7 17 8 己$1指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$2 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$3 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVTOPV Temp_R1 1 7 17 8 棋子空 1 0 8
+MOV Temp_R1 1 7 17 8 己$1指之黑棋得分 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$2 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$3 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVTOPV Temp_R1 1 7 17 8 最小分 1 0 8
+MOV Temp_R1 1 7 17 8 己$1指之白棋得分 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$2 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$3 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVTOPV Temp_R1 1 7 17 8 最小分 1 0 8
+JMP ForStepBlock7
+
+Block ForStepBlock7
+MOV Temp_R0 1 7 8 乙$3 2 0 8
+INC 乙$3 2 0 8
+JMP ForConditionBlock5
+
+Block DefaultBlock8
+JMP ForStepBlock3
+
+Block ForStepBlock3
+MOV Temp_R0 1 7 8 甲$2 2 0 8
+INC 甲$2 2 0 8
+JMP ForConditionBlock1
+
+Block DefaultBlock4
+RET Void 0 0 1
+
+FunctionEnd 70
+
+Function 五子棋@开始游戏 1
+Param 己 18 五子棋
+Variable 己$1 18 五子棋 -12 8 72
+FunctionStart 73
+
+Block Entry
+PUSH 己$1 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@清除 24 1 8 五子棋
+MOV Temp_R0 1 7 8 棋盘长度 1 0 8
+DIV Temp_R0 1 7 8 2 1 1 8
+MOV 己$1指之上边界 2 15 8 Temp_R0 1 7 8
+MOV 己$1指之下边界 2 15 8 己$1指之上边界 2 15 8
+MOV 己$1指之左边界 2 15 8 己$1指之上边界 2 15 8
+MOV 己$1指之右边界 2 15 8 己$1指之上边界 2 15 8
+MOV 己$1指之棋子范围 2 15 8 19 1 1 8
+MOV 己$1指之放子计数 2 15 8 0 1 1 8
+MOV 己$1指之打印连线 2 15 8 0 1 1 8
+PUSH 常字符串指针 1 2 17 5 0
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+RET Void 0 0 1
+
+FunctionEnd 84
+
+Function 五子棋@是否胜利 2
+Param 己 18 五子棋
+Param 颜色 8
+Variable 己$2 18 五子棋 -12 8 86
+Variable 颜色$1 8 -16 4 86
+Variable 得分数组$3 14 8 0 8 88
+Variable 甲$4 8 8 4 89
+Variable 乙$5 8 12 4 91
+FunctionStart 87
+
+Block Entry
+CMP 颜色$1 2 0 8 棋子黑 1 0 8
+JE DefaultBlock2 DefaultBlock3
+
+Block DefaultBlock1
+MOV 得分数组$3 2 0 14 8 Temp_R0 1 7 14 8
+MOV 甲$4 2 0 8 己$2指之左边界 2 15 8
+JMP ForConditionBlock4
+
+Block ForConditionBlock4
+CMP 甲$4 2 0 8 己$2指之右边界 2 15 8
+JNG LoopBlock5 DefaultBlock7
+
+Block LoopBlock5
+MOV 乙$5 2 0 8 己$2指之上边界 2 15 8
+JMP ForConditionBlock8
+
+Block ForConditionBlock8
+CMP 乙$5 2 0 8 己$2指之下边界 2 15 8
+JNG LoopBlock9 DefaultBlock11
+
+Block LoopBlock9
+MOV Temp_R1 1 7 17 8 得分数组$3 2 0 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$4 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$5 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R1 1 7 17 8
+CMP Temp_R0 1 7 8 五分 1 0 8
+JNL IfThenBlock12 DefaultBlock13
+
+Block IfThenBlock12
+MOV Temp_R1 1 7 17 8 己$2指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$4 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$5 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R1 1 7 17 8
+CMP Temp_R0 1 7 8 颜色$1 2 0 8
+JE IfThenBlock14 DefaultBlock15
+
+Block IfThenBlock14
+PUSH 五分 1 0 8
+MOV Temp_R2 1 7 17 8 得分数组$3 2 0 14 8
+MOV Temp_R1 1 7 13 19 1 1 13
+CVT Temp_R4 1 7 13 甲$4 2 0 8
+MOV Temp_R3 1 7 13 Temp_R4 1 7 13
+MUL Temp_R1 1 7 13 Temp_R3 1 7 13
+ADD Temp_R2 1 7 17 8 Temp_R1 1 7 13
+MOV Temp_R1 1 7 8 乙$5 2 0 8
+ADD Temp_R2 1 7 17 8 Temp_R1 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R2 1 7 17 8
+PUSH Temp_R0 1 7 8
+PUSH 常字符串指针 1 2 17 5 1
+PUSH RetAddress 0 9 8
+CALL 打印 24 3 16 标准流
+RET 1 1 1 2
+JMP DefaultBlock15
+
+Block DefaultBlock15
+JMP DefaultBlock13
+
+Block DefaultBlock13
+JMP ForStepBlock10
+
+Block ForStepBlock10
+MOV Temp_R0 1 7 8 乙$5 2 0 8
+INC 乙$5 2 0 8
+JMP ForConditionBlock8
+
+Block DefaultBlock11
+JMP ForStepBlock6
+
+Block ForStepBlock6
+MOV Temp_R0 1 7 8 甲$4 2 0 8
+INC 甲$4 2 0 8
+JMP ForConditionBlock4
+
+Block DefaultBlock7
+PUSH 常字符串指针 1 2 17 5 2
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+RET 0 1 1 2
+
+Block DefaultBlock2
+MOV Temp_R0 1 7 14 8 己$2指之黑棋得分 2 14 14 8
+JMP DefaultBlock1
+
+Block DefaultBlock3
+MOV Temp_R0 1 7 14 8 己$2指之白棋得分 2 14 14 8
+JMP DefaultBlock1
+
+FunctionEnd 106
+
+Function 五子棋@刷新打印 1
+Param 己 18 五子棋
+Variable 己$1 18 五子棋 -12 8 108
+Variable 甲$2 8 0 4 111
+Variable 甲$3 8 4 4 124
+Variable 乙$4 8 8 4 135
+Variable 颜色$5 8 12 4 138
+FunctionStart 109
+
+Block Entry
+PUSH 常字符串指针 1 2 17 5 3
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+MOV 甲$2 2 0 8 0 1 1 8
+JMP ForConditionBlock1
+
+Block ForConditionBlock1
+CMP 甲$2 2 0 8 棋盘长度 1 0 8
+JL LoopBlock2 DefaultBlock4
+
+Block LoopBlock2
+CMP 甲$2 2 0 8 10 1 1 8
+JL IfThenBlock5 ElseBlock6
+
+Block IfThenBlock5
+PUSH 甲$2 2 0 8
+PUSH 常字符串指针 1 2 17 5 4
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock7
+
+Block ElseBlock6
+PUSH 甲$2 2 0 8
+PUSH 常字符串指针 1 2 17 5 5
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock7
+
+Block DefaultBlock7
+JMP ForStepBlock3
+
+Block ForStepBlock3
+MOV Temp_R0 1 7 8 甲$2 2 0 8
+INC 甲$2 2 0 8
+JMP ForConditionBlock1
+
+Block DefaultBlock4
+PUSH 常字符串指针 1 2 17 5 6
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+MOV 甲$3 2 0 8 0 1 1 8
+JMP ForConditionBlock8
+
+Block ForConditionBlock8
+CMP 甲$3 2 0 8 棋盘长度 1 0 8
+JL LoopBlock9 DefaultBlock11
+
+Block LoopBlock9
+CMP 甲$3 2 0 8 10 1 1 8
+JL IfThenBlock12 ElseBlock13
+
+Block IfThenBlock12
+PUSH 甲$3 2 0 8
+PUSH 常字符串指针 1 2 17 5 5
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock14
+
+Block ElseBlock13
+PUSH 甲$3 2 0 8
+PUSH 常字符串指针 1 2 17 5 7
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock14
+
+Block DefaultBlock14
+MOV 乙$4 2 0 8 0 1 1 8
+JMP ForConditionBlock15
+
+Block ForConditionBlock15
+CMP 乙$4 2 0 8 棋盘长度 1 0 8
+JL LoopBlock16 DefaultBlock18
+
+Block LoopBlock16
+MOV Temp_R1 1 7 17 8 己$1指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 乙$4 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 甲$3 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色$5 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色$5 2 0 8 棋子黑 1 0 8
+JE IfThenBlock19 ElseBlock20
+
+Block IfThenBlock19
+PUSH 常字符串指针 1 2 17 5 8
+PUSH 常字符串指针 1 2 17 5 9
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 16 标准流
+JMP DefaultBlock21
+
+Block ElseBlock20
+CMP 颜色$5 2 0 8 棋子白 1 0 8
+JE IfThenBlock22 ElseBlock23
+
+Block IfThenBlock22
+PUSH 常字符串指针 1 2 17 5 10
+PUSH 常字符串指针 1 2 17 5 9
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 16 标准流
+JMP DefaultBlock24
+
+Block ElseBlock23
+PUSH 常字符串指针 1 2 17 5 11
+PUSH 常字符串指针 1 2 17 5 9
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 16 标准流
+JMP DefaultBlock24
+
+Block DefaultBlock24
+JMP DefaultBlock21
+
+Block DefaultBlock21
+JMP ForStepBlock17
+
+Block ForStepBlock17
+MOV Temp_R0 1 7 8 乙$4 2 0 8
+INC 乙$4 2 0 8
+JMP ForConditionBlock15
+
+Block DefaultBlock18
+PUSH 常字符串指针 1 2 17 5 12
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+JMP ForStepBlock10
+
+Block ForStepBlock10
+MOV Temp_R0 1 7 8 甲$3 2 0 8
+INC 甲$3 2 0 8
+JMP ForConditionBlock8
+
+Block DefaultBlock11
+RET Void 0 0 1
+
+FunctionEnd 156
+
+Function 五子棋@打印得分 1
+Param 己 18 五子棋
+Param 颜色 8
+Variable 己$2 18 五子棋 -12 8 158
+Variable 颜色$1 8 -16 4 158
+Variable 得分数组$3 14 8 0 8 163
+Variable 甲$4 8 8 4 164
+Variable 甲$5 8 12 4 177
+Variable 乙$6 8 16 4 188
+FunctionStart 159
+
+Block Entry
+PUSH 常字符串指针 1 2 17 5 13
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+PUSH 常字符串指针 1 2 17 5 3
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+CMP 颜色$1 2 0 8 棋子黑 1 0 8
+JE DefaultBlock2 DefaultBlock3
+
+Block DefaultBlock1
+MOV 得分数组$3 2 0 14 8 Temp_R0 1 7 14 8
+MOV 甲$4 2 0 8 0 1 1 8
+JMP ForConditionBlock4
+
+Block ForConditionBlock4
+CMP 甲$4 2 0 8 棋盘长度 1 0 8
+JL LoopBlock5 DefaultBlock7
+
+Block LoopBlock5
+CMP 甲$4 2 0 8 10 1 1 8
+JL IfThenBlock8 ElseBlock9
+
+Block IfThenBlock8
+PUSH 甲$4 2 0 8
+PUSH 常字符串指针 1 2 17 5 4
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock10
+
+Block ElseBlock9
+PUSH 甲$4 2 0 8
+PUSH 常字符串指针 1 2 17 5 5
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock10
+
+Block DefaultBlock10
+JMP ForStepBlock6
+
+Block ForStepBlock6
+MOV Temp_R0 1 7 8 甲$4 2 0 8
+INC 甲$4 2 0 8
+JMP ForConditionBlock4
+
+Block DefaultBlock7
+PUSH 常字符串指针 1 2 17 5 6
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+MOV 甲$5 2 0 8 0 1 1 8
+JMP ForConditionBlock11
+
+Block ForConditionBlock11
+CMP 甲$5 2 0 8 棋盘长度 1 0 8
+JL LoopBlock12 DefaultBlock14
+
+Block LoopBlock12
+CMP 甲$5 2 0 8 10 1 1 8
+JL IfThenBlock15 ElseBlock16
+
+Block IfThenBlock15
+PUSH 甲$5 2 0 8
+PUSH 常字符串指针 1 2 17 5 5
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock17
+
+Block ElseBlock16
+PUSH 甲$5 2 0 8
+PUSH 常字符串指针 1 2 17 5 7
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock17
+
+Block DefaultBlock17
+MOV 乙$6 2 0 8 0 1 1 8
+JMP ForConditionBlock18
+
+Block ForConditionBlock18
+CMP 乙$6 2 0 8 棋盘长度 1 0 8
+JL LoopBlock19 DefaultBlock21
+
+Block LoopBlock19
+MOV Temp_R1 1 7 17 8 得分数组$3 2 0 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 乙$6 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 甲$5 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R1 1 7 17 8
+CMP Temp_R0 1 7 8 10 1 1 8
+JL IfThenBlock22 ElseBlock23
+
+Block IfThenBlock22
+MOV Temp_R2 1 7 17 8 得分数组$3 2 0 14 8
+MOV Temp_R1 1 7 13 19 1 1 13
+CVT Temp_R4 1 7 13 乙$6 2 0 8
+MOV Temp_R3 1 7 13 Temp_R4 1 7 13
+MUL Temp_R1 1 7 13 Temp_R3 1 7 13
+ADD Temp_R2 1 7 17 8 Temp_R1 1 7 13
+MOV Temp_R1 1 7 8 甲$5 2 0 8
+ADD Temp_R2 1 7 17 8 Temp_R1 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R2 1 7 17 8
+PUSH Temp_R0 1 7 8
+PUSH 常字符串指针 1 2 17 5 4
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock24
+
+Block ElseBlock23
+MOV Temp_R2 1 7 17 8 得分数组$3 2 0 14 8
+MOV Temp_R1 1 7 13 19 1 1 13
+CVT Temp_R4 1 7 13 乙$6 2 0 8
+MOV Temp_R3 1 7 13 Temp_R4 1 7 13
+MUL Temp_R1 1 7 13 Temp_R3 1 7 13
+ADD Temp_R2 1 7 17 8 Temp_R1 1 7 13
+MOV Temp_R1 1 7 8 甲$5 2 0 8
+ADD Temp_R2 1 7 17 8 Temp_R1 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R2 1 7 17 8
+PUSH Temp_R0 1 7 8
+PUSH 常字符串指针 1 2 17 5 7
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+JMP DefaultBlock24
+
+Block DefaultBlock24
+JMP ForStepBlock20
+
+Block ForStepBlock20
+MOV Temp_R0 1 7 8 乙$6 2 0 8
+INC 乙$6 2 0 8
+JMP ForConditionBlock18
+
+Block DefaultBlock21
+PUSH 常字符串指针 1 2 17 5 12
+PUSH RetAddress 0 9 8
+CALL 打印 24 1 8 标准流
+JMP ForStepBlock13
+
+Block ForStepBlock13
+MOV Temp_R0 1 7 8 甲$5 2 0 8
+INC 甲$5 2 0 8
+JMP ForConditionBlock11
+
+Block DefaultBlock14
+RET Void 0 0 1
+
+Block DefaultBlock2
+MOV Temp_R0 1 7 14 8 己$2指之黑棋得分 2 14 14 8
+JMP DefaultBlock1
+
+Block DefaultBlock3
+MOV Temp_R0 1 7 14 8 己$2指之白棋得分 2 14 14 8
+JMP DefaultBlock1
+
+FunctionEnd 201
+
+Function 五子棋@放子 1
+Param 己 18 五子棋
+Param 横坐标 8
+Param 纵坐标 8
+Param 颜色 8
+Variable 己$4 18 五子棋 -12 8 203
+Variable 横坐标$3 8 -16 4 203
+Variable 纵坐标$2 8 -20 4 203
+Variable 颜色$1 8 -24 4 203
+FunctionStart 204
+
+Block Entry
+MOV Temp_R0 1 7 8 己$4指之放子计数 2 15 8
+INC 己$4指之放子计数 2 15 8
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 横坐标$3 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVTOPV Temp_R1 1 7 17 8 颜色$1 2 0 8
+MOV Temp_R2 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R1 1 7 13 19 1 1 13
+CVT Temp_R4 1 7 13 横坐标$3 2 0 8
+MOV Temp_R3 1 7 13 Temp_R4 1 7 13
+MUL Temp_R1 1 7 13 Temp_R3 1 7 13
+ADD Temp_R2 1 7 17 8 Temp_R1 1 7 13
+MOV Temp_R1 1 7 8 纵坐标$2 2 0 8
+ADD Temp_R2 1 7 17 8 Temp_R1 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R2 1 7 17 8
+PUSH Temp_R0 1 7 8
+PUSH 颜色$1 2 0 8
+PUSH 纵坐标$2 2 0 8
+PUSH 横坐标$3 2 0 8
+PUSH 己$4指之放子计数 2 15 8
+PUSH 常字符串指针 1 2 17 5 14
+PUSH RetAddress 0 9 8
+CALL 打印 24 6 28 标准流
+PUSH 纵坐标$2 2 0 8
+PUSH 横坐标$3 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@更新得分 24 3 16 五子棋
+PUSH 横坐标$3 2 0 8
+PUSH 纵坐标$2 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@更新边界 24 3 16 五子棋
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@刷新打印 24 1 8 五子棋
+PUSH 颜色$1 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@打印得分 24 2 12 五子棋
+RET Void 0 0 1
+
+FunctionEnd 215
+
+Function 五子棋@更新得分 1
+Param 己 18 五子棋
+Param 横 8
+Param 纵 8
+Variable 己$3 18 五子棋 -12 8 220
+Variable 横$2 8 -16 4 220
+Variable 纵$1 8 -20 4 220
+Variable 最小横坐标$4 8 0 4 222
+Variable 最大横坐标$5 8 4 4 223
+Variable 最小纵坐标$6 8 8 4 224
+Variable 最大纵坐标$7 8 12 4 225
+Variable 甲$8 8 16 4 228
+Variable 乙$9 8 20 4 230
+FunctionStart 221
+
+Block Entry
+MOV Temp_R0 1 7 8 横$2 2 0 8
+SUB Temp_R0 1 7 8 己$3指之棋子范围 2 15 8
+CMP Temp_R0 1 7 8 0 1 1 8
+JNL DefaultBlock2 DefaultBlock3
+
+Block DefaultBlock1
+MOV 最小横坐标$4 2 0 8 Temp_R0 1 7 8
+MOV Temp_R0 1 7 8 横$2 2 0 8
+ADD Temp_R0 1 7 8 己$3指之棋子范围 2 15 8
+CMP Temp_R0 1 7 8 棋盘长度 1 0 8
+JL DefaultBlock5 DefaultBlock6
+
+Block DefaultBlock4
+MOV 最大横坐标$5 2 0 8 Temp_R0 1 7 8
+MOV Temp_R0 1 7 8 纵$1 2 0 8
+SUB Temp_R0 1 7 8 己$3指之棋子范围 2 15 8
+CMP Temp_R0 1 7 8 0 1 1 8
+JNL DefaultBlock8 DefaultBlock9
+
+Block DefaultBlock7
+MOV 最小纵坐标$6 2 0 8 Temp_R0 1 7 8
+MOV Temp_R0 1 7 8 纵$1 2 0 8
+ADD Temp_R0 1 7 8 己$3指之棋子范围 2 15 8
+CMP Temp_R0 1 7 8 棋盘长度 1 0 8
+JL DefaultBlock11 DefaultBlock12
+
+Block DefaultBlock10
+MOV 最大纵坐标$7 2 0 8 Temp_R0 1 7 8
+PUSH 最大纵坐标$7 2 0 8
+PUSH 最小纵坐标$6 2 0 8
+PUSH 最大横坐标$5 2 0 8
+PUSH 最小横坐标$4 2 0 8
+PUSH 常字符串指针 1 2 17 5 15
+PUSH RetAddress 0 9 8
+CALL 打印 24 5 24 标准流
+MOV 甲$8 2 0 8 最小横坐标$4 2 0 8
+JMP ForConditionBlock13
+
+Block ForConditionBlock13
+CMP 甲$8 2 0 8 最大横坐标$5 2 0 8
+JL LoopBlock14 DefaultBlock16
+
+Block LoopBlock14
+MOV 乙$9 2 0 8 最小纵坐标$6 2 0 8
+JMP ForConditionBlock17
+
+Block ForConditionBlock17
+CMP 乙$9 2 0 8 最大纵坐标$7 2 0 8
+JL LoopBlock18 DefaultBlock20
+
+Block LoopBlock18
+MOV Temp_R1 1 7 17 8 己$3指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$8 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$9 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R1 1 7 17 8
+CMP Temp_R0 1 7 8 棋子空 1 0 8
+JE IfThenBlock21 DefaultBlock22
+
+Block IfThenBlock21
+PUSH 棋子黑 1 0 8
+PUSH 乙$9 2 0 8
+PUSH 甲$8 2 0 8
+PUSH 己$3 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@获得连线最大分 24 4 20 五子棋
+MOV Temp_R1 1 7 17 8 己$3指之黑棋得分 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$8 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$9 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVTOPV Temp_R1 1 7 17 8 Ret_R 1 4 8
+PUSH 棋子白 1 0 8
+PUSH 乙$9 2 0 8
+PUSH 甲$8 2 0 8
+PUSH 己$3 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@获得连线最大分 24 4 20 五子棋
+MOV Temp_R1 1 7 17 8 己$3指之白棋得分 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$8 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$9 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVTOPV Temp_R1 1 7 17 8 Ret_R 1 4 8
+JMP DefaultBlock22
+
+Block DefaultBlock22
+JMP ForStepBlock19
+
+Block ForStepBlock19
+MOV Temp_R0 1 7 8 乙$9 2 0 8
+INC 乙$9 2 0 8
+JMP ForConditionBlock17
+
+Block DefaultBlock20
+JMP ForStepBlock15
+
+Block ForStepBlock15
+MOV Temp_R0 1 7 8 甲$8 2 0 8
+INC 甲$8 2 0 8
+JMP ForConditionBlock13
+
+Block DefaultBlock16
+RET Void 0 0 1
+
+Block DefaultBlock11
+MOV Temp_R1 1 7 8 纵$1 2 0 8
+ADD Temp_R1 1 7 8 己$3指之棋子范围 2 15 8
+MOV Temp_R0 1 7 8 Temp_R1 1 7 8
+JMP DefaultBlock10
+
+Block DefaultBlock12
+MOV Temp_R0 1 7 8 棋盘长度 1 0 8
+JMP DefaultBlock10
+
+Block DefaultBlock8
+MOV Temp_R1 1 7 8 纵$1 2 0 8
+SUB Temp_R1 1 7 8 己$3指之棋子范围 2 15 8
+MOV Temp_R0 1 7 8 Temp_R1 1 7 8
+JMP DefaultBlock7
+
+Block DefaultBlock9
+MOV Temp_R0 1 7 8 0 1 1 8
+JMP DefaultBlock7
+
+Block DefaultBlock5
+MOV Temp_R1 1 7 8 横$2 2 0 8
+ADD Temp_R1 1 7 8 己$3指之棋子范围 2 15 8
+MOV Temp_R0 1 7 8 Temp_R1 1 7 8
+JMP DefaultBlock4
+
+Block DefaultBlock6
+MOV Temp_R0 1 7 8 棋盘长度 1 0 8
+JMP DefaultBlock4
+
+Block DefaultBlock2
+MOV Temp_R1 1 7 8 横$2 2 0 8
+SUB Temp_R1 1 7 8 己$3指之棋子范围 2 15 8
+MOV Temp_R0 1 7 8 Temp_R1 1 7 8
+JMP DefaultBlock1
+
+Block DefaultBlock3
+MOV Temp_R0 1 7 8 0 1 1 8
+JMP DefaultBlock1
+
+FunctionEnd 239
+
+Function 五子棋@更新边界 1
+Param 己 18 五子棋
+Param 横 8
+Param 纵 8
+Variable 己$3 18 五子棋 -12 8 241
+Variable 横$2 8 -16 4 241
+Variable 纵$1 8 -20 4 241
+FunctionStart 242
+
+Block Entry
+PUSH 纵$1 2 0 8
+PUSH 横$2 2 0 8
+PUSH 己$3指之右边界 2 15 8
+PUSH 己$3指之左边界 2 15 8
+PUSH 己$3指之下边界 2 15 8
+PUSH 己$3指之上边界 2 15 8
+PUSH 常字符串指针 1 2 17 5 16
+PUSH RetAddress 0 9 8
+CALL 打印 24 7 32 标准流
+CMP 横$2 2 0 8 己$3指之上边界 2 15 8
+JNG IfThenBlock1 DefaultBlock2
+
+Block IfThenBlock1
+MOV 己$3指之上边界 2 15 8 横$2 2 0 8
+CMP 己$3指之上边界 2 15 8 1 1 1 8
+JNL IfThenBlock3 DefaultBlock4
+
+Block IfThenBlock3
+MOV Temp_R0 1 7 8 己$3指之上边界 2 15 8
+DEC 己$3指之上边界 2 15 8
+JMP DefaultBlock4
+
+Block DefaultBlock4
+JMP DefaultBlock2
+
+Block DefaultBlock2
+CMP 横$2 2 0 8 己$3指之下边界 2 15 8
+JNL IfThenBlock5 DefaultBlock6
+
+Block IfThenBlock5
+MOV 己$3指之下边界 2 15 8 横$2 2 0 8
+MOV Temp_R0 1 7 8 棋盘长度 1 0 8
+SUB Temp_R0 1 7 8 1 1 1 8
+CMP 己$3指之下边界 2 15 8 Temp_R0 1 7 8
+JL IfThenBlock7 DefaultBlock8
+
+Block IfThenBlock7
+MOV Temp_R0 1 7 8 己$3指之下边界 2 15 8
+INC 己$3指之下边界 2 15 8
+JMP DefaultBlock8
+
+Block DefaultBlock8
+JMP DefaultBlock6
+
+Block DefaultBlock6
+CMP 纵$1 2 0 8 己$3指之左边界 2 15 8
+JNG IfThenBlock9 DefaultBlock10
+
+Block IfThenBlock9
+MOV 己$3指之左边界 2 15 8 纵$1 2 0 8
+CMP 己$3指之左边界 2 15 8 1 1 1 8
+JNL IfThenBlock11 DefaultBlock12
+
+Block IfThenBlock11
+MOV Temp_R0 1 7 8 己$3指之左边界 2 15 8
+DEC 己$3指之左边界 2 15 8
+JMP DefaultBlock12
+
+Block DefaultBlock12
+JMP DefaultBlock10
+
+Block DefaultBlock10
+CMP 纵$1 2 0 8 己$3指之右边界 2 15 8
+JNL IfThenBlock13 DefaultBlock14
+
+Block IfThenBlock13
+MOV 己$3指之右边界 2 15 8 纵$1 2 0 8
+MOV Temp_R0 1 7 8 棋盘长度 1 0 8
+SUB Temp_R0 1 7 8 1 1 1 8
+CMP 己$3指之右边界 2 15 8 Temp_R0 1 7 8
+JL IfThenBlock15 DefaultBlock16
+
+Block IfThenBlock15
+MOV Temp_R0 1 7 8 己$3指之右边界 2 15 8
+INC 己$3指之右边界 2 15 8
+JMP DefaultBlock16
+
+Block DefaultBlock16
+JMP DefaultBlock14
+
+Block DefaultBlock14
+PUSH 己$3指之右边界 2 15 8
+PUSH 己$3指之左边界 2 15 8
+PUSH 己$3指之下边界 2 15 8
+PUSH 己$3指之上边界 2 15 8
+PUSH 常字符串指针 1 2 17 5 17
+PUSH RetAddress 0 9 8
+CALL 打印 24 5 24 标准流
+RET Void 0 0 1
+
+FunctionEnd 281
+
+Function 五子棋@算取分数 8
+Param 己 18 五子棋
+Param 数量 8
+Param 阻挡甲 2
+Param 阻挡乙 2
+Variable 己$4 18 五子棋 -12 8 283
+Variable 数量$3 8 -16 4 283
+Variable 阻挡甲$2 2 -17 1 283
+Variable 阻挡乙$1 2 -18 1 283
+FunctionStart 284
+
+Block Entry
+CMP 数量$3 2 0 8 5 1 1 8
+JNL IfThenBlock1 ElseBlock2
+
+Block IfThenBlock1
+RET 五分 1 0 8
+JMP DefaultBlock3
+
+Block ElseBlock2
+CMP 阻挡甲$2 2 0 2 1 1 1 2
+JE JmpNull ElseBlock5
+CMP 阻挡乙$1 2 0 2 1 1 1 2
+JE IfThenBlock4 ElseBlock5
+
+Block IfThenBlock4
+RET 零分 1 0 8
+JMP DefaultBlock6
+
+Block ElseBlock5
+CMP 数量$3 2 0 8 4 1 1 8
+JE IfThenBlock7 ElseBlock8
+
+Block IfThenBlock7
+CMP 阻挡甲$2 2 0 2 1 1 1 2
+JE IfThenBlock10 JmpNull 
+CMP 阻挡乙$1 2 0 2 1 1 1 2
+JE IfThenBlock10 ElseBlock11
+
+Block IfThenBlock10
+RET 阻挡四分 1 0 8
+JMP DefaultBlock12
+
+Block ElseBlock11
+RET 四分 1 0 8
+JMP DefaultBlock12
+
+Block DefaultBlock12
+JMP DefaultBlock9
+
+Block ElseBlock8
+CMP 数量$3 2 0 8 3 1 1 8
+JE IfThenBlock13 ElseBlock14
+
+Block IfThenBlock13
+CMP 阻挡甲$2 2 0 2 1 1 1 2
+JE IfThenBlock16 JmpNull 
+CMP 阻挡乙$1 2 0 2 1 1 1 2
+JE IfThenBlock16 ElseBlock17
+
+Block IfThenBlock16
+RET 阻挡三分 1 0 8
+JMP DefaultBlock18
+
+Block ElseBlock17
+RET 三分 1 0 8
+JMP DefaultBlock18
+
+Block DefaultBlock18
+JMP DefaultBlock15
+
+Block ElseBlock14
+CMP 数量$3 2 0 8 2 1 1 8
+JE IfThenBlock19 ElseBlock20
+
+Block IfThenBlock19
+CMP 阻挡甲$2 2 0 2 1 1 1 2
+JE IfThenBlock22 JmpNull 
+CMP 阻挡乙$1 2 0 2 1 1 1 2
+JE IfThenBlock22 ElseBlock23
+
+Block IfThenBlock22
+RET 阻挡二分 1 0 8
+JMP DefaultBlock24
+
+Block ElseBlock23
+RET 二分 1 0 8
+JMP DefaultBlock24
+
+Block DefaultBlock24
+JMP DefaultBlock21
+
+Block ElseBlock20
+CMP 数量$3 2 0 8 1 1 1 8
+JE IfThenBlock25 DefaultBlock26
+
+Block IfThenBlock25
+CMP 阻挡甲$2 2 0 2 1 1 1 2
+JE IfThenBlock27 JmpNull 
+CMP 阻挡乙$1 2 0 2 1 1 1 2
+JE IfThenBlock27 ElseBlock28
+
+Block IfThenBlock27
+RET 阻挡一分 1 0 8
+JMP DefaultBlock29
+
+Block ElseBlock28
+RET 一分 1 0 8
+JMP DefaultBlock29
+
+Block DefaultBlock29
+JMP DefaultBlock26
+
+Block DefaultBlock26
+JMP DefaultBlock21
+
+Block DefaultBlock21
+JMP DefaultBlock15
+
+Block DefaultBlock15
+JMP DefaultBlock9
+
+Block DefaultBlock9
+JMP DefaultBlock6
+
+Block DefaultBlock6
+JMP DefaultBlock3
+
+Block DefaultBlock3
+RET 零分 1 0 8
+
+FunctionEnd 339
+
+Function 五子棋@获得连线最大分 8
+Param 己 18 五子棋
+Param 横坐标 8
+Param 纵坐标 8
+Param 颜色 8
+Variable 己$4 18 五子棋 -12 8 341
+Variable 横坐标$3 8 -16 4 341
+Variable 纵坐标$2 8 -20 4 341
+Variable 颜色$1 8 -24 4 341
+Variable 列计数$5 8 0 4 352
+Variable 阻挡甲$6 2 4 1 353
+Variable 阻挡乙$7 2 5 1 354
+Variable 甲$8 8 6 4 356
+Variable 颜色甲$9 8 10 4 364
+Variable 甲$10 8 14 4 378
+Variable 颜色甲$11 8 18 4 386
+Variable 分数甲$12 8 22 4 400
+Variable 行计数$13 8 26 4 410
+Variable 甲$14 8 30 4 414
+Variable 颜色甲$15 8 34 4 422
+Variable 甲$16 8 38 4 436
+Variable 颜色甲$17 8 42 4 444
+Variable 分数乙$18 8 46 4 458
+Variable 斜向计数甲$19 8 50 4 468
+Variable 甲$20 8 54 4 471
+Variable 横甲$21 8 58 4 473
+Variable 纵甲$22 8 62 4 474
+Variable 颜色甲$23 8 66 4 481
+Variable 甲$24 8 70 4 495
+Variable 横甲$25 8 74 4 497
+Variable 纵甲$26 8 78 4 498
+Variable 颜色甲$27 8 82 4 505
+Variable 分数丙$28 8 86 4 519
+Variable 斜向计数乙$29 8 90 4 529
+Variable 甲$30 8 94 4 533
+Variable 横甲$31 8 98 4 535
+Variable 纵甲$32 8 102 4 536
+Variable 颜色甲$33 8 106 4 543
+Variable 甲$34 8 110 4 557
+Variable 横甲$35 8 114 4 559
+Variable 纵甲$36 8 118 4 560
+Variable 颜色甲$37 8 122 4 567
+Variable 分数丁$38 8 126 4 581
+Variable 最大分数$39 8 130 4 591
+FunctionStart 342
+
+Block Entry
+CMP 己$4指之打印连线 2 15 8 0 1 1 8
+JG IfThenBlock1 DefaultBlock2
+
+Block IfThenBlock1
+PUSH 纵坐标$2 2 0 8
+PUSH 横坐标$3 2 0 8
+PUSH 常字符串指针 1 2 17 5 18
+PUSH RetAddress 0 9 8
+CALL 打印 24 3 16 标准流
+JMP DefaultBlock2
+
+Block DefaultBlock2
+CMP 颜色$1 2 0 8 棋子空 1 0 8
+JE IfThenBlock3 DefaultBlock4
+
+Block IfThenBlock3
+RET 零分 1 0 8
+JMP DefaultBlock4
+
+Block DefaultBlock4
+MOV 列计数$5 2 0 8 1 1 1 8
+MOV 阻挡甲$6 2 0 2 0 1 1 2
+MOV 阻挡乙$7 2 0 2 0 1 1 2
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+ADD Temp_R0 1 7 8 1 1 1 8
+MOV 甲$8 2 0 8 Temp_R0 1 7 8
+JMP ForConditionBlock5
+
+Block ForConditionBlock5
+MOV Temp_R0 1 7 2 1 1 1 2
+BIT_XOR Temp_R0 1 7 2 0 1 1 2
+CMP Temp_R0 1 7 2 1 1 1 2
+JE LoopBlock6 DefaultBlock8
+
+Block LoopBlock6
+CMP 甲$8 2 0 8 棋盘长度 1 0 8
+JNL IfThenBlock9 DefaultBlock10
+
+Block IfThenBlock9
+MOV 阻挡甲$6 2 0 2 1 1 1 2
+JMP DefaultBlock8
+JMP DefaultBlock10
+
+Block DefaultBlock10
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 横坐标$3 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 甲$8 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色甲$9 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色甲$9 2 0 8 颜色$1 2 0 8
+JNE IfThenBlock11 DefaultBlock12
+
+Block IfThenBlock11
+CMP 颜色甲$9 2 0 8 棋子空 1 0 8
+JNE IfThenBlock13 DefaultBlock14
+
+Block IfThenBlock13
+MOV 阻挡甲$6 2 0 2 1 1 1 2
+JMP DefaultBlock14
+
+Block DefaultBlock14
+JMP DefaultBlock8
+JMP DefaultBlock12
+
+Block DefaultBlock12
+MOV Temp_R0 1 7 8 列计数$5 2 0 8
+INC 列计数$5 2 0 8
+JMP ForStepBlock7
+
+Block ForStepBlock7
+MOV Temp_R0 1 7 8 甲$8 2 0 8
+INC 甲$8 2 0 8
+JMP ForConditionBlock5
+
+Block DefaultBlock8
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+SUB Temp_R0 1 7 8 1 1 1 8
+MOV 甲$10 2 0 8 Temp_R0 1 7 8
+JMP ForConditionBlock15
+
+Block ForConditionBlock15
+MOV Temp_R0 1 7 2 1 1 1 2
+BIT_XOR Temp_R0 1 7 2 0 1 1 2
+CMP Temp_R0 1 7 2 1 1 1 2
+JE LoopBlock16 DefaultBlock18
+
+Block LoopBlock16
+CMP 甲$10 2 0 8 0 1 1 8
+JL IfThenBlock19 DefaultBlock20
+
+Block IfThenBlock19
+MOV 阻挡乙$7 2 0 2 1 1 1 2
+JMP DefaultBlock18
+JMP DefaultBlock20
+
+Block DefaultBlock20
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 横坐标$3 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 甲$10 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色甲$11 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色甲$11 2 0 8 颜色$1 2 0 8
+JNE IfThenBlock21 DefaultBlock22
+
+Block IfThenBlock21
+CMP 颜色甲$11 2 0 8 棋子空 1 0 8
+JNE IfThenBlock23 DefaultBlock24
+
+Block IfThenBlock23
+MOV 阻挡乙$7 2 0 2 1 1 1 2
+JMP DefaultBlock24
+
+Block DefaultBlock24
+JMP DefaultBlock18
+JMP DefaultBlock22
+
+Block DefaultBlock22
+MOV Temp_R0 1 7 8 列计数$5 2 0 8
+INC 列计数$5 2 0 8
+JMP ForStepBlock17
+
+Block ForStepBlock17
+MOV Temp_R0 1 7 8 甲$10 2 0 8
+DEC 甲$10 2 0 8
+JMP ForConditionBlock15
+
+Block DefaultBlock18
+PUSH 阻挡乙$7 2 0 2
+PUSH 阻挡甲$6 2 0 2
+PUSH 列计数$5 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@算取分数 24 4 14 五子棋
+MOV 分数甲$12 2 0 8 Ret_R 1 4 8
+CMP 己$4指之打印连线 2 15 8 0 1 1 8
+JG IfThenBlock25 DefaultBlock26
+
+Block IfThenBlock25
+PUSH 列计数$5 2 0 8
+PUSH 颜色$1 2 0 8
+PUSH 分数甲$12 2 0 8
+PUSH 阻挡乙$7 2 0 2
+PUSH 阻挡甲$6 2 0 2
+PUSH 常字符串指针 1 2 17 5 19
+PUSH RetAddress 0 9 8
+CALL 打印 24 6 22 标准流
+JMP DefaultBlock26
+
+Block DefaultBlock26
+CMP 分数甲$12 2 0 8 五分 1 0 8
+JNL IfThenBlock27 DefaultBlock28
+
+Block IfThenBlock27
+RET 分数甲$12 2 0 8
+JMP DefaultBlock28
+
+Block DefaultBlock28
+MOV 行计数$13 2 0 8 1 1 1 8
+MOV 阻挡甲$6 2 0 2 0 1 1 2
+MOV 阻挡乙$7 2 0 2 0 1 1 2
+MOV Temp_R0 1 7 8 横坐标$3 2 0 8
+ADD Temp_R0 1 7 8 1 1 1 8
+MOV 甲$14 2 0 8 Temp_R0 1 7 8
+JMP ForConditionBlock29
+
+Block ForConditionBlock29
+MOV Temp_R0 1 7 2 1 1 1 2
+BIT_XOR Temp_R0 1 7 2 0 1 1 2
+CMP Temp_R0 1 7 2 1 1 1 2
+JE LoopBlock30 DefaultBlock32
+
+Block LoopBlock30
+CMP 甲$14 2 0 8 棋盘长度 1 0 8
+JNL IfThenBlock33 DefaultBlock34
+
+Block IfThenBlock33
+MOV 阻挡甲$6 2 0 2 1 1 1 2
+JMP DefaultBlock32
+JMP DefaultBlock34
+
+Block DefaultBlock34
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$14 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色甲$15 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色甲$15 2 0 8 颜色$1 2 0 8
+JNE IfThenBlock35 DefaultBlock36
+
+Block IfThenBlock35
+CMP 颜色甲$15 2 0 8 棋子空 1 0 8
+JNE IfThenBlock37 DefaultBlock38
+
+Block IfThenBlock37
+MOV 阻挡甲$6 2 0 2 1 1 1 2
+JMP DefaultBlock38
+
+Block DefaultBlock38
+JMP DefaultBlock32
+JMP DefaultBlock36
+
+Block DefaultBlock36
+MOV Temp_R0 1 7 8 行计数$13 2 0 8
+INC 行计数$13 2 0 8
+JMP ForStepBlock31
+
+Block ForStepBlock31
+MOV Temp_R0 1 7 8 甲$14 2 0 8
+INC 甲$14 2 0 8
+JMP ForConditionBlock29
+
+Block DefaultBlock32
+MOV Temp_R0 1 7 8 横坐标$3 2 0 8
+SUB Temp_R0 1 7 8 1 1 1 8
+MOV 甲$16 2 0 8 Temp_R0 1 7 8
+JMP ForConditionBlock39
+
+Block ForConditionBlock39
+MOV Temp_R0 1 7 2 1 1 1 2
+BIT_XOR Temp_R0 1 7 2 0 1 1 2
+CMP Temp_R0 1 7 2 1 1 1 2
+JE LoopBlock40 DefaultBlock42
+
+Block LoopBlock40
+CMP 甲$16 2 0 8 0 1 1 8
+JL IfThenBlock43 DefaultBlock44
+
+Block IfThenBlock43
+MOV 阻挡乙$7 2 0 2 1 1 1 2
+JMP DefaultBlock42
+JMP DefaultBlock44
+
+Block DefaultBlock44
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$16 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色甲$17 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色甲$17 2 0 8 颜色$1 2 0 8
+JNE IfThenBlock45 DefaultBlock46
+
+Block IfThenBlock45
+CMP 颜色甲$17 2 0 8 棋子空 1 0 8
+JNE IfThenBlock47 DefaultBlock48
+
+Block IfThenBlock47
+MOV 阻挡乙$7 2 0 2 1 1 1 2
+JMP DefaultBlock48
+
+Block DefaultBlock48
+JMP DefaultBlock42
+JMP DefaultBlock46
+
+Block DefaultBlock46
+MOV Temp_R0 1 7 8 行计数$13 2 0 8
+INC 行计数$13 2 0 8
+JMP ForStepBlock41
+
+Block ForStepBlock41
+MOV Temp_R0 1 7 8 甲$16 2 0 8
+DEC 甲$16 2 0 8
+JMP ForConditionBlock39
+
+Block DefaultBlock42
+PUSH 阻挡乙$7 2 0 2
+PUSH 阻挡甲$6 2 0 2
+PUSH 行计数$13 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@算取分数 24 4 14 五子棋
+MOV 分数乙$18 2 0 8 Ret_R 1 4 8
+CMP 己$4指之打印连线 2 15 8 0 1 1 8
+JG IfThenBlock49 DefaultBlock50
+
+Block IfThenBlock49
+PUSH 行计数$13 2 0 8
+PUSH 分数乙$18 2 0 8
+PUSH 阻挡乙$7 2 0 2
+PUSH 阻挡甲$6 2 0 2
+PUSH 常字符串指针 1 2 17 5 20
+PUSH RetAddress 0 9 8
+CALL 打印 24 5 18 标准流
+JMP DefaultBlock50
+
+Block DefaultBlock50
+CMP 分数乙$18 2 0 8 五分 1 0 8
+JNL IfThenBlock51 DefaultBlock52
+
+Block IfThenBlock51
+RET 分数乙$18 2 0 8
+JMP DefaultBlock52
+
+Block DefaultBlock52
+MOV 斜向计数甲$19 2 0 8 1 1 1 8
+MOV 阻挡甲$6 2 0 2 0 1 1 2
+MOV 阻挡乙$7 2 0 2 0 1 1 2
+MOV 甲$20 2 0 8 1 1 1 8
+JMP ForConditionBlock53
+
+Block ForConditionBlock53
+MOV Temp_R0 1 7 2 1 1 1 2
+BIT_XOR Temp_R0 1 7 2 0 1 1 2
+CMP Temp_R0 1 7 2 1 1 1 2
+JE LoopBlock54 DefaultBlock56
+
+Block LoopBlock54
+MOV Temp_R0 1 7 8 横坐标$3 2 0 8
+ADD Temp_R0 1 7 8 甲$20 2 0 8
+MOV 横甲$21 2 0 8 Temp_R0 1 7 8
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+ADD Temp_R0 1 7 8 甲$20 2 0 8
+MOV 纵甲$22 2 0 8 Temp_R0 1 7 8
+CMP 横甲$21 2 0 8 棋盘长度 1 0 8
+JNL IfThenBlock57 JmpNull 
+CMP 纵甲$22 2 0 8 棋盘长度 1 0 8
+JNL IfThenBlock57 DefaultBlock58
+
+Block IfThenBlock57
+MOV 阻挡甲$6 2 0 2 1 1 1 2
+JMP DefaultBlock56
+JMP DefaultBlock58
+
+Block DefaultBlock58
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 横甲$21 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 纵甲$22 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色甲$23 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色甲$23 2 0 8 颜色$1 2 0 8
+JNE IfThenBlock59 DefaultBlock60
+
+Block IfThenBlock59
+CMP 颜色甲$23 2 0 8 棋子空 1 0 8
+JNE IfThenBlock61 DefaultBlock62
+
+Block IfThenBlock61
+MOV 阻挡甲$6 2 0 2 1 1 1 2
+JMP DefaultBlock62
+
+Block DefaultBlock62
+JMP DefaultBlock56
+JMP DefaultBlock60
+
+Block DefaultBlock60
+MOV Temp_R0 1 7 8 斜向计数甲$19 2 0 8
+INC 斜向计数甲$19 2 0 8
+JMP ForStepBlock55
+
+Block ForStepBlock55
+MOV Temp_R0 1 7 8 甲$20 2 0 8
+INC 甲$20 2 0 8
+JMP ForConditionBlock53
+
+Block DefaultBlock56
+MOV 甲$24 2 0 8 1 1 1 8
+JMP ForConditionBlock63
+
+Block ForConditionBlock63
+MOV Temp_R0 1 7 2 1 1 1 2
+BIT_XOR Temp_R0 1 7 2 0 1 1 2
+CMP Temp_R0 1 7 2 1 1 1 2
+JE LoopBlock64 DefaultBlock66
+
+Block LoopBlock64
+MOV Temp_R0 1 7 8 横坐标$3 2 0 8
+SUB Temp_R0 1 7 8 甲$24 2 0 8
+MOV 横甲$25 2 0 8 Temp_R0 1 7 8
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+SUB Temp_R0 1 7 8 甲$24 2 0 8
+MOV 纵甲$26 2 0 8 Temp_R0 1 7 8
+CMP 横甲$25 2 0 8 0 1 1 8
+JL IfThenBlock67 JmpNull 
+CMP 纵甲$26 2 0 8 0 1 1 8
+JL IfThenBlock67 DefaultBlock68
+
+Block IfThenBlock67
+MOV 阻挡乙$7 2 0 2 1 1 1 2
+JMP DefaultBlock66
+JMP DefaultBlock68
+
+Block DefaultBlock68
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 横甲$25 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 纵甲$26 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色甲$27 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色甲$27 2 0 8 颜色$1 2 0 8
+JNE IfThenBlock69 DefaultBlock70
+
+Block IfThenBlock69
+CMP 颜色甲$27 2 0 8 棋子空 1 0 8
+JNE IfThenBlock71 DefaultBlock72
+
+Block IfThenBlock71
+MOV 阻挡乙$7 2 0 2 1 1 1 2
+JMP DefaultBlock72
+
+Block DefaultBlock72
+JMP DefaultBlock66
+JMP DefaultBlock70
+
+Block DefaultBlock70
+MOV Temp_R0 1 7 8 斜向计数甲$19 2 0 8
+INC 斜向计数甲$19 2 0 8
+JMP ForStepBlock65
+
+Block ForStepBlock65
+MOV Temp_R0 1 7 8 甲$24 2 0 8
+INC 甲$24 2 0 8
+JMP ForConditionBlock63
+
+Block DefaultBlock66
+PUSH 阻挡乙$7 2 0 2
+PUSH 阻挡甲$6 2 0 2
+PUSH 斜向计数甲$19 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@算取分数 24 4 14 五子棋
+MOV 分数丙$28 2 0 8 Ret_R 1 4 8
+CMP 己$4指之打印连线 2 15 8 0 1 1 8
+JG IfThenBlock73 DefaultBlock74
+
+Block IfThenBlock73
+PUSH 斜向计数甲$19 2 0 8
+PUSH 分数丙$28 2 0 8
+PUSH 阻挡乙$7 2 0 2
+PUSH 阻挡甲$6 2 0 2
+PUSH 常字符串指针 1 2 17 5 21
+PUSH RetAddress 0 9 8
+CALL 打印 24 5 18 标准流
+JMP DefaultBlock74
+
+Block DefaultBlock74
+CMP 分数丙$28 2 0 8 五分 1 0 8
+JNL IfThenBlock75 DefaultBlock76
+
+Block IfThenBlock75
+RET 分数丙$28 2 0 8
+JMP DefaultBlock76
+
+Block DefaultBlock76
+MOV 斜向计数乙$29 2 0 8 1 1 1 8
+MOV 阻挡甲$6 2 0 2 0 1 1 2
+MOV 阻挡乙$7 2 0 2 0 1 1 2
+MOV 甲$30 2 0 8 1 1 1 8
+JMP ForConditionBlock77
+
+Block ForConditionBlock77
+MOV Temp_R0 1 7 2 1 1 1 2
+BIT_XOR Temp_R0 1 7 2 0 1 1 2
+CMP Temp_R0 1 7 2 1 1 1 2
+JE LoopBlock78 DefaultBlock80
+
+Block LoopBlock78
+MOV Temp_R0 1 7 8 横坐标$3 2 0 8
+ADD Temp_R0 1 7 8 甲$30 2 0 8
+MOV 横甲$31 2 0 8 Temp_R0 1 7 8
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+SUB Temp_R0 1 7 8 甲$30 2 0 8
+MOV 纵甲$32 2 0 8 Temp_R0 1 7 8
+CMP 横甲$31 2 0 8 棋盘长度 1 0 8
+JNL IfThenBlock81 JmpNull 
+CMP 纵甲$32 2 0 8 棋盘长度 1 0 8
+JNL IfThenBlock81 JmpNull 
+CMP 横甲$31 2 0 8 0 1 1 8
+JL IfThenBlock81 JmpNull 
+CMP 纵甲$32 2 0 8 0 1 1 8
+JL IfThenBlock81 DefaultBlock82
+
+Block IfThenBlock81
+MOV 阻挡甲$6 2 0 2 1 1 1 2
+JMP DefaultBlock80
+JMP DefaultBlock82
+
+Block DefaultBlock82
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 横甲$31 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 纵甲$32 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色甲$33 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色甲$33 2 0 8 颜色$1 2 0 8
+JNE IfThenBlock83 DefaultBlock84
+
+Block IfThenBlock83
+CMP 颜色甲$33 2 0 8 棋子空 1 0 8
+JNE IfThenBlock85 DefaultBlock86
+
+Block IfThenBlock85
+MOV 阻挡甲$6 2 0 2 1 1 1 2
+JMP DefaultBlock86
+
+Block DefaultBlock86
+JMP DefaultBlock80
+JMP DefaultBlock84
+
+Block DefaultBlock84
+MOV Temp_R0 1 7 8 斜向计数乙$29 2 0 8
+INC 斜向计数乙$29 2 0 8
+JMP ForStepBlock79
+
+Block ForStepBlock79
+MOV Temp_R0 1 7 8 甲$30 2 0 8
+INC 甲$30 2 0 8
+JMP ForConditionBlock77
+
+Block DefaultBlock80
+MOV 甲$34 2 0 8 1 1 1 8
+JMP ForConditionBlock87
+
+Block ForConditionBlock87
+MOV Temp_R0 1 7 2 1 1 1 2
+BIT_XOR Temp_R0 1 7 2 0 1 1 2
+CMP Temp_R0 1 7 2 1 1 1 2
+JE LoopBlock88 DefaultBlock90
+
+Block LoopBlock88
+MOV Temp_R0 1 7 8 横坐标$3 2 0 8
+SUB Temp_R0 1 7 8 甲$34 2 0 8
+MOV 横甲$35 2 0 8 Temp_R0 1 7 8
+MOV Temp_R0 1 7 8 纵坐标$2 2 0 8
+ADD Temp_R0 1 7 8 甲$34 2 0 8
+MOV 纵甲$36 2 0 8 Temp_R0 1 7 8
+CMP 横甲$35 2 0 8 棋盘长度 1 0 8
+JNL IfThenBlock91 JmpNull 
+CMP 纵甲$36 2 0 8 棋盘长度 1 0 8
+JNL IfThenBlock91 JmpNull 
+CMP 横甲$35 2 0 8 0 1 1 8
+JL IfThenBlock91 JmpNull 
+CMP 纵甲$36 2 0 8 0 1 1 8
+JL IfThenBlock91 DefaultBlock92
+
+Block IfThenBlock91
+MOV 阻挡乙$7 2 0 2 1 1 1 2
+JMP DefaultBlock90
+JMP DefaultBlock92
+
+Block DefaultBlock92
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 横甲$35 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 纵甲$36 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 颜色甲$37 2 0 8 Temp_R1 1 7 17 8
+CMP 颜色甲$37 2 0 8 颜色$1 2 0 8
+JNE IfThenBlock93 DefaultBlock94
+
+Block IfThenBlock93
+CMP 颜色甲$37 2 0 8 棋子空 1 0 8
+JNE IfThenBlock95 DefaultBlock96
+
+Block IfThenBlock95
+MOV 阻挡乙$7 2 0 2 1 1 1 2
+JMP DefaultBlock96
+
+Block DefaultBlock96
+JMP DefaultBlock90
+JMP DefaultBlock94
+
+Block DefaultBlock94
+MOV Temp_R0 1 7 8 斜向计数乙$29 2 0 8
+INC 斜向计数乙$29 2 0 8
+JMP ForStepBlock89
+
+Block ForStepBlock89
+MOV Temp_R0 1 7 8 甲$34 2 0 8
+INC 甲$34 2 0 8
+JMP ForConditionBlock87
+
+Block DefaultBlock90
+PUSH 阻挡乙$7 2 0 2
+PUSH 阻挡甲$6 2 0 2
+PUSH 斜向计数乙$29 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@算取分数 24 4 14 五子棋
+MOV 分数丁$38 2 0 8 Ret_R 1 4 8
+CMP 己$4指之打印连线 2 15 8 0 1 1 8
+JG IfThenBlock97 DefaultBlock98
+
+Block IfThenBlock97
+PUSH 斜向计数乙$29 2 0 8
+PUSH 分数丁$38 2 0 8
+PUSH 阻挡乙$7 2 0 2
+PUSH 阻挡甲$6 2 0 2
+PUSH 常字符串指针 1 2 17 5 22
+PUSH RetAddress 0 9 8
+CALL 打印 24 5 18 标准流
+JMP DefaultBlock98
+
+Block DefaultBlock98
+CMP 分数丁$38 2 0 8 五分 1 0 8
+JNL IfThenBlock99 DefaultBlock100
+
+Block IfThenBlock99
+RET 分数丁$38 2 0 8
+JMP DefaultBlock100
+
+Block DefaultBlock100
+MOV 最大分数$39 2 0 8 分数甲$12 2 0 8
+CMP 分数乙$18 2 0 8 最大分数$39 2 0 8
+JG IfThenBlock101 DefaultBlock102
+
+Block IfThenBlock101
+MOV 最大分数$39 2 0 8 分数乙$18 2 0 8
+JMP DefaultBlock102
+
+Block DefaultBlock102
+CMP 分数丙$28 2 0 8 最大分数$39 2 0 8
+JG IfThenBlock103 DefaultBlock104
+
+Block IfThenBlock103
+MOV 最大分数$39 2 0 8 分数丙$28 2 0 8
+JMP DefaultBlock104
+
+Block DefaultBlock104
+CMP 分数丁$38 2 0 8 最大分数$39 2 0 8
+JG IfThenBlock105 DefaultBlock106
+
+Block IfThenBlock105
+MOV 最大分数$39 2 0 8 分数丁$38 2 0 8
+JMP DefaultBlock106
+
+Block DefaultBlock106
+RET 最大分数$39 2 0 8
+
+FunctionEnd 608
+
+Function 五子棋@模拟计算AI放子 1
+Param 己 18 五子棋
+Param 位置甲 17 8
+Param 位置乙 17 8
+Param 颜色 8
+Variable 己$4 18 五子棋 -12 8 610
+Variable 位置甲$3 17 8 -20 8 610
+Variable 位置乙$2 17 8 -28 8 610
+Variable 颜色$1 8 -32 4 610
+Variable 横坐标$5 8 0 4 614
+Variable 纵坐标$6 8 4 4 615
+Variable 得分数组$7 14 8 8 8 634
+Variable AI得分$8 8 16 4 635
+Variable 甲$9 8 20 4 636
+Variable 乙$10 8 24 4 638
+Variable 临时分$11 8 28 4 642
+Variable 对手得分数组$12 14 8 32 8 665
+Variable 对手颜色$13 8 40 4 666
+Variable 对手得分$14 8 44 4 667
+Variable 甲$15 8 48 4 668
+Variable 乙$16 8 52 4 670
+Variable 临时分$17 8 56 4 674
+FunctionStart 611
+
+Block Entry
+CMP 己$4指之放子计数 2 15 8 2 1 1 8
+JL IfThenBlock1 DefaultBlock2
+
+Block IfThenBlock1
+MOV Temp_R0 1 7 8 棋盘长度 1 0 8
+DIV Temp_R0 1 7 8 2 1 1 8
+MOV 横坐标$5 2 0 8 Temp_R0 1 7 8
+MOV 纵坐标$6 2 0 8 横坐标$5 2 0 8
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 横坐标$5 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 纵坐标$6 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R1 1 7 17 8
+CMP Temp_R0 1 7 8 棋子空 1 0 8
+JE IfThenBlock3 ElseBlock4
+
+Block IfThenBlock3
+MOVTOPV 位置甲$3 2 0 17 8 横坐标$5 2 0 8
+MOVTOPV 位置乙$2 2 0 17 8 纵坐标$6 2 0 8
+JMP DefaultBlock5
+
+Block ElseBlock4
+MOV Temp_R0 1 7 8 棋盘长度 1 0 8
+DIV Temp_R0 1 7 8 4 1 1 8
+MOV 横坐标$5 2 0 8 Temp_R0 1 7 8
+MOV 纵坐标$6 2 0 8 横坐标$5 2 0 8
+MOVTOPV 位置甲$3 2 0 17 8 横坐标$5 2 0 8
+MOVTOPV 位置乙$2 2 0 17 8 纵坐标$6 2 0 8
+JMP DefaultBlock5
+
+Block DefaultBlock5
+RET 0 1 1 8
+JMP DefaultBlock2
+
+Block DefaultBlock2
+CMP 颜色$1 2 0 8 棋子黑 1 0 8
+JE DefaultBlock7 DefaultBlock8
+
+Block DefaultBlock6
+MOV 得分数组$7 2 0 14 8 Temp_R0 1 7 14 8
+MOV AI得分$8 2 0 8 最小分 1 0 8
+MOV 甲$9 2 0 8 己$4指之左边界 2 15 8
+JMP ForConditionBlock9
+
+Block ForConditionBlock9
+CMP 甲$9 2 0 8 己$4指之右边界 2 15 8
+JNG LoopBlock10 DefaultBlock12
+
+Block LoopBlock10
+MOV 乙$10 2 0 8 己$4指之上边界 2 15 8
+JMP ForConditionBlock13
+
+Block ForConditionBlock13
+CMP 乙$10 2 0 8 己$4指之下边界 2 15 8
+JNG LoopBlock14 DefaultBlock16
+
+Block LoopBlock14
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$9 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$10 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R1 1 7 17 8
+CMP Temp_R0 1 7 8 棋子空 1 0 8
+JE IfThenBlock17 DefaultBlock18
+
+Block IfThenBlock17
+MOV Temp_R1 1 7 17 8 得分数组$7 2 0 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$9 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$10 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 临时分$11 2 0 8 Temp_R1 1 7 17 8
+CMP 临时分$11 2 0 8 最小分 1 0 8
+JE IfThenBlock19 DefaultBlock20
+
+Block IfThenBlock19
+PUSH 颜色$1 2 0 8
+PUSH 乙$10 2 0 8
+PUSH 甲$9 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@获得连线最大分 24 4 20 五子棋
+MOV 临时分$11 2 0 8 Ret_R 1 4 8
+JMP DefaultBlock20
+
+Block DefaultBlock20
+CMP 临时分$11 2 0 8 AI得分$8 2 0 8
+JG IfThenBlock21 DefaultBlock22
+
+Block IfThenBlock21
+MOV AI得分$8 2 0 8 临时分$11 2 0 8
+MOVTOPV 位置甲$3 2 0 17 8 甲$9 2 0 8
+MOVTOPV 位置乙$2 2 0 17 8 乙$10 2 0 8
+CMP AI得分$8 2 0 8 五分 1 0 8
+JNL IfThenBlock23 DefaultBlock24
+
+Block IfThenBlock23
+RET 0 1 1 8
+JMP DefaultBlock24
+
+Block DefaultBlock24
+JMP DefaultBlock22
+
+Block DefaultBlock22
+JMP DefaultBlock18
+
+Block DefaultBlock18
+JMP ForStepBlock15
+
+Block ForStepBlock15
+MOV Temp_R0 1 7 8 乙$10 2 0 8
+INC 乙$10 2 0 8
+JMP ForConditionBlock13
+
+Block DefaultBlock16
+JMP ForStepBlock11
+
+Block ForStepBlock11
+MOV Temp_R0 1 7 8 甲$9 2 0 8
+INC 甲$9 2 0 8
+JMP ForConditionBlock9
+
+Block DefaultBlock12
+MOVPV Temp_R0 1 7 8 位置乙$2 2 0 17 8
+MOVPV Temp_R1 1 7 8 位置甲$3 2 0 17 8
+PUSH Temp_R0 1 7 8
+PUSH Temp_R1 1 7 8
+PUSH AI得分$8 2 0 8
+PUSH 常字符串指针 1 2 17 5 23
+PUSH RetAddress 0 9 8
+CALL 打印 24 4 20 标准流
+MOV 己$4指之打印连线 2 15 8 1 1 1 8
+CMP 颜色$1 2 0 8 棋子黑 1 0 8
+JE DefaultBlock26 DefaultBlock27
+
+Block DefaultBlock25
+MOV 对手得分数组$12 2 0 14 8 Temp_R0 1 7 14 8
+CMP 颜色$1 2 0 8 棋子黑 1 0 8
+JE DefaultBlock29 DefaultBlock30
+
+Block DefaultBlock28
+MOV 对手颜色$13 2 0 8 Temp_R0 1 7 8
+MOV 对手得分$14 2 0 8 最小分 1 0 8
+MOV 甲$15 2 0 8 己$4指之左边界 2 15 8
+JMP ForConditionBlock31
+
+Block ForConditionBlock31
+CMP 甲$15 2 0 8 己$4指之右边界 2 15 8
+JNG LoopBlock32 DefaultBlock34
+
+Block LoopBlock32
+MOV 乙$16 2 0 8 己$4指之上边界 2 15 8
+JMP ForConditionBlock35
+
+Block ForConditionBlock35
+CMP 乙$16 2 0 8 己$4指之下边界 2 15 8
+JNG LoopBlock36 DefaultBlock38
+
+Block LoopBlock36
+MOV Temp_R1 1 7 17 8 己$4指之棋盘 2 14 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$15 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$16 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV Temp_R0 1 7 8 Temp_R1 1 7 17 8
+CMP Temp_R0 1 7 8 棋子空 1 0 8
+JE IfThenBlock39 DefaultBlock40
+
+Block IfThenBlock39
+MOV Temp_R1 1 7 17 8 对手得分数组$12 2 0 14 8
+MOV Temp_R0 1 7 13 19 1 1 13
+CVT Temp_R3 1 7 13 甲$15 2 0 8
+MOV Temp_R2 1 7 13 Temp_R3 1 7 13
+MUL Temp_R0 1 7 13 Temp_R2 1 7 13
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 13
+MOV Temp_R0 1 7 8 乙$16 2 0 8
+ADD Temp_R1 1 7 17 8 Temp_R0 1 7 8
+MOVPV 临时分$17 2 0 8 Temp_R1 1 7 17 8
+CMP 临时分$17 2 0 8 最小分 1 0 8
+JE IfThenBlock41 DefaultBlock42
+
+Block IfThenBlock41
+PUSH 对手颜色$13 2 0 8
+PUSH 乙$16 2 0 8
+PUSH 甲$15 2 0 8
+PUSH 己$4 2 0 18 五子棋
+PUSH RetAddress 0 9 8
+CALL 五子棋@获得连线最大分 24 4 20 五子棋
+MOV 临时分$17 2 0 8 Ret_R 1 4 8
+JMP DefaultBlock42
+
+Block DefaultBlock42
+PUSH 乙$16 2 0 8
+PUSH 甲$15 2 0 8
+PUSH 对手得分$14 2 0 8
+PUSH 临时分$17 2 0 8
+PUSH 常字符串指针 1 2 17 5 24
+PUSH RetAddress 0 9 8
+CALL 打印 24 5 24 标准流
+CMP 临时分$17 2 0 8 对手得分$14 2 0 8
+JG IfThenBlock43 DefaultBlock44
+
+Block IfThenBlock43
+MOV 对手得分$14 2 0 8 临时分$17 2 0 8
+PUSH 临时分$17 2 0 8
+PUSH 对手得分$14 2 0 8
+PUSH 常字符串指针 1 2 17 5 25
+PUSH RetAddress 0 9 8
+CALL 打印 24 3 16 标准流
+CMP 对手得分$14 2 0 8 AI得分$8 2 0 8
+JG IfThenBlock45 DefaultBlock46
+
+Block IfThenBlock45
+PUSH 乙$16 2 0 8
+PUSH 甲$15 2 0 8
+PUSH 常字符串指针 1 2 17 5 26
+PUSH RetAddress 0 9 8
+CALL 打印 24 3 16 标准流
+MOVTOPV 位置甲$3 2 0 17 8 甲$15 2 0 8
+MOVTOPV 位置乙$2 2 0 17 8 乙$16 2 0 8
+CMP 对手得分$14 2 0 8 五分 1 0 8
+JNL IfThenBlock47 DefaultBlock48
+
+Block IfThenBlock47
+PUSH 对手得分$14 2 0 8
+PUSH 常字符串指针 1 2 17 5 27
+PUSH RetAddress 0 9 8
+CALL 打印 24 2 12 标准流
+MOV 己$4指之打印连线 2 15 8 0 1 1 8
+RET 0 1 1 8
+JMP DefaultBlock48
+
+Block DefaultBlock48
+JMP DefaultBlock46
+
+Block DefaultBlock46
+JMP DefaultBlock44
+
+Block DefaultBlock44
+JMP DefaultBlock40
+
+Block DefaultBlock40
+JMP ForStepBlock37
+
+Block ForStepBlock37
+MOV Temp_R0 1 7 8 乙$16 2 0 8
+INC 乙$16 2 0 8
+JMP ForConditionBlock35
+
+Block DefaultBlock38
+JMP ForStepBlock33
+
+Block ForStepBlock33
+MOV Temp_R0 1 7 8 甲$15 2 0 8
+INC 甲$15 2 0 8
+JMP ForConditionBlock31
+
+Block DefaultBlock34
+MOV 己$4指之打印连线 2 15 8 0 1 1 8
+RET Void 0 0 1
+
+Block DefaultBlock29
+MOV Temp_R0 1 7 8 棋子白 1 0 8
+JMP DefaultBlock28
+
+Block DefaultBlock30
+MOV Temp_R0 1 7 8 棋子黑 1 0 8
+JMP DefaultBlock28
+
+Block DefaultBlock26
+MOV Temp_R0 1 7 14 8 己$4指之白棋得分 2 14 14 8
+JMP DefaultBlock25
+
+Block DefaultBlock27
+MOV Temp_R0 1 7 14 8 己$4指之黑棋得分 2 14 14 8
+JMP DefaultBlock25
+
+Block DefaultBlock7
+MOV Temp_R0 1 7 14 8 己$4指之黑棋得分 2 14 14 8
+JMP DefaultBlock6
+
+Block DefaultBlock8
+MOV Temp_R0 1 7 14 8 己$4指之白棋得分 2 14 14 8
+JMP DefaultBlock6
+
+FunctionEnd 703
+

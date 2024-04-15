@@ -1,5 +1,6 @@
 #include "ASTFunction.h"
 
+#include "HazeLogDefine.h"
 #include "HazeCompiler.h"
 #include "HazeBaseBlock.h"
 #include "HazeCompilerPointerValue.h"
@@ -152,8 +153,17 @@ ASTClassFunctionSection::~ASTClassFunctionSection()
 
 void ASTClassFunctionSection::CodeGen()
 {
+	auto& className = m_Compiler->GetCurrModule()->GetCurrClassName();
 	for (auto& iter : m_Functions)
 	{
+		if (iter.first == HazeDataDesc::ClassFunction_Local_Public)
+		{
+			if (iter.second[0]->GetName() != className)
+			{
+				COMPILER_ERR_MODULE_W("模板类<%s>需要在<公>范围内第一个定义构造函数", m_Compiler->GetCurrModuleName().c_str(), className.c_str());
+			}
+		}
+
 		for (auto& function : iter.second)
 		{
 			function->RegisterFunction();

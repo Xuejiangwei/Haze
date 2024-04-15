@@ -105,7 +105,7 @@ public:
 
 	std::shared_ptr<HazeCompilerValue> CreateLea(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value);
 
-	std::shared_ptr<HazeCompilerValue> CreateMov(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value);
+	std::shared_ptr<HazeCompilerValue> CreateMov(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value, bool storeValue = true);
 
 	std::shared_ptr<HazeCompilerValue> CreateMovToPV(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value);
 

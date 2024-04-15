@@ -63,10 +63,6 @@ private:
 
 	void PCStepInc();
 
-	void PreMainFunction();
-
-	void PushMainFuntion();
-
 	void InitStackRegister();
 
 	void OnCall(const FunctionData* info, int paramSize);

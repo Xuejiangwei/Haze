@@ -18,6 +18,8 @@ public:
 
 	void RegisterFunction();
 
+	const HAZE_STRING& GetName() const { return m_FunctionName; }
+
 private:
 	HazeCompiler* m_Compiler;
 	HazeSectionSignal m_Section;

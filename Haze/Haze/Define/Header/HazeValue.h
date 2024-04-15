@@ -115,6 +115,8 @@ bool IsHazeDefaultType(HazeValueType type);
 
 bool IsIntegerType(HazeValueType type);
 
+bool IsFloatingType(HazeValueType type);
+
 bool IsUnsignedLongType(HazeValueType type);
 
 bool IsPointerType(HazeValueType type);
@@ -150,3 +152,5 @@ const HAZE_CHAR* GetHazeValueTypeString(HazeValueType type);
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value);
 
 HazeValue GetNegValue(HazeValueType type, const HazeValue& value);
+
+bool CanCVT(HazeValueType type1, HazeValueType type2);

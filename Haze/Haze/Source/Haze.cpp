@@ -57,6 +57,7 @@ void HazeExit()
 enum class ParamType
 {
 	MainFile,
+	MainFunction,
 	DebugType,
 	LoadLibrary,
 	ClassInherit,
@@ -68,6 +69,7 @@ uint32 GetParam(ParamType type, char** paramArray, int length)
 	std::unordered_map<ParamType, const char*> HashMap_Param =
 	{
 		{ ParamType::MainFile, "-m" },
+		{ ParamType::MainFunction, "-mf" },
 		{ ParamType::DebugType, "-d" },
 		{ ParamType::LoadLibrary, "-ld" },
 		{ ParamType::ClassInherit, "-ci" },
@@ -106,6 +108,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	//std::wstring Path = std::filesystem::current_path();
 
 	char* mainFilePath = nullptr;
+	HAZE_STRING mainFunction = HAZE_DEFAULT_MAIN_FUNCTION_TEXT;
 	if (argCount < 2)
 	{
 		return 0;
@@ -122,6 +125,11 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	HazeRunType runType = GetParam(ParamType::DebugType, argValue, argCount) != 0 ?
 		strcmp(argValue[GetParam(ParamType::DebugType, argValue, argCount)], "debug") == 0 ? 
 		HazeRunType::Debug : HazeRunType::Release : HazeRunType::Release;
+
+	if (GetParam(ParamType::MainFunction, argValue, argCount) > 0)
+	{
+		mainFunction = String2WString(argValue[GetParam(ParamType::MainFunction, argValue, argCount)]);
+	}
 
 	if (GetParam(ParamType::ClassInherit, argValue, argCount) > 0)
 	{
@@ -159,13 +167,12 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	//VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Code\\HazeCode.hz"), HAZE_TEST_FILE} });
 	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
 
-	if (vm->HasMainFunction()) 
+	if (vm->GetFucntionIndexByName(mainFunction) >= 0)
 	{
 		std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
-		vm->StartMainFunction();
+		vm->CallFunction(mainFunction.c_str(), 1, 2);
 		HazeEnd();
 	}
-
 
 	return vm;
 }

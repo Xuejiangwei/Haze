@@ -537,9 +537,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLea(std::shared_ptr<HazeC
 	return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::LEA);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value)
+std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value, bool storeValue)
 {
-	allocaValue->StoreValueType(value);
+	if (storeValue)
+	{
+		allocaValue->StoreValueType(value);
+	}
 
 	if ((allocaValue->IsPointer() && !value->IsPointer() && !value->IsArray()) || (allocaValue->IsPointerPointer() && value->IsPointer() && !value->IsPointerPointer()))
 	{
@@ -569,9 +572,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeC
 	}
 	else
 	{
-		if (!allocaValue->GetValueType().NeedSecondaryType() && IsHazeDefaultType(allocaValue->GetValueType().PrimaryType) && 
-			!value->GetValueType().NeedSecondaryType() && IsHazeDefaultType(value->GetValueType().PrimaryType)
-			&& allocaValue->GetValueType() != value->GetValueType())
+		if (CanCVT(allocaValue->GetValueType().PrimaryType, value->GetValueType().PrimaryType))
 		{
 			value = CreateCVT(allocaValue, value);
 		}
@@ -1057,6 +1058,12 @@ void HazeCompiler::ReplaceConstantValueByStrongerType(std::shared_ptr<HazeCompil
 				ConvertBaseTypeValue(strongerType, v, right->GetValueType().PrimaryType, right->GetValue());
 				right = GenConstantValue(strongerType, v);
 			}
+			else
+			{
+				auto tempRegister = GetTempRegister();
+				tempRegister->StoreValueType(left);
+				right = CreateMov(tempRegister, right, false);
+			}
 		}
 		else
 		{
@@ -1065,6 +1072,12 @@ void HazeCompiler::ReplaceConstantValueByStrongerType(std::shared_ptr<HazeCompil
 				HazeValue v;
 				ConvertBaseTypeValue(strongerType, v, left->GetValueType().PrimaryType, left->GetValue());
 				left = GenConstantValue(strongerType, v);
+			}
+			else
+			{
+				auto tempRegister = GetTempRegister();
+				tempRegister->StoreValueType(right);
+				left = CreateMov(tempRegister, left, false);
 			}
 		}
 	}

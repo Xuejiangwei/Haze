@@ -35,13 +35,9 @@ public:
 
 	bool IsDebug() const { return GenType == HazeRunType::Debug; }
 
-	bool HasMainFunction() const;
-
 	void LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath);
 
 	const std::vector<Instruction>& GetInstruction() const { return Instructions; }
-
-	void StartMainFunction();
 
 	void CallFunction(const HAZE_CHAR* functionName, ...);
 

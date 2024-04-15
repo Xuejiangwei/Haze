@@ -50,3 +50,5 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const std::pair<HAZE_STR
 
 std::shared_ptr<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* compilerModule,
 	std::shared_ptr<HazeCompilerValue> elementValue, std::shared_ptr<HazeCompilerValue> movToValue = nullptr);
+
+void GetTemplateClassName(HAZE_STRING& inName, const std::vector<HazeDefineType>& templateTypes);

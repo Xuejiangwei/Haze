@@ -4,7 +4,7 @@
 #include "Parse.h"
 #include "HazeTokenText.h"
 #include "HazeDebugDefine.h"
-#include "HazeLog.h"
+#include "HazeLogDefine.h"
 #include "HazeFilePathHelper.h"
 
 #include "HazeCompiler.h"
@@ -207,31 +207,8 @@ bool HazeCompilerModule::ResetTemplateClassRealName(HAZE_STRING& inName, const s
 				return false;
 			}
 
-			HAZE_STRING className = inName;
-			for (auto& type : templateTypes)
-			{
-				if (type.HasCustomName())
-				{
-					inName += (HAZE_TEXT("__") + type.CustomName);
-					if (IsPointerType(type.SecondaryType))
-					{
-						inName += HAZE_TEXT("*");
-					}
-				}
-				else
-				{
-					if (IsPointerType(type.PrimaryType))
-					{
-						inName += (HAZE_STRING(HAZE_TEXT("__")) + GetHazeValueTypeString(type.SecondaryType));
-						inName += HAZE_TEXT("*");
-					}
-					else
-					{
-						inName += (HAZE_STRING(HAZE_TEXT("__")) + GetHazeValueTypeString(type.PrimaryType));
-					}
-					
-				}
-			}
+			//HAZE_STRING className = inName;
+			GetTemplateClassName(inName, templateTypes);
 
 			for (auto& compilerClass : m_HashMap_Classes)
 			{
@@ -752,11 +729,21 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HAZE_STRING
 
 	if (thisPointerTo)
 	{
-		if (!GetCurrFunction()->FindLocalVariableName(thisPointerTo, strName))
+		if (GetCurrFunction())
+		{
+			if (!GetCurrFunction()->FindLocalVariableName(thisPointerTo, strName))
+			{
+				if (!GetGlobalVariableName(thisPointerTo, strName))
+				{
+					COMPILER_ERR_MODULE_W("生成函数<%s>调用错误,没有找到调用类对象变量", GetName().c_str(), callName.c_str());
+				}
+			}
+		}
+		else
 		{
 			if (!GetGlobalVariableName(thisPointerTo, strName))
 			{
-				HAZE_LOG_ERR_W("生成函数<%s>调用错误,没有找到调用类对象变量!\n", callName.c_str());
+				COMPILER_ERR_MODULE_W("生成函数<%s>调用错误,没有找到调用类对象全局变量", GetName().c_str(), callName.c_str());
 			}
 		}
 

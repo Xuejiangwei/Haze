@@ -265,11 +265,11 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 
 	if (retValue && exprValue)
 	{
-		if (m_ArraySize.size() > 0 && retValue->IsArray())
+		/*if (m_ArraySize.size() > 0 && retValue->IsArray())
 		{
 			m_Compiler->CreateArrayInit(retValue, exprValue);
 		}
-		else if (isRef)
+		else*/ if (isRef)
 		{
 			m_Compiler->CreateLea(retValue, exprValue);
 		}
@@ -277,6 +277,12 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		{
 			m_Compiler->CreateMov(retValue, exprValue);
 		}
+	}
+	else if (retValue->IsClass())
+	{
+		auto function = m_Compiler->GetCurrModule()->GetClass(retValue->GetValueType().CustomName)->FindFunction(retValue->GetValueType().CustomName);
+		std::vector<std::shared_ptr<HazeCompilerValue>> param;
+		m_Compiler->CreateFunctionCall(function, param, retValue);
 	}
 
 	return retValue;
@@ -310,8 +316,8 @@ std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 	return nullptr;
 }
 
-ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar, std::unique_ptr<ASTBase> countExpression)
-	: ASTBase(compiler, location, DefineVar), m_CountExpression(std::move(countExpression))
+ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar, std::vector<std::unique_ptr<ASTBase>> countArrayExpression)
+	: ASTBase(compiler, location, DefineVar), m_CountArrayExpression(std::move(countArrayExpression))
 {
 }
 
@@ -321,10 +327,15 @@ ASTNew::~ASTNew()
 
 std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 {
-	auto countValue = m_Compiler->GetConstantValueInt(1);
-	if (m_CountExpression)
+	auto countValue = m_Compiler->GetConstantValueUint64(1);
+	if (m_CountArrayExpression.size() > 0)
 	{
-		countValue = m_CountExpression->CodeGen();
+		countValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), countValue);
+
+		for (auto& iter : m_CountArrayExpression)
+		{
+			m_Compiler->CreateMul(countValue, iter->CodeGen());
+		}
 	}
 
 	return m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type, countValue);

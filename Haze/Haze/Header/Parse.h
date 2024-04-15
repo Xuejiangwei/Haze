@@ -98,8 +98,6 @@ private:
 
 	std::unique_ptr<ASTFunctionSection> ParseFunctionSection();
 
-	std::unique_ptr<ASTFunction> ParseMainFunction();
-
 	std::unique_ptr<ASTLibrary> ParseLibrary();
 
 	std::unique_ptr<ASTClassDefine> ParseLibrary_ClassDefine();

@@ -449,3 +449,31 @@ std::shared_ptr<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* co
 
 	return compiler->CreateMovPV(movToValue ? movToValue : compiler->GetTempRegister(), arrayPointer);
 }
+
+void GetTemplateClassName(HAZE_STRING& inName, const std::vector<HazeDefineType>& templateTypes)
+{
+	for (auto& type : templateTypes)
+	{
+		if (type.HasCustomName())
+		{
+			inName += (HAZE_TEXT("__") + type.CustomName);
+			if (IsPointerType(type.SecondaryType))
+			{
+				inName += HAZE_TEXT("*");
+			}
+		}
+		else
+		{
+			if (IsPointerType(type.PrimaryType))
+			{
+				inName += (HAZE_STRING(HAZE_TEXT("__")) + GetHazeValueTypeString(type.SecondaryType));
+				inName += HAZE_TEXT("*");
+			}
+			else
+			{
+				inName += (HAZE_STRING(HAZE_TEXT("__")) + GetHazeValueTypeString(type.PrimaryType));
+			}
+
+		}
+	}
+}

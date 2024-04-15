@@ -11,6 +11,7 @@
 #include "ASTTemplateClass.h"
 
 #include "HazeCompiler.h"
+#include "HazeCompilerHelper.h"
 #include "HazeCompilerModule.h"
 
 #include "HazeLogDefine.h"
@@ -43,8 +44,6 @@ static std::unordered_map<HAZE_STRING, HazeToken> s_HashMap_Token =
 	{ TOKEN_STRING_MATCH, HazeToken::StringMatch },
 
 	{ TOKEN_FUNCTION, HazeToken::Function },
-
-	{ TOKEN_MAIN_FUNCTION, HazeToken::MainFunction },
 
 	{ TOKEN_ENUM, HazeToken::Enum },
 
@@ -292,12 +291,6 @@ void Parse::ParseContent()
 		case HazeToken::Function:
 		{
 			auto ast = ParseFunctionSection();
-			ast->CodeGen();
-		}
-		break;
-		case HazeToken::MainFunction:
-		{
-			auto ast = ParseMainFunction();
 			ast->CodeGen();
 		}
 		break;
@@ -1141,10 +1134,22 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 
 	if (ExpectNextTokenIs(HazeToken::Array))
 	{
-		GetNextToken();
-		auto countAst = ParseExpression();
-		GetNextToken();
-		return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, std::move(countAst));
+		std::vector<std::unique_ptr<ASTBase>> arraySize;
+		while (m_CurrToken == HazeToken::Array)
+		{
+			if (ExpectNextTokenIs(HazeToken::ArrayDefineEnd))
+			{
+				GetNextToken();
+				break;
+			}
+			else
+			{
+				arraySize.push_back(ParseExpression());
+				GetNextToken();
+			}
+		}
+
+		return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, std::move(arraySize));
 	}
 	else
 	{
@@ -1153,7 +1158,7 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 			if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("生成表达式 期望 )")))
 			{
 				GetNextToken();
-				return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, nullptr);
+				return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar);
 			}
 		}
 	}
@@ -1410,11 +1415,13 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* className)
 	funcType.PrimaryType = GetValueTypeByToken(m_CurrToken);
 	GetValueType(funcType);
 	
+	uint32 startLineCount = m_LineCount;
+	HAZE_STRING functionName;
+
 	//获得函数名
-	if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("函数命名错误")))
+	if (ExpectNextTokenIs(HazeToken::Identifier))
 	{
-		uint32 startLineCount = m_LineCount;
-		HAZE_STRING functionName = m_CurrLexeme;
+		functionName = m_CurrLexeme;
 		if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数定义需要 (")))
 		{
 			std::vector<std::unique_ptr<ASTBase>> params;
@@ -1453,69 +1460,49 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* className)
 					tempLineCount = m_LineCount;
 
 					GetNextToken();
-					return std::make_unique<ASTFunction>(m_Compiler, SourceLocation(startLineCount), SourceLocation(tempLineCount), m_StackSectionSignal.top(), functionName, funcType, params, body);
+					return std::make_unique<ASTFunction>(m_Compiler, SourceLocation(startLineCount), SourceLocation(tempLineCount),
+						m_StackSectionSignal.top(), functionName, funcType, params, body);
 				}
 			}
 		}
 	}
 	else if (*className == funcType.CustomName)
 	{
-		HAZE_LOG_ERR_W("解析错误,暂时不支持定义类的构造函数!\n");
 		//类构造函数
-		/*HAZE_STRING FunctionName = FuncType.CustomName;
+		funcType.PrimaryType = HazeValueType::Void;
+		functionName = *className;
 		if (m_CurrToken == HazeToken::LeftParentheses)
 		{
-			std::vector<HazeDefineVariable> Vector_Param;
+			std::vector<std::unique_ptr<ASTBase>> params;
 
-			if (ClassName && !ClassName->empty())
+			if (className && !className->empty())
 			{
-				HazeDefineVariable ThisParam;
-				ThisParam.Name = HAZE_CLASS_THIS;
-				ThisParam.Type.PrimaryType = HazeValueType::PointerClass;
-				ThisParam.Type.CustomName = *ClassName;
+				HazeDefineVariable thisParam;
+				thisParam.Name = HAZE_CLASS_THIS;
+				thisParam.Type.PrimaryType = HazeValueType::PointerClass;
+				thisParam.Type.CustomName = className->c_str();
 
-				Vector_Param.push_back(ThisParam);
+				params.push_back(std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount),
+					HazeSectionSignal::Local, thisParam, nullptr));
 			}
 
-			while (!TokenIs(HazeToken::LeftBrace))
+			GetNextToken();
+
+			while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
 			{
-				HazeDefineVariable Param;
-				if (GetNextToken() == HazeToken::RightParentheses)
+				params.push_back(ParseVariableDefine());
+				if (!TokenIs(HazeToken::Comma))
 				{
-					break;
-				}
-
-				Param.Type.PrimaryType = GetValueTypeByToken(m_CurrToken);
-				if (m_CurrToken == HazeToken::Identifier)
-				{
-					Param.Type.PrimaryType = HazeValueType::Class;
-					Param.Type.CustomName = CurrLexeme;
-				}
-
-				if (Param.Type.PrimaryType == HazeValueType::MultiVariable)
-				{
-					Param.Name = HAZE_MULTI_PARAM_NAME;
-					ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("类的构造函数多参参数右边需要 )"));
-					Vector_Param.push_back(Param);
-
-					GetNextToken();
 					break;
 				}
 
 				GetNextToken();
-				Param.Name = CurrLexeme;
-
-				Vector_Param.push_back(Param);
-
-				if (!ExpectNextTokenIs(HazeToken::Comma))
-				{
-					break;
-				}
 			}
 
 			if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("类的构造函数体需要 {")))
 			{
-				std::unique_ptr<ASTBase> Body = ParseMultiExpression();
+				startLineCount = m_LineCount;
+				std::unique_ptr<ASTBase> body = ParseMultiExpression();
 
 				if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("类的构造函数体需要 }")))
 				{
@@ -1523,65 +1510,14 @@ std::unique_ptr<ASTFunction> Parse::ParseFunction(const HAZE_STRING* className)
 					tempLineCount = m_LineCount;
 
 					GetNextToken();
-					return std::make_unique<ASTFunction>(Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), FunctionName, FuncType, Vector_Param, Body);
+					return std::make_unique<ASTFunction>(m_Compiler, SourceLocation(startLineCount), SourceLocation(tempLineCount),
+						m_StackSectionSignal.top(), functionName,	funcType, params, body);
 				}
 			}
-		}*/
-	}
-
-	return nullptr;
-}
-
-std::unique_ptr<ASTFunction> Parse::ParseMainFunction()
-{
-	uint32 startLineCount = m_LineCount;
-	HAZE_STRING functionName = m_CurrLexeme;
-	m_StackSectionSignal.push(HazeSectionSignal::Local);
-	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("函数参数左边需要 (")))
-	{
-		//std::vector<HazeDefineVariable> Vector_Param;
-		std::vector<std::unique_ptr<ASTBase>> params;
-
-		while (!TokenIs(HazeToken::LeftBrace))
-		{
-			HazeDefineVariable param;
-			if (GetNextToken() == HazeToken::RightParentheses)
-			{
-				break;
-			}
-
-			/*Param.Type.PrimaryType = GetValueTypeByToken(m_CurrToken);
-			if (m_CurrToken == HazeToken::Identifier)
-			{
-				Param.Type.PrimaryType = HazeValueType::Class;
-				Param.Type.CustomName = CurrLexeme;
-			}
-
-			GetNextToken();
-			Param.Name = CurrLexeme;
-
-			Vector_Param.push_back(Param);
-
-			if (!ExpectNextTokenIs(HazeToken::Comma))
-			{
-				break;
-			}*/
 		}
-
-		if (ExpectNextTokenIs(HazeToken::LeftBrace, HAZE_TEXT("函数体需要 {")))
+		else
 		{
-			startLineCount = m_LineCount;
-			std::unique_ptr<ASTBase> body = ParseMultiExpression();
-
-			if (TokenIs(HazeToken::RightBrace, HAZE_TEXT("函数体需要 }")))
-			{
-				m_StackSectionSignal.pop();
-
-				uint32 tempLineCount = m_LineCount;
-				GetNextToken();
-				HazeDefineType defineType = { HazeValueType::Void, HAZE_TEXT("") };
-				return std::make_unique<ASTFunction>(m_Compiler, SourceLocation(startLineCount), SourceLocation(tempLineCount), m_StackSectionSignal.top(), functionName, defineType, params, body);
-			}
+			PARSE_ERR_W("类<%s>的构造函数定义错误", className->c_str());
 		}
 	}
 
@@ -1973,7 +1909,7 @@ std::unique_ptr<ASTClassFunctionSection> Parse::ParseClassFunction(const HAZE_ST
 
 		if (m_CurrToken != HazeToken::RightBrace)
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("类函数需要 }"));
+			PARSE_ERR_W("类<%s>函数需要 }", className.c_str());
 		}
 
 		GetNextToken();
@@ -2395,7 +2331,13 @@ void Parse::GetValueType(HazeDefineType& inType)
 		m_DefineVariable.Name = HAZE_MULTI_PARAM_NAME;
 		break;
 	case HazeToken::CustomClass:
+	{
 		inType.CustomName = m_CurrLexeme;
+		if (m_IsParseTemplate)
+		{
+			GetTemplateClassName(inType.CustomName, *m_TemplateRealTypes);
+		}
+	}
 		break;
 	case HazeToken::ReferenceBase:
 	case HazeToken::PointerBase:

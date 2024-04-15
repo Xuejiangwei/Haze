@@ -112,7 +112,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const 
 
 void HazeCompilerFunction::FunctionFinish()
 {
-	if (m_Type.PrimaryType == HazeValueType::Void || m_Name == HAZE_MAIN_FUNCTION_TEXT)
+	if (m_Type.PrimaryType == HazeValueType::Void)
 	{
 		HAZE_STRING_STREAM hss;
 		hss << GetInstructionString(InstructionOpCode::RET) << " " << HAZE_TEXT("Void") << " " << CAST_SCOPE(HazeVariableScope::None) << " "

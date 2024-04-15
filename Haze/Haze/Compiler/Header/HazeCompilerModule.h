@@ -27,6 +27,8 @@ public:
 
 	const HAZE_STRING& GetName() const;
 
+	const HAZE_STRING& GetCurrClassName() const { return m_CurrClass; }
+
 	HazeLibraryType GetModuleLibraryType() { return m_ModuleLibraryType; }
 
 	void MarkLibraryType(HazeLibraryType type);

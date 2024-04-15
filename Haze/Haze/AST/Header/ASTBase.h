@@ -157,14 +157,14 @@ private:
 class ASTNew : public ASTBase
 {
 public:
-	ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, std::unique_ptr<ASTBase> countExpression = nullptr);
+	ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, std::vector<std::unique_ptr<ASTBase>> countarrayExpression = {});
 	
 	virtual ~ASTNew() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
-	std::unique_ptr<ASTBase> m_CountExpression;
+	std::vector<std::unique_ptr<ASTBase>> m_CountArrayExpression;
 };
 
 //ªÒµ√µÿ÷∑

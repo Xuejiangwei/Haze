@@ -30,8 +30,6 @@ enum class HazeToken : unsigned int
 
 	Function,
 
-	MainFunction,
-
 	Enum,
 
 	TypeName,

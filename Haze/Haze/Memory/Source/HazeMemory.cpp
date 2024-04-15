@@ -255,8 +255,11 @@ void HazeMemory::Mark()
 
 		//因为只在函数结束调用Ret指令时会GC，所以只存在Ret虚拟寄存器有引用的情况
 		auto retRegister = m_VM->VMStack->GetVirtualRegister(RET_REGISTER);
-		memcpy(&Address, retRegister->Data.begin()._Unwrapped(), sizeof(Address));
-		MarkVariable(retRegister->Type, Address, retRegister->Data.begin()._Unwrapped());
+		if (retRegister && retRegister->Data.size() > 0)
+		{
+			memcpy(&Address, retRegister->Data.begin()._Unwrapped(), sizeof(Address));
+			MarkVariable(retRegister->Type, Address, retRegister->Data.begin()._Unwrapped());
+		}
 
 		for (size_t i = 0; i < m_VM->VMStack->m_StackFrame.size(); i++)
 		{
