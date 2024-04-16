@@ -1587,10 +1587,7 @@ std::vector<std::unique_ptr<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefi
 			//获得函数返回类型及是自定义类型时获得类型名字
 			HazeDefineType funcType;
 			funcType.PrimaryType = GetValueTypeByToken(m_CurrToken);
-			if (m_CurrToken == HazeToken::Identifier)
-			{
-				funcType.CustomName = m_CurrLexeme;
-			}
+			GetValueType(funcType);
 
 			//获得函数名
 			if (ExpectNextTokenIs(HazeToken::Identifier, HAZE_TEXT("库函数命名错误")))

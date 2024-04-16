@@ -66,7 +66,7 @@ enum class ParamType
 
 uint32 GetParam(ParamType type, char** paramArray, int length)
 {
-	std::unordered_map<ParamType, const char*> HashMap_Param =
+	static std::unordered_map<ParamType, const char*> HashMap_Param =
 	{
 		{ ParamType::MainFile, "-m" },
 		{ ParamType::MainFunction, "-mf" },
