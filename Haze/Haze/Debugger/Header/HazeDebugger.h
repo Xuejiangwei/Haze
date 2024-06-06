@@ -17,7 +17,7 @@ public:
 
 	~HazeDebugger();
 
-	enum DebuggerHookType
+	enum class DebuggerHookType
 	{
 		Line = 1,
 		Instruction = 1 << 1,
@@ -54,6 +54,8 @@ public:
 
 public:
 	void AddTempBreakPoint(uint32 line);
+
+	void AddTempBreakPoint(const HAZE_STRING& moduleName, uint32 line);
 
 	void SendProgramEnd();
 
@@ -95,4 +97,7 @@ private:
 	bool m_IsPause;
 
 	std::unordered_map<HAZE_STRING, bool> m_IsStepOvers;
+
+	bool m_IsStepIn;
+	bool m_IsStepInInstruction;
 };

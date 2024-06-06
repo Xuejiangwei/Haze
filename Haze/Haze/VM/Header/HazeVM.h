@@ -73,6 +73,8 @@ private:
 
 	uint32 GetNextLine(uint32 CurrLine);
 
+	std::pair<HAZE_STRING, uint32> GetStepIn(uint32 CurrLine);
+
 	uint32 GetCurrCallFunctionLine();
 
 	uint64 GetRegisterArrayLength(uint64 address);
@@ -90,6 +92,7 @@ private:
 
 private:
 	std::vector<ModuleData> Vector_ModuleData;
+	std::vector<HAZE_STRING> m_ModuleFilePath;
 
 	std::vector<HazeVariable> Vector_GlobalData;
 

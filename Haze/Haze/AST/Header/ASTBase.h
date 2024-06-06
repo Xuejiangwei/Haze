@@ -452,7 +452,7 @@ private:
 	std::unique_ptr<ASTBase> m_MultiExpression;
 };
 
-//初始话列表
+//初始化列表
 class ASTInitializeList : public ASTBase
 {
 public:

@@ -24,7 +24,7 @@ public:
 
 	~HazeCompilerFunction();
 
-	void SetStartEndLine(uint32 stratLine, uint32 endLine) { m_StartLine = stratLine; m_EndLine = endLine; };
+	void SetStartEndLine(uint32 startLine, uint32 endLine);
 
 	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& VariableName);
 

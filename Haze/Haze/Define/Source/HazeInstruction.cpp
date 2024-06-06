@@ -130,7 +130,8 @@ void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
 
 class InstructionProcessor
 {
-	friend void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
+	friend void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args);
+	friend void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData);
 #define HAZE_DEBUG_ENABLE 0
 #if HAZE_DEBUG_ENABLE
 	struct DataDebugScope
@@ -1443,7 +1444,7 @@ private:
 	}
 
 	//只能C++多参数函数调用
-	static void CallHazeFunction(HazeStack* stack, FunctionData* funcData, int paramNum, va_list& args)
+	static void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, int paramNum, va_list& args)
 	{
 		int size = 0;
 		for (size_t i = 0; i < funcData->Params.size(); i++)
@@ -1559,9 +1560,14 @@ private:
 	}
 };
 
-void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args)
+void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args)
 {
 	InstructionProcessor::CallHazeFunction(stack, funcData, (int)funcData->Params.size(), args);
+}
+
+void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData)
+{
+	return InstructionProcessor::GetOperatorAddress(stack, insData);
 }
 
 //可以考虑将HashMap改为使用数组

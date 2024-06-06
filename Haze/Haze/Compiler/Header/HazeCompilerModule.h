@@ -14,6 +14,13 @@ class HazeCompilerEnum;
 class HazeCompilerTemplateFunction;
 class HazeCompilerTemplateClass;
 
+struct TemplateCacheTextData
+{
+	uint32 StartLine;
+	HAZE_STRING Text;
+	std::vector<HAZE_STRING> Types;
+};
+
 class HazeCompilerModule
 {
 	friend class HazeCompiler;
@@ -65,7 +72,7 @@ public:
 
 	std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetFunction(const HAZE_STRING& name);
 
-	void StartCacheTemplate(HAZE_STRING& templateName, HAZE_STRING& templateText, std::vector<HAZE_STRING>& templateTypes);
+	void StartCacheTemplate(HAZE_STRING& templateName, uint32 startLine, HAZE_STRING& templateText, std::vector<HAZE_STRING>& templateTypes);
 
 	bool IsTemplateClass(const HAZE_STRING& name);
 
@@ -164,7 +171,7 @@ private:
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> m_HashMap_StringTable;
 	std::unordered_map<int, const HAZE_STRING*> m_HashMap_StringMapping;
 
-	std::unordered_map<HAZE_STRING, std::pair<HAZE_STRING, std::vector<HAZE_STRING>>> m_HashMap_TemplateText;
+	std::unordered_map<HAZE_STRING, TemplateCacheTextData> m_HashMap_TemplateText;
 
 	std::vector<HazeCompilerModule*> m_ImportModules;
 

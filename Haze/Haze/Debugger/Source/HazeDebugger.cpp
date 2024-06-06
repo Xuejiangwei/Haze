@@ -2,10 +2,10 @@
 #include "HazeLog.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
-
+#include "HazeFilePathHelper.h"
 #include "HazeDebuggerServer.h"
 
-#define ENABLE_DEBUGGER_LOG 0
+#define ENABLE_DEBUGGER_LOG 1
 
 static HAZE_STRING GetFileName(const HAZE_CHAR*& msg)
 {
@@ -126,7 +126,8 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 }
 
 HazeDebugger::HazeDebugger(HazeVM* vm, void(*endCall)()) 
-	: m_VM(vm), m_EndCall(endCall), m_HookFunctionCall(&HookCall), m_HookType(DebuggerHookType::Line), m_IsPause(true)
+	: m_VM(vm), m_EndCall(endCall), m_HookFunctionCall(&HookCall), m_HookType((uint32)DebuggerHookType::Line), m_IsPause(true),
+	m_IsStepIn(false), m_IsStepInInstruction(false)
 {
 	m_BreakPoints.clear();
 	m_TempBreakPoints.clear();
@@ -168,7 +169,7 @@ void HazeDebugger::AddBreakPoint(const char* message)
 
 #if ENABLE_DEBUGGER_LOG
 
-	HAZE_LOG_INFO(HAZE_TEXT("添加断点<%s><%s><%d>\n"), ModuleName.c_str(), FileName.c_str(), Line);
+	HAZE_LOG_INFO(HAZE_TEXT("添加断点<%s><%s><%d>\n"), moduleName.c_str(), fileName.c_str(), Line);
 
 #endif
 }
@@ -224,7 +225,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 {
 #if ENABLE_DEBUGGER_LOG
 
-	HAZE_LOG_INFO(HAZE_TEXT("运行到<%d>行!\n"), Line);
+	HAZE_LOG_INFO(HAZE_TEXT("运行到<%d>行!\n"), line);
 
 #endif // ENABLE_DEBUGGER_LOG
 
@@ -235,7 +236,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 		auto it = iter->second.first.find(line);
 		if (it != iter->second.first.end())
 		{
-			if (m_HookType & DebuggerHookType::Line)
+			if (m_HookType & (uint32)DebuggerHookType::Line)
 			{
 				if (m_HookFunctionCall)
 				{
@@ -248,7 +249,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 		}
 	}
 
-	if (!m_IsPause && CurrModuleIsStepOver())
+	if (!m_IsPause && (CurrModuleIsStepOver() || m_IsStepIn))
 	{
 		if (line == m_CurrPauseModule.second && *moduleName == m_CurrPauseModule.first)
 		{
@@ -262,10 +263,11 @@ void HazeDebugger::OnExecLine(uint32 line)
 				auto tempIt = tempIter->second.first.find(line);
 				if (tempIt != tempIter->second.first.end())
 				{
-					if (m_HookType & DebuggerHookType::Line)
+					if (m_HookType & (uint32)DebuggerHookType::Line)
 					{
 						m_CurrPauseModule = { tempIter->first, line };
 						m_IsPause = true;
+						m_IsStepIn = false;
 
 						tempIter->second.first.erase(tempIt);
 					}
@@ -283,9 +285,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 	if (m_IsPause)
 	{
 #if ENABLE_DEBUGGER_LOG
-
-		HAZE_LOG_INFO(HAZE_TEXT("调试器暂停<%s><%d>!\n"), CurrPauseModule.first.c_str(), Line);
-
+		HAZE_LOG_INFO(HAZE_TEXT("调试器暂停<%s><%d>!\n"), m_CurrPauseModule.first.c_str(), line);
 #endif
 
 		SendBreakInfo();
@@ -314,6 +314,20 @@ void HazeDebugger::StepOver()
 
 void HazeDebugger::StepIn()
 {
+	if (m_IsPause)
+	{
+		m_IsPause = false;
+		m_IsStepIn = true;
+		auto pauseModule = m_VM->GetStepIn(m_CurrPauseModule.second);
+		AddTempBreakPoint(pauseModule.first, pauseModule.second);
+
+		XJson json;
+		SetJsonType(json, HazeDebugInfoType::StepInInfo);
+		SetJsonBreakFilePath(json, GetModuleFilePath(pauseModule.first));
+		SetJsonBreakLine(json, pauseModule.second);
+		auto& data = json.Encode();
+		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
+	}
 }
 
 void HazeDebugger::StepInstruction()
@@ -370,6 +384,11 @@ void HazeDebugger::AddTempBreakPoint(uint32 line)
 	}
 }
 
+void HazeDebugger::AddTempBreakPoint(const HAZE_STRING& moduleName, uint32 line)
+{
+	m_TempBreakPoints[moduleName].first.insert(line);
+}
+
 void HazeDebugger::SendProgramEnd()
 {
 	XJson json;
@@ -392,15 +411,15 @@ bool HazeDebugger::CurrModuleIsStepOver()
 
 void HazeDebugger::SendBreakInfo()
 {
-	auto iter = m_BreakPoints.find(m_CurrPauseModule.first);
-	if (iter != m_BreakPoints.end())
+	//auto iter = m_BreakPoints.find(m_CurrPauseModule.first);
+	//if (iter != m_BreakPoints.end())
 	{
 		XJson json;
 		SetJsonType(json, HazeDebugInfoType::BreakInfo);
-		SetJsonBreakFilePath(json, iter->second.second);
+		SetJsonBreakFilePath(json, GetModuleFilePath(m_CurrPauseModule.first));
 		SetJsonBreakLine(json, m_CurrPauseModule.second);
 		SetJsonLocalVariable(json);
-		//SetJsonModuleGlobalVariable(Json);
+		//SetJsonModuleGlobalVariable(json);
 
 		auto& data = json.Encode();
 		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());

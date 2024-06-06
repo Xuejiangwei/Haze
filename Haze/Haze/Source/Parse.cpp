@@ -250,10 +250,11 @@ void Parse::InitializeFile(const HAZE_STRING& filePath)
 	fs.close();
 }
 
-void Parse::InitializeString(const HAZE_STRING& str)
+void Parse::InitializeString(const HAZE_STRING& str, uint32 startLine)
 {
 	m_CodeText = str;
 	m_CurrCode = m_CodeText.c_str();
+	m_LineCount = startLine;
 }
 
 void Parse::ParseContent()
@@ -510,7 +511,6 @@ HazeToken Parse::GetNextToken()
 			m_CurrCode++;
 			s_CommentStr = *m_CurrCode;
 		}
-
 		return GetNextToken();
 	}
 	else if (m_CurrLexeme == HAZE_MULTI_COMMENT_START)
@@ -1979,6 +1979,8 @@ void Parse::ParseTemplate()
 				{
 					HAZE_STRING templateClassName = m_CurrLexeme;
 					const HAZE_CHAR* start = m_CurrCode;
+					uint32 line = m_LineCount;
+
 					if (ExpectNextTokenIs(HazeToken::Colon))
 					{
 						//暂时不支持继承模板类
@@ -1999,6 +2001,8 @@ void Parse::ParseTemplate()
 								{
 									HAZE_LOG_ERR(HAZE_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), templateClassName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 								}
+
+								line = m_LineCount;
 							}
 						}
 						else
@@ -2023,7 +2027,7 @@ void Parse::ParseTemplate()
 						}
 
 						HAZE_STRING templateText(start, m_CurrCode);
-						m_Compiler->GetCurrModule()->StartCacheTemplate(templateClassName, templateText, templateTypes);
+						m_Compiler->GetCurrModule()->StartCacheTemplate(templateClassName, line, templateText, templateTypes);
 					}
 				}
 			}
@@ -2555,6 +2559,14 @@ void Parse::GetTemplateRealValueType(const HAZE_STRING& str, HazeDefineType& inT
 void Parse::IncLineCount(bool insert)
 {
 	m_LineCount++;
+
+	HAZE_CHAR code[20];
+	memcpy(code, m_CurrCode + 1, sizeof(code));
+	code[19] = '\0';
+
+	HAZE_LOG_ERR_W("Line %d %s\n", m_LineCount, code);
+
+
 
 	//#if HAZE_DEBUG_ENABLE
 	//

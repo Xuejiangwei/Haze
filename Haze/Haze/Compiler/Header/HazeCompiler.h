@@ -78,6 +78,12 @@ public:
 
 	static std::shared_ptr<HazeCompilerValue> GetTempRegister();
 
+	static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> GetUseTempRegister();
+
+	static void ClearTempRegister(const std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>>& useTempRegisters);
+
+	static void ResetTempRegister(const std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>>& useTempRegisters);
+
 	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* name);
 
 	static const HAZE_CHAR* GetRegisterName(const std::shared_ptr<HazeCompilerValue>& compilerRegister);

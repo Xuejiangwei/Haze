@@ -22,6 +22,13 @@ HazeCompilerFunction::~HazeCompilerFunction()
 {
 }
 
+void HazeCompilerFunction::SetStartEndLine(uint32 startLine, uint32 endLine)
+{
+	m_StartLine = startLine;
+	m_EndLine = endLine;
+	HAZE_LOG_ERR_W("SetStartEndLine %s %d %d\n", m_Name.c_str(), startLine, endLine);
+}
+
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, 
 	int line, std::shared_ptr<HazeCompilerValue> refValue,std::vector<std::shared_ptr<HazeCompilerValue>> arraySize,
 	std::vector<HazeDefineType>* params)

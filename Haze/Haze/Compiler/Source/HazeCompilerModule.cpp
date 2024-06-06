@@ -20,6 +20,41 @@
 #include "HazeCompilerClass.h"
 #include "HazeCompilerEnum.h"
 
+struct PushTempRegister
+{
+	PushTempRegister(HAZE_STRING_STREAM& hss, HazeCompiler* compiler, HazeCompilerModule* compilerModule)
+		: Size(0), Hss(hss), Compiler(compiler), Module(compilerModule)
+	{
+		UseTempRegisters = Compiler->GetUseTempRegister();
+		for (auto& regi : UseTempRegisters)
+		{
+			Hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
+			Module->GenVariableHzic(Module, Hss, regi.second);
+			Hss << std::endl;
+			Size += regi.second->GetSize();
+		}
+	}
+
+	~PushTempRegister()
+	{
+		for (auto& regi : UseTempRegisters)
+		{
+			Hss << GetInstructionString(InstructionOpCode::POP) << " ";
+			Module->GenVariableHzic(Module, Hss, regi.second);
+			Hss << std::endl;
+		}
+		
+		Compiler->ResetTempRegister(UseTempRegisters);
+	}
+
+	int Size;
+private:
+	HAZE_STRING_STREAM& Hss;
+	HazeCompiler* Compiler;
+	HazeCompilerModule* Module;
+	std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> UseTempRegisters;
+};
+
 
 HazeCompilerModule::HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName)
 	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_IsBeginCreateFunctionVariable(false),
@@ -166,12 +201,12 @@ std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerVal
 	return { nullptr, nullptr };
 }
 
-void HazeCompilerModule::StartCacheTemplate(HAZE_STRING& templateName, HAZE_STRING& templateText, std::vector<HAZE_STRING>& templateTypes)
+void HazeCompilerModule::StartCacheTemplate(HAZE_STRING& templateName, uint32 startLine, HAZE_STRING& templateText, std::vector<HAZE_STRING>& templateTypes)
 {
 	auto iter = m_HashMap_TemplateText.find(templateName);
 	if (iter == m_HashMap_TemplateText.end())
 	{
-		m_HashMap_TemplateText.insert({ std::move(templateName), { std::move(templateText), std::move(templateTypes) } });
+		m_HashMap_TemplateText.insert({ std::move(templateName), { startLine, std::move(templateText), std::move(templateTypes) } });
 	}
 }
 
@@ -200,9 +235,9 @@ bool HazeCompilerModule::ResetTemplateClassRealName(HAZE_STRING& inName, const s
 	{
 		if (templateText.first == inName)
 		{
-			if (templateTypes.size() != templateText.second.second.size())
+			if (templateTypes.size() != templateText.second.Types.size())
 			{
-				HAZE_LOG_ERR_W("生成模板<%s>错误, 类型数应为%d, 实际为%d!\n", inName.c_str(), templateText.second.second.size(), 
+				HAZE_LOG_ERR_W("生成模板<%s>错误, 类型数应为%d, 实际为%d!\n", inName.c_str(), templateText.second.Types.size(), 
 					templateTypes.size());
 				return false;
 			}
@@ -219,8 +254,8 @@ bool HazeCompilerModule::ResetTemplateClassRealName(HAZE_STRING& inName, const s
 			}
 
 			Parse p(m_Compiler);
-			p.InitializeString(templateText.second.first);
-			p.ParseTemplateContent(GetName(), inName, templateText.second.second, templateTypes);
+			p.InitializeString(templateText.second.Text, templateText.second.StartLine);
+			p.ParseTemplateContent(GetName(), inName, templateText.second.Types, templateTypes);
 			return true;
 		}
 	}
@@ -780,6 +815,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
 
+	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, callFunction->GetName(), size, params, thisPointerTo);
 
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::Function) 
@@ -811,6 +847,8 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 			return nullptr;
 		}
 	}
+
+	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 
 	FunctionCall(hss, varName, size, params, thisPointerTo);
 

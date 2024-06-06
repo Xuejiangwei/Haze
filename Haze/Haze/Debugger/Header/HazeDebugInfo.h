@@ -25,6 +25,7 @@ enum class HazeDebugInfoType : uint8
 	None,
 	ProgramEnd,
 	BreakInfo,
+	StepInInfo,
 };
 
 struct SourceLocation

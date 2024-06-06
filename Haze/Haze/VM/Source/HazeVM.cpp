@@ -15,6 +15,7 @@
 #include <cstdarg>
 
 extern std::unique_ptr<HazeDebugger> g_Debugger;
+extern void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData);
 
 HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
@@ -75,10 +76,10 @@ void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
 
 void HazeVM::CallFunction(const HAZE_CHAR* functionName, ...)
 {
-	auto function = GetFunctionByName(functionName);
+	auto& function = GetFunctionByName(functionName);
 	va_list args;
 	va_start(args, function.Params.size());
-	extern void CallHazeFunction(HazeStack * stack, FunctionData * funcData, va_list & args);
+	extern void CallHazeFunction(HazeStack * stack, const FunctionData * funcData, va_list & args);
 	CallHazeFunction(VMStack.get(), &function, args);
 	va_end(args);
 }
@@ -114,7 +115,8 @@ const HAZE_STRING* HazeVM::GetModuleNameByCurrFunction()
 {
 	for (size_t i = 0; i < Vector_FunctionTable.size(); i++)
 	{
-		if (&Vector_FunctionTable[i] == VMStack->GetCurrFrame().FunctionInfo)
+		auto functionInfo = VMStack->GetCurrFrame().FunctionInfo;
+		if (&Vector_FunctionTable[i] == functionInfo)
 		{
 			for (auto& Iter : Vector_ModuleData)
 			{
@@ -275,6 +277,64 @@ uint32 HazeVM::GetNextLine(uint32 CurrLine)
 	}
 
 	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
+}
+
+std::pair<HAZE_STRING, uint32> HazeVM::GetStepIn(uint32 CurrLine)
+{
+	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (size_t i = VMStack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
+	{
+		if (Instructions[i].InsCode == InstructionOpCode::LINE && Instructions[i].Operator[0].Extra.Line > CurrLine)
+		{
+			break;
+		}
+
+		if (Instructions[i].InsCode == InstructionOpCode::CALL)
+		{
+			const auto& oper = Instructions[i].Operator;
+			if (oper.size() >= 1)
+			{
+				if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
+				{
+					void* value = GetOperatorAddress(VMStack.get(), oper[0]);
+					uint64 functionAddress;
+					memcpy(&functionAddress, value, sizeof(functionAddress));
+					auto function = (FunctionData*)functionAddress;
+					if (function->FunctionDescData.Type == InstructionFunctionType::HazeFunction)
+					{
+						for (size_t i = 0; i < Vector_FunctionTable.size(); i++)
+						{
+							if (&Vector_FunctionTable[i] == function)
+							{
+								for (auto& Iter : Vector_ModuleData)
+								{
+									if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second)
+									{
+										return { Iter.Name, function->FunctionDescData.StartLine };
+									}
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					int functionIndex = GetFucntionIndexByName(oper[0].Variable.Name);
+					if (functionIndex >= 0)
+					{
+						auto& function = Vector_FunctionTable[functionIndex];
+						if (function.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
+						{
+							return { oper[1].Variable.Name, function.FunctionDescData.StartLine };
+						}
+					}
+				}
+			}
+		}
+	}
+
+	return { HAZE_STRING(), 0 };
 }
 
 uint32 HazeVM::GetCurrCallFunctionLine()

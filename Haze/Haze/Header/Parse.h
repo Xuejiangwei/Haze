@@ -27,7 +27,7 @@ public:
 
 	void InitializeFile(const HAZE_STRING& filePath);
 
-	void InitializeString(const HAZE_STRING& str);
+	void InitializeString(const HAZE_STRING& str, uint32 startLine = 0);
 
 	void ParseContent();
 
