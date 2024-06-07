@@ -895,7 +895,7 @@ std::shared_ptr<HazeCompilerValue> ASTWhileExpression::CodeGen()
 
 	auto parentBlock = m_Compiler->GetInsertBlock();
 	auto whileBlock = HazeBaseBlock::CreateBaseBlock(function->GenWhileBlockName(), function, parentBlock);
-	auto nextBlock = HazeBaseBlock::CreateBaseBlock(function->GenWhileBlockName(), function, parentBlock);
+	auto nextBlock = HazeBaseBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
 
 	whileBlock->SetLoopEnd(nextBlock.get());
 	whileBlock->SetLoopStep(whileBlock.get());

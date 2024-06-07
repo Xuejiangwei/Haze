@@ -24,6 +24,12 @@ public:
 		Function = 1 << 2,
 	};
 
+	struct CurrParseModuleData
+	{
+		HAZE_STRING ModuleName;
+		uint32 CurrLine;
+	};
+
 	void SetHook(void(*hookCall)(HazeVM* vm), uint32 type);
 
 	void AddBreakPoint(const char* message);
@@ -62,9 +68,11 @@ public:
 private:
 	void ClearCurrParseModuleData()
 	{
-		m_CurrPauseModule.first.clear();
-		m_CurrPauseModule.second = 0;
+		m_CurrPauseModule.ModuleName.clear();
+		m_CurrPauseModule.CurrLine = 0;
 		m_IsPause = false;
+		m_IsStepIn = false;
+		m_IsStepInInstruction = false;
 	}
 
 	bool CurrModuleIsStepOver();
@@ -93,9 +101,10 @@ private:
 	std::unordered_map<HAZE_STRING, std::pair<std::unordered_set<uint32>, HAZE_STRING>> m_BreakPoints;
 	std::unordered_map<HAZE_STRING, std::pair<std::unordered_set<uint32>, HAZE_STRING>> m_TempBreakPoints;
 
-	std::pair<HAZE_STRING, uint32> m_CurrPauseModule;
+	CurrParseModuleData m_CurrPauseModule;
 	bool m_IsPause;
 
+	std::vector<std::pair<HAZE_STRING, uint32>> m_StepInStack;
 	std::unordered_map<HAZE_STRING, bool> m_IsStepOvers;
 
 	bool m_IsStepIn;

@@ -36,6 +36,11 @@ void HazePreInit()
 
 void HazeEnd()
 {
+	if (g_Debugger)
+	{
+		g_Debugger->SendProgramEnd();
+	}
+
 	g_IsHazeEnd = true;
 	std::cout << std::endl << std::endl << "Haze End!" << std::endl;
 	system("pause");
@@ -45,6 +50,7 @@ void HazeExit()
 {
 	if (g_Debugger)
 	{
+		g_Debugger->SendProgramEnd();
 		g_Debugger.release();
 	}
 

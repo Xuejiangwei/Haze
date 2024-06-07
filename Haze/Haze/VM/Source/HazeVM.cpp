@@ -279,6 +279,21 @@ uint32 HazeVM::GetNextLine(uint32 CurrLine)
 	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
+uint32 HazeVM::GetNextInstructionLine(uint32 currLine)
+{
+	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (size_t i = VMStack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
+	{
+		if (Instructions[i].InsCode == InstructionOpCode::LINE && Instructions[i].Operator[0].Extra.Line >= currLine)
+		{
+			return Instructions[i].Operator[0].Extra.Line;
+		}
+	}
+
+	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
+}
+
 std::pair<HAZE_STRING, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 {
 	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;

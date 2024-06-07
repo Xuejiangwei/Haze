@@ -5,7 +5,7 @@
 #include "HazeFilePathHelper.h"
 #include "HazeDebuggerServer.h"
 
-#define ENABLE_DEBUGGER_LOG 1
+#define ENABLE_DEBUGGER_LOG 0
 
 static HAZE_STRING GetFileName(const HAZE_CHAR*& msg)
 {
@@ -132,6 +132,7 @@ HazeDebugger::HazeDebugger(HazeVM* vm, void(*endCall)())
 	m_BreakPoints.clear();
 	m_TempBreakPoints.clear();
 	m_IsStepOvers.clear();
+	m_StepInStack.clear();
 }
 
 HazeDebugger::~HazeDebugger()
@@ -223,13 +224,14 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* message)
 
 void HazeDebugger::OnExecLine(uint32 line)
 {
+	auto moduleName = m_VM->GetModuleNameByCurrFunction();
+
 #if ENABLE_DEBUGGER_LOG
 
-	HAZE_LOG_INFO(HAZE_TEXT("运行到<%d>行!\n"), line);
+	HAZE_LOG_INFO(HAZE_TEXT("运行到<%s><%d>行!\n"), moduleName->c_str(), line);
 
 #endif // ENABLE_DEBUGGER_LOG
 
-	auto moduleName = m_VM->GetModuleNameByCurrFunction();
 	auto iter = m_BreakPoints.find(*moduleName);
 	if (iter != m_BreakPoints.end())
 	{
@@ -249,13 +251,25 @@ void HazeDebugger::OnExecLine(uint32 line)
 		}
 	}
 
-	if (!m_IsPause && (CurrModuleIsStepOver() || m_IsStepIn))
+	if (!m_IsPause)
 	{
-		if (line == m_CurrPauseModule.second && *moduleName == m_CurrPauseModule.first)
+		if (CurrModuleIsStepOver())
 		{
-			m_IsPause = true;
+			if (*moduleName == m_CurrPauseModule.ModuleName)
+			{
+				if (line != m_CurrPauseModule.CurrLine)
+				{
+					m_IsPause = true;
+					m_CurrPauseModule.CurrLine = line;
+				}
+				/*else if (line <= m_CurrPauseModule.CurrLine && m_VM->FindClass)
+				{
+
+				}*/
+			}
 		}
-		else
+			
+		if (m_IsStepIn)
 		{
 			auto tempIter = m_TempBreakPoints.find(*moduleName);
 			if (tempIter != m_TempBreakPoints.end())
@@ -274,6 +288,17 @@ void HazeDebugger::OnExecLine(uint32 line)
 				}
 			}
 		}
+
+		if (m_StepInStack.size() > 0)
+		{
+			auto& stepInCache = m_StepInStack.back();
+			if (line == stepInCache.second && *moduleName == stepInCache.first)
+			{
+				m_IsPause = true;
+				m_StepInStack.pop_back();
+				m_CurrPauseModule = { *moduleName, line };
+			}
+		}
 	}
 
 	/*if (IsStepOver && Line != CurrPauseModule.second)
@@ -285,7 +310,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 	if (m_IsPause)
 	{
 #if ENABLE_DEBUGGER_LOG
-		HAZE_LOG_INFO(HAZE_TEXT("调试器暂停<%s><%d>!\n"), m_CurrPauseModule.first.c_str(), line);
+		HAZE_LOG_INFO(HAZE_TEXT("调试器暂停<%s><%d>!\n"), m_CurrPauseModule.ModuleName.c_str(), line);
 #endif
 
 		SendBreakInfo();
@@ -304,7 +329,7 @@ void HazeDebugger::StepOver()
 	if (m_IsPause)
 	{
 		m_IsPause = false;
-		m_CurrPauseModule.second = m_VM->GetNextLine(m_CurrPauseModule.second);
+		//m_CurrPauseModule.second = m_VM->GetNextLine(m_CurrPauseModule.second);
 	}
 	else
 	{
@@ -318,7 +343,8 @@ void HazeDebugger::StepIn()
 	{
 		m_IsPause = false;
 		m_IsStepIn = true;
-		auto pauseModule = m_VM->GetStepIn(m_CurrPauseModule.second);
+		m_StepInStack.push_back({ m_CurrPauseModule.ModuleName, m_VM->GetNextInstructionLine(m_CurrPauseModule.CurrLine) });
+		auto pauseModule = m_VM->GetStepIn(m_CurrPauseModule.CurrLine);
 		AddTempBreakPoint(pauseModule.first, pauseModule.second);
 
 		XJson json;
@@ -348,7 +374,7 @@ void HazeDebugger::SetJsonLocalVariable(XJson& json)
 	{
 		for (size_t i = 0; i < frame.FunctionInfo->Variables.size(); i++)
 		{
-			if (frame.FunctionInfo->Variables[i].Line < m_CurrPauseModule.second)
+			if (frame.FunctionInfo->Variables[i].Line < m_CurrPauseModule.CurrLine)
 			{
 				SetJsonVariableData(info[i], frame.FunctionInfo->Variables[i]);
 			}
@@ -416,8 +442,8 @@ void HazeDebugger::SendBreakInfo()
 	{
 		XJson json;
 		SetJsonType(json, HazeDebugInfoType::BreakInfo);
-		SetJsonBreakFilePath(json, GetModuleFilePath(m_CurrPauseModule.first));
-		SetJsonBreakLine(json, m_CurrPauseModule.second);
+		SetJsonBreakFilePath(json, GetModuleFilePath(m_CurrPauseModule.ModuleName));
+		SetJsonBreakLine(json, m_CurrPauseModule.CurrLine);
 		SetJsonLocalVariable(json);
 		//SetJsonModuleGlobalVariable(json);
 

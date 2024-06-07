@@ -110,11 +110,6 @@ void HazeStack::InitStackRegister()
 
 void HazeStack::OnCall(const FunctionData* info, int paramSize)
 {
-	if (g_Debugger)
-	{
-		g_Debugger->AddTempBreakPoint(m_VM->GetNextLine(m_VM->GetCurrCallFunctionLine()));
-	}
-
 	RegisterData registerDara({ GetVirtualRegister(CMP_REGISTER)->Data });
 	m_StackFrame.push_back(HazeStackFrame(info, paramSize, m_EBP, m_ESP - (HAZE_ADDRESS_SIZE + paramSize), registerDara));
 

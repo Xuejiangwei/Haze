@@ -73,6 +73,8 @@ private:
 
 	uint32 GetNextLine(uint32 CurrLine);
 
+	uint32 GetNextInstructionLine(uint32 currLine);
+
 	std::pair<HAZE_STRING, uint32> GetStepIn(uint32 CurrLine);
 
 	uint32 GetCurrCallFunctionLine();
