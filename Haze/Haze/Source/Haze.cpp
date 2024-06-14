@@ -8,6 +8,7 @@
 #include "Haze.h"
 #include "HazeHeader.h"
 #include "HazeLog.h"
+#include "HazeUtility.h"
 
 #include "HazeLibraryManager.h"
 #include "HazeDebugger.h"
@@ -66,6 +67,7 @@ enum class ParamType
 	MainFunction,
 	DebugType,
 	LoadLibrary,
+	Files,
 	ClassInherit,
 	ClassInheritLevel,
 };
@@ -80,6 +82,7 @@ uint32 GetParam(ParamType type, char** paramArray, int length)
 		{ ParamType::LoadLibrary, "-ld" },
 		{ ParamType::ClassInherit, "-ci" },
 		{ ParamType::ClassInheritLevel, "-cil" },
+		{ ParamType::Files, "-f" },
 	};
 
 	auto Iter = HashMap_Param.find(type);
@@ -168,7 +171,28 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 
 	auto vm = new HazeVM(runType);
 
-	vm->InitVM({ { mainFile , mainFile.filename().wstring().substr(0, mainFile.filename().wstring().length() - 3) } });
+	{
+		std::vector<HAZE_STRING> files;
+		files.push_back(mainFile);
+
+		int index = GetParam(ParamType::Files, argValue, argCount);
+		if (index > 0)
+		{
+			std::string str = argValue[index];
+			char* s = new char[str.size() + 1];
+			s[str.size()] = '\0';
+			strcpy_s(s, str.size() + 1, str.c_str());
+			char* p = nullptr;
+			char* token = strtok_s(s, " ", &p);
+			while (token)
+			{
+				files.push_back(String2WString(token));
+				token = strtok_s(NULL, " ", &p);
+			}
+		}
+
+		vm->InitVM(files);
+	}
 
 	//VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Code\\HazeCode.hz"), HAZE_TEST_FILE} });
 	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));

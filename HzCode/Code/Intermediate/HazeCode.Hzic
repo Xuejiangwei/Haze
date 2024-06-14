@@ -30,100 +30,77 @@ Variable 乙$9 8 80 4 36
 FunctionStart 17
 
 Block Entry
-LINE 16
-LINE 16
-LINE 18
-LINE 18
-MOV Temp_R4 1 7 8 甲$2 2 0 8
-ADD Temp_R4 1 7 8 乙$1 2 0 8
-PUSH Temp_R4 1 7 8
-PUSH Temp_R4 1 7 8
+MOV Temp_R1 1 7 8 甲$2 2 0 8
+ADD Temp_R1 1 7 8 乙$1 2 0 8
+PUSH Temp_R1 1 7 8
+PUSH Temp_R1 1 7 8
 PUSH 常字符串指针 1 2 17 5 0
 PUSH RetAddress 0 9 8
 CALL 打印 24 2 12 标准流
-LINE 20
 MOV 甲0$3 2 0 8 100 1 1 8
-LINE 21
 MOV 甲1$4 2 0 8 250 1 1 8
-LINE 22
 MOV 甲2$5 2 0 8 500 1 1 8
-LINE 23
-LEA Temp_R4 1 7 17 8 甲0$3 2 0 8
-PUSH Temp_R4 1 7 17 8
-PUSH Temp_R4 1 7 17 8
+LEA Temp_R1 1 7 17 8 甲0$3 2 0 8
+PUSH Temp_R1 1 7 17 8
+PUSH Temp_R1 1 7 17 8
 PUSH 指针列表 1 11 18 列表__整数*
 PUSH RetAddress 0 9 8
 CALL 列表__整数*@添加 24 1 16 列表
-LINE 24
-LEA Temp_R4 1 7 17 8 甲1$4 2 0 8
-PUSH Temp_R4 1 7 17 8
-PUSH Temp_R4 1 7 17 8
+LEA Temp_R1 1 7 17 8 甲1$4 2 0 8
+PUSH Temp_R1 1 7 17 8
+PUSH Temp_R1 1 7 17 8
 PUSH 指针列表 1 11 18 列表__整数*
 PUSH RetAddress 0 9 8
 CALL 列表__整数*@添加 24 1 16 列表
-LINE 25
-LEA Temp_R4 1 7 17 8 甲2$5 2 0 8
-PUSH Temp_R4 1 7 17 8
-PUSH Temp_R4 1 7 17 8
+LEA Temp_R1 1 7 17 8 甲2$5 2 0 8
+PUSH Temp_R1 1 7 17 8
+PUSH Temp_R1 1 7 17 8
 PUSH 指针列表 1 11 18 列表__整数*
 PUSH RetAddress 0 9 8
 CALL 列表__整数*@添加 24 1 16 列表
-LINE 26
 PUSH 0 1 1 8
 PUSH 指针列表 1 11 18 列表__整数*
 PUSH RetAddress 0 9 8
 CALL 列表__整数*@获得 24 1 12 列表
-LINE 26
 MOV 丙$6 2 0 17 8 Ret_R 1 4 17 8
-LINE 27
-MOVPV Temp_R4 1 7 8 丙$6 2 0 17 8
-PUSH Temp_R4 1 7 8
-PUSH Temp_R4 1 7 8
+MOVPV Temp_R1 1 7 8 丙$6 2 0 17 8
+PUSH Temp_R1 1 7 8
+PUSH Temp_R1 1 7 8
 PUSH 常字符串指针 1 2 17 5 1
 PUSH RetAddress 0 9 8
 CALL 打印 24 2 12 标准流
-LINE 29
 PUSH 我的五子棋$7 2 11 18 五子棋
 PUSH RetAddress 0 9 8
 CALL 五子棋@五子棋 24 0 8 五子棋
-LINE 31
 PUSH 常字符串指针 1 2 17 5 2
 PUSH RetAddress 0 9 8
 CALL 打印 24 1 8 标准流
-LINE 32
 PUSH 我的五子棋$7 2 11 18 五子棋
 PUSH RetAddress 0 9 8
 CALL 五子棋@开始游戏 24 0 8 五子棋
-LINE 33
-MOV Temp_R4 1 7 2 1 1 1 2
-BIT_XOR Temp_R4 1 7 2 0 1 1 2
-CMP Temp_R4 1 7 2 1 1 1 2
+MOV Temp_R1 1 7 2 1 1 1 2
+BIT_XOR Temp_R1 1 7 2 0 1 1 2
+CMP Temp_R1 1 7 2 1 1 1 2
 JE WhileBlock1 DefaultBlock2
 
 Block WhileBlock1
-LINE 35
 MOV 甲$8 2 0 8 100 1 1 8
-LINE 36
 MOV 乙$9 2 0 8 99 1 1 8
-LINE 37
-LEA Temp_R4 1 7 17 8 乙$9 2 0 8
-LEA Temp_R3 1 7 17 8 甲$8 2 0 8
-PUSH Temp_R3 1 7 17 8
-PUSH Temp_R4 1 7 17 8
-PUSH Temp_R4 1 7 17 8
-PUSH Temp_R3 1 7 17 8
+LEA Temp_R1 1 7 17 8 乙$9 2 0 8
+LEA Temp_R0 1 7 17 8 甲$8 2 0 8
+PUSH Temp_R0 1 7 17 8
+PUSH Temp_R1 1 7 17 8
+PUSH Temp_R1 1 7 17 8
+PUSH Temp_R0 1 7 17 8
 PUSH 常字符串指针 1 2 17 5 3
 PUSH RetAddress 0 9 8
 CALL 输入 24 3 24 标准流
-LINE 38
 PUSH 玩家默认颜色 1 0 8
 PUSH 乙$9 2 0 8
 PUSH 甲$8 2 0 8
 PUSH 我的五子棋$7 2 11 18 五子棋
 PUSH RetAddress 0 9 8
 CALL 五子棋@放子 24 3 20 五子棋
-LINE 40
-LINE 40
 PUSH 玩家默认颜色 1 0 8
 PUSH 我的五子棋$7 2 11 18 五子棋
 PUSH RetAddress 0 9 8
@@ -132,35 +109,29 @@ CMP Ret_R 1 4 2 1 1 1 2
 JE IfThenBlock3 DefaultBlock4
 
 Block IfThenBlock3
-LINE 42
 PUSH 常字符串指针 1 2 17 5 4
 PUSH RetAddress 0 9 8
 CALL 打印 24 1 8 标准流
-LINE 43
 JMP DefaultBlock2
 JMP DefaultBlock4
 
 Block DefaultBlock4
-LINE 46
-LEA Temp_R4 1 7 17 8 乙$9 2 0 8
-LEA Temp_R3 1 7 17 8 甲$8 2 0 8
-PUSH Temp_R3 1 7 17 8
-PUSH Temp_R4 1 7 17 8
+LEA Temp_R1 1 7 17 8 乙$9 2 0 8
+LEA Temp_R0 1 7 17 8 甲$8 2 0 8
+PUSH Temp_R0 1 7 17 8
+PUSH Temp_R1 1 7 17 8
 PUSH AI默认颜色 1 0 8
-PUSH Temp_R4 1 7 17 8
-PUSH Temp_R3 1 7 17 8
+PUSH Temp_R1 1 7 17 8
+PUSH Temp_R0 1 7 17 8
 PUSH 我的五子棋$7 2 11 18 五子棋
 PUSH RetAddress 0 9 8
 CALL 五子棋@模拟计算AI放子 24 3 28 五子棋
-LINE 47
 PUSH AI默认颜色 1 0 8
 PUSH 乙$9 2 0 8
 PUSH 甲$8 2 0 8
 PUSH 我的五子棋$7 2 11 18 五子棋
 PUSH RetAddress 0 9 8
 CALL 五子棋@放子 24 3 20 五子棋
-LINE 48
-LINE 48
 PUSH AI默认颜色 1 0 8
 PUSH 我的五子棋$7 2 11 18 五子棋
 PUSH RetAddress 0 9 8
@@ -169,11 +140,9 @@ CMP Ret_R 1 4 2 1 1 1 2
 JE IfThenBlock5 DefaultBlock6
 
 Block IfThenBlock5
-LINE 50
 PUSH 常字符串指针 1 2 17 5 5
 PUSH RetAddress 0 9 8
 CALL 打印 24 1 8 标准流
-LINE 51
 JMP DefaultBlock2
 JMP DefaultBlock6
 
@@ -181,7 +150,6 @@ Block DefaultBlock6
 JMP WhileBlock1
 
 Block DefaultBlock2
-LINE 55
 PUSH 常字符串指针 1 2 17 5 6
 PUSH RetAddress 0 9 8
 CALL 打印 24 1 8 标准流

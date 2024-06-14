@@ -1,4 +1,6 @@
+#include "HazeDefine.h"
 #include "XJson.h"
+#include "HazeLog.h"
 
 #include <stdarg.h>
 #include <cassert>
@@ -47,7 +49,7 @@ static void IntToStringBuffer(T intValue, char* str, unsigned long long size)
 	char buf[128] = { 0 };
 
 	T tmp = intValue < 0 ? -intValue : intValue;
-	
+
 	while (tmp && i < 128)
 	{
 		buf[i++] = (tmp % 10) + '0';
@@ -200,7 +202,7 @@ void XJson::JsonNodeData::ToString()
 	break;
 	case DataType::Float:
 	{
-		
+
 		DoubleToStringBuffer(m_Value.FloatValue, buffer, sizeof(buffer));
 		m_Content = buffer;
 	}
@@ -235,12 +237,12 @@ void XJson::operator=(bool val)
 		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
-	
+
 	if (m_Type != JsonType::Number)
 	{
 		m_Type = JsonType::Number;
 	}
-	
+
 	if (!m_NodeData)
 	{
 		m_NodeData = std::make_unique<JsonNodeData>();
@@ -262,7 +264,7 @@ void XJson::operator=(int val)
 	{
 		m_Type = JsonType::Number;
 	}
-	
+
 	if (!m_NodeData)
 	{
 		m_NodeData = std::make_unique<JsonNodeData>();
@@ -294,7 +296,7 @@ void XJson::operator=(unsigned int val)
 	m_NodeData->m_Value.UIntValue = val;
 }
 
-void XJson::operator=(int64 val)
+void XJson::operator=(long long val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
 	{
@@ -437,14 +439,14 @@ XJson& XJson::SetArray(unsigned long long idx)
 	}
 	if (!m_JsonValue)
 	{
-		m_JsonValue = std::make_unique<HazeJsonList>();
+		m_JsonValue = std::make_unique<XJsonList>();
 	}
-	
+
 	if (idx >= m_JsonValue->m_Childs.size())
 	{
 		m_JsonValue->m_Childs.resize(idx + 1);
 	}
-	
+
 	auto& child = m_JsonValue->m_Childs[idx];
 	if (!child)
 	{
@@ -470,10 +472,10 @@ XJson& XJson::SetObject(const char* str)
 		}
 		m_Type = JsonType::Object;
 	}
-	
+
 	if (!m_JsonValue)
 	{
-		m_JsonValue = std::make_unique<HazeJsonList>();
+		m_JsonValue = std::make_unique<XJsonList>();
 	}
 
 	XJson* child = nullptr;
@@ -484,7 +486,7 @@ XJson& XJson::SetObject(const char* str)
 		{
 			continue;
 		}
-		
+
 		if (strcmp(child->KeyNodeName(), str) == 0)
 		{
 			return *child;
@@ -547,6 +549,32 @@ std::unique_ptr<XJson> XJson::CreateNode(char code)
 	return std::make_unique<XJson>(ctype);
 }
 
+bool XJson::MakeReadContext()
+{
+	if (m_Type != JsonType::None)
+	{
+		if (m_DecodeContext && m_DecodeContext->m_Root != this)
+		{
+			HAZE_LOG_INFO("OpenJson warn:JsonNode is no root or empty!");
+			return false;
+		}
+	}
+	else
+	{
+		if (m_DecodeContext && m_DecodeContext->m_Root != this)
+		{
+			HAZE_LOG_INFO("OpenJson warn:JsonNode is no root or empty!");
+			return false;
+		};
+	}
+	Clear();
+	m_DecodeContext = std::make_shared<JsonBuffer>();
+	m_DecodeContext->m_Root = this;
+	m_DecodeContext->m_Offset = 0;
+	m_DecodeContext->m_ReadBuffer.clear();
+	return true;
+}
+
 void XJson::AddNode(std::unique_ptr<XJson>& node)
 {
 	if (node)
@@ -559,11 +587,44 @@ void XJson::AddNode(std::unique_ptr<XJson>& node)
 
 		if (!m_JsonValue)
 		{
-			m_JsonValue = std::make_unique<HazeJsonList>();
+			m_JsonValue = std::make_unique<XJsonList>();
 		}
 
 		m_JsonValue->Add(node);
 	}
+}
+
+void XJson::Clear()
+{
+	if (m_NodeData)
+	{
+		m_NodeData.release();
+	}
+	if (m_KeyNameNode)
+	{
+		m_KeyNameNode.release();
+	}
+	if (m_JsonValue)
+	{
+		assert(m_Type == JsonType::Object || m_Type == JsonType::Array);
+		m_JsonValue.release();
+	}
+	if (m_DecodeContext && m_DecodeContext->m_Root == this)
+	{
+		m_DecodeContext->m_Root = nullptr;
+		m_DecodeContext.reset();
+	}
+
+
+	if (m_Encodecontext != 0 && m_Encodecontext->m_Root == this)
+	{
+		m_Encodecontext->m_Root = nullptr;
+		m_Encodecontext.reset();
+	}
+
+	m_Type = JsonType::None;
+	m_ReadIndex = 0;
+	m_Length = 0;
 }
 
 void XJson::TrimSpace()
@@ -572,7 +633,7 @@ void XJson::TrimSpace()
 	{
 		return;
 	}
-	
+
 	char code = 0;
 	for (unsigned long long i = m_ReadIndex; i < m_DecodeContext->m_Size; ++i)
 	{
@@ -591,7 +652,7 @@ char XJson::GetCharCode()
 	{
 		return 0;
 	}
-	
+
 	if (m_ReadIndex < m_DecodeContext->m_Size)
 	{
 		return m_DecodeContext->m_Data[m_ReadIndex];
@@ -629,7 +690,7 @@ char XJson::CheckCode(char charCode)
 unsigned long long XJson::SearchCode(char code)
 {
 	char* data = m_DecodeContext->m_Data;
-	for (size_t i = m_ReadIndex; i < m_DecodeContext->m_Size; i++)
+	for (unsigned long long i = m_ReadIndex; i < m_DecodeContext->m_Size; i++)
 	{
 		if (data[i] == code)
 		{
@@ -640,7 +701,7 @@ unsigned long long XJson::SearchCode(char code)
 		}
 	}
 
-	return (unsigned long long)-1;
+	return (unsigned long long) - 1;
 }
 
 JsonType XJson::CodeToType(char code)
@@ -709,6 +770,12 @@ const char* XJson::NodeDataString()
 	return nullptr;
 }
 
+const std::string& XJson::NodeDataStringRef()
+{
+	const char* data = NodeDataString();
+	return m_NodeData->m_Content;
+}
+
 const char* XJson::KeyNodeName()
 {
 	if (m_KeyNameNode)
@@ -734,14 +801,19 @@ const std::string& XJson::Encode()
 
 bool XJson::Decode(const std::string& buffer)
 {
-	//if (!makeRContext()) return false;
+	if (!m_DecodeContext)
+	{
+		m_DecodeContext = std::make_shared<JsonBuffer>();
+		m_DecodeContext->m_Root = this;
+	}
+
 	m_DecodeContext->m_ReadBuffer = buffer;
 	m_DecodeContext->StartRead();
 	m_Type = CodeToType(GetChar());
 
 	//try 
 	//{
-		Read(m_DecodeContext, true);
+	Read(m_DecodeContext, true);
 	//}
 	//catch (const char* error) 
 	//{
@@ -750,6 +822,100 @@ bool XJson::Decode(const std::string& buffer)
 	//}
 
 	return true;
+}
+
+bool XJson::DecodeFromFile(const std::string& filePath)
+{
+	if (!MakeReadContext())
+	{
+		return false;
+	}
+
+	FILE* fp = 0;
+#ifdef _MSC_VER
+	fopen_s(&fp, filePath.c_str(), "rb");
+#else
+	fp = fopen(filePath.c_str(), "rb");
+#endif
+	if (fp == 0)
+	{
+#ifdef _MSC_VER
+		char buffer[1024] = { 0 };
+		strerror_s(buffer, sizeof(buffer), errno);
+		HAZE_LOG_INFO("OpenJson warn:decodeFile error:%s,%s\n", buffer, filePath.c_str());
+#else
+		HAZE_LOG_INFO("OpenJson warn:decodeFile error:%s,%s\n", strerror(errno), filePath.c_str());
+#endif
+		return false;
+	}
+	fseek(fp, 0, SEEK_END);
+	size_t size = ftell(fp);
+	fseek(fp, 0, SEEK_SET);
+
+	size_t ret = 0;
+	char buff[1024 * 8] = { 0 };
+	while (true)
+	{
+		ret = fread(buff, 1, sizeof(buff), fp);
+		if (ret < 0)
+		{
+#ifdef _MSC_VER
+			char buffer[1024] = { 0 };
+			strerror_s(buffer, sizeof(buffer), errno);
+			HAZE_LOG_INFO("OpenJson warn:decodeFile error:%s,%s\n", buffer, filePath.c_str());
+#else
+			HAZE_LOG_INFO("OpenJson warn:decodeFile error:%s,%s\n", strerror(errno), filePath.c_str());
+#endif
+			fclose(fp);
+			return false;
+		}
+		else if (ret == 0) break;
+		m_DecodeContext->m_ReadBuffer.append(buff, ret);
+	}
+	fclose(fp);
+
+	m_DecodeContext->StartRead();
+	m_Type = CodeToType(GetChar());
+	try {
+		Read(m_DecodeContext, true);
+	}
+	catch (const char* error)
+	{
+		HAZE_LOG_INFO("OpenJson warn:decodeFile catch exception %s", error);
+	}
+	return true;
+}
+
+double XJson::StringToDouble()
+{
+	const char* str = Data();
+	double dval = 0;
+	if (!str || strlen(str) == 0)
+		dval = (float)(1e+300 * 1e+300) * 0.0F;
+	else if (strcmp(str, "true") == 0)
+		dval = 1.0;
+	else if (strcmp(str, "false") == 0)
+		dval = 0.0;
+	else
+		dval = atof(str);
+	return dval;
+}
+
+float XJson::StringToFloat()
+{
+	return (float)StringToDouble();
+}
+
+int XJson::StringToInt32()
+{
+	int ret = atoi(Data());
+	return ret;
+}
+
+long long XJson::StringToInt64()
+{
+	long long ret = atoll(Data());
+	return ret;
 }
 
 void XJson::Read(std::shared_ptr<JsonBuffer> context, bool isRoot)
@@ -779,16 +945,16 @@ void XJson::Read(std::shared_ptr<JsonBuffer> context, bool isRoot)
 	case JsonType::None:
 		break;
 	case JsonType::String:
-		ReadString(); 
+		ReadString();
 		break;
 	case JsonType::Number:
-		ReadNumber(); 
+		ReadNumber();
 		break;
 	case JsonType::Object:
-		ReadObject(); 
+		ReadObject();
 		break;
 	case JsonType::Array:
-		ReadArray(); 
+		ReadArray();
 		break;
 	default:
 		break;
@@ -835,8 +1001,8 @@ void XJson::ReadString()
 			return;
 		}
 	}
-	size_t sidx = m_ReadIndex;
-	size_t eidx = SearchCode(code);
+	unsigned long long sidx = m_ReadIndex;
+	unsigned long long eidx = SearchCode(code);
 	if (eidx < 0)
 	{
 		//HAZE_LOG_ERR_W("丢失<'\"'>或<\"'\">!\n");
@@ -856,7 +1022,7 @@ void XJson::ReadObject()
 		//HAZE_LOG_ERR_W("丢失<'{'>!\n");
 		return;
 	}
-	
+
 	char code = 0;
 	unsigned long long oidx = m_ReadIndex;
 	while (m_ReadIndex < m_DecodeContext->m_Size)
@@ -867,7 +1033,7 @@ void XJson::ReadObject()
 			//HAZE_LOG_ERR_W("丢失<'}'>!\n");
 			return;
 		}
-		
+
 		if (CheckCode('}'))
 		{
 			break;
@@ -986,13 +1152,13 @@ void XJson::Write(std::shared_ptr<JsonBuffer> context, bool isRoot)
 		WriteString();
 		break;
 	case JsonType::Number:
-		WriteNumber(); 
+		WriteNumber();
 		break;
 	case JsonType::Object:
-		WriteObject(); 
+		WriteObject();
 		break;
 	case JsonType::Array:
-		WriteArray(); 
+		WriteArray();
 		break;
 	default:
 		break;

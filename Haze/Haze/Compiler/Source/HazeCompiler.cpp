@@ -70,7 +70,7 @@ void HazeCompiler::FinishParse()
 
 HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& moduleName)
 {
-	m_VM->ParseFile(GetModuleFilePath(moduleName), moduleName);
+	m_VM->ParseFile(GetModuleFilePath(moduleName));
 	return GetModule(moduleName);
 }
 

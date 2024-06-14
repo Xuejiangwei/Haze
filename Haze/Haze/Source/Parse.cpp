@@ -2560,12 +2560,13 @@ void Parse::IncLineCount(bool insert)
 {
 	m_LineCount++;
 
+#if HAZE_DEBUG_ENABLE
 	HAZE_CHAR code[20];
 	memcpy(code, m_CurrCode + 1, sizeof(code));
 	code[19] = '\0';
 
 	HAZE_LOG_ERR_W("Line %d %s\n", m_LineCount, code);
-
+#endif
 
 
 	//#if HAZE_DEBUG_ENABLE

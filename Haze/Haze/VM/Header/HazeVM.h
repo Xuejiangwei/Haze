@@ -29,13 +29,11 @@ public:
 
 	~HazeVM();
 
-	using ModulePair = std::pair<HAZE_STRING, HAZE_STRING>;
-
-	void InitVM(std::vector<ModulePair> Vector_ModulePath);
+	void InitVM(std::vector<HAZE_STRING> Vector_ModulePath);
 
 	bool IsDebug() const { return GenType == HazeRunType::Debug; }
 
-	void LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath);
+	void LoadStandardLibrary(std::vector<HAZE_STRING> Vector_ModulePath);
 
 	const std::vector<Instruction>& GetInstruction() const { return Instructions; }
 
@@ -43,7 +41,7 @@ public:
 
 	//void ParseString(const HAZE_STRING& String);
 
-	void ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& m_ModuleName);
+	void ParseFile(const HAZE_STRING& FilePath);
 
 	std::unique_ptr<HazeCompiler>& GetCompiler() { return m_Compiler; }
 

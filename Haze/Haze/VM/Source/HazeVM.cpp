@@ -13,6 +13,7 @@
 #include "HazeStack.h"
 #include "HazeMemory.h"
 #include <cstdarg>
+#include <filesystem>
 
 extern std::unique_ptr<HazeDebugger> g_Debugger;
 extern void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData);
@@ -27,11 +28,11 @@ HazeVM::~HazeVM()
 {
 }
 
-void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
+void HazeVM::InitVM(std::vector<HAZE_STRING> Vector_ModulePath)
 {
 	for (auto& iter : Vector_ModulePath)
 	{
-		ParseFile(iter.first, iter.second);
+		ParseFile(iter);
 	}
 
 	m_Compiler->FinishParse();
@@ -70,7 +71,7 @@ void HazeVM::InitVM(std::vector<ModulePair> Vector_ModulePath)
 	HazeMemory::GetMemory()->SetVM(this);
 }
 
-void HazeVM::LoadStandardLibrary(std::vector<ModulePair> Vector_ModulePath)
+void HazeVM::LoadStandardLibrary(std::vector<HAZE_STRING> Vector_ModulePath)
 {
 }
 
@@ -91,10 +92,12 @@ void HazeVM::CallFunction(const HAZE_CHAR* functionName, ...)
 //	P.ParseContent();
 //}
 
-void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& m_ModuleName)
+void HazeVM::ParseFile(const HAZE_STRING& FilePath)
 {
 	bool PopCurrModule = false;
-	if (m_Compiler->InitializeCompiler(m_ModuleName))
+	std::filesystem::path path(FilePath); 
+	auto moduleName = path.filename().wstring().substr(0, path.filename().wstring().length() - 3);
+	if (m_Compiler->InitializeCompiler(moduleName))
 	{
 		PopCurrModule = true;
 		Parse P(m_Compiler.get());
@@ -103,7 +106,7 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath, const HAZE_STRING& m_ModuleN
 		m_Compiler->FinishModule();
 	}
 
-	HashSet_RefModule.insert(m_ModuleName);
+	HashSet_RefModule.insert(moduleName);
 
 	if (PopCurrModule)
 	{
