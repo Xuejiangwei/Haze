@@ -84,6 +84,10 @@ public:
 
 	uint32 GetGlobalStringIndex(std::shared_ptr<HazeCompilerValue> value);
 
+	void PreStartCreateGlobalVariable();
+
+	void EndCreateGlobalVariable();
+
 	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, std::shared_ptr<HazeCompilerValue> refValue = nullptr,
 		std::vector<std::shared_ptr<HazeCompilerValue>> arraySize = {}, std::vector<HazeDefineType>* params = nullptr);
 
@@ -166,7 +170,10 @@ private:
 
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerEnum>> m_HashMap_Enums;
 
-	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> m_Variables; //这个是Symbol table(符号表)
+	//之后考虑全局变量放在一个block里面，复用其中的函数与成员变量
+	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> m_Variables; //全局变量
+	std::vector<std::pair<int, int>> m_VariablesAddress;
+	std::vector<HAZE_STRING> m_ModuleIRCodes;
 
 	std::unordered_map<HAZE_STRING, std::shared_ptr<HazeCompilerValue>> m_HashMap_StringTable;
 	std::unordered_map<int, const HAZE_STRING*> m_HashMap_StringMapping;

@@ -172,31 +172,58 @@ void BackendParse::Parse_I_Code_GlobalTable()
 		uint32 number = StringToStandardType<uint32>(m_CurrLexeme);
 
 		ModuleUnit::GlobalDataTable& table = m_CurrParseModule->m_GlobalDataTable;
-		table.m_Data.resize(number);
+		table.Data.resize(number);
 
-		for (size_t i = 0; i < table.m_Data.size(); i++)
+		for (size_t i = 0; i < table.Data.size(); i++)
 		{
-			GetNextLexmeAssign_HazeString(table.m_Data[i].m_Name);
+			//因为将所有的指令合在一起了，需要重新计算
+			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].StartAddress);
+			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].EndAddress);
 
-			GetNextLexmeAssign_StandardType(table.m_Data[i].Size);
+			GetNextLexmeAssign_HazeString(table.Data[i].Name);
 
-			GetNextLexmeAssign_CustomType<uint32>(table.m_Data[i].m_Type.PrimaryType);
+			GetNextLexmeAssign_StandardType(table.Data[i].Size);
 
-			if (IsHazeDefaultType(table.m_Data[i].m_Type.PrimaryType))
+			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].Type.PrimaryType);
+
+			if (IsHazeDefaultType(table.Data[i].Type.PrimaryType))
 			{
 				GetNextLexeme();
-				StringToHazeValueNumber(m_CurrLexeme, table.m_Data[i].m_Type.PrimaryType, table.m_Data[i].Value);
+				StringToHazeValueNumber(m_CurrLexeme, table.Data[i].Type.PrimaryType, table.Data[i].Value);
 			}
 			else
 			{
-				if (IsClassType(table.m_Data[i].m_Type.PrimaryType))
+				if (IsClassType(table.Data[i].Type.PrimaryType))
 				{
-					GetNextLexmeAssign_HazeString(table.m_Data[i].m_Type.CustomName);
-					table.ClassObjectAllSize += table.m_Data[i].Size;
+					GetNextLexmeAssign_HazeString(table.Data[i].Type.CustomName);
+					table.ClassObjectAllSize += table.Data[i].Size;
+				}
+			}
+		}
+
+		GetNextLexeme();
+		if (m_CurrLexeme == GetGlobalDataInitBlockStart())
+		{
+			GetNextLexeme();
+			while (m_CurrLexeme != GetGlobalDataInitBlockEnd())
+			{
+				ModuleUnit::FunctionInstruction Instruction;
+				Instruction.InsCode = GetInstructionByString(m_CurrLexeme);
+
+				ParseInstruction(Instruction);
+
+				table.Instructions.push_back(Instruction);
+
+				GetNextLexeme();
+
+				if (m_CurrLexeme == GetGlobalDataInitBlockEnd())
+				{
+					break;
 				}
 			}
 		}
 	}
+
 }
 
 void BackendParse::Parse_I_Code_StringTable()
@@ -536,11 +563,22 @@ void BackendParse::GenOpCodeFile()
 	{
 		newFunctionTable.m_Functions.insert(newFunctionTable.m_Functions.end(), 
 			iter.second->m_FunctionTable.m_Functions.begin(), iter.second->m_FunctionTable.m_Functions.end());
+
 		ReplaceStringIndex(newStringTable, newFunctionTable, functionCount);
 
-		newGlobalDataTable.m_Data.insert(newGlobalDataTable.m_Data.end(), 
-			iter.second->m_GlobalDataTable.m_Data.begin(), iter.second->m_GlobalDataTable.m_Data.end());
+		newGlobalDataTable.Data.insert(newGlobalDataTable.Data.end(),
+			iter.second->m_GlobalDataTable.Data.begin(), iter.second->m_GlobalDataTable.Data.end());
 		newGlobalDataTable.ClassObjectAllSize += iter.second->m_GlobalDataTable.ClassObjectAllSize;
+		
+		int globalInstructionSize = newGlobalDataTable.Instructions.size();
+		for (auto i = newGlobalDataTable.Data.size() - iter.second->m_GlobalDataTable.Data.size(); i < newGlobalDataTable.Data.size(); i++)
+		{
+			newGlobalDataTable.Data[i].StartAddress += globalInstructionSize;
+			newGlobalDataTable.Data[i].EndAddress += globalInstructionSize;
+		}
+		
+		newGlobalDataTable.Instructions.insert(newGlobalDataTable.Instructions.end(),
+			iter.second->m_GlobalDataTable.Instructions.begin(), iter.second->m_GlobalDataTable.Instructions.end());
 
 		newStringTable.Strings.insert(newStringTable.Strings.end(), 
 			iter.second->m_StringTable.Strings.begin(), iter.second->m_StringTable.Strings.end());
@@ -668,8 +706,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 	}
 }
 
-inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
-	std::unordered_map<HAZE_STRING, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable)
+inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
 	HAZE_STRING objName;
 	HAZE_STRING memberName;
@@ -682,7 +719,7 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 		index = (int)newGlobalDataTable.GetIndex(objName);
 		if (index >= 0)
 		{
-			auto Class = GetClass(newGlobalDataTable.m_Data[index].m_Type.CustomName);
+			auto Class = GetClass(newGlobalDataTable.Data[index].Type.CustomName);
 			if (Class)
 			{
 				operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
@@ -735,6 +772,41 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	for (size_t i = 0; i < newFunctionTable.m_Functions.size(); i++)
 	{
 		HashMap_FunctionIndexAndAddress[newFunctionTable.m_Functions[i].Name] = i;
+	}
+
+	for (size_t i = 0; i < newGlobalDataTable.Instructions.size(); i++)
+	{
+		if (!IsIgnoreFindAddressInsCode(newGlobalDataTable.Instructions[i]))
+		{
+			HAZE_STRING objName;
+			HAZE_STRING memberName;
+
+			for (auto& operatorData : newGlobalDataTable.Instructions[i].Operator)
+			{
+				if (!IsIgnoreFindAddress(operatorData))
+				{
+					if (IS_SCOPE_GLOBAL(operatorData.Scope))
+					{
+						ResetGlobalOperatorAddress(operatorData, newGlobalDataTable);
+					}
+					else if (IS_SCOPE_TEMP(operatorData.Scope))
+					{
+						if (operatorData.Desc == HazeDataDesc::FunctionAddress)
+						{
+							operatorData.AddressType = InstructionAddressType::FunctionAddress;
+						}
+						else
+						{
+							HAZE_LOG_ERR_W("寻找全局变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
+						}
+					}
+					else
+					{
+						HAZE_LOG_ERR_W("寻找变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
+					}
+				}
+			}
+		}
 	}
 
 	//替换变量为索引或相对函数起始偏移
@@ -800,7 +872,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 						}
 						else if (IS_SCOPE_GLOBAL(operatorData.Scope))
 						{
-							ResetGlobalOperatorAddress(operatorData, m_CurrFunction, localVariables, newGlobalDataTable);
+							ResetGlobalOperatorAddress(operatorData, newGlobalDataTable);
 						}
 						else if (IS_SCOPE_TEMP(operatorData.Scope))
 						{

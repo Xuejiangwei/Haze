@@ -250,7 +250,11 @@ void HazeMemory::Mark()
 
 		for (auto& it : m_VM->Vector_GlobalData)
 		{
-			MarkVariable(it.m_Type, (uint64)it.Value.Value.Pointer, (char*)it.Value.Value.Pointer);
+			if (it.second)
+			{
+				MarkVariable(it.first.m_Type, (uint64)it.first.Value.Value.Pointer, 
+					(char*)it.first.Value.Value.Pointer);
+			}
 		}
 
 		//因为只在函数结束调用Ret指令时会GC，所以只存在Ret虚拟寄存器有引用的情况

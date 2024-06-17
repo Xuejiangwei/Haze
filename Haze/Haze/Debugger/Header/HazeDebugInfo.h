@@ -6,6 +6,7 @@ enum class HazeDebugOperatorType : uint8
 {
 	None,
 	Start,
+	End,
 	StepOver,
 	StepIn,
 	StepInstruction,

@@ -164,7 +164,7 @@ void HazeExecuteFile::WriteModule(const std::unordered_map<HAZE_STRING, std::sha
 		m_FileStream->write(s_BinaryString.c_str(), number);
 
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(globalDataIndex));
-		globalDataIndex += (uint32)iter.second->m_GlobalDataTable.m_Data.size();
+		globalDataIndex += (uint32)iter.second->m_GlobalDataTable.Data.size();
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(globalDataIndex));
 
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(stringIndex));
@@ -187,46 +187,53 @@ void HazeExecuteFile::WriteExecuteFile(const ModuleUnit::GlobalDataTable& global
 	WriteGlobalDataTable(globalDataTable);
 	WriteStringTable(stringTable);
 	WriteClassTable(classTable);
-	WriteFunctionTable(functionTable);
+	auto funcInstructionLength = WriteFunctionTable(functionTable, (uint32)globalDataTable.Instructions.size());
+	WriteAllInstruction(functionTable, globalDataTable, funcInstructionLength);
 }
 
 void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& table)
 {
 	FileFormatCheck check(ExeFileType::Out, HazeFileFormat::GlobalDataTable, m_States);
 
-	uint32 number = (uint32)table.m_Data.size();
+	uint32 number = (uint32)table.Data.size();
 	m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 
 	number = (uint32)table.ClassObjectAllSize;
 	m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 
-	for (auto& iter : table.m_Data)
+	for (auto& iter : table.Data)
 	{
-		s_BinaryString = WString2String(iter.m_Name);
+		number = (uint32)iter.StartAddress;
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+
+		number = (uint32)iter.EndAddress;
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+
+		s_BinaryString = WString2String(iter.Name);
 		number = (uint32)s_BinaryString.size();
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 		m_FileStream->write(s_BinaryString.c_str(), number);
 
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Size));
 
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.m_Type.PrimaryType));
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Type.PrimaryType));
 
-		if (iter.m_Type.NeedSecondaryType())
+		if (iter.Type.NeedSecondaryType())
 		{
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.m_Type.SecondaryType));
+			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Type.SecondaryType));
 		}
 
-		if (iter.m_Type.NeedCustomName())
+		if (iter.Type.NeedCustomName())
 		{
-			s_BinaryString = WString2String(iter.m_Type.CustomName);
+			s_BinaryString = WString2String(iter.Type.CustomName);
 			number = (uint32)s_BinaryString.size();
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 			m_FileStream->write(s_BinaryString.c_str(), number);
 		}
 
-		if (!(iter.m_Type.NeedCustomName() || iter.m_Type.NeedSecondaryType()))
+		if (!(iter.Type.NeedCustomName() || iter.Type.NeedSecondaryType()))
 		{
-			m_FileStream->write(GetBinaryPointer(iter.m_Type.PrimaryType, iter.Value), iter.Size);
+			m_FileStream->write(GetBinaryPointer(iter.Type.PrimaryType, iter.Value), iter.Size);
 		}
 	}
 }
@@ -287,9 +294,9 @@ void HazeExecuteFile::WriteClassTable(const ModuleUnit::ClassTable& table)
 	}
 }
 
-void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& table)
+uint32 HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& table, uint32 globalDataInsLength)
 {
-	uint32 instructionStartAddr = 0;
+	uint32 instructionStartAddr = globalDataInsLength;
 	{
 		FileFormatCheck check(ExeFileType::Out, HazeFileFormat::FunctionTable, m_States);
 
@@ -362,14 +369,22 @@ void HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& table)
 		}
 	}
 
-	WriteFunctionInstruction(table, instructionStartAddr);
+	return instructionStartAddr;
 }
 
-void HazeExecuteFile::WriteFunctionInstruction(const ModuleUnit::FunctionTable& table, uint32 length)
+void HazeExecuteFile::WriteAllInstruction(const ModuleUnit::FunctionTable& table,
+	const ModuleUnit::GlobalDataTable& globalDataTable, uint32 funcInslength)
 {
 	FileFormatCheck check(ExeFileType::Out, HazeFileFormat::InstructionTable, m_States);
 
-	m_FileStream->write(HAZE_WRITE_AND_SIZE(length));  //指令总个数
+	funcInslength += (uint32)globalDataTable.Instructions.size();
+	m_FileStream->write(HAZE_WRITE_AND_SIZE(funcInslength));  //指令总个数
+	
+	for (auto& instruction : globalDataTable.Instructions)
+	{
+		WriteInstruction(instruction);
+	}
+
 	for (auto& function : table.m_Functions)
 	{
 		for (auto& ins : function.Instructions)
@@ -471,6 +486,7 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* vm)
 	uint32 number = 0;
 	m_InFileStream->read(HAZE_READ(number));
 	vm->Vector_GlobalData.resize(number);
+	vm->m_GlobalDataInitAddress.resize(number);
 
 	m_InFileStream->read(HAZE_READ(number));
 	vm->Vector_GlobalDataClassObjectMemory.resize(number);
@@ -478,36 +494,43 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* vm)
 	int classObjectMemoryIndex = 0;
 	for (uint64 i = 0; i < vm->Vector_GlobalData.size(); i++)
 	{
+		vm->Vector_GlobalData[i].second = false;
+		m_InFileStream->read(HAZE_READ(number));
+		vm->m_GlobalDataInitAddress[i].first = number;
+		m_InFileStream->read(HAZE_READ(number));
+		vm->m_GlobalDataInitAddress[i].second = number;
+
+		auto& globalData = vm->Vector_GlobalData[i].first;
 		m_InFileStream->read(HAZE_READ(number));
 
 		s_BinaryString.resize(number);
 		m_InFileStream->read(s_BinaryString.data(), number);
-		vm->Vector_GlobalData[i].m_Name = String2WString(s_BinaryString);
+		globalData.m_Name = String2WString(s_BinaryString);
 
 		int size = 0;
 		m_InFileStream->read(HAZE_READ(size));
 
-		m_InFileStream->read((char*)&vm->Vector_GlobalData[i].m_Type.PrimaryType, sizeof(HazeValueType));
+		m_InFileStream->read((char*)&globalData.m_Type.PrimaryType, sizeof(HazeValueType));
 
-		if (vm->Vector_GlobalData[i].m_Type.NeedSecondaryType())
+		if (globalData.m_Type.NeedSecondaryType())
 		{
-			m_InFileStream->read((char*)&vm->Vector_GlobalData[i].m_Type.SecondaryType, sizeof(HazeValueType));
+			m_InFileStream->read((char*)&globalData.m_Type.SecondaryType, sizeof(HazeValueType));
 		}
-		if (vm->Vector_GlobalData[i].m_Type.NeedCustomName())
+		if (globalData.m_Type.NeedCustomName())
 		{
 			m_InFileStream->read(HAZE_READ(number));
 			s_BinaryString.resize(number);
 			m_InFileStream->read(s_BinaryString.data(), number);
-			vm->Vector_GlobalData[i].m_Type.CustomName = String2WString(s_BinaryString);
+			globalData.m_Type.CustomName = String2WString(s_BinaryString);
 		}
 
-		if (!(vm->Vector_GlobalData[i].m_Type.NeedCustomName() || vm->Vector_GlobalData[i].m_Type.NeedSecondaryType()))
+		if (!(globalData.m_Type.NeedCustomName() || globalData.m_Type.NeedSecondaryType()))
 		{
-			m_InFileStream->read(GetBinaryPointer(vm->Vector_GlobalData[i].m_Type.PrimaryType, vm->Vector_GlobalData[i].Value), size);
+			m_InFileStream->read(GetBinaryPointer(globalData.m_Type.PrimaryType, globalData.Value), size);
 		}
 		else
 		{
-			vm->Vector_GlobalData[i].Address = &vm->Vector_GlobalDataClassObjectMemory[classObjectMemoryIndex];
+			globalData.Address = &vm->Vector_GlobalDataClassObjectMemory[classObjectMemoryIndex];
 			classObjectMemoryIndex += size;
 		}
 	}

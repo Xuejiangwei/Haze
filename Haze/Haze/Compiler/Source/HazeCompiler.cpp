@@ -77,6 +77,7 @@ HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& moduleName)
 void HazeCompiler::FinishModule()
 {
 	m_CompilerModules[GetCurrModuleName()]->FinishModule();
+	ClearBlockPoint();
 }
 
 HazeCompilerModule* HazeCompiler::GetModule(const HAZE_STRING& name)

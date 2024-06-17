@@ -74,6 +74,16 @@ const HAZE_CHAR* GetGlobalDataHeaderString()
 	return HEADER_STRING_GLOBAL_DATA;
 }
 
+const HAZE_CHAR* GetGlobalDataInitBlockStart()
+{
+	return GLOBAL_DATA_INIT_BLOCK_START;
+}
+
+const HAZE_CHAR* GetGlobalDataInitBlockEnd()
+{
+	return GLOBAL_DATA_INIT_BLOCK_END;
+}
+
 const HAZE_CHAR* GetStringTableHeaderString()
 {
 	return HEADER_STRING_STRING_TABLE;

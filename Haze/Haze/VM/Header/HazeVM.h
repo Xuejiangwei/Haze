@@ -56,8 +56,6 @@ public:
 
 	const HAZE_STRING& GetHazeStringByIndex(int Index) const { return Vector_StringTable[Index].second; }
 
-	void* GetGlobalValue(const HAZE_STRING& m_Name);
-
 	char* GetGlobalValueByIndex(uint32 Index);
 
 	ClassData* FindClass(const HAZE_STRING& m_ClassName);
@@ -94,7 +92,8 @@ private:
 	std::vector<ModuleData> Vector_ModuleData;
 	std::vector<HAZE_STRING> m_ModuleFilePath;
 
-	std::vector<HazeVariable> Vector_GlobalData;
+	std::vector<std::pair<HazeVariable, bool>> Vector_GlobalData; //是否初始化
+	std::vector<std::pair<uint32, uint32>> m_GlobalDataInitAddress;	//全局变量初始化开始地址与结束地址
 
 	std::vector<std::pair<HAZE_STRING, HAZE_STRING>> Vector_StringTable;
 

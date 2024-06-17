@@ -65,8 +65,7 @@ private:
 	inline void ResetLocalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
 		std::unordered_map<HAZE_STRING, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable);
 
-	inline void ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
-		std::unordered_map<HAZE_STRING, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable);
+	inline void ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::GlobalDataTable& newGlobalDataTable);
 
 	void FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable, ModuleUnit::FunctionTable& newFunctionTable);
 

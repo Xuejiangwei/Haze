@@ -22,6 +22,10 @@ int Log2(int n);
 
 const HAZE_CHAR* GetGlobalDataHeaderString();
 
+const HAZE_CHAR* GetGlobalDataInitBlockStart();
+
+const HAZE_CHAR* GetGlobalDataInitBlockEnd();
+
 const HAZE_CHAR* GetStringTableHeaderString();
 
 const HAZE_CHAR* GetClassTableHeaderString();

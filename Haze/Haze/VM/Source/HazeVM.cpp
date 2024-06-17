@@ -150,89 +150,36 @@ const FunctionData& HazeVM::GetFunctionByName(const HAZE_STRING& m_Name)
 	return Vector_FunctionTable[Index];
 }
 
-void* HazeVM::GetGlobalValue(const HAZE_STRING& m_Name)
-{
-	static HAZE_STRING ObjectName;
-	static HAZE_STRING MemberName;
-
-	auto Pos = m_Name.find(HAZE_CLASS_POINTER_ATTR);
-	if (Pos != HAZE_STRING::npos)
-	{
-		ObjectName = m_Name.substr(0, Pos);
-		MemberName = m_Name.substr(Pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
-
-		for (auto& Iter : Vector_GlobalData)
-		{
-			if (Iter.m_Name == ObjectName)
-			{
-				auto Class = FindClass(Iter.GetType().CustomName);
-				if (Class)
-				{
-					for (size_t i = 0; i < Class->Members.size(); i++)
-					{
-						if (Class->Members[i].Variable.Name == MemberName)
-						{
-							uint64 Address = 0;
-							memcpy(&Address, Iter.Value.Value.Pointer, sizeof(Address));
-							return (char*)(Address + Class->Members[i].Offset);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	Pos = m_Name.find(HAZE_CLASS_ATTR);
-	if (Pos != HAZE_STRING::npos)
-	{
-		ObjectName = m_Name.substr(0, Pos);
-		MemberName = m_Name.substr(Pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
-
-		for (auto& Iter : Vector_GlobalData)
-		{
-			if (Iter.m_Name == ObjectName)
-			{
-				auto Class = FindClass(Iter.GetType().CustomName);
-				if (Class)
-				{
-					for (size_t i = 0; i < Class->Members.size(); i++)
-					{
-						if (Class->Members[i].Variable.Name == MemberName)
-						{
-							return (char*)Iter.Address + Class->Members[i].Offset;
-						}
-					}
-				}
-			}
-		}
-	}
-	else
-	{
-		for (auto& Iter : Vector_GlobalData)
-		{
-			if (Iter.m_Name == m_Name)
-			{
-				return &Iter.Value.Value;
-			}
-		}
-	}
-
-	return nullptr;
-}
-
 char* HazeVM::GetGlobalValueByIndex(uint32 Index)
 {
 	if (Index < Vector_GlobalData.size())
 	{
-		if (IsClassType(Vector_GlobalData[Index].m_Type.PrimaryType))
+		if (Vector_GlobalData[Index].second)
 		{
-			return (char*)Vector_GlobalData[Index].Address;
+			if (IsClassType(Vector_GlobalData[Index].first.m_Type.PrimaryType))
+			{
+				return (char*)Vector_GlobalData[Index].first.Address;
+			}
+			else
+			{
+				return (char*)(&Vector_GlobalData[Index].first.Value);
+			}
 		}
 		else
 		{
-			return (char*)(&Vector_GlobalData[Index].Value);
+			Vector_GlobalData[Index].second = true;
+			VMStack->RunGlobalDataInit(m_GlobalDataInitAddress[Index].first, m_GlobalDataInitAddress[Index].second);
+			if (IsClassType(Vector_GlobalData[Index].first.m_Type.PrimaryType))
+			{
+				return (char*)Vector_GlobalData[Index].first.Address;
+			}
+			else
+			{
+				return (char*)(&Vector_GlobalData[Index].first.Value);
+			}
 		}
 	}
+	
 	return nullptr;
 }
 

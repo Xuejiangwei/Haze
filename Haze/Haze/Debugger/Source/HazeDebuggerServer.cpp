@@ -117,6 +117,10 @@ static bool HandleMessage(char* Message)
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<开始>操作\n"));
 		g_Debugger->Start();
 		return true;
+	case HazeDebugOperatorType::End:
+		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<退出>操作\n"));
+		g_Debugger->End();
+		return true;
 	case HazeDebugOperatorType::StepOver:
 		HAZE_LOG_INFO(HAZE_TEXT("Haze调试接收到<单步断点>操作\n"));
 		g_Debugger->StepOver();

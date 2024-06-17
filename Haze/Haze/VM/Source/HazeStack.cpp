@@ -20,6 +20,42 @@ HazeStack::~HazeStack()
 {
 }
 
+void HazeStack::RunGlobalDataInit(uint32 startPC, uint32 endPC)
+{
+	int pc = m_PC;
+
+	bool isConstructor = endPC - startPC > 1;
+	for (m_PC = startPC; true; m_PC++)
+	{
+		auto iter = g_InstructionProcessor.find(m_VM->Instructions[m_PC].InsCode);
+		if (iter != g_InstructionProcessor.end())
+		{
+			iter->second(this);
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("<初始化全局变量错误>："  HAZE_TEXT("!\n"));
+			return;
+		}
+
+		if (m_PC == endPC - 1)
+		{
+			if (isConstructor)
+			{
+				isConstructor = false;
+			}
+			else
+			{
+				break;
+			}
+
+		}
+
+	}
+
+	m_PC = pc;
+}
+
 void HazeStack::JmpTo(const InstructionData& data)
 {
 	auto& function = m_StackFrame.back().FunctionInfo;

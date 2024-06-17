@@ -278,6 +278,12 @@ void Parse::ParseContent()
 			//case HazeToken::String:
 		case HazeToken::Identifier:
 		case HazeToken::CustomClass:
+		case HazeToken::PointerBase:
+		case HazeToken::PointerClass:
+		case HazeToken::ReferenceBase:
+		case HazeToken::ReferenceClass:
+		case HazeToken::PointerFunction:
+		case HazeToken::PointerPointer:
 		{
 			auto ast = ParseExpression();
 			ast->CodeGen();
@@ -321,6 +327,7 @@ void Parse::ParseContent()
 		}
 		break;
 		default:
+			PARSE_ERR_W("未能找到生成相应Token的AST处理");
 			break;
 		}
 	}

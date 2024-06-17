@@ -519,9 +519,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 
 	bool needTemp = s_HashSet_NoTemp.find(opCode) == s_HashSet_NoTemp.end();
 
+	HAZE_STRING_STREAM ss;
+	
 	if (!m_CurrFunction.empty())
 	{
-		HAZE_STRING_STREAM ss;
 
 		if (needTemp)
 		{
@@ -553,6 +554,21 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(
 		ss << std::endl;
 
 		m_Compiler->GetInsertBlock()->PushIRCode(ss.str());
+	}
+	else if (left->IsGlobalVariable())
+	{
+		ss << GetInstructionString(opCode) << " ";
+		GenVariableHzic(this, ss, retValue);
+
+		if (right)
+		{
+			ss << " ";
+			GenVariableHzic(this, ss, right);
+		}
+
+		ss << std::endl;
+
+		m_ModuleIRCodes.push_back(ss.str());
 	}
 
 	return retValue;
@@ -648,6 +664,15 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(cons
 		CreateVariable(this, var, HazeVariableScope::Global, HazeDataDesc::None, 0, refValue, arraySize, params) });
 
 	auto& retValue = m_Variables.back().second;
+	if (!IsHazeDefaultType(retValue->GetValueType().PrimaryType))
+	{
+		if (retValue->IsClass())
+		{
+
+		}
+	}
+
+
 
 	return retValue;
 }
@@ -755,7 +780,16 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HAZE_STRING
 		}*/
 
 		hss << std::endl;
-		insertBlock->PushIRCode(hss.str());
+
+		if (insertBlock)
+		{
+			insertBlock->PushIRCode(hss.str());
+		}
+		else
+		{
+			m_ModuleIRCodes.push_back(hss.str());
+		}
+
 		hss.str(HAZE_TEXT(""));
 
 		size += Variable->GetSize();
@@ -797,7 +831,16 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HAZE_STRING
 		}
 
 		hss << std::endl;
-		insertBlock->PushIRCode(hss.str());
+
+		if (insertBlock)
+		{
+			insertBlock->PushIRCode(hss.str());
+		}
+		else
+		{
+			m_ModuleIRCodes.push_back(hss.str());
+		}
+
 		hss.str(HAZE_TEXT(""));
 
 		size += GetSizeByHazeType(HazeValueType::PointerClass);
@@ -805,7 +848,14 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HAZE_STRING
 
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
 		<< " " << (uint32)HazeDataDesc::Address << " " << CAST_TYPE(HazeValueType::Int) << std::endl;
-	insertBlock->PushIRCode(hss.str());
+	if (insertBlock)
+	{
+		insertBlock->PushIRCode(hss.str());
+	}
+	else
+	{
+		m_ModuleIRCodes.push_back(hss.str());
+	}
 	hss.str(HAZE_TEXT(""));
 }
 
@@ -820,7 +870,15 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::Function) 
 		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << std::endl;
-	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
+
+	if (m_Compiler->GetInsertBlock())
+	{
+		m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
+	}
+	else
+	{
+		m_ModuleIRCodes.push_back(hss.str());
+	}
 
 	auto retRegister = HazeCompiler::GetRegister(RET_REGISTER);
 
@@ -902,6 +960,16 @@ uint32 HazeCompilerModule::GetGlobalStringIndex(std::shared_ptr<HazeCompilerValu
 	}
 
 	return 0;
+}
+
+void HazeCompilerModule::PreStartCreateGlobalVariable()
+{
+	m_VariablesAddress.push_back({ (int)m_ModuleIRCodes.size(), 0 });
+}
+
+void HazeCompilerModule::EndCreateGlobalVariable()
+{
+	m_VariablesAddress[m_VariablesAddress.size() - 1].second = m_ModuleIRCodes.size();
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const HAZE_STRING& name)
@@ -1229,25 +1297,38 @@ void HazeCompilerModule::GenICode()
 	hss << GetGlobalDataHeaderString() << std::endl;
 	hss << m_Variables.size() << std::endl;
 
-	for (auto& iter : m_Variables)
+	for (int i = 0; i < m_Variables.size(); i++)
 	{
-		hss << iter.first << " " << iter.second->GetSize() << " " << CAST_TYPE(iter.second->GetValueType().PrimaryType) << " ";
+		auto& var = m_Variables[i];
+	
+		hss << m_VariablesAddress[i].first << " " << m_VariablesAddress[i].second << " ";
 
-		if (IsHazeDefaultType(iter.second->GetValueType().PrimaryType))
+		hss << var.first << " " << var.second->GetSize() << " " << CAST_TYPE(var.second->GetValueType().PrimaryType) << " ";
+
+		if (IsHazeDefaultType(var.second->GetValueType().PrimaryType))
 		{
-			HazeCompilerStream(hss, iter.second);
+			HazeCompilerStream(hss, var.second);
 		}
 		else
 		{
-			if (iter.second->IsClass())
+			if (var.second->IsClass())
 			{
-				auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(iter.second);
+				auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(var.second);
 				hss << ClassValue->GetOwnerClassName();
 			}
 		}
 
 		hss << std::endl;
 	}
+
+	//全局变量初始化
+	hss << GetGlobalDataInitBlockStart() << std::endl;
+	for (size_t i = 0; i < m_ModuleIRCodes.size(); i++)
+	{
+		hss << m_ModuleIRCodes[i].c_str();
+	}
+	hss << GetGlobalDataInitBlockEnd() << std::endl;
+	
 
 	/*
 	*	字符串表 ：	个数

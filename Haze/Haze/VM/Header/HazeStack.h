@@ -18,8 +18,6 @@ public:
 
 	~HazeStack();
 
-	void StartMain(uint32 address);
-
 public:
 	char* GetAddressByEBP(int offset) { return &m_StackMain[(uint64)m_EBP + offset]; }
 
@@ -28,6 +26,8 @@ public:
 	HazeVM* GetVM() const { return m_VM; }
 
 	int GetCurrPC() const { return m_PC; }
+
+	void RunGlobalDataInit(uint32 startPC, uint32 endPC);
 
 public:
 	struct RegisterData

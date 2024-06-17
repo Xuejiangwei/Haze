@@ -126,8 +126,8 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 }
 
 HazeDebugger::HazeDebugger(HazeVM* vm, void(*endCall)()) 
-	: m_VM(vm), m_EndCall(endCall), m_HookFunctionCall(&HookCall), m_HookType((uint32)DebuggerHookType::Line), m_IsPause(true),
-	m_IsStepIn(false), m_IsStepInInstruction(false)
+	: m_VM(vm), m_EndCall(endCall), m_HookFunctionCall(&HookCall), m_HookType((uint32)DebuggerHookType::Line), m_IsPause(true), 
+	 m_IsStepIn(false), m_IsStepInInstruction(false)
 {
 	m_BreakPoints.clear();
 	m_TempBreakPoints.clear();
@@ -320,6 +320,11 @@ void HazeDebugger::OnExecLine(uint32 line)
 void HazeDebugger::Start()
 {
 	m_IsPause = false;
+}
+
+void HazeDebugger::End()
+{
+	exit(0);
 }
 
 void HazeDebugger::StepOver()

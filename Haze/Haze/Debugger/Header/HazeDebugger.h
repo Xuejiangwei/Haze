@@ -44,6 +44,8 @@ public:
 
 	void Start();
 
+	void End();
+
 	void StepOver();
 
 	void StepIn();

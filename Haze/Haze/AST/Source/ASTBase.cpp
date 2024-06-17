@@ -213,8 +213,31 @@ ASTVariableDefine::~ASTVariableDefine()
 
 std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 {
+	struct GlobalVariableInitScope
+	{
+		GlobalVariableInitScope(HazeCompilerModule* m, HazeSectionSignal signal) : Module(m), Signal(signal)
+		{
+			if (Signal == HazeSectionSignal::Global)
+			{
+				Module->PreStartCreateGlobalVariable();
+			}
+		}
+
+		~GlobalVariableInitScope()
+		{
+			if (Signal == HazeSectionSignal::Global)
+			{
+				Module->EndCreateGlobalVariable();
+			}
+		}
+		
+		HazeCompilerModule* Module;
+		HazeSectionSignal Signal;
+	};
+
 	std::shared_ptr<HazeCompilerValue> retValue = nullptr;
 	std::unique_ptr<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
 	std::vector<std::shared_ptr<HazeCompilerValue>> sizeValue;
 	for (auto& iter : m_ArraySize)
@@ -265,11 +288,7 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 
 	if (retValue && exprValue)
 	{
-		/*if (m_ArraySize.size() > 0 && retValue->IsArray())
-		{
-			m_Compiler->CreateArrayInit(retValue, exprValue);
-		}
-		else*/ if (isRef)
+		if (isRef)
 		{
 			m_Compiler->CreateLea(retValue, exprValue);
 		}
@@ -284,6 +303,8 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		std::vector<std::shared_ptr<HazeCompilerValue>> param;
 		m_Compiler->CreateFunctionCall(function, param, retValue);
 	}
+
+	
 
 	return retValue;
 }

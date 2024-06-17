@@ -14,30 +14,44 @@ public:
 	friend class BackendParse;
 	friend class HazeExecuteFile;
 
+	struct FunctionInstruction
+	{
+		InstructionOpCode InsCode;
+		std::vector<InstructionData> Operator;
+
+		FunctionInstruction() : InsCode(InstructionOpCode::NONE), Operator()
+		{
+		}
+	};
+
 	struct GlobalData
 	{
-		HAZE_STRING m_Name;
+		HAZE_STRING Name;
 		uint32 Size;
-		HazeDefineType m_Type;
+		HazeDefineType Type;
 		HazeValue Value;
+
+		uint32 StartAddress;
+		uint32 EndAddress;
 	};
 
 	struct GlobalDataTable
 	{
-		std::vector<GlobalData> m_Data;
+		std::vector<GlobalData> Data;
 		uint32 ClassObjectAllSize;
+		std::vector<FunctionInstruction> Instructions;
 
 		GlobalDataTable()
 		{
-			m_Data.clear();
+			Data.clear();
 			ClassObjectAllSize = 0;
 		}
 
 		int GetIndex(const HAZE_STRING& name)
 		{
-			for (uint64 i = 0; i < m_Data.size(); i++)
+			for (uint64 i = 0; i < Data.size(); i++)
 			{
-				if (m_Data[i].m_Name == name)
+				if (Data[i].Name == name)
 				{
 					return (int)i;
 				}
@@ -85,16 +99,6 @@ public:
 	};
 
 public:
-
-	struct FunctionInstruction
-	{
-		InstructionOpCode InsCode;
-		std::vector<InstructionData> Operator;
-
-		FunctionInstruction() : InsCode(InstructionOpCode::NONE), Operator()
-		{
-		}
-	};
 
 	struct FunctionBlock
 	{
