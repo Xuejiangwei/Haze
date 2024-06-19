@@ -38,9 +38,9 @@ void HazeStack::RunGlobalDataInit(uint32 startPC, uint32 endPC)
 			return;
 		}
 
-		if (m_PC == endPC - 1)
+		if (m_PC == (int)endPC - 1)
 		{
-			if (isConstructor)
+			if (isConstructor && !m_VM->IsDebug())
 			{
 				isConstructor = false;
 			}

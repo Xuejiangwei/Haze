@@ -109,6 +109,7 @@ void* HazeMemory::Alloca(uint64 size)
 		GetMemory()->m_BigMemorys[ret] = { GC_State::Black, ret };
 	}
 
+	memset(ret, 0, size);
 	return ret;
 }
 

@@ -80,6 +80,8 @@
 #define NEW_REGISTER					HAZE_TEXT("New_R")
 #define CMP_REGISTER					HAZE_TEXT("Cmp_R")
 
+#define NULL_PTR						HAZE_TEXT("NULL_PTR")
+
 #define TEMP_REGISTER_0					HAZE_TEXT("Temp_R0")
 #define TEMP_REGISTER_1					HAZE_TEXT("Temp_R1")
 #define TEMP_REGISTER_2					HAZE_TEXT("Temp_R2")

@@ -922,6 +922,11 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		}
 		else
 		{
+			if (IsPointerType(m_DefineVariable.Type.PrimaryType))
+			{
+				PARSE_ERR_W("指针类型需要初始化");
+			}
+
 			return std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), m_DefineVariable, nullptr, std::move(arraySize), pointerLevel);
 		}
 	}

@@ -67,7 +67,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDef
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	block->PushIRCode(hss.str());
 
-	return m_Module->GetCompiler()->GetNewRegister(m_Module, data);
+	auto ret = m_Module->GetCompiler()->GetNewRegister(m_Module, data);
+
+	return ret;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HAZE_STRING& variableName)

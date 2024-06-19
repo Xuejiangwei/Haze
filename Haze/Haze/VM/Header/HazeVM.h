@@ -63,6 +63,8 @@ public:
 	uint32 GetClassSize(const HAZE_STRING& m_ClassName);
 
 private:
+	void DynamicInitializerForGlobalData();
+
 	void OnExecLine(uint32 Line);
 
 	void InstructionExecPost();

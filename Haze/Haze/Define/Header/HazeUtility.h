@@ -69,10 +69,10 @@ InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type);
 HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& filePath);
 
 template <typename T>
-unsigned int GetSizeByType(HazeDefineType type, T* This);
+unsigned int GetSizeByType(const HazeDefineType& type, T* This);
 
 template <typename T>
-unsigned int GetNewAllocSizeByType(HazeDefineType type, T* This);
+unsigned int GetNewAllocSizeByType(const HazeDefineType& type, T* This);
 
 template <typename T>
 T StringToStandardType(const HAZE_STRING& str);

@@ -528,6 +528,10 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* vm)
 		{
 			m_InFileStream->read(GetBinaryPointer(globalData.m_Type.PrimaryType, globalData.Value), size);
 		}
+		else if (IsPointerType(globalData.m_Type.PrimaryType))
+		{
+			
+		}
 		else
 		{
 			globalData.Address = &vm->Vector_GlobalDataClassObjectMemory[classObjectMemoryIndex];

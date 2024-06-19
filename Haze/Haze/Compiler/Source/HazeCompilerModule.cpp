@@ -969,7 +969,7 @@ void HazeCompilerModule::PreStartCreateGlobalVariable()
 
 void HazeCompilerModule::EndCreateGlobalVariable()
 {
-	m_VariablesAddress[m_VariablesAddress.size() - 1].second = m_ModuleIRCodes.size();
+	m_VariablesAddress[m_VariablesAddress.size() - 1].second = (int)m_ModuleIRCodes.size();
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(const HAZE_STRING& name)
@@ -1236,6 +1236,11 @@ void HazeCompilerModule::GenVariableHzic(HazeCompilerModule* compilerModule, HAZ
 	if (value->IsGlobalVariable())
 	{
 		find = compilerModule->GetGlobalVariableName(value, s_StrName);
+		if (!find && value->IsNullPtr())
+		{
+			find = true;
+			s_StrName = NULL_PTR;
+		}
 	}
 	else if (value->IsLocalVariable())
 	{
@@ -1245,13 +1250,6 @@ void HazeCompilerModule::GenVariableHzic(HazeCompilerModule* compilerModule, HAZ
 	{
 		find = true;
 		s_StrName = value->GetValueType().CustomName;
-	}
-	else if (value->IsClassMember())
-	{
-		if (value)
-		{
-
-		}
 	}
 	else
 	{
@@ -1311,10 +1309,9 @@ void HazeCompilerModule::GenICode()
 		}
 		else
 		{
-			if (var.second->IsClass())
+			if (var.second->GetValueType().NeedCustomName())
 			{
-				auto ClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(var.second);
-				hss << ClassValue->GetOwnerClassName();
+				hss << var.second->GetValueType().CustomName;
 			}
 		}
 

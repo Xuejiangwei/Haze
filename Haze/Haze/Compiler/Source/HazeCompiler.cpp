@@ -147,7 +147,9 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModu
 	auto iter = g_GlobalRegisters.find(NEW_REGISTER);
 	if (iter != g_GlobalRegisters.end())
 	{
-		iter->second = CreateVariable(compilerModule, HazeDefineVariable(data, HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterNew, 0);
+		HazeDefineType type(data);
+		type.PointerTo(data);
+		iter->second = CreateVariable(compilerModule, HazeDefineVariable(type, HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterNew, 0);
 
 		return iter->second;
 	}
@@ -955,7 +957,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArrayElement(std
 		for (uint64 i = 0; i < arrayElementValue->GetIndex().size(); i++)
 		{
 			uint64 size = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetValue().Value.UnsignedLong
-				: arrayValue->GetSizeByLevel((uint64)i);
+				: arrayValue->GetSizeByLevel((uint32)i);
 			std::shared_ptr<HazeCompilerValue> sizeValue = nullptr;
 
 			if (arrayElementValue->GetIndex()[i]->IsConstant())

@@ -249,7 +249,7 @@ void StringToHazeValueNumber(const HAZE_STRING& str, HazeValueType type, HazeVal
 }
 
 #define VARIABLE_DEFINE_INIT(TYPE, TARGET) TYPE T; memcpy(&T, target, sizeof(TYPE))
-#define TWO_VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, source, sizeof(TYPE)); memcpy(&T, target, sizeof(TYPE))
+#define TWO_VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, SOURCE, sizeof(TYPE)); memcpy(&T, TARGET, sizeof(TYPE))
 
 #define VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, T)
 #define TWO_VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, S, T)
@@ -691,8 +691,8 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	case HazeValueType::PointerFunction:
 	case HazeValueType::PointerPointer:
 	{
-		uint64 s = *(uint64*)source, t = *(uint64*)target;
-		TWO_VARIABLE_DEFINE_INIT(uint64, s, t);
+		//uint64 s = *(uint64*)source, t = *(uint64*)target;
+		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}

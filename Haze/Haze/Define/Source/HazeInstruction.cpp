@@ -139,7 +139,15 @@ class InstructionProcessor
 		DataDebugScope(HazeStack* stack, const std::vector<InstructionData>& data, InstructionOpCode opCode)
 			: Stack(stack), Data(data)
 		{
-			memcpy(&Address, GetOperatorAddress(Stack, Data[0]), 8);
+			auto address = GetOperatorAddress(Stack, Data[0]);
+			if (address)
+			{
+				memcpy(&Address, address, 8);
+			}
+			else
+			{
+				Address = 0;
+			}
 
 			if (Data.size() == 2)
 			{
@@ -461,9 +469,6 @@ public:
 			}
 			else if (IsPointerType(oper[0].Variable.Type.PrimaryType) && !IsPointerFunction(oper[0].Variable.Type.PrimaryType))
 			{
-				const auto& instruction = stack->m_VM->Instructions[stack->m_PC];
-				const auto& oper = instruction.Operator;
-
 				uint32 size = 0;
 				if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerBase)
 				{
@@ -921,9 +926,9 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		HazeRegister* newRegister = stack->GetVirtualRegister(oper[0].Variable.Name.c_str());
 		if (oper.size() == 2)
 		{
-			HazeRegister* newRegister = stack->GetVirtualRegister(oper[0].Variable.Name.c_str());
 			newRegister->Type = oper[0].Variable.Type;
 
 			uint64 size = GetSizeByType(newRegister->Type, stack->m_VM);
@@ -956,8 +961,8 @@ public:
 				stack->RegisterArray(address, newSize / size);
 			}
 
-			newRegister->Data.resize(sizeof(void*));
-			memcpy(newRegister->Data.begin()._Unwrapped(), &address, newRegister->Data.size());
+			newRegister->Data.resize(sizeof(address));
+			memcpy(newRegister->Data.begin()._Unwrapped(), &address, sizeof(address));
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -1240,13 +1245,22 @@ private:
 			return ret;
 		}
 		case InstructionAddressType::Constant:
-		case InstructionAddressType::NullPtr:
 		{
 			auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
 			auto& value = const_cast<HazeValue&>(constantValue.GetValue());
 
 			type.PrimaryType = insData.Variable.Type.PrimaryType;
 			StringToHazeValueNumber(insData.Variable.Name, type.PrimaryType, value);
+			ret = GetBinaryPointer(type.PrimaryType, value);
+			return ret;
+		}
+		case InstructionAddressType::NullPtr:
+		{
+			auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
+			auto& value = const_cast<HazeValue&>(constantValue.GetValue());
+
+			type.PrimaryType = insData.Variable.Type.PrimaryType;
+			StringToHazeValueNumber(HAZE_TEXT("0"), type.PrimaryType, value);
 			ret = GetBinaryPointer(type.PrimaryType, value);
 			return ret;
 		}

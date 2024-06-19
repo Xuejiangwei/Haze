@@ -62,6 +62,12 @@ static bool IsIgnoreFindAddress(InstructionData& operatorData)
 		return true;
 	}
 
+	if (operatorData.Desc == HazeDataDesc::NullPtr)
+	{
+		operatorData.AddressType = InstructionAddressType::NullPtr;
+		return true;
+	}
+
 	if (operatorData.Desc == HazeDataDesc::ConstantString)
 	{
 		operatorData.AddressType = InstructionAddressType::ConstantString;
@@ -193,10 +199,13 @@ void BackendParse::Parse_I_Code_GlobalTable()
 			}
 			else
 			{
-				if (IsClassType(table.Data[i].Type.PrimaryType))
+				if (table.Data[i].Type.NeedCustomName())
 				{
 					GetNextLexmeAssign_HazeString(table.Data[i].Type.CustomName);
-					table.ClassObjectAllSize += table.Data[i].Size;
+					if (IsClassType(table.Data[i].Type.PrimaryType))
+					{
+						table.ClassObjectAllSize += table.Data[i].Size;
+					}
 				}
 			}
 		}
@@ -488,7 +497,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Variable.Type.PrimaryType);
 
-		if (operatorOne.Variable.Type.PrimaryType == HazeValueType::PointerClass)
+		if (operatorOne.Variable.Type.NeedCustomName())
 		{
 			GetNextLexmeAssign_HazeString(operatorOne.Variable.Type.CustomName);
 		}
@@ -570,7 +579,7 @@ void BackendParse::GenOpCodeFile()
 			iter.second->m_GlobalDataTable.Data.begin(), iter.second->m_GlobalDataTable.Data.end());
 		newGlobalDataTable.ClassObjectAllSize += iter.second->m_GlobalDataTable.ClassObjectAllSize;
 		
-		int globalInstructionSize = newGlobalDataTable.Instructions.size();
+		int globalInstructionSize = (int)newGlobalDataTable.Instructions.size();
 		for (auto i = newGlobalDataTable.Data.size() - iter.second->m_GlobalDataTable.Data.size(); i < newGlobalDataTable.Data.size(); i++)
 		{
 			newGlobalDataTable.Data[i].StartAddress += globalInstructionSize;

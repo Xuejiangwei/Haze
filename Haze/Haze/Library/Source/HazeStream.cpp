@@ -117,6 +117,16 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				hss << tempV;
 				start++;
 			}
+			else if (*start == HAZE_CHAR('p'))
+			{
+				uint64 pointerAddress;
+				offset -= sizeof(pointerAddress);
+
+				char* address = stack->GetAddressByEBP(offset);
+				memcpy(&pointerAddress, address, sizeof(float));
+				hss << (void*)pointerAddress;
+				start++;
+			}
 			else if (*start == HAZE_CHAR('s'))
 			{
 				uint64 tempAddress;

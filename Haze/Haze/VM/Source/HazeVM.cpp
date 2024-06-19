@@ -61,14 +61,24 @@ void HazeVM::InitVM(std::vector<HAZE_STRING> Vector_ModulePath)
 	m_Compiler.release();
 	HashSet_RefModule.clear();
 
+	HazeMemory::GetMemory()->SetVM(this);
+	
 	if (IsDebug())
 	{
 		HazeDebuggerServer::InitDebuggerServer(this);
 		//VMDebugger = std::make_unique<HazeDebugger>(this);
 		//VMDebugger->SetHook(&HazeVM::Hook, HazeDebugger::DebuggerHookType::Instruction | HazeDebugger::DebuggerHookType::Line);
-	}
+	
+		while (!g_Debugger)
+		{
+		}
 
-	HazeMemory::GetMemory()->SetVM(this);
+		DynamicInitializerForGlobalData();
+	}
+	else
+	{
+		DynamicInitializerForGlobalData();
+	}
 }
 
 void HazeVM::LoadStandardLibrary(std::vector<HAZE_STRING> Vector_ModulePath)
@@ -200,6 +210,15 @@ uint32 HazeVM::GetClassSize(const HAZE_STRING& m_ClassName)
 {
 	auto Class = FindClass(m_ClassName);
 	return Class ? Class->Size : 0;
+}
+
+void HazeVM::DynamicInitializerForGlobalData()
+{
+	for (int i = 0; i < Vector_GlobalData.size(); i++)
+	{
+		Vector_GlobalData[i].second = true;
+		VMStack->RunGlobalDataInit(m_GlobalDataInitAddress[i].first, m_GlobalDataInitAddress[i].second);
+	}
 }
 
 void HazeVM::OnExecLine(uint32 Line)
