@@ -40,15 +40,7 @@ void HazeStack::RunGlobalDataInit(uint32 startPC, uint32 endPC)
 
 		if (m_PC == (int)endPC - 1)
 		{
-			if (isConstructor && !m_VM->IsDebug())
-			{
-				isConstructor = false;
-			}
-			else
-			{
-				break;
-			}
-
+			break;
 		}
 
 	}

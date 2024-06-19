@@ -596,6 +596,9 @@ void BackendParse::GenOpCodeFile()
 
 	FindAddress(newGlobalDataTable, newFunctionTable);
 
+	//指令总个数，在全局变量初始化和函数指令间添加一个空指令，防止Call指令执行的PC-1时指到全局变量初始化的指令上
+	newGlobalDataTable.Instructions.push_back(ModuleUnit::FunctionInstruction());
+
 	exeFile.WriteExecuteFile(newGlobalDataTable, newStringTable, newClassTable, newFunctionTable);
 }
 

@@ -378,7 +378,8 @@ void HazeExecuteFile::WriteAllInstruction(const ModuleUnit::FunctionTable& table
 	FileFormatCheck check(ExeFileType::Out, HazeFileFormat::InstructionTable, m_States);
 
 	funcInslength += (uint32)globalDataTable.Instructions.size();
-	m_FileStream->write(HAZE_WRITE_AND_SIZE(funcInslength));  //指令总个数
+
+	m_FileStream->write(HAZE_WRITE_AND_SIZE(funcInslength));
 	
 	for (auto& instruction : globalDataTable.Instructions)
 	{
@@ -694,13 +695,21 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 		auto& function = vm->Vector_FunctionTable[iter.second];
 		if (function.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
 		{
+			bool set = false;
 			for (auto& lib : stdLib)
 			{
 				auto pointer = lib.second->find(iter.first);
 				if (pointer != lib.second->end())
 				{
+					set = true;
 					function.FunctionDescData.StdLibFunction = pointer->second;
 				}
+				
+			}
+
+			if (!set)
+			{
+				HAZE_LOG_ERR_W("标准库未能匹配到函数<%s>!\n", iter.first.c_str());
 			}
 		}
 	}

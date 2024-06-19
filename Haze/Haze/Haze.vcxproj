@@ -116,6 +116,28 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      xcopy /y /d "$(ProjectDir)Header\Haze.h"  "$(OutDir)..\include\" 
+      xcopy /y /d "$(ProjectDir)Header\HazeHeader.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeCompare.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeDebugDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeInstruction.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeLibraryType.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeStrcut.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeTemplate.inl"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeToken.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeUtility.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeValue.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)HazeLog\Header\HazeLog.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeLibraryDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeStandardLibraryBase.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)MetaData\Header\HazeVariable.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)VM\Header\HazeStack.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)VM\Header\HazeVM.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)XJson\XJson.h"  "$(OutDir)..\include\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
