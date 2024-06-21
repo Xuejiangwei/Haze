@@ -24,6 +24,7 @@ struct TemplateCacheTextData
 class HazeCompilerModule
 {
 	friend class HazeCompiler;
+	friend struct PushTempRegister;
 public:
 
 	HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName);

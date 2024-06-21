@@ -95,6 +95,15 @@ void HazeVM::CallFunction(const HAZE_CHAR* functionName, ...)
 	va_end(args);
 }
 
+void HazeVM::CallFunction(FunctionData* functionData, ...)
+{
+	va_list args;
+	va_start(args, functionData->Params.size());
+	extern void CallHazeFunction(HazeStack * stack, const FunctionData * funcData, va_list & args);
+	CallHazeFunction(VMStack.get(), functionData, args);
+	va_end(args);
+}
+
 //void HazeVM::ParseString(const HAZE_STRING& String)
 //{
 //	Parse P(Compiler.get());

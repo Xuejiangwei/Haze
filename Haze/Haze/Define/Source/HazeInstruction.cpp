@@ -364,7 +364,11 @@ public:
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
-			stack->m_ESP -= GetSizeByType(oper[0].Variable.Type, stack->m_VM);
+			auto size = GetSizeByType(oper[0].Variable.Type, stack->m_VM);
+			auto address = GetOperatorAddress(stack, oper[0]);
+			memcpy(address, &stack->m_StackMain[stack->m_ESP - size], size);
+			
+			stack->m_ESP -= size;
 		}
 
 		stack->m_VM->InstructionExecPost();

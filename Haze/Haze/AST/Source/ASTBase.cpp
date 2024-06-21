@@ -357,7 +357,40 @@ std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 		}
 	}
 
-	return m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type, countValue);
+	auto value = m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type, countValue);
+
+	//new申请内存后，若是类的话，需要调用构造函数
+	if (value->GetValueType().HasCustomName())
+	{
+		auto newClass = m_Compiler->GetCurrModule()->GetClass(value->GetValueType().CustomName);
+		if (countValue)
+		{
+			//需要初始化多个类对象
+			auto function = newClass->FindFunction(value->GetValueType().CustomName);
+			auto arrayConstructorFunc = m_Compiler->GetFunction(HAZE_OBJECT_ARRAY_CONSTRUCTOR);
+			std::vector<std::shared_ptr<HazeCompilerValue>> param;
+
+			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
+
+			std::vector<std::shared_ptr<HazeCompilerValue>> params;
+			params.push_back(value);
+			params.push_back(m_Compiler->CreatePointerToFunction(function));
+			params.push_back(m_Compiler->GetConstantValueUint64(newClass->GetDataSize()));
+			params.push_back(countValue);
+
+			m_Compiler->CreateFunctionCall(arrayConstructorFunc.first, params);
+		}
+		else
+		{
+			auto function = newClass->FindFunction(value->GetValueType().CustomName);
+			std::vector<std::shared_ptr<HazeCompilerValue>> param;
+
+			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
+			m_Compiler->CreateFunctionCall(function, param, value);
+		}
+	}
+
+	return value;
 }
 
 ASTGetAddress::ASTGetAddress(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)
@@ -598,19 +631,7 @@ std::shared_ptr<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	case HazeToken::Shr:
 		return m_Compiler->CreateShr(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::Assign:
-	{
-		auto rightV = m_RightAST->CodeGen();
-		auto leftV = m_LeftAST->CodeGen();
-		auto v = m_Compiler->CreateMov(leftV, rightV);
-		//new申请内存后，若是类的话，需要调用构造函数
-		if (rightV->IsRegister(HazeDataDesc::RegisterNew) && rightV->GetValueType().HasCustomName())
-		{
-			auto function = m_Compiler->GetCurrModule()->GetClass(rightV->GetValueType().CustomName)->FindFunction(rightV->GetValueType().CustomName);
-			std::vector<std::shared_ptr<HazeCompilerValue>> param;
-			m_Compiler->GetCurrModule()->GetCompiler()->CreateFunctionCall(function, param, v);
-		}
-		return v;
-	}
+		return m_Compiler->CreateMov(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::BitAnd:
 		return m_Compiler->CreateBitAnd(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
 	case HazeToken::BitOr:

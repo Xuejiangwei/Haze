@@ -23,20 +23,20 @@ static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> 
 };
 
 static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> g_GlobalTempRegisters = {
-	{ TEMP_REGISTER_0, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_1, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_2, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_3, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_4, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_5, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_6, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_7, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_8, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_9, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_0, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_1, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_2, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_3, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_4, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_5, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_6, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_7, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_8, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+	{ TEMP_REGISTER_9, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")), HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
 };
 
 static std::shared_ptr<HazeCompilerInitListValue> s_InitializeListValue =
-std::make_shared<HazeCompilerInitListValue>(nullptr, HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HazeVariableScope::Global, HazeDataDesc::Initlist, 0);
+std::make_shared<HazeCompilerInitListValue>(nullptr, HazeDefineType(HazeValueType::Void, HAZE_TEXT("Temp_Register")), HazeVariableScope::Temp, HazeDataDesc::Initlist, 0);
 
 HazeCompiler::HazeCompiler(HazeVM* vm) : m_VM(vm)
 {
@@ -194,7 +194,7 @@ void HazeCompiler::ClearTempRegister(const std::unordered_map<const HAZE_CHAR*, 
 			if (regi.first == useRegi.first)
 			{
 				regi.second = CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void, HAZE_TEXT("")),
-					HAZE_TEXT("")), HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0);
+					HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0);
 				break;
 			}
 		}
@@ -1003,8 +1003,13 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToPointerArray(std
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(std::shared_ptr<HazeCompilerFunction> function)
 {
-	return CreateVariable(GetCurrModule().get(), HazeDefineVariable({ HazeValueType::PointerFunction, function->GetName() },
-		HAZE_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::FunctionAddress, 0);
+	auto pointer = GetTempRegister();
+	auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
+	type.PrimaryType = HazeValueType::PointerFunction;
+	type.CustomName = function->GetName();
+	pointer->SetDataDesc(HazeDataDesc::FunctionAddress);
+
+	return pointer;
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data,

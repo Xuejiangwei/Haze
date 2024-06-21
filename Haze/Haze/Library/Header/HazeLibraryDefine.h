@@ -20,10 +20,10 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, v
 #define ARG_N_HELPER(...)  ARG_T(ARG_N(__VA_ARGS__))										//辅助宏
 #define COUNT_ARG(...)  ARG_N_HELPER(__VA_ARGS__,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)	//返回可变参数个数
 
-#define GET_PARAM_START() int Offset = 0
-#define GET_PARAM(V, ADDRESS)  memcpy(&V, ADDRESS - sizeof(V) - Offset, sizeof(V)); Offset += sizeof(V)
-#define SET_RET(V, ADDRESS) memcpy(ADDRESS, &V, sizeof(V))
-#define GET_RET(V, ADDRESS) memcpy(&V, ADDRESS, sizeof(V))
+#define GET_PARAM_START() int Offset = 0; auto zzzAddress = stack->GetAddressByESP(HAZE_ADDRESS_SIZE)
+#define GET_PARAM(V)  memcpy(&V, zzzAddress - sizeof(V) - Offset, sizeof(V)); Offset += sizeof(V)
+#define SET_RET(V) memcpy(zzzAddress, &V, sizeof(V))
+#define GET_RET(V) memcpy(&V, zzzAddress, sizeof(V))
 #define SET_HAZE_RET_TO_RET() 0
 #define SET_HAZE_CALL_PARAM(...) COUNT_ARG(__VA_ARGS__), __VA_ARGS__
 

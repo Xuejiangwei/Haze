@@ -764,6 +764,10 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 			operatorData.Extra.Index = index;
 			operatorData.AddressType = InstructionAddressType::Global;
 		}
+		else if (NEW_REGISTER == operatorData.Variable.Name)
+		{
+			operatorData.AddressType = InstructionAddressType::Register;
+		}
 		else
 		{
 			if (operatorData.Desc == HazeDataDesc::Constant)
@@ -894,6 +898,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 							}
 							else
 							{
+								operatorData.AddressType = InstructionAddressType::Register;
 								HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
 							}
 						}

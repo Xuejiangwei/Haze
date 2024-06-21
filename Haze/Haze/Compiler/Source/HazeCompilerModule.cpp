@@ -44,6 +44,15 @@ struct PushTempRegister
 			Hss << std::endl;
 		}
 		
+		if (Compiler->GetInsertBlock())
+		{
+			Compiler->GetInsertBlock()->PushIRCode(Hss.str());
+		}
+		else
+		{
+			Module->m_ModuleIRCodes.push_back(Hss.str());
+		}
+
 		Compiler->ResetTempRegister(UseTempRegisters);
 	}
 
@@ -819,8 +828,9 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HAZE_STRING
 		hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
 		if (thisPointerTo->IsPointerClass())
 		{
-			auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(thisPointerTo);
-			hss << strName << " " << CAST_SCOPE(pointerValue->GetVariableScope()) << " " << CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
+
+			//auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(thisPointerTo);
+			hss << strName << " " << CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " <<//CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
 				CAST_TYPE(HazeValueType::PointerClass) << " " << thisPointerTo->GetValueType().CustomName;
 		}
 		else if (thisPointerTo->IsClass())
@@ -870,15 +880,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(std::s
 
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::Function) 
 		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << std::endl;
-
-	if (m_Compiler->GetInsertBlock())
-	{
-		m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
-	}
-	else
-	{
-		m_ModuleIRCodes.push_back(hss.str());
-	}
 
 	auto retRegister = HazeCompiler::GetRegister(RET_REGISTER);
 
@@ -1249,7 +1250,7 @@ void HazeCompilerModule::GenVariableHzic(HazeCompilerModule* compilerModule, HAZ
 	else if (value->IsTempVariable())
 	{
 		find = true;
-		s_StrName = value->GetValueType().CustomName;
+		s_StrName = compilerModule->m_Compiler->GetRegisterName(value);
 	}
 	else
 	{

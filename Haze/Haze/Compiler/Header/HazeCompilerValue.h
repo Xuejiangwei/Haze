@@ -41,6 +41,9 @@ public:
 	bool IsTempVariable() const { return m_Scope == HazeVariableScope::Temp; }
 
 	void SetScope(HazeVariableScope scope) { m_Scope = scope; }
+
+	void SetDataDesc(HazeDataDesc desc) { m_Desc = desc; }
+
 public:
 	bool IsRegister() const { return IsRegisterDesc(m_Desc); }
 
