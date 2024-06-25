@@ -42,8 +42,8 @@ void HazeMemoryLib::ObjectArrayConstructor(HAZE_STD_CALL_PARAM)
 {
 	char* address;
 	char* constructorAddress;
-	int objectSize;
-	int count;
+	uint64 objectSize;
+	uint64 count;
 
 	GET_PARAM_START();
 	GET_PARAM(address);
@@ -57,6 +57,6 @@ void HazeMemoryLib::ObjectArrayConstructor(HAZE_STD_CALL_PARAM)
 	}
 }
 
-void HazeMemoryLib::ObjectArrayConstructorCall(void* address, void* constructorAddress, int objectSize, int count)
+void HazeMemoryLib::ObjectArrayConstructorCall(void* address, void* constructorAddress, uint64 objectSize, uint64 count)
 {
 }

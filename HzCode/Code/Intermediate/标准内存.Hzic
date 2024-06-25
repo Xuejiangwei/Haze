@@ -12,12 +12,12 @@ FunctionTable
 Function 多对象构造 1
 Param 首地址 17 1
 Param 构造函数地址 17 1
-Param 对象大小 8
-Param 对象个数 8
-Variable 对象个数$4 8 -8 4 6
-Variable 对象大小$3 8 -12 4 6
-Variable 构造函数地址$2 17 1 -20 8 6
-Variable 首地址$1 17 1 -28 8 6
+Param 对象大小 10
+Param 对象个数 10
+Variable 对象个数$4 10 -12 8 5
+Variable 对象大小$3 10 -20 8 5
+Variable 构造函数地址$2 17 1 -28 8 5
+Variable 首地址$1 17 1 -36 8 5
 FunctionStart 0
 
 Block Entry
@@ -28,9 +28,9 @@ Function 内存复制 1
 Param 目标地址 17 1
 Param 源地址 17 1
 Param 字节大小 10
-Variable 字节大小$3 10 -12 8 5
-Variable 源地址$2 17 1 -20 8 5
-Variable 目标地址$1 17 1 -28 8 5
+Variable 字节大小$3 10 -12 8 4
+Variable 源地址$2 17 1 -20 8 4
+Variable 目标地址$1 17 1 -28 8 4
 FunctionStart 0
 
 Block Entry

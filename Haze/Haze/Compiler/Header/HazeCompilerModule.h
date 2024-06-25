@@ -92,11 +92,9 @@ public:
 	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, std::shared_ptr<HazeCompilerValue> refValue = nullptr,
 		std::vector<std::shared_ptr<HazeCompilerValue>> arraySize = {}, std::vector<HazeDefineType>* params = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& name);
+	static std::shared_ptr<HazeCompilerValue> GetGlobalVariable(HazeCompilerModule* m, const HAZE_STRING& name);
 
-	bool GetGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
-
-	bool GetGlobalVariableName(const HazeCompilerValue* value, HAZE_STRING& outName);
+	static bool GetGlobalVariableName(HazeCompilerModule* m, const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
 
 	static void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const std::shared_ptr<HazeCompilerValue>& value, int index = -1);
 
@@ -155,6 +153,11 @@ private:
 	void GenCodeFile();
 
 	void GenICode();
+
+private:
+	std::shared_ptr<HazeCompilerValue> GetGlobalVariable_Internal(const HAZE_STRING& name);
+
+	bool GetGlobalVariableName_Internal(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
 
 private:
 	HazeCompiler* m_Compiler;

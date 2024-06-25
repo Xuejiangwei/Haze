@@ -12,6 +12,7 @@
 #include "HazeCompilerInitListValue.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
+#include "HazeCompilerEnum.h"
 #include "HazeCompilerClass.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerHelper.h"
@@ -68,6 +69,14 @@ void HazeCompiler::FinishParse()
 	}
 }
 
+HazeCompilerModule* HazeCompiler::ParseBaseModule(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode)
+{
+	m_VM->ParseString(moduleName, moduleCode);
+	m_CompilerBaseModules[moduleName] = GetModule(moduleName);
+
+	return m_CompilerBaseModules[moduleName];
+}
+
 HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& moduleName)
 {
 	m_VM->ParseFile(GetModuleFilePath(moduleName));
@@ -102,6 +111,61 @@ const HAZE_STRING* HazeCompiler::GetModuleName(const HazeCompilerModule* compile
 	}
 
 	return nullptr;
+}
+
+std::shared_ptr<HazeCompilerEnum> HazeCompiler::GetBaseModuleEnum(const HAZE_STRING& name)
+{
+	for (auto& it : m_CompilerBaseModules)
+	{
+		auto ret = it.second->GetEnum(name);
+		if (ret)
+		{
+			return ret;
+		}
+	}
+	
+	return nullptr;
+}
+
+std::shared_ptr<HazeCompilerValue> HazeCompiler::GetBaseModuleGlobalVariable(const HAZE_STRING& name)
+{
+	for (auto& it : m_CompilerBaseModules)
+	{
+		auto ret = it.second->GetGlobalVariable_Internal(name);
+		if (ret)
+		{
+			return ret;
+		}
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<HazeCompilerClass> HazeCompiler::GetBaseModuleClass(const HAZE_STRING& className)
+{
+	for (auto& it : m_CompilerBaseModules)
+	{
+		auto ret = it.second->GetClass(className);
+		if (ret)
+		{
+			return ret;
+		}
+	}
+
+	return nullptr;
+}
+
+bool HazeCompiler::GetBaseModuleGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName)
+{
+	for (auto& it : m_CompilerBaseModules)
+	{
+		if (it.second->GetGlobalVariableName_Internal(value, outName))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void HazeCompiler::InsertLineCount(int64 lineCount)
@@ -263,9 +327,17 @@ bool HazeCompiler::IsClass(const HAZE_STRING& name)
 	}
 	else
 	{
-		for (auto& Iter : currModule->m_ImportModules)
+		for (auto& iter : currModule->m_ImportModules)
 		{
-			if (Iter->GetClass(name))
+			if (iter->GetClass(name))
+			{
+				return true;
+			}
+		}
+
+		for (auto& iter : m_CompilerBaseModules)
+		{
+			if (iter.second->GetClass(name))
 			{
 				return true;
 			}
@@ -298,9 +370,17 @@ bool HazeCompiler::IsTemplateClass(const HAZE_STRING& name)
 	}
 	else
 	{
-		for (auto& Iter : currModule->m_ImportModules)
+		for (auto& iter : currModule->m_ImportModules)
 		{
-			if (Iter->IsTemplateClass(name))
+			if (iter->IsTemplateClass(name))
+			{
+				return true;
+			}
+		}
+
+		for (auto& iter : m_CompilerBaseModules)
+		{
+			if (iter.second->IsTemplateClass(name))
 			{
 				return true;
 			}
@@ -501,7 +581,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::GenStringVariable(HAZE_STRING& 
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetGlobalVariable(const HAZE_STRING& name)
 {
-	return GetCurrModule()->GetGlobalVariable(name);
+	return HazeCompilerModule::GetGlobalVariable(GetCurrModule().get(), name);
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HAZE_STRING& name)
@@ -1007,9 +1087,10 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(std::sh
 	auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
 	type.PrimaryType = HazeValueType::PointerFunction;
 	type.CustomName = function->GetName();
-	pointer->SetDataDesc(HazeDataDesc::FunctionAddress);
+	//pointer->SetDataDesc(HazeDataDesc::FunctionAddress);
 
-	return pointer;
+	return CreateLea(pointer, CreateVariable(GetCurrModule().get(), HazeDefineVariable({ HazeValueType::PointerFunction, function->GetName() },
+		HAZE_TEXT("")), HazeVariableScope::Ignore, HazeDataDesc::FunctionAddress, 0));
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data,

@@ -27,37 +27,37 @@ FunctionStart 17
 
 Block Entry
 NEW New_R 23 五子棋 2 5 0 1 1 13
-MOV Temp_R7 4 7 18 五子棋 New_R 1 5 18 五子棋
-PUSH Temp_R7 4 7 18 五子棋
-PUSH Temp_R7 4 7 18 五子棋
+MOV Temp_R0 4 7 18 五子棋 New_R 1 5 18 五子棋
+PUSH Temp_R0 4 7 18 五子棋
+PUSH Temp_R0 4 7 18 五子棋
 PUSH RetAddress 0 9 8
 CALL 五子棋@五子棋 24 0 8 五子棋
-POP Temp_R7 4 7 18 五子棋
-MOV 我的五子棋 1 0 18 五子棋 Temp_R7 4 7 18 五子棋
+POP Temp_R0 4 7 18 五子棋
+MOV 我的五子棋 1 0 18 五子棋 Temp_R0 4 7 18 五子棋
 PUSH 常字符串指针 1 2 17 5 0
 PUSH RetAddress 0 9 8
 CALL 打印 24 1 8 标准流
 PUSH 我的五子棋 1 0 18 五子棋
 PUSH RetAddress 0 9 8
 CALL 五子棋@开始游戏 24 0 8 五子棋
-MOV Temp_R7 4 7 2 1 1 1 2
-BIT_XOR Temp_R7 4 7 2 0 1 1 2
-CMP Temp_R7 4 7 2 1 1 1 2
+MOV Temp_R0 4 7 2 1 1 1 2
+BIT_XOR Temp_R0 4 7 2 0 1 1 2
+CMP Temp_R0 4 7 2 1 1 1 2
 JE WhileBlock1 DefaultBlock2
 
 Block WhileBlock1
 MOV 甲$3 2 0 8 100 1 1 8
 MOV 乙$4 2 0 8 99 1 1 8
-LEA Temp_R7 4 7 17 8 乙$4 2 0 8
-LEA Temp_R6 4 7 17 8 甲$3 2 0 8
-PUSH Temp_R6 4 7 17 8
+LEA Temp_R0 4 7 17 8 乙$4 2 0 8
+LEA Temp_R7 4 7 17 8 甲$3 2 0 8
+PUSH Temp_R0 4 7 17 8
 PUSH Temp_R7 4 7 17 8
+PUSH Temp_R0 4 7 17 8
 PUSH Temp_R7 4 7 17 8
-PUSH Temp_R6 4 7 17 8
 PUSH 常字符串指针 1 2 17 5 1
 PUSH RetAddress 0 9 8
 CALL 输入 24 3 24 标准流
-POP Temp_R6 4 7 17 8
+POP Temp_R0 4 7 17 8
 POP Temp_R7 4 7 17 8
 PUSH 玩家默认颜色 1 0 8
 PUSH 乙$4 2 0 8
@@ -80,17 +80,17 @@ JMP DefaultBlock2
 JMP DefaultBlock4
 
 Block DefaultBlock4
-LEA Temp_R7 4 7 17 8 乙$4 2 0 8
-LEA Temp_R6 4 7 17 8 甲$3 2 0 8
-PUSH Temp_R6 4 7 17 8
+LEA Temp_R0 4 7 17 8 乙$4 2 0 8
+LEA Temp_R7 4 7 17 8 甲$3 2 0 8
+PUSH Temp_R0 4 7 17 8
 PUSH Temp_R7 4 7 17 8
 PUSH AI默认颜色 1 0 8
+PUSH Temp_R0 4 7 17 8
 PUSH Temp_R7 4 7 17 8
-PUSH Temp_R6 4 7 17 8
 PUSH 我的五子棋 1 0 18 五子棋
 PUSH RetAddress 0 9 8
 CALL 五子棋@模拟计算AI放子 24 3 28 五子棋
-POP Temp_R6 4 7 17 8
+POP Temp_R0 4 7 17 8
 POP Temp_R7 4 7 17 8
 PUSH AI默认颜色 1 0 8
 PUSH 乙$4 2 0 8

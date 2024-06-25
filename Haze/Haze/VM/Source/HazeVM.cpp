@@ -4,6 +4,7 @@
 
 #include "Parse.h"
 #include "HazeCompiler.h"
+#include "HazeBaseLibraryDefine.h"
 #include "BackendParse.h"
 #include "HazeExecuteFile.h"
 
@@ -30,6 +31,9 @@ HazeVM::~HazeVM()
 
 void HazeVM::InitVM(std::vector<HAZE_STRING> Vector_ModulePath)
 {
+	m_Compiler->ParseBaseModule(HAZE_BASE_LIBRARY_STREAM_NAME, HAZE_BASE_LIBRARY_STREAM_CODE);
+	m_Compiler->ParseBaseModule(HAZE_BASE_LIBRARY_MEMORY_NAME, HAZE_BASE_LIBRARY_MEMORY_CODE);
+
 	for (auto& iter : Vector_ModulePath)
 	{
 		ParseFile(iter);
@@ -104,12 +108,25 @@ void HazeVM::CallFunction(FunctionData* functionData, ...)
 	va_end(args);
 }
 
-//void HazeVM::ParseString(const HAZE_STRING& String)
-//{
-//	Parse P(Compiler.get());
-//	P.InitializeString(String);
-//	P.ParseContent();
-//}
+void HazeVM::ParseString(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode)
+{
+	bool PopCurrModule = false;
+	if (m_Compiler->InitializeCompiler(moduleName))
+	{
+		PopCurrModule = true;
+		Parse P(m_Compiler.get());
+		P.InitializeString(moduleCode);
+		P.ParseContent();
+		m_Compiler->FinishModule();
+	}
+
+	HashSet_RefModule.insert(moduleName);
+
+	if (PopCurrModule)
+	{
+		m_Compiler->PopCurrModule();
+	}
+}
 
 void HazeVM::ParseFile(const HAZE_STRING& FilePath)
 {

@@ -243,6 +243,7 @@
     <ClInclude Include="Debugger\Header\HazeDebugger.h" />
     <ClInclude Include="Debugger\Header\HazeDebuggerServer.h" />
     <ClInclude Include="Debugger\Header\HazeDebugInfo.h" />
+    <ClInclude Include="Define\Header\HazeBaseLibraryDefine.h" />
     <ClInclude Include="Define\Header\HazeCompare.h" />
     <ClInclude Include="Define\Header\HazeDebugDefine.h" />
     <ClInclude Include="Define\Header\HazeExecuteFile.h" />

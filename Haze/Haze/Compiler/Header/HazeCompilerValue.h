@@ -40,6 +40,8 @@ public:
 
 	bool IsTempVariable() const { return m_Scope == HazeVariableScope::Temp; }
 
+	bool IsFunctionAddress() const { return m_Scope == HazeVariableScope::Ignore && m_Desc == HazeDataDesc::FunctionAddress; }
+
 	void SetScope(HazeVariableScope scope) { m_Scope = scope; }
 
 	void SetDataDesc(HazeDataDesc desc) { m_Desc = desc; }

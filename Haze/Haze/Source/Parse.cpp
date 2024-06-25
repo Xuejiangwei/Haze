@@ -517,6 +517,11 @@ HazeToken Parse::GetNextToken()
 		{
 			m_CurrCode++;
 			s_CommentStr = *m_CurrCode;
+
+			if (HAZE_STRING(m_CurrCode) == HAZE_TEXT(""))
+			{
+				break;
+			}
 		}
 		return GetNextToken();
 	}

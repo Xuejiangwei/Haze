@@ -291,7 +291,7 @@ std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule
 			}
 			else
 			{
-				classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(compilerModule->GetGlobalVariable(outObjectName));
+				classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(HazeCompilerModule::GetGlobalVariable(compilerModule, outObjectName));
 				if (classValue)
 				{
 					return classValue->GetMember(outMemberName);
@@ -340,7 +340,7 @@ std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerVal
 
 		if (!findVariable)
 		{
-			findVariable = compilerModule->GetGlobalVariable(outObjectName);
+			findVariable = HazeCompilerModule::GetGlobalVariable(compilerModule, outObjectName);
 		}
 
 		auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(findVariable);
@@ -366,7 +366,7 @@ std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerVal
 
 			if (!findVariable)
 			{
-				findVariable = compilerModule->GetGlobalVariable(outObjectName);
+				findVariable = HazeCompilerModule::GetGlobalVariable(compilerModule, outObjectName);
 			}
 
 			auto classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(findVariable);

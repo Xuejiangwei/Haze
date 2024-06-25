@@ -310,26 +310,7 @@ public:
 		{
 			int size = GetSizeByType(oper[0].Variable.Type, stack->m_VM);
 
-			if (oper[0].Desc == HazeDataDesc::Constant)
-			{
-				switch (oper[0].Variable.Type.PrimaryType)
-				{
-					case HazeValueType::Float:
-					{
-						float number = StringToStandardType<float>(oper[0].Variable.Name);
-						memcpy(&stack->m_StackMain[stack->m_ESP], &number, size);
-					}
-					break;
-					default:
-					{
-						int number = StringToStandardType<int>(oper[0].Variable.Name);
-						memcpy(&stack->m_StackMain[stack->m_ESP], &number, size);
-					}
-					break;
-				}
-				
-			}
-			else if (oper[0].Desc == HazeDataDesc::Address)
+			if (oper[0].Desc == HazeDataDesc::Address)
 			{
 				memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, size);
 			}
@@ -1244,9 +1225,9 @@ private:
 		}
 		case InstructionAddressType::FunctionAddress:
 		{
-			tempAddress = (uint64)((void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name));
-			ret = &tempAddress;
-			return ret;
+			/*tempAddress = (uint64)((void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name));
+			ret = &tempAddress;*/
+			return (void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name);
 		}
 		case InstructionAddressType::Constant:
 		{
@@ -1480,6 +1461,11 @@ private:
 				HAZE_LOG_ERR_W("三方库调用Haze函数Push参数<%s>类型错误", GetHazeValueTypeString(m_Type.PrimaryType));
 				break;
 			}
+		}
+		else if (IsPointerType(m_Type.PrimaryType))
+		{
+			stack->m_ESP -= size;
+			memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, void*), size);
 		}
 		else
 		{

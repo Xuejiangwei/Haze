@@ -10,8 +10,9 @@ class HazeVM;
 class HazeCompilerValue;
 class HazeCompilerInitListValue;
 class HazeCompilerFunction;
+class HazeCompilerEnum;
+class HazeCompilerClass;
 class HazeCompilerModule;
-
 class HazeBaseBlock;
 
 class HazeCompiler
@@ -24,6 +25,8 @@ public:
 	bool InitializeCompiler(const HAZE_STRING& moduleName);
 
 	void FinishParse();
+
+	HazeCompilerModule* ParseBaseModule(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode);
 
 	HazeCompilerModule* ParseModule(const HAZE_STRING& moduleName);
 
@@ -191,6 +194,14 @@ public:
 	void ReplaceConstantValueByStrongerType(std::shared_ptr<HazeCompilerValue>& left, std::shared_ptr<HazeCompilerValue>& right);
 
 public:
+	std::shared_ptr<HazeCompilerEnum> GetBaseModuleEnum(const HAZE_STRING& name);
+
+	std::shared_ptr<HazeCompilerValue> GetBaseModuleGlobalVariable(const HAZE_STRING& name);
+
+	std::shared_ptr<HazeCompilerClass> GetBaseModuleClass(const HAZE_STRING& className);
+
+	bool GetBaseModuleGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
+
 	void InsertLineCount(int64 lineCount);
 
 	bool IsDebug() const;
@@ -201,6 +212,7 @@ private:
 	std::vector<HAZE_STRING> m_ModuleNameStack;
 
 	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> m_CompilerModules;
+	std::unordered_map<HAZE_STRING, HazeCompilerModule*> m_CompilerBaseModules;
 
 	//³£Á¿
 	std::unordered_map<bool, std::shared_ptr<HazeCompilerValue>> m_BoolConstantValues;

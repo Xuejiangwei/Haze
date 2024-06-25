@@ -35,6 +35,7 @@ enum class InstructionOpCodeType : uint8
 #define IS_SCOPE_GLOBAL(V) V == HazeVariableScope::Global
 #define IS_SCOPE_LOCAL(V) V == HazeVariableScope::Local
 #define IS_SCOPE_TEMP(V) V == HazeVariableScope::Temp
+#define IS_SCOPE_IGNORE(V) V == HazeVariableScope::Ignore
 enum class HazeVariableScope : uint32
 {
 	None,
@@ -42,7 +43,7 @@ enum class HazeVariableScope : uint32
 	Local,
 	Static,
 
-	Temp,		//解析时生成中间变量
+	Temp,		//临时寄存器
 	Ignore,
 };
 

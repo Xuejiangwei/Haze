@@ -890,17 +890,21 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 						{
 							ResetGlobalOperatorAddress(operatorData, newGlobalDataTable);
 						}
-						else if (IS_SCOPE_TEMP(operatorData.Scope))
+						//else if (IS_SCOPE_TEMP(operatorData.Scope))
+						//{
+						//	/*if (operatorData.Desc == HazeDataDesc::FunctionAddress)
+						//	{
+						//		operatorData.AddressType = InstructionAddressType::FunctionAddress;
+						//	}
+						//	else*/
+						//	{
+						//		operatorData.AddressType = InstructionAddressType::Register;
+						//		HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
+						//	}
+						//}
+						else if (IS_SCOPE_IGNORE(operatorData.Scope) && operatorData.Desc == HazeDataDesc::FunctionAddress)
 						{
-							if (operatorData.Desc == HazeDataDesc::FunctionAddress)
-							{
-								operatorData.AddressType = InstructionAddressType::FunctionAddress;
-							}
-							else
-							{
-								operatorData.AddressType = InstructionAddressType::Register;
-								HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
-							}
+							operatorData.AddressType = InstructionAddressType::FunctionAddress;
 						}
 						else
 						{

@@ -41,7 +41,7 @@ public:
 
 	void CallFunction(FunctionData* functionData, ...);
 
-	//void ParseString(const HAZE_STRING& String);
+	void ParseString(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode);
 
 	void ParseFile(const HAZE_STRING& FilePath);
 

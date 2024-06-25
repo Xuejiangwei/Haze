@@ -372,11 +372,12 @@ std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 
 			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
 
+			//²ÎÊı´ÓÓÒÍù×ó
 			std::vector<std::shared_ptr<HazeCompilerValue>> params;
-			params.push_back(value);
-			params.push_back(m_Compiler->CreatePointerToFunction(function));
-			params.push_back(m_Compiler->GetConstantValueUint64(newClass->GetDataSize()));
 			params.push_back(countValue);
+			params.push_back(m_Compiler->GetConstantValueUint64(newClass->GetDataSize()));
+			params.push_back(m_Compiler->CreatePointerToFunction(function));
+			params.push_back(value);
 
 			m_Compiler->CreateFunctionCall(arrayConstructorFunc.first, params);
 		}
