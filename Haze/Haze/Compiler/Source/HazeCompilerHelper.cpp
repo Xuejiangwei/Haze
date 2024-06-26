@@ -374,6 +374,14 @@ std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerVal
 			{
 				return { classValue->GetOwnerClass()->FindFunction(outFunctionName), findVariable };
 			}
+			else if (findVariable && findVariable->IsRefClass())
+			{
+				return { compilerModule->GetClass(findVariable->GetValueType().CustomName)->FindFunction(outFunctionName), findVariable };
+			}
+			else if (findVariable)
+			{
+				HAZE_LOG_ERR(HAZE_TEXT("获得类对象<%s>的成员函数错误!\n"), outObjectName.c_str());
+			}
 		}
 	}
 

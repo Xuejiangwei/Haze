@@ -13,6 +13,7 @@ HazeStack::HazeStack(HazeVM* vm)
 	: m_VM(vm), m_PC(0), m_EBP(0), m_ESP(0)
 {
 	m_StackMain.resize(HAZE_VM_STACK_SIZE);
+	m_CallHazeStack.clear();
 	InitStackRegister();
 }
 
@@ -184,10 +185,18 @@ void HazeStack::OnRet()
 
 void HazeStack::ResetCallHaze()
 {
+	auto tempStack = m_CallHazeStack;
 	m_CallHazeStack.clear();
 	m_CallHazeStack.push_back(1);
 
 	Run(true);
+
+	if (tempStack.size() > 0)
+	{
+		tempStack.pop_back();
+	}
+
+	m_CallHazeStack = tempStack;
 }
 
 void HazeStack::AddCallHazeTimes()

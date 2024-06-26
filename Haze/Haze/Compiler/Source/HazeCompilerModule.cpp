@@ -198,16 +198,17 @@ std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerVal
 		auto iter = m_HashMap_Classes.find(m_CurrClass);
 		if (iter != m_HashMap_Classes.end())
 		{
-			return { iter->second->FindFunction(name), nullptr };
+			auto func = iter->second->FindFunction(name);
+			if (func)
+			{
+				return { func, nullptr };
+			}
+
 		}
 	}
-	else
-	{
-		bool isPointer;
-		return GetObjectFunction(this, name, isPointer);
-	}
 
-	return { nullptr, nullptr };
+	bool isPointer;
+	return GetObjectFunction(this, name, isPointer);
 }
 
 void HazeCompilerModule::StartCacheTemplate(HAZE_STRING& templateName, uint32 startLine, HAZE_STRING& templateText, std::vector<HAZE_STRING>& templateTypes)
@@ -757,6 +758,15 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HAZE_STRING
 			auto classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(thisPointerTo);
 			hss << strName << " " << CAST_SCOPE(classValue->GetVariableScope()) << " " << CAST_TYPE(HazeDataDesc::ClassThis) << " " <<
 				CAST_TYPE(HazeValueType::PointerClass) << " " << classValue->GetOwnerClassName();
+		}
+		else if (thisPointerTo->IsRefClass())
+		{
+			hss << strName << " " << CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " <<//CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
+				CAST_TYPE(HazeValueType::ReferenceClass) << " " << thisPointerTo->GetValueType().CustomName;
+		}
+		else
+		{
+			HAZE_LOG_ERR(HAZE_TEXT("函数调用失败，己指针类型错误!\n"));
 		}
 
 		hss << std::endl;

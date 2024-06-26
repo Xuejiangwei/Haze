@@ -31,4 +31,4 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, v
 	HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER); \
 	retRegister->Type.PrimaryType = TYPE; \
 	retRegister->Data.resize(GetSizeByType(retRegister->Type, stack->GetVM())); \
-	SET_RET(V, retRegister->Data.begin()._Unwrapped())
+	memcpy(retRegister->Data.begin()._Unwrapped(), &V, retRegister->Data.size())

@@ -115,7 +115,7 @@ struct HazeDefineType
 				SecondaryType = type.SecondaryType;
 				CustomName.clear();
 			}
-			else if (IsClassType(type.SecondaryType))
+			else if (!type.CustomName.empty())
 			{
 				SecondaryType = HazeValueType::Class;
 				CustomName = type.CustomName;

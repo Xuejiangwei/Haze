@@ -662,7 +662,15 @@ void HazeCompiler::AddImportModuleToCurrModule(HazeCompilerModule* compilerModul
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLea(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value)
 {
-	return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::LEA);
+	if (allocaValue->IsRef() && value->IsArrayElement())
+	{
+		auto arrayPointer = CreatePointerToArrayElement(value);
+		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, arrayPointer, InstructionOpCode::MOV);
+	}
+	else
+	{
+		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::LEA);
+	}
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateMov(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value, bool storeValue)
