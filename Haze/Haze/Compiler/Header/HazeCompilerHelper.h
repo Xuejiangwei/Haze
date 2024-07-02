@@ -7,8 +7,6 @@ class HazeCompilerValue;
 class HazeCompilerFunction;
 class HazeCompilerClass;
 
-HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& className, const HAZE_STRING& functionName);
-
 HAZE_STRING GetLocalVariableName(const HAZE_STRING& name, std::shared_ptr<HazeCompilerValue> value);
 
 void HazeCompilerStream(HAZE_STRING_STREAM& hss, HazeCompilerValue* value, bool streamValue = true);

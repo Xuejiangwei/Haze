@@ -20,6 +20,8 @@ bool IsCanCastToken(HazeToken token);
 
 int Log2(int n);
 
+HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& className, const HAZE_STRING& functionName);
+
 const HAZE_CHAR* GetGlobalDataHeaderString();
 
 const HAZE_CHAR* GetGlobalDataInitBlockStart();
@@ -89,5 +91,7 @@ template <typename T>
 HAZE_STRING ToHazeString(T value);
 
 void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2);
+
+std::vector<HAZE_STRING> HazeStringSplit(const HAZE_STRING& str, const HAZE_STRING& delimiter);
 
 #include "HazeTemplate.inl"

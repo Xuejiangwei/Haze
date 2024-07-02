@@ -77,9 +77,21 @@ HazeCompilerModule* HazeCompiler::ParseBaseModule(const HAZE_CHAR* moduleName, c
 	return m_CompilerBaseModules[moduleName];
 }
 
-HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& moduleName)
+HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& modulePath)
 {
-	m_VM->ParseFile(GetModuleFilePath(moduleName));
+	auto pos = modulePath.find_last_of(HAZE_MODULE_PATH_CONBINE);
+	HAZE_STRING moduleName;
+	if (pos == std::string::npos)
+	{
+		moduleName = modulePath;
+	}
+	else
+	{
+		moduleName = modulePath.substr(pos + 1);
+	}
+
+
+	m_VM->ParseFile(GetModuleFilePath(moduleName, pos == std::string::npos ? nullptr : &modulePath));
 	return GetModule(moduleName);
 }
 
@@ -664,8 +676,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateLea(std::shared_ptr<HazeC
 {
 	if (allocaValue->IsRef() && value->IsArrayElement())
 	{
-		auto arrayPointer = CreatePointerToArrayElement(value);
-		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, arrayPointer, InstructionOpCode::MOV);
+		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, CreatePointerToArrayElement(value), InstructionOpCode::MOV);
 	}
 	else
 	{
@@ -933,7 +944,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_
 		HazeValue IndexValue;
 		IndexValue.Value.Int = index[i];
 
-		indces.push_back(GenConstantValue(HazeValueType::Int, IndexValue));
+		indces.push_back(GenConstantValue(HazeValueType::UnsignedLong, IndexValue));
 	}
 
 	return CreateArrayElement(value, indces);
@@ -942,9 +953,23 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateArrayElement(std::shared_ptr<HazeCompilerValue> value, std::vector<std::shared_ptr<HazeCompilerValue>> indices)
 {
 	std::vector<HazeCompilerValue*> values;
-	for (auto& Iter : indices)
+	for (auto& iter : indices)
 	{
-		values.push_back(Iter.get());
+		auto  index = iter;
+		if (index->IsConstant() && !IsUnsignedLongType(index->GetValueType().PrimaryType))
+		{
+			switch (iter->GetValueType().PrimaryType)
+			{
+			case HazeValueType::Int:
+				index = GetConstantValueUint64(index->GetValue().Value.Int);
+				break;
+			default:
+				HAZE_LOG_ERR_W("创建数组索引变量错误!");
+				break;
+			}
+		}
+
+		values.push_back(index.get());
 	}
 
 	if (value->IsArray())
@@ -997,22 +1022,18 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateGetArrayLength(std::share
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToValue(std::shared_ptr<HazeCompilerValue> value)
 {
-	auto tempReg = GetTempRegister();
-	tempReg->StoreValueType(value);
-
-	auto& type = const_cast<HazeDefineType&>(tempReg->GetValueType());
-	type.SecondaryType = type.PrimaryType;
-
-	if (IsHazeDefaultType(type.SecondaryType))
+	if (value->IsArrayElement())
 	{
-		type.PrimaryType = HazeValueType::PointerBase;
+		return CreatePointerToArrayElement(value);
 	}
-	else if (type.SecondaryType == HazeValueType::Class)
+	else
 	{
-		type.PrimaryType = HazeValueType::PointerClass;
-	}
+		auto pointer = GetTempRegister();
 
-	return CreateLea(tempReg, value);
+		auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
+		type.PointerTo(value->GetValueType());
+		return CreateLea(pointer, value);
+	}
 }
 
 std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArray(std::shared_ptr<HazeCompilerValue> arrValue, std::shared_ptr<HazeCompilerValue> index)
@@ -1039,13 +1060,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArrayElement(std
 	if (arrayValue)
 	{
 		auto tempRegister = GetTempRegister();
-		std::shared_ptr<HazeCompilerValue> arrayPointer;
-		arrayPointer = CreatePointerToArray(arrayValue);
+		std::shared_ptr<HazeCompilerValue> arrayPointer = CreatePointerToArray(arrayValue);
 
 		for (uint64 i = 0; i < arrayElementValue->GetIndex().size(); i++)
 		{
 			uint64 size = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetValue().Value.UnsignedLong
-				: arrayValue->GetSizeByLevel((uint32)i);
+				: arrayValue->GetSizeByLevel((uint64)i);
 			std::shared_ptr<HazeCompilerValue> sizeValue = nullptr;
 
 			if (arrayElementValue->GetIndex()[i]->IsConstant())
@@ -1066,7 +1086,6 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArrayElement(std
 		}
 
 		return arrayPointer;
-		//Compiler->CreateMovPV(MovToValue ? MovToValue : TempRegister, ArrayPointer);
 	}
 
 	return nullptr;

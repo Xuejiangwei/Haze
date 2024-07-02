@@ -28,7 +28,7 @@ public:
 
 	HazeCompilerModule* ParseBaseModule(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode);
 
-	HazeCompilerModule* ParseModule(const HAZE_STRING& moduleName);
+	HazeCompilerModule* ParseModule(const HAZE_STRING& modulePath);
 
 	void FinishModule();
 

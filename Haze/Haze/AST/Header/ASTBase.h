@@ -157,7 +157,8 @@ private:
 class ASTNew : public ASTBase
 {
 public:
-	ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, std::vector<std::unique_ptr<ASTBase>> countarrayExpression = {});
+	ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, std::vector<std::unique_ptr<ASTBase>> countarrayExpression = {},
+		std::vector<std::unique_ptr<ASTBase>> constructorParam = {});
 	
 	virtual ~ASTNew() override;
 
@@ -165,6 +166,7 @@ public:
 
 private:
 	std::vector<std::unique_ptr<ASTBase>> m_CountArrayExpression;
+	std::vector<std::unique_ptr<ASTBase>> m_ConstructorParam;
 };
 
 //ªÒµ√µÿ÷∑
@@ -360,14 +362,14 @@ private:
 class ASTImportModule : public ASTBase
 {
 public:
-	ASTImportModule(HazeCompiler* compiler, const SourceLocation& location, const HAZE_STRING& moduleName);
+	ASTImportModule(HazeCompiler* compiler, const SourceLocation& location, const HAZE_STRING& modulepath);
 	
 	virtual ~ASTImportModule() override;
 
 	virtual std::shared_ptr<HazeCompilerValue> CodeGen() override;
 
 private:
-	HAZE_STRING m_ModuleName;
+	HAZE_STRING m_ModulePath;
 };
 
 //Break
@@ -499,7 +501,7 @@ private:
 class ASTSizeOf : public ASTBase
 {
 public:
-	ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression);
+	ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineType& type, std::unique_ptr<ASTBase>& expression);
 
 	virtual ~ASTSizeOf() override;
 

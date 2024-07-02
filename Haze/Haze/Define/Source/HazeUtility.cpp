@@ -69,6 +69,11 @@ int Log2(int n)
 	return count;
 }
 
+HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& className, const HAZE_STRING& functionName)
+{
+	return className + HAZE_CLASS_FUNCTION_CONBINE + functionName;
+}
+
 const HAZE_CHAR* GetGlobalDataHeaderString()
 {
 	return HEADER_STRING_GLOBAL_DATA;
@@ -461,4 +466,24 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	default:
 		break;
 	}
+}
+
+std::vector<HAZE_STRING> HazeStringSplit(const HAZE_STRING& str, const HAZE_STRING& delimiter)
+{
+	std::vector<HAZE_STRING> result;
+
+	HAZE_CHAR* s = new HAZE_CHAR[str.size() + 1];
+	s[str.size()] = '\0';
+	
+	wcscpy_s(s, str.size() + 1, str.c_str());
+
+	HAZE_CHAR* p = nullptr;
+	auto token = wcstok_s(s, delimiter.c_str(), &p);
+	while (token)
+	{
+		result.push_back(token);
+		token = wcstok_s(NULL, delimiter.c_str(), &p);
+	}
+
+	return result;
 }

@@ -18,6 +18,7 @@
 
 extern std::unique_ptr<HazeDebugger> g_Debugger;
 extern void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData);
+extern void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args);
 
 HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
@@ -60,6 +61,7 @@ void HazeVM::InitVM(std::vector<HAZE_STRING> Vector_ModulePath)
 		ExeFile.ReadExecuteFile(this);
 
 #endif
+
 	}
 
 	m_Compiler.release();
@@ -94,7 +96,6 @@ void HazeVM::CallFunction(const HAZE_CHAR* functionName, ...)
 	auto& function = GetFunctionByName(functionName);
 	va_list args;
 	va_start(args, function.Params.size());
-	extern void CallHazeFunction(HazeStack * stack, const FunctionData * funcData, va_list & args);
 	CallHazeFunction(VMStack.get(), &function, args);
 	va_end(args);
 }
@@ -103,9 +104,27 @@ void HazeVM::CallFunction(FunctionData* functionData, ...)
 {
 	va_list args;
 	va_start(args, functionData->Params.size());
-	extern void CallHazeFunction(HazeStack * stack, const FunctionData * funcData, va_list & args);
 	CallHazeFunction(VMStack.get(), functionData, args);
 	va_end(args);
+}
+
+void* HazeVM::CreateHazeClass(const HAZE_STRING& className, ...)
+{
+	auto hazeClass = FindClass(className);
+	auto obj = malloc(hazeClass->Size);
+
+	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(className, className));
+
+	va_list args;
+	va_start(args, constructorFunc.Params.size());
+
+	auto dst = &va_arg(args, decltype(obj));
+	memcpy(dst, &obj, sizeof(obj));
+
+	CallHazeFunction(VMStack.get(), &constructorFunc, (va_list&)dst);
+	va_end(args);
+
+	return obj;
 }
 
 void HazeVM::ParseString(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode)
@@ -184,6 +203,11 @@ const FunctionData& HazeVM::GetFunctionByName(const HAZE_STRING& m_Name)
 {
 	int Index = GetFucntionIndexByName(m_Name);
 	return Vector_FunctionTable[Index];
+}
+
+const HAZE_CHAR* HazeVM::GetConstantStringByIndex(int Index) const
+{
+	return Vector_StringTable.at(Index).c_str();
 }
 
 char* HazeVM::GetGlobalValueByIndex(uint32 Index)
@@ -313,9 +337,9 @@ std::pair<HAZE_STRING, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 					auto function = (FunctionData*)functionAddress;
 					if (function->FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 					{
-						for (size_t i = 0; i < Vector_FunctionTable.size(); i++)
+						for (size_t j = 0; j < Vector_FunctionTable.size(); j++)
 						{
-							if (&Vector_FunctionTable[i] == function)
+							if (&Vector_FunctionTable[j] == function)
 							{
 								for (auto& Iter : Vector_ModuleData)
 								{

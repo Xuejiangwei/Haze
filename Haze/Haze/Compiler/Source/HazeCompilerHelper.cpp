@@ -12,11 +12,6 @@
 #include "HazeCompilerEnumValue.h"
 #include "HazeLogDefine.h"
 
-HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& className, const HAZE_STRING& functionName)
-{
-	return className + HAZE_CLASS_FUNCTION_CONBINE + functionName;
-}
-
 HAZE_STRING GetLocalVariableName(const HAZE_STRING& name, std::shared_ptr<HazeCompilerValue> value)
 {
 	static HAZE_STRING_STREAM s_Hss;

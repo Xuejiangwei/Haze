@@ -50,9 +50,9 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 
 	int argNum = 1;
 
-	const HAZE_STRING* str = (HAZE_STRING*)v;
-	auto start = str->cbegin();
-	while (start != str->cend())
+	const HAZE_CHAR* str = (HAZE_CHAR*)v;
+	auto start = str;
+	while (*start != '\0')
 	{
 		if (*start != PRE_SIGN)
 		{
@@ -81,7 +81,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				return;
 			}
 			HAZE_CHAR Form[MAX_FORMAT];
-			start._Seek_to(GetFormat(start._Unwrapped(), Form));
+			start = GetFormat(start, Form);
 
 			start++;
 			if (*start == HAZE_CHAR('d'))
@@ -136,8 +136,8 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				char* Address = stack->GetAddressByEBP(offset);
 				memcpy(&tempAddress, Address, sizeof(tempAddress));
 
-				const HAZE_STRING* tempStr = (HAZE_STRING*)tempAddress;
-				hss << *tempStr;
+				const HAZE_CHAR* tempStr = (HAZE_CHAR*)tempAddress;
+				hss << tempStr;
 				start++;
 			}
 		}
@@ -164,12 +164,12 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 
 	int ArgNum = 1;
 
-	const HAZE_STRING* String = (HAZE_STRING*)V;
-	auto Start = String->cbegin();
+	const HAZE_CHAR* String = (HAZE_CHAR*)V;
+	auto Start = String;
 
 	uint64 Address = 0;
 
-	while (Start != String->cend())
+	while (*Start != '\0')
 	{
 		if (*Start != PRE_SIGN)
 		{
@@ -200,7 +200,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				return;
 			}
 			HAZE_CHAR Form[MAX_FORMAT];
-			Start._Seek_to(GetFormat(Start._Unwrapped(), Form));
+			Start = GetFormat(Start, Form);
 
 			Start++;
 			if (*Start == HAZE_CHAR('d'))

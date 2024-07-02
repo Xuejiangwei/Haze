@@ -62,6 +62,8 @@ public:
 
 	bool FindLocalVariableName(const HazeCompilerValue* value, HAZE_STRING& outName);
 
+	bool HasParam() const { return m_Params.size() > 0; }
+
 	void AddLocalVariable(std::shared_ptr<HazeCompilerValue> value, int line);
 
 private:

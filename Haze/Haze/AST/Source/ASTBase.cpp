@@ -335,8 +335,9 @@ std::shared_ptr<HazeCompilerValue> ASTReturn::CodeGen()
 	return nullptr;
 }
 
-ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar, std::vector<std::unique_ptr<ASTBase>> countArrayExpression)
-	: ASTBase(compiler, location, DefineVar), m_CountArrayExpression(std::move(countArrayExpression))
+ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar, std::vector<std::unique_ptr<ASTBase>> countArrayExpression
+	, std::vector<std::unique_ptr<ASTBase>> constructorParam)
+	: ASTBase(compiler, location, DefineVar), m_CountArrayExpression(std::move(countArrayExpression)), m_ConstructorParam(std::move(constructorParam))
 {
 }
 
@@ -365,12 +366,18 @@ std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 		auto newClass = m_Compiler->GetCurrModule()->GetClass(value->GetValueType().CustomName);
 		if (countValue)
 		{
-			//需要初始化多个类对象
+			//需要初始化多个类对象，类的参数个数必须为0
 			auto function = newClass->FindFunction(value->GetValueType().CustomName);
 			auto arrayConstructorFunc = m_Compiler->GetFunction(HAZE_OBJECT_ARRAY_CONSTRUCTOR);
 			std::vector<std::shared_ptr<HazeCompilerValue>> param;
 
 			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
+
+			if (function->HasParam())
+			{
+				HAZE_LOG_ERR_W("生成类对象数组的构造函数必须是无参数的!\n");
+				return value;
+			}
 
 			//参数从右往左
 			std::vector<std::shared_ptr<HazeCompilerValue>> params;
@@ -385,6 +392,12 @@ std::shared_ptr<HazeCompilerValue> ASTNew::CodeGen()
 		{
 			auto function = newClass->FindFunction(value->GetValueType().CustomName);
 			std::vector<std::shared_ptr<HazeCompilerValue>> param;
+
+			//构造参数
+			for (auto& p : m_ConstructorParam)
+			{
+				param.push_back(p->CodeGen());
+			}
 
 			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
 			m_Compiler->CreateFunctionCall(function, param, value);
@@ -820,8 +833,8 @@ std::shared_ptr<HazeCompilerValue> ASTThreeExpression::CodeGen()
 	return tempValue;
 }
 
-ASTImportModule::ASTImportModule(HazeCompiler* compiler, const SourceLocation& location, const HAZE_STRING& moduleName)
-	: ASTBase(compiler, location), m_ModuleName(moduleName)
+ASTImportModule::ASTImportModule(HazeCompiler* compiler, const SourceLocation& location, const HAZE_STRING& modulepath)
+	: ASTBase(compiler, location), m_ModulePath(modulepath)
 {
 }
 
@@ -831,7 +844,7 @@ ASTImportModule::~ASTImportModule()
 
 std::shared_ptr<HazeCompilerValue> ASTImportModule::CodeGen()
 {
-	m_Compiler->AddImportModuleToCurrModule(m_Compiler->ParseModule(m_ModuleName));
+	m_Compiler->AddImportModuleToCurrModule(m_Compiler->ParseModule(m_ModulePath));
 	return nullptr;
 }
 
@@ -1085,9 +1098,10 @@ std::shared_ptr<HazeCompilerValue> ASTArrayLength::CodeGen()
 	return m_Compiler->CreateGetArrayLength(m_Expression->CodeGen());
 }
 
-ASTSizeOf::ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, std::unique_ptr<ASTBase>& expression)
+ASTSizeOf::ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineType& type, std::unique_ptr<ASTBase>& expression)
 	: ASTBase(compiler, location), m_Expression(std::move(expression))
 {
+	m_DefineVariable.Type = type;
 }
 
 ASTSizeOf::~ASTSizeOf()
@@ -1096,5 +1110,12 @@ ASTSizeOf::~ASTSizeOf()
 
 std::shared_ptr<HazeCompilerValue> ASTSizeOf::CodeGen()
 {
-	return m_Compiler->GetConstantValueUint64(m_Expression->CodeGen()->GetSize());
+	if (m_Expression)
+	{
+		return m_Compiler->GetConstantValueUint64(m_Expression->CodeGen()->GetSize());
+	}
+	else
+	{
+		return m_Compiler->GetConstantValueUint64(GetSizeByType(m_DefineVariable.Type, m_Compiler->GetCurrModule().get()));
+	}
 }

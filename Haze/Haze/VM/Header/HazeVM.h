@@ -41,6 +41,8 @@ public:
 
 	void CallFunction(FunctionData* functionData, ...);
 
+	void* CreateHazeClass(const HAZE_STRING& className, ...);
+
 	void ParseString(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode);
 
 	void ParseFile(const HAZE_STRING& FilePath);
@@ -56,7 +58,7 @@ public:
 
 	const FunctionData& GetFunctionByName(const HAZE_STRING& m_Name);
 
-	const HAZE_STRING& GetHazeStringByIndex(int Index) const { return Vector_StringTable[Index].second; }
+	const HAZE_CHAR* GetConstantStringByIndex(int Index) const;
 
 	char* GetGlobalValueByIndex(uint32 Index);
 
@@ -99,7 +101,7 @@ private:
 	std::vector<std::pair<HazeVariable, bool>> Vector_GlobalData; //是否初始化
 	std::vector<std::pair<uint32, uint32>> m_GlobalDataInitAddress;	//全局变量初始化开始地址与结束地址
 
-	std::vector<std::pair<HAZE_STRING, HAZE_STRING>> Vector_StringTable;
+	std::vector<HAZE_STRING> Vector_StringTable;
 
 	std::vector<ClassData> Vector_ClassTable;
 

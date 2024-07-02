@@ -66,7 +66,7 @@ enum class ParamType
 	MainFile,
 	MainFunction,
 	DebugType,
-	LoadLibrary,
+	LoadLibraryDll,
 	Files,
 	ClassInherit,
 	ClassInheritLevel,
@@ -79,7 +79,7 @@ uint32 GetParam(ParamType type, char** paramArray, int length)
 		{ ParamType::MainFile, "-m" },
 		{ ParamType::MainFunction, "-mf" },
 		{ ParamType::DebugType, "-d" },
-		{ ParamType::LoadLibrary, "-ld" },
+		{ ParamType::LoadLibraryDll, "-ld" },
 		{ ParamType::ClassInherit, "-ci" },
 		{ ParamType::ClassInheritLevel, "-cil" },
 		{ ParamType::Files, "-f" },
@@ -158,7 +158,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 
 	for (int dll_Index = 0; dll_Index < argCount; dll_Index += 2)
 	{
-		dll_Index = GetParam(ParamType::LoadLibrary, argValue + dll_Index, argCount - dll_Index);
+		dll_Index = GetParam(ParamType::LoadLibraryDll, argValue + dll_Index, argCount - dll_Index);
 		if (dll_Index > 0)
 		{
 			g_HazeLibManager->LoadDLLLibrary(String2WString(argValue[dll_Index]), String2WString(argValue[dll_Index + 1]));

@@ -2,7 +2,7 @@
 
 #include "HazeHeader.h"
 
-HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName);
+HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* dir = nullptr);
 
 HAZE_STRING GetMainBinaryFilePath();
 

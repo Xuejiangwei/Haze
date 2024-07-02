@@ -1149,9 +1149,9 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	defineVar.Type.PrimaryType = GetValueTypeByToken(m_CurrToken);
 	GetValueType(defineVar.Type);
 
+	std::vector<std::unique_ptr<ASTBase>> arraySize;
 	if (ExpectNextTokenIs(HazeToken::Array))
 	{
-		std::vector<std::unique_ptr<ASTBase>> arraySize;
 		while (m_CurrToken == HazeToken::Array)
 		{
 			if (ExpectNextTokenIs(HazeToken::ArrayDefineEnd))
@@ -1172,11 +1172,23 @@ std::unique_ptr<ASTBase> Parse::ParseNew()
 	{
 		if (TokenIs(HazeToken::LeftParentheses, HAZE_TEXT("生成表达式 期望 (")))
 		{
-			if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("生成表达式 期望 )")))
+			std::vector<std::unique_ptr<ASTBase>> params;
+
+			GetNextToken();
+			while (!TokenIs(HazeToken::RightParentheses))
 			{
+				params.push_back(ParseExpression());
+				if (!TokenIs(HazeToken::Comma))
+				{
+					break;
+				}
+
 				GetNextToken();
-				return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar);
 			}
+			
+			GetNextToken();
+			return std::make_unique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, 
+				std::move(arraySize), std::move(params));
 		}
 	}
 
@@ -1955,12 +1967,25 @@ std::unique_ptr<ASTBase> Parse::ParseSizeOf()
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, HAZE_TEXT("获得字节大小需要 （")))
 	{
 		GetNextToken();
-		auto variable = ParseExpression();
+
+		m_DefineVariable.Name.clear();
+		m_DefineVariable.Type.Reset();
+
+		std::unique_ptr<ASTBase> variable = nullptr;
+		if (TokenIs(HazeToken::Identifier))
+		{
+			variable = ParseExpression();
+		}
+		else
+		{
+			m_DefineVariable.Type.PrimaryType = GetValueTypeByToken(m_CurrToken);
+			GetValueType(m_DefineVariable.Type);
+		}
 
 		if (ExpectNextTokenIs(HazeToken::RightParentheses, HAZE_TEXT("获得字节大小需要 )")))
 		{
 			GetNextToken();
-			return std::make_unique<ASTSizeOf>(m_Compiler, m_LineCount, variable);
+			return std::make_unique<ASTSizeOf>(m_Compiler, m_LineCount, m_DefineVariable.Type, variable);
 		}
 	}
 

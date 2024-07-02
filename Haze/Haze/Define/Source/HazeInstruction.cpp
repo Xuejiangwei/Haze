@@ -1251,7 +1251,7 @@ private:
 		}
 		case InstructionAddressType::ConstantString:
 		{
-			tempAddress = (uint64)&stack->m_VM->GetHazeStringByIndex(insData.Extra.Index);
+			tempAddress = (uint64)stack->m_VM->GetConstantStringByIndex(insData.Extra.Index);
 			return &tempAddress;
 		}
 		case InstructionAddressType::Register:
@@ -1379,7 +1379,7 @@ private:
 
 		for (size_t i = 0; i < funcData->Params.size(); i++)
 		{
-			PushParam(stack, args, funcData->Params[i].Type);
+			PushParamByArgs(stack, args, funcData->Params[i].Type);
 		}
 		stack->m_ESP += size;
 
@@ -1391,87 +1391,94 @@ private:
 		stack->ResetCallHaze();
 	}
 
-	static int PushParam(HazeStack* stack, va_list& Args, const HazeDefineType& m_Type)
+	static void PushParam(HazeStack* stack, void* src, int size)
 	{
-		int size = GetSizeByType(m_Type, stack->m_VM);
-		if (IsHazeDefaultType(m_Type.PrimaryType))
+		stack->m_ESP -= size;
+		memcpy(&stack->m_StackMain[stack->m_ESP], src, size);
+	}
+
+	static int PushParamByArgs(HazeStack* stack, va_list& args, const HazeDefineType& type)
+	{
+		HazeValue value;
+		int size = GetSizeByType(type, stack->m_VM);
+		void* src = nullptr;
+
+		if (IsHazeDefaultType(type.PrimaryType))
 		{
-			stack->m_ESP -= size;
-			switch (m_Type.PrimaryType)
+			switch (type.PrimaryType)
 			{
 			case HazeValueType::Bool:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, bool), size);
+				src = &va_arg(args, bool);
 				break;
 			//在可变长参数中，会被扩展成int
 			case HazeValueType::Byte:
 				{
-					hbyte v = va_arg(Args, int);
-					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+					value.Value.Byte = va_arg(args, int);
+					src = &value.Value.Byte;
 				}
 				break;
 			case HazeValueType::UnsignedByte:
 				{
-					uhbyte v = va_arg(Args, int);
-					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+					value.Value.UnsignedByte = va_arg(args, int);
+					src = &value.Value.UnsignedByte;
 				}
 				break;
 			case HazeValueType::Char:
 				{
-					hchar v = va_arg(Args, int);
-					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+					value.Value.Char = va_arg(args, int);
+					src = &value.Value.Char;
 				}
 				break;
 			case HazeValueType::Short:
 				{
-					short v = va_arg(Args, int);
-					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+					value.Value.Short = va_arg(args, int);
+					src = &value.Value.Short;
 				}
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, short), size);
 				break;
 			case HazeValueType::UnsignedShort:
 				{
-					ushort v = va_arg(Args, int);
-					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+					value.Value.UnsignedShort = va_arg(args, int);
+					src = &value.Value.UnsignedShort;
 				}
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, ushort), size);
 				break;
 			case HazeValueType::Int:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, int), size);
+				src = &va_arg(args, int);
 				break;
 			case HazeValueType::Long:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, int64), size);
+				src = &va_arg(args, int64);
 				break;
 			//在可变长参数中，float会被扩展成double
 			case HazeValueType::Float:
 				{
-					float v = va_arg(Args, double);
-					memcpy(&stack->m_StackMain[stack->m_ESP], &v, size);
+					value.Value.Float = va_arg(args, double);
+					src = &value.Value.Float;
 				}
 				break; 
 			case HazeValueType::Double:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, double), size);
+				src = &va_arg(args, double);
 				break;
 			case HazeValueType::UnsignedInt:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, uint32), size);
+				src = &va_arg(args, uint32);
 				break;
 			case HazeValueType::UnsignedLong:
-				memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, uint64), size);
+				src = &va_arg(args, uint64);
 				break;
 			default:
-				HAZE_LOG_ERR_W("三方库调用Haze函数Push参数<%s>类型错误", GetHazeValueTypeString(m_Type.PrimaryType));
+				HAZE_LOG_ERR_W("三方库调用Haze函数Push参数<%s>类型错误", GetHazeValueTypeString(type.PrimaryType));
 				break;
 			}
+
 		}
-		else if (IsPointerType(m_Type.PrimaryType))
+		else if (IsPointerType(type.PrimaryType))
 		{
-			stack->m_ESP -= size;
-			memcpy(&stack->m_StackMain[stack->m_ESP], &va_arg(Args, void*), size);
+			src = &va_arg(args, void*);
 		}
 		else
 		{
 			HAZE_LOG_ERR_W("三方库调用Haze函数暂时只支持默认类型!\n");
 		}
 
+		PushParam(stack, src, size);
 		return size;
 	}
 

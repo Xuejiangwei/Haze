@@ -29,6 +29,7 @@
 #define HAZE_FILE_INTER					HAZE_TEXT("Intermediate\\")
 #define HAZE_FILE_PATH_BIN				HAZE_TEXT("Bin\\")
 #define HAZE_FILE_MAIN_BIN				HAZE_TEXT("Main.Hzb")
+#define HAZE_MODULE_PATH_CONBINE		HAZE_TEXT("¡¤")
 
 #define HAZE_CLASS_THIS					HAZE_TEXT("¼º")
 #define HAZE_CLASS_POINTER_ATTR			HAZE_TEXT("Ö¸Ö®")

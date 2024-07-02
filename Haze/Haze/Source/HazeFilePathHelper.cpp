@@ -5,7 +5,7 @@
 extern std::wstring g_rootCodePath;
 extern std::unique_ptr<HazeLibraryManager> g_HazeLibManager;
 
-HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName)
+HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* dir)
 {
 	const HAZE_STRING* path = g_HazeLibManager->TryGetFilePath(moduleName);
 	if (path)
@@ -23,6 +23,24 @@ HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName)
 	if (std::filesystem::exists(filePath))
 	{
 		return filePath.c_str();
+	}
+
+	if (dir)
+	{
+		auto dirs = HazeStringSplit(*dir, HAZE_MODULE_PATH_CONBINE);
+		for (size_t i = 0; i < dirs.size(); i++)
+		{
+			if (i > 0)
+			{
+				dirs[0] += HAZE_TEXT("\\") + dirs[i];
+			}
+		}
+
+		filePath = g_rootCodePath + dirs[0] + HAZE_FILE_SUFFIX;
+		if (std::filesystem::exists(filePath))
+		{
+			return filePath.c_str();
+		}
 	}
 
 	HAZE_LOG_ERR_W("未能找到<%s>模块的文件路径!\n", moduleName.c_str());
