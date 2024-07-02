@@ -24,14 +24,14 @@ FunctionStart 17
 
 Block Entry
 NEW New_R 23 ×Ö·û´® 2 5 0 1 1 13
-MOV Temp_R6 4 7 18 ×Ö·û´® New_R 1 5 18 ×Ö·û´®
-PUSH Temp_R6 4 7 18 ×Ö·û´®
+MOV Temp_R7 4 7 18 ×Ö·û´® New_R 1 5 18 ×Ö·û´®
+PUSH Temp_R7 4 7 18 ×Ö·û´®
 PUSH ³£×Ö·û´®Ö¸Õë 1 2 17 5 0
-PUSH Temp_R6 4 7 18 ×Ö·û´®
+PUSH Temp_R7 4 7 18 ×Ö·û´®
 PUSH RetAddress 0 9 8
 CALL ×Ö·û´®@×Ö·û´® 24 1 16 ×Ö·û´®
-POP Temp_R6 4 7 18 ×Ö·û´®
-MOV ±û$3 2 0 18 ×Ö·û´® Temp_R6 4 7 18 ×Ö·û´®
+POP Temp_R7 4 7 18 ×Ö·û´®
+MOV ±û$3 2 0 18 ×Ö·û´® Temp_R7 4 7 18 ×Ö·û´®
 PUSH ±û$3 2 0 18 ×Ö·û´®
 PUSH RetAddress 0 9 8
 CALL ×Ö·û´®@»ñµÃ×Ö·ûµØÖ· 24 0 8 ×Ö·û´®
@@ -39,14 +39,14 @@ PUSH Ret_R 1 4 17 5
 PUSH ³£×Ö·û´®Ö¸Õë 1 2 17 5 1
 PUSH RetAddress 0 9 8
 CALL ´òÓ¡ 24 2 16 ±ê×¼Á÷
-MOV Temp_R6 4 7 8 ¼×$2 2 0 8
-ADD Temp_R6 4 7 8 ÒÒ$1 2 0 8
-PUSH Temp_R6 4 7 8
-PUSH Temp_R6 4 7 8
+MOV Temp_R7 4 7 8 ¼×$2 2 0 8
+ADD Temp_R7 4 7 8 ÒÒ$1 2 0 8
+PUSH Temp_R7 4 7 8
+PUSH Temp_R7 4 7 8
 PUSH ³£×Ö·û´®Ö¸Õë 1 2 17 5 2
 PUSH RetAddress 0 9 8
 CALL ´òÓ¡ 24 2 12 ±ê×¼Á÷
-POP Temp_R6 4 7 8
+POP Temp_R7 4 7 8
 RET Void 0 0 1
 
 FunctionEnd 61

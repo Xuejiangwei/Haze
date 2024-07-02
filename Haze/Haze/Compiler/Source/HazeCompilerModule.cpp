@@ -65,9 +65,9 @@ private:
 };
 
 
-HazeCompilerModule::HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName)
+HazeCompilerModule::HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName, const HAZE_STRING& modulePath)
 	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_IsBeginCreateFunctionVariable(false),
-	 m_IsGenTemplateCode(false)
+	 m_IsGenTemplateCode(false), m_Path(modulePath)
 {
 #if HAZE_I_CODE_ENABLE
 

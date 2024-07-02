@@ -27,13 +27,15 @@ class HazeCompilerModule
 	friend struct PushTempRegister;
 public:
 
-	HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName);
+	HazeCompilerModule(HazeCompiler* compiler, const HAZE_STRING& moduleName, const HAZE_STRING& modulePath);
 
 	~HazeCompilerModule();
 
 	HazeCompiler* GetCompiler() { return m_Compiler; }
 
 	const HAZE_STRING& GetName() const;
+
+	const HAZE_STRING& GetPath() const { return m_Path; }
 
 	const HAZE_STRING& GetCurrClassName() const { return m_CurrClass; }
 
@@ -161,6 +163,8 @@ private:
 
 private:
 	HazeCompiler* m_Compiler;
+
+	HAZE_STRING m_Path;
 
 	HazeLibraryType m_ModuleLibraryType;
 

@@ -5,7 +5,7 @@
 extern std::wstring g_rootCodePath;
 extern std::unique_ptr<HazeLibraryManager> g_HazeLibManager;
 
-HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* dir)
+HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* refModulePath, const HAZE_STRING* dir)
 {
 	const HAZE_STRING* path = g_HazeLibManager->TryGetFilePath(moduleName);
 	if (path)
@@ -23,6 +23,15 @@ HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* 
 	if (std::filesystem::exists(filePath))
 	{
 		return filePath.c_str();
+	}
+
+	if (refModulePath)
+	{
+		filePath = *refModulePath + HAZE_TEXT("\\") + moduleName + HAZE_FILE_SUFFIX;
+		if (std::filesystem::exists(filePath))
+		{
+			return filePath.c_str();
+		}
 	}
 
 	if (dir)

@@ -47,7 +47,7 @@ HazeCompiler::~HazeCompiler()
 {
 }
 
-bool HazeCompiler::InitializeCompiler(const HAZE_STRING& moduleName)
+bool HazeCompiler::InitializeCompiler(const HAZE_STRING& moduleName, const HAZE_STRING& path)
 {
 	//Éú³ÉÄ£¿é
 	auto It = m_CompilerModules.find(moduleName);
@@ -57,7 +57,7 @@ bool HazeCompiler::InitializeCompiler(const HAZE_STRING& moduleName)
 	}
 
 	m_ModuleNameStack.push_back(moduleName);
-	m_CompilerModules[moduleName] = std::make_unique<HazeCompilerModule>(this, moduleName);
+	m_CompilerModules[moduleName] = std::make_unique<HazeCompilerModule>(this, moduleName, path);
 	return true;
 }
 
@@ -90,8 +90,7 @@ HazeCompilerModule* HazeCompiler::ParseModule(const HAZE_STRING& modulePath)
 		moduleName = modulePath.substr(pos + 1);
 	}
 
-
-	m_VM->ParseFile(GetModuleFilePath(moduleName, pos == std::string::npos ? nullptr : &modulePath));
+	m_VM->ParseFile(GetModuleFilePath(moduleName, &GetCurrModule()->GetPath(), pos == std::string::npos ? nullptr : &modulePath));
 	return GetModule(moduleName);
 }
 

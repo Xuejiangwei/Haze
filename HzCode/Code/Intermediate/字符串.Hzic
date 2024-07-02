@@ -21,33 +21,33 @@ Variable 字符文本$1 17 5 -20 8 17
 FunctionStart 18
 
 Block Entry
-CVT Temp_R6 4 7 13 0 1 1 8
-MOV 己$2指之长度 2 15 13 Temp_R6 4 7 13
-CVT Temp_R6 4 7 13 15 1 1 8
-MOV 己$2指之容量 2 15 13 Temp_R6 4 7 13
-MOV Temp_R6 4 7 13 1 1 1 13
-MOV Temp_R5 4 7 13 己$2指之容量 2 15 13
-ADD Temp_R5 4 7 13 1 1 1 13
-MUL Temp_R6 4 7 13 Temp_R5 4 7 13
-NEW New_R 5 0 2 5 Temp_R6 4 7 13
+CVT Temp_R7 4 7 13 0 1 1 8
+MOV 己$2指之长度 2 15 13 Temp_R7 4 7 13
+CVT Temp_R7 4 7 13 15 1 1 8
+MOV 己$2指之容量 2 15 13 Temp_R7 4 7 13
+MOV Temp_R7 4 7 13 1 1 1 13
+MOV Temp_R6 4 7 13 己$2指之容量 2 15 13
+ADD Temp_R6 4 7 13 1 1 1 13
+MUL Temp_R7 4 7 13 Temp_R6 4 7 13
+NEW New_R 5 0 2 5 Temp_R7 4 7 13
 MOV 己$2指之字符串数组 2 15 14 5 New_R 1 5 17 5
 PUSH 字符文本$1 2 0 17 5
 PUSH RetAddress 0 9 8
 CALL 获得字符个数 24 1 8 标准内存
-CVT Temp_R6 4 7 13 Ret_R 1 4 10
-MOV 己$2指之长度 2 15 13 Temp_R6 4 7 13
-MOV Temp_R6 4 7 13 己$2指之长度 2 15 13
-MUL Temp_R6 4 7 13 2 1 1 13
-LEA Temp_R5 4 7 17 5 己$2指之字符串数组 2 15 14 5
-PUSH Temp_R5 4 7 17 5
-PUSH Temp_R6 4 7 13
-PUSH Temp_R6 4 7 13
+CVT Temp_R7 4 7 13 Ret_R 1 4 10
+MOV 己$2指之长度 2 15 13 Temp_R7 4 7 13
+MOV Temp_R7 4 7 13 己$2指之长度 2 15 13
+MUL Temp_R7 4 7 13 2 1 1 13
+LEA Temp_R6 4 7 17 5 己$2指之字符串数组 2 15 14 5
+PUSH Temp_R6 4 7 17 5
+PUSH Temp_R7 4 7 13
+PUSH Temp_R7 4 7 13
 PUSH 字符文本$1 2 0 17 5
-PUSH Temp_R5 4 7 17 5
+PUSH Temp_R6 4 7 17 5
 PUSH RetAddress 0 9 8
 CALL 内存复制 24 3 24 标准内存
-POP Temp_R5 4 7 17 5
-POP Temp_R6 4 7 13
+POP Temp_R6 4 7 17 5
+POP Temp_R7 4 7 13
 RET Void 0 0 1
 
 FunctionEnd 25
@@ -68,8 +68,8 @@ Variable 己$1 18 字符串 -12 8 32
 FunctionStart 33
 
 Block Entry
-LEA Temp_R6 4 7 17 5 己$1指之字符串数组 2 15 14 5
-RET Temp_R6 4 7 17 5
+LEA Temp_R7 4 7 17 5 己$1指之字符串数组 2 15 14 5
+RET Temp_R7 4 7 17 5
 
 FunctionEnd 35
 
@@ -81,11 +81,11 @@ Variable 索引$1 8 -16 4 67
 FunctionStart 68
 
 Block Entry
-MOV Temp_R5 4 7 17 5 己$2指之字符串数组 2 15 14 5
-MOV Temp_R6 4 7 8 索引$1 2 0 8
-ADD Temp_R5 4 7 17 5 Temp_R6 4 7 8
-MOVPV Temp_R6 4 7 5 Temp_R5 4 7 17 5
-RET Temp_R6 4 7 5
+MOV Temp_R6 4 7 17 5 己$2指之字符串数组 2 15 14 5
+MOV Temp_R7 4 7 8 索引$1 2 0 8
+ADD Temp_R6 4 7 17 5 Temp_R7 4 7 8
+MOVPV Temp_R7 4 7 5 Temp_R6 4 7 17 5
+RET Temp_R7 4 7 5
 
 FunctionEnd 70
 

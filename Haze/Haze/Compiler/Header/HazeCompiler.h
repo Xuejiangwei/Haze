@@ -22,7 +22,7 @@ public:
 
 	~HazeCompiler();
 
-	bool InitializeCompiler(const HAZE_STRING& moduleName);
+	bool InitializeCompiler(const HAZE_STRING& moduleName, const HAZE_STRING& path);
 
 	void FinishParse();
 

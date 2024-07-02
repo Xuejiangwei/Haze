@@ -130,7 +130,7 @@ void* HazeVM::CreateHazeClass(const HAZE_STRING& className, ...)
 void HazeVM::ParseString(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode)
 {
 	bool PopCurrModule = false;
-	if (m_Compiler->InitializeCompiler(moduleName))
+	if (m_Compiler->InitializeCompiler(moduleName, HAZE_TEXT("")))
 	{
 		PopCurrModule = true;
 		Parse P(m_Compiler.get());
@@ -151,8 +151,9 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath)
 {
 	bool PopCurrModule = false;
 	std::filesystem::path path(FilePath); 
-	auto moduleName = path.filename().wstring().substr(0, path.filename().wstring().length() - 3);
-	if (m_Compiler->InitializeCompiler(moduleName))
+	auto dir = path.parent_path().wstring();
+	auto moduleName = path.filename().stem().wstring();
+	if (m_Compiler->InitializeCompiler(moduleName, dir))
 	{
 		PopCurrModule = true;
 		Parse P(m_Compiler.get());
