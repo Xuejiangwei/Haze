@@ -32,8 +32,11 @@ HazeVM::~HazeVM()
 
 void HazeVM::InitVM(std::vector<HAZE_STRING> Vector_ModulePath)
 {
-	m_Compiler->ParseBaseModule(HAZE_BASE_LIBRARY_STREAM_NAME, HAZE_BASE_LIBRARY_STREAM_CODE);
-	m_Compiler->ParseBaseModule(HAZE_BASE_LIBRARY_MEMORY_NAME, HAZE_BASE_LIBRARY_MEMORY_CODE);
+	std::vector<HAZE_STRING> baseModules = HAZE_BASE_LIBS;
+	for (uint64 i = 0; i + 1 < baseModules.size(); i+=2)
+	{
+		m_Compiler->ParseBaseModule(baseModules[i].c_str(), baseModules[i + 1].c_str());
+	}
 
 	for (auto& iter : Vector_ModulePath)
 	{

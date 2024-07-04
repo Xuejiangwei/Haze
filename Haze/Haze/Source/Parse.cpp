@@ -235,6 +235,10 @@ Parse::Parse(HazeCompiler* compiler)
 
 Parse::~Parse()
 {
+	std::ifstream s;
+	s.open("");
+	std::string s1;
+	std::getline(s, s1);
 }
 
 void Parse::InitializeFile(const HAZE_STRING& filePath)
@@ -873,17 +877,23 @@ std::unique_ptr<ASTBase> Parse::ParseVariableDefine()
 		{
 			if (m_CurrToken == HazeToken::LeftParentheses)
 			{
-				//类对象定义
+				std::vector<std::unique_ptr<ASTBase>>& params = arraySize;
+
 				GetNextToken();
-				if (m_CurrToken == HazeToken::RightParentheses)
+				while (!TokenIs(HazeToken::RightParentheses))
 				{
+					params.push_back(ParseExpression());
+					if (!TokenIs(HazeToken::Comma))
+					{
+						break;
+					}
+
 					GetNextToken();
-					return std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), m_DefineVariable, nullptr, std::move(arraySize), pointerLevel);
 				}
-				else
-				{
-					HAZE_LOG_ERR_W("解析错误, 暂时不支持类的构造函数有参数!");
-				}
+
+				GetNextToken();
+				return std::make_unique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+					m_DefineVariable, nullptr, std::move(params), pointerLevel);
 			}
 			else if (isTemplateVar)
 			{

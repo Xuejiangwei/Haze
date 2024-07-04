@@ -1,15 +1,12 @@
 0
 GlobalDataTable
-1
-0 1 我的五子棋 8 18 五子棋
+0
 GlobalDataInitStart
-MOV 我的五子棋 1 0 18 五子棋 NULL_PTR 1 22 18 五子棋
 GlobalDataInitEnd
 StringTable
-3
-8 测试主函数字符串
+2
+54 C:\\Users\\WIN10\\Desktop\\ConsoleApplication1\\tt.txt
 8 打印字符串 %s
-10 测试主函数 %d\n
 ClassTable
 0
 FunctionTable
@@ -17,37 +14,35 @@ FunctionTable
 Function 测试主函数 1
 Param 甲 8
 Param 乙 8
-Variable 甲$2 8 -8 4 16
-Variable 乙$1 8 -12 4 16
-Variable 丙$3 18 字符串 0 8 18
-FunctionStart 17
+Variable 甲$2 8 -8 4 17
+Variable 乙$1 8 -12 4 17
+Variable 我的文件$3 23 文件 0 8 19
+Variable 第一个字符$4 5 8 2 20
+Variable 我的字符串$5 14 5 10 8 23
+FunctionStart 18
 
 Block Entry
-NEW New_R 23 字符串 2 5 0 1 1 13
-MOV Temp_R7 4 7 18 字符串 New_R 1 5 18 字符串
-PUSH Temp_R7 4 7 18 字符串
 PUSH 常字符串指针 1 2 17 5 0
-PUSH Temp_R7 4 7 18 字符串
+PUSH 我的文件$3 2 11 18 文件
 PUSH RetAddress 0 9 8
-CALL 字符串@字符串 24 1 16 字符串
-POP Temp_R7 4 7 18 字符串
-MOV 丙$3 2 0 18 字符串 Temp_R7 4 7 18 字符串
-PUSH 丙$3 2 0 18 字符串
+CALL 文件@文件 24 1 16 文件
+MOV 第一个字符$4 2 0 5 25125 1 1 8
+MOV Temp_R7 4 7 13 1 1 1 13
+MUL Temp_R7 4 7 13 14 1 1 13
+NEW New_R 5 0 2 5 Temp_R7 4 7 13
+MOV 我的字符串$5 2 0 14 5 New_R 1 5 17 5
+PUSH 我的字符串$5 2 0 14 5
+PUSH 我的文件$3 2 11 18 文件
 PUSH RetAddress 0 9 8
-CALL 字符串@获得字符地址 24 0 8 字符串
-PUSH Ret_R 1 4 17 5
+CALL 文件@读取字符串 24 1 16 文件
+PUSH 我的字符串$5 2 0 14 5
 PUSH 常字符串指针 1 2 17 5 1
 PUSH RetAddress 0 9 8
 CALL 打印 24 2 16 标准流
-MOV Temp_R7 4 7 8 甲$2 2 0 8
-ADD Temp_R7 4 7 8 乙$1 2 0 8
-PUSH Temp_R7 4 7 8
-PUSH Temp_R7 4 7 8
-PUSH 常字符串指针 1 2 17 5 2
+PUSH 我的文件$3 2 11 18 文件
 PUSH RetAddress 0 9 8
-CALL 打印 24 2 12 标准流
-POP Temp_R7 4 7 8
+CALL 文件@关闭 24 0 8 文件
 RET Void 0 0 1
 
-FunctionEnd 61
+FunctionEnd 71
 

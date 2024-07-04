@@ -329,10 +329,118 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 {
 	switch (type1)
 	{
+	case HazeValueType::Byte:
+	{
+		switch (type2)
+		{
+		case HazeValueType::UnsignedByte:
+			v1.Value.Byte = (hbyte)v2.Value.UnsignedByte;
+			break;
+		case HazeValueType::Char:
+			v1.Value.Byte = (hbyte)v2.Value.Char;
+			break;
+		case HazeValueType::UnsignedInt:
+			v1.Value.Byte = (hbyte)v2.Value.UnsignedInt;
+			break;
+		case HazeValueType::Int:
+			v1.Value.Byte = (hbyte)v2.Value.Int;
+			break;
+		case HazeValueType::Float:
+			v1.Value.Byte = (hbyte)v2.Value.Float;
+			break;
+		case HazeValueType::Double:
+			v1.Value.Byte = (hbyte)v2.Value.Double;
+			break;
+		case HazeValueType::Long:
+			v1.Value.Byte = (hbyte)v2.Value.Long;
+			break;
+		case HazeValueType::UnsignedLong:
+			v1.Value.Byte = (hbyte)v2.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+	}
+	break;
+	case HazeValueType::UnsignedByte:
+	{
+		switch (type2)
+		{
+		case HazeValueType::Byte:
+			v1.Value.UnsignedByte = (uhbyte)v2.Value.Byte;
+			break;
+		case HazeValueType::Char:
+			v1.Value.UnsignedByte = (uhbyte)v2.Value.Char;
+			break;
+		case HazeValueType::UnsignedInt:
+			v1.Value.UnsignedByte = (uhbyte)v2.Value.UnsignedInt;
+			break;
+		case HazeValueType::Int:
+			v1.Value.UnsignedByte = (uhbyte)v2.Value.Int;
+			break;
+		case HazeValueType::Float:
+			v1.Value.UnsignedByte = (uhbyte)v2.Value.Float;
+			break;
+		case HazeValueType::Double:
+			v1.Value.UnsignedByte = (uhbyte)v2.Value.Double;
+			break;
+		case HazeValueType::Long:
+			v1.Value.UnsignedByte = (uhbyte)v2.Value.Long;
+			break;
+		case HazeValueType::UnsignedLong:
+			v1.Value.UnsignedByte = (uhbyte)v2.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+	}
+	break;
+	case HazeValueType::Char:
+	{
+		switch (type2)
+		{
+		case HazeValueType::Byte:
+			v1.Value.Char = (HAZE_CHAR)v2.Value.Byte;
+			break;
+		case HazeValueType::UnsignedByte:
+			v1.Value.Char = (HAZE_CHAR)v2.Value.UnsignedByte;
+			break;
+		case HazeValueType::UnsignedInt:
+			v1.Value.Char = (HAZE_CHAR)v2.Value.UnsignedInt;
+			break;
+		case HazeValueType::Int:
+			v1.Value.Char = (HAZE_CHAR)v2.Value.Int;
+			break;
+		case HazeValueType::Float:
+			v1.Value.Char = (HAZE_CHAR)v2.Value.Float;
+			break;
+		case HazeValueType::Double:
+			v1.Value.Char = (HAZE_CHAR)v2.Value.Double;
+			break;
+		case HazeValueType::Long:
+			v1.Value.Char = (HAZE_CHAR)v2.Value.Long;
+			break;
+		case HazeValueType::UnsignedLong:
+			v1.Value.Char = (HAZE_CHAR)v2.Value.UnsignedLong;
+			break;
+		default:
+			break;
+		}
+	}
+		break;
 	case HazeValueType::Int:
 	{
 		switch (type2)
 		{
+		case HazeValueType::Byte:
+			v1.Value.Int = (int)v2.Value.Byte;
+			break;
+		case HazeValueType::UnsignedByte:
+			v1.Value.Int = (int)v2.Value.UnsignedByte;
+			break;
+		case HazeValueType::Char:
+			v1.Value.Int = (int)v2.Value.Char;
+			break;
 		case HazeValueType::UnsignedInt:
 			v1.Value.Int = (int)v2.Value.UnsignedInt;
 			break;
@@ -356,6 +464,15 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	case HazeValueType::Float:
 		switch (type2)
 		{
+		case HazeValueType::Byte:
+			v1.Value.Float = (float)v2.Value.Byte;
+			break;
+		case HazeValueType::UnsignedByte:
+			v1.Value.Float = (float)v2.Value.UnsignedByte;
+			break;
+		case HazeValueType::Char:
+			v1.Value.Float = (float)v2.Value.Char;
+			break;
 		case HazeValueType::UnsignedInt:
 			v1.Value.Float = (float)v2.Value.UnsignedInt;
 			break;
@@ -378,6 +495,15 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	case HazeValueType::Long:
 		switch (type2)
 		{
+		case HazeValueType::Byte:
+			v1.Value.Long = (int64)v2.Value.Byte;
+			break;
+		case HazeValueType::UnsignedByte:
+			v1.Value.Long = (int64)v2.Value.UnsignedByte;
+			break;
+		case HazeValueType::Char:
+			v1.Value.Long = (int64)v2.Value.Char;
+			break;
 		case HazeValueType::UnsignedInt:
 			v1.Value.Long = (int64)v2.Value.UnsignedInt;
 			break;
@@ -400,6 +526,15 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	case HazeValueType::Double:
 		switch (type2)
 		{
+		case HazeValueType::Byte:
+			v1.Value.Double = (double)v2.Value.Byte;
+			break;
+		case HazeValueType::UnsignedByte:
+			v1.Value.Double = (double)v2.Value.UnsignedByte;
+			break;
+		case HazeValueType::Char:
+			v1.Value.Double = (double)v2.Value.Char;
+			break;
 		case HazeValueType::UnsignedInt:
 			v1.Value.Double = (double)v2.Value.UnsignedInt;
 			break;
@@ -422,6 +557,15 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	case HazeValueType::UnsignedInt:
 		switch (type2)
 		{
+		case HazeValueType::Byte:
+			v1.Value.UnsignedInt = (uint32)v2.Value.Byte;
+			break;
+		case HazeValueType::UnsignedByte:
+			v1.Value.UnsignedInt = (uint32)v2.Value.UnsignedByte;
+			break;
+		case HazeValueType::Char:
+			v1.Value.UnsignedInt = (uint32)v2.Value.Char;
+			break;
 		case HazeValueType::Int:
 			v1.Value.UnsignedInt = (uint32)v2.Value.Int;
 			break;
@@ -444,6 +588,15 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	case HazeValueType::UnsignedLong:
 		switch (type2)
 		{
+		case HazeValueType::Byte:
+			v1.Value.UnsignedLong = (uint64)v2.Value.Byte;
+			break;
+		case HazeValueType::UnsignedByte:
+			v1.Value.UnsignedLong = (uint64)v2.Value.UnsignedByte;
+			break;
+		case HazeValueType::Char:
+			v1.Value.UnsignedLong = (uint64)v2.Value.Char;
+			break;
 		case HazeValueType::UnsignedInt:
 			v1.Value.UnsignedLong = (uint64)v2.Value.UnsignedInt;
 			break;

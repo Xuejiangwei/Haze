@@ -185,7 +185,7 @@ bool IsNumberType(HazeValueType type)
 	static std::unordered_set<HazeValueType> HashSet_Table =
 	{
 		HazeValueType::Int, HazeValueType::Float, HazeValueType::Long, HazeValueType::Double,
-		HazeValueType::UnsignedInt, HazeValueType::UnsignedLong,
+		HazeValueType::UnsignedInt, HazeValueType::UnsignedLong, HazeValueType::Char, HazeValueType::Byte, HazeValueType::UnsignedByte
 	};
 
 	return HashSet_Table.find(type) != HashSet_Table.end();

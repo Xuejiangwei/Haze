@@ -196,10 +196,10 @@ std::shared_ptr<HazeCompilerValue> ASTFunctionCall::CodeGen()
 }
 
 ASTVariableDefine::ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
-	const HazeDefineVariable& defineVar, std::unique_ptr<ASTBase> expression, std::vector<std::unique_ptr<ASTBase>> arraySize,
+	const HazeDefineVariable& defineVar, std::unique_ptr<ASTBase> expression, std::vector<std::unique_ptr<ASTBase>> arraySizeOrParams,
 	int pointerLevel, std::vector<HazeDefineType>* paramType)
 	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(std::move(expression)), 
-		m_ArraySize(std::move(arraySize)), m_PointerLevel(pointerLevel)
+		m_ArraySizeOrParams(std::move(arraySizeOrParams)), m_PointerLevel(pointerLevel)
 {
 	if (paramType)
 	{
@@ -240,20 +240,30 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
 	std::vector<std::shared_ptr<HazeCompilerValue>> sizeValue;
-	for (auto& iter : m_ArraySize)
+	
+	if (IsArrayType(m_DefineVariable.Type.PrimaryType))
 	{
-		auto v = iter->CodeGen();
-		if (v->IsConstant())
+		for (auto& iter : m_ArraySizeOrParams)
 		{
-			sizeValue.push_back(v);
-		}
-		else
-		{
-			HAZE_LOG_ERR_W("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n", m_DefineVariable.Name.c_str(),
-				m_SectionSignal == HazeSectionSignal::Local ? currModule->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
-			return nullptr;
+			auto v = iter->CodeGen();
+			if (v->IsConstant())
+			{
+				sizeValue.push_back(v);
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n", m_DefineVariable.Name.c_str(),
+					m_SectionSignal == HazeSectionSignal::Local ? currModule->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
+				return nullptr;
+			}
 		}
 	}
+	else if (!IsClassType(m_DefineVariable.Type.PrimaryType) && m_ArraySizeOrParams.size() > 0)
+	{
+		HAZE_LOG_ERR_W("变量<%s>定义失败，非数组变量传入数组变量! 当前函数<%s>\n", m_DefineVariable.Name.c_str(),
+			m_SectionSignal == HazeSectionSignal::Local ? currModule->GetCurrFunction()->GetName().c_str() : HAZE_TEXT("None"));
+	}
+	
 
 	std::shared_ptr<HazeCompilerValue> exprValue = nullptr;
 	if (m_Expression)
@@ -301,6 +311,13 @@ std::shared_ptr<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	{
 		auto function = m_Compiler->GetCurrModule()->GetClass(retValue->GetValueType().CustomName)->FindFunction(retValue->GetValueType().CustomName);
 		std::vector<std::shared_ptr<HazeCompilerValue>> param;
+
+		//构造参数
+		for (auto& p : m_ArraySizeOrParams)
+		{
+			param.push_back(p->CodeGen());
+		}
+
 		m_Compiler->CreateFunctionCall(function, param, retValue);
 	}
 

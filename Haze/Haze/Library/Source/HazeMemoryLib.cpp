@@ -5,7 +5,6 @@
 #include "HazeLog.h"
 #include "HazeStack.h"
 #include "HazeMemoryLib.h"
-#include "HazeLibraryDefine.h"
 
 static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {

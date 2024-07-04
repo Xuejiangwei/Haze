@@ -1131,7 +1131,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreateCast(const HazeDefineType
 	auto& valueType1 = const_cast<HazeDefineType&>(reg->GetValueType());
 	valueType1 = type;
 
-	GetCurrModule()->GenIRCode_BinaryOperater(reg, value, InstructionOpCode::MOV);
+	GetCurrModule()->GenIRCode_BinaryOperater(reg, value, InstructionOpCode::CVT);
 
 	return reg;
 }

@@ -20,3 +20,24 @@
 		长整数 获得字符个数(空* 字符首地址)\n\
 	}\n\
 }")
+
+#define HAZE_BASE_LIBRARY_FILE_NAME HAZE_TEXT("标准文件")
+#define HAZE_BASE_LIBRARY_FILE_CODE HAZE_TEXT("标准库 标准文件\n\
+{\n\
+	函数\n\
+	{\n\
+		整数* 打开文件(字符* 文件路径, 字符* 操作方式)\n\
+		空 关闭文件(整数* 文件指针)\n\
+		整数 读取字符(整数* 文件指针, 整数 单个字符)\n\
+		字符* 读取字符串(整数* 文件指针, 整数 最大个数, 字符* 单个字符串)\n\
+		正长整数 读取(整数* 文件指针, 正长整数 字节大小, 正长整数 个数, 字符* 单个字符串)\n\
+		整数 写入字符(整数* 文件指针, 整数 单个字符)\n\
+		整数 写入字符串(整数* 文件指针, 字符* 单个字符串)\n\
+		正长整数 写入(整数* 文件指针, 正长整数 字节大小, 正长整数 个数, 字符* 单个字符串)\n\
+	}\n\
+}")
+
+#define HAZE_BASE_LIBS { HAZE_BASE_LIBRARY_STREAM_NAME, HAZE_BASE_LIBRARY_STREAM_CODE, \
+						 HAZE_BASE_LIBRARY_MEMORY_NAME, HAZE_BASE_LIBRARY_MEMORY_CODE, \
+						 HAZE_BASE_LIBRARY_FILE_NAME, HAZE_BASE_LIBRARY_FILE_CODE \
+ }

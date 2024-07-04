@@ -118,7 +118,7 @@ class ASTVariableDefine : public ASTBase
 public:
 	ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 		const HazeDefineVariable& defineVar, std::unique_ptr<ASTBase> expression, 
-		std::vector<std::unique_ptr<ASTBase>> arraySize = {}, int pointerLevel = 0, std::vector<HazeDefineType>* paramType = nullptr);
+		std::vector<std::unique_ptr<ASTBase>> arraySizeOrParams = {}, int pointerLevel = 0, std::vector<HazeDefineType>* paramType = nullptr);
 
 	virtual ~ASTVariableDefine() override;
 
@@ -129,7 +129,7 @@ public:
 private:
 	HazeSectionSignal m_SectionSignal;
 	std::unique_ptr<ASTBase> m_Expression;
-	std::vector<std::unique_ptr<ASTBase>> m_ArraySize;
+	std::vector<std::unique_ptr<ASTBase>> m_ArraySizeOrParams;
 	int m_PointerLevel;
 
 	union

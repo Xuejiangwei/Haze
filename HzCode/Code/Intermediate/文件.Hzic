@@ -1,0 +1,96 @@
+0
+GlobalDataTable
+0
+GlobalDataInitStart
+GlobalDataInitEnd
+StringTable
+0
+ClassTable
+1
+Class 文件 8 1
+文件指针 17 1 0 8
+FunctionTable
+5
+Function 文件@文件 1
+Param 己 18 文件
+Param 文件路径 17 5
+Param 操作方式 8
+Variable 己$3 18 文件 -12 8 22
+Variable 文件路径$2 17 5 -20 8 22
+Variable 操作方式$1 8 -24 4 22
+FunctionStart 23
+
+Block Entry
+PUSH 0 1 1 8
+PUSH 文件路径$2 2 0 17 5
+PUSH RetAddress 0 9 8
+CALL 打开文件 24 2 12 标准文件
+MOV 己$3指之文件指针 2 15 17 1 Ret_R 1 4 17 8
+RET Void 0 0 1
+
+FunctionEnd 25
+
+Function 文件@关闭 1
+Param 己 18 文件
+Variable 己$1 18 文件 -12 8 27
+FunctionStart 28
+
+Block Entry
+PUSH 己$1指之文件指针 2 15 17 1
+PUSH RetAddress 0 9 8
+CALL 关闭文件 24 1 8 标准文件
+RET Void 0 0 1
+
+FunctionEnd 30
+
+Function 文件@读取字符 8
+Param 己 18 文件
+Variable 己$1 18 文件 -12 8 32
+FunctionStart 33
+
+Block Entry
+PUSH 己$1指之文件指针 2 15 17 1
+PUSH RetAddress 0 9 8
+CALL 读取字符 24 1 8 标准文件
+RET Ret_R 1 4 8
+
+FunctionEnd 35
+
+Function 文件@读取字符串 1
+Param 己 18 文件
+Param 字符地址 17 5
+Variable 己$2 18 文件 -12 8 37
+Variable 字符地址$1 17 5 -20 8 37
+FunctionStart 38
+
+Block Entry
+PUSH 字符地址$1 2 0 17 5
+PUSH 14 1 1 8
+PUSH 己$2指之文件指针 2 15 17 1
+PUSH RetAddress 0 9 8
+CALL 读取字符串 24 3 20 标准文件
+PUSH 字符地址$1 2 0 17 5
+PUSH 3 1 1 8
+PUSH 己$2指之文件指针 2 15 17 1
+PUSH RetAddress 0 9 8
+CALL 读取字符串 24 3 20 标准文件
+RET Void 0 0 1
+
+FunctionEnd 41
+
+Function 文件@写入字符 1
+Param 己 18 文件
+Param 甲 5
+Variable 己$2 18 文件 -12 8 43
+Variable 甲$1 5 -14 2 43
+FunctionStart 44
+
+Block Entry
+PUSH 甲$1 2 0 5
+PUSH 己$2指之文件指针 2 15 17 1
+PUSH RetAddress 0 9 8
+CALL 写入字符 24 2 10 标准文件
+RET Void 0 0 1
+
+FunctionEnd 46
+
