@@ -1042,7 +1042,7 @@ std::shared_ptr<HazeCompilerValue> HazeCompiler::CreatePointerToArray(std::share
 	auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
 	type.PointerTo(arrValue->GetValueType());
 
-	auto ret = CreateMov(pointer, arrValue);
+	auto ret = CreateLea(pointer, arrValue);
 	if (index)
 	{
 		CreateAdd(ret, index);
