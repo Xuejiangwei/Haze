@@ -6,7 +6,6 @@
 	uint8		uint8		uint8		uint64		(uint8		uint64)		...(uint8		uint64)
 	指令字节id	操作数个数	操作数类型	操作数值		(操作数类型	操作数值)	...(操作数类型	操作数值)
 */
-
 enum class InstructionOpCodeType : uint8
 {
 	Memory,
@@ -150,7 +149,7 @@ enum class InstructionOpCode : uint32
 
 //函数及函数调用处理同Jmp处理
 
-enum class InstructionFunctionType : uint32
+enum class InstructionFunctionType : int
 {
 	HazeFunction,
 	StdLibFunction,
@@ -230,7 +229,7 @@ struct InstructionData
 struct Instruction
 {
 	InstructionOpCode InsCode;
-	std::vector<InstructionData> Operator;
+	V_Array<InstructionData> Operator;
 };
 
 struct FunctionDescData
@@ -251,11 +250,11 @@ struct FunctionDescData
 
 struct ModuleData
 {
-	HAZE_STRING Name;
-	std::pair<uint32, uint32> GlobalDataIndex;
-	std::pair<uint32, uint32> StringIndex;
-	std::pair<uint32, uint32> ClassIndex;
-	std::pair<uint32, uint32> FunctionIndex;
+	HString Name;
+	Pair<uint32, uint32> GlobalDataIndex;
+	Pair<uint32, uint32> StringIndex;
+	Pair<uint32, uint32> ClassIndex;
+	Pair<uint32, uint32> FunctionIndex;
 
 	ModuleData()
 	{
@@ -269,16 +268,16 @@ struct ModuleData
 
 struct ClassData
 {
-	HAZE_STRING Name;
+	HString Name;
 	unsigned int Size;
-	std::vector<HazeVariableData> Members;
+	V_Array<HazeVariableData> Members;
 };
 
 struct FunctionData
 {
 	HazeDefineType Type;
-	std::vector<HazeDefineVariable> Params;
-	std::vector<HazeVariableData> Variables;
+	V_Array<HazeDefineVariable> Params;
+	V_Array<HazeVariableData> Variables;
 	uint32 InstructionNum;
 
 	FunctionDescData FunctionDescData;
@@ -286,7 +285,7 @@ struct FunctionData
 
 struct HazeRegister
 {
-	std::vector<char> Data;
+	V_Array<char> Data;
 	HazeDefineType Type;
 };
 
@@ -299,7 +298,7 @@ struct HazeRegister
 
 struct HazFrameFunctionData
 {
-	std::vector<HazeDefineVariable*> LocalParams;
+	V_Array<HazeDefineVariable*> LocalParams;
 };
 
 bool IsRegisterDesc(HazeDataDesc scope);
@@ -308,6 +307,6 @@ bool IsJmpOpCode(InstructionOpCode code);
 
 bool IsClassMember(HazeDataDesc scope);
 
-const HAZE_CHAR* GetInstructionString(InstructionOpCode code);
+const HChar* GetInstructionString(InstructionOpCode code);
 
-InstructionOpCode GetInstructionByString(const HAZE_STRING& str);
+InstructionOpCode GetInstructionByString(const HString& str);

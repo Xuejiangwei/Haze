@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeCompilerTemplateClass.h"
 #include "HazeCompilerClass.h"
 

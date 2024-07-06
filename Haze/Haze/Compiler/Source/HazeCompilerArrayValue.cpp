@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerClass.h"
 #include "HazeCompilerModule.h"
@@ -9,7 +10,7 @@
 
 HazeCompilerArrayElementValue::HazeCompilerArrayElementValue(HazeCompilerModule* compilerModule, 
 	const HazeDefineType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count,
-	HazeCompilerValue* arrayValue, std::vector<HazeCompilerValue*> index) 
+	HazeCompilerValue* arrayValue, V_Array<HazeCompilerValue*> index) 
 	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayOrPointer(arrayValue), m_ArrayIndex(index)
 {
 }
@@ -19,7 +20,7 @@ HazeCompilerArrayElementValue::~HazeCompilerArrayElementValue()
 }
 
 HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-	HazeDataDesc desc, int count, std::vector<std::shared_ptr<HazeCompilerValue>>& arraySize)
+	HazeDataDesc desc, int count, V_Array<Share<HazeCompilerValue>>& arraySize)
 	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayLength(0), m_Size(0)
 {
 	if (arraySize.size() > 0)

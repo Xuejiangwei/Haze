@@ -10,7 +10,7 @@ class ASTFunction
 {
 public:
 	ASTFunction(HazeCompiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
-		HAZE_STRING& name, HazeDefineType& type, std::vector<std::unique_ptr<ASTBase>>& params, std::unique_ptr<ASTBase>& body);
+		HString& name, HazeDefineType& type, V_Array<Unique<ASTBase>>& params, Unique<ASTBase>& body);
 
 	~ASTFunction();
 
@@ -18,16 +18,16 @@ public:
 
 	void RegisterFunction();
 
-	const HAZE_STRING& GetName() const { return m_FunctionName; }
+	const HString& GetName() const { return m_FunctionName; }
 
 private:
 	HazeCompiler* m_Compiler;
 	HazeSectionSignal m_Section;
 
-	HAZE_STRING m_FunctionName;
+	HString m_FunctionName;
 	HazeDefineType m_FunctionType;
-	std::vector<std::unique_ptr<ASTBase>> m_FunctionParams; //从左到右
-	std::unique_ptr<ASTBase> m_Body;
+	V_Array<Unique<ASTBase>> m_FunctionParams; //从左到右
+	Unique<ASTBase> m_Body;
 
 	SourceLocation m_StartLocation;
 	SourceLocation m_EndLocation;
@@ -36,7 +36,7 @@ private:
 class ASTFunctionSection
 {
 public:
-	ASTFunctionSection(HazeCompiler* compiler,/* const SourceLocation& Location,*/ std::vector<std::unique_ptr<ASTFunction>>& functions);
+	ASTFunctionSection(HazeCompiler* compiler,/* const SourceLocation& Location,*/ V_Array<Unique<ASTFunction>>& functions);
 
 	~ASTFunctionSection();
 
@@ -44,28 +44,28 @@ public:
 
 private:
 	HazeCompiler* m_Compiler;
-	std::vector<std::unique_ptr<ASTFunction>> m_Functions;
+	V_Array<Unique<ASTFunction>> m_Functions;
 };
 
 class ASTClassFunctionSection
 {
 public:
 	ASTClassFunctionSection(HazeCompiler* compiler, /*const SourceLocation& Location,*/
-		std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>>& functions);
+		V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTFunction>>>>& functions);
 
 	~ASTClassFunctionSection();
 
 	void CodeGen();
 private:
 	HazeCompiler* m_Compiler;
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTFunction>>>> m_Functions;
+	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTFunction>>>> m_Functions;
 };
 
 class ASTFunctionDefine
 {
 public:
-	ASTFunctionDefine(HazeCompiler* compiler,/* const SourceLocation& Location,*/ const HAZE_STRING& name, HazeDefineType& type,
-		std::vector<std::unique_ptr<ASTBase>>& params);
+	ASTFunctionDefine(HazeCompiler* compiler,/* const SourceLocation& Location,*/ const HString& name, HazeDefineType& type,
+		V_Array<Unique<ASTBase>>& params);
 
 	~ASTFunctionDefine();
 
@@ -73,7 +73,7 @@ public:
 
 private:
 	HazeCompiler* m_Compiler;
-	HAZE_STRING m_FunctionName;
+	HString m_FunctionName;
 	HazeDefineType m_FunctionType;
-	std::vector<std::unique_ptr<ASTBase>> m_FunctionParams; //从左到右
+	V_Array<Unique<ASTBase>> m_FunctionParams; //从左到右
 };

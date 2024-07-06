@@ -1,13 +1,13 @@
+#include "HazePch.h"
 #include "HazeVM.h"
 #include "HazeLog.h"
 #include "HazeStack.h"
-#include "HazeInstruction.h"
 #include "HazeMemory.h"
 
 #include "HazeDebugger.h"
 
-extern std::unordered_map<InstructionOpCode, void (*)(HazeStack* Stack)> g_InstructionProcessor;
-extern std::unique_ptr<HazeDebugger> g_Debugger;
+extern HashMap<InstructionOpCode, void (*)(HazeStack* Stack)> g_InstructionProcessor;
+extern Unique<HazeDebugger> g_Debugger;
 
 HazeStack::HazeStack(HazeVM* vm) 
 	: m_VM(vm), m_PC(0), m_EBP(0), m_ESP(0)
@@ -35,7 +35,7 @@ void HazeStack::RunGlobalDataInit(uint32 startPC, uint32 endPC)
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("<初始化全局变量错误>："  HAZE_TEXT("!\n"));
+			HAZE_LOG_ERR_W("<初始化全局变量错误>："  H_TEXT("!\n"));
 			return;
 		}
 
@@ -102,7 +102,7 @@ void HazeStack::PCStepInc()
 	++m_PC;
 }
 
-HazeRegister* HazeStack::GetVirtualRegister(const HAZE_CHAR* name)
+HazeRegister* HazeStack::GetVirtualRegister(const HChar* name)
 {
 	auto iter = m_VirtualRegister.find(name);
 	if (iter != m_VirtualRegister.end())

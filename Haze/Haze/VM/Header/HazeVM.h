@@ -1,6 +1,6 @@
 #pragma once
 
-//#include <memory>
+#include "HazeHeader.h"
 #include <unordered_set>
 #include "HazeVariable.h"
 
@@ -29,42 +29,42 @@ public:
 
 	~HazeVM();
 
-	void InitVM(std::vector<HAZE_STRING> Vector_ModulePath);
+	void InitVM(V_Array<HString> Vector_ModulePath);
 
 	bool IsDebug() const { return GenType == HazeRunType::Debug; }
 
-	void LoadStandardLibrary(std::vector<HAZE_STRING> Vector_ModulePath);
+	void LoadStandardLibrary(V_Array<HString> Vector_ModulePath);
 
-	const std::vector<Instruction>& GetInstruction() const { return Instructions; }
+	const V_Array<Instruction>& GetInstruction() const { return Instructions; }
 
-	void CallFunction(const HAZE_CHAR* functionName, ...);
+	void CallFunction(const HChar* functionName, ...);
 
 	void CallFunction(FunctionData* functionData, ...);
 
-	void* CreateHazeClass(const HAZE_STRING& className, ...);
+	void* CreateHazeClass(const HString& className, ...);
 
-	void ParseString(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode);
+	void ParseString(const HChar* moduleName, const HChar* moduleCode);
 
-	void ParseFile(const HAZE_STRING& FilePath);
+	void ParseFile(const HString& FilePath);
 
-	std::unique_ptr<HazeCompiler>& GetCompiler() { return m_Compiler; }
+	Unique<HazeCompiler>& GetCompiler() { return m_Compiler; }
 
-	const std::unordered_set<HAZE_STRING>& GetReferenceModules() const { return HashSet_RefModule; }
+	const std::unordered_set<HString>& GetReferenceModules() const { return HashSet_RefModule; }
 
 public:
-	const HAZE_STRING* GetModuleNameByCurrFunction();
+	const HString* GetModuleNameByCurrFunction();
 
-	int GetFucntionIndexByName(const HAZE_STRING& m_Name);
+	int GetFucntionIndexByName(const HString& m_Name);
 
-	const FunctionData& GetFunctionByName(const HAZE_STRING& m_Name);
+	const FunctionData& GetFunctionByName(const HString& m_Name);
 
-	const HAZE_CHAR* GetConstantStringByIndex(int Index) const;
+	const HChar* GetConstantStringByIndex(int Index) const;
 
 	char* GetGlobalValueByIndex(uint32 Index);
 
-	ClassData* FindClass(const HAZE_STRING& m_ClassName);
+	ClassData* FindClass(const HString& m_ClassName);
 
-	uint32 GetClassSize(const HAZE_STRING& m_ClassName);
+	uint32 GetClassSize(const HString& m_ClassName);
 
 private:
 	void DynamicInitializerForGlobalData();
@@ -77,42 +77,42 @@ private:
 
 	uint32 GetNextInstructionLine(uint32 currLine);
 
-	std::pair<HAZE_STRING, uint32> GetStepIn(uint32 CurrLine);
+	Pair<HString, uint32> GetStepIn(uint32 CurrLine);
 
 	uint32 GetCurrCallFunctionLine();
 
 	uint64 GetRegisterArrayLength(uint64 address);
 
 private:
-	std::unique_ptr<HazeCompiler> m_Compiler;
+	Unique<HazeCompiler> m_Compiler;
 
 private:
-	//std::unordered_map<HAZE_STRING, std::unique_ptr<Module>> MapModule;
-	std::unordered_set<HAZE_STRING> MapString;
+	//HashMap<HString, Unique<Module>> MapModule;
+	std::unordered_set<HString> MapString;
 
-	std::unique_ptr<HazeStack> VMStack;
+	Unique<HazeStack> VMStack;
 
-	std::unordered_set<HAZE_STRING> HashSet_RefModule;
+	std::unordered_set<HString> HashSet_RefModule;
 
 private:
-	std::vector<ModuleData> Vector_ModuleData;
-	std::vector<HAZE_STRING> m_ModuleFilePath;
+	V_Array<ModuleData> Vector_ModuleData;
+	V_Array<HString> m_ModuleFilePath;
 
-	std::vector<std::pair<HazeVariable, bool>> Vector_GlobalData; //是否初始化
-	std::vector<std::pair<uint32, uint32>> m_GlobalDataInitAddress;	//全局变量初始化开始地址与结束地址
+	V_Array<Pair<HazeVariable, bool>> Vector_GlobalData; //是否初始化
+	V_Array<Pair<uint32, uint32>> m_GlobalDataInitAddress;	//全局变量初始化开始地址与结束地址
 
-	std::vector<HAZE_STRING> Vector_StringTable;
+	V_Array<HString> Vector_StringTable;
 
-	std::vector<ClassData> Vector_ClassTable;
+	V_Array<ClassData> Vector_ClassTable;
 
-	std::vector<FunctionData> Vector_FunctionTable;
-	std::unordered_map<HAZE_STRING, uint32> HashMap_FunctionTable;
+	V_Array<FunctionData> Vector_FunctionTable;
+	HashMap<HString, uint32> HashMap_FunctionTable;
 
-	std::vector<Instruction> Instructions;
+	V_Array<Instruction> Instructions;
 
-	std::vector<char> Vector_GlobalDataClassObjectMemory;
+	V_Array<char> Vector_GlobalDataClassObjectMemory;
 
-	std::unordered_map<uint64, uint64> Vector_ArrayCache;
+	HashMap<uint64, uint64> Vector_ArrayCache;
 
 	HazeRunType GenType;
 };

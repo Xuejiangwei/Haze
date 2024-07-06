@@ -1,6 +1,7 @@
+#include "HazePch.h"
 #include "HazeStandardLibraryBase.h"
 
-std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*>* HazeStandardLibraryBase::s_Hash_MapStdLib = nullptr;
+HashMap<HString, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>*>* HazeStandardLibraryBase::s_Hash_MapStdLib = nullptr;
 
 HazeStandardLibraryBase::HazeStandardLibraryBase()
 {
@@ -10,7 +11,7 @@ HazeStandardLibraryBase::~HazeStandardLibraryBase()
 {
 }
 
-bool HazeStandardLibraryBase::AddStdLib(HAZE_STRING libName, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>* hashMap)
+bool HazeStandardLibraryBase::AddStdLib(HString libName, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>* hashMap)
 {
 	if (s_Hash_MapStdLib)
 	{
@@ -23,14 +24,14 @@ bool HazeStandardLibraryBase::AddStdLib(HAZE_STRING libName, std::unordered_map<
 	}
 	else
 	{
-		s_Hash_MapStdLib = new std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*>();
+		s_Hash_MapStdLib = new HashMap<HString, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>*>();
 		(*s_Hash_MapStdLib)[libName] = hashMap;
 	}
 
 	return true;
 }
 
-const std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*>& HazeStandardLibraryBase::GetStdLib()
+const HashMap<HString, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>*>& HazeStandardLibraryBase::GetStdLib()
 {
 	return *s_Hash_MapStdLib;
 }

@@ -16,6 +16,6 @@ public:
 	void AddMemberFunction();
 
 private:
-	//std::vector<HazeVariable> Variables;
-	//std::vector<HazeFunction> Functions;
+	//V_Array<HazeVariable> Variables;
+	//V_Array<HazeFunction> Functions;
 };

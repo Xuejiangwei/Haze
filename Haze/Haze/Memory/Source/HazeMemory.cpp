@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeMemory.h"
 #include "MemoryBlock.h"
 #include "MemoryHelper.h"
@@ -29,7 +30,7 @@ HazeMemory::~HazeMemory()
 
 HazeMemory* HazeMemory::GetMemory()
 {
-	static std::unique_ptr<HazeMemory> s_Memory = std::make_unique<HazeMemory>();
+	static Unique<HazeMemory> s_Memory = MakeUnique<HazeMemory>();
 	return s_Memory.get();
 }
 
@@ -46,7 +47,7 @@ void* HazeMemory::Alloca(uint64 size)
 		auto memoryIns = GetMemory();
 		if (!memoryIns->m_FreeList[index])
 		{
-			memoryIns->m_FreeList[index] = std::make_unique<MemoryFreeList>();
+			memoryIns->m_FreeList[index] = MakeUnique<MemoryFreeList>();
 		}
 		
 		auto freeList = memoryIns->m_FreeList[index].get();
@@ -374,7 +375,7 @@ void HazeMemory::Sweep()
 					}
 					else
 					{
-						memoryIns->m_FreeList[index] = std::make_unique<MemoryFreeList>();
+						memoryIns->m_FreeList[index] = MakeUnique<MemoryFreeList>();
 						memoryIns->m_FreeList[index]->Push(&block->m_Memory[unitSize * i]);
 					}
 				}

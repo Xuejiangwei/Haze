@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeLibraryManager.h"
 #include "HazeLibraryDefine.h"
 #include "HazeLog.h"
@@ -14,7 +15,7 @@
 	#define HAZE_GET_DLL_FUNCTION(X, m_Name) GetProcAddress((HINSTANCE)X, m_Name)
 #endif // _WIN32
 
-std::unique_ptr<HazeLibraryManager> g_HazeLibManager = std::make_unique<HazeLibraryManager>();
+Unique<HazeLibraryManager> g_HazeLibManager = MakeUnique<HazeLibraryManager>();
 
 void ExeFunc()
 {
@@ -32,7 +33,7 @@ HazeLibraryManager::~HazeLibraryManager()
 	}
 }
 
-void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& moduleName, const HAZE_STRING& functionName, 
+void HazeLibraryManager::ExecuteDLLFunction(const HString& moduleName, const HString& functionName, 
 	char* paramStartAddress, char* retStartAddress, void* stack, void(*ExeHazeFunctionCall)(void*, void*, int, ...))
 {
 	auto iter = m_Libraries.find(moduleName);
@@ -53,7 +54,7 @@ void HazeLibraryManager::ExecuteDLLFunction(const HAZE_STRING& moduleName, const
 	}
 }
 
-void HazeLibraryManager::LoadDLLLibrary(const HAZE_STRING& libraryPath, const HAZE_STRING& filePath)
+void HazeLibraryManager::LoadDLLLibrary(const HString& libraryPath, const HString& filePath)
 {
 	auto iter = m_Libraries.find(libraryPath);
 	if (iter == m_Libraries.end())
@@ -71,7 +72,7 @@ void HazeLibraryManager::LoadDLLLibrary(const HAZE_STRING& libraryPath, const HA
 	}
 }
 
-void HazeLibraryManager::UnloadDLLLibrary(const HAZE_STRING& libraryPath)
+void HazeLibraryManager::UnloadDLLLibrary(const HString& libraryPath)
 {
 	auto iter = m_Libraries.find(libraryPath);
 	if (iter != m_Libraries.end())
@@ -80,7 +81,7 @@ void HazeLibraryManager::UnloadDLLLibrary(const HAZE_STRING& libraryPath)
 	}
 }
 
-const HAZE_STRING* HazeLibraryManager::TryGetFilePath(const HAZE_STRING& moduleName)
+const HString* HazeLibraryManager::TryGetFilePath(const HString& moduleName)
 {
 	auto iter = m_Libraries.find(moduleName);
 	if (iter != m_Libraries.end())

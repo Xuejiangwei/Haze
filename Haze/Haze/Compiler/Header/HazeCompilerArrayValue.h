@@ -6,24 +6,24 @@ class HazeCompilerArrayElementValue : public HazeCompilerValue
 {
 public:
 	explicit HazeCompilerArrayElementValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-		HazeDataDesc desc, int count, HazeCompilerValue* arrayValue, std::vector<HazeCompilerValue*> index);
+		HazeDataDesc desc, int count, HazeCompilerValue* arrayValue, V_Array<HazeCompilerValue*> index);
 
 	virtual ~HazeCompilerArrayElementValue() override;
 
 	HazeCompilerValue* GetArray() const { return m_ArrayOrPointer; }
 
-	const std::vector<HazeCompilerValue*>& GetIndex() const { return m_ArrayIndex; }
+	const V_Array<HazeCompilerValue*>& GetIndex() const { return m_ArrayIndex; }
 
 private:
 	HazeCompilerValue* m_ArrayOrPointer;			//数组或者指针
-	std::vector<HazeCompilerValue*> m_ArrayIndex;
+	V_Array<HazeCompilerValue*> m_ArrayIndex;
 };
 
 class HazeCompilerArrayValue : public HazeCompilerValue
 {
 public:
 	explicit HazeCompilerArrayValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope, 
-		HazeDataDesc desc, int count, std::vector<std::shared_ptr<HazeCompilerValue>>& arraySize);
+		HazeDataDesc desc, int count, V_Array<Share<HazeCompilerValue>>& arraySize);
 
 	virtual ~HazeCompilerArrayValue() override;
 
@@ -31,7 +31,7 @@ public:
 
 	uint32 GetArrayLength() { return m_ArrayLength; }
 
-	const std::vector<std::shared_ptr<HazeCompilerValue>>& GetArraySize() const { return m_SizeValues; }
+	const V_Array<Share<HazeCompilerValue>>& GetArraySize() const { return m_SizeValues; }
 
 	uint32 GetSizeByLevel(uint32 level);
 
@@ -39,5 +39,5 @@ private:
 	uint32 m_ArrayLength;
 	uint32 m_Size;
 
-	std::vector<std::shared_ptr<HazeCompilerValue>> m_SizeValues;
+	V_Array<Share<HazeCompilerValue>> m_SizeValues;
 };

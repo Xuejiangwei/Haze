@@ -12,13 +12,13 @@ public:
 
 	~HazeCompilerEnum();
 
-	void InitEnumValues(std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& values);
+	void AddEnumValue(const HString& name, Share<HazeCompilerValue> & value);
 
-	std::shared_ptr<HazeCompilerValue> GetEnumValue(const HAZE_STRING& name);
+	Share<HazeCompilerValue> GetEnumValue(const HString& name);
 
 private:
 	HazeValueType m_ParentType;
 	HazeCompilerModule* m_Module;
 
-	std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>> m_EnumValues;
+	V_Array<Pair<HString, Share<HazeCompilerValue>>> m_EnumValues;
 };

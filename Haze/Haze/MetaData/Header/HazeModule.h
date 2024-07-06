@@ -1,9 +1,5 @@
 #pragma once
 
-#include <unordered_map>
-
-#include "HazeHeader.h"
-
 //class HazeClass;
 //class HazeFunction;
 
@@ -34,19 +30,19 @@
 class HazeModule
 {
 public:
-	HazeModule(const HAZE_STRING& opFile);
+	HazeModule(const HString& opFile);
 
 	~HazeModule();
 
 private:
-	void ParseOpFile(const HAZE_STRING& opFile);
+	void ParseOpFile(const HString& opFile);
 
 private:
 
 	HazeValue* AddGlobalVariable();
 
 private:
-	//std::unordered_map<HAZE_STRING, HazeCompilerValue> MapGlobalVariables;
-	//std::vector<HazeClass> Classes;
-	//std::vector<HazeFunction> Functions;
+	//HashMap<HString, HazeCompilerValue> MapGlobalVariables;
+	//V_Array<HazeClass> Classes;
+	//V_Array<HazeFunction> Functions;
 };

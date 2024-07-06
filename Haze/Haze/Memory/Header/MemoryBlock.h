@@ -1,6 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
 #include "MemoryFreeList.h"
 
 class MemoryBlock;

@@ -1,6 +1,5 @@
 #pragma once
 #include "HazeStandardLibraryBase.h"
-#include "HazeHeader.h"
 
 class HazeMemoryLib : public HazeStandardLibraryBase
 {

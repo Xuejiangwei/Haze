@@ -1,6 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
 #include "HazeCompilerValue.h"
 
 class HazeCompilerClass;
@@ -19,16 +18,16 @@ public:
 
 	HazeCompilerClass* GetOwnerClass() { return m_OwnerClass; };
 
-	const HAZE_STRING& GetOwnerClassName();
+	const HString& GetOwnerClassName();
 
-	std::shared_ptr<HazeCompilerValue> GetMember(const HAZE_STRING& name);
+	Share<HazeCompilerValue> GetMember(const HString& name);
 
-	void GetMemberName(const std::shared_ptr<HazeCompilerValue>& memberValue, HAZE_STRING& outName);
+	void GetMemberName(const Share<HazeCompilerValue>& memberValue, HString& outName);
 
-	void GetMemberName(const HazeCompilerValue* memberValue, HAZE_STRING& outName);
+	void GetMemberName(const HazeCompilerValue* memberValue, HString& outName);
 
 private:
 	HazeCompilerClass* m_OwnerClass;
 
-	std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> m_Data;
+	V_Array<Pair<HazeDataDesc, V_Array<Share<HazeCompilerValue>>>> m_Data;
 };

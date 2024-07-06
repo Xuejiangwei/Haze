@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeVM.h"
 #include "HazeHeader.h"
 #include "HazeLog.h"
@@ -16,23 +17,23 @@
 #include <cstdarg>
 #include <filesystem>
 
-extern std::unique_ptr<HazeDebugger> g_Debugger;
+extern Unique<HazeDebugger> g_Debugger;
 extern void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData);
 extern void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args);
 
 HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
-	VMStack = std::make_unique<HazeStack>(this);
-	m_Compiler = std::make_unique<HazeCompiler>(this);
+	VMStack = MakeUnique<HazeStack>(this);
+	m_Compiler = MakeUnique<HazeCompiler>(this);
 }
 
 HazeVM::~HazeVM()
 {
 }
 
-void HazeVM::InitVM(std::vector<HAZE_STRING> Vector_ModulePath)
+void HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 {
-	std::vector<HAZE_STRING> baseModules = HAZE_BASE_LIBS;
+	V_Array<HString> baseModules = HAZE_BASE_LIBS;
 	for (uint64 i = 0; i + 1 < baseModules.size(); i+=2)
 	{
 		m_Compiler->ParseBaseModule(baseModules[i].c_str(), baseModules[i + 1].c_str());
@@ -75,7 +76,7 @@ void HazeVM::InitVM(std::vector<HAZE_STRING> Vector_ModulePath)
 	if (IsDebug())
 	{
 		HazeDebuggerServer::InitDebuggerServer(this);
-		//VMDebugger = std::make_unique<HazeDebugger>(this);
+		//VMDebugger = MakeUnique<HazeDebugger>(this);
 		//VMDebugger->SetHook(&HazeVM::Hook, HazeDebugger::DebuggerHookType::Instruction | HazeDebugger::DebuggerHookType::Line);
 	
 		while (!g_Debugger)
@@ -90,11 +91,11 @@ void HazeVM::InitVM(std::vector<HAZE_STRING> Vector_ModulePath)
 	}
 }
 
-void HazeVM::LoadStandardLibrary(std::vector<HAZE_STRING> Vector_ModulePath)
+void HazeVM::LoadStandardLibrary(V_Array<HString> Vector_ModulePath)
 {
 }
 
-void HazeVM::CallFunction(const HAZE_CHAR* functionName, ...)
+void HazeVM::CallFunction(const HChar* functionName, ...)
 {
 	auto& function = GetFunctionByName(functionName);
 	va_list args;
@@ -111,7 +112,7 @@ void HazeVM::CallFunction(FunctionData* functionData, ...)
 	va_end(args);
 }
 
-void* HazeVM::CreateHazeClass(const HAZE_STRING& className, ...)
+void* HazeVM::CreateHazeClass(const HString& className, ...)
 {
 	auto hazeClass = FindClass(className);
 	auto obj = malloc(hazeClass->Size);
@@ -130,10 +131,10 @@ void* HazeVM::CreateHazeClass(const HAZE_STRING& className, ...)
 	return obj;
 }
 
-void HazeVM::ParseString(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode)
+void HazeVM::ParseString(const HChar* moduleName, const HChar* moduleCode)
 {
 	bool PopCurrModule = false;
-	if (m_Compiler->InitializeCompiler(moduleName, HAZE_TEXT("")))
+	if (m_Compiler->InitializeCompiler(moduleName, H_TEXT("")))
 	{
 		PopCurrModule = true;
 		Parse P(m_Compiler.get());
@@ -150,7 +151,7 @@ void HazeVM::ParseString(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCod
 	}
 }
 
-void HazeVM::ParseFile(const HAZE_STRING& FilePath)
+void HazeVM::ParseFile(const HString& FilePath)
 {
 	bool PopCurrModule = false;
 	std::filesystem::path path(FilePath); 
@@ -173,7 +174,7 @@ void HazeVM::ParseFile(const HAZE_STRING& FilePath)
 	}
 }
 
-const HAZE_STRING* HazeVM::GetModuleNameByCurrFunction()
+const HString* HazeVM::GetModuleNameByCurrFunction()
 {
 	for (size_t i = 0; i < Vector_FunctionTable.size(); i++)
 	{
@@ -193,7 +194,7 @@ const HAZE_STRING* HazeVM::GetModuleNameByCurrFunction()
 	return nullptr;
 }
 
-int HazeVM::GetFucntionIndexByName(const HAZE_STRING& m_Name)
+int HazeVM::GetFucntionIndexByName(const HString& m_Name)
 {
 	auto Iter = HashMap_FunctionTable.find(m_Name);
 	if (Iter == HashMap_FunctionTable.end())
@@ -203,13 +204,13 @@ int HazeVM::GetFucntionIndexByName(const HAZE_STRING& m_Name)
 	return Iter->second;
 }
 
-const FunctionData& HazeVM::GetFunctionByName(const HAZE_STRING& m_Name)
+const FunctionData& HazeVM::GetFunctionByName(const HString& m_Name)
 {
 	int Index = GetFucntionIndexByName(m_Name);
 	return Vector_FunctionTable[Index];
 }
 
-const HAZE_CHAR* HazeVM::GetConstantStringByIndex(int Index) const
+const HChar* HazeVM::GetConstantStringByIndex(int Index) const
 {
 	return Vector_StringTable.at(Index).c_str();
 }
@@ -247,7 +248,7 @@ char* HazeVM::GetGlobalValueByIndex(uint32 Index)
 	return nullptr;
 }
 
-ClassData* HazeVM::FindClass(const HAZE_STRING& m_ClassName)
+ClassData* HazeVM::FindClass(const HString& m_ClassName)
 {
 	for (auto& Iter : Vector_ClassTable)
 	{
@@ -260,7 +261,7 @@ ClassData* HazeVM::FindClass(const HAZE_STRING& m_ClassName)
 	return nullptr;
 }
 
-uint32 HazeVM::GetClassSize(const HAZE_STRING& m_ClassName)
+uint32 HazeVM::GetClassSize(const HString& m_ClassName)
 {
 	auto Class = FindClass(m_ClassName);
 	return Class ? Class->Size : 0;
@@ -317,7 +318,7 @@ uint32 HazeVM::GetNextInstructionLine(uint32 currLine)
 	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
-std::pair<HAZE_STRING, uint32> HazeVM::GetStepIn(uint32 CurrLine)
+Pair<HString, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 {
 	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
 	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
@@ -372,7 +373,7 @@ std::pair<HAZE_STRING, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 		}
 	}
 
-	return { HAZE_STRING(), 0 };
+	return { HString(), 0 };
 }
 
 uint32 HazeVM::GetCurrCallFunctionLine()
@@ -402,5 +403,5 @@ uint64 HazeVM::GetRegisterArrayLength(uint64 address)
 
 //void HazeVM::Hook(HazeVM* m_VM)
 //{
-//	HAZE_LOG_INFO(HAZE_TEXT("已命中断点\n"));
+//	HAZE_LOG_INFO(H_TEXT("已命中断点\n"));
 //}

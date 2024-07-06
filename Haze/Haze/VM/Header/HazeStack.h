@@ -1,9 +1,5 @@
 #pragma once
 
-#include <vector>
-
-#include "HazeHeader.h"
-
 struct HazeRegister;
 
 class HazeVM;
@@ -32,7 +28,7 @@ public:
 public:
 	struct RegisterData
 	{
-		std::vector<char> Cmp_RegisterData;
+		V_Array<char> Cmp_RegisterData;
 	};
 
 	struct HazeStackFrame
@@ -56,7 +52,7 @@ public:
 
 	void JmpTo(const InstructionData& m_Data);
 
-	HazeRegister* GetVirtualRegister(const HAZE_CHAR* name);
+	HazeRegister* GetVirtualRegister(const HChar* name);
 
 private:
 	void Run(bool isHazeCall = false);
@@ -87,14 +83,14 @@ private:
 private:
 	HazeVM* m_VM;
 
-	std::vector<char> m_StackMain;
-	std::vector<HazeStackFrame> m_StackFrame;
+	V_Array<char> m_StackMain;
+	V_Array<HazeStackFrame> m_StackFrame;
 
 	int m_PC;
 	uint32 m_EBP;		//Õ»µ×
 	uint32 m_ESP;		//Õ»¶¥
 
-	std::unordered_map<HAZE_STRING, HazeRegister>  m_VirtualRegister;
+	HashMap<HString, HazeRegister>  m_VirtualRegister;
 
-	std::vector<int> m_CallHazeStack;
+	V_Array<int> m_CallHazeStack;
 };

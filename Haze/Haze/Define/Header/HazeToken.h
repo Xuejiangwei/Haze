@@ -22,7 +22,7 @@ enum class HazeToken : unsigned int
 	UnsignedInt,
 	UnsignedLong,
 
-	Array,
+	V_Array,
 	ArrayDefineEnd,
 	ArrayLength,
 

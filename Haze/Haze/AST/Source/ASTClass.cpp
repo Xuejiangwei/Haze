@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "ASTBase.h"
 #include "ASTFunction.h"
 #include "ASTClass.h"
@@ -12,8 +13,8 @@
 extern int g_ClassInheritLimit;
 extern int g_ClassInheritLevelLimit;
 
-ASTClass::ASTClass(HazeCompiler* compiler,/* const SourceLocation& Location,*/ HAZE_STRING& name, std::vector<HAZE_STRING>& parentClass,
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& data, std::unique_ptr<ASTClassFunctionSection>& functionSection)
+ASTClass::ASTClass(HazeCompiler* compiler,/* const SourceLocation& Location,*/ HString& name, V_Array<HString>& parentClass,
+	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data, Unique<ASTClassFunctionSection>& functionSection)
 	: m_Compiler(compiler), m_ClassName(std::move(name)), m_ParentClasses(std::move(parentClass)), m_ClassDatas(std::move(data)), 
 		m_ClassFunctionSection(std::move(functionSection))
 {
@@ -31,7 +32,7 @@ void ASTClass::CodeGen()
 		return;
 	}
 
-	std::vector<HazeCompilerClass*> parentClasses;
+	V_Array<HazeCompilerClass*> parentClasses;
 	for (size_t i = 0; i < m_ParentClasses.size(); i++)
 	{
 		auto parentClass = m_Compiler->GetCurrModule()->GetClass(m_ParentClasses[i]);
@@ -55,7 +56,7 @@ void ASTClass::CodeGen()
 		}
 	}
 
-	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>> datas;
+	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>> datas;
 
 	for (size_t i = 0; i < m_ClassDatas.size(); i++)
 	{
@@ -86,8 +87,8 @@ void ASTClass::CodeGen()
 	m_Compiler->GetCurrModule()->FinishCreateClass();
 }
 
-ASTClassDefine::ASTClassDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HAZE_STRING& name,
-	std::vector<std::vector<std::unique_ptr<ASTBase>>>& datas, std::vector<std::unique_ptr<ASTFunctionDefine>>& functions)
+ASTClassDefine::ASTClassDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HString& name,
+	V_Array<V_Array<Unique<ASTBase>>>& datas, V_Array<Unique<ASTFunctionDefine>>& functions)
 	: m_Compiler(compiler), m_ClassName(std::move(name)), m_ClassDatas(std::move(datas)), m_ClassFunctions(std::move(functions))
 {
 }

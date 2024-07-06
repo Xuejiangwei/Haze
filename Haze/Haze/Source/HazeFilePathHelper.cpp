@@ -1,13 +1,14 @@
+#include "HazePch.h"
 #include <filesystem>
 #include "HazeFilePathHelper.h"
 #include "HazeLibraryManager.h"
 
 extern std::wstring g_rootCodePath;
-extern std::unique_ptr<HazeLibraryManager> g_HazeLibManager;
+extern Unique<HazeLibraryManager> g_HazeLibManager;
 
-HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* refModulePath, const HAZE_STRING* dir)
+HString GetModuleFilePath(const HString& moduleName, const HString* refModulePath, const HString* dir)
 {
-	const HAZE_STRING* path = g_HazeLibManager->TryGetFilePath(moduleName);
+	const HString* path = g_HazeLibManager->TryGetFilePath(moduleName);
 	if (path)
 	{
 		return *path;
@@ -27,7 +28,7 @@ HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* 
 
 	if (refModulePath)
 	{
-		filePath = *refModulePath + HAZE_TEXT("\\") + moduleName + HAZE_FILE_SUFFIX;
+		filePath = *refModulePath + H_TEXT("\\") + moduleName + HAZE_FILE_SUFFIX;
 		if (std::filesystem::exists(filePath))
 		{
 			return filePath.c_str();
@@ -41,7 +42,7 @@ HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* 
 		{
 			if (i > 0)
 			{
-				dirs[0] += HAZE_TEXT("\\") + dirs[i];
+				dirs[0] += H_TEXT("\\") + dirs[i];
 			}
 		}
 
@@ -53,15 +54,15 @@ HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* 
 	}
 
 	HAZE_LOG_ERR_W("未能找到<%s>模块的文件路径!\n", moduleName.c_str());
-	return HAZE_TEXT("None");
+	return H_TEXT("None");
 }
 
-HAZE_STRING GetMainBinaryFilePath()
+HString GetMainBinaryFilePath()
 {
 	return g_rootCodePath + HAZE_FILE_PATH_BIN + HAZE_FILE_MAIN_BIN;
 }
 
-HAZE_STRING GetIntermediateModuleFile(const HAZE_STRING& moduleName)
+HString GetIntermediateModuleFile(const HString& moduleName)
 {
 	return g_rootCodePath + HAZE_FILE_INTER + moduleName + HAZE_FILE_INTER_SUFFIX;
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
-
 //https://www.codemag.com/article/1809051/Writing-Your-Own-Debugger-and-Language-Extensions-with-Visual-Studio-Code
 
 class HazeVM;

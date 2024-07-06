@@ -1,12 +1,6 @@
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-
-#include "HazeHeader.h"
-
 class HazeVM;
-
 class HazeCompilerValue;
 class HazeCompilerInitListValue;
 class HazeCompilerFunction;
@@ -22,185 +16,187 @@ public:
 
 	~HazeCompiler();
 
-	bool InitializeCompiler(const HAZE_STRING& moduleName, const HAZE_STRING& path);
+	bool InitializeCompiler(const HString& moduleName, const HString& path);
 
 	void FinishParse();
 
-	HazeCompilerModule* ParseBaseModule(const HAZE_CHAR* moduleName, const HAZE_CHAR* moduleCode);
+	HazeCompilerModule* ParseBaseModule(const HChar* moduleName, const HChar* moduleCode);
 
-	HazeCompilerModule* ParseModule(const HAZE_STRING& modulePath);
+	HazeCompilerModule* ParseModule(const HString& modulePath);
 
 	void FinishModule();
 
-	HazeCompilerModule* GetModule(const HAZE_STRING& name);
+	HazeCompilerModule* GetModule(const HString& name);
 
-	const HAZE_STRING* GetModuleName(const HazeCompilerModule* compilerModule) const;
+	const HString* GetModuleName(const HazeCompilerModule* compilerModule) const;
 
-	std::unique_ptr<HazeCompilerModule>& GetCurrModule();
+	Unique<HazeCompilerModule>& GetCurrModule();
 
 	bool CurrModuleIsStdLib();
 
-	std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetFunction(const HAZE_STRING& name);
+	Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetFunction(const HString& name);
 
-	const HAZE_STRING& GetCurrModuleName() const { return m_ModuleNameStack.back(); }
+	const HString& GetCurrModuleName() const { return m_ModuleNameStack.back(); }
 
 	void PopCurrModule() { return m_ModuleNameStack.pop_back(); }
 
 	void AddImportModuleToCurrModule(HazeCompilerModule* compilerModule);
 
-	bool IsClass(const HAZE_STRING& name);
+	bool IsClass(const HString& name);
 
-	const HAZE_CHAR* GetClassName(const HAZE_STRING& name);
+	const HChar* GetClassName(const HString& name);
 
-	bool IsTemplateClass(const HAZE_STRING& name);
+	bool IsTemplateClass(const HString& name);
 
-	void MarkParseTemplate(bool begin, const HAZE_STRING* moduleName = nullptr);
+	void MarkParseTemplate(bool begin, const HString* moduleName = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var);
+	Share<HazeCompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var);
 
-	std::shared_ptr<HazeCompilerValue> GenStringVariable(HAZE_STRING& str);
+	Share<HazeCompilerValue> GenStringVariable(HString& str);
 
-	std::shared_ptr<HazeCompilerValue> GetGlobalVariable(const HAZE_STRING& name);
+	Share<HazeCompilerValue> GetGlobalVariable(const HString& name);
 
-	std::shared_ptr<HazeCompilerValue> GetLocalVariable(const HAZE_STRING& name);
+	Share<HazeCompilerValue> GetLocalVariable(const HString& name);
 
-	std::shared_ptr<HazeCompilerValue> GetConstantValueInt(int v);
+	Share<HazeCompilerValue> GetEnumVariable(const HString& name);
 
-	std::shared_ptr<HazeCompilerValue> GetConstantValueUint64(uint64 v);
+	Share<HazeCompilerValue> GetConstantValueInt(int v);
 
-	std::shared_ptr<HazeCompilerValue> GenConstantValueBool(bool isTrue);
+	Share<HazeCompilerValue> GetConstantValueUint64(uint64 v);
 
-	std::shared_ptr<HazeCompilerValue> GetNullPtr(const HazeDefineType& type);
+	Share<HazeCompilerValue> GenConstantValueBool(bool isTrue);
 
-	bool IsConstantValueBoolTrue(std::shared_ptr<HazeCompilerValue> v);
+	Share<HazeCompilerValue> GetNullPtr(const HazeDefineType& type);
 
-	bool IsConstantValueBoolFalse(std::shared_ptr<HazeCompilerValue> v);
+	bool IsConstantValueBoolTrue(Share<HazeCompilerValue> v);
+
+	bool IsConstantValueBoolFalse(Share<HazeCompilerValue> v);
 
 public:
-	static std::shared_ptr<HazeCompilerValue> GetNewRegister(HazeCompilerModule* compilerModule, const HazeDefineType& data);
+	static Share<HazeCompilerValue> GetNewRegister(HazeCompilerModule* compilerModule, const HazeDefineType& data);
 
-	static std::shared_ptr<HazeCompilerValue> GetTempRegister();
+	static Share<HazeCompilerValue> GetTempRegister();
 
-	static std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>> GetUseTempRegister();
+	static HashMap<const HChar*, Share<HazeCompilerValue>> GetUseTempRegister();
 
-	static void ClearTempRegister(const std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>>& useTempRegisters);
+	static void ClearTempRegister(const HashMap<const HChar*, Share<HazeCompilerValue>>& useTempRegisters);
 
-	static void ResetTempRegister(const std::unordered_map<const HAZE_CHAR*, std::shared_ptr<HazeCompilerValue>>& useTempRegisters);
+	static void ResetTempRegister(const HashMap<const HChar*, Share<HazeCompilerValue>>& useTempRegisters);
 
-	static std::shared_ptr<HazeCompilerValue> GetRegister(const HAZE_CHAR* name);
+	static Share<HazeCompilerValue> GetRegister(const HChar* name);
 
-	static const HAZE_CHAR* GetRegisterName(const std::shared_ptr<HazeCompilerValue>& compilerRegister);
+	static const HChar* GetRegisterName(const Share<HazeCompilerValue>& compilerRegister);
 
-	static std::shared_ptr<HazeCompilerInitListValue> GetInitializeListValue();
+	static Share<HazeCompilerInitListValue> GetInitializeListValue();
 
 	static constexpr int GetMaxPointerLevel() { return 2; }
 
 public:
-	void SetInsertBlock(std::shared_ptr<HazeBaseBlock> block);
+	void SetInsertBlock(Share<HazeBaseBlock> block);
 
-	std::shared_ptr<HazeBaseBlock> GetInsertBlock() { return m_InsertBaseBlock; }
+	Share<HazeBaseBlock> GetInsertBlock() { return m_InsertBaseBlock; }
 
 	void ClearBlockPoint();
 
 public:
-	std::shared_ptr<HazeCompilerValue> CreateLocalVariable(std::shared_ptr<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
-		std::shared_ptr<HazeCompilerValue> RefValue = nullptr, std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize = {}, std::vector<HazeDefineType>* Params = nullptr);
+	Share<HazeCompilerValue> CreateLocalVariable(Share<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
+		Share<HazeCompilerValue> RefValue = nullptr, V_Array<Share<HazeCompilerValue>> m_ArraySize = {}, V_Array<HazeDefineType>* Params = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> CreateGlobalVariable(std::unique_ptr<HazeCompilerModule>& m_Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
-		std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize = {}, std::vector<HazeDefineType>* Params = nullptr);
+	Share<HazeCompilerValue> CreateGlobalVariable(Unique<HazeCompilerModule>& m_Module, const HazeDefineVariable& Var, Share<HazeCompilerValue> RefValue = nullptr,
+		V_Array<Share<HazeCompilerValue>> m_ArraySize = {}, V_Array<HazeDefineType>* Params = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> CreateClassVariable(std::unique_ptr<HazeCompilerModule>& m_Module, const HazeDefineVariable& Var, std::shared_ptr<HazeCompilerValue> RefValue = nullptr,
-		std::vector<std::shared_ptr<HazeCompilerValue>> m_ArraySize = {}, std::vector<HazeDefineType>* Params = nullptr);
+	Share<HazeCompilerValue> CreateClassVariable(Unique<HazeCompilerModule>& m_Module, const HazeDefineVariable& Var, Share<HazeCompilerValue> RefValue = nullptr,
+		V_Array<Share<HazeCompilerValue>> m_ArraySize = {}, V_Array<HazeDefineType>* Params = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> CreateLea(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateLea(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value);
 
-	std::shared_ptr<HazeCompilerValue> CreateMov(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value, bool storeValue = true);
+	Share<HazeCompilerValue> CreateMov(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value, bool storeValue = true);
 
-	std::shared_ptr<HazeCompilerValue> CreateMovToPV(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateMovToPV(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value);
 
-	std::shared_ptr<HazeCompilerValue> CreateMovPV(std::shared_ptr<HazeCompilerValue> allocaValue, std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateMovPV(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value);
 
-	std::shared_ptr<HazeCompilerValue> CreateRet(std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateRet(Share<HazeCompilerValue> value);
 
-	std::shared_ptr<HazeCompilerValue> CreateAdd(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateAdd(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateSub(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateSub(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateMul(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateMul(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateDiv(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateDiv(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateMod(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateMod(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateBitAnd(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateBitAnd(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateBitOr(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateBitOr(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateBitNeg(std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateBitNeg(Share<HazeCompilerValue> value);
 
-	std::shared_ptr<HazeCompilerValue> CreateBitXor(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateBitXor(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateShl(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateShl(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateShr(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right, bool isAssign = false);
+	Share<HazeCompilerValue> CreateShr(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign = false);
 
-	std::shared_ptr<HazeCompilerValue> CreateNot(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right);
+	Share<HazeCompilerValue> CreateNot(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right);
 
-	std::shared_ptr<HazeCompilerValue> CreateNeg(std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateNeg(Share<HazeCompilerValue> value);
 
-	std::shared_ptr<HazeCompilerValue> CreateInc(std::shared_ptr<HazeCompilerValue> value, bool isPreInc);
+	Share<HazeCompilerValue> CreateInc(Share<HazeCompilerValue> value, bool isPreInc);
 
-	std::shared_ptr<HazeCompilerValue> CreateDec(std::shared_ptr<HazeCompilerValue> value, bool isPreDec);
+	Share<HazeCompilerValue> CreateDec(Share<HazeCompilerValue> value, bool isPreDec);
 
-	std::shared_ptr<HazeCompilerValue> CreateNew(std::shared_ptr<HazeCompilerFunction> function, const HazeDefineType& data, std::shared_ptr<HazeCompilerValue> countValue);
+	Share<HazeCompilerValue> CreateNew(Share<HazeCompilerFunction> function, const HazeDefineType& data, Share<HazeCompilerValue> countValue);
 
-	std::shared_ptr<HazeCompilerValue> CreateCast(const HazeDefineType& type, std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateCast(const HazeDefineType& type, Share<HazeCompilerValue> value);
 
-	std::shared_ptr<HazeCompilerValue> CreateCVT(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right);
+	Share<HazeCompilerValue> CreateCVT(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right);
 
-	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerFunction> function, std::vector<std::shared_ptr<HazeCompilerValue>>& param, std::shared_ptr<HazeCompilerValue> thisPointerTo = nullptr);
+	Share<HazeCompilerValue> CreateFunctionCall(Share<HazeCompilerFunction> function, V_Array<Share<HazeCompilerValue>>& param, Share<HazeCompilerValue> thisPointerTo = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> CreateFunctionCall(std::shared_ptr<HazeCompilerValue> pointerFunction, std::vector<std::shared_ptr<HazeCompilerValue>>& param, std::shared_ptr<HazeCompilerValue> thisPointerTo = nullptr);
-
-public:
-	std::shared_ptr<HazeCompilerValue> CreateArrayInit(std::shared_ptr<HazeCompilerValue> arrValue, std::shared_ptr<HazeCompilerValue> initList);
-
-	std::shared_ptr<HazeCompilerValue> CreateArrayElement(std::shared_ptr<HazeCompilerValue> value, std::vector<uint32> index);
-
-	std::shared_ptr<HazeCompilerValue> CreateArrayElement(std::shared_ptr<HazeCompilerValue> value, std::vector<std::shared_ptr<HazeCompilerValue>> indices);
-
-	std::shared_ptr<HazeCompilerValue> CreateGetArrayLength(std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateFunctionCall(Share<HazeCompilerValue> pointerFunction, V_Array<Share<HazeCompilerValue>>& param, Share<HazeCompilerValue> thisPointerTo = nullptr);
 
 public:
-	std::shared_ptr<HazeCompilerValue> CreatePointerToValue(std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreateArrayInit(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> initList);
 
-	std::shared_ptr<HazeCompilerValue> CreatePointerToArray(std::shared_ptr<HazeCompilerValue> arrValue, std::shared_ptr<HazeCompilerValue> index = nullptr);
+	Share<HazeCompilerValue> CreateArrayElement(Share<HazeCompilerValue> value, V_Array<uint32> index);
 
-	std::shared_ptr<HazeCompilerValue> CreatePointerToArrayElement(std::shared_ptr<HazeCompilerValue> elementValue);
+	Share<HazeCompilerValue> CreateArrayElement(Share<HazeCompilerValue> value, V_Array<Share<HazeCompilerValue>> indices);
 
-	std::shared_ptr<HazeCompilerValue> CreatePointerToPointerArray(std::shared_ptr<HazeCompilerValue> pointerArray, std::shared_ptr<HazeCompilerValue> index = nullptr);
-
-	std::shared_ptr<HazeCompilerValue> CreatePointerToFunction(std::shared_ptr<HazeCompilerFunction> function);
+	Share<HazeCompilerValue> CreateGetArrayLength(Share<HazeCompilerValue> value);
 
 public:
-	void CreateJmpToBlock(std::shared_ptr<HazeBaseBlock> block);
+	Share<HazeCompilerValue> CreatePointerToValue(Share<HazeCompilerValue> value);
 
-	void CreateCompareJmp(HazeCmpType cmpType, std::shared_ptr<HazeBaseBlock> ifJmpBlock, std::shared_ptr<HazeBaseBlock> elseJmpBlock);
+	Share<HazeCompilerValue> CreatePointerToArray(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> index = nullptr);
 
-	std::shared_ptr<HazeCompilerValue> CreateIntCmp(std::shared_ptr<HazeCompilerValue> left, std::shared_ptr<HazeCompilerValue> right);
+	Share<HazeCompilerValue> CreatePointerToArrayElement(Share<HazeCompilerValue> elementValue);
 
-	std::shared_ptr<HazeCompilerValue> CreateBoolCmp(std::shared_ptr<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreatePointerToPointerArray(Share<HazeCompilerValue> pointerArray, Share<HazeCompilerValue> index = nullptr);
 
-	void ReplaceConstantValueByStrongerType(std::shared_ptr<HazeCompilerValue>& left, std::shared_ptr<HazeCompilerValue>& right);
+	Share<HazeCompilerValue> CreatePointerToFunction(Share<HazeCompilerFunction> function);
 
 public:
-	std::shared_ptr<HazeCompilerEnum> GetBaseModuleEnum(const HAZE_STRING& name);
+	void CreateJmpToBlock(Share<HazeBaseBlock> block);
 
-	std::shared_ptr<HazeCompilerValue> GetBaseModuleGlobalVariable(const HAZE_STRING& name);
+	void CreateCompareJmp(HazeCmpType cmpType, Share<HazeBaseBlock> ifJmpBlock, Share<HazeBaseBlock> elseJmpBlock);
 
-	std::shared_ptr<HazeCompilerClass> GetBaseModuleClass(const HAZE_STRING& className);
+	Share<HazeCompilerValue> CreateIntCmp(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right);
 
-	bool GetBaseModuleGlobalVariableName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
+	Share<HazeCompilerValue> CreateBoolCmp(Share<HazeCompilerValue> value);
+
+	void ReplaceConstantValueByStrongerType(Share<HazeCompilerValue>& left, Share<HazeCompilerValue>& right);
+
+public:
+	Share<HazeCompilerEnum> GetBaseModuleEnum(const HString& name);
+
+	Share<HazeCompilerValue> GetBaseModuleGlobalVariable(const HString& name);
+
+	Share<HazeCompilerClass> GetBaseModuleClass(const HString& className);
+
+	bool GetBaseModuleGlobalVariableName(const Share<HazeCompilerValue>& value, HString& outName);
 
 	void InsertLineCount(int64 lineCount);
 
@@ -209,31 +205,31 @@ public:
 private:
 	HazeVM* m_VM;
 
-	std::vector<HAZE_STRING> m_ModuleNameStack;
+	V_Array<HString> m_ModuleNameStack;
 
-	std::unordered_map<HAZE_STRING, std::unique_ptr<HazeCompilerModule>> m_CompilerModules;
-	std::unordered_map<HAZE_STRING, HazeCompilerModule*> m_CompilerBaseModules;
+	HashMap<HString, Unique<HazeCompilerModule>> m_CompilerModules;
+	HashMap<HString, HazeCompilerModule*> m_CompilerBaseModules;
 
 	//³£Á¿
-	std::unordered_map<bool, std::shared_ptr<HazeCompilerValue>> m_BoolConstantValues;
+	HashMap<bool, Share<HazeCompilerValue>> m_BoolConstantValues;
 
-	std::unordered_map<hbyte, std::shared_ptr<HazeCompilerValue>> m_ByteConstantValues;
-	std::unordered_map<uhbyte, std::shared_ptr<HazeCompilerValue>> m_UnsignedByteConstantValues;
+	HashMap<HByte, Share<HazeCompilerValue>> m_ByteConstantValues;
+	HashMap<uhbyte, Share<HazeCompilerValue>> m_UnsignedByteConstantValues;
 
-	std::unordered_map<hchar, std::shared_ptr<HazeCompilerValue>> m_CharConstantValues;
+	HashMap<HChar, Share<HazeCompilerValue>> m_CharConstantValues;
 
-	std::unordered_map<short, std::shared_ptr<HazeCompilerValue>> m_ShortConstantValues;
-	std::unordered_map<ushort, std::shared_ptr<HazeCompilerValue>> m_UnsignedShortConstantValues;
+	HashMap<short, Share<HazeCompilerValue>> m_ShortConstantValues;
+	HashMap<ushort, Share<HazeCompilerValue>> m_UnsignedShortConstantValues;
 
-	std::unordered_map<int, std::shared_ptr<HazeCompilerValue>> m_IntConstantValues;
-	std::unordered_map<uint32, std::shared_ptr<HazeCompilerValue>> m_UnsignedIntConstantValues;
+	HashMap<int, Share<HazeCompilerValue>> m_IntConstantValues;
+	HashMap<uint32, Share<HazeCompilerValue>> m_UnsignedIntConstantValues;
 
-	std::unordered_map<int64, std::shared_ptr<HazeCompilerValue>> m_LongConstantValues;
-	std::unordered_map<uint64, std::shared_ptr<HazeCompilerValue>> m_UnsignedLongConstantValues;
+	HashMap<int64, Share<HazeCompilerValue>> m_LongConstantValues;
+	HashMap<uint64, Share<HazeCompilerValue>> m_UnsignedLongConstantValues;
 
-	std::unordered_map<float, std::shared_ptr<HazeCompilerValue>> m_FloatConstantValues;
-	std::unordered_map<double, std::shared_ptr<HazeCompilerValue>> m_DobuleConstantValues;
+	HashMap<float, Share<HazeCompilerValue>> m_FloatConstantValues;
+	HashMap<double, Share<HazeCompilerValue>> m_DobuleConstantValues;
 
 	//BaseBlock
-	std::shared_ptr<HazeBaseBlock> m_InsertBaseBlock;
+	Share<HazeBaseBlock> m_InsertBaseBlock;
 };

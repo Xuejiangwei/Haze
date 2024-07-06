@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeFunction.h"
 
 HazeFunction::HazeFunction()

@@ -54,10 +54,10 @@ struct HazeValue
 	{
 		bool Bool;
 
-		hbyte Byte;
+		HByte Byte;
 		uhbyte UnsignedByte;
 
-		HAZE_CHAR Char;
+		HChar Char;
 
 		short Short;
 		ushort UnsignedShort;
@@ -76,7 +76,7 @@ struct HazeValue
 		{
 			int StringTableIndex;
 			int MemorySize;
-			//const HAZE_STRING* StringPointer;
+			//const HString* StringPointer;
 		} Extra;
 	} Value;
 
@@ -137,7 +137,7 @@ bool IsArrayPointerType(HazeValueType type);
 
 bool IsReferenceType(HazeValueType type);
 
-void StringToHazeValueNumber(const HAZE_STRING& str, HazeValueType type, HazeValue& value);
+void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);
 
 void OperatorValueByType(HazeValueType type, InstructionOpCode typeCode, const void* target);
 
@@ -145,9 +145,9 @@ void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const 
 
 void CompareValueByType(HazeValueType type, struct HazeRegister* hazeRegister, const void* source, const void* target);
 
-size_t GetHazeCharPointerLength(const HAZE_CHAR* hChar);
+size_t GetHazeCharPointerLength(const HChar* hChar);
 
-const HAZE_CHAR* GetHazeValueTypeString(HazeValueType type);
+const HChar* GetHazeValueTypeString(HazeValueType type);
 
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value);
 

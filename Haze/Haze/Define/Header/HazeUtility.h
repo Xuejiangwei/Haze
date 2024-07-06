@@ -1,14 +1,9 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <sstream>
-
 #include "HazeDefine.h"
 #include "HazeStrcut.h"
 #include "HazeValue.h"
 #include "HazeLibraryType.h"
-#include "HazeInstruction.h"
 
 bool IsAndOrToken(HazeToken token);
 
@@ -20,55 +15,55 @@ bool IsCanCastToken(HazeToken token);
 
 int Log2(int n);
 
-HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& className, const HAZE_STRING& functionName);
+HString GetHazeClassFunctionName(const HString& className, const HString& functionName);
 
-const HAZE_CHAR* GetGlobalDataHeaderString();
+const HChar* GetGlobalDataHeaderString();
 
-const HAZE_CHAR* GetGlobalDataInitBlockStart();
+const HChar* GetGlobalDataInitBlockStart();
 
-const HAZE_CHAR* GetGlobalDataInitBlockEnd();
+const HChar* GetGlobalDataInitBlockEnd();
 
-const HAZE_CHAR* GetStringTableHeaderString();
+const HChar* GetStringTableHeaderString();
 
-const HAZE_CHAR* GetClassTableHeaderString();
+const HChar* GetClassTableHeaderString();
 
-const HAZE_CHAR* GetClassLabelHeader();
+const HChar* GetClassLabelHeader();
 
-const HAZE_CHAR* GetFucntionTableHeaderString();
+const HChar* GetFucntionTableHeaderString();
 
-const HAZE_CHAR* GetFunctionLabelHeader();
+const HChar* GetFunctionLabelHeader();
 
-const HAZE_CHAR* GetFunctionParamHeader();
+const HChar* GetFunctionParamHeader();
 
-const HAZE_CHAR* GetFunctionVariableHeader();
+const HChar* GetFunctionVariableHeader();
 
-const HAZE_CHAR* GetFunctionStartHeader();
+const HChar* GetFunctionStartHeader();
 
-const HAZE_CHAR* GetFunctionEndHeader();
+const HChar* GetFunctionEndHeader();
 
-bool HazeIsSpace(HAZE_CHAR hChar, bool* isNewLine = nullptr);
+bool HazeIsSpace(HChar hChar, bool* isNewLine = nullptr);
 
-bool IsNumber(const HAZE_STRING& str);
+bool IsNumber(const HString& str);
 
-HazeValueType GetNumberDefaultType(const HAZE_STRING& str);
+HazeValueType GetNumberDefaultType(const HString& str);
 
-HAZE_STRING String2WString(const char* str);
+HString String2WString(const char* str);
 
-HAZE_STRING String2WString(const HAZE_BINARY_STRING& str);
+HString String2WString(const HAZE_BINARY_STRING& str);
 
-HAZE_BINARY_STRING WString2String(const HAZE_STRING& str);
+HAZE_BINARY_STRING WString2String(const HString& str);
 
 char* UTF8_2_GB2312(const char* utf8);
 
 char* GB2312_2_UFT8(const char* gb2312);
 
-void ReplacePathSlash(HAZE_STRING& path);
+void ReplacePathSlash(HString& path);
 
 HazeLibraryType GetHazeLibraryTypeByToken(HazeToken token);
 
-InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type);
+enum class InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type);
 
-HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& filePath);
+HString GetModuleNameByFilePath(const HString& filePath);
 
 template <typename T>
 unsigned int GetSizeByType(const HazeDefineType& type, T* This);
@@ -77,10 +72,10 @@ template <typename T>
 unsigned int GetNewAllocSizeByType(const HazeDefineType& type, T* This);
 
 template <typename T>
-T StringToStandardType(const HAZE_STRING& str);
+T StringToStandardType(const HString& str);
 
 template <typename T>
-T StringToStandardType(const HAZE_CHAR* str);
+T StringToStandardType(const HChar* str);
 
 template <typename T>
 HAZE_BINARY_STRING ToString(T value);
@@ -88,10 +83,10 @@ HAZE_BINARY_STRING ToString(T value);
 HAZE_BINARY_STRING ToString(void* value);
 
 template <typename T>
-HAZE_STRING ToHazeString(T value);
+HString ToHazeString(T value);
 
 void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2);
 
-std::vector<HAZE_STRING> HazeStringSplit(const HAZE_STRING& str, const HAZE_STRING& delimiter);
+V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter);
 
 #include "HazeTemplate.inl"

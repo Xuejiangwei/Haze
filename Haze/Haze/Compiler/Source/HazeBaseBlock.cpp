@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeBaseBlock.h"
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerValue.h"
@@ -6,19 +7,19 @@
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerFunction.h"
 
-HazeBaseBlock::HazeBaseBlock(const HAZE_STRING& name, HazeCompilerFunction* parentFunction, HazeBaseBlock* parentBlock)
+HazeBaseBlock::HazeBaseBlock(const HString& name, HazeCompilerFunction* parentFunction, HazeBaseBlock* parentBlock)
 	: enable_shared_from_this(*this), m_Name(name), m_ParentFunction(parentFunction), m_ParentBlock(parentBlock), m_LoopEndBlock(nullptr)
 {
 	m_IRCodes.clear();
 	m_Allocas.clear();
-	PushIRCode(HAZE_STRING(BLOCK_START) + HAZE_TEXT(" ") + name + HAZE_TEXT("\n"));
+	PushIRCode(HString(BLOCK_START) + H_TEXT(" ") + name + H_TEXT("\n"));
 }
 
 HazeBaseBlock::~HazeBaseBlock()
 {
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName)
+bool HazeBaseBlock::FindLocalVariableName(const Share<HazeCompilerValue>& value, HString& outName)
 {
 	for (auto& it : m_Allocas)
 	{
@@ -39,7 +40,7 @@ bool HazeBaseBlock::FindLocalVariableName(const std::shared_ptr<HazeCompilerValu
 	return false;
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* value, HAZE_STRING& outName)
+bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* value, HString& outName)
 {
 	for (auto& it : m_Allocas)
 	{
@@ -78,8 +79,8 @@ HazeBaseBlock* HazeBaseBlock::FindLoopBlock()
 
 bool HazeBaseBlock::IsLoopBlock() const
 {
-	static HAZE_STRING s_WhileBlockName = BLOCK_WHILE;
-	static HAZE_STRING s_ForBlockName = BLOCK_LOOP;
+	static HString s_WhileBlockName = BLOCK_WHILE;
+	static HString s_ForBlockName = BLOCK_LOOP;
 
 	if (m_Name.length() >= s_WhileBlockName.length() && m_Name.substr(0, s_WhileBlockName.length()) == s_WhileBlockName)
 	{
@@ -94,7 +95,7 @@ bool HazeBaseBlock::IsLoopBlock() const
 	return false;
 }
 
-void HazeBaseBlock::AddChildBlock(std::shared_ptr<HazeBaseBlock> block)
+void HazeBaseBlock::AddChildBlock(Share<HazeBaseBlock> block)
 {
 	m_ChildBlocks.push_back(block);
 }
@@ -129,9 +130,9 @@ void HazeBaseBlock::ClearLocalVariable()
 	}
 }
 
-std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING& name, std::shared_ptr<HazeCompilerFunction> Parent, std::shared_ptr<HazeBaseBlock> parentBlock)
+Share<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HString& name, Share<HazeCompilerFunction> Parent, Share<HazeBaseBlock> parentBlock)
 {
-	auto BB = std::make_shared<HazeBaseBlock>(name, Parent.get(), parentBlock.get());
+	auto BB = MakeShare<HazeBaseBlock>(name, Parent.get(), parentBlock.get());
 
 	if (parentBlock)
 	{
@@ -141,24 +142,24 @@ std::shared_ptr<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HAZE_STRING&
 	return BB;
 }
 
-void HazeBaseBlock::PushIRCode(const HAZE_STRING& code)
+void HazeBaseBlock::PushIRCode(const HString& code)
 {
 	m_IRCodes.push_back(code);
 }
 
-std::shared_ptr<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, std::shared_ptr<HazeCompilerValue> refValue,
-	std::vector<std::shared_ptr<HazeCompilerValue>> arraySize, std::vector<HazeDefineType>* params)
+Share<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, Share<HazeCompilerValue> refValue,
+	V_Array<Share<HazeCompilerValue>> arraySize, V_Array<HazeDefineType>* params)
 {
 	for (auto& Iter : m_Allocas)
 	{
 		if (Iter.first == defineVar.Name)
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("重复添加临时变量 %s !\n"), defineVar.Name.c_str());
+			HAZE_LOG_ERR(H_TEXT("重复添加临时变量 %s !\n"), defineVar.Name.c_str());
 			return nullptr;
 		}
 	}
 
-	std::shared_ptr<HazeCompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar, HazeVariableScope::Local, HazeDataDesc::None, count,
+	Share<HazeCompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar, HazeVariableScope::Local, HazeDataDesc::None, count,
 		refValue, arraySize, params);
 	m_Allocas.push_back({ defineVar.Name, Alloce });
 

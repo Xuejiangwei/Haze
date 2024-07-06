@@ -15,7 +15,7 @@ unsigned int GetSizeByType(const HazeDefineType& type, T* This)
 //}
 
 template <typename T>
-T StringToStandardType(const HAZE_STRING& str)
+T StringToStandardType(const HString& str)
 {
 	HAZE_STRING_STREAM wss;
 	wss << str;
@@ -27,7 +27,7 @@ T StringToStandardType(const HAZE_STRING& str)
 }
 
 template<typename T>
-inline T StringToStandardType(const HAZE_CHAR* str)
+inline T StringToStandardType(const HChar* str)
 {
 	std::stringstream ss;
 	ss << str;
@@ -57,7 +57,7 @@ HAZE_BINARY_STRING ToString(T value)
 }
 
 template <typename T>
-HAZE_STRING ToHazeString(T value)
+HString ToHazeString(T value)
 {
 	return HAZE_TO_HAZE_STR(value);
 }

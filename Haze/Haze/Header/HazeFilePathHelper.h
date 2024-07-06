@@ -1,9 +1,7 @@
 #pragma once
 
-#include "HazeHeader.h"
+HString GetModuleFilePath(const HString& moduleName, const HString* refModulePath = nullptr, const HString* dir = nullptr);
 
-HAZE_STRING GetModuleFilePath(const HAZE_STRING& moduleName, const HAZE_STRING* refModulePath = nullptr, const HAZE_STRING* dir = nullptr);
+HString GetMainBinaryFilePath();
 
-HAZE_STRING GetMainBinaryFilePath();
-
-HAZE_STRING GetIntermediateModuleFile(const HAZE_STRING& moduleName);
+HString GetIntermediateModuleFile(const HString& moduleName);

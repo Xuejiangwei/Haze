@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerHelper.h"
@@ -14,7 +15,7 @@
 //}
 
 HazeCompilerValue::HazeCompilerValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-	HazeDataDesc desc, int count, std::shared_ptr<HazeCompilerValue> AssignValue)
+	HazeDataDesc desc, int count, Share<HazeCompilerValue> AssignValue)
 	: m_Module(compilerModule), m_ValueType(defineType), m_Scope(scope), m_Desc(desc), m_Count(count)
 {
 	if (AssignValue)
@@ -31,7 +32,7 @@ HazeCompilerValue::~HazeCompilerValue()
 {
 }
 
-void HazeCompilerValue::StoreValueType(std::shared_ptr<HazeCompilerValue> srcValue)
+void HazeCompilerValue::StoreValueType(Share<HazeCompilerValue> srcValue)
 {
 	if (IsRegister() && !IsArrayPointerType(srcValue->GetValueType().PrimaryType))
 	{
@@ -57,7 +58,7 @@ uint32 HazeCompilerValue::GetSize()
 	return GetSizeByHazeType(m_ValueType.PrimaryType);
 }
 
-bool HazeCompilerValue::TryGetVariableName(HAZE_STRING& outName)
+bool HazeCompilerValue::TryGetVariableName(HString& outName)
 {
 	bool ret = false;
 	HAZE_STRING_STREAM hss;

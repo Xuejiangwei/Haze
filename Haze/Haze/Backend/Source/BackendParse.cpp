@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include <filesystem>
 #include <fstream>
 
@@ -10,25 +11,25 @@
 
 #define BACKEND_INSTRUCTION_LOG			0
 
-static std::pair<bool, int> ParseStringCount = { false, 0 };
+static Pair<bool, int> ParseStringCount = { false, 0 };
 
-static void FindObjectAndMemberName(const HAZE_STRING& inName, HAZE_STRING& outObjectName, 
-	HAZE_STRING& outMemberName, bool& objectIsPointer)
+static void FindObjectAndMemberName(const HString& inName, HString& outObjectName, 
+	HString& outMemberName, bool& objectIsPointer)
 {
 	size_t pos = inName.find(HAZE_CLASS_POINTER_ATTR);
-	if (pos != HAZE_STRING::npos)
+	if (pos != HString::npos)
 	{
 		outObjectName = inName.substr(0, pos);
-		outMemberName = inName.substr(pos + HAZE_STRING(HAZE_CLASS_POINTER_ATTR).size());
+		outMemberName = inName.substr(pos + HString(HAZE_CLASS_POINTER_ATTR).size());
 		objectIsPointer = true;
 	}
 	else
 	{
 		pos = inName.find(HAZE_CLASS_ATTR);
-		if (pos != HAZE_STRING::npos)
+		if (pos != HString::npos)
 		{
 			outObjectName = inName.substr(0, pos);
-			outMemberName = inName.substr(pos + HAZE_STRING(HAZE_CLASS_ATTR).size());
+			outMemberName = inName.substr(pos + HString(HAZE_CLASS_ATTR).size());
 			objectIsPointer = false;
 		}
 	}
@@ -104,21 +105,21 @@ BackendParse::~BackendParse()
 
 void BackendParse::Parse()
 {
-	HAZE_STRING interCodePath;
+	HString interCodePath;
 
 	auto& refModules = m_VM->GetReferenceModules();
 
-	HAZE_STRING codeText;
+	HString codeText;
 
 	for (auto& refModule : refModules)
 	{
-		m_CurrParseModule = std::make_shared<ModuleUnit>(refModule);
+		m_CurrParseModule = MakeShare<ModuleUnit>(refModule);
 		m_Modules[refModule] = m_CurrParseModule;
 
 		HAZE_IFSTREAM fs(GetIntermediateModuleFile(refModule));
 		fs.imbue(std::locale("chs"));
 
-		HAZE_STRING Content(std::istreambuf_iterator<HAZE_CHAR>(fs), {});
+		HString Content(std::istreambuf_iterator<HChar>(fs), {});
 
 		codeText = std::move(Content);
 		m_CurrCode = codeText.c_str();
@@ -638,10 +639,10 @@ void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::Functio
 }
 
 inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData,ModuleUnit::FunctionTableData& function,
-	std::unordered_map<HAZE_STRING, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable)
+	HashMap<HString, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
-	HAZE_STRING objName;
-	HAZE_STRING memberName;
+	HString objName;
+	HString memberName;
 	bool isPointer = false;
 
 	if (IsClassMember(operatorData.Desc))
@@ -720,8 +721,8 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 
 inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
-	HAZE_STRING objName;
-	HAZE_STRING memberName;
+	HString objName;
+	HString memberName;
 	bool isPointer = false;
 	int index = 0;
 
@@ -784,7 +785,7 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	ModuleUnit::FunctionTable& newFunctionTable)
 {
-	std::unordered_map<HAZE_STRING, size_t> HashMap_FunctionIndexAndAddress;
+	HashMap<HString, size_t> HashMap_FunctionIndexAndAddress;
 	for (size_t i = 0; i < newFunctionTable.m_Functions.size(); i++)
 	{
 		HashMap_FunctionIndexAndAddress[newFunctionTable.m_Functions[i].Name] = i;
@@ -794,8 +795,8 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	{
 		if (!IsIgnoreFindAddressInsCode(newGlobalDataTable.Instructions[i]))
 		{
-			HAZE_STRING objName;
-			HAZE_STRING memberName;
+			HString objName;
+			HString memberName;
 
 			for (auto& operatorData : newGlobalDataTable.Instructions[i].Operator)
 			{
@@ -833,7 +834,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 #endif
 		auto& m_CurrFunction = newFunctionTable.m_Functions[k];
 
-		std::unordered_map<HAZE_STRING, int> localVariables;
+		HashMap<HString, int> localVariables;
 		for (size_t i = 0; i < m_CurrFunction.Variables.size(); i++)
 		{
 			localVariables[m_CurrFunction.Variables[i].Variable.Name] = (int)i;
@@ -869,14 +870,14 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 					}
 					else
 					{
-						HAZE_LOG_ERR(HAZE_TEXT("查找调用的函数指针<%s>失败!\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str());
+						HAZE_LOG_ERR(H_TEXT("查找调用的函数指针<%s>失败!\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str());
 					}
 				}
 			}*/
 			else if (!IsIgnoreFindAddressInsCode(m_CurrFunction.Instructions[i]))
 			{
-				HAZE_STRING objName;
-				HAZE_STRING memberName;
+				HString objName;
+				HString memberName;
 
 				for (auto& operatorData : m_CurrFunction.Instructions[i].Operator)
 				{
@@ -928,7 +929,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	}
 }
 
-const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING& className)
+const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HString& className)
 {
 	for (auto& iter : m_Modules)
 	{
@@ -944,7 +945,7 @@ const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HAZE_STRING
 	return nullptr;
 }
 
-uint32 const BackendParse::GetClassSize(const HAZE_STRING& className)
+uint32 const BackendParse::GetClassSize(const HString& className)
 {
 	auto classData = GetClass(className);
 	if (classData)
@@ -954,7 +955,7 @@ uint32 const BackendParse::GetClassSize(const HAZE_STRING& className)
 	return 0;
 }
 
-uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HAZE_STRING& memberName)
+uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HString& memberName)
 {
 	for (auto& iter : classData.Members)
 	{

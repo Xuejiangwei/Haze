@@ -6,12 +6,12 @@ class HazeCompilerRefValue : public HazeCompilerValue
 {
 public:
 	HazeCompilerRefValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-		HazeDataDesc desc, int count, std::shared_ptr<HazeCompilerValue>& refValue);
+		HazeDataDesc desc, int count, Share<HazeCompilerValue>& refValue);
 
 	~HazeCompilerRefValue();
 
-	const std::shared_ptr<HazeCompilerValue>& GetRefValue() const { return m_RefValue; }
+	const Share<HazeCompilerValue>& GetRefValue() const { return m_RefValue; }
 
 private:
-	std::shared_ptr<HazeCompilerValue> m_RefValue;
+	Share<HazeCompilerValue> m_RefValue;
 };

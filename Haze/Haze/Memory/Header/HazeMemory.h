@@ -1,7 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
-
 //https://juejin.cn/post/6966954993869914119
 //https://juejin.cn/post/6968400262629163038
 
@@ -73,16 +71,16 @@ private:
 	uint64 m_MarkStartTimestamp;
 	uint64 m_MaxMarkTime;		//∫¡√Î
 
-	std::unique_ptr<MemoryFreeList> m_FreeList[MAX_HAZE_ALLOC_SIZE / GRANULE];
+	Unique<MemoryFreeList> m_FreeList[MAX_HAZE_ALLOC_SIZE / GRANULE];
 	MemoryBlock* m_MemoryBlocks[PAGE_NUM];
-	std::unordered_map<void*, std::pair<GC_State, void*>> m_BigMemorys;
+	HashMap<void*, Pair<GC_State, void*>> m_BigMemorys;
 
 	uint64 m_CurrMarkBaseIndex;
 	uint64 m_CurrMarkClassIndex;
 	uint64 m_CurrMarkArrayIndex;
 
-	std::vector<void*> m_KeepMemorys;
-	std::vector<std::pair<std::pair<uint64, HazeValueType>, GC_State>> m_MarkAddressBases;
-	std::vector<std::pair<std::pair<uint64, ClassData*>, GC_State>> m_MarkAddressClasses;
-	std::vector<std::pair<std::pair<uint64, uint64>, GC_State>> m_MarkAddressArrays;
+	V_Array<void*> m_KeepMemorys;
+	V_Array<Pair<Pair<uint64, HazeValueType>, GC_State>> m_MarkAddressBases;
+	V_Array<Pair<Pair<uint64, ClassData*>, GC_State>> m_MarkAddressClasses;
+	V_Array<Pair<Pair<uint64, uint64>, GC_State>> m_MarkAddressArrays;
 };

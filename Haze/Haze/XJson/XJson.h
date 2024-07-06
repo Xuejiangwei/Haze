@@ -9,7 +9,7 @@ enum class JsonType
 	String,
 	Number,
 	Object,
-	Array,
+	V_Array,
 };
 
 //²Î¿¼×Ôopenjson
@@ -30,7 +30,7 @@ private:
 
 		unsigned long long Size() { return m_Childs.size(); }
 
-		void Add(std::unique_ptr<XJson>& node) { m_Childs.push_back(std::move(node)); }
+		void Add(Unique<XJson>& node) { m_Childs.push_back(std::move(node)); }
 
 		XJson* operator[](unsigned long long idx) { return m_Childs[idx].get(); }
 
@@ -49,7 +49,7 @@ private:
 		}
 
 	private:
-		std::vector<std::unique_ptr<XJson>> m_Childs;
+		V_Array<Unique<XJson>> m_Childs;
 	};
 
 	class JsonBuffer
@@ -154,11 +154,11 @@ public:
 
 	bool Empty() { return m_JsonValue ? m_JsonValue->Empty() : true; }
 
-	std::unique_ptr<XJson> CreateNode(char code);
+	Unique<XJson> CreateNode(char code);
 
 	bool MakeReadContext();
 
-	void AddNode(std::unique_ptr<XJson>& node);
+	void AddNode(Unique<XJson>& node);
 
 	void Clear();
 
@@ -194,7 +194,7 @@ public:
 	float StringToFloat();
 
 private:
-	void Read(std::shared_ptr<JsonBuffer> context, bool isRoot = false);
+	void Read(Share<JsonBuffer> context, bool isRoot = false);
 
 	void ReadNumber();
 
@@ -204,7 +204,7 @@ private:
 
 	void ReadArray();
 
-	void Write(std::shared_ptr<JsonBuffer> context, bool isRoot = false);
+	void Write(Share<JsonBuffer> context, bool isRoot = false);
 
 	void WriteNumber();
 
@@ -223,10 +223,10 @@ private:
 	unsigned long long m_ReadIndex;
 	unsigned long long m_Length;
 
-	std::unique_ptr<XJson> m_KeyNameNode;
-	std::unique_ptr<XJsonList> m_JsonValue;
-	std::unique_ptr<JsonNodeData> m_NodeData;
+	Unique<XJson> m_KeyNameNode;
+	Unique<XJsonList> m_JsonValue;
+	Unique<JsonNodeData> m_NodeData;
 
-	std::shared_ptr<JsonBuffer> m_DecodeContext;
-	std::shared_ptr<JsonBuffer> m_Encodecontext;
+	Share<JsonBuffer> m_DecodeContext;
+	Share<JsonBuffer> m_Encodecontext;
 };

@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeCompilerEnumValue.h"
 #include "HazeCompilerEnum.h"
 

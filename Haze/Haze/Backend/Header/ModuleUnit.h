@@ -1,12 +1,9 @@
 #pragma once
 
-#include "HazeHeader.h"
-#include <vector>
-
 class ModuleUnit
 {
 public:
-	ModuleUnit(const HAZE_STRING& name);
+	ModuleUnit(const HString& name);
 
 	~ModuleUnit();
 
@@ -17,7 +14,7 @@ public:
 	struct FunctionInstruction
 	{
 		InstructionOpCode InsCode;
-		std::vector<InstructionData> Operator;
+		V_Array<InstructionData> Operator;
 
 		FunctionInstruction() : InsCode(InstructionOpCode::NONE), Operator()
 		{
@@ -26,7 +23,7 @@ public:
 
 	struct GlobalData
 	{
-		HAZE_STRING Name;
+		HString Name;
 		uint32 Size;
 		HazeDefineType Type;
 		HazeValue Value;
@@ -37,9 +34,9 @@ public:
 
 	struct GlobalDataTable
 	{
-		std::vector<GlobalData> Data;
+		V_Array<GlobalData> Data;
 		uint32 ClassObjectAllSize;
-		std::vector<FunctionInstruction> Instructions;
+		V_Array<FunctionInstruction> Instructions;
 
 		GlobalDataTable()
 		{
@@ -47,7 +44,7 @@ public:
 			ClassObjectAllSize = 0;
 		}
 
-		int GetIndex(const HAZE_STRING& name)
+		int GetIndex(const HString& name)
 		{
 			for (uint64 i = 0; i < Data.size(); i++)
 			{
@@ -64,13 +61,13 @@ public:
 public:
 	struct StringTableData
 	{
-		//HAZE_STRING Name;
-		HAZE_STRING String;
+		//HString Name;
+		HString String;
 	};
 
 	struct StringTable
 	{
-		std::vector<StringTableData> Strings;
+		V_Array<StringTableData> Strings;
 
 		StringTable()
 		{
@@ -88,33 +85,33 @@ public:
 
 	struct ClassTableData
 	{
-		HAZE_STRING m_Name;
+		HString m_Name;
 		uint32 Size;
-		std::vector<ClassMemberData> Members;
+		V_Array<ClassMemberData> Members;
 	};
 
 	struct ClassTable
 	{
-		std::vector<ClassTableData> Classes;
+		V_Array<ClassTableData> Classes;
 	};
 
 public:
 
 	struct FunctionBlock
 	{
-		HAZE_STRING BlockName;
+		HString BlockName;
 		int InstructionNum;
 		int StartAddress;
 	};
 
 	struct FunctionTableData
 	{
-		HAZE_STRING Name;
+		HString Name;
 		HazeDefineType Type;
-		std::vector<HazeDefineVariable> Params;
-		std::vector<HazeVariableData> Variables;
-		std::vector<FunctionBlock> Blocks;
-		std::vector<FunctionInstruction> Instructions;
+		V_Array<HazeDefineVariable> Params;
+		V_Array<HazeVariableData> Variables;
+		V_Array<FunctionBlock> Blocks;
+		V_Array<FunctionInstruction> Instructions;
 		InstructionFunctionType DescType;
 		
 		uint32 StartLine;
@@ -134,7 +131,7 @@ public:
 
 	struct FunctionTable
 	{
-		std::vector<FunctionTableData> m_Functions;
+		V_Array<FunctionTableData> m_Functions;
 
 		FunctionTable()
 		{
@@ -145,7 +142,7 @@ public:
 private:
 	HazeLibraryType m_LibraryType;
 
-	HAZE_STRING m_Name;
+	HString m_Name;
 
 	GlobalDataTable m_GlobalDataTable;
 	StringTable m_StringTable;

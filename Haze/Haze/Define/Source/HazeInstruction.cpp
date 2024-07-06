@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeHeader.h"
 #include "HazeDebugDefine.h"
 #include "HazeLogDefine.h"
@@ -17,64 +18,64 @@
 				if (INS == InstructionOpCode::SUB) address -= size * v; else address += size * v; \
 				memcpy(operAddress, &address, sizeof(operAddress));
 
-extern std::unique_ptr<HazeLibraryManager> g_HazeLibManager;
+extern Unique<HazeLibraryManager> g_HazeLibManager;
 
-static std::unordered_map<HAZE_STRING, InstructionOpCode> s_HashMap_String2Code =
+static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 {
-	{HAZE_TEXT("MOV"), InstructionOpCode::MOV },
-	{HAZE_TEXT("MOVPV"), InstructionOpCode::MOVPV },
-	{HAZE_TEXT("MOVTOPV"), InstructionOpCode::MOVTOPV },
-	{HAZE_TEXT("LEA"), InstructionOpCode::LEA },
-	{HAZE_TEXT("ADD"), InstructionOpCode::ADD },
-	{HAZE_TEXT("SUB"), InstructionOpCode::SUB },
-	{HAZE_TEXT("MUL"), InstructionOpCode::MUL },
-	{HAZE_TEXT("DIV"), InstructionOpCode::DIV },
-	{HAZE_TEXT("MOD"), InstructionOpCode::MOD },
+	{H_TEXT("MOV"), InstructionOpCode::MOV },
+	{H_TEXT("MOVPV"), InstructionOpCode::MOVPV },
+	{H_TEXT("MOVTOPV"), InstructionOpCode::MOVTOPV },
+	{H_TEXT("LEA"), InstructionOpCode::LEA },
+	{H_TEXT("ADD"), InstructionOpCode::ADD },
+	{H_TEXT("SUB"), InstructionOpCode::SUB },
+	{H_TEXT("MUL"), InstructionOpCode::MUL },
+	{H_TEXT("DIV"), InstructionOpCode::DIV },
+	{H_TEXT("MOD"), InstructionOpCode::MOD },
 
-	{HAZE_TEXT("NEG"), InstructionOpCode::NEG },
-	{HAZE_TEXT("NOT"), InstructionOpCode::NOT },
-	{HAZE_TEXT("INC"), InstructionOpCode::INC },
-	{HAZE_TEXT("DEC"), InstructionOpCode::DEC},
+	{H_TEXT("NEG"), InstructionOpCode::NEG },
+	{H_TEXT("NOT"), InstructionOpCode::NOT },
+	{H_TEXT("INC"), InstructionOpCode::INC },
+	{H_TEXT("DEC"), InstructionOpCode::DEC},
 
-	{HAZE_TEXT("BIT_AND"), InstructionOpCode::BIT_AND },
-	{HAZE_TEXT("BIT_OR"), InstructionOpCode::BIT_OR },
-	{HAZE_TEXT("BIT_NEG"), InstructionOpCode::BIT_NEG },
-	{HAZE_TEXT("BIT_XOR"), InstructionOpCode::BIT_XOR },
-	{HAZE_TEXT("SHL"), InstructionOpCode::SHL },
-	{HAZE_TEXT("SHR"), InstructionOpCode::SHR },
+	{H_TEXT("BIT_AND"), InstructionOpCode::BIT_AND },
+	{H_TEXT("BIT_OR"), InstructionOpCode::BIT_OR },
+	{H_TEXT("BIT_NEG"), InstructionOpCode::BIT_NEG },
+	{H_TEXT("BIT_XOR"), InstructionOpCode::BIT_XOR },
+	{H_TEXT("SHL"), InstructionOpCode::SHL },
+	{H_TEXT("SHR"), InstructionOpCode::SHR },
 
-	{HAZE_TEXT("ADD_ASSIGN"), InstructionOpCode::ADD_ASSIGN },
-	{HAZE_TEXT("SUB_ASSIGN"), InstructionOpCode::SUB_ASSIGN },
-	{HAZE_TEXT("MUL_ASSIGN"), InstructionOpCode::MUL_ASSIGN },
-	{HAZE_TEXT("DIV_ASSIGN"), InstructionOpCode::DIV_ASSIGN },
-	{HAZE_TEXT("MOD_ASSIGN"), InstructionOpCode::MOD_ASSIGN },
-	{HAZE_TEXT("BIT_AND_ASSIGN"), InstructionOpCode::BIT_AND_ASSIGN },
-	{HAZE_TEXT("BIT_OR_ASSIGN"), InstructionOpCode::BIT_OR_ASSIGN },
-	{HAZE_TEXT("BIT_XOR_ASSIGN"), InstructionOpCode::BIT_XOR_ASSIGN },
-	{HAZE_TEXT("SHL_ASSIGN"), InstructionOpCode::SHL_ASSIGN },
-	{HAZE_TEXT("SHR_ASSIGN"), InstructionOpCode::SHR_ASSIGN },
+	{H_TEXT("ADD_ASSIGN"), InstructionOpCode::ADD_ASSIGN },
+	{H_TEXT("SUB_ASSIGN"), InstructionOpCode::SUB_ASSIGN },
+	{H_TEXT("MUL_ASSIGN"), InstructionOpCode::MUL_ASSIGN },
+	{H_TEXT("DIV_ASSIGN"), InstructionOpCode::DIV_ASSIGN },
+	{H_TEXT("MOD_ASSIGN"), InstructionOpCode::MOD_ASSIGN },
+	{H_TEXT("BIT_AND_ASSIGN"), InstructionOpCode::BIT_AND_ASSIGN },
+	{H_TEXT("BIT_OR_ASSIGN"), InstructionOpCode::BIT_OR_ASSIGN },
+	{H_TEXT("BIT_XOR_ASSIGN"), InstructionOpCode::BIT_XOR_ASSIGN },
+	{H_TEXT("SHL_ASSIGN"), InstructionOpCode::SHL_ASSIGN },
+	{H_TEXT("SHR_ASSIGN"), InstructionOpCode::SHR_ASSIGN },
 
-	{HAZE_TEXT("PUSH"), InstructionOpCode::PUSH },
-	{HAZE_TEXT("POP"), InstructionOpCode::POP },
+	{H_TEXT("PUSH"), InstructionOpCode::PUSH },
+	{H_TEXT("POP"), InstructionOpCode::POP },
 
-	{HAZE_TEXT("CALL"), InstructionOpCode::CALL },
-	{HAZE_TEXT("RET"), InstructionOpCode::RET },
+	{H_TEXT("CALL"), InstructionOpCode::CALL },
+	{H_TEXT("RET"), InstructionOpCode::RET },
 
-	{HAZE_TEXT("NEW"), InstructionOpCode::NEW },
+	{H_TEXT("NEW"), InstructionOpCode::NEW },
 
-	{HAZE_TEXT("CMP"), InstructionOpCode::CMP },
-	{HAZE_TEXT("JMP"), InstructionOpCode::JMP },
-	{HAZE_TEXT("JNE"), InstructionOpCode::JNE },
-	{HAZE_TEXT("JNG"), InstructionOpCode::JNG },
-	{HAZE_TEXT("JNL"), InstructionOpCode::JNL },
-	{HAZE_TEXT("JE"), InstructionOpCode::JE },
-	{HAZE_TEXT("JG"), InstructionOpCode::JG },
-	{HAZE_TEXT("JL"), InstructionOpCode::JL },
+	{H_TEXT("CMP"), InstructionOpCode::CMP },
+	{H_TEXT("JMP"), InstructionOpCode::JMP },
+	{H_TEXT("JNE"), InstructionOpCode::JNE },
+	{H_TEXT("JNG"), InstructionOpCode::JNG },
+	{H_TEXT("JNL"), InstructionOpCode::JNL },
+	{H_TEXT("JE"), InstructionOpCode::JE },
+	{H_TEXT("JG"), InstructionOpCode::JG },
+	{H_TEXT("JL"), InstructionOpCode::JL },
 
-	{HAZE_TEXT("CVT"), InstructionOpCode::CVT },
-	{HAZE_TEXT("ARRAY_LENGTH"), InstructionOpCode::ARRAY_LENGTH},
+	{H_TEXT("CVT"), InstructionOpCode::CVT },
+	{H_TEXT("ARRAY_LENGTH"), InstructionOpCode::ARRAY_LENGTH},
 
-	{HAZE_TEXT("LINE"), InstructionOpCode::LINE },
+	{H_TEXT("LINE"), InstructionOpCode::LINE },
 };
 
 bool IsRegisterDesc(HazeDataDesc desc)
@@ -82,9 +83,9 @@ bool IsRegisterDesc(HazeDataDesc desc)
 	return HazeDataDesc::RegisterBegin < desc && desc < HazeDataDesc::RegisterEnd;
 }
 
-const HAZE_CHAR* GetInstructionString(InstructionOpCode code)
+const HChar* GetInstructionString(InstructionOpCode code)
 {
-	static std::unordered_map<InstructionOpCode, const HAZE_CHAR*> s_HashMap_Code2String;
+	static HashMap<InstructionOpCode, const HChar*> s_HashMap_Code2String;
 
 	if (s_HashMap_Code2String.size() <= 0)
 	{
@@ -101,10 +102,10 @@ const HAZE_CHAR* GetInstructionString(InstructionOpCode code)
 	}
 
 	HAZE_LOG_ERR_W("未能找到字节码操作符名称<%d>!\n", (int)code);
-	return HAZE_TEXT("None");
+	return H_TEXT("None");
 }
 
-InstructionOpCode GetInstructionByString(const HAZE_STRING& str)
+InstructionOpCode GetInstructionByString(const HString& str)
 {
 	auto iter = s_HashMap_String2Code.find(str);
 	if (iter != s_HashMap_String2Code.end())
@@ -136,7 +137,7 @@ class InstructionProcessor
 #if HAZE_DEBUG_ENABLE
 	struct DataDebugScope
 	{
-		DataDebugScope(HazeStack* stack, const std::vector<InstructionData>& data, InstructionOpCode opCode)
+		DataDebugScope(HazeStack* stack, const V_Array<InstructionData>& data, InstructionOpCode opCode)
 			: Stack(stack), Data(data)
 		{
 			auto address = GetOperatorAddress(Stack, Data[0]);
@@ -155,14 +156,14 @@ class InstructionProcessor
 				ShowData2();
 				HAZE_LOG_ERR_W("\n");
 
-				HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s> <%s>\n"), GetInstructionString(opCode),
+				HAZE_LOG_INFO(H_TEXT("执行指令<%s> <%s> <%s>\n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str(), Data[1].Variable.Name.c_str());
 			}
 			else
 			{
 				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p>\n", (char*)Address);
 
-				HAZE_LOG_INFO(HAZE_TEXT("执行指令<%s> <%s> \n"), GetInstructionString(opCode),
+				HAZE_LOG_INFO(H_TEXT("执行指令<%s> <%s> \n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str());
 			}
 		}
@@ -220,7 +221,7 @@ class InstructionProcessor
 		}
 
 	private:
-		const std::vector<InstructionData>& Data;
+		const V_Array<InstructionData>& Data;
 		uint64 Address;
 		HazeStack* Stack;
 	};
@@ -723,7 +724,7 @@ public:
 		}
 		else
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("bir neg operator error!\n"));
+			HAZE_LOG_ERR(H_TEXT("bir neg operator error!\n"));
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -822,7 +823,7 @@ public:
 		if (oper.size() >= 1)
 		{
 #if HAZE_CALL_LOG
-			HAZE_LOG_INFO(HAZE_TEXT("调用函数<%s>\n"), oper[0].Variable.Name.c_str());
+			HAZE_LOG_INFO(H_TEXT("调用函数<%s>\n"), oper[0].Variable.Name.c_str());
 #endif
 
 			memcpy(&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], &stack->m_PC, HAZE_ADDRESS_SIZE);
@@ -1245,7 +1246,7 @@ private:
 			auto& value = const_cast<HazeValue&>(constantValue.GetValue());
 
 			type.PrimaryType = insData.Variable.Type.PrimaryType;
-			StringToHazeValueNumber(HAZE_TEXT("0"), type.PrimaryType, value);
+			StringToHazeValueNumber(H_TEXT("0"), type.PrimaryType, value);
 			ret = GetBinaryPointer(type.PrimaryType, value);
 			return ret;
 		}
@@ -1507,7 +1508,7 @@ void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData)
 }
 
 //可以考虑将HashMap改为使用数组
-std::unordered_map<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
+HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 {
 	{InstructionOpCode::MOV, &InstructionProcessor::Mov},
 	{InstructionOpCode::MOVPV, &InstructionProcessor::MovPV},

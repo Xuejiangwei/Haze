@@ -1,15 +1,11 @@
 #pragma once
 
-#include <stack>
-#include <string>
-
-#include "HazeHeader.h"
-
 class HazeCompiler;
 
 class ASTBase;
 class ASTVariableDefine;
 class ASTClass;
+class ASTEnum;
 class ASTClassDefine;
 class ASTFunction;
 class ASTFunctionSection;
@@ -25,121 +21,121 @@ public:
 
 	~Parse();
 
-	void InitializeFile(const HAZE_STRING& filePath);
+	void InitializeFile(const HString& filePath);
 
-	void InitializeString(const HAZE_STRING& str, uint32 startLine = 0);
+	void InitializeString(const HString& str, uint32 startLine = 0);
 
 	void ParseContent();
 
-	void ParseTemplateContent(const HAZE_STRING& moduleName, const HAZE_STRING& templateName, const std::vector<HAZE_STRING>& templateTypes, const std::vector<HazeDefineType>& templateRealTypes);
+	void ParseTemplateContent(const HString& moduleName, const HString& templateName, const V_Array<HString>& templateTypes, const V_Array<HazeDefineType>& templateRealTypes);
 
 	HazeToken GetNextToken();
 
-	const HAZE_STRING& GetCurrLexeme() const { return m_CurrLexeme; }
+	const HString& GetCurrLexeme() const { return m_CurrLexeme; }
 
 	static bool TokenIsNone(HazeToken token) { return token == HazeToken::None; }
 
 private:
-	std::unique_ptr<ASTBase> HandleParseExpression();
+	Unique<ASTBase> HandleParseExpression();
 
-	std::unique_ptr<ASTBase> ParseExpression(int prec = 0);
+	Unique<ASTBase> ParseExpression(int prec = 0);
 
-	std::unique_ptr<ASTBase> ParseUnaryExpression();
+	Unique<ASTBase> ParseUnaryExpression();
 
-	std::unique_ptr<ASTBase> ParseBinaryOperateExpression(int prec, std::unique_ptr<ASTBase> left);
+	Unique<ASTBase> ParseBinaryOperateExpression(int prec, Unique<ASTBase> left);
 
-	std::unique_ptr<ASTBase> ParsePrimary();
+	Unique<ASTBase> ParsePrimary();
 
-	std::unique_ptr<ASTBase> ParseIdentifer();
+	Unique<ASTBase> ParseIdentifer();
 
-	std::unique_ptr<ASTBase> ParseVariableDefine();
+	Unique<ASTBase> ParseVariableDefine();
 
-	std::unique_ptr<ASTBase> ParseStringText();
+	Unique<ASTBase> ParseStringText();
 
-	std::unique_ptr<ASTBase> ParseBoolExpression();
+	Unique<ASTBase> ParseBoolExpression();
 
-	std::unique_ptr<ASTBase> ParseNumberExpression();
+	Unique<ASTBase> ParseNumberExpression();
 
-	std::unique_ptr<ASTBase> ParseIfExpression(bool recursion = false);
+	Unique<ASTBase> ParseIfExpression(bool recursion = false);
 
-	std::unique_ptr<ASTBase> ParseForExpression();
+	Unique<ASTBase> ParseForExpression();
 
-	std::unique_ptr<ASTBase> ParseWhileExpression();
+	Unique<ASTBase> ParseWhileExpression();
 
-	std::unique_ptr<ASTBase> ParseBreakExpression();
+	Unique<ASTBase> ParseBreakExpression();
 
-	std::unique_ptr<ASTBase> ParseContinueExpression();
+	Unique<ASTBase> ParseContinueExpression();
 
-	std::unique_ptr<ASTBase> ParseReturn();
+	Unique<ASTBase> ParseReturn();
 
-	std::unique_ptr<ASTBase> ParseNew();
+	Unique<ASTBase> ParseNew();
 
-	std::unique_ptr<ASTBase> ParseLeftBrace();
+	Unique<ASTBase> ParseLeftBrace();
 
-	std::unique_ptr<ASTBase> ParseNot();
+	Unique<ASTBase> ParseNot();
 
-	std::unique_ptr<ASTBase> ParseLeftParentheses();
+	Unique<ASTBase> ParseLeftParentheses();
 
-	std::unique_ptr<ASTBase> ParsePointerValue();
+	Unique<ASTBase> ParsePointerValue();
 
-	std::unique_ptr<ASTBase> ParseNeg();
+	Unique<ASTBase> ParseNeg();
 
-	std::unique_ptr<ASTBase> ParseNullPtr();
+	Unique<ASTBase> ParseNullPtr();
 
-	std::unique_ptr<ASTBase> ParseGetAddress();
+	Unique<ASTBase> ParseGetAddress();
 
-	std::unique_ptr<ASTBase> ParseInc();
+	Unique<ASTBase> ParseInc();
 
-	std::unique_ptr<ASTBase> ParseDec();
+	Unique<ASTBase> ParseDec();
 
-	std::unique_ptr<ASTBase> ParseThreeOperator(std::unique_ptr<ASTBase> condition);
+	Unique<ASTBase> ParseThreeOperator(Unique<ASTBase> condition);
 
-	std::unique_ptr<ASTBase> ParseMultiExpression();
+	Unique<ASTBase> ParseMultiExpression();
 
-	std::unique_ptr<ASTFunctionSection> ParseFunctionSection();
+	Unique<ASTFunctionSection> ParseFunctionSection();
 
-	std::unique_ptr<ASTLibrary> ParseLibrary();
+	Unique<ASTLibrary> ParseLibrary();
 
-	std::unique_ptr<ASTClassDefine> ParseLibrary_ClassDefine();
+	Unique<ASTClassDefine> ParseLibrary_ClassDefine();
 
-	std::vector<std::unique_ptr<ASTFunctionDefine>> ParseLibrary_FunctionDefine();
+	V_Array<Unique<ASTFunctionDefine>> ParseLibrary_FunctionDefine();
 
-	std::unique_ptr<ASTBase> ParseImportModule();
+	Unique<ASTBase> ParseImportModule();
 
-	std::unique_ptr<ASTClass> ParseClass();
+	Unique<ASTClass> ParseClass();
 
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> ParseClassData();
+	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> ParseClassData();
 
-	std::unique_ptr<ASTClassFunctionSection> ParseClassFunction(const HAZE_STRING& className);
+	Unique<ASTClassFunctionSection> ParseClassFunction(const HString& className);
 
-	std::unique_ptr<ASTBase> ParseArrayLength();
+	Unique<ASTBase> ParseArrayLength();
 
-	std::unique_ptr<ASTBase> ParseSizeOf();
+	Unique<ASTBase> ParseSizeOf();
 
-	std::unique_ptr<ASTBase> ParseEnum();
+	Unique<ASTEnum> ParseEnum();
 
 	void ParseTemplate();
 
-	std::unique_ptr<ASTTemplateBase> ParseTemplateClass(std::vector<HAZE_STRING>& templateTypes);
+	Unique<ASTTemplateBase> ParseTemplateClass(V_Array<HString>& templateTypes);
 
-	std::unique_ptr<ASTTemplateBase> ParseTemplateFunction(std::vector<HAZE_STRING>& templateTypes);
+	Unique<ASTTemplateBase> ParseTemplateFunction(V_Array<HString>& templateTypes);
 
 private:
-	std::unique_ptr<ASTFunction> ParseFunction(const HAZE_STRING* className = nullptr);
+	Unique<ASTFunction> ParseFunction(const HString* className = nullptr);
 
-	bool ExpectNextTokenIs(HazeToken token, const HAZE_CHAR* errorInfo = nullptr);
+	bool ExpectNextTokenIs(HazeToken token, const HChar* errorInfo = nullptr);
 
-	bool TokenIs(HazeToken token, const HAZE_CHAR* errorInfo = nullptr);
+	bool TokenIs(HazeToken token, const HChar* errorInfo = nullptr);
 
-	bool IsHazeSignalToken(const HAZE_CHAR* hChar, const HAZE_CHAR*& outChar, uint32 charSize = 1);
+	bool IsHazeSignalToken(const HChar* hChar, const HChar*& outChar, uint32 charSize = 1);
 
-	bool IsPointerOrRef(const HAZE_STRING& str, HazeToken& outToken);
+	bool IsPointerOrRef(const HString& str, HazeToken& outToken);
 
 	void GetValueType(HazeDefineType& inType);
 
 	void ResetArrayVariableType(HazeDefineType& inType);
 
-	void GetTemplateRealValueType(const HAZE_STRING& str, HazeDefineType& inType);
+	void GetTemplateRealValueType(const HString& str, HazeDefineType& inType);
 
 	//void ParseVariableType();
 
@@ -149,21 +145,21 @@ private:
 	HazeCompiler* m_Compiler;
 
 	HazeToken m_CurrToken;
-	const HAZE_CHAR* m_CurrCode;
-	HAZE_STRING m_CodeText;
-	HAZE_STRING m_CurrLexeme;
-	std::pair<HAZE_STRING, int> m_CurrPreLexeme;		//LexemeString, skip char count
+	const HChar* m_CurrCode;
+	HString m_CodeText;
+	HString m_CurrLexeme;
+	Pair<HString, int> m_CurrPreLexeme;		//LexemeString, skip char count
 
 	std::stack<HazeSectionSignal> m_StackSectionSignal;
 
 	HazeDefineVariable m_DefineVariable;
-	HAZE_STRING m_CurrParseClass;
+	HString m_CurrParseClass;
 
 	int m_LeftParenthesesExpressionCount;
 	uint32 m_LineCount;
 	bool m_NeedParseNextStatement;
 
 	bool m_IsParseTemplate;
-	const std::vector<HAZE_STRING>* m_TemplateTypes;
-	const std::vector<HazeDefineType>* m_TemplateRealTypes;
+	const V_Array<HString>* m_TemplateTypes;
+	const V_Array<HazeDefineType>* m_TemplateRealTypes;
 };

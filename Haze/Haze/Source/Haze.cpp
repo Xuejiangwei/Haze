@@ -1,20 +1,16 @@
-#include <iostream>
-#include <filesystem>
+#include "HazePch.h"
 
-#include <unordered_map>
-#include <assert.h>
 
-#include "HazeHeader.h"
 #include "Haze.h"
-#include "HazeHeader.h"
+#include "HazeVM.h"
 #include "HazeLog.h"
 #include "HazeUtility.h"
 
 #include "HazeLibraryManager.h"
 #include "HazeDebugger.h"
 
-extern std::unique_ptr<HazeDebugger> g_Debugger;
-extern std::unique_ptr<HazeLibraryManager> g_HazeLibManager;
+extern Unique<HazeDebugger> g_Debugger;
+extern Unique<HazeLibraryManager> g_HazeLibManager;
 
 bool g_IsHazeEnd = false;
 std::wstring g_rootCodePath;
@@ -24,7 +20,7 @@ int g_ClassInheritLevelLimit = 2;
 
 void HazeNewHandler()
 {
-	HAZE_LOG_ERR(HAZE_TEXT("Haze no memory!!!!\n"));
+	HAZE_LOG_ERR(H_TEXT("Haze no memory!!!!\n"));
 }
 
 void HazePreInit()
@@ -74,7 +70,7 @@ enum class ParamType
 
 uint32 GetParam(ParamType type, char** paramArray, int length)
 {
-	static std::unordered_map<ParamType, const char*> HashMap_Param =
+	static HashMap<ParamType, const char*> HashMap_Param =
 	{
 		{ ParamType::MainFile, "-m" },
 		{ ParamType::MainFunction, "-mf" },
@@ -117,7 +113,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	//std::wstring Path = std::filesystem::current_path();
 
 	char* mainFilePath = nullptr;
-	HAZE_STRING mainFunction = HAZE_DEFAULT_MAIN_FUNCTION_TEXT;
+	HString mainFunction = HAZE_DEFAULT_MAIN_FUNCTION_TEXT;
 	if (argCount < 2)
 	{
 		return 0;
@@ -151,7 +147,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	}
 
 	std::filesystem::path mainFile(mainFilePath);
-	g_rootCodePath = mainFile.parent_path().wstring() + HAZE_TEXT("\\");
+	g_rootCodePath = mainFile.parent_path().wstring() + H_TEXT("\\");
 
 	std::filesystem::create_directory(g_rootCodePath + HAZE_FILE_INTER);
 	std::filesystem::create_directory(g_rootCodePath + HAZE_FILE_PATH_BIN);
@@ -172,7 +168,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	auto vm = new HazeVM(runType);
 
 	{
-		std::vector<HAZE_STRING> files;
+		V_Array<HString> files;
 		files.push_back(mainFile);
 
 		int index = GetParam(ParamType::Files, argValue, argCount);
@@ -194,8 +190,8 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 		vm->InitVM(files);
 	}
 
-	//VM.LoadStandardLibrary({ {Path + HAZE_TEXT("\\Code\\HazeCode.hz"), HAZE_TEST_FILE} });
-	//VM.ParseFile(Path + HAZE_TEXT("\\Other\\HazeCode.hz"), HAZE_TEXT("HazeCode"));
+	//VM.LoadStandardLibrary({ {Path + H_TEXT("\\Code\\HazeCode.hz"), HAZE_TEST_FILE} });
+	//VM.ParseFile(Path + H_TEXT("\\Other\\HazeCode.hz"), H_TEXT("HazeCode"));
 
 	if (vm->GetFucntionIndexByName(mainFunction) >= 0)
 	{

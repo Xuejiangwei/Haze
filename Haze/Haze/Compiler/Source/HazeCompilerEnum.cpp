@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeCompilerEnum.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerModule.h"
@@ -11,12 +12,19 @@ HazeCompilerEnum::~HazeCompilerEnum()
 {
 }
 
-void HazeCompilerEnum::InitEnumValues(std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>& values)
+void HazeCompilerEnum::AddEnumValue(const HString& name, Share<HazeCompilerValue>& value)
 {
-	m_EnumValues = std::move(values);
+	if (!GetEnumValue(name))
+	{
+		m_EnumValues.push_back({ name, value });
+	}
+	else
+	{
+		COMPILER_ERR_W("ÃÌº”÷ÿ∏¥√∂æŸ<%s>", name.c_str());
+	}
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerEnum::GetEnumValue(const HAZE_STRING& name)
+Share<HazeCompilerValue> HazeCompilerEnum::GetEnumValue(const HString& name)
 {
 	for (auto& it : m_EnumValues)
 	{

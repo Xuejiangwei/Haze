@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeDefine.h"
 #include "XJson.h"
 #include "HazeLog.h"
@@ -232,9 +233,9 @@ XJson::~XJson()
 
 void XJson::operator=(bool val)
 {
-	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
 
@@ -245,7 +246,7 @@ void XJson::operator=(bool val)
 
 	if (!m_NodeData)
 	{
-		m_NodeData = std::make_unique<JsonNodeData>();
+		m_NodeData = MakeUnique<JsonNodeData>();
 	}
 
 	m_NodeData->SetType(JsonNodeData::DataType::Bool);
@@ -254,9 +255,9 @@ void XJson::operator=(bool val)
 
 void XJson::operator=(int val)
 {
-	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
 
@@ -267,7 +268,7 @@ void XJson::operator=(int val)
 
 	if (!m_NodeData)
 	{
-		m_NodeData = std::make_unique<JsonNodeData>();
+		m_NodeData = MakeUnique<JsonNodeData>();
 	}
 
 	m_NodeData->SetType(JsonNodeData::DataType::Int32);
@@ -276,9 +277,9 @@ void XJson::operator=(int val)
 
 void XJson::operator=(unsigned int val)
 {
-	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
 
@@ -289,7 +290,7 @@ void XJson::operator=(unsigned int val)
 
 	if (!m_NodeData)
 	{
-		m_NodeData = std::make_unique<JsonNodeData>();
+		m_NodeData = MakeUnique<JsonNodeData>();
 	}
 
 	m_NodeData->SetType(JsonNodeData::DataType::UInt32);
@@ -298,9 +299,9 @@ void XJson::operator=(unsigned int val)
 
 void XJson::operator=(long long val)
 {
-	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
 
@@ -311,7 +312,7 @@ void XJson::operator=(long long val)
 
 	if (!m_NodeData)
 	{
-		m_NodeData = std::make_unique<JsonNodeData>();
+		m_NodeData = MakeUnique<JsonNodeData>();
 	}
 
 	m_NodeData->SetType(JsonNodeData::DataType::Int64);
@@ -320,9 +321,9 @@ void XJson::operator=(long long val)
 
 void XJson::operator=(unsigned long long val)
 {
-	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
 
@@ -333,7 +334,7 @@ void XJson::operator=(unsigned long long val)
 
 	if (!m_NodeData)
 	{
-		m_NodeData = std::make_unique<JsonNodeData>();
+		m_NodeData = MakeUnique<JsonNodeData>();
 	}
 
 	m_NodeData->SetType(JsonNodeData::DataType::UInt64);
@@ -342,9 +343,9 @@ void XJson::operator=(unsigned long long val)
 
 void XJson::operator=(float val)
 {
-	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
 
@@ -355,7 +356,7 @@ void XJson::operator=(float val)
 
 	if (!m_NodeData)
 	{
-		m_NodeData = std::make_unique<JsonNodeData>();
+		m_NodeData = MakeUnique<JsonNodeData>();
 	}
 
 	m_NodeData->SetType(JsonNodeData::DataType::Float);
@@ -364,9 +365,9 @@ void XJson::operator=(float val)
 
 void XJson::operator=(double val)
 {
-	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
 
@@ -377,7 +378,7 @@ void XJson::operator=(double val)
 
 	if (!m_NodeData)
 	{
-		m_NodeData = std::make_unique<JsonNodeData>();
+		m_NodeData = MakeUnique<JsonNodeData>();
 	}
 
 	m_NodeData->SetType(JsonNodeData::DataType::Double);
@@ -386,9 +387,9 @@ void XJson::operator=(double val)
 
 void XJson::operator=(const char* val)
 {
-	if (m_Type == JsonType::Object || m_Type == JsonType::Array)
+	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点是容器类型，不能接受值!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点是容器类型，不能接受值!\n"));
 		return;
 	}
 
@@ -399,7 +400,7 @@ void XJson::operator=(const char* val)
 
 	if (!m_NodeData)
 	{
-		m_NodeData = std::make_unique<JsonNodeData>();
+		m_NodeData = MakeUnique<JsonNodeData>();
 	}
 
 	m_NodeData->SetType(JsonNodeData::DataType::String);
@@ -425,13 +426,13 @@ void XJson::operator=(const std::string& val)
 
 XJson& XJson::SetArray(unsigned long long idx)
 {
-	if (m_Type != JsonType::Array)
+	if (m_Type != JsonType::V_Array)
 	{
 		if (m_Type == JsonType::Object)
 		{
-			//HAZE_LOG_INFO(HAZE_TEXT("Json节点是数组类型，不能接受对象!\n"));
+			//HAZE_LOG_INFO(H_TEXT("Json节点是数组类型，不能接受对象!\n"));
 		}
-		m_Type = JsonType::Array;
+		m_Type = JsonType::V_Array;
 	}
 	else
 	{
@@ -439,7 +440,7 @@ XJson& XJson::SetArray(unsigned long long idx)
 	}
 	if (!m_JsonValue)
 	{
-		m_JsonValue = std::make_unique<XJsonList>();
+		m_JsonValue = MakeUnique<XJsonList>();
 	}
 
 	if (idx >= m_JsonValue->m_Childs.size())
@@ -450,7 +451,7 @@ XJson& XJson::SetArray(unsigned long long idx)
 	auto& child = m_JsonValue->m_Childs[idx];
 	if (!child)
 	{
-		child = std::make_unique<XJson>();
+		child = MakeUnique<XJson>();
 		m_JsonValue->m_Childs[idx] = std::move(child);
 	}
 
@@ -466,16 +467,16 @@ XJson& XJson::SetObject(const char* str)
 
 	if (m_Type != JsonType::Object)
 	{
-		if (m_Type == JsonType::Array)
+		if (m_Type == JsonType::V_Array)
 		{
-			//HAZE_LOG_INFO(HAZE_TEXT("Json节点是对象类型，不能接受数组!\n"));
+			//HAZE_LOG_INFO(H_TEXT("Json节点是对象类型，不能接受数组!\n"));
 		}
 		m_Type = JsonType::Object;
 	}
 
 	if (!m_JsonValue)
 	{
-		m_JsonValue = std::make_unique<XJsonList>();
+		m_JsonValue = MakeUnique<XJsonList>();
 	}
 
 	XJson* child = nullptr;
@@ -493,9 +494,9 @@ XJson& XJson::SetObject(const char* str)
 		}
 	}
 
-	auto keyNode = std::make_unique<XJson>(JsonType::String);
+	auto keyNode = MakeUnique<XJson>(JsonType::String);
 	*keyNode = str;
-	auto newChild = std::make_unique<XJson>();
+	auto newChild = MakeUnique<XJson>();
 	child = newChild.get();
 	child->m_KeyNameNode = std::move(keyNode);
 
@@ -527,11 +528,11 @@ const char* XJson::Data()
 		}
 	}
 
-	//HAZE_LOG_INFO(HAZE_TEXT("Json节点为空，没有数据!\n"));
+	//HAZE_LOG_INFO(H_TEXT("Json节点为空，没有数据!\n"));
 	return nullptr;
 }
 
-std::unique_ptr<XJson> XJson::CreateNode(char code)
+Unique<XJson> XJson::CreateNode(char code)
 {
 	JsonType ctype = JsonType::None;
 	switch (code)
@@ -542,11 +543,11 @@ std::unique_ptr<XJson> XJson::CreateNode(char code)
 	case '{':
 		ctype = JsonType::Object; break;
 	case '[':
-		ctype = JsonType::Array; break;
+		ctype = JsonType::V_Array; break;
 	default:
 		ctype = JsonType::Number; break;
 	}
-	return std::make_unique<XJson>(ctype);
+	return MakeUnique<XJson>(ctype);
 }
 
 bool XJson::MakeReadContext()
@@ -568,26 +569,26 @@ bool XJson::MakeReadContext()
 		};
 	}
 	Clear();
-	m_DecodeContext = std::make_shared<JsonBuffer>();
+	m_DecodeContext = MakeShare<JsonBuffer>();
 	m_DecodeContext->m_Root = this;
 	m_DecodeContext->m_Offset = 0;
 	m_DecodeContext->m_ReadBuffer.clear();
 	return true;
 }
 
-void XJson::AddNode(std::unique_ptr<XJson>& node)
+void XJson::AddNode(Unique<XJson>& node)
 {
 	if (node)
 	{
-		if (m_Type != JsonType::Object && m_Type != JsonType::Array)
+		if (m_Type != JsonType::Object && m_Type != JsonType::V_Array)
 		{
-			//HAZE_LOG_INFO(HAZE_TEXT("Json节点必须为对象或数组类型才能添加节点!\n"));
-			m_Type = node->m_KeyNameNode ? JsonType::Object : JsonType::Array;
+			//HAZE_LOG_INFO(H_TEXT("Json节点必须为对象或数组类型才能添加节点!\n"));
+			m_Type = node->m_KeyNameNode ? JsonType::Object : JsonType::V_Array;
 		}
 
 		if (!m_JsonValue)
 		{
-			m_JsonValue = std::make_unique<XJsonList>();
+			m_JsonValue = MakeUnique<XJsonList>();
 		}
 
 		m_JsonValue->Add(node);
@@ -606,7 +607,7 @@ void XJson::Clear()
 	}
 	if (m_JsonValue)
 	{
-		assert(m_Type == JsonType::Object || m_Type == JsonType::Array);
+		assert(m_Type == JsonType::Object || m_Type == JsonType::V_Array);
 		m_JsonValue.release();
 	}
 	if (m_DecodeContext && m_DecodeContext->m_Root == this)
@@ -715,7 +716,7 @@ JsonType XJson::CodeToType(char code)
 	case '{':
 		ctype = JsonType::Object; break;
 	case '[':
-		ctype = JsonType::Array; break;
+		ctype = JsonType::V_Array; break;
 	default:
 		ctype = JsonType::Number; break;
 	}
@@ -728,7 +729,7 @@ const char* XJson::NodeDataString()
 	{
 		if (!m_NodeData)
 		{
-			m_NodeData = std::make_unique<JsonNodeData>(JsonNodeData::DataType::String);
+			m_NodeData = MakeUnique<JsonNodeData>(JsonNodeData::DataType::String);
 			m_NodeData->m_Content = Data();
 		}
 
@@ -749,7 +750,7 @@ const char* XJson::NodeDataString()
 				return nullptr;
 			}
 
-			m_NodeData = std::make_unique<JsonNodeData>(JsonNodeData::DataType::None);
+			m_NodeData = MakeUnique<JsonNodeData>(JsonNodeData::DataType::None);
 			m_NodeData->m_Content = Data();
 			return m_NodeData->m_Content.c_str();
 		}
@@ -764,7 +765,7 @@ const char* XJson::NodeDataString()
 	}
 	else
 	{
-		//HAZE_LOG_INFO(HAZE_TEXT("Json节点类型不是字符串类型!\n"));
+		//HAZE_LOG_INFO(H_TEXT("Json节点类型不是字符串类型!\n"));
 	}
 
 	return nullptr;
@@ -790,7 +791,7 @@ const std::string& XJson::Encode()
 {
 	if (!m_Encodecontext)
 	{
-		m_Encodecontext = std::make_shared<JsonBuffer>();
+		m_Encodecontext = MakeShare<JsonBuffer>();
 		m_Encodecontext->m_Root = this;
 	}
 
@@ -803,7 +804,7 @@ bool XJson::Decode(const std::string& buffer)
 {
 	if (!m_DecodeContext)
 	{
-		m_DecodeContext = std::make_shared<JsonBuffer>();
+		m_DecodeContext = MakeShare<JsonBuffer>();
 		m_DecodeContext->m_Root = this;
 	}
 
@@ -918,7 +919,7 @@ long long XJson::StringToInt64()
 	return ret;
 }
 
-void XJson::Read(std::shared_ptr<JsonBuffer> context, bool isRoot)
+void XJson::Read(Share<JsonBuffer> context, bool isRoot)
 {
 	if (m_DecodeContext)
 	{
@@ -953,7 +954,7 @@ void XJson::Read(std::shared_ptr<JsonBuffer> context, bool isRoot)
 	case JsonType::Object:
 		ReadObject();
 		break;
-	case JsonType::Array:
+	case JsonType::V_Array:
 		ReadArray();
 		break;
 	default:
@@ -1082,7 +1083,7 @@ void XJson::ReadObject()
 
 void XJson::ReadArray()
 {
-	assert(m_Type == JsonType::Array);
+	assert(m_Type == JsonType::V_Array);
 	if (!CheckCode('['))
 	{
 		//HAZE_LOG_ERR_W("丢失数组类型的<'['>!\n");
@@ -1123,7 +1124,7 @@ void XJson::ReadArray()
 }
 
 
-void XJson::Write(std::shared_ptr<JsonBuffer> context, bool isRoot)
+void XJson::Write(Share<JsonBuffer> context, bool isRoot)
 {
 	if (m_Encodecontext)
 	{
@@ -1157,7 +1158,7 @@ void XJson::Write(std::shared_ptr<JsonBuffer> context, bool isRoot)
 	case JsonType::Object:
 		WriteObject();
 		break;
-	case JsonType::Array:
+	case JsonType::V_Array:
 		WriteArray();
 		break;
 	default:
@@ -1229,7 +1230,7 @@ void XJson::WriteObject()
 
 void XJson::WriteArray()
 {
-	assert(m_Type == JsonType::Array);
+	assert(m_Type == JsonType::V_Array);
 
 	if (m_KeyNameNode)
 	{

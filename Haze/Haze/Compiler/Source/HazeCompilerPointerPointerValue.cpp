@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeCompiler.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerPointerPointerValue.h"

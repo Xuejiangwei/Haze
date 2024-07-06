@@ -1,7 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
-
 class HazeVariable
 {
 public:
@@ -18,7 +16,7 @@ public:
 	const HazeValue& GetValue() const { return Value; }
 
 private:
-	HAZE_STRING m_Name;
+	HString m_Name;
 
 	HazeDefineType m_Type;
 

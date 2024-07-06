@@ -10,10 +10,10 @@ public:
 	
 	~HazeCompilerInitListValue();
 
-	void ResetInitializeList(std::vector<std::shared_ptr<HazeCompilerValue>>& freeList) { m_InitList = std::move(freeList); }
+	void ResetInitializeList(V_Array<Share<HazeCompilerValue>>& freeList) { m_InitList = std::move(freeList); }
 
-	const std::vector<std::shared_ptr<HazeCompilerValue>>& GetList() const { return m_InitList; }
+	const V_Array<Share<HazeCompilerValue>>& GetList() const { return m_InitList; }
 
 private:
-	std::vector<std::shared_ptr<HazeCompilerValue>> m_InitList;
+	V_Array<Share<HazeCompilerValue>> m_InitList;
 };

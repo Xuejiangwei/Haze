@@ -1,7 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
-
 static inline void*& NextObj(void* obj)
 {
 	return *(void**)obj;

@@ -1,13 +1,13 @@
+#include "HazePch.h"
 #include "HazeUtility.h"
 
 #ifdef _WIN32
 #include <Windows.h>
 #endif
 
-#include <string>
 #include <regex>
 
-thread_local static HAZE_STRING s_HazeString;
+thread_local static HString s_HazeString;
 thread_local static HAZE_BINARY_STRING s_String;
 
 bool IsAndOrToken(HazeToken token)
@@ -69,90 +69,90 @@ int Log2(int n)
 	return count;
 }
 
-HAZE_STRING GetHazeClassFunctionName(const HAZE_STRING& className, const HAZE_STRING& functionName)
+HString GetHazeClassFunctionName(const HString& className, const HString& functionName)
 {
 	return className + HAZE_CLASS_FUNCTION_CONBINE + functionName;
 }
 
-const HAZE_CHAR* GetGlobalDataHeaderString()
+const HChar* GetGlobalDataHeaderString()
 {
 	return HEADER_STRING_GLOBAL_DATA;
 }
 
-const HAZE_CHAR* GetGlobalDataInitBlockStart()
+const HChar* GetGlobalDataInitBlockStart()
 {
 	return GLOBAL_DATA_INIT_BLOCK_START;
 }
 
-const HAZE_CHAR* GetGlobalDataInitBlockEnd()
+const HChar* GetGlobalDataInitBlockEnd()
 {
 	return GLOBAL_DATA_INIT_BLOCK_END;
 }
 
-const HAZE_CHAR* GetStringTableHeaderString()
+const HChar* GetStringTableHeaderString()
 {
 	return HEADER_STRING_STRING_TABLE;
 }
 
-const HAZE_CHAR* GetClassTableHeaderString()
+const HChar* GetClassTableHeaderString()
 {
 	return HEADER_STRING_CLASS_TABLE;
 }
 
-const HAZE_CHAR* GetClassLabelHeader()
+const HChar* GetClassLabelHeader()
 {
 	return CLASS_LABEL_HEADER;
 }
 
-const HAZE_CHAR* GetFucntionTableHeaderString()
+const HChar* GetFucntionTableHeaderString()
 {
 	return HEADER_STRING_FUNCTION_TABLE;
 }
 
-const HAZE_CHAR* GetFunctionLabelHeader()
+const HChar* GetFunctionLabelHeader()
 {
 	return FUNCTION_LABEL_HEADER;
 }
 
-const HAZE_CHAR* GetFunctionParamHeader()
+const HChar* GetFunctionParamHeader()
 {
 	return FUNCTION_PARAM_HEADER;
 }
 
-const HAZE_CHAR* GetFunctionVariableHeader()
+const HChar* GetFunctionVariableHeader()
 {
 	return HAZE_LOCAL_VARIABLE_HEADER;
 }
 
-const HAZE_CHAR* GetFunctionStartHeader()
+const HChar* GetFunctionStartHeader()
 {
 	return FUNCTION_START_HEADER;
 }
 
-const HAZE_CHAR* GetFunctionEndHeader()
+const HChar* GetFunctionEndHeader()
 {
 	return FUNCTION_END_HEADER;
 }
 
-bool HazeIsSpace(HAZE_CHAR hChar, bool* isNewLine)
+bool HazeIsSpace(HChar hChar, bool* isNewLine)
 {
 	if (isNewLine)
 	{
-		*isNewLine = hChar == HAZE_CHAR('\n');
+		*isNewLine = hChar == HChar('\n');
 	}
 
-	return hChar == HAZE_CHAR(' ') || hChar == HAZE_CHAR('\n') || hChar == HAZE_CHAR('\t') || hChar == HAZE_CHAR('\v') || hChar == HAZE_CHAR('\f') || hChar == HAZE_CHAR('\r');
+	return hChar == HChar(' ') || hChar == HChar('\n') || hChar == HChar('\t') || hChar == HChar('\v') || hChar == HChar('\f') || hChar == HChar('\r');
 }
 
-bool IsNumber(const HAZE_STRING& str)
+bool IsNumber(const HString& str)
 {
-	std::wregex pattern(HAZE_TEXT("-[0-9]+(.[0-9]+)?|[0-9]+(.[0-9]+)?"));
+	std::wregex pattern(H_TEXT("-[0-9]+(.[0-9]+)?|[0-9]+(.[0-9]+)?"));
 	return std::regex_match(str, pattern);
 }
 
-HazeValueType GetNumberDefaultType(const HAZE_STRING& str)
+HazeValueType GetNumberDefaultType(const HString& str)
 {
-	std::wregex pattern(HAZE_TEXT("-?(([1-9]\\d*\\.\\d*)|(0\\.\\d*[1-9]\\d*))"));
+	std::wregex pattern(H_TEXT("-?(([1-9]\\d*\\.\\d*)|(0\\.\\d*[1-9]\\d*))"));
 	bool isFloat = std::regex_match(str, pattern);
 	
 	if (isFloat)
@@ -167,14 +167,14 @@ HazeValueType GetNumberDefaultType(const HAZE_STRING& str)
 	return HazeValueType::Int;
 }
 
-HAZE_STRING String2WString(const char* str)
+HString String2WString(const char* str)
 {
 	return String2WString(HAZE_BINARY_STRING(str));
 }
 
-HAZE_STRING String2WString(const HAZE_BINARY_STRING& str)
+HString String2WString(const HAZE_BINARY_STRING& str)
 {
-	HAZE_STRING& result = s_HazeString;
+	HString& result = s_HazeString;
 #ifdef _WIN32
 
 	//获取缓冲区大小
@@ -189,7 +189,7 @@ HAZE_STRING String2WString(const HAZE_BINARY_STRING& str)
 	return result;
 }
 
-HAZE_BINARY_STRING WString2String(const HAZE_STRING& wstr)
+HAZE_BINARY_STRING WString2String(const HString& wstr)
 {
 	HAZE_BINARY_STRING& result = s_String;
 
@@ -209,7 +209,7 @@ HAZE_BINARY_STRING WString2String(const HAZE_STRING& wstr)
 
 char* UTF8_2_GB2312(const char* utf8)
 {
-	HAZE_STRING& hazeString = s_HazeString;
+	HString& hazeString = s_HazeString;
 	HAZE_BINARY_STRING& result = s_String;
 
 #ifdef _WIN32
@@ -231,7 +231,7 @@ char* UTF8_2_GB2312(const char* utf8)
 
 char* GB2312_2_UFT8(const char* gb2312)
 {
-	HAZE_STRING& hazeString = s_HazeString;
+	HString& hazeString = s_HazeString;
 	HAZE_BINARY_STRING& result = s_String;
 
 #ifdef _WIN32
@@ -251,14 +251,14 @@ char* GB2312_2_UFT8(const char* gb2312)
 	return result.data();
 }
 
-void ReplacePathSlash(HAZE_STRING& path)
+void ReplacePathSlash(HString& path)
 {
-	static HAZE_STRING WindowsPathSlash(HAZE_TEXT("\\"));
-	static HAZE_STRING PathSlash(HAZE_TEXT("/"));
+	static HString WindowsPathSlash(H_TEXT("\\"));
+	static HString PathSlash(H_TEXT("/"));
 
-	for (HAZE_STRING::size_type pos(0); pos != HAZE_STRING::npos; pos += PathSlash.length())
+	for (HString::size_type pos(0); pos != HString::npos; pos += PathSlash.length())
 	{
-		if ((pos = path.find(WindowsPathSlash, pos)) != HAZE_STRING::npos)
+		if ((pos = path.find(WindowsPathSlash, pos)) != HString::npos)
 		{
 			path.replace(pos, WindowsPathSlash.length(), PathSlash);
 		}
@@ -300,21 +300,21 @@ InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type)
 	}
 }
 
-HAZE_STRING GetModuleNameByFilePath(const HAZE_STRING& filePath)
+HString GetModuleNameByFilePath(const HString& filePath)
 {
-	auto Index = filePath.find_last_of(HAZE_TEXT("\\"));
-	if (Index != HAZE_STRING::npos)
+	auto Index = filePath.find_last_of(H_TEXT("\\"));
+	if (Index != HString::npos)
 	{
 		return filePath.substr(Index + 1, filePath.length() - Index - 1 - 3);
 	}
 
-	Index = filePath.find_last_of(HAZE_TEXT("/"));
-	if (Index != HAZE_STRING::npos)
+	Index = filePath.find_last_of(H_TEXT("/"));
+	if (Index != HString::npos)
 	{
 		return filePath.substr(Index + 1, filePath.length() - Index - 1 - 3);
 	}
 
-	return HAZE_TEXT("None");
+	return H_TEXT("None");
 }
 
 HAZE_BINARY_STRING ToString(void* value)
@@ -334,28 +334,28 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		switch (type2)
 		{
 		case HazeValueType::UnsignedByte:
-			v1.Value.Byte = (hbyte)v2.Value.UnsignedByte;
+			v1.Value.Byte = (HByte)v2.Value.UnsignedByte;
 			break;
 		case HazeValueType::Char:
-			v1.Value.Byte = (hbyte)v2.Value.Char;
+			v1.Value.Byte = (HByte)v2.Value.Char;
 			break;
 		case HazeValueType::UnsignedInt:
-			v1.Value.Byte = (hbyte)v2.Value.UnsignedInt;
+			v1.Value.Byte = (HByte)v2.Value.UnsignedInt;
 			break;
 		case HazeValueType::Int:
-			v1.Value.Byte = (hbyte)v2.Value.Int;
+			v1.Value.Byte = (HByte)v2.Value.Int;
 			break;
 		case HazeValueType::Float:
-			v1.Value.Byte = (hbyte)v2.Value.Float;
+			v1.Value.Byte = (HByte)v2.Value.Float;
 			break;
 		case HazeValueType::Double:
-			v1.Value.Byte = (hbyte)v2.Value.Double;
+			v1.Value.Byte = (HByte)v2.Value.Double;
 			break;
 		case HazeValueType::Long:
-			v1.Value.Byte = (hbyte)v2.Value.Long;
+			v1.Value.Byte = (HByte)v2.Value.Long;
 			break;
 		case HazeValueType::UnsignedLong:
-			v1.Value.Byte = (hbyte)v2.Value.UnsignedLong;
+			v1.Value.Byte = (HByte)v2.Value.UnsignedLong;
 			break;
 		default:
 			break;
@@ -400,28 +400,28 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		switch (type2)
 		{
 		case HazeValueType::Byte:
-			v1.Value.Char = (HAZE_CHAR)v2.Value.Byte;
+			v1.Value.Char = (HChar)v2.Value.Byte;
 			break;
 		case HazeValueType::UnsignedByte:
-			v1.Value.Char = (HAZE_CHAR)v2.Value.UnsignedByte;
+			v1.Value.Char = (HChar)v2.Value.UnsignedByte;
 			break;
 		case HazeValueType::UnsignedInt:
-			v1.Value.Char = (HAZE_CHAR)v2.Value.UnsignedInt;
+			v1.Value.Char = (HChar)v2.Value.UnsignedInt;
 			break;
 		case HazeValueType::Int:
-			v1.Value.Char = (HAZE_CHAR)v2.Value.Int;
+			v1.Value.Char = (HChar)v2.Value.Int;
 			break;
 		case HazeValueType::Float:
-			v1.Value.Char = (HAZE_CHAR)v2.Value.Float;
+			v1.Value.Char = (HChar)v2.Value.Float;
 			break;
 		case HazeValueType::Double:
-			v1.Value.Char = (HAZE_CHAR)v2.Value.Double;
+			v1.Value.Char = (HChar)v2.Value.Double;
 			break;
 		case HazeValueType::Long:
-			v1.Value.Char = (HAZE_CHAR)v2.Value.Long;
+			v1.Value.Char = (HChar)v2.Value.Long;
 			break;
 		case HazeValueType::UnsignedLong:
-			v1.Value.Char = (HAZE_CHAR)v2.Value.UnsignedLong;
+			v1.Value.Char = (HChar)v2.Value.UnsignedLong;
 			break;
 		default:
 			break;
@@ -621,16 +621,16 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	}
 }
 
-std::vector<HAZE_STRING> HazeStringSplit(const HAZE_STRING& str, const HAZE_STRING& delimiter)
+V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter)
 {
-	std::vector<HAZE_STRING> result;
+	V_Array<HString> result;
 
-	HAZE_CHAR* s = new HAZE_CHAR[str.size() + 1];
+	HChar* s = new HChar[str.size() + 1];
 	s[str.size()] = '\0';
 	
 	wcscpy_s(s, str.size() + 1, str.c_str());
 
-	HAZE_CHAR* p = nullptr;
+	HChar* p = nullptr;
 	auto token = wcstok_s(s, delimiter.c_str(), &p);
 	while (token)
 	{

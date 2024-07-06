@@ -7,46 +7,46 @@ class HazeCompilerValue;
 class HazeCompilerFunction;
 class HazeCompilerClass;
 
-HAZE_STRING GetLocalVariableName(const HAZE_STRING& name, std::shared_ptr<HazeCompilerValue> value);
+HString GetLocalVariableName(const HString& name, Share<HazeCompilerValue> value);
 
 void HazeCompilerStream(HAZE_STRING_STREAM& hss, HazeCompilerValue* value, bool streamValue = true);
 
-void HazeCompilerStream(HAZE_STRING_STREAM& hss, std::shared_ptr<HazeCompilerValue> value, bool streamValue = true);
+void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<HazeCompilerValue> value, bool streamValue = true);
 
-std::shared_ptr<HazeCompilerValue> CreateVariable(HazeCompilerModule* compilerModule, const HazeDefineVariable& var, 
-	HazeVariableScope scope, HazeDataDesc desc, int count, std::shared_ptr<HazeCompilerValue> refValue = nullptr,
-	std::vector<std::shared_ptr<HazeCompilerValue>> arraySize = {}, std::vector<HazeDefineType>* params = nullptr);
+Share<HazeCompilerValue> CreateVariable(HazeCompilerModule* compilerModule, const HazeDefineVariable& var, 
+	HazeVariableScope scope, HazeDataDesc desc, int count, Share<HazeCompilerValue> refValue = nullptr,
+	V_Array<Share<HazeCompilerValue>> arraySize = {}, V_Array<HazeDefineType>* params = nullptr);
 
-std::vector<std::pair<HazeDataDesc, std::vector<std::shared_ptr<HazeCompilerValue>>>> CreateVariableCopyClassMember(
+V_Array<Pair<HazeDataDesc, V_Array<Share<HazeCompilerValue>>>> CreateVariableCopyClassMember(
 	HazeCompilerModule* compilerModule, HazeVariableScope scope, HazeCompilerClass* compilerClass);
 
-void StreamCompilerValue(HAZE_STRING_STREAM& hss, InstructionOpCode insCode, std::shared_ptr<HazeCompilerValue> value, 
-	const HAZE_CHAR* defaultName = nullptr);
+void StreamCompilerValue(HAZE_STRING_STREAM& hss, InstructionOpCode insCode, Share<HazeCompilerValue> value, 
+	const HChar* defaultName = nullptr);
 
-HAZE_STRING GetObjectName(const HAZE_STRING& inName);
+HString GetObjectName(const HString& inName);
 
-std::shared_ptr<HazeCompilerValue> GetObjectMember(HazeCompilerModule* compilerModule, const HAZE_STRING& inName);
+Share<HazeCompilerValue> GetObjectMember(HazeCompilerModule* compilerModule, const HString& inName);
 
-std::shared_ptr<HazeCompilerValue> GetObjectMember(HazeCompilerModule* compilerModule, const HAZE_STRING& inName, bool& isPointer);
+Share<HazeCompilerValue> GetObjectMember(HazeCompilerModule* compilerModule, const HString& inName, bool& isPointer);
 
-std::shared_ptr<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* compilerModule, const HAZE_STRING& inName,
-	HAZE_STRING& outObjectName, HAZE_STRING& outMemberName, bool& isPointer);
+Share<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* compilerModule, const HString& inName,
+	HString& outObjectName, HString& outMemberName, bool& isPointer);
 
-std::shared_ptr<HazeCompilerFunction> GetObjectFunction(HazeCompilerModule* compilerModule, const HAZE_STRING& inName);
+Share<HazeCompilerFunction> GetObjectFunction(HazeCompilerModule* compilerModule, const HString& inName);
 
-std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetObjectFunction(
-	HazeCompilerModule* compilerModule, const HAZE_STRING& inName, bool& isPointer);
+Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectFunction(
+	HazeCompilerModule* compilerModule, const HString& inName, bool& isPointer);
 
-std::pair<std::shared_ptr<HazeCompilerFunction>, std::shared_ptr<HazeCompilerValue>> GetObjectNameAndFunctionName(
-	HazeCompilerModule* compilerModule, const HAZE_STRING& inName, HAZE_STRING& outObjectName, HAZE_STRING& outFunctionName, bool& isPointer);
+Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunctionName(
+	HazeCompilerModule* compilerModule, const HString& inName, HString& outObjectName, HString& outFunctionName, bool& isPointer);
 
-bool TrtGetVariableName(HazeCompilerFunction* function, const std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>& data,
-	const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
+bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Share<HazeCompilerValue>>& data,
+	const Share<HazeCompilerValue>& value, HString& outName);
 
-bool TrtGetVariableName(HazeCompilerFunction* function, const std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>& data,
-	const HazeCompilerValue* value, HAZE_STRING& outName);
+bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Share<HazeCompilerValue>>& data,
+	const HazeCompilerValue* value, HString& outName);
 
-std::shared_ptr<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* compilerModule,
-	std::shared_ptr<HazeCompilerValue> elementValue, std::shared_ptr<HazeCompilerValue> movToValue = nullptr);
+Share<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* compilerModule,
+	Share<HazeCompilerValue> elementValue, Share<HazeCompilerValue> movToValue = nullptr);
 
-void GetTemplateClassName(HAZE_STRING& inName, const std::vector<HazeDefineType>& templateTypes);
+void GetTemplateClassName(HString& inName, const V_Array<HazeDefineType>& templateTypes);

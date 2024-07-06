@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include <stdio.h>
 #include <windows.h>
 
@@ -6,18 +7,18 @@
 #include "HazeStack.h"
 #include "HazeMemoryLib.h"
 
-static std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
+static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
-	{ HAZE_TEXT("内存复制"), &HazeMemoryLib::MemoryCopy },
+	{ H_TEXT("内存复制"), &HazeMemoryLib::MemoryCopy },
 	{ HAZE_OBJECT_ARRAY_CONSTRUCTOR, &HazeMemoryLib::ObjectArrayConstructor },
-	{ HAZE_TEXT("获得字符个数"), &HazeMemoryLib::StringCount }
+	{ H_TEXT("获得字符个数"), &HazeMemoryLib::StringCount }
 };
 
-static bool Z_NoUse_HazeMemoryLib = HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeMemoryLib"), &s_HashMap_Functions);
+static bool Z_NoUse_HazeMemoryLib = HazeStandardLibraryBase::AddStdLib(H_TEXT("HazeMemoryLib"), &s_HashMap_Functions);
 
 void HazeMemoryLib::InitializeLib()
 {
-	HazeStandardLibraryBase::AddStdLib(HAZE_TEXT("HazeMemoryLib"), &s_HashMap_Functions);
+	HazeStandardLibraryBase::AddStdLib(H_TEXT("HazeMemoryLib"), &s_HashMap_Functions);
 }
 
 void HazeMemoryLib::MemoryCopy(HAZE_STD_CALL_PARAM)
@@ -54,12 +55,12 @@ void HazeMemoryLib::ObjectArrayConstructor(HAZE_STD_CALL_PARAM)
 
 void HazeMemoryLib::StringCount(HAZE_STD_CALL_PARAM)
 {
-	HAZE_CHAR* src;
+	HChar* src;
 
 	GET_PARAM_START();
 	GET_PARAM(src);
 
-	HAZE_STRING s(src);
+	HString s(src);
 	int64 length = s.length();
 
 	SET_RET_BY_TYPE(HazeValueType::Long, length);

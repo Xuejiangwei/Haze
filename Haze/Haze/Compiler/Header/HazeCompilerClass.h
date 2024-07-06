@@ -1,7 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
-
 class HazeCompilerModule;
 class HazeCompilerFunction;
 class HazeCompilerValue;
@@ -13,36 +11,36 @@ class HazeCompilerClass
 public:
 	friend class HazeCompiler;
 
-	HazeCompilerClass(HazeCompilerModule* compilerModule, const HAZE_STRING& name, std::vector<HazeCompilerClass*>& parentClass,
-		std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& data);
+	HazeCompilerClass(HazeCompilerModule* compilerModule, const HString& name, V_Array<HazeCompilerClass*>& parentClass,
+		V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>>& data);
 
 	~HazeCompilerClass();
 
-	std::shared_ptr<HazeCompilerFunction> FindFunction(const HAZE_STRING& m_FunctionName);
+	Share<HazeCompilerFunction> FindFunction(const HString& m_FunctionName);
 
-	std::shared_ptr<HazeCompilerFunction> AddFunction(std::shared_ptr<HazeCompilerFunction>& function);
+	Share<HazeCompilerFunction> AddFunction(Share<HazeCompilerFunction>& function);
 
 	uint64 GetFunctionNum() { return m_Functions.size(); }
 
 	void InitThisValue();
 
-	std::shared_ptr<HazeCompilerPointerValue> GetThisPointerValue() { return m_ThisPointerValue; }
+	Share<HazeCompilerPointerValue> GetThisPointerValue() { return m_ThisPointerValue; }
 
-	std::shared_ptr<HazeCompilerClassValue> GetThisPointerToValue() { return m_ThisClassValue; }
+	Share<HazeCompilerClassValue> GetThisPointerToValue() { return m_ThisClassValue; }
 
-	std::shared_ptr<HazeCompilerClassValue> GetNewPointerToValue() { return m_NewPointerToValue; }
+	Share<HazeCompilerClassValue> GetNewPointerToValue() { return m_NewPointerToValue; }
 
-	const HAZE_STRING& GetName() { return m_Name; }
+	const HString& GetName() { return m_Name; }
 
-	int GetMemberIndex(const HAZE_STRING& memberName);
+	int GetMemberIndex(const HString& memberName);
 
-	bool GetMemberName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName);
+	bool GetMemberName(const Share<HazeCompilerValue>& value, HString& outName);
 
-	bool GetMemberName(const HazeCompilerValue* value, HAZE_STRING& outName);
+	bool GetMemberName(const HazeCompilerValue* value, HString& outName);
 
-	bool GetMemberName(HazeCompilerClassValue* classValue, const HazeCompilerValue* value, HAZE_STRING& outName);
+	bool GetMemberName(HazeCompilerClassValue* classValue, const HazeCompilerValue* value, HString& outName);
 
-	const std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& GetClassMemberData() const { return m_Data; }
+	const V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>>& GetClassMemberData() const { return m_Data; }
 
 	void GenClassData_I_Code(HAZE_STRING_STREAM& hss);
 
@@ -52,7 +50,7 @@ public:
 
 	uint32 GetAlignSize();
 
-	uint32 GetOffset(uint32 index, std::shared_ptr<HazeCompilerValue> member);
+	uint32 GetOffset(uint32 index, Share<HazeCompilerValue> member);
 
 	int GetClassInheritLevel() const;
 
@@ -62,21 +60,21 @@ private:
 private:
 	HazeCompilerModule* m_Module;
 
-	HAZE_STRING m_Name;
+	HString m_Name;
 
 	uint32 m_DataSize;
 
-	std::vector<HazeCompilerClass*> m_ParentClass;
+	V_Array<HazeCompilerClass*> m_ParentClass;
 
-	std::shared_ptr<HazeCompilerPointerValue> m_ThisPointerValue;
-	std::shared_ptr<HazeCompilerClassValue> m_ThisClassValue;			//所有同类对象指向此同一个this Value
+	Share<HazeCompilerPointerValue> m_ThisPointerValue;
+	Share<HazeCompilerClassValue> m_ThisClassValue;			//所有同类对象指向此同一个this Value
 
-	std::shared_ptr<HazeCompilerClassValue> m_NewPointerToValue;		//所有New出来的对象指向此Value
+	Share<HazeCompilerClassValue> m_NewPointerToValue;		//所有New出来的对象指向此Value
 
-	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>> m_Data;
+	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>> m_Data;
 
-	std::vector<std::shared_ptr<HazeCompilerFunction>> m_Functions;
-	std::unordered_map<HAZE_STRING, unsigned int> m_HashMap_Functions;
+	V_Array<Share<HazeCompilerFunction>> m_Functions;
+	HashMap<HString, unsigned int> m_HashMap_Functions;
 
-	std::vector<uint32> m_Offsets;
+	V_Array<uint32> m_Offsets;
 };

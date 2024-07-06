@@ -1,7 +1,7 @@
 #pragma once
 
-#define HAZE_BASE_LIBRARY_STREAM_NAME HAZE_TEXT("标准流")
-#define HAZE_BASE_LIBRARY_STREAM_CODE HAZE_TEXT("标准库 标准流\n\
+#define HAZE_BASE_LIBRARY_STREAM_NAME H_TEXT("标准流")
+#define HAZE_BASE_LIBRARY_STREAM_CODE H_TEXT("标准库 标准流\n\
 {\n\
 	函数\n\
 	{\n\
@@ -10,8 +10,8 @@
 	}\n\
 }")
 
-#define HAZE_BASE_LIBRARY_MEMORY_NAME HAZE_TEXT("标准内存")
-#define HAZE_BASE_LIBRARY_MEMORY_CODE HAZE_TEXT("标准库 标准内存\n\
+#define HAZE_BASE_LIBRARY_MEMORY_NAME H_TEXT("标准内存")
+#define HAZE_BASE_LIBRARY_MEMORY_CODE H_TEXT("标准库 标准内存\n\
 {\n\
 	函数\n\
 	{\n\
@@ -21,8 +21,8 @@
 	}\n\
 }")
 
-#define HAZE_BASE_LIBRARY_FILE_NAME HAZE_TEXT("标准文件")
-#define HAZE_BASE_LIBRARY_FILE_CODE HAZE_TEXT("标准库 标准文件\n\
+#define HAZE_BASE_LIBRARY_FILE_NAME H_TEXT("标准文件")
+#define HAZE_BASE_LIBRARY_FILE_CODE H_TEXT("标准库 标准文件\n\
 {\n\
 	函数\n\
 	{\n\

@@ -4,12 +4,18 @@
 #include "HazeValue.h"
 #include "HazeLog.h"
 
+#ifdef HAZE
+	#include <sstream>
+	#include "JwHeader.h"
+#endif
+
 enum class HazeSectionSignal : uint8
 {
 	Global,
 	Local,
 	Static,
 	Class,
+	Enum,
 };
 
 struct HazeDefineType
@@ -18,7 +24,7 @@ struct HazeDefineType
 
 	HazeValueType SecondaryType;			//指针指向类型,自定义类指针值为void
 
-	HAZE_STRING CustomName;				//自定义类型名
+	HString CustomName;				//自定义类型名
 
 	HazeDefineType() : PrimaryType(HazeValueType::None), SecondaryType(HazeValueType::None)
 	{
@@ -34,22 +40,22 @@ struct HazeDefineType
 		this->CustomName.clear();
 	}
 
-	HazeDefineType(HazeValueType type, const HAZE_STRING& customName) : PrimaryType(type), SecondaryType(HazeValueType::None)
+	HazeDefineType(HazeValueType type, const HString& customName) : PrimaryType(type), SecondaryType(HazeValueType::None)
 	{
 		this->CustomName = customName;
 	}
 
-	HazeDefineType(HazeValueType type, const HAZE_CHAR* customName) : PrimaryType(type), SecondaryType(HazeValueType::None)
+	HazeDefineType(HazeValueType type, const HChar* customName) : PrimaryType(type), SecondaryType(HazeValueType::None)
 	{
 		this->CustomName = customName;
 	}
 
-	HazeDefineType(HazeValueType type, HazeValueType type2, const HAZE_STRING& customName) : PrimaryType(type), SecondaryType(type2)
+	HazeDefineType(HazeValueType type, HazeValueType type2, const HString& customName) : PrimaryType(type), SecondaryType(type2)
 	{
 		this->CustomName = customName;
 	}
 
-	HazeDefineType(HazeValueType type, HazeValueType type2, const HAZE_CHAR* customName) : PrimaryType(type), SecondaryType(type2)
+	HazeDefineType(HazeValueType type, HazeValueType type2, const HChar* customName) : PrimaryType(type), SecondaryType(type2)
 	{
 		this->CustomName = customName;
 	}
@@ -147,7 +153,7 @@ struct HazeDefineType
 	}
 
 	template<typename Class>
-	void StringStream(Class* pThis, void(Class::* stringCall)(HAZE_STRING&), void(Class::* typeCall)(uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
+	void StringStream(Class* pThis, void(Class::* stringCall)(HString&), void(Class::* typeCall)(uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
 
 	static bool NeedSecondaryType(const HazeDefineType& type)
 	{
@@ -198,7 +204,7 @@ struct HazeDefineType
 	}
 
 	template<typename Class>
-	static void StringStream(Class* pThis, void(Class::* stringCall)(HAZE_STRING&), void(Class::* typeCall)(uint32&), HazeDefineType& type)
+	static void StringStream(Class* pThis, void(Class::* stringCall)(HString&), void(Class::* typeCall)(uint32&), HazeDefineType& type)
 	{
 		(pThis->*typeCall)((uint32&)type.PrimaryType);
 
@@ -225,7 +231,7 @@ struct HazeDefineTypeHashFunction
 	{
 		if (!type.CustomName.empty())
 		{
-			return std::hash<HAZE_STRING>()(type.CustomName);
+			return std::hash<HString>()(type.CustomName);
 		}
 		else
 		{
@@ -237,10 +243,10 @@ struct HazeDefineTypeHashFunction
 struct HazeDefineVariable
 {
 	HazeDefineType Type;		//变量类型
-	HAZE_STRING Name;			//变量名
+	HString Name;			//变量名
 
 	HazeDefineVariable() {}
-	HazeDefineVariable(const HazeDefineType& type, const HAZE_STRING& name)
+	HazeDefineVariable(const HazeDefineType& type, const HString& name)
 		: Type(type), Name(name) {}
 };
 
@@ -254,5 +260,5 @@ struct HazeVariableData
 
 struct HazeClassData
 {
-	std::vector<HazeDefineVariable> Data;
+	V_Array<HazeDefineVariable> Data;
 };

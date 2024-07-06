@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "MemoryHelper.h"
 
 static int64 _RoundUp(int64 bytes, int64 alignNum)

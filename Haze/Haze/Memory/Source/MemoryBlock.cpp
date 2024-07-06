@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "MemoryBlock.h"
 #include "HazeMemory.h"
 #include "HazeLog.h"

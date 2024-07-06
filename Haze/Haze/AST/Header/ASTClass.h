@@ -9,8 +9,8 @@ class ASTFunctionDefine;
 class ASTClass
 {
 public:
-	ASTClass(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HAZE_STRING& name, std::vector<HAZE_STRING>& parentClass,
-		std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& data, std::unique_ptr<ASTClassFunctionSection>& functionSection);
+	ASTClass(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HString& name, V_Array<HString>& parentClass,
+		V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data, Unique<ASTClassFunctionSection>& functionSection);
 	
 	~ASTClass();
 
@@ -18,17 +18,17 @@ public:
 private:
 	HazeCompiler* m_Compiler;
 
-	HAZE_STRING m_ClassName;
-	std::vector<HAZE_STRING> m_ParentClasses;
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>> m_ClassDatas;
-	std::unique_ptr<ASTClassFunctionSection> m_ClassFunctionSection;
+	HString m_ClassName;
+	V_Array<HString> m_ParentClasses;
+	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> m_ClassDatas;
+	Unique<ASTClassFunctionSection> m_ClassFunctionSection;
 };
 
 class ASTClassDefine
 {
 public:
-	ASTClassDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HAZE_STRING& name, 
-		std::vector<std::vector<std::unique_ptr<ASTBase>>>& data, std::vector<std::unique_ptr<ASTFunctionDefine>>& function);
+	ASTClassDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HString& name, 
+		V_Array<V_Array<Unique<ASTBase>>>& data, V_Array<Unique<ASTFunctionDefine>>& function);
 
 	~ASTClassDefine();
 
@@ -36,7 +36,7 @@ public:
 private:
 	HazeCompiler* m_Compiler;
 
-	HAZE_STRING m_ClassName;
-	std::vector<std::vector<std::unique_ptr<ASTBase>>> m_ClassDatas;
-	std::vector<std::unique_ptr<ASTFunctionDefine>> m_ClassFunctions;
+	HString m_ClassName;
+	V_Array<V_Array<Unique<ASTBase>>> m_ClassDatas;
+	V_Array<Unique<ASTFunctionDefine>> m_ClassFunctions;
 };

@@ -1,6 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
 #include "HazeLibraryDefine.h"
 
 #define HAZE_STD_LIB_FUNCTION(TYPE, NAME, ...) \
@@ -19,14 +18,14 @@ public:
 
 	~HazeStandardLibraryBase();
 
-	static bool AddStdLib(HAZE_STRING libName, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>* hashMap);
+	static bool AddStdLib(HString libName, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>* hashMap);
 
 	static void InitializeStdLibs();
 
-	static const std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*>& GetStdLib();
+	static const HashMap<HString, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>*>& GetStdLib();
 
 	static int GetStdLibSize();
 
 private:
-	static std::unordered_map<HAZE_STRING, std::unordered_map<HAZE_STRING, void(*)(HAZE_STD_CALL_PARAM)>*>* s_Hash_MapStdLib;
+	static HashMap<HString, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>*>* s_Hash_MapStdLib;
 };

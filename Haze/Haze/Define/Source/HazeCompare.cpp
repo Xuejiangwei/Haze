@@ -1,10 +1,10 @@
+#include "HazePch.h"
 #include "HazeCompare.h"
-#include "HazeHeader.h"
 #include <unordered_map>
 
 HazeCmpType GetHazeCmpTypeByToken(HazeToken token)
 {
-	static std::unordered_map<HazeToken, HazeCmpType> s_HashMap =
+	static HashMap<HazeToken, HazeCmpType> s_HashMap =
 	{
 		{HazeToken::Equal, HazeCmpType::Equal},
 		{HazeToken::NotEqual, HazeCmpType::NotEqual},
@@ -28,7 +28,7 @@ HazeCmpType GetHazeCmpTypeByToken(HazeToken token)
 
 InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType type)
 {
-	static std::unordered_map<HazeCmpType, InstructionOpCode> s_HashMap =
+	static HashMap<HazeCmpType, InstructionOpCode> s_HashMap =
 	{
 		{HazeCmpType::Equal, InstructionOpCode::JE},
 		{HazeCmpType::NotEqual, InstructionOpCode::JNE},
@@ -52,7 +52,7 @@ InstructionOpCode GetInstructionOpCodeByCmpType(HazeCmpType type)
 
 HazeOperatorAssign GetHazeOperatorAssignTypeByToken(HazeToken token)
 {
-	static std::unordered_map<HazeToken, HazeOperatorAssign> s_HashMap =
+	static HashMap<HazeToken, HazeOperatorAssign> s_HashMap =
 	{
 		{HazeToken::AddAssign, HazeOperatorAssign::AddAssign},
 		{HazeToken::SubAssign, HazeOperatorAssign::SubAssign},

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <fstream>
-#include "HazeHeader.h"
 #include "ModuleUnit.h"
 
 class HazeVM;
@@ -31,7 +29,7 @@ public:
 	~HazeExecuteFile();
 
 public:
-	void WriteModule(const std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>>& moduleUnit);
+	void WriteModule(const HashMap<HString, Share<ModuleUnit>>& moduleUnit);
 
 	void WriteExecuteFile(const ModuleUnit::GlobalDataTable& globalDataTable, const ModuleUnit::StringTable& stringTable,
 		const ModuleUnit::ClassTable& classTable, const ModuleUnit::FunctionTable& functionTable);
@@ -69,8 +67,8 @@ private:
 	void ReadInstruction(Instruction& instruction);
 
 private:
-	std::unique_ptr<HAZE_BINARY_OFSTREAM> m_FileStream;
-	std::unique_ptr<HAZE_BINARY_IFSTREAM> m_InFileStream;
+	Unique<HAZE_BINARY_OFSTREAM> m_FileStream;
+	Unique<HAZE_BINARY_IFSTREAM> m_InFileStream;
 
 	bool m_States[HazeFileFormat::End];
 };

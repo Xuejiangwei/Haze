@@ -1,7 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
-
 enum class LibraryLoadState
 {
 	UnLoad,
@@ -12,8 +10,8 @@ struct LibraryData
 {
 	LibraryLoadState State;
 	void* Address;
-	HAZE_STRING LibraryPath;
-	HAZE_STRING FilePath;
+	HString LibraryPath;
+	HString FilePath;
 };
 
 class HazeLibraryManager
@@ -23,19 +21,19 @@ public:
 
 	~HazeLibraryManager();
 
-	void ExecuteDLLFunction(const HAZE_STRING& moduleName, const HAZE_STRING& functionName, char* paramStartAddress, char* retStartAddress, void* stack, 
+	void ExecuteDLLFunction(const HString& moduleName, const HString& functionName, char* paramStartAddress, char* retStartAddress, void* stack, 
 		void(*exeHazeFunctionCall)(void*, void*, int, ...));
 
-	void LoadDLLLibrary(const HAZE_STRING& libraryPath, const HAZE_STRING& filePath);
+	void LoadDLLLibrary(const HString& libraryPath, const HString& filePath);
 
-	void UnloadDLLLibrary(const HAZE_STRING& libraryPath);
+	void UnloadDLLLibrary(const HString& libraryPath);
 
-	const HAZE_STRING* TryGetFilePath(const HAZE_STRING& moduleName);
+	const HString* TryGetFilePath(const HString& moduleName);
 
 	const void* GetExeAddress();
 
 	static void LoadStdLibrary();
 
 private:
-	std::unordered_map<HAZE_STRING, LibraryData> m_Libraries;
+	HashMap<HString, LibraryData> m_Libraries;
 };

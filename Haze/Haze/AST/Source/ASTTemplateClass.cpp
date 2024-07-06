@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "ASTTemplateClass.h"
 #include "ASTFunction.h"
 #include "HazeLog.h"
@@ -10,10 +11,10 @@
 extern int g_ClassInheritLimit;
 extern int g_ClassInheritLevelLimit;
 
-ASTTemplateClass::ASTTemplateClass(HazeCompiler* compiler, HAZE_STRING& name, std::vector<HAZE_STRING>& parentClass,
-	std::vector<HAZE_STRING>& templateTypes,
-	std::vector<std::pair<HazeDataDesc, std::vector<std::unique_ptr<ASTBase>>>>& data,
-	std::unique_ptr<ASTClassFunctionSection>& functionSection)
+ASTTemplateClass::ASTTemplateClass(HazeCompiler* compiler, HString& name, V_Array<HString>& parentClass,
+	V_Array<HString>& templateTypes,
+	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data,
+	Unique<ASTClassFunctionSection>& functionSection)
 	: ASTTemplateBase(templateTypes),  m_Compiler(compiler), m_ClassName(std::move(name)), m_ParentClasses(std::move(parentClass)),
 	  m_ClassDatas(std::move(data)), m_ClassFunctionSection(std::move(functionSection))
 {
@@ -31,7 +32,7 @@ void ASTTemplateClass::CodeGen()
 		return;
 	}
 
-	std::vector<HazeCompilerClass*> parentClasses;
+	V_Array<HazeCompilerClass*> parentClasses;
 	for (size_t i = 0; i < m_ParentClasses.size(); i++)
 	{
 		auto parentClass = m_Compiler->GetCurrModule()->GetClass(m_ParentClasses[i]);
@@ -55,7 +56,7 @@ void ASTTemplateClass::CodeGen()
 		}
 	}
 
-	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>> datas;
+	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>> datas;
 
 	for (size_t i = 0; i < m_ClassDatas.size(); i++)
 	{

@@ -105,12 +105,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)Xjson;$(ProjectDir)\ThirdParty;$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\Library\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)Xjson;$(ProjectDir)ThirdParty;$(ProjectDir)Debugger\Header;$(ProjectDir)Header;$(ProjectDir)AST\Header;$(ProjectDir)VM\Header;$(ProjectDir)Compiler\Header;$(ProjectDir)Memory\Header;$(ProjectDir)MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\Library\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <ProgramDataBaseFileName>$(TEMP)vc$(PlatformToolsetVersion).pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>HazePch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -205,6 +207,9 @@
     <ClCompile Include="Source\Haze.cpp" />
     <ClCompile Include="HazeLog\Source\HazeLog.cpp" />
     <ClCompile Include="Source\HazeFilePathHelper.cpp" />
+    <ClCompile Include="Source\HazePch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="XJson\XJson.cpp" />
     <ClCompile Include="VM\Source\HazeLibraryManager.cpp" />
     <ClCompile Include="VM\Source\HazeStack.cpp" />
@@ -260,6 +265,8 @@
     <ClInclude Include="HazeLog\Header\HazeLog.h" />
     <ClInclude Include="Header\HazeFilePathHelper.h" />
     <ClInclude Include="Header\HazeHeader.h" />
+    <ClInclude Include="Header\HazePch.h" />
+    <ClInclude Include="Header\JwHeader.h" />
     <ClInclude Include="Library\Header\HazeFileLib.h" />
     <ClInclude Include="Library\Header\HazeLibraryDefine.h" />
     <ClInclude Include="Library\Header\HazeMemoryLib.h" />

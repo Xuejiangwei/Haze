@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeDebugger.h"
 #include "HazeLog.h"
 #include "HazeVM.h"
@@ -7,10 +8,10 @@
 
 #define ENABLE_DEBUGGER_LOG 0
 
-static HAZE_STRING GetFileName(const HAZE_CHAR*& msg)
+static HString GetFileName(const HChar*& msg)
 {
 	bool IsNewLine = false;
-	HAZE_STRING FileName;
+	HString FileName;
 	FileName.clear();
 	while (!HazeIsSpace(*msg, &IsNewLine))
 	{
@@ -22,7 +23,7 @@ static HAZE_STRING GetFileName(const HAZE_CHAR*& msg)
 	return FileName;
 }
 
-//static  HAZE_STRING GetFileModuleName(const HAZE_CHAR*& filePath)
+//static  HString GetFileModuleName(const HChar*& filePath)
 //{
 //	return GetModuleNameByFilePath(GetFileName(filePath));
 //}
@@ -44,7 +45,7 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 	break;
 	case HazeValueType::Byte:
 	{
-		hbyte Value;
+		HByte Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
@@ -156,7 +157,7 @@ void HazeDebugger::AddBreakPoint(const char* message)
 
 	auto fileName = GetFileName(hazeChar);
 	auto moduleName = GetModuleNameByFilePath(fileName);
-	uint32 Line = StringToStandardType<uint32>(HAZE_STRING(hazeChar));
+	uint32 Line = StringToStandardType<uint32>(HString(hazeChar));
 
 	auto iter = m_BreakPoints.find(moduleName);
 	if (iter != m_BreakPoints.end())
@@ -170,7 +171,7 @@ void HazeDebugger::AddBreakPoint(const char* message)
 
 #if ENABLE_DEBUGGER_LOG
 
-	HAZE_LOG_INFO(HAZE_TEXT("添加断点<%s><%s><%d>\n"), moduleName.c_str(), fileName.c_str(), Line);
+	HAZE_LOG_INFO(H_TEXT("添加断点<%s><%s><%d>\n"), moduleName.c_str(), fileName.c_str(), Line);
 
 #endif
 }
@@ -194,12 +195,12 @@ void HazeDebugger::DeleteBreakPoint(const char* message)
 		}
 		else
 		{
-			HAZE_LOG_ERR(HAZE_TEXT("删除断点错误,在模块<%s>未能找到<%d>行!\n"), fileName.c_str(), line);
+			HAZE_LOG_ERR(H_TEXT("删除断点错误,在模块<%s>未能找到<%d>行!\n"), fileName.c_str(), line);
 		}
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("删除断点错误,未能找到模块<%s>!\n"), fileName.c_str());
+		HAZE_LOG_ERR(H_TEXT("删除断点错误,未能找到模块<%s>!\n"), fileName.c_str());
 	}
 }
 
@@ -219,7 +220,7 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* message)
 		iter->second.first.clear();
 	}
 
-	HAZE_LOG_ERR(HAZE_TEXT("清除模块<%s>的所有断点!\n"), moduleName.c_str());
+	HAZE_LOG_ERR(H_TEXT("清除模块<%s>的所有断点!\n"), moduleName.c_str());
 }
 
 void HazeDebugger::OnExecLine(uint32 line)
@@ -228,7 +229,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 
 #if ENABLE_DEBUGGER_LOG
 
-	HAZE_LOG_INFO(HAZE_TEXT("运行到<%s><%d>行!\n"), moduleName->c_str(), line);
+	HAZE_LOG_INFO(H_TEXT("运行到<%s><%d>行!\n"), moduleName->c_str(), line);
 
 #endif // ENABLE_DEBUGGER_LOG
 
@@ -310,7 +311,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 	if (m_IsPause)
 	{
 #if ENABLE_DEBUGGER_LOG
-		HAZE_LOG_INFO(HAZE_TEXT("调试器暂停<%s><%d>!\n"), m_CurrPauseModule.ModuleName.c_str(), line);
+		HAZE_LOG_INFO(H_TEXT("调试器暂停<%s><%d>!\n"), m_CurrPauseModule.ModuleName.c_str(), line);
 #endif
 
 		SendBreakInfo();
@@ -338,7 +339,7 @@ void HazeDebugger::StepOver()
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("单步调试错误,不是暂停状态!\n"));
+		HAZE_LOG_ERR(H_TEXT("单步调试错误,不是暂停状态!\n"));
 	}
 }
 
@@ -415,7 +416,7 @@ void HazeDebugger::AddTempBreakPoint(uint32 line)
 	}
 }
 
-void HazeDebugger::AddTempBreakPoint(const HAZE_STRING& moduleName, uint32 line)
+void HazeDebugger::AddTempBreakPoint(const HString& moduleName, uint32 line)
 {
 	m_TempBreakPoints[moduleName].first.insert(line);
 }
@@ -483,7 +484,7 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 	}
 	else if (IsPointerType(variable.Variable.Type.PrimaryType))
 	{
-		s_String = WString2String(HAZE_TEXT("指针"));
+		s_String = WString2String(H_TEXT("指针"));
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
 
 		uint64 value;

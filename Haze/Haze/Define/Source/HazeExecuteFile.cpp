@@ -1,5 +1,4 @@
-#include <filesystem>
-#include <fstream>
+#include "HazePch.h"
 
 #include "HazeExecuteFile.h"
 #include "HazeStandardLibraryBase.h"
@@ -11,16 +10,16 @@
 
 thread_local static HAZE_BINARY_STRING s_BinaryString;
 
-static std::unordered_map<HazeFileFormat, const HAZE_CHAR*> s_HashMap_FileFormatString =
+static HashMap<HazeFileFormat, const HChar*> s_HashMap_FileFormatString =
 {
-	{HazeFileFormat::GlobalDataTable, HAZE_TEXT("全局数据表")},
-	{HazeFileFormat::StringTable, HAZE_TEXT("字符串表")},
-	{HazeFileFormat::ClassTable, HAZE_TEXT("类表")},
-	{HazeFileFormat::FunctionTable, HAZE_TEXT("函数表")},
-	{HazeFileFormat::InstructionTable, HAZE_TEXT("指令表")},
+	{HazeFileFormat::GlobalDataTable, H_TEXT("全局数据表")},
+	{HazeFileFormat::StringTable, H_TEXT("字符串表")},
+	{HazeFileFormat::ClassTable, H_TEXT("类表")},
+	{HazeFileFormat::FunctionTable, H_TEXT("函数表")},
+	{HazeFileFormat::InstructionTable, H_TEXT("指令表")},
 };
 
-static const HAZE_CHAR* GetFileFormatString(HazeFileFormat format)
+static const HChar* GetFileFormatString(HazeFileFormat format)
 {
 	auto Iter = s_HashMap_FileFormatString.find(HazeFileFormat::GlobalDataTable);
 	if (Iter != s_HashMap_FileFormatString.end())
@@ -28,8 +27,8 @@ static const HAZE_CHAR* GetFileFormatString(HazeFileFormat format)
 		return Iter->second;
 	}
 
-	HAZE_LOG_ERR(HAZE_TEXT("不能够找到二进制文件的格式<%d>!\n"), (int)format);
-	return HAZE_TEXT("None");
+	HAZE_LOG_ERR(H_TEXT("不能够找到二进制文件的格式<%d>!\n"), (int)format);
+	return H_TEXT("None");
 }
 
 struct FileFormatCheck
@@ -42,11 +41,11 @@ struct FileFormatCheck
 			{
 				if (type == ExeFileType::Out)
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("生成执行文件错误,没有生成<%s>数据!\n"), GetFileFormatString((HazeFileFormat)i));
+					HAZE_LOG_ERR(H_TEXT("生成执行文件错误,没有生成<%s>数据!\n"), GetFileFormatString((HazeFileFormat)i));
 				}
 				else if (type == ExeFileType::In)
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("解析执行文件错误,没有解析<%s>数据!\n"), GetFileFormatString((HazeFileFormat)i));
+					HAZE_LOG_ERR(H_TEXT("解析执行文件错误,没有解析<%s>数据!\n"), GetFileFormatString((HazeFileFormat)i));
 				}
 			}
 		}
@@ -55,11 +54,11 @@ struct FileFormatCheck
 		{
 			if (type == ExeFileType::Out)
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("生成执行文件错误,重复生成<%s>!\n"), GetFileFormatString(Format));
+				HAZE_LOG_ERR(H_TEXT("生成执行文件错误,重复生成<%s>!\n"), GetFileFormatString(Format));
 			}
 			else if (type == ExeFileType::In)
 			{
-				HAZE_LOG_ERR(HAZE_TEXT("解析执行文件错误,重复解析<%s>!\n"), GetFileFormatString(Format));
+				HAZE_LOG_ERR(H_TEXT("解析执行文件错误,重复解析<%s>!\n"), GetFileFormatString(Format));
 			}
 		}
 	}
@@ -80,18 +79,18 @@ HazeExecuteFile::HazeExecuteFile(ExeFileType type)
 {
 	if (type == ExeFileType::Out)
 	{
-		m_FileStream = std::make_unique<HAZE_BINARY_OFSTREAM>();
+		m_FileStream = MakeUnique<HAZE_BINARY_OFSTREAM>();
 		//不用二进制的话，写入10，会当成换行特殊处理，写入两个字符 0x0d 0x0a，即回车换行符
 		m_FileStream->open(GetMainBinaryFilePath(), std::ios::out | std::ios::binary);
 	}
 	else if (type == ExeFileType::In)
 	{
-		m_InFileStream = std::make_unique<HAZE_BINARY_IFSTREAM>(GetMainBinaryFilePath(), std::ios::in | std::ios::binary);
+		m_InFileStream = MakeUnique<HAZE_BINARY_IFSTREAM>(GetMainBinaryFilePath(), std::ios::in | std::ios::binary);
 		m_InFileStream->imbue(std::locale("chs"));
 	}
 	else
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("处理Haze二进制文件失败!\n"));
+		HAZE_LOG_ERR(H_TEXT("处理Haze二进制文件失败!\n"));
 	}
 
 	memset(&m_States, 0, sizeof(m_States));
@@ -123,11 +122,11 @@ void HazeExecuteFile::CheckAll()
 				auto it = s_HashMap_FileFormatString.find((HazeFileFormat)i);
 				if (it != s_HashMap_FileFormatString.end())
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("生成<%s>错误!\n"), it->second);
+					HAZE_LOG_ERR(H_TEXT("生成<%s>错误!\n"), it->second);
 				}
 				else
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("生成二进制文件错误\n"));
+					HAZE_LOG_ERR(H_TEXT("生成二进制文件错误\n"));
 				}
 			}
 			else
@@ -135,18 +134,18 @@ void HazeExecuteFile::CheckAll()
 				auto it = s_HashMap_FileFormatString.find((HazeFileFormat)i);
 				if (it != s_HashMap_FileFormatString.end())
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("解析<%s>错误!\n"), it->second);
+					HAZE_LOG_ERR(H_TEXT("解析<%s>错误!\n"), it->second);
 				}
 				else
 				{
-					HAZE_LOG_ERR(HAZE_TEXT("解析二进制文件错误\n"));
+					HAZE_LOG_ERR(H_TEXT("解析二进制文件错误\n"));
 				}
 			}
 		}
 	}
 }
 
-void HazeExecuteFile::WriteModule(const std::unordered_map<HAZE_STRING, std::shared_ptr<ModuleUnit>>& moduleUnit)
+void HazeExecuteFile::WriteModule(const HashMap<HString, Share<ModuleUnit>>& moduleUnit)
 {
 	uint32 globalDataIndex = 0;
 	uint32 stringIndex = 0;
@@ -283,7 +282,7 @@ void HazeExecuteFile::WriteClassTable(const ModuleUnit::ClassTable& table)
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Members[i].Variable.Type.PrimaryType));
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Members[i].Variable.Type.SecondaryType));
 
-			s_BinaryString = WString2String(HAZE_STRING(iter.Members[i].Variable.Type.CustomName));
+			s_BinaryString = WString2String(HString(iter.Members[i].Variable.Type.CustomName));
 			number = (uint32)s_BinaryString.size();
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 			m_FileStream->write(s_BinaryString.data(), number);

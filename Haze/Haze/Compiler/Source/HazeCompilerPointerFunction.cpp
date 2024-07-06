@@ -1,7 +1,8 @@
+#include "HazePch.h"
 #include "HazeCompilerPointerFunction.h"
 
 HazeCompilerPointerFunction::HazeCompilerPointerFunction(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
-	HazeVariableScope scope, HazeDataDesc desc, int count, std::vector<HazeDefineType>* paramTypes)
+	HazeVariableScope scope, HazeDataDesc desc, int count, V_Array<HazeDefineType>* paramTypes)
 	: HazeCompilerPointerValue(compilerModule, defineType, scope, desc, count)
 {
 	if (paramTypes)

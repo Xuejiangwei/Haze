@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-#include "HazeHeader.h"
-
 class HazeCompilerModule;
 
 class HazeCompilerValue : public std::enable_shared_from_this<HazeCompilerValue>
@@ -14,13 +11,13 @@ public:
 	//HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
 	HazeCompilerValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-		HazeDataDesc desc, int count, std::shared_ptr<HazeCompilerValue> assignValue = nullptr);
+		HazeDataDesc desc, int count, Share<HazeCompilerValue> assignValue = nullptr);
 
 	virtual ~HazeCompilerValue();
 
-	std::shared_ptr<HazeCompilerValue> GetShared() { return shared_from_this(); }
+	Share<HazeCompilerValue> GetShared() { return shared_from_this(); }
 
-	virtual void StoreValueType(std::shared_ptr<HazeCompilerValue> srcValue);
+	virtual void StoreValueType(Share<HazeCompilerValue> srcValue);
 
 	virtual void StoreValue(HazeValue& srcValue);
 
@@ -93,7 +90,7 @@ public:
 public:
 	virtual uint32 GetSize();
 
-	bool TryGetVariableName(HAZE_STRING& outName);
+	bool TryGetVariableName(HString& outName);
 
 protected:
 	HazeDefineType m_ValueType;

@@ -1,13 +1,11 @@
-#include <unordered_set>
-#include <set>
+#include "HazePch.h"
 #include "HazeValue.h"
 #include "HazeHeader.h"
-#include "HazeInstruction.h"
 #include "HazeLog.h"
 
-extern const std::unordered_map<HAZE_STRING, HazeToken>& GetHashMap_Token();
+extern const HashMap<HString, HazeToken>& GetHashMap_Token();
 
-static std::unordered_map<HazeToken, HazeValueType> s_HashMap_Types =
+static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 {
 	{ HazeToken::Void, HazeValueType::Void },
 	{ HazeToken::Bool, HazeValueType::Bool },
@@ -26,7 +24,7 @@ static std::unordered_map<HazeToken, HazeValueType> s_HashMap_Types =
 	{ HazeToken::PointerClass, HazeValueType::PointerClass},
 	{ HazeToken::PointerPointer, HazeValueType::PointerPointer},
 	{ HazeToken::MultiVariable, HazeValueType::MultiVariable},
-	//{ HazeToken::Array, HazeValueType::Array }
+	//{ HazeToken::V_Array, HazeValueType::V_Array }
 };
 
 uint32 GetSizeByHazeType(HazeValueType type)
@@ -63,7 +61,7 @@ uint32 GetSizeByHazeType(HazeValueType type)
 
 HazeToken GetTokenByValueType(HazeValueType type)
 {
-	static std::unordered_map<HazeValueType, HazeToken> s_HashMap_Tokens;
+	static HashMap<HazeValueType, HazeToken> s_HashMap_Tokens;
 	if (s_HashMap_Tokens.size() <= 0)
 	{
 		for (auto& iter : s_HashMap_Types)
@@ -94,7 +92,7 @@ HazeValueType GetValueTypeByToken(HazeToken token)
 
 HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2)
 {
-	static std::unordered_map<HazeValueType, std::set<HazeValueType>> s_HashMap_Table =
+	static HashMap<HazeValueType, Set<HazeValueType>> s_HashMap_Table =
 	{
 		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::UnsignedLong, HazeValueType::Float, HazeValueType::Double } },
 		{ HazeValueType::UnsignedInt, { HazeValueType::UnsignedLong } },
@@ -211,7 +209,7 @@ bool IsReferenceType(HazeValueType type)
 	return type == HazeValueType::ReferenceBase || type == HazeValueType::ReferenceClass;
 }
 
-void StringToHazeValueNumber(const HAZE_STRING& str, HazeValueType type, HazeValue& value)
+void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value)
 {
 	HAZE_STRING_STREAM wss;
 	wss << str;
@@ -272,7 +270,7 @@ void CalculateValue(InstructionOpCode typeCode, T& target)
 		--target;
 		break;
 	default:
-		HAZE_LOG_ERR(HAZE_TEXT("<%s>操作不支持!"), WString2String(GetInstructionString(typeCode)).c_str());
+		HAZE_LOG_ERR(H_TEXT("<%s>操作不支持!"), WString2String(GetInstructionString(typeCode)).c_str());
 		break;
 	}
 }
@@ -703,14 +701,14 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	}
 }
 
-size_t GetHazeCharPointerLength(const HAZE_CHAR* hChar)
+size_t GetHazeCharPointerLength(const HChar* hChar)
 {
 	return wcslen(hChar);
 }
 
-const HAZE_CHAR* GetHazeValueTypeString(HazeValueType type)
+const HChar* GetHazeValueTypeString(HazeValueType type)
 {
-	static std::unordered_map<HazeValueType, const HAZE_CHAR*> s_HashMap_Code2String;
+	static HashMap<HazeValueType, const HChar*> s_HashMap_Code2String;
 
 	if (s_HashMap_Code2String.size() <= 0)
 	{
@@ -726,7 +724,7 @@ const HAZE_CHAR* GetHazeValueTypeString(HazeValueType type)
 		return iter->second;
 	}
 
-	return HAZE_TEXT("None");
+	return H_TEXT("None");
 }
 
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value)

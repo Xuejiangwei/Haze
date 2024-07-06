@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeCompilerInitListValue.h"
 
 HazeCompilerInitListValue::HazeCompilerInitListValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, 

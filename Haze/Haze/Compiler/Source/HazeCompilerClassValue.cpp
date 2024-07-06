@@ -1,10 +1,11 @@
+#include "HazePch.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerHelper.h"
 #include "HazeCompilerClass.h"
 
-//extern std::shared_ptr<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
-//	std::shared_ptr<HazeCompilerValue> RefValue, std::vector<std::shared_ptr<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, std::vector<HazeDefineType>* Vector_Param);
+//extern Share<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
+//	Share<HazeCompilerValue> RefValue, V_Array<Share<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, V_Array<HazeDefineType>* Vector_Param);
 
 HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count)
@@ -23,12 +24,12 @@ unsigned int HazeCompilerClassValue::GetSize()
 	return m_OwnerClass->GetDataSize();
 }
 
-const HAZE_STRING& HazeCompilerClassValue::GetOwnerClassName()
+const HString& HazeCompilerClassValue::GetOwnerClassName()
 {
 	return m_OwnerClass->GetName();
 }
 
-std::shared_ptr<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HAZE_STRING& name)
+Share<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HString& name)
 {
 	auto index = m_OwnerClass->GetMemberIndex(name);
 
@@ -47,12 +48,12 @@ std::shared_ptr<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HAZE_
 	return nullptr;
 }
 
-void HazeCompilerClassValue::GetMemberName(const std::shared_ptr<HazeCompilerValue>& memberValue, HAZE_STRING& outName)
+void HazeCompilerClassValue::GetMemberName(const Share<HazeCompilerValue>& memberValue, HString& outName)
 {
 	m_OwnerClass->GetMemberName(memberValue, outName);
 }
 
-void HazeCompilerClassValue::GetMemberName(const HazeCompilerValue* memberValue, HAZE_STRING& outName)
+void HazeCompilerClassValue::GetMemberName(const HazeCompilerValue* memberValue, HString& outName)
 {
 	m_OwnerClass->GetMemberName(this, memberValue, outName);
 }

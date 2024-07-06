@@ -1,7 +1,5 @@
 #pragma once
 
-#include "HazeHeader.h"
-
 enum class HazeDebugOperatorType : uint8
 {
 	None,
@@ -44,7 +42,7 @@ struct HookInfo
 
 struct BreakPoint
 {
-	HAZE_STRING FilePath;
+	HString FilePath;
 	uint32 Line;
 
 	bool operator==(const BreakPoint& BP) const
@@ -57,6 +55,6 @@ struct BreakPointHash
 {
 	uint64 operator()(const BreakPoint& BP) const
 	{
-		return std::hash<HAZE_STRING>()(BP.FilePath) + BP.Line;
+		return std::hash<HString>()(BP.FilePath) + BP.Line;
 	}
 };

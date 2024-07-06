@@ -1,5 +1,4 @@
 #pragma once
-#include "HazeHeader.h"
 
 class HazeCompilerClass;
 
@@ -11,5 +10,5 @@ public:
 	~HazeCompilerTemplateClass();
 
 private:
-	std::vector<std::shared_ptr<HazeCompilerClass>> m_GenerateClass;
+	V_Array<Share<HazeCompilerClass>> m_GenerateClass;
 };

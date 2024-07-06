@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "HazeCompilerClass.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerFunction.h"
@@ -5,8 +6,8 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 
-HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* compilerModule, const HAZE_STRING& name, std::vector<HazeCompilerClass*>& parentClass,
-	std::vector<std::pair<HazeDataDesc, std::vector<std::pair<HAZE_STRING, std::shared_ptr<HazeCompilerValue>>>>>& data)
+HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* compilerModule, const HString& name, V_Array<HazeCompilerClass*>& parentClass,
+	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>>& data)
 	: m_Module(compilerModule), m_Name(name), m_ParentClass(std::move(parentClass)), m_Data(std::move(data))
 {
 	m_DataSize = 0;
@@ -19,7 +20,7 @@ HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* compilerModule, const H
 	}
 	
 	uint32 memberNum = 0;
-	std::shared_ptr<HazeCompilerValue> lastMember = nullptr;
+	Share<HazeCompilerValue> lastMember = nullptr;
 	for (size_t i = 0; i < m_Data.size(); i++)
 	{
 		for (size_t j = 0; j < m_Data[i].second.size(); j++)
@@ -34,14 +35,14 @@ HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* compilerModule, const H
 	uint32 alignSize = GetAlignSize();
 	alignSize = alignSize > HAZE_ALIGN_BYTE ? alignSize : HAZE_ALIGN_BYTE;
 	m_DataSize = lastMember ? HAZE_ALIGN(m_Offsets.back() + lastMember->GetSize(), alignSize) : 0;
-	HAZE_LOG_INFO(HAZE_TEXT("¿‡<%s> DataSize %d\n"), name.c_str(), m_DataSize);
+	HAZE_LOG_INFO(H_TEXT("¿‡<%s> DataSize %d\n"), name.c_str(), m_DataSize);
 }
 
 HazeCompilerClass::~HazeCompilerClass()
 {
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::FindFunction(const HAZE_STRING& functionName)
+Share<HazeCompilerFunction> HazeCompilerClass::FindFunction(const HString& functionName)
 {
 	auto iter = m_HashMap_Functions.find(GetHazeClassFunctionName(m_Name, functionName));
 	if (iter != m_HashMap_Functions.end())
@@ -52,7 +53,7 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::FindFunction(const HAZE
 	return nullptr;
 }
 
-std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared_ptr<HazeCompilerFunction>& function)
+Share<HazeCompilerFunction> HazeCompilerClass::AddFunction(Share<HazeCompilerFunction>& function)
 {
 	auto iter = m_HashMap_Functions.find(function->GetName());
 	if (iter == m_HashMap_Functions.end())
@@ -69,7 +70,7 @@ std::shared_ptr<HazeCompilerFunction> HazeCompilerClass::AddFunction(std::shared
 void HazeCompilerClass::InitThisValue()
 {
 	m_NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
-		HAZE_TEXT("")), HazeVariableScope::None, HazeDataDesc::ClassThis, 0));
+		H_TEXT("")), HazeVariableScope::None, HazeDataDesc::ClassThis, 0));
 	
 	m_ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
 		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
@@ -78,7 +79,7 @@ void HazeCompilerClass::InitThisValue()
 		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 }
 
-int HazeCompilerClass::GetMemberIndex(const HAZE_STRING& memberName)
+int HazeCompilerClass::GetMemberIndex(const HString& memberName)
 {
 	size_t index = 0;
 	for (size_t i = 0; i < m_Data.size(); i++)
@@ -97,12 +98,12 @@ int HazeCompilerClass::GetMemberIndex(const HAZE_STRING& memberName)
 	return -1;
 }
 
-bool HazeCompilerClass::GetMemberName(const std::shared_ptr<HazeCompilerValue>& value, HAZE_STRING& outName)
+bool HazeCompilerClass::GetMemberName(const Share<HazeCompilerValue>& value, HString& outName)
 {
 	return GetMemberName(value.get(), outName);
 }
 
-bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* value, HAZE_STRING& outName)
+bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* value, HString& outName)
 {
 	for (size_t i = 0; i < m_ThisClassValue->m_Data.size(); i++)
 	{
@@ -129,7 +130,7 @@ bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* value, HAZE_STRIN
 	return false;
 }
 
-bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* classValue, const HazeCompilerValue* value, HAZE_STRING& outName)
+bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* classValue, const HazeCompilerValue* value, HString& outName)
 {
 	for (size_t i = 0; i < classValue->m_Data.size(); i++)
 	{
@@ -227,7 +228,7 @@ uint32 HazeCompilerClass::GetAlignSize()
 	return maxMemberSize;
 }
 
-uint32 HazeCompilerClass::GetOffset(uint32 index, std::shared_ptr<HazeCompilerValue> member)
+uint32 HazeCompilerClass::GetOffset(uint32 index, Share<HazeCompilerValue> member)
 {
 	return index * member->GetSize();
 }

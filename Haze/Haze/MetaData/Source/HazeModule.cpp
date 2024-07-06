@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include <filesystem>
 #include <fstream>
 
@@ -5,7 +6,7 @@
 #include "HazeLog.h"
 #include "HazeCompilerValue.h"
 
-HazeModule::HazeModule(const HAZE_STRING& opFile)
+HazeModule::HazeModule(const HString& opFile)
 {
 	ParseOpFile(opFile);
 }
@@ -14,11 +15,11 @@ HazeModule::~HazeModule()
 {
 }
 
-void HazeModule::ParseOpFile(const HAZE_STRING& opFile)
+void HazeModule::ParseOpFile(const HString& opFile)
 {
 	HAZE_IFSTREAM fs(opFile);
 	//FS.imbue(std::locale("chs"));
-	HAZE_STRING content(std::istreambuf_iterator<HAZE_CHAR>(fs), {});
+	HString content(std::istreambuf_iterator<HChar>(fs), {});
 
 	/*Content
 
@@ -29,14 +30,14 @@ void HazeModule::ParseOpFile(const HAZE_STRING& opFile)
 
 HazeValue* HazeModule::AddGlobalVariable()
 {
-	/*auto It = MapGlobalVariables.find(HAZE_TEXT(""));
+	/*auto It = MapGlobalVariables.find(H_TEXT(""));
 	if (It != MapGlobalVariables.end())
 	{
-		HAZE_LOG_ERR(HAZE_TEXT("添加全局变量重复，"));
+		HAZE_LOG_ERR(H_TEXT("添加全局变量重复，"));
 		return nullptr;
 	}
 
-	MapGlobalVariables[HAZE_TEXT("1")] = HazeCompilerValue();
-	return &MapGlobalVariables[HAZE_TEXT("1")];*/
+	MapGlobalVariables[H_TEXT("1")] = HazeCompilerValue();
+	return &MapGlobalVariables[H_TEXT("1")];*/
 	return nullptr;
 }

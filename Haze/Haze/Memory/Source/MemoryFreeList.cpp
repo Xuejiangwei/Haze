@@ -1,3 +1,4 @@
+#include "HazePch.h"
 #include "MemoryFreeList.h"
 
 MemoryFreeList::MemoryFreeList() : m_FreeList(nullptr), m_Length(0)

@@ -1,4 +1,3 @@
 ﻿#pragma once
-#include "HazeVM.h"
 
-HazeVM* HazeMain(int argCount, char* argValue[]);
+class HazeVM* HazeMain(int argCount, char* argValue[]);
