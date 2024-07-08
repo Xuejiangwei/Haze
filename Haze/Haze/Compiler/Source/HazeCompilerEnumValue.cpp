@@ -2,10 +2,11 @@
 #include "HazeCompilerEnumValue.h"
 #include "HazeCompilerEnum.h"
 
-HazeCompilerEnumValue::HazeCompilerEnumValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, 
-	HazeVariableScope scope, HazeDataDesc desc, int count)
-	: HazeCompilerValue(compilerModule, defineType, scope, desc, count)
+HazeCompilerEnumValue::HazeCompilerEnumValue(HazeCompilerEnum* owner, Share<HazeCompilerValue>& value)
+	: m_OwnerEnum(owner), HazeCompilerValue(nullptr, value->GetValueType(), value->GetVariableScope(),
+		value->GetVariableDesc(), 0, value)
 {
+	
 }
 
 HazeCompilerEnumValue::~HazeCompilerEnumValue()

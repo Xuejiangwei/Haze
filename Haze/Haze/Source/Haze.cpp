@@ -20,7 +20,7 @@ int g_ClassInheritLevelLimit = 2;
 
 void HazeNewHandler()
 {
-	HAZE_LOG_ERR(H_TEXT("Haze no memory!!!!\n"));
+	HAZE_LOG_ERR_W("Haze no memory!!!!\n");
 }
 
 void HazePreInit()

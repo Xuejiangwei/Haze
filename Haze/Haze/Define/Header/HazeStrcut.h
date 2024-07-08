@@ -62,6 +62,11 @@ struct HazeDefineType
 
 	bool operator==(const HazeDefineType& type) const
 	{
+		if (IsArrayType(PrimaryType) && (SecondaryType == type.PrimaryType || CustomName == type.CustomName))
+		{
+			return true;
+		}
+
 		return PrimaryType == type.PrimaryType && SecondaryType == type.SecondaryType
 			&& CustomName == type.CustomName;
 	}

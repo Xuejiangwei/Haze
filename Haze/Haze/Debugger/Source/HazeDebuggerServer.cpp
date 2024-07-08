@@ -43,7 +43,7 @@ void HazeDebuggerServer::Start(HazeVM* m_VM)
 	//初始化WSA
 	if (WSAStartup(sockVersion, &wsaData) != 0)
 	{
-		HAZE_LOG_ERR(H_TEXT("Haze调试器Socket初始化失败!\n"));
+		HAZE_LOG_ERR_W("Haze调试器Socket初始化失败!\n");
 		return;
 	}
 
@@ -51,7 +51,7 @@ void HazeDebuggerServer::Start(HazeVM* m_VM)
 	g_SocketServer = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (g_SocketServer == INVALID_SOCKET)
 	{
-		HAZE_LOG_ERR(H_TEXT("Haze调试器Socket创建失败!\n"));
+		HAZE_LOG_ERR_W("Haze调试器Socket创建失败!\n");
 		return;
 	}
 
@@ -64,14 +64,14 @@ void HazeDebuggerServer::Start(HazeVM* m_VM)
 	//bind函数把一个地址族中的特定地址赋给scket。
 	if (bind(g_SocketServer, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
 	{
-		HAZE_LOG_ERR(H_TEXT("Haze调试器Socket绑定失败!\n"));
+		HAZE_LOG_ERR_W("Haze调试器Socket绑定失败!\n");
 		return;
 	}
 
 	//开始监听
 	if (listen(g_SocketServer, 5) == SOCKET_ERROR)
 	{
-		HAZE_LOG_ERR(H_TEXT("Haze调试器Socket监听失败!\n"));
+		HAZE_LOG_ERR_W("Haze调试器Socket监听失败!\n");
 		return;
 	}
 
@@ -112,7 +112,7 @@ static bool HandleMessage(char* Message)
 	switch ((HazeDebugOperatorType)m_Type)
 	{
 	case HazeDebugOperatorType::None:
-		HAZE_LOG_ERR(H_TEXT("Haze调试接收到<空调试>操作\n"));
+		HAZE_LOG_ERR_W("Haze调试接收到<空调试>操作\n");
 		return false;
 	case HazeDebugOperatorType::Start:
 		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<开始>操作\n"));
@@ -205,7 +205,7 @@ void HazeDebuggerServer::Recv()
 			}
 			else
 			{
-				HAZE_LOG_ERR(H_TEXT("接收的Socket数据大小超过1024!\n"));
+				HAZE_LOG_ERR_W("接收的Socket数据大小超过1024!\n");
 			}
 		}
 		else

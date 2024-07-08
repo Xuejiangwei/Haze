@@ -116,7 +116,7 @@ Share<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* compilerModule, 
 		}
 		else
 		{
-			HAZE_LOG_ERR(H_TEXT("创建引用变量失败，必须赋予初始化值!\n"));
+			HAZE_LOG_ERR_W("创建引用变量失败，必须赋予初始化值!\n");
 			return nullptr;
 		}
 	case HazeValueType::Class:
@@ -376,7 +376,7 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunc
 			}
 			else if (findVariable)
 			{
-				HAZE_LOG_ERR(H_TEXT("获得类对象<%s>的成员函数错误!\n"), outObjectName.c_str());
+				HAZE_LOG_ERR_W("获得类对象<%s>的成员函数错误!\n"), outObjectName.c_str();
 			}
 		}
 	}
@@ -423,7 +423,7 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Shar
 				outName = GetLocalVariableName(data.first, data.second) + HAZE_CLASS_ATTR + outName;
 				if (!value->IsClassPublicMember())
 				{
-					HAZE_LOG_ERR(H_TEXT("不能够访问类<%s>非公开成员变量<%s>!\n"), compilerClass->GetOwnerClassName().c_str(), outName.c_str());
+					HAZE_LOG_ERR_W("不能够访问类<%s>非公开成员变量<%s>!\n", compilerClass->GetOwnerClassName().c_str(), outName.c_str());
 				}
 				return true;
 			}

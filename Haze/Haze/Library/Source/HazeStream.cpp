@@ -78,7 +78,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 		{
 			if (++argNum > multiParamNum) //入栈参数个数
 			{
-				HAZE_LOG_ERR(H_TEXT("调用<打印>函数参数个数错误!\n"));
+				HAZE_LOG_ERR_W("调用<打印>函数参数个数错误!\n");
 				return;
 			}
 			HChar Form[MAX_FORMAT];
@@ -197,7 +197,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				HSS << *(Start++);
 			}*/
 
-			HAZE_LOG_ERR(H_TEXT("输入函数只能输入格式字符!\n"));
+			HAZE_LOG_ERR_W("输入函数只能输入格式字符!\n");
 			return;
 		}
 		else if (*(++Start) == PRE_SIGN)

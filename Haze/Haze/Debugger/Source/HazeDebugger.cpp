@@ -195,12 +195,12 @@ void HazeDebugger::DeleteBreakPoint(const char* message)
 		}
 		else
 		{
-			HAZE_LOG_ERR(H_TEXT("删除断点错误,在模块<%s>未能找到<%d>行!\n"), fileName.c_str(), line);
+			HAZE_LOG_ERR_W("删除断点错误,在模块<%s>未能找到<%d>行!\n", fileName.c_str(), line);
 		}
 	}
 	else
 	{
-		HAZE_LOG_ERR(H_TEXT("删除断点错误,未能找到模块<%s>!\n"), fileName.c_str());
+		HAZE_LOG_ERR_W("删除断点错误,未能找到模块<%s>!\n", fileName.c_str());
 	}
 }
 
@@ -220,7 +220,7 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* message)
 		iter->second.first.clear();
 	}
 
-	HAZE_LOG_ERR(H_TEXT("清除模块<%s>的所有断点!\n"), moduleName.c_str());
+	HAZE_LOG_ERR_W("清除模块<%s>的所有断点!\n", moduleName.c_str());
 }
 
 void HazeDebugger::OnExecLine(uint32 line)
@@ -339,7 +339,7 @@ void HazeDebugger::StepOver()
 	}
 	else
 	{
-		HAZE_LOG_ERR(H_TEXT("单步调试错误,不是暂停状态!\n"));
+		HAZE_LOG_ERR_W("单步调试错误,不是暂停状态!\n");
 	}
 }
 

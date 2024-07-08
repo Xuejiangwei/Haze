@@ -1,6 +1,6 @@
 #include "HazePch.h"
 #include "HazeCompilerEnum.h"
-#include "HazeCompilerValue.h"
+#include "HazeCompilerEnumValue.h"
 #include "HazeCompilerModule.h"
 
 HazeCompilerEnum::HazeCompilerEnum(HazeCompilerModule* compilerModule, HazeValueType parentType)
@@ -16,7 +16,7 @@ void HazeCompilerEnum::AddEnumValue(const HString& name, Share<HazeCompilerValue
 {
 	if (!GetEnumValue(name))
 	{
-		m_EnumValues.push_back({ name, value });
+		m_EnumValues.push_back({ name, MakeShare<HazeCompilerEnumValue>(this, value) });
 	}
 	else
 	{
@@ -24,7 +24,7 @@ void HazeCompilerEnum::AddEnumValue(const HString& name, Share<HazeCompilerValue
 	}
 }
 
-Share<HazeCompilerValue> HazeCompilerEnum::GetEnumValue(const HString& name)
+Share<HazeCompilerEnumValue> HazeCompilerEnum::GetEnumValue(const HString& name)
 {
 	for (auto& it : m_EnumValues)
 	{

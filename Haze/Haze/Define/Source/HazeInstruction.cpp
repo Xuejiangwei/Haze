@@ -724,7 +724,7 @@ public:
 		}
 		else
 		{
-			HAZE_LOG_ERR(H_TEXT("bir neg operator error!\n"));
+			HAZE_LOG_ERR_W("字节取反操作错误!\n");
 		}
 
 		stack->m_VM->InstructionExecPost();

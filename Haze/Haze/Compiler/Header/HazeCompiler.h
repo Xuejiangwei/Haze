@@ -58,7 +58,7 @@ public:
 
 	Share<HazeCompilerValue> GetLocalVariable(const HString& name);
 
-	Share<HazeCompilerValue> GetEnumVariable(const HString& name);
+	Share<HazeCompilerValue> GetEnumVariable(const HString& enumName, const HString& name);
 
 	Share<HazeCompilerValue> GetConstantValueInt(int v);
 

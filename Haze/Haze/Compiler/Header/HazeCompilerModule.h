@@ -53,6 +53,8 @@ public:
 	Share<HazeCompilerEnum> CreateEnum(const HString& name, HazeValueType baseType);
 
 	Share<HazeCompilerEnum> GetCurrEnum();
+	
+	const HString& GetCurrEnumName() const { return m_CurrEnum; }
 
 	void FinishCreateEnum();
 

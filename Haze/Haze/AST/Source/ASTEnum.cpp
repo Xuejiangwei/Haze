@@ -38,10 +38,10 @@ void ASTEnum::CodeGen()
 			HazeValue value;
 			if (i > 0)
 			{
-				auto preValue = m_Compiler->GetEnumVariable(m_Enums[i - 1].first);
+				auto preValue = m_Compiler->GetEnumVariable(m_EnumName, m_Enums[i - 1].first);
 				if (preValue)
 				{
-					value.Value.UnsignedLong = preValue->GetValue().Value.UnsignedLong + 1;
+					AddEnumOneValueByType(value, preValue->GetValue());
 				}
 				else
 				{
@@ -51,7 +51,7 @@ void ASTEnum::CodeGen()
 			}
 			else
 			{
-				value.Value.UnsignedLong = 0;
+				memset(&value.Value, 0, sizeof(value.Value));
 			}
 
 			v = m_Compiler->GenConstantValue(m_BaseType, value);
@@ -67,4 +67,38 @@ void ASTEnum::CodeGen()
 	}
 
 	m_Compiler->GetCurrModule()->FinishCreateEnum();
+}
+
+void ASTEnum::AddEnumOneValueByType(HazeValue& value, const HazeValue& prValue)
+{
+	switch (m_BaseType)
+	{
+	case HazeValueType::Byte:
+		value.Value.Byte = prValue.Value.Byte + 1;
+		break;
+	case HazeValueType::UnsignedByte:
+		value.Value.UnsignedByte = prValue.Value.UnsignedByte + 1;
+		break;
+	case HazeValueType::Short:
+		value.Value.Short = prValue.Value.Short + 1;
+		break;
+	case HazeValueType::UnsignedShort:
+		value.Value.UnsignedShort = prValue.Value.UnsignedShort + 1;
+		break;
+	case HazeValueType::Int:
+		value.Value.Int = prValue.Value.Int + 1;
+		break;
+	case HazeValueType::Long:
+		value.Value.Long = prValue.Value.Long + 1;
+		break;
+	case HazeValueType::UnsignedInt:
+		value.Value.UnsignedInt = prValue.Value.UnsignedInt + 1;
+		break;
+	case HazeValueType::UnsignedLong:
+		value.Value.UnsignedLong = prValue.Value.UnsignedLong + 1;
+		break;
+	default:
+		AST_ERR_W("枚举自动匹配常量值出错");
+		break;
+	}
 }

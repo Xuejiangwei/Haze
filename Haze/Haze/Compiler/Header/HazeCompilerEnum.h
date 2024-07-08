@@ -3,6 +3,7 @@
 #include "HazeHeader.h"
 
 class HazeCompilerValue;
+class HazeCompilerEnumValue;
 class HazeCompilerModule;
 
 class HazeCompilerEnum
@@ -14,11 +15,11 @@ public:
 
 	void AddEnumValue(const HString& name, Share<HazeCompilerValue> & value);
 
-	Share<HazeCompilerValue> GetEnumValue(const HString& name);
+	Share<HazeCompilerEnumValue> GetEnumValue(const HString& name);
 
 private:
 	HazeValueType m_ParentType;
 	HazeCompilerModule* m_Module;
 
-	V_Array<Pair<HString, Share<HazeCompilerValue>>> m_EnumValues;
+	V_Array<Pair<HString, Share<HazeCompilerEnumValue>>> m_EnumValues;
 };

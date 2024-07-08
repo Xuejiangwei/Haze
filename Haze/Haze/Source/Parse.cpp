@@ -138,6 +138,8 @@ static HashMap<HString, HazeToken> s_HashMap_Token =
 	{ TOKEN_TEMPLATE, HazeToken::Template },
 
 	{ TOKEN_SIZE_OF, HazeToken::SizeOf },
+
+	{ TOKEN_TWO_COLON, HazeToken::TwoColon },
 };
 
 const HashMap<HString, HazeToken>& GetHashMap_Token()
@@ -366,13 +368,13 @@ void Parse::ParseTemplateContent(const HString& moduleName, const HString& templ
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), templateName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+					HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", templateName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 				}
 			}
 		}
 		else
 		{
-			HAZE_LOG_ERR(H_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), templateName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+			HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", templateName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 		}
 	}
 
@@ -394,7 +396,7 @@ void Parse::ParseTemplateContent(const HString& moduleName, const HString& templ
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!"), templateName.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+					HAZE_LOG_ERR_W("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!", templateName.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 				}
 			}
 			else if (m_CurrToken == HazeToken::Function)
@@ -423,7 +425,7 @@ void Parse::ParseTemplateContent(const HString& moduleName, const HString& templ
 HazeToken Parse::GetNextToken()
 {
 	bool bNewLine = false;
-	while (HazeIsSpace(*m_CurrCode, &bNewLine))
+	while (HazeIsSpace(*m_CurrCode, &bNewLine) && m_CurrToken != HazeToken::StringMatch)
 	{
 		if (bNewLine)
 		{
@@ -811,6 +813,16 @@ Unique<ASTBase> Parse::ParseIdentifer()
 
 		ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), identiferName, indexExpression);
 	}
+	else if (m_CurrToken == HazeToken::TwoColon)
+	{
+		if (ExpectNextTokenIs(HazeToken::Identifier)) 
+		{
+			HString nameSpace = m_CurrLexeme;
+			GetNextToken();
+			return MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+				identiferName, indexExpression, nameSpace);
+		}
+	}
 	else
 	{
 		ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), identiferName, indexExpression);
@@ -931,7 +943,7 @@ Unique<ASTBase> Parse::ParseVariableDefine()
 			}
 			else
 			{
-				HAZE_LOG_ERR(H_TEXT("解析错误 类对象定义需要括号\"(\" <%s>文件<%d>行!!\n"), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+				HAZE_LOG_ERR_W("解析错误 类对象定义需要括号\"(\" <%s>文件<%d>行!!\n", m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 			}
 		}
 		else
@@ -1237,7 +1249,7 @@ Unique<ASTBase> Parse::ParseThreeOperator(Unique<ASTBase> Condition)
 
 		if (m_CurrToken != HazeToken::Colon)
 		{
-			HAZE_LOG_ERR(H_TEXT("三目表达式 需要 : 符号!\n"));
+			HAZE_LOG_ERR_W("三目表达式 需要 : 符号!\n");
 			return nullptr;
 		}
 
@@ -1290,7 +1302,7 @@ Unique<ASTBase> Parse::ParseLeftParentheses()
 		}
 		else
 		{
-			HAZE_LOG_ERR(H_TEXT("Parse left parentheses error, expect right parentheses\n"));
+			PARSE_ERR_W("解析 ( 错误, 期望 ） \n");
 		}
 	}
 
@@ -1671,7 +1683,7 @@ Unique<ASTBase> Parse::ParseImportModule()
 	}
 	else
 	{
-		HAZE_LOG_ERR(H_TEXT("解析错误: 引入模块<%s>错误! <%s>文件<%d>行!\n"), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+		HAZE_LOG_ERR_W("解析错误: 引入模块<%s>错误! <%s>文件<%d>行!\n", m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 	}
 
 	return nullptr;
@@ -1705,13 +1717,13 @@ Unique<ASTClass> Parse::ParseClass()
 					}
 					else
 					{
-						HAZE_LOG_ERR(H_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+						HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 					}
 				}
 			}
 			else
 			{
-				HAZE_LOG_ERR(H_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+				HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 			}
 		}
 
@@ -1733,7 +1745,7 @@ Unique<ASTClass> Parse::ParseClass()
 					}
 					else
 					{
-						HAZE_LOG_ERR(H_TEXT("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!"), name.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+						HAZE_LOG_ERR_W("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!", name.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 					}
 				}
 				else if (m_CurrToken == HazeToken::Function)
@@ -1752,7 +1764,7 @@ Unique<ASTClass> Parse::ParseClass()
 	}
 	else
 	{
-		HAZE_LOG_ERR(H_TEXT("解析错误: 类名<%s>错误! <%s>文件<%d>行!"), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+		HAZE_LOG_ERR_W("解析错误: 类名<%s>错误! <%s>文件<%d>行!", m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 	}
 
 	return nullptr;
@@ -1800,7 +1812,7 @@ V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> Parse::ParseClassData()
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("解析错误: 类的公有区域只能定义一次! <%s>文件<%d>行!\n"), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+					HAZE_LOG_ERR_W("解析错误: 类的公有区域只能定义一次! <%s>文件<%d>行!\n", m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 				}
 			}
 			else if (m_CurrToken == HazeToken::ClassPrivate)
@@ -1822,7 +1834,7 @@ V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> Parse::ParseClassData()
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("解析错误: 类的私有区域只能定义一次! <%s>文件<%d>行!\n"), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+					HAZE_LOG_ERR_W("解析错误: 类的私有区域只能定义一次! <%s>文件<%d>行!\n", m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 				}
 			}
 			else if (m_CurrToken == HazeToken::ClassProtected)
@@ -1844,14 +1856,14 @@ V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> Parse::ParseClassData()
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("解析错误: 类的保护区域只能定义一次! <%s>文件<%d>行!\n"), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+					HAZE_LOG_ERR_W("解析错误: 类的保护区域只能定义一次! <%s>文件<%d>行!\n", m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 				}
 			}
 		}
 
 		if (m_CurrToken != HazeToken::RightBrace)
 		{
-			HAZE_LOG_ERR(H_TEXT("解析错误: 类需要 }! <%s>文件<%d>行!\n"), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+			HAZE_LOG_ERR_W("解析错误: 类需要 }! <%s>文件<%d>行!\n", m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 		}
 
 		GetNextToken();
@@ -2090,7 +2102,7 @@ void Parse::ParseTemplate()
 								}
 								else
 								{
-									HAZE_LOG_ERR(H_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), templateClassName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+									HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", templateClassName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 								}
 
 								line = m_LineCount;
@@ -2098,7 +2110,7 @@ void Parse::ParseTemplate()
 						}
 						else
 						{
-							HAZE_LOG_ERR(H_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), templateClassName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+							HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", templateClassName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 						}
 					}
 					
@@ -2159,13 +2171,13 @@ Unique<ASTTemplateBase> Parse::ParseTemplateClass(V_Array<HString>& templateType
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+					HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 				}
 			}
 		}
 		else
 		{
-			HAZE_LOG_ERR(H_TEXT("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n"), name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+			HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", name.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 		}
 	}
 
@@ -2187,7 +2199,7 @@ Unique<ASTTemplateBase> Parse::ParseTemplateClass(V_Array<HString>& templateType
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!"), name.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+					HAZE_LOG_ERR_W("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!", name.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 				}
 			}
 			else if (m_CurrToken == HazeToken::Function)
@@ -2256,6 +2268,7 @@ bool Parse::IsHazeSignalToken(const HChar* hChar, const HChar*& outChar, uint32 
 		TOKEN_ARRAY_START, TOKEN_ARRAY_END,
 		TOKEN_INC, TOKEN_DEC, TOKEN_ADD_ASSIGN, TOKEN_SUB_ASSIGN, TOKEN_MUL_ASSIGN, TOKEN_DIV_ASSIGN, TOKEN_MOD_ASSIGN, TOKEN_SHL_ASSIGN, TOKEN_SHR_ASSIGN,
 		TOKEN_BIT_AND_ASSIGN, TOKEN_BIT_OR_ASSIGN, TOKEN_BIT_XOR_ASSIGN,
+		TOKEN_QUESTIOB_COLON, TOKEN_TWO_COLON,
 	};
 
 	static HString s_WS;
@@ -2343,7 +2356,7 @@ bool Parse::IsPointerOrRef(const HString& str, HazeToken& outToken)
 
 			if (str.length() > HazeCompiler::GetMaxPointerLevel())
 			{
-				HAZE_LOG_ERR(H_TEXT("Haze max 3 level pointer pointer !\n"));
+				PARSE_ERR_W("最多3层指针 !\n");
 				return false;
 			}
 

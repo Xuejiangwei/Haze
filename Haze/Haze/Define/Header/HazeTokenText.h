@@ -122,3 +122,5 @@
 
 #define TOkEN_ARRAY_LENGTH				H_TEXT("数组长度")
 #define TOKEN_SIZE_OF					H_TEXT("字节数")
+
+#define TOKEN_TWO_COLON					H_TEXT("::")

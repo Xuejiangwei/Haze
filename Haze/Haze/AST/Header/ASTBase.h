@@ -75,7 +75,7 @@ class ASTIdentifier : public ASTBase
 {
 public:
 	ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name
-		, V_Array<Unique<ASTBase>>& arrayIndexExpression);
+		, V_Array<Unique<ASTBase>>& arrayIndexExpression, HString nameSpace = HAZE_TEXT(""));
 	
 	virtual ~ASTIdentifier() override;
 
@@ -84,6 +84,7 @@ public:
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
 private:
+	HString m_NameSpace;
 	HazeSectionSignal m_SectionSignal;
 	V_Array<Unique<ASTBase>> m_ArrayIndexExpression;
 };

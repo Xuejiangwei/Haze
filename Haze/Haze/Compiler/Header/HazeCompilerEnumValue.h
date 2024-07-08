@@ -9,8 +9,7 @@ class HazeCompilerEnumValue : public HazeCompilerValue
 public:
 	friend class HazeCompilerClass;
 
-	explicit HazeCompilerEnumValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-		HazeDataDesc desc, int count);
+	explicit HazeCompilerEnumValue(HazeCompilerEnum* owner, Share<HazeCompilerValue>& value);
 
 	virtual ~HazeCompilerEnumValue() override;
 

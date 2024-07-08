@@ -12,6 +12,8 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerInitListValue.h"
+#include "HazeCompilerEnum.h"
+#include "HazeCompilerEnumValue.h"
 #include "HazeCompilerHelper.h"
 
 //Base
@@ -78,10 +80,11 @@ Share<HazeCompilerValue> ASTStringText::CodeGen()
 }
 
 ASTIdentifier::ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
-	V_Array<Unique<ASTBase>>& arrayIndexExpression)
-	: ASTBase(compiler, location), m_SectionSignal(section), m_ArrayIndexExpression(std::move(arrayIndexExpression))
+	V_Array<Unique<ASTBase>>& arrayIndexExpression, HString nameSpace)
+	: ASTBase(compiler, location), m_SectionSignal(section), m_ArrayIndexExpression(Move(arrayIndexExpression)),
+	m_NameSpace(Move(nameSpace))
 {
-	m_DefineVariable.Name = std::move(name);
+	m_DefineVariable.Name = Move(name);
 }
 
 ASTIdentifier::~ASTIdentifier()
@@ -111,7 +114,12 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 	}
 	else if (m_SectionSignal == HazeSectionSignal::Enum)
 	{
-		retValue = m_Compiler->GetEnumVariable(m_DefineVariable.Name);
+		retValue = m_Compiler->GetEnumVariable(m_Compiler->GetCurrModule()->GetCurrEnumName(), m_DefineVariable.Name);
+	}
+
+	if (!m_NameSpace.empty())
+	{
+		retValue = m_Compiler->GetEnumVariable(m_NameSpace, m_DefineVariable.Name);
 	}
 
 	if (retValue)

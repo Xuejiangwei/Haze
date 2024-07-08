@@ -270,7 +270,7 @@ void CalculateValue(InstructionOpCode typeCode, T& target)
 		--target;
 		break;
 	default:
-		HAZE_LOG_ERR(H_TEXT("<%s>操作不支持!"), WString2String(GetInstructionString(typeCode)).c_str());
+		HAZE_LOG_ERR_W("<%s>操作不支持!", WString2String(GetInstructionString(typeCode)).c_str());
 		break;
 	}
 }

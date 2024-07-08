@@ -14,6 +14,10 @@ public:
 	~ASTEnum();
 
 	void CodeGen();
+
+private:
+	void AddEnumOneValueByType(HazeValue& value, const HazeValue& prValue);
+
 private:
 	HazeCompiler* m_Compiler;
 	HString m_EnumName;

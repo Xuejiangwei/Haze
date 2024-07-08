@@ -147,4 +147,6 @@ enum class HazeToken : unsigned int
 	NullPtr,
 
 	SizeOf,
+
+	TwoColon,
 };

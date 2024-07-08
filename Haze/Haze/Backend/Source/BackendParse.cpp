@@ -138,6 +138,13 @@ void BackendParse::GetNextLexeme()
 	while (HazeIsSpace(*m_CurrCode))
 	{
 		m_CurrCode++;
+		if (!ParseStringCount.first)
+		{
+		}
+		else
+		{
+			break;
+		}
 	}
 
 	m_CurrLexeme.clear();
@@ -870,7 +877,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 					}
 					else
 					{
-						HAZE_LOG_ERR(H_TEXT("查找调用的函数指针<%s>失败!\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str());
+						HAZE_LOG_ERR_W("查找调用的函数指针<%s>失败!\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str());
 					}
 				}
 			}*/

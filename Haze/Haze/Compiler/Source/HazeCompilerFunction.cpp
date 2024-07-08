@@ -139,7 +139,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	if (!m_Type.StringStreamTo(hss))
 	{
-		HAZE_LOG_ERR(H_TEXT("函数<%s>类型解析失败,生成中间代码错误!\n"), m_Name.c_str());
+		HAZE_LOG_ERR_W("函数<%s>类型解析失败,生成中间代码错误!\n", m_Name.c_str());
 		return;
 	}
 
@@ -152,7 +152,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 		if (!m_Params[i].second->GetValueType().StringStreamTo(hss))
 		{
-			HAZE_LOG_ERR(H_TEXT("函数<%s>的参数<%s>类型解析失败,生成中间代码错误!\n"), m_Name.c_str(), m_Params[i].first.c_str());
+			HAZE_LOG_ERR_W("函数<%s>的参数<%s>类型解析失败,生成中间代码错误!\n", m_Name.c_str(), m_Params[i].first.c_str());
 			return;
 		}
 

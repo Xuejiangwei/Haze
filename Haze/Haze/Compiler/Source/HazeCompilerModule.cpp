@@ -449,7 +449,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateInc(Share<HazeCompilerValue> 
 	}
 	else
 	{
-		HAZE_LOG_ERR(H_TEXT("<%s>类型不能使用Inc操作\n"), GetHazeValueTypeString(value->GetValueType().PrimaryType));
+		HAZE_LOG_ERR_W("<%s>类型不能使用Inc操作\n", GetHazeValueTypeString(value->GetValueType().PrimaryType));
 	}
 	return retValue;
 }
@@ -469,7 +469,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateDec(Share<HazeCompilerValue> 
 	}
 	else
 	{
-		HAZE_LOG_ERR(H_TEXT("<%s>类型不能使用Dec操作\n"), GetHazeValueTypeString(value->GetValueType().PrimaryType));
+		HAZE_LOG_ERR_W("<%s>类型不能使用Dec操作\n", GetHazeValueTypeString(value->GetValueType().PrimaryType));
 	}
 	return retValue;
 }
@@ -503,7 +503,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(Share<HazeCompilerV
 	}
 	else
 	{
-		HAZE_LOG_ERR(H_TEXT("目前只支持Haze默认类型的数组初始化赋值!\n"));
+		HAZE_LOG_ERR_W("目前只支持Haze默认类型的数组初始化赋值!\n");
 	}
 
 	return array;
@@ -628,7 +628,7 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType cmpType, Share<HazeBaseBlock>
 
 	if (cmpType == HazeCmpType::None)
 	{
-		HAZE_LOG_ERR(H_TEXT("比较失败,比较类型为空,当前函数<%s>!\n"), GetCurrFunction()->GetName().c_str());
+		HAZE_LOG_ERR_W("比较失败,比较类型为空,当前函数<%s>!\n", GetCurrFunction()->GetName().c_str());
 	}
 
 	hss << GetInstructionString(GetInstructionOpCodeByCmpType(cmpType)) << " ";
@@ -671,7 +671,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefi
 	{
 		if (it.first == var.Name)
 		{
-			HAZE_LOG_ERR(H_TEXT("编译器错误,添加全局变量重复\n"));
+			HAZE_LOG_ERR_W("编译器错误,添加全局变量重复\n");
 			return nullptr;
 		}
 	}
@@ -772,7 +772,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HString& ca
 		}
 		else
 		{
-			HAZE_LOG_ERR(H_TEXT("函数调用失败，己指针类型错误!\n"));
+			HAZE_LOG_ERR_W("函数调用失败，己指针类型错误!\n");
 		}
 
 		hss << std::endl;
@@ -837,7 +837,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 		GetCurrFunction()->FindLocalVariableName(pointerFunction, varName);
 		if (varName.empty())
 		{
-			HAZE_LOG_ERR(H_TEXT("函数指针调用失败!\n"));
+			HAZE_LOG_ERR_W("函数指针调用失败!\n");
 			return nullptr;
 		}
 	}
@@ -1161,7 +1161,7 @@ void HazeCompilerModule::GenICode()
 	*/
 	if (m_HashMap_StringMapping.size() != m_HashMap_StringTable.size())
 	{
-		HAZE_LOG_ERR(H_TEXT("生成字符串表失败!"),
+		HAZE_LOG_ERR_W("生成字符串表失败!",
 			m_HashMap_StringMapping.size(), m_HashMap_StringTable.size());
 		return;
 	}

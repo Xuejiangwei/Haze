@@ -12,6 +12,7 @@
 #include "HazeCompilerValue.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerEnum.h"
+#include "HazeCompilerEnumValue.h"
 #include "HazeCompilerClass.h"
 #include "HazeCompilerModule.h"
 #include "HazeCompilerHelper.h"
@@ -241,7 +242,7 @@ Share<HazeCompilerValue> HazeCompiler::GetTempRegister()
 		}
 	}
 
-	HAZE_LOG_ERR(H_TEXT("不能获得临时寄存器!\n"));
+	HAZE_LOG_ERR_W("不能获得临时寄存器!\n");
 	return nullptr;
 }
 
@@ -319,7 +320,7 @@ const HChar* HazeCompiler::GetRegisterName(const Share<HazeCompilerValue>& compi
 		}
 	}
 
-	HAZE_LOG_ERR(H_TEXT("查找寄存器错误,未能找到!\n"));
+	HAZE_LOG_ERR_W("查找寄存器错误,未能找到!\n");
 	return nullptr;
 }
 
@@ -577,7 +578,7 @@ Share<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType type, cons
 		return ret;
 	}
 	default:
-		HAZE_LOG_ERR(H_TEXT("未支持生成<%s>常量类型!\n"), GetHazeValueTypeString(type));
+		HAZE_LOG_ERR_W("未支持生成<%s>常量类型!\n", GetHazeValueTypeString(type));
 		break;
 	}
 
@@ -599,9 +600,9 @@ Share<HazeCompilerValue> HazeCompiler::GetLocalVariable(const HString& name)
 	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(name);
 }
 
-Share<HazeCompilerValue> HazeCompiler::GetEnumVariable(const HString& name)
+Share<HazeCompilerValue> HazeCompiler::GetEnumVariable(const HString& enumName, const HString& name)
 {
-	return GetCurrModule()->GetCurrEnum()->GetEnumValue(name);
+	return  GetCurrModule()->GetEnum(GetCurrModule().get(), enumName)->GetEnumValue(name);
 }
 
 Share<HazeCompilerValue> HazeCompiler::GetConstantValueInt(int v)
@@ -680,6 +681,10 @@ Share<HazeCompilerValue> HazeCompiler::CreateLea(Share<HazeCompilerValue> alloca
 	if (allocaValue->IsRef() && value->IsArrayElement())
 	{
 		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, CreatePointerToArrayElement(value), InstructionOpCode::MOV);
+	}
+	else if (value->IsArray())
+	{
+		return CreateMov(allocaValue, value);
 	}
 	else
 	{

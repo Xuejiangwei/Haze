@@ -154,7 +154,7 @@ Share<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& d
 	{
 		if (Iter.first == defineVar.Name)
 		{
-			HAZE_LOG_ERR(H_TEXT("重复添加临时变量 %s !\n"), defineVar.Name.c_str());
+			HAZE_LOG_ERR_W("重复添加临时变量 %s !\n", defineVar.Name.c_str());
 			return nullptr;
 		}
 	}

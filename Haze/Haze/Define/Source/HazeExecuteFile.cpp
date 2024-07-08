@@ -27,7 +27,7 @@ static const HChar* GetFileFormatString(HazeFileFormat format)
 		return Iter->second;
 	}
 
-	HAZE_LOG_ERR(H_TEXT("不能够找到二进制文件的格式<%d>!\n"), (int)format);
+	HAZE_LOG_ERR_W("不能够找到二进制文件的格式<%d>!\n", (int)format);
 	return H_TEXT("None");
 }
 
@@ -41,11 +41,11 @@ struct FileFormatCheck
 			{
 				if (type == ExeFileType::Out)
 				{
-					HAZE_LOG_ERR(H_TEXT("生成执行文件错误,没有生成<%s>数据!\n"), GetFileFormatString((HazeFileFormat)i));
+					HAZE_LOG_ERR_W("生成执行文件错误,没有生成<%s>数据!\n", GetFileFormatString((HazeFileFormat)i));
 				}
 				else if (type == ExeFileType::In)
 				{
-					HAZE_LOG_ERR(H_TEXT("解析执行文件错误,没有解析<%s>数据!\n"), GetFileFormatString((HazeFileFormat)i));
+					HAZE_LOG_ERR_W("解析执行文件错误,没有解析<%s>数据!\n", GetFileFormatString((HazeFileFormat)i));
 				}
 			}
 		}
@@ -54,11 +54,11 @@ struct FileFormatCheck
 		{
 			if (type == ExeFileType::Out)
 			{
-				HAZE_LOG_ERR(H_TEXT("生成执行文件错误,重复生成<%s>!\n"), GetFileFormatString(Format));
+				HAZE_LOG_ERR_W("生成执行文件错误,重复生成<%s>!\n", GetFileFormatString(Format));
 			}
 			else if (type == ExeFileType::In)
 			{
-				HAZE_LOG_ERR(H_TEXT("解析执行文件错误,重复解析<%s>!\n"), GetFileFormatString(Format));
+				HAZE_LOG_ERR_W("解析执行文件错误,重复解析<%s>!\n", GetFileFormatString(Format));
 			}
 		}
 	}
@@ -90,7 +90,7 @@ HazeExecuteFile::HazeExecuteFile(ExeFileType type)
 	}
 	else
 	{
-		HAZE_LOG_ERR(H_TEXT("处理Haze二进制文件失败!\n"));
+		HAZE_LOG_ERR_W("处理Haze二进制文件失败!\n");
 	}
 
 	memset(&m_States, 0, sizeof(m_States));
@@ -122,11 +122,11 @@ void HazeExecuteFile::CheckAll()
 				auto it = s_HashMap_FileFormatString.find((HazeFileFormat)i);
 				if (it != s_HashMap_FileFormatString.end())
 				{
-					HAZE_LOG_ERR(H_TEXT("生成<%s>错误!\n"), it->second);
+					HAZE_LOG_ERR_W("生成<%s>错误!\n", it->second);
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("生成二进制文件错误\n"));
+					HAZE_LOG_ERR_W("生成二进制文件错误\n");
 				}
 			}
 			else
@@ -134,11 +134,11 @@ void HazeExecuteFile::CheckAll()
 				auto it = s_HashMap_FileFormatString.find((HazeFileFormat)i);
 				if (it != s_HashMap_FileFormatString.end())
 				{
-					HAZE_LOG_ERR(H_TEXT("解析<%s>错误!\n"), it->second);
+					HAZE_LOG_ERR_W("解析<%s>错误!\n", it->second);
 				}
 				else
 				{
-					HAZE_LOG_ERR(H_TEXT("解析二进制文件错误\n"));
+					HAZE_LOG_ERR_W("解析二进制文件错误\n");
 				}
 			}
 		}
