@@ -12,6 +12,7 @@ static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 	{ H_TEXT("¶ÁÈ¡×Ö·û"), &HazeFileLib::ReadChar },
 	{ H_TEXT("¶ÁÈ¡×Ö·û´®"), &HazeFileLib::ReadString },
 	{ H_TEXT("¶ÁÈ¡"), &HazeFileLib::Read },
+	{ H_TEXT("¶ÁÈ¡Ò»ÐÐ"), &HazeFileLib::ReadLine },
 
 	{ H_TEXT("Ð´Èë×Ö·û"), &HazeFileLib::WriteChar },
 	{ H_TEXT("Ð´Èë×Ö·û´®"), &HazeFileLib::WriteString },
@@ -86,7 +87,7 @@ void HazeFileLib::CloseFile(HAZE_STD_CALL_PARAM)
 
 void HazeFileLib::ReadChar(HAZE_STD_CALL_PARAM)
 {
-	HChar* file;
+	int* file;
 
 	GET_PARAM_START();
 	GET_PARAM(file);
@@ -98,7 +99,7 @@ void HazeFileLib::ReadChar(HAZE_STD_CALL_PARAM)
 
 void HazeFileLib::ReadString(HAZE_STD_CALL_PARAM)
 {
-	HChar* file;
+	int* file;
 	int maxNum;
 	HChar* str;
 
@@ -113,7 +114,7 @@ void HazeFileLib::ReadString(HAZE_STD_CALL_PARAM)
 
 void HazeFileLib::Read(HAZE_STD_CALL_PARAM)
 {
-	HChar* file;
+	int* file;
 	uint64 size;
 	uint64 count;
 	void* buffer;
@@ -126,6 +127,28 @@ void HazeFileLib::Read(HAZE_STD_CALL_PARAM)
 
 	auto result = fread(buffer, size, count, (FILE*)file);
 	SET_RET_BY_TYPE(HazeValueType::UnsignedLong, result);
+}
+
+void HazeFileLib::ReadLine(HAZE_STD_CALL_PARAM)
+{
+	int* file;
+	HChar* buffer;
+
+	GET_PARAM_START();
+	GET_PARAM(file);
+	GET_PARAM(buffer);
+
+	auto result = buffer;
+	HChar c = fgetwc((FILE*)file);
+	while (c != '\n')
+	{
+		*buffer = c;
+		buffer++;
+
+		c = fgetwc((FILE*)file);
+	}
+
+	SET_RET_BY_TYPE(HazeValueType::PointerBase, result);
 }
 
 void HazeFileLib::WriteChar(HAZE_STD_CALL_PARAM)

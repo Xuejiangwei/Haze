@@ -17,6 +17,8 @@ public:
 
 	HAZE_STD_LIB_FUNCTION_NO_CALL(void, Read, int* file, uint64 size, uint64 count, const HChar* buffer);
 
+	HAZE_STD_LIB_FUNCTION_NO_CALL(void, ReadLine, int* file, const HChar* buffer);
+
 	HAZE_STD_LIB_FUNCTION_NO_CALL(void, WriteChar, int* file, int character);
 
 	HAZE_STD_LIB_FUNCTION_NO_CALL(void, WriteString, int* file, const HChar* str);

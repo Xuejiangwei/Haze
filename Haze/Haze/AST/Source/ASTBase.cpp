@@ -192,7 +192,7 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		{
 			if (!objectVariable)
 			{
-				param.push_back(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(HAZE_CLASS_THIS));
+				objectVariable = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(HAZE_CLASS_THIS);//param.push_back(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(HAZE_CLASS_THIS));
 			}
 		}
 
