@@ -109,6 +109,8 @@ bool IsNoneType(HazeValueType type);
 
 bool IsVoidType(HazeValueType type);
 
+bool IsMultiVariableType(HazeValueType type);
+
 bool IsHazeDefaultTypeAndVoid(HazeValueType type);
 
 bool IsHazeDefaultType(HazeValueType type);

@@ -17,7 +17,7 @@ HazeCompilerPointerFunction::~HazeCompilerPointerFunction()
 {
 }
 
-const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeByIndex(int index) const
+const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeByIndex(uint64 index) const
 {
 	if (index < m_ParamTypes.size())
 	{
@@ -25,7 +25,28 @@ const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeByIndex(int index
 	}
 	else
 	{
-		COMPILER_ERR_W("获得指针函数的第<%d>个参数错误", m_ParamTypes.size() - 1 - index);
+		if (index > 0)
+		{
+			COMPILER_ERR_W("获得指针函数的第<%d>个参数错误", m_ParamTypes.size() - 1 - index);
+		}
+
+		return m_ParamTypes[0];
+	}
+}
+
+const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeLeftToRightByIndex(uint64 index) const
+{
+	if (index + 1 < m_ParamTypes.size())
+	{
+		return m_ParamTypes[m_ParamTypes.size() - 1 - index];
+	}
+	else
+	{
+		if (index > 0)
+		{
+			COMPILER_ERR_W("获得指针函数的第<%d>个参数错误", index);
+		}
+
 		return m_ParamTypes[0];
 	}
 }

@@ -407,7 +407,7 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 
 			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
 
-			if (function->HasParam())
+			if (function->HasExceptThisParam())
 			{
 				HAZE_LOG_ERR_W("生成类对象数组的构造函数必须是无参数的!\n");
 				return value;

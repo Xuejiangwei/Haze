@@ -1,7 +1,9 @@
 #pragma once
+#include "HazeDefine.h"
 
 struct HazeRegister;
-
+struct InstructionData;
+struct FunctionData;
 class HazeVM;
 
 class HazeStack

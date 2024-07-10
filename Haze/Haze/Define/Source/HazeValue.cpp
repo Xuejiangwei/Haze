@@ -138,6 +138,11 @@ bool IsVoidType(HazeValueType type)
 	return type == HazeValueType::Void;
 }
 
+bool IsMultiVariableType(HazeValueType type)
+{
+	return type == HazeValueType::MultiVariable;
+}
+
 bool IsHazeDefaultTypeAndVoid(HazeValueType type)
 {
 	return HazeValueType::Void <= type && type <= HazeValueType::UnsignedLong;

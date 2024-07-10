@@ -1,6 +1,7 @@
 #pragma once
 
 #include "HazeLibraryDefine.h"
+#include "HazeDefine.h"
 
 #define HAZE_STD_LIB_FUNCTION(TYPE, NAME, ...) \
 	static void NAME(HAZE_STD_CALL_PARAM); \

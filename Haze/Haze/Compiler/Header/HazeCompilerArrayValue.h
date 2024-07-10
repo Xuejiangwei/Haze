@@ -33,7 +33,7 @@ public:
 
 	const V_Array<Share<HazeCompilerValue>>& GetArraySize() const { return m_SizeValues; }
 
-	uint32 GetSizeByLevel(uint32 level);
+	uint64 GetSizeByLevel(uint64 level);
 
 private:
 	uint32 m_ArrayLength;

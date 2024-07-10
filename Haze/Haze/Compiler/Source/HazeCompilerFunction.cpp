@@ -282,12 +282,36 @@ bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* value,
 	return false;
 }
 
+bool HazeCompilerFunction::HasExceptThisParam() const
+{
+	if (m_OwnerClass)
+	{
+		if (m_Params.size() > 0)
+		{
+			if (m_Params[0].second->IsCalssThis())
+			{
+				return m_Params.size() > 1;
+			}
+		}
+		else
+		{
+			return true;
+		}
+	}
+	else
+	{
+		return m_Params.size() > 0;
+	}
+
+	return false;
+}
+
 void HazeCompilerFunction::AddLocalVariable(Share<HazeCompilerValue> value, int line)
 {
 	m_LocalVariables.push_back({ value, line });
 }
 
-const HazeDefineType& HazeCompilerFunction::GetParamTypeByIndex(int index)
+const HazeDefineType& HazeCompilerFunction::GetParamTypeByIndex(uint64 index)
 {
 	if (index < m_Params.size())
 	{
@@ -295,7 +319,33 @@ const HazeDefineType& HazeCompilerFunction::GetParamTypeByIndex(int index)
 	}
 	else
 	{
-		COMPILER_ERR_W("获得函数的第<%d>个参数错误", m_Params.size() - 1 - index);
+		if (index > 0)
+		{
+			COMPILER_ERR_W("从右往左，获得函数的第<%d>个参数错误", m_Params.size() - 1 - index);
+		}
+		
+		return m_Params[0].second->GetValueType();
+	}
+}
+
+const HazeDefineType& HazeCompilerFunction::GetParamTypeLeftToRightByIndex(uint64 index)
+{
+	if (m_OwnerClass)
+	{
+		index += 1;
+	}
+
+	if (index < m_Params.size())
+	{
+		return m_Params[m_Params.size() - 1 - index].second->GetValueType();
+	}
+	else
+	{
+		if (index > 0)
+		{
+			COMPILER_ERR_W("从左往右，获得函数的第<%d>个参数错误", index);
+		}
+
 		return m_Params[0].second->GetValueType();
 	}
 }

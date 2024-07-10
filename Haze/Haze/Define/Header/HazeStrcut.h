@@ -96,7 +96,7 @@ struct HazeDefineType
 	{
 		if (*this != type)
 		{
-			if (type.PrimaryType != PrimaryType)
+			if (type.PrimaryType != PrimaryType && !(IsPointerType(type.PrimaryType) && IsPointerType(PrimaryType)))
 			{
 				auto strongerType = GetStrongerType(PrimaryType, type.PrimaryType, false);
 				return strongerType == HazeValueType::None ? false : strongerType == PrimaryType;

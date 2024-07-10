@@ -55,11 +55,13 @@ public:
 
 	bool FindLocalVariableName(const HazeCompilerValue* value, HString& outName);
 
-	bool HasParam() const { return m_Params.size() > 0; }
+	bool HasExceptThisParam() const;
 
 	void AddLocalVariable(Share<HazeCompilerValue> value, int line);
 
-	const HazeDefineType& GetParamTypeByIndex(int index);
+	const HazeDefineType& GetParamTypeByIndex(uint64 index);
+
+	const HazeDefineType& GetParamTypeLeftToRightByIndex(uint64 index);
 
 private:
 	void AddFunctionParam(const HazeDefineVariable& variable);

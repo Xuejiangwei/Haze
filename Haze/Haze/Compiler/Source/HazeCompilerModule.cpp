@@ -721,17 +721,20 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 	HString strName;
 
 	auto pointerFunc = DynamicCast<HazeCompilerPointerFunction>(pointerFunction);
-	for (size_t i = 0; i < params.size(); i++)
+
+	for (int64 i = params.size() - 1; i >= 0; i--)
 	{
 		auto Variable = params[i];
 
 		if (!callFunction && !pointerFunc)
 		{
-			COMPILER_ERR_MODULE_W("生成函数调用错误, 函数为空", GetName().c_str());
+			COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", GetName().c_str(),
+				callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"));
 		}
 		else
 		{
-			auto& type = callFunction ? callFunction->GetParamTypeByIndex(i) : pointerFunc->GetParamTypeByIndex(i);
+			auto& type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) : 
+				pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i);
 
 			if (type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(type))
 			{
@@ -743,17 +746,23 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 					}
 					else
 					{
-						COMPILER_ERR_MODULE_W("生成函数调用错误, 第<%d>个参数类型不匹配", GetName().c_str(), params.size() - i);
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数枚举类型不匹配", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				else
+				else if (!IsMultiVariableType(type.PrimaryType))
 				{
-					COMPILER_ERR_MODULE_W("生成函数调用错误, 第<%d>个参数类型不匹配", GetName().c_str(), params.size() - i);
+					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
+						callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 				}
 			}
 		}
+	}
 
-		//枚举入参参考下C++，是不是使用的继承的基础类型，枚举的不同类型判断只在解析层？
+	for (size_t i = 0; i < params.size(); i++)
+	{
+		auto Variable = params[i];
+
 		if (Variable->IsRef())
 		{
 			Variable = m_Compiler->CreateMovPV(m_Compiler->GetTempRegister(), Variable);
