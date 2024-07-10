@@ -351,11 +351,12 @@ void BackendParse::Parse_I_Code_FunctionTable()
 				while (m_CurrLexeme == GetFunctionVariableHeader())
 				{
 					HazeVariableData var;
+					GetNextLexmeAssign_CustomType<int>(var.Offset);
+
 					GetNextLexmeAssign_HazeString(var.Variable.Name);
 
 					var.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
 						&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
-					GetNextLexmeAssign_CustomType<int>(var.Offset);
 					GetNextLexmeAssign_CustomType<uint32>(var.Size);
 					GetNextLexmeAssign_CustomType<uint32>(var.Line);
 

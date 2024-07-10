@@ -12,6 +12,8 @@ public:
 
 	const V_Array<HazeDefineType>& GetParamTypes() const { return m_ParamTypes; }
 
+	const HazeDefineType& GetParamTypeByIndex(int index) const;
+
 private:
 	V_Array<HazeDefineType> m_ParamTypes;
 };

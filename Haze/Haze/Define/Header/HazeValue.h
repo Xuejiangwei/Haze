@@ -103,7 +103,7 @@ HazeToken GetTokenByValueType(HazeValueType type);
 
 HazeValueType GetValueTypeByToken(HazeToken token);
 
-HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2);
+HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isLog = true);
 
 bool IsNoneType(HazeValueType type);
 
@@ -130,6 +130,8 @@ bool IsPointerPointer(HazeValueType type);
 bool IsNumberType(HazeValueType type);
 
 bool IsClassType(HazeValueType type);
+
+bool IsEnumType(HazeValueType type);
 
 bool IsArrayType(HazeValueType type);
 

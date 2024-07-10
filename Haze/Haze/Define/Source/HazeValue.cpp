@@ -18,6 +18,7 @@ static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 	{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
 	{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
 	{ HazeToken::CustomClass, HazeValueType::Class},
+	{ HazeToken::CustomEnum, HazeValueType::Enum},
 	{ HazeToken::ReferenceBase, HazeValueType::ReferenceBase},
 	{ HazeToken::ReferenceClass, HazeValueType::ReferenceClass},
 	{ HazeToken::PointerBase, HazeValueType::PointerBase},
@@ -90,7 +91,7 @@ HazeValueType GetValueTypeByToken(HazeToken token)
 	return HazeValueType::None;
 }
 
-HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2)
+HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isLog)
 {
 	static HashMap<HazeValueType, Set<HazeValueType>> s_HashMap_Table =
 	{
@@ -119,8 +120,12 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2)
 		}
 	}
 
-	HAZE_LOG_ERR_W("获得更强类型错误，<%s> <%s>!\n", GetHazeValueTypeString(type1), GetHazeValueTypeString(type2));
-	return HazeValueType::Void;
+	if (isLog)
+	{
+		HAZE_LOG_ERR_W("获得更强类型错误，<%s> <%s>!\n", GetHazeValueTypeString(type1), GetHazeValueTypeString(type2));
+	}
+
+	return HazeValueType::None;
 }
 
 bool IsNoneType(HazeValueType type)
@@ -192,6 +197,11 @@ bool IsNumberType(HazeValueType type)
 bool IsClassType(HazeValueType type)
 {
 	return type == HazeValueType::Class;
+}
+
+bool IsEnumType(HazeValueType type)
+{
+	return type == HazeValueType::Enum;
 }
 
 bool IsArrayType(HazeValueType type)

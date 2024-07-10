@@ -115,6 +115,10 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 	else if (m_SectionSignal == HazeSectionSignal::Enum)
 	{
 		retValue = m_Compiler->GetEnumVariable(m_Compiler->GetCurrModule()->GetCurrEnumName(), m_DefineVariable.Name);
+		if (m_Compiler->GetCurrModule()->GetCurrEnum())
+		{
+			retValue = m_Compiler->GenConstantValue(m_Compiler->GetCurrModule()->GetCurrEnum()->GetParentType(), retValue->GetValue());
+		}
 	}
 
 	if (!m_NameSpace.empty())
@@ -323,12 +327,12 @@ Share<HazeCompilerValue> ASTVariableDefine::CodeGen()
 	else if (retValue->IsClass())
 	{
 		auto function = m_Compiler->GetCurrModule()->GetClass(retValue->GetValueType().CustomName)->FindFunction(retValue->GetValueType().CustomName);
-		V_Array<Share<HazeCompilerValue>> param;
+		V_Array<Share<HazeCompilerValue>> param(m_ArraySizeOrParams.size());
 
 		//构造参数
-		for (auto& p : m_ArraySizeOrParams)
+		for (int i = 0; i < m_ArraySizeOrParams.size(); i++)
 		{
-			param.push_back(p->CodeGen());
+			param[i] = m_ArraySizeOrParams[m_ArraySizeOrParams.size() - 1 - i]->CodeGen();
 		}
 
 		m_Compiler->CreateFunctionCall(function, param, retValue);

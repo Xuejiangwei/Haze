@@ -3,8 +3,8 @@
 #include "HazeCompilerEnumValue.h"
 #include "HazeCompilerModule.h"
 
-HazeCompilerEnum::HazeCompilerEnum(HazeCompilerModule* compilerModule, HazeValueType parentType)
-	: m_Module(compilerModule), m_ParentType(parentType)
+HazeCompilerEnum::HazeCompilerEnum(HazeCompilerModule* compilerModule, const HString& name, HazeValueType parentType)
+	: m_Module(compilerModule), m_Name(name), m_ParentType(parentType)
 {
 }
 
@@ -16,7 +16,10 @@ void HazeCompilerEnum::AddEnumValue(const HString& name, Share<HazeCompilerValue
 {
 	if (!GetEnumValue(name))
 	{
-		m_EnumValues.push_back({ name, MakeShare<HazeCompilerEnumValue>(this, value) });
+		auto v = MakeShare<HazeCompilerEnumValue>(this, value);
+		auto& type = const_cast<HazeDefineType&>(v->GetValueType());
+		
+		m_EnumValues.push_back({ name, v });
 	}
 	else
 	{
@@ -32,6 +35,20 @@ Share<HazeCompilerEnumValue> HazeCompilerEnum::GetEnumValue(const HString& name)
 		{
 			return it.second;
 		}
+	}
+
+	return nullptr;
+}
+
+Share<HazeCompilerEnumValue> HazeCompilerEnum::GetEnumValueByIndex(uint64 index)
+{
+	if (index < m_EnumValues.size())
+	{
+		return m_EnumValues[index].second;
+	}
+	else
+	{
+		COMPILER_ERR_W("枚举没有<%d>个成员数", index + 1);
 	}
 
 	return nullptr;

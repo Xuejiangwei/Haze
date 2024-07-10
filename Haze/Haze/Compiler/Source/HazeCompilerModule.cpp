@@ -11,6 +11,7 @@
 #include "HazeCompilerModule.h"
 #include "HazeCompilerValue.h"
 #include "HazeCompilerPointerValue.h"
+#include "HazeCompilerPointerFunction.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerArrayValue.h"
 #include "HazeCompilerInitlistValue.h"
@@ -18,6 +19,7 @@
 #include "HazeBaseBlock.h"
 #include "HazeCompilerClass.h"
 #include "HazeCompilerEnum.h"
+#include "HazeCompilerEnumValue.h"
 
 struct PushTempRegister
 {
@@ -148,7 +150,7 @@ Share<HazeCompilerEnum> HazeCompilerModule::CreateEnum(const HString& name, Haze
 	Share<HazeCompilerEnum> compilerEnum = GetEnum(this, name);
 	if (!compilerEnum)
 	{
-		compilerEnum = MakeShare<HazeCompilerEnum>(this, baseType);
+		compilerEnum = MakeShare<HazeCompilerEnum>(this, name, baseType);
 		m_HashMap_Enums[name] = compilerEnum;
 	
 		m_CurrEnum = name;
@@ -533,6 +535,25 @@ Share<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(Share<Haze
 
 	Share<HazeCompilerValue> retValue = left;
 
+	if (left->IsConstant() && right->IsConstant())
+	{
+		if (IsNumberType(left->GetValueType().PrimaryType))
+		{
+			auto& leftValue = const_cast<HazeValue&>(left->GetValue());
+			HazeValue tempValue = leftValue;
+			auto& rightValue = const_cast<HazeValue&>(right->GetValue());
+			CalculateValueByType(left->GetValueType().PrimaryType, opCode, &rightValue, &leftValue);
+
+			retValue = m_Compiler->GenConstantValue(left->GetValueType().PrimaryType, leftValue);
+			leftValue = tempValue;
+		}
+		else
+		{
+
+		}
+		return retValue;
+	}
+
 	bool needTemp = s_HashSet_NoTemp.find(opCode) == s_HashSet_NoTemp.end();
 
 	HAZE_STRING_STREAM ss;
@@ -693,22 +714,53 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefi
 	return retValue;
 }
 
-void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HString& callName, uint32& size, 
-	V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo)
+void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompilerFunction> callFunction, Share<HazeCompilerValue> pointerFunction,
+	uint32& size, V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo)
 {
 	Share<HazeBaseBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HString strName;
 
+	auto pointerFunc = DynamicCast<HazeCompilerPointerFunction>(pointerFunction);
 	for (size_t i = 0; i < params.size(); i++)
 	{
 		auto Variable = params[i];
-		if (params[i]->IsRef())
+
+		if (!callFunction && !pointerFunc)
 		{
-			Variable = m_Compiler->CreateMovPV(m_Compiler->GetTempRegister(), params[i]);
+			COMPILER_ERR_MODULE_W("生成函数调用错误, 函数为空", GetName().c_str());
 		}
-		else if (params[i]->IsArrayElement())
+		else
 		{
-			Variable = GetArrayElementToValue(this, params[i], m_Compiler->GetTempRegister());
+			auto& type = callFunction ? callFunction->GetParamTypeByIndex(i) : pointerFunc->GetParamTypeByIndex(i);
+
+			if (type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(type))
+			{
+				if (Variable->IsEnum())
+				{
+					auto enumValue = DynamicCast<HazeCompilerEnumValue>(Variable);
+					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetParentType() == type.PrimaryType)
+					{
+					}
+					else
+					{
+						COMPILER_ERR_MODULE_W("生成函数调用错误, 第<%d>个参数类型不匹配", GetName().c_str(), params.size() - i);
+					}
+				}
+				else
+				{
+					COMPILER_ERR_MODULE_W("生成函数调用错误, 第<%d>个参数类型不匹配", GetName().c_str(), params.size() - i);
+				}
+			}
+		}
+
+		//枚举入参参考下C++，是不是使用的继承的基础类型，枚举的不同类型判断只在解析层？
+		if (Variable->IsRef())
+		{
+			Variable = m_Compiler->CreateMovPV(m_Compiler->GetTempRegister(), Variable);
+		}
+		else if (Variable->IsArrayElement())
+		{
+			Variable = GetArrayElementToValue(this, Variable, m_Compiler->GetTempRegister());
 		}
 
 		hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
@@ -739,7 +791,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HString& ca
 			{
 				if (!GetGlobalVariableName(this, thisPointerTo, strName))
 				{
-					COMPILER_ERR_MODULE_W("生成函数<%s>调用错误,没有找到调用类对象变量", GetName().c_str(), callName.c_str());
+					COMPILER_ERR_MODULE_W("生成函数调用错误,没有找到调用类对象变量", GetName().c_str());
 				}
 			}
 		}
@@ -747,7 +799,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, const HString& ca
 		{
 			if (!GetGlobalVariableName(this, thisPointerTo, strName))
 			{
-				COMPILER_ERR_MODULE_W("生成函数<%s>调用错误,没有找到调用类对象全局变量", GetName().c_str(), callName.c_str());
+				COMPILER_ERR_MODULE_W("生成函数调用错误,没有找到调用类对象全局变量", GetName().c_str());
 			}
 		}
 
@@ -811,7 +863,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 	uint32 size = 0;
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
-	FunctionCall(hss, callFunction->GetName(), size, params, thisPointerTo);
+	FunctionCall(hss, callFunction, nullptr, size, params, thisPointerTo);
 
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::Function) 
 		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << std::endl;
@@ -844,7 +896,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 
-	FunctionCall(hss, varName, size, params, thisPointerTo);
+	FunctionCall(hss, nullptr, pointerFunction, size, params, thisPointerTo);
 
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::PointerFunction) << " "
 		<< CAST_SCOPE(pointerFunction->GetVariableScope())  << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << params.size()

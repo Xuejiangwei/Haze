@@ -92,6 +92,24 @@ struct HazeDefineType
 
 	bool StringStreamTo(HAZE_STRING_STREAM& hss) const { return StringStreamTo(hss, *this); }
 
+	bool IsStrongerType(const HazeDefineType& type) const
+	{
+		if (*this != type)
+		{
+			if (type.PrimaryType != PrimaryType)
+			{
+				auto strongerType = GetStrongerType(PrimaryType, type.PrimaryType, false);
+				return strongerType == HazeValueType::None ? false : strongerType == PrimaryType;
+			}
+			else
+			{
+				return IsPointerType(PrimaryType) && type.SecondaryType == HazeValueType::Void;
+			}
+		}
+
+		return true;
+	}
+
 	void PointerTo(const HazeDefineType& type)
 	{
 		if (IsPointerPointer(type.PrimaryType))
@@ -181,6 +199,12 @@ struct HazeDefineType
 
 	static bool StringStreamTo(HAZE_STRING_STREAM& hss, const HazeDefineType& type)
 	{
+		if (IsEnumType(type.PrimaryType))
+		{
+			hss << CAST_TYPE(type.SecondaryType);
+			return true;
+		}
+
 		hss << CAST_TYPE(type.PrimaryType);
 
 		/*if (Type.PrimaryType == HazeValueType::MultiVariable)

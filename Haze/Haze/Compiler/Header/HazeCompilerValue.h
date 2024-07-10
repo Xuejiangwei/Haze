@@ -85,7 +85,9 @@ public:
 
 	bool IsArray() const { return IsArrayType(m_ValueType.PrimaryType); }
 
-	bool IsClass() const { return m_ValueType.PrimaryType == HazeValueType::Class; }
+	bool IsClass() const { return IsClassType(m_ValueType.PrimaryType); }
+
+	virtual bool IsEnum() const { return false; }
 
 public:
 	virtual uint32 GetSize();

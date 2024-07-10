@@ -358,18 +358,15 @@ bool HazeCompiler::IsClass(const HString& name)
 	return false;
 }
 
-const HChar* HazeCompiler::GetClassName(const HString& name)
+bool HazeCompiler::IsEnum(const HString& name)
 {
-	for (auto& iter : m_CompilerModules)
+	auto& currModule = GetCurrModule();
+	if (currModule.get()->GetEnum(currModule.get(), name))
 	{
-		auto compilerClass = iter.second->GetClass(name);
-		if (compilerClass)
-		{
-			return compilerClass->GetName().c_str();
-		}
+		return true;
 	}
 
-	return nullptr;
+	return false;
 }
 
 bool HazeCompiler::IsTemplateClass(const HString& name)

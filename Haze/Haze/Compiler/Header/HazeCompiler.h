@@ -44,7 +44,7 @@ public:
 
 	bool IsClass(const HString& name);
 
-	const HChar* GetClassName(const HString& name);
+	bool IsEnum(const HString& name);
 
 	bool IsTemplateClass(const HString& name);
 

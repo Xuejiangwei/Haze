@@ -155,7 +155,8 @@ private:
 	//static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const Share<HazeCompilerValue>& Value, int Index = -1);
 
 private:
-	void FunctionCall(HAZE_STRING_STREAM& hss, const HString& callName, uint32& size, V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo);
+	void FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompilerFunction> callFunction, Share<HazeCompilerValue> pointerFunction, 
+		uint32& size, V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo);
 
 	void GenCodeFile();
 

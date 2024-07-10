@@ -7,6 +7,7 @@
 #include "HazeCompilerClass.h"
 #include "HazeCompilerFunction.h"
 #include "HazeBaseBlock.h"
+#include "HazeLogDefine.h"
 
 HazeCompilerFunction::HazeCompilerFunction(HazeCompilerModule* compilerModule, const HString& name, 
 	HazeDefineType& type, V_Array<HazeDefineVariable>& params, HazeCompilerClass* compilerClass)
@@ -169,11 +170,12 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 			HAZE_LOG_ERR_W("函数<%s>生成中间代码错误，未能找到参数临时变量!\n", m_Name.c_str());
 			return;
 		}
-		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
+		size -= m_LocalVariables[i].first->GetSize();
+		
+		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 
-		size -= m_LocalVariables[i].first->GetSize();
-		hss << " " << size << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << std::endl;
+		hss << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << std::endl;
 	}
 
 	size = 0;
@@ -181,9 +183,9 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	for (size_t i = m_Params.size(); i < m_LocalVariables.size(); i++)
 	{
 		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);
-		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << LocalVariableName;
+		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
-		hss << " " << size << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << std::endl;
+		hss << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << std::endl;
 		size += m_LocalVariables[i].first->GetSize();
 	}
 
@@ -283,6 +285,19 @@ bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* value,
 void HazeCompilerFunction::AddLocalVariable(Share<HazeCompilerValue> value, int line)
 {
 	m_LocalVariables.push_back({ value, line });
+}
+
+const HazeDefineType& HazeCompilerFunction::GetParamTypeByIndex(int index)
+{
+	if (index < m_Params.size())
+	{
+		return m_Params[index].second->GetValueType();
+	}
+	else
+	{
+		COMPILER_ERR_W("获得函数的第<%d>个参数错误", m_Params.size() - 1 - index);
+		return m_Params[0].second->GetValueType();
+	}
 }
 
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)

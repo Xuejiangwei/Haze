@@ -59,6 +59,8 @@ public:
 
 	void AddLocalVariable(Share<HazeCompilerValue> value, int line);
 
+	const HazeDefineType& GetParamTypeByIndex(int index);
+
 private:
 	void AddFunctionParam(const HazeDefineVariable& variable);
 

@@ -16,7 +16,7 @@
 {
     空 测试主函数(整数 甲, 整数 乙)
     {
-        文件 我的文件("C:\\Users\\WIN10\\Desktop\\ConsoleApplication1\\tt.txt", 文件操作方式::读写)
+        文件 我的文件("C:\\Users\\WIN10\\Desktop\\ConsoleApplication1\\tt.txt", 文件操作方式::只写贰)
         //字符 第一个字符 = 25125
         //我的文件之写入字符(第一个字符)
         //第一个字符 = 我的文件之读取字符()

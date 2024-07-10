@@ -10,6 +10,7 @@
 #include "HazeCompilerPointerFunction.h"
 #include "HazeCompilerRefValue.h"
 #include "HazeCompilerClassValue.h"
+#include "HazeCompilerEnum.h"
 #include "HazeCompilerEnumValue.h"
 #include "HazeLogDefine.h"
 
@@ -32,7 +33,11 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, HazeCompilerValue* value, bool 
 	if (bStreamValue)
 	{
 		const auto& v = value->GetValue();
-		switch (value->GetValueType().PrimaryType)
+
+		HazeValueType type = value->IsEnum() ? value->GetValueType().SecondaryType : 
+			value->GetValueType().PrimaryType;
+
+		switch (type)
 		{
 		case HazeValueType::Bool:
 			hss << v.Value.Bool;
@@ -131,8 +136,11 @@ Share<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* compilerModule, 
 			return MakeShare<HazeCompilerClassValue>(compilerModule, type, scope, desc, count);
 		}
 	}
-	/*case HazeValueType::Enum:
-		return MakeShare<HazeCompilerEnumValue>(compilerModule, type, scope, desc, count);*/
+	case HazeValueType::Enum:
+	{
+		auto enumValue = compilerModule->GetEnum(compilerModule, type.CustomName).get();
+		return MakeShare<HazeCompilerEnumValue>(enumValue, compilerModule, type, scope, desc, count, assignValue);
+	}
 	default:
 		break;
 	}

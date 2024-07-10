@@ -565,6 +565,10 @@ HazeToken Parse::GetNextToken()
 	{
 		m_CurrToken = HazeToken::CustomClass;
 	}
+	else if (m_Compiler->IsEnum(m_CurrLexeme))
+	{
+		m_CurrToken = HazeToken::CustomEnum;
+	}
 	else
 	{
 		m_CurrToken = HazeToken::Identifier;
@@ -708,6 +712,7 @@ Unique<ASTBase> Parse::ParsePrimary()
 	case HazeToken::PointerPointer:
 		return ParseVariableDefine();
 	case HazeToken::Identifier:
+	case HazeToken::CustomEnum:
 		return ParseIdentifer();
 	case HazeToken::Number:
 		return ParseNumberExpression();
@@ -817,10 +822,10 @@ Unique<ASTBase> Parse::ParseIdentifer()
 	{
 		if (ExpectNextTokenIs(HazeToken::Identifier)) 
 		{
-			HString nameSpace = m_CurrLexeme;
+			HString name = m_CurrLexeme;
 			GetNextToken();
 			return MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
-				identiferName, indexExpression, nameSpace);
+				name, indexExpression, identiferName);
 		}
 	}
 	else
@@ -2442,6 +2447,11 @@ void Parse::GetValueType(HazeDefineType& inType)
 		{
 			GetTemplateClassName(inType.CustomName, *m_TemplateRealTypes);
 		}
+	}
+		break;
+	case HazeToken::CustomEnum:
+	{
+		inType.CustomName = m_CurrLexeme;
 	}
 		break;
 	case HazeToken::ReferenceBase:
