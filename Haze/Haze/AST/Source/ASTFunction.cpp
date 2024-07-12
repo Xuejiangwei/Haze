@@ -13,8 +13,9 @@
 ASTFunction::ASTFunction(HazeCompiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation,
 	HazeSectionSignal section, HString& name, HazeDefineType& type, V_Array<Unique<ASTBase>>& params,
 	Unique<ASTBase>& body) 
-	: m_Compiler(compiler), m_StartLocation(startLocation), m_EndLocation(endLocation), m_Section(section), m_FunctionName(std::move(name)),m_FunctionType(std::move(type)),
-	m_FunctionParams(std::move(params)), m_Body(std::move(body))
+	: m_Compiler(compiler), m_StartLocation(startLocation), m_EndLocation(endLocation), m_Section(section), 
+	m_FunctionName(Move(name)),m_FunctionType(Move(type)),
+	m_FunctionParams(Move(params)), m_Body(Move(body))
 {
 }
 
@@ -91,7 +92,7 @@ void ASTFunction::RegisterFunction()
 }
 
 ASTFunctionSection::ASTFunctionSection(HazeCompiler* compiler,/* const SourceLocation& Location,*/ V_Array<Unique<ASTFunction>>& functions)
-	: m_Compiler(compiler), m_Functions(std::move(functions))
+	: m_Compiler(compiler), m_Functions(Move(functions))
 {
 }
 
@@ -114,7 +115,7 @@ void ASTFunctionSection::CodeGen()
 
 ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ const HString& name, 
 	HazeDefineType& type, V_Array<Unique<ASTBase>>& params)
-	: m_Compiler(compiler), m_FunctionName(name), m_FunctionType(type), m_FunctionParams(std::move(params))
+	: m_Compiler(compiler), m_FunctionName(name), m_FunctionType(type), m_FunctionParams(Move(params))
 {
 }
 
@@ -144,7 +145,7 @@ void ASTFunctionDefine::CodeGen()
 
 ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* compiler, /*const SourceLocation& Location,*/ 
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTFunction>>>>& functions)
-	: m_Compiler(compiler), m_Functions(std::move(functions))
+	: m_Compiler(compiler), m_Functions(Move(functions))
 {
 }
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "HazeHeader.h"
-#include <unordered_set>
 #include "HazeVariable.h"
 
 class HazeCompiler;
@@ -49,7 +48,7 @@ public:
 
 	Unique<HazeCompiler>& GetCompiler() { return m_Compiler; }
 
-	const std::unordered_set<HString>& GetReferenceModules() const { return HashSet_RefModule; }
+	const HashSet<HString>& GetReferenceModules() const { return HashSet_RefModule; }
 
 public:
 	const HString* GetModuleNameByCurrFunction();
@@ -88,11 +87,11 @@ private:
 
 private:
 	//HashMap<HString, Unique<Module>> MapModule;
-	std::unordered_set<HString> MapString;
+	HashSet<HString> MapString;
 
 	Unique<HazeStack> VMStack;
 
-	std::unordered_set<HString> HashSet_RefModule;
+	HashSet<HString> HashSet_RefModule;
 
 private:
 	V_Array<ModuleData> Vector_ModuleData;

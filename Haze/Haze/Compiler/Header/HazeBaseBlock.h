@@ -66,7 +66,7 @@ private:
 	HazeBaseBlock* m_LoopEndBlock;
 	HazeBaseBlock* m_LoopStepBlock;
 
-	std::list<Share<HazeBaseBlock>> m_ChildBlocks;
+	List<Share<HazeBaseBlock>> m_ChildBlocks;
 
 	V_Array<Pair<HString, Share<HazeCompilerValue>>> m_Allocas;
 

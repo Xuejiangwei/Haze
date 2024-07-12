@@ -12,7 +12,7 @@ HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* compilerModul
 	: HazeCompilerValue(compilerModule, defineType, scope, desc, count)
 {
 	m_OwnerClass = compilerModule->GetClass(defineType.CustomName).get();
-	m_Data = std::move(CreateVariableCopyClassMember(compilerModule, scope, m_OwnerClass));
+	m_Data = Move(CreateVariableCopyClassMember(compilerModule, scope, m_OwnerClass));
 }
 
 HazeCompilerClassValue::~HazeCompilerClassValue()

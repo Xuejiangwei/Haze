@@ -15,8 +15,8 @@ extern int g_ClassInheritLevelLimit;
 
 ASTClass::ASTClass(HazeCompiler* compiler,/* const SourceLocation& Location,*/ HString& name, V_Array<HString>& parentClass,
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data, Unique<ASTClassFunctionSection>& functionSection)
-	: m_Compiler(compiler), m_ClassName(std::move(name)), m_ParentClasses(std::move(parentClass)), m_ClassDatas(std::move(data)), 
-		m_ClassFunctionSection(std::move(functionSection))
+	: m_Compiler(compiler), m_ClassName(Move(name)), m_ParentClasses(Move(parentClass)),
+	m_ClassDatas(Move(data)), m_ClassFunctionSection(Move(functionSection))
 {
 }
 
@@ -89,7 +89,8 @@ void ASTClass::CodeGen()
 
 ASTClassDefine::ASTClassDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HString& name,
 	V_Array<V_Array<Unique<ASTBase>>>& datas, V_Array<Unique<ASTFunctionDefine>>& functions)
-	: m_Compiler(compiler), m_ClassName(std::move(name)), m_ClassDatas(std::move(datas)), m_ClassFunctions(std::move(functions))
+	: m_Compiler(compiler), m_ClassName(Move(name)), m_ClassDatas(Move(datas)), 
+	m_ClassFunctions(Move(functions))
 {
 }
 

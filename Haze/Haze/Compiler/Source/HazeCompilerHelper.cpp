@@ -167,10 +167,10 @@ V_Array<Pair<HazeDataDesc, V_Array<Share<HazeCompilerValue>>>> CreateVariableCop
 		{
 			auto& var = it.second[i].second;
 			members.back().second[i] = CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0,
-				var->IsRef() ? std::dynamic_pointer_cast<HazeCompilerRefValue>(var)->GetRefValue() : var,
-				var->IsArray() ? std::dynamic_pointer_cast<HazeCompilerArrayValue>(var)->GetArraySize() :
+				var->IsRef() ? DynamicCast<HazeCompilerRefValue>(var)->GetRefValue() : var,
+				var->IsArray() ? DynamicCast<HazeCompilerArrayValue>(var)->GetArraySize() :
 				V_Array<Share<HazeCompilerValue>>{},
-				var->IsPointerFunction() ? &const_cast<V_Array<HazeDefineType>&>(std::dynamic_pointer_cast<HazeCompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
+				var->IsPointerFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<HazeCompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
 		}
 	}
 
@@ -184,7 +184,7 @@ V_Array<Pair<HazeDataDesc, V_Array<Share<HazeCompilerValue>>>> CreateVariableCop
 
 void StreamPointerValue(HAZE_STRING_STREAM& hss, Share<HazeCompilerValue> value)
 {
-	auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(value);
+	auto pointerValue = DynamicCast<HazeCompilerPointerValue>(value);
 	if (value->GetValueType().PrimaryType == HazeValueType::PointerBase)
 	{
 		hss << " " << (uint32)pointerValue->GetValueType().PrimaryType;
@@ -197,7 +197,7 @@ void StreamPointerValue(HAZE_STRING_STREAM& hss, Share<HazeCompilerValue> value)
 
 void StreamClassValue(HAZE_STRING_STREAM& hss, Share<HazeCompilerValue> value)
 {
-	auto classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(value);
+	auto classValue = DynamicCast<HazeCompilerClassValue>(value);
 	hss << " " << classValue->GetOwnerClassName();
 }
 
@@ -264,7 +264,7 @@ Share<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* compiler
 		outObjectName = inName.substr(0, pos);
 		outMemberName = inName.substr(pos + HString(HAZE_CLASS_POINTER_ATTR).size());
 
-		auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
+		auto pointerValue = DynamicCast<HazeCompilerPointerValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
 		auto compilerClass = compilerModule->GetClass(pointerValue->GetValueType().CustomName);
 
 		Share<HazeCompilerClassValue> classValue = nullptr;
@@ -288,14 +288,14 @@ Share<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* compiler
 			outObjectName = inName.substr(0, pos);
 			outMemberName = inName.substr(pos + HString(HAZE_CLASS_ATTR).size());
 
-			auto classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
+			auto classValue = DynamicCast<HazeCompilerClassValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
 			if (classValue)
 			{
 				return classValue->GetMember(outMemberName);
 			}
 			else
 			{
-				classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(HazeCompilerModule::GetGlobalVariable(compilerModule, outObjectName));
+				classValue = DynamicCast<HazeCompilerClassValue>(HazeCompilerModule::GetGlobalVariable(compilerModule, outObjectName));
 				if (classValue)
 				{
 					return classValue->GetMember(outMemberName);
@@ -347,7 +347,7 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunc
 			findVariable = HazeCompilerModule::GetGlobalVariable(compilerModule, outObjectName);
 		}
 
-		auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(findVariable);
+		auto pointerValue = DynamicCast<HazeCompilerPointerValue>(findVariable);
 		if (pointerValue)
 		{
 			auto compilerClass = compilerModule->GetClass(pointerValue->GetValueType().CustomName);
@@ -373,7 +373,7 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunc
 				findVariable = HazeCompilerModule::GetGlobalVariable(compilerModule, outObjectName);
 			}
 
-			auto classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(findVariable);
+			auto classValue = DynamicCast<HazeCompilerClassValue>(findVariable);
 			if (classValue)
 			{
 				return { classValue->GetOwnerClass()->FindFunction(outFunctionName), findVariable };
@@ -424,7 +424,7 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Shar
 		}
 		else if (data.second->IsClass())
 		{
-			auto compilerClass = std::dynamic_pointer_cast<HazeCompilerClassValue>(data.second);
+			auto compilerClass = DynamicCast<HazeCompilerClassValue>(data.second);
 			compilerClass->GetMemberName(value, outName);
 			if (!outName.empty())
 			{

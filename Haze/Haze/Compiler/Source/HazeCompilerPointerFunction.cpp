@@ -9,7 +9,7 @@ HazeCompilerPointerFunction::HazeCompilerPointerFunction(HazeCompilerModule* com
 {
 	if (paramTypes)
 	{
-		m_ParamTypes = std::move(*paramTypes);
+		m_ParamTypes = Move(*paramTypes);
 	}
 }
 

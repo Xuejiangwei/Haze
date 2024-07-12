@@ -8,7 +8,7 @@
 
 HazeCompilerClass::HazeCompilerClass(HazeCompilerModule* compilerModule, const HString& name, V_Array<HazeCompilerClass*>& parentClass,
 	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>>& data)
-	: m_Module(compilerModule), m_Name(name), m_ParentClass(std::move(parentClass)), m_Data(std::move(data))
+	: m_Module(compilerModule), m_Name(name), m_ParentClass(Move(parentClass)), m_Data(Move(data))
 {
 	m_DataSize = 0;
 	if (this->m_ParentClass.size() > 0)
@@ -69,13 +69,13 @@ Share<HazeCompilerFunction> HazeCompilerClass::AddFunction(Share<HazeCompilerFun
 
 void HazeCompilerClass::InitThisValue()
 {
-	m_NewPointerToValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
+	m_NewPointerToValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
 		H_TEXT("")), HazeVariableScope::None, HazeDataDesc::ClassThis, 0));
 	
-	m_ThisClassValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
+	m_ThisClassValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
 		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 
-	m_ThisPointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, m_Name),
+	m_ThisPointerValue = DynamicCast<HazeCompilerPointerValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, m_Name),
 		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 }
 
@@ -209,7 +209,7 @@ uint32 HazeCompilerClass::GetAlignSize()
 		{
 			if (iter.second->IsClass())
 			{
-				uint32 classAlignSize = std::dynamic_pointer_cast<HazeCompilerClassValue>(iter.second)->GetOwnerClass()->GetAlignSize();
+				uint32 classAlignSize = DynamicCast<HazeCompilerClassValue>(iter.second)->GetOwnerClass()->GetAlignSize();
 				if (classAlignSize > maxMemberSize)
 				{
 					maxMemberSize = classAlignSize;

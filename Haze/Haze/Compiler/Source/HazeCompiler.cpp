@@ -979,7 +979,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateArrayElement(Share<HazeCompilerValu
 
 	if (value->IsArray())
 	{
-		auto arrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(value);
+		auto arrayValue = DynamicCast<HazeCompilerArrayValue>(value);
 
 		HazeDefineType type(arrayValue->GetValueType().SecondaryType, arrayValue->GetValueType().CustomName);
 		if (IsArrayPointerType(arrayValue->GetValueType().PrimaryType))
@@ -1004,7 +1004,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateArrayElement(Share<HazeCompilerValu
 	}
 	else if (value->IsPointer())
 	{
-		auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(value);
+		auto pointerValue = DynamicCast<HazeCompilerPointerValue>(value);
 		if (pointerValue)
 		{
 			return MakeShare<HazeCompilerArrayElementValue>(GetCurrModule().get(), HazeDefineType(pointerValue->GetValueType().SecondaryType,
@@ -1059,8 +1059,8 @@ Share<HazeCompilerValue> HazeCompiler::CreatePointerToArray(Share<HazeCompilerVa
 
 Share<HazeCompilerValue> HazeCompiler::CreatePointerToArrayElement(Share<HazeCompilerValue> elementValue)
 {
-	auto arrayElementValue = std::dynamic_pointer_cast<HazeCompilerArrayElementValue>(elementValue);
-	auto arrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(arrayElementValue->GetArray()->GetShared());
+	auto arrayElementValue = DynamicCast<HazeCompilerArrayElementValue>(elementValue);
+	auto arrayValue = DynamicCast<HazeCompilerArrayValue>(arrayElementValue->GetArray()->GetShared());
 
 	if (arrayValue)
 	{

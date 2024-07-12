@@ -2,7 +2,7 @@
 #include "ASTTemplateBase.h"
 
 ASTTemplateBase::ASTTemplateBase(V_Array<HString>& templateTypes)
-	: m_TemplateTypes(std::move(templateTypes))
+	: m_TemplateTypes(Move(templateTypes))
 {
 }
 

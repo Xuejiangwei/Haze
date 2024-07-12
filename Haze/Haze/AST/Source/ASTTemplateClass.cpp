@@ -15,8 +15,9 @@ ASTTemplateClass::ASTTemplateClass(HazeCompiler* compiler, HString& name, V_Arra
 	V_Array<HString>& templateTypes,
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data,
 	Unique<ASTClassFunctionSection>& functionSection)
-	: ASTTemplateBase(templateTypes),  m_Compiler(compiler), m_ClassName(std::move(name)), m_ParentClasses(std::move(parentClass)),
-	  m_ClassDatas(std::move(data)), m_ClassFunctionSection(std::move(functionSection))
+	: ASTTemplateBase(templateTypes),  m_Compiler(compiler), m_ClassName(Move(name)),
+	m_ParentClasses(Move(parentClass)), m_ClassDatas(Move(data)),
+	m_ClassFunctionSection(Move(functionSection))
 {
 }
 

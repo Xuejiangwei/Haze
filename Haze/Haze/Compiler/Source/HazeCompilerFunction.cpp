@@ -117,7 +117,7 @@ Share<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HString& v
 
 	if (!ret && m_OwnerClass)
 	{
-		ret = std::dynamic_pointer_cast<HazeCompilerClassValue>(m_OwnerClass->GetThisPointerToValue())->GetMember(variableName);
+		ret = DynamicCast<HazeCompilerClassValue>(m_OwnerClass->GetThisPointerToValue())->GetMember(variableName);
 	}
 
 	return ret;

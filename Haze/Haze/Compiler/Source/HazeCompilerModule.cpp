@@ -233,7 +233,8 @@ void HazeCompilerModule::StartCacheTemplate(HString& templateName, uint32 startL
 	auto iter = m_HashMap_TemplateText.find(templateName);
 	if (iter == m_HashMap_TemplateText.end())
 	{
-		m_HashMap_TemplateText.insert({ std::move(templateName), { startLine, std::move(templateText), std::move(templateTypes) } });
+		m_HashMap_TemplateText.insert({ Move(templateName), { startLine, Move(templateText),
+			Move(templateTypes) } });
 	}
 }
 
@@ -478,8 +479,8 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateDec(Share<HazeCompilerValue> 
 
 Share<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(Share<HazeCompilerValue> array, Share<HazeCompilerValue> initList)
 {
-	auto arrayValue = std::dynamic_pointer_cast<HazeCompilerArrayValue>(array);
-	auto initListValue = std::dynamic_pointer_cast<HazeCompilerInitListValue>(initList);
+	auto arrayValue = DynamicCast<HazeCompilerArrayValue>(array);
+	auto initListValue = DynamicCast<HazeCompilerInitListValue>(initList);
 
 	HAZE_STRING_STREAM hss;
 	HString varName;
@@ -513,7 +514,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(Share<HazeCompilerV
 
 Share<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, InstructionOpCode opCode)
 {
-	static std::unordered_set<InstructionOpCode> s_HashSet_NoTemp =
+	static HashSet<InstructionOpCode> s_HashSet_NoTemp =
 	{
 		InstructionOpCode::MOV,
 		InstructionOpCode::MOVPV,
@@ -815,14 +816,12 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 		hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
 		if (thisPointerTo->IsPointerClass())
 		{
-
-			//auto pointerValue = std::dynamic_pointer_cast<HazeCompilerPointerValue>(thisPointerTo);
 			hss << strName << " " << CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " <<//CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
 				CAST_TYPE(HazeValueType::PointerClass) << " " << thisPointerTo->GetValueType().CustomName;
 		}
 		else if (thisPointerTo->IsClass())
 		{
-			auto classValue = std::dynamic_pointer_cast<HazeCompilerClassValue>(thisPointerTo);
+			auto classValue = DynamicCast<HazeCompilerClassValue>(thisPointerTo);
 			hss << strName << " " << CAST_SCOPE(classValue->GetVariableScope()) << " " << CAST_TYPE(HazeDataDesc::ClassThis) << " " <<
 				CAST_TYPE(HazeValueType::PointerClass) << " " << classValue->GetOwnerClassName();
 		}

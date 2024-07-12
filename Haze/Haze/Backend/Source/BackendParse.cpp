@@ -121,7 +121,7 @@ void BackendParse::Parse()
 
 		HString Content(std::istreambuf_iterator<HChar>(fs), {});
 
-		codeText = std::move(Content);
+		codeText = Move(Content);
 		m_CurrCode = codeText.c_str();
 
 		Parse_I_Code();
@@ -343,7 +343,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					param.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
 						&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
-					table.m_Functions[i].Params.push_back(std::move(param));
+					table.m_Functions[i].Params.push_back(Move(param));
 
 					GetNextLexeme();
 				}
@@ -360,7 +360,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					GetNextLexmeAssign_CustomType<uint32>(var.Size);
 					GetNextLexmeAssign_CustomType<uint32>(var.Line);
 
-					table.m_Functions[i].Variables.push_back(std::move(var));
+					table.m_Functions[i].Variables.push_back(Move(var));
 					GetNextLexeme();
 				}
 

@@ -66,7 +66,7 @@ Share<HazeCompilerValue> ASTNumber::CodeGen()
 }
 
 ASTStringText::ASTStringText(HazeCompiler* compiler, const SourceLocation& location, HString& text) 
-	: ASTBase(compiler, location), m_Text(std::move(text))
+	: ASTBase(compiler, location), m_Text(Move(text))
 {
 }
 
@@ -160,7 +160,8 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 
 ASTFunctionCall::ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 	HString& name, V_Array<Unique<ASTBase>>& functionParam)
-	: ASTBase(compiler, location), m_SectionSignal(section), m_Name(std::move(name)), m_FunctionParam(std::move(functionParam))
+	: ASTBase(compiler, location), m_SectionSignal(section), m_Name(Move(name)),
+	m_FunctionParam(Move(functionParam))
 {
 }
 
@@ -215,12 +216,12 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 ASTVariableDefine::ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, V_Array<Unique<ASTBase>> arraySizeOrParams,
 	int pointerLevel, V_Array<HazeDefineType>* paramType)
-	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(std::move(expression)), 
-		m_ArraySizeOrParams(std::move(arraySizeOrParams)), m_PointerLevel(pointerLevel)
+	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(Move(expression)),
+		m_ArraySizeOrParams(Move(arraySizeOrParams)), m_PointerLevel(pointerLevel)
 {
 	if (paramType)
 	{
-		m_Vector_PointerFunctionParamType = std::move(*paramType);
+		m_Vector_PointerFunctionParamType = Move(*paramType);
 	}
 }
 
@@ -342,7 +343,7 @@ Share<HazeCompilerValue> ASTVariableDefine::CodeGen()
 }
 
 ASTReturn::ASTReturn(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
-	:ASTBase(compiler, location), m_Expression(std::move(expression))
+	:ASTBase(compiler, location), m_Expression(Move(expression))
 {
 }
 
@@ -371,7 +372,8 @@ Share<HazeCompilerValue> ASTReturn::CodeGen()
 
 ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar, V_Array<Unique<ASTBase>> countArrayExpression
 	, V_Array<Unique<ASTBase>> constructorParam)
-	: ASTBase(compiler, location, DefineVar), m_CountArrayExpression(std::move(countArrayExpression)), m_ConstructorParam(std::move(constructorParam))
+	: ASTBase(compiler, location, DefineVar), m_CountArrayExpression(Move(countArrayExpression)),
+	m_ConstructorParam(Move(constructorParam))
 {
 }
 
@@ -442,7 +444,7 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 }
 
 ASTGetAddress::ASTGetAddress(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
-	: ASTBase(compiler, location), m_Expression(std::move(expression))
+	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 }
 
@@ -481,7 +483,8 @@ Share<HazeCompilerValue> ASTGetAddress::CodeGen()
 
 ASTPointerValue::ASTPointerValue(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
 	int level, Unique<ASTBase> assignExpression)
-	: ASTBase(compiler, location), m_Expression(std::move(expression)), m_Level(level), m_AssignExpression(std::move(assignExpression))
+	: ASTBase(compiler, location), m_Expression(Move(expression)), m_Level(level),
+	m_AssignExpression(Move(assignExpression))
 {
 }
 
@@ -511,7 +514,7 @@ Share<HazeCompilerValue> ASTPointerValue::CodeGen()
 }
 
 ASTNeg::ASTNeg(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isNumberNeg)
-	: ASTBase(compiler, location), m_Expression(std::move(expression)), m_IsNumberNeg(isNumberNeg)
+	: ASTBase(compiler, location), m_Expression(Move(expression)), m_IsNumberNeg(isNumberNeg)
 {
 }
 
@@ -550,7 +553,7 @@ void ASTNullPtr::SetDefineType(const HazeDefineType& type)
 }
 
 ASTNot::ASTNot(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
-	: ASTBase(compiler, location), m_Expression(std::move(expression))
+	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 }
 
@@ -565,7 +568,7 @@ Share<HazeCompilerValue> ASTNot::CodeGen()
 
 
 ASTInc::ASTInc(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isPreInc)
-	: ASTBase(compiler, location), m_IsPreInc(isPreInc), m_Expression(std::move(expression))
+	: ASTBase(compiler, location), m_IsPreInc(isPreInc), m_Expression(Move(expression))
 {
 }
 
@@ -580,7 +583,7 @@ Share<HazeCompilerValue> ASTInc::CodeGen()
 }
 
 ASTDec::ASTDec(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isPreDec)
-	: ASTBase(compiler, location), m_IsPreDec(isPreDec), m_Expression(std::move(expression))
+	: ASTBase(compiler, location), m_IsPreDec(isPreDec), m_Expression(Move(expression))
 {
 }
 
@@ -596,7 +599,7 @@ Share<HazeCompilerValue> ASTDec::CodeGen()
 
 ASTOperetorAssign::ASTOperetorAssign(HazeCompiler* compiler, const SourceLocation& location, HazeToken token, 
 	Unique<ASTBase>& expression) 
-	: ASTBase(compiler, location), m_Token(token), m_Expression(std::move(expression))
+	: ASTBase(compiler, location), m_Token(token), m_Expression(Move(expression))
 {
 }
 
@@ -611,7 +614,7 @@ Share<HazeCompilerValue> ASTOperetorAssign::CodeGen()
 
 ASTMultiExpression::ASTMultiExpression(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	V_Array<Unique<ASTBase>>& expressions)
-	: ASTBase(compiler, location), m_SectionSignal(section), m_Expressions(std::move(expressions))
+	: ASTBase(compiler, location), m_SectionSignal(section), m_Expressions(Move(expressions))
 {
 }
 
@@ -631,8 +634,8 @@ Share<HazeCompilerValue> ASTMultiExpression::CodeGen()
 
 ASTBinaryExpression::ASTBinaryExpression(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 	HazeToken operatorToken, Unique<ASTBase>& leftAST, Unique<ASTBase>& rightAST)
-	:ASTBase(compiler, location), m_SectionSignal(section), m_OperatorToken(operatorToken), m_LeftAST(std::move(leftAST)),
-	m_RightAST(std::move(rightAST)), m_LeftBlock(nullptr), m_RightBlock(nullptr), m_DefaultBlock(nullptr)
+	:ASTBase(compiler, location), m_SectionSignal(section), m_OperatorToken(operatorToken), m_LeftAST(Move(leftAST)),
+	m_RightAST(Move(rightAST)), m_LeftBlock(nullptr), m_RightBlock(nullptr), m_DefaultBlock(nullptr)
 {
 }
 
@@ -820,8 +823,8 @@ void ASTBinaryExpression::SetLeftAndRightBlock(HazeBaseBlock* leftJmpBlock, Haze
 
 ASTThreeExpression::ASTThreeExpression(HazeCompiler* compiler, const SourceLocation& location
 	, Unique<ASTBase>& conditionAST, Unique<ASTBase>& leftAST, Unique<ASTBase>& rightAST)
-	: ASTBase(compiler, location), m_ConditionAST(std::move(conditionAST)), m_LeftAST(std::move(leftAST)), 
-		m_RightAST(std::move(rightAST))
+	: ASTBase(compiler, location), m_ConditionAST(Move(conditionAST)), m_LeftAST(Move(leftAST)),
+		m_RightAST(Move(rightAST))
 {
 }
 
@@ -916,8 +919,8 @@ Share<HazeCompilerValue> ASTContinueExpression::CodeGen()
 
 ASTIfExpression::ASTIfExpression(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
 	Unique<ASTBase>& ifExpression, Unique<ASTBase>& elseExpression)
-	: ASTBase(compiler, location),m_Condition(std::move(condition)), m_IfExpression(std::move(ifExpression)),
-		m_ElseExpression(std::move(elseExpression))
+	: ASTBase(compiler, location),m_Condition(Move(condition)), m_IfExpression(Move(ifExpression)),
+		m_ElseExpression(Move(elseExpression))
 {
 }
 
@@ -979,7 +982,7 @@ bool ASTIfExpression::HasElseExpression() const
 
 ASTWhileExpression::ASTWhileExpression(HazeCompiler* compiler, const SourceLocation& location, 
 	Unique<ASTBase>& condition, Unique<ASTBase>& multiExpression)
-	:ASTBase(compiler, location), m_Condition(std::move(condition)), m_MultiExpression(std::move(multiExpression))
+	:ASTBase(compiler, location), m_Condition(Move(condition)), m_MultiExpression(Move(multiExpression))
 {
 }
 
@@ -1023,8 +1026,8 @@ Share<HazeCompilerValue> ASTWhileExpression::CodeGen()
 ASTForExpression::ASTForExpression(HazeCompiler* compiler, const SourceLocation& location,
 	Unique<ASTBase>& initExpression, Unique<ASTBase>& conditionExpression, 
 	Unique<ASTBase>& stepExpression, Unique<ASTBase>& multiExpression)
-	: ASTBase(compiler, location), m_InitExpression(std::move(initExpression)), m_ConditionExpression(std::move(conditionExpression)),
-		m_StepExpression(std::move(stepExpression)), m_MultiExpression(std::move(multiExpression))
+	: ASTBase(compiler, location), m_InitExpression(Move(initExpression)), m_ConditionExpression(Move(conditionExpression)),
+		m_StepExpression(Move(stepExpression)), m_MultiExpression(Move(multiExpression))
 {
 }
 
@@ -1081,7 +1084,7 @@ Share<HazeCompilerValue> ASTForExpression::CodeGen()
 
 ASTInitializeList::ASTInitializeList(HazeCompiler* compiler, const SourceLocation& location, 
 	V_Array<Unique<ASTBase>>& initializeListExpression)
-	: ASTBase(compiler, location), m_InitializeListExpression(std::move(initializeListExpression))
+	: ASTBase(compiler, location), m_InitializeListExpression(Move(initializeListExpression))
 {
 }
 
@@ -1104,7 +1107,7 @@ Share<HazeCompilerValue> ASTInitializeList::CodeGen()
 }
 
 ASTCast::ASTCast(HazeCompiler* compiler, const SourceLocation& location, HazeDefineType& type, Unique<ASTBase>& expression)
-	: ASTBase(compiler, location), m_Expression(std::move(expression))
+	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 	m_DefineVariable.Type = type;
 }
@@ -1119,7 +1122,7 @@ Share<HazeCompilerValue> ASTCast::CodeGen()
 }
 
 ASTArrayLength::ASTArrayLength(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
-	: ASTBase(compiler, location), m_Expression(std::move(expression))
+	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 }
 
@@ -1133,7 +1136,7 @@ Share<HazeCompilerValue> ASTArrayLength::CodeGen()
 }
 
 ASTSizeOf::ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineType& type, Unique<ASTBase>& expression)
-	: ASTBase(compiler, location), m_Expression(std::move(expression))
+	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 	m_DefineVariable.Type = type;
 }

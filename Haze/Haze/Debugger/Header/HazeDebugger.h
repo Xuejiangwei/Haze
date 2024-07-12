@@ -100,8 +100,8 @@ private:
 	void(*m_EndCall)();
 	uint32 m_HookType;
 
-	HashMap<HString, Pair<std::unordered_set<uint32>, HString>> m_BreakPoints;
-	HashMap<HString, Pair<std::unordered_set<uint32>, HString>> m_TempBreakPoints;
+	HashMap<HString, Pair<HashSet<uint32>, HString>> m_BreakPoints;
+	HashMap<HString, Pair<HashSet<uint32>, HString>> m_TempBreakPoints;
 
 	CurrParseModuleData m_CurrPauseModule;
 	bool m_IsPause;

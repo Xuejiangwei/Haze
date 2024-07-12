@@ -21,12 +21,14 @@ enum class HazeValueType : uint32
 	UnsignedShort,
 
 	Int,
-	Float,
-	Long,
-	Double,
-
 	UnsignedInt,
+
+	Float,
+	
+	Long,
 	UnsignedLong,
+	
+	Double,
 
 	ArrayBase,
 	ArrayClass,

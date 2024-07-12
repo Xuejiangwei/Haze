@@ -32,10 +32,13 @@ bool IsCanCastToken(HazeToken token)
 	case HazeToken::Bool:
 	case HazeToken::Byte:
 	case HazeToken::Char:
+	case HazeToken::Short:
 	case HazeToken::Int:
 	case HazeToken::Float:
 	case HazeToken::Long:
 	case HazeToken::Double:
+	case HazeToken::UnsignedByte:
+	case HazeToken::UnsignedShort:
 	case HazeToken::UnsignedInt:
 	case HazeToken::UnsignedLong:
 	case HazeToken::Enum:
@@ -325,296 +328,104 @@ HAZE_BINARY_STRING ToString(void* value)
 	return ss.str();
 }
 
+
 void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2)
 {
+#define CONVERT_SET_VALUE(V, V_TYPE) switch(type2) { \
+	case HazeValueType::Byte: \
+		V = (V_TYPE)v2.Value.Byte; \
+		break; \
+	case HazeValueType::UnsignedByte: \
+		V = (V_TYPE)v2.Value.UnsignedByte; \
+		break; \
+	case HazeValueType::Char: \
+		V = (V_TYPE)v2.Value.Char; \
+		break; \
+	case HazeValueType::Short: \
+		V = (V_TYPE)v2.Value.Short; \
+		break; \
+	case HazeValueType::UnsignedShort: \
+		V = (V_TYPE)v2.Value.UnsignedShort; \
+		break; \
+	case HazeValueType::Int: \
+		V = (V_TYPE)v2.Value.Int; \
+		break; \
+	case HazeValueType::UnsignedInt: \
+		V = (V_TYPE)v2.Value.UnsignedInt; \
+		break; \
+	case HazeValueType::Float: \
+		V = (V_TYPE)v2.Value.Float; \
+		break; \
+	case HazeValueType::Long: \
+		V = (V_TYPE)v2.Value.Long; \
+		break; \
+	case HazeValueType::UnsignedLong: \
+		V = (V_TYPE)v2.Value.UnsignedLong; \
+		break; \
+	case HazeValueType::Double: \
+		V = (V_TYPE)v2.Value.Double; \
+		break; \
+	default: \
+		HAZE_LOG_ERR_W("不支持<%s>类型转为<%s>类型", GetHazeValueTypeString(type2), GetHazeValueTypeString(type1)); \
+		break; \
+	} 
+
 	switch (type1)
 	{
 	case HazeValueType::Byte:
 	{
-		switch (type2)
-		{
-		case HazeValueType::UnsignedByte:
-			v1.Value.Byte = (HByte)v2.Value.UnsignedByte;
-			break;
-		case HazeValueType::Char:
-			v1.Value.Byte = (HByte)v2.Value.Char;
-			break;
-		case HazeValueType::UnsignedInt:
-			v1.Value.Byte = (HByte)v2.Value.UnsignedInt;
-			break;
-		case HazeValueType::Int:
-			v1.Value.Byte = (HByte)v2.Value.Int;
-			break;
-		case HazeValueType::Float:
-			v1.Value.Byte = (HByte)v2.Value.Float;
-			break;
-		case HazeValueType::Double:
-			v1.Value.Byte = (HByte)v2.Value.Double;
-			break;
-		case HazeValueType::Long:
-			v1.Value.Byte = (HByte)v2.Value.Long;
-			break;
-		case HazeValueType::UnsignedLong:
-			v1.Value.Byte = (HByte)v2.Value.UnsignedLong;
-			break;
-		default:
-			break;
-		}
+		CONVERT_SET_VALUE(v1.Value.Byte, HByte)
 	}
 	break;
 	case HazeValueType::UnsignedByte:
 	{
-		switch (type2)
-		{
-		case HazeValueType::Byte:
-			v1.Value.UnsignedByte = (uhbyte)v2.Value.Byte;
-			break;
-		case HazeValueType::Char:
-			v1.Value.UnsignedByte = (uhbyte)v2.Value.Char;
-			break;
-		case HazeValueType::UnsignedInt:
-			v1.Value.UnsignedByte = (uhbyte)v2.Value.UnsignedInt;
-			break;
-		case HazeValueType::Int:
-			v1.Value.UnsignedByte = (uhbyte)v2.Value.Int;
-			break;
-		case HazeValueType::Float:
-			v1.Value.UnsignedByte = (uhbyte)v2.Value.Float;
-			break;
-		case HazeValueType::Double:
-			v1.Value.UnsignedByte = (uhbyte)v2.Value.Double;
-			break;
-		case HazeValueType::Long:
-			v1.Value.UnsignedByte = (uhbyte)v2.Value.Long;
-			break;
-		case HazeValueType::UnsignedLong:
-			v1.Value.UnsignedByte = (uhbyte)v2.Value.UnsignedLong;
-			break;
-		default:
-			break;
-		}
+		CONVERT_SET_VALUE(v1.Value.UnsignedByte, uhbyte)
 	}
 	break;
 	case HazeValueType::Char:
 	{
-		switch (type2)
-		{
-		case HazeValueType::Byte:
-			v1.Value.Char = (HChar)v2.Value.Byte;
-			break;
-		case HazeValueType::UnsignedByte:
-			v1.Value.Char = (HChar)v2.Value.UnsignedByte;
-			break;
-		case HazeValueType::UnsignedInt:
-			v1.Value.Char = (HChar)v2.Value.UnsignedInt;
-			break;
-		case HazeValueType::Int:
-			v1.Value.Char = (HChar)v2.Value.Int;
-			break;
-		case HazeValueType::Float:
-			v1.Value.Char = (HChar)v2.Value.Float;
-			break;
-		case HazeValueType::Double:
-			v1.Value.Char = (HChar)v2.Value.Double;
-			break;
-		case HazeValueType::Long:
-			v1.Value.Char = (HChar)v2.Value.Long;
-			break;
-		case HazeValueType::UnsignedLong:
-			v1.Value.Char = (HChar)v2.Value.UnsignedLong;
-			break;
-		default:
-			break;
-		}
+		CONVERT_SET_VALUE(v1.Value.Char, HChar)
 	}
 		break;
+	case HazeValueType::Short:
+	{
+		CONVERT_SET_VALUE(v1.Value.Short, short)
+	}
+	break;
+	case HazeValueType::UnsignedShort:
+	{
+		CONVERT_SET_VALUE(v1.Value.UnsignedShort, ushort)
+	}
+	break;
 	case HazeValueType::Int:
 	{
-		switch (type2)
-		{
-		case HazeValueType::Byte:
-			v1.Value.Int = (int)v2.Value.Byte;
-			break;
-		case HazeValueType::UnsignedByte:
-			v1.Value.Int = (int)v2.Value.UnsignedByte;
-			break;
-		case HazeValueType::Char:
-			v1.Value.Int = (int)v2.Value.Char;
-			break;
-		case HazeValueType::UnsignedInt:
-			v1.Value.Int = (int)v2.Value.UnsignedInt;
-			break;
-		case HazeValueType::Float:
-			v1.Value.Int = (int)v2.Value.Float;
-			break;
-		case HazeValueType::Double:
-			v1.Value.Int = (int)v2.Value.Double;
-			break;
-		case HazeValueType::Long:
-			v1.Value.Int = (int)v2.Value.Long;
-			break;
-		case HazeValueType::UnsignedLong:
-			v1.Value.Int = (int)v2.Value.UnsignedLong;
-			break;
-		default:
-			break;
-		}
+		CONVERT_SET_VALUE(v1.Value.Int, int)
+	}
+		break;
+	case HazeValueType::UnsignedInt:
+	{
+		CONVERT_SET_VALUE(v1.Value.Int, int)
 	}
 		break;
 	case HazeValueType::Float:
-		switch (type2)
-		{
-		case HazeValueType::Byte:
-			v1.Value.Float = (float)v2.Value.Byte;
-			break;
-		case HazeValueType::UnsignedByte:
-			v1.Value.Float = (float)v2.Value.UnsignedByte;
-			break;
-		case HazeValueType::Char:
-			v1.Value.Float = (float)v2.Value.Char;
-			break;
-		case HazeValueType::UnsignedInt:
-			v1.Value.Float = (float)v2.Value.UnsignedInt;
-			break;
-		case HazeValueType::Int:
-			v1.Value.Float = (float)v2.Value.Int;
-			break;
-		case HazeValueType::Double:
-			v1.Value.Float = (float)v2.Value.Double;
-			break;
-		case HazeValueType::Long:
-			v1.Value.Float = (float)v2.Value.Long;
-			break;
-		case HazeValueType::UnsignedLong:
-			v1.Value.Float = (float)v2.Value.UnsignedLong;
-			break;
-		default:
-			break;
-		}
+	{
+		CONVERT_SET_VALUE(v1.Value.Float, float)
+	}
 		break;
 	case HazeValueType::Long:
-		switch (type2)
-		{
-		case HazeValueType::Byte:
-			v1.Value.Long = (int64)v2.Value.Byte;
-			break;
-		case HazeValueType::UnsignedByte:
-			v1.Value.Long = (int64)v2.Value.UnsignedByte;
-			break;
-		case HazeValueType::Char:
-			v1.Value.Long = (int64)v2.Value.Char;
-			break;
-		case HazeValueType::UnsignedInt:
-			v1.Value.Long = (int64)v2.Value.UnsignedInt;
-			break;
-		case HazeValueType::Int:
-			v1.Value.Long = (int64)v2.Value.Int;
-			break;
-		case HazeValueType::Float:
-			v1.Value.Long = (int64)v2.Value.Float;
-			break;
-		case HazeValueType::Double:
-			v1.Value.Long = (int64)v2.Value.Double;
-			break;
-		case HazeValueType::UnsignedLong:
-			v1.Value.Long = (int64)v2.Value.UnsignedLong;
-			break;
-		default:
-			break;
-		}
-		break;
-	case HazeValueType::Double:
-		switch (type2)
-		{
-		case HazeValueType::Byte:
-			v1.Value.Double = (double)v2.Value.Byte;
-			break;
-		case HazeValueType::UnsignedByte:
-			v1.Value.Double = (double)v2.Value.UnsignedByte;
-			break;
-		case HazeValueType::Char:
-			v1.Value.Double = (double)v2.Value.Char;
-			break;
-		case HazeValueType::UnsignedInt:
-			v1.Value.Double = (double)v2.Value.UnsignedInt;
-			break;
-		case HazeValueType::Int:
-			v1.Value.Double = (double)v2.Value.Int;
-			break;
-		case HazeValueType::Float:
-			v1.Value.Double = (double)v2.Value.Float;
-			break;
-		case HazeValueType::Long:
-			v1.Value.Double = (double)v2.Value.Long;
-			break;
-		case HazeValueType::UnsignedLong:
-			v1.Value.Double = (double)v2.Value.UnsignedLong;
-			break;
-		default:
-			break;
-		}
-		break;
-	case HazeValueType::UnsignedInt:
-		switch (type2)
-		{
-		case HazeValueType::Byte:
-			v1.Value.UnsignedInt = (uint32)v2.Value.Byte;
-			break;
-		case HazeValueType::UnsignedByte:
-			v1.Value.UnsignedInt = (uint32)v2.Value.UnsignedByte;
-			break;
-		case HazeValueType::Char:
-			v1.Value.UnsignedInt = (uint32)v2.Value.Char;
-			break;
-		case HazeValueType::Int:
-			v1.Value.UnsignedInt = (uint32)v2.Value.Int;
-			break;
-		case HazeValueType::Float:
-			v1.Value.UnsignedInt = (uint32)v2.Value.Float;
-			break;
-		case HazeValueType::Double:
-			v1.Value.UnsignedInt = (uint32)v2.Value.Double;
-			break;
-		case HazeValueType::Long:
-			v1.Value.UnsignedInt = (uint32)v2.Value.Long;
-			break;
-		case HazeValueType::UnsignedLong:
-			v1.Value.UnsignedInt = (uint32)v2.Value.UnsignedLong;
-			break;
-		default:
-			break;
-		}
+	{
+		CONVERT_SET_VALUE(v1.Value.Long, int64)
+	}
 		break;
 	case HazeValueType::UnsignedLong:
-		switch (type2)
-		{
-		case HazeValueType::Byte:
-			v1.Value.UnsignedLong = (uint64)v2.Value.Byte;
-			break;
-		case HazeValueType::UnsignedByte:
-			v1.Value.UnsignedLong = (uint64)v2.Value.UnsignedByte;
-			break;
-		case HazeValueType::Char:
-			v1.Value.UnsignedLong = (uint64)v2.Value.Char;
-			break;
-		case HazeValueType::UnsignedInt:
-			v1.Value.UnsignedLong = (uint64)v2.Value.UnsignedInt;
-			break;
-		case HazeValueType::Int:
-			v1.Value.UnsignedLong = (uint64)v2.Value.Int;
-			break;
-		case HazeValueType::Float:
-			v1.Value.UnsignedLong = (uint64)v2.Value.Float;
-			break;
-		case HazeValueType::Double:
-			v1.Value.UnsignedLong = (uint64)v2.Value.Double;
-			break;
-		case HazeValueType::Long:
-			v1.Value.UnsignedLong = (uint64)v2.Value.Long;
-			break;
-		default:
-			break;
-		}
+	{
+		CONVERT_SET_VALUE(v1.Value.UnsignedLong, int64)
+	}
+	break; 
+	case HazeValueType::Double:
+	{
+		CONVERT_SET_VALUE(v1.Value.Double, double)
+	}
 		break;
 	default:
 		break;

@@ -10,13 +10,16 @@ static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 	{ HazeToken::Void, HazeValueType::Void },
 	{ HazeToken::Bool, HazeValueType::Bool },
 	{ HazeToken::Byte, HazeValueType::Byte },
+	{ HazeToken::UnsignedByte, HazeValueType::UnsignedByte },
+	{ HazeToken::Short, HazeValueType::Short },
+	{ HazeToken::UnsignedShort, HazeValueType::UnsignedShort },
 	{ HazeToken::Char, HazeValueType::Char },
 	{ HazeToken::Int, HazeValueType::Int },
+	{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
 	{ HazeToken::Float, HazeValueType::Float },
 	{ HazeToken::Long, HazeValueType::Long },
-	{ HazeToken::Double, HazeValueType::Double },
-	{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
 	{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
+	{ HazeToken::Double, HazeValueType::Double },
 	{ HazeToken::CustomClass, HazeValueType::Class},
 	{ HazeToken::CustomEnum, HazeValueType::Enum},
 	{ HazeToken::ReferenceBase, HazeValueType::ReferenceBase},
@@ -25,7 +28,6 @@ static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 	{ HazeToken::PointerClass, HazeValueType::PointerClass},
 	{ HazeToken::PointerPointer, HazeValueType::PointerPointer},
 	{ HazeToken::MultiVariable, HazeValueType::MultiVariable},
-	//{ HazeToken::V_Array, HazeValueType::V_Array }
 };
 
 uint32 GetSizeByHazeType(HazeValueType type)
@@ -34,16 +36,19 @@ uint32 GetSizeByHazeType(HazeValueType type)
 	{
 	case HazeValueType::Bool:
 	case HazeValueType::Byte:
+	case HazeValueType::UnsignedByte:
 		return 1;
 	case HazeValueType::Char:
+	case HazeValueType::Short:
+	case HazeValueType::UnsignedShort:
 		return 2;
 	case HazeValueType::Int:
-	case HazeValueType::Float:
 	case HazeValueType::UnsignedInt:
+	case HazeValueType::Float:
 		return 4;
 	case HazeValueType::Long:
-	case HazeValueType::Double:
 	case HazeValueType::UnsignedLong:
+	case HazeValueType::Double:
 	case HazeValueType::PointerBase:
 	case HazeValueType::PointerClass:
 	case HazeValueType::PointerFunction:
@@ -190,7 +195,7 @@ bool IsPointerPointer(HazeValueType type)
 
 bool IsNumberType(HazeValueType type)
 {
-	static std::unordered_set<HazeValueType> HashSet_Table =
+	static HashSet<HazeValueType> HashSet_Table =
 	{
 		HazeValueType::Int, HazeValueType::Float, HazeValueType::Long, HazeValueType::Double,
 		HazeValueType::UnsignedInt, HazeValueType::UnsignedLong, HazeValueType::Char, HazeValueType::Byte, HazeValueType::UnsignedByte

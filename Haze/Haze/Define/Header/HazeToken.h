@@ -14,11 +14,14 @@ enum class HazeToken : unsigned int
 
 	Char,
 
+	Short,
 	Int,
 	Float,
 	Long,
 	Double,
 
+	UnsignedByte,
+	UnsignedShort,
 	UnsignedInt,
 	UnsignedLong,
 
