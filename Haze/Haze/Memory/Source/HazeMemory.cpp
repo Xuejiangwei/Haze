@@ -122,16 +122,16 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, c
 {
 	switch (type.PrimaryType)
 	{
-	case HazeValueType::PointerBase:
+	/*case HazeValueType::PointerBase:
 		m_MarkAddressBases.push_back({ { startAddress, type.SecondaryType }, GC_State::Gray });
 		break;
 	case HazeValueType::PointerClass:
 		m_MarkAddressClasses.push_back({ { startAddress, m_VM->FindClass(type.CustomName) }, GC_State::Gray });
-		break;
+		break;*/
 	case HazeValueType::Class:
-		MarkClassMember(m_VM->FindClass(type.CustomName), classAddress);
+		MarkClassMember(m_VM->FindClass(*type.CustomName), classAddress);
 		break;
-	case HazeValueType::ArrayBase:
+	case HazeValueType::Array:
 	{
 		uint64 size = m_VM->GetRegisterArrayLength(startAddress) * GetSizeByHazeType(type.SecondaryType);
 
@@ -146,65 +146,65 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, c
 		m_MarkAddressArrays.push_back({ { startAddress, size }, GC_State::Gray });
 	}
 		break;
-	case HazeValueType::ArrayClass:
-	{
-		auto classData = m_VM->FindClass(type.CustomName);
-		for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
-		{
-			MarkClassMember(classData, (char*)startAddress + classData->Size * i);
-		}
-
-		uint64 size = m_VM->GetRegisterArrayLength(startAddress) * classData->Size;
-
-#ifdef _DEBUG
-		if (size == 0)
-		{
-			GC_ERR_W("基本类型数组长度为0");
-			return;
-		}
-#endif // _DEBUG
-
-		m_MarkAddressArrays.push_back({ { startAddress, size }, GC_State::Gray });
-	}
-	break;
-	case HazeValueType::ArrayPointer:
-	{
-		uint64 address;
-		if (IsHazeDefaultTypeAndVoid(type.SecondaryType))
-		{
-			for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
-			{
-				memcpy(&address, (char*)startAddress + sizeof(char*) * i, sizeof(char*));
-				m_MarkAddressBases.push_back({ { address, type.SecondaryType }, GC_State::Gray });
-			}
-		}
-		else if (IsClassType(type.SecondaryType))
-		{
-			auto classData = m_VM->FindClass(type.CustomName);
-			for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
-			{
-				memcpy(&address, (char*)startAddress + sizeof(char*) * i, sizeof(char*));
-				m_MarkAddressClasses.push_back({ {address, m_VM->FindClass(type.CustomName) }, GC_State::Gray });
-			}
-		}
-		else
-		{
-			GC_ERR_W("指针数组指向错误的类型");
-			return;
-		}
-
-		uint64 size = m_VM->GetRegisterArrayLength(startAddress) * sizeof(char*);
-
-#ifdef _DEBUG
-		if (size == 0)
-		{
-			GC_ERR_W("基本类型数组长度为0");
-			return;
-		}
-#endif // _DEBUG
-
-		m_MarkAddressArrays.push_back({ { startAddress, size }, GC_State::Gray });
-	}
+//	case HazeValueType::ArrayClass:
+//	{
+//		auto classData = m_VM->FindClass(type.CustomName);
+//		for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
+//		{
+//			MarkClassMember(classData, (char*)startAddress + classData->Size * i);
+//		}
+//
+//		uint64 size = m_VM->GetRegisterArrayLength(startAddress) * classData->Size;
+//
+//#ifdef _DEBUG
+//		if (size == 0)
+//		{
+//			GC_ERR_W("基本类型数组长度为0");
+//			return;
+//		}
+//#endif // _DEBUG
+//
+//		m_MarkAddressArrays.push_back({ { startAddress, size }, GC_State::Gray });
+//	}
+//	break;
+//	case HazeValueType::ArrayPointer:
+//	{
+//		uint64 address;
+//		if (IsHazeBaseTypeAndVoid(type.SecondaryType))
+//		{
+//			for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
+//			{
+//				memcpy(&address, (char*)startAddress + sizeof(char*) * i, sizeof(char*));
+//				m_MarkAddressBases.push_back({ { address, type.SecondaryType }, GC_State::Gray });
+//			}
+//		}
+//		else if (IsClassType(type.SecondaryType))
+//		{
+//			auto classData = m_VM->FindClass(type.CustomName);
+//			for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
+//			{
+//				memcpy(&address, (char*)startAddress + sizeof(char*) * i, sizeof(char*));
+//				m_MarkAddressClasses.push_back({ {address, m_VM->FindClass(type.CustomName) }, GC_State::Gray });
+//			}
+//		}
+//		else
+//		{
+//			GC_ERR_W("指针数组指向错误的类型");
+//			return;
+//		}
+//
+//		uint64 size = m_VM->GetRegisterArrayLength(startAddress) * sizeof(char*);
+//
+//#ifdef _DEBUG
+//		if (size == 0)
+//		{
+//			GC_ERR_W("基本类型数组长度为0");
+//			return;
+//		}
+//#endif // _DEBUG
+//
+//		m_MarkAddressArrays.push_back({ { startAddress, size }, GC_State::Gray });
+//	}
 	break;
 	default:
 		break;

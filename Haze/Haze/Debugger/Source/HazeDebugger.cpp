@@ -43,79 +43,73 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 		json = Value;
 	}
 	break;
-	case HazeValueType::Byte:
+	case HazeValueType::Int8:
 	{
-		HByte Value;
+		int8 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
-	case HazeValueType::UnsignedByte:
+	case HazeValueType::UInt8:
 	{
-		uhbyte Value;
+		uint8 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
-	case HazeValueType::Char:
+	case HazeValueType::Int16:
 	{
-		char Value;
+		int16 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
-	case HazeValueType::Short:
+	case HazeValueType::UInt16:
 	{
-		short Value;
+		uint16 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
-	case HazeValueType::UnsignedShort:
+	case HazeValueType::Int32:
 	{
-		ushort Value;
+		int32 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
-	case HazeValueType::Int:
-	{
-		int Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::Float:
-	{
-		float Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::Long:
-	{
-		int64 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::Double:
-	{
-		double Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::UnsignedInt:
+	case HazeValueType::UInt32:
 	{
 		uint32 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
-	case HazeValueType::UnsignedLong:
+	case HazeValueType::Int64:
+	{
+		int64 Value;
+		memcpy(&Value, address, sizeof(Value));
+		json = Value;
+	}
+	break; 
+	case HazeValueType::UInt64:
 	{
 		uint64 Value;
+		memcpy(&Value, address, sizeof(Value));
+		json = Value;
+	}
+	break;
+	case HazeValueType::Float32:
+	{
+		float32 Value;
+		memcpy(&Value, address, sizeof(Value));
+		json = Value;
+	}
+	break;
+	
+	case HazeValueType::Float64:
+	{
+		float64 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
@@ -473,40 +467,13 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 
 	if (IsClassType(variable.Variable.Type.PrimaryType))
 	{
-		auto classData = m_VM->FindClass(variable.Variable.Type.CustomName);
-		s_String = WString2String(variable.Variable.Type.CustomName);
+		auto classData = m_VM->FindClass(*variable.Variable.Type.CustomName);
+		s_String = WString2String(*variable.Variable.Type.CustomName);
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
 
 		for (size_t j = 0; j < classData->Members.size(); j++)
 		{
 			SetJsonVariableData(json["Value"][j], classData->Members[j], dataAddress);
-		}
-	}
-	else if (IsPointerType(variable.Variable.Type.PrimaryType))
-	{
-		s_String = WString2String(H_TEXT("Ö¸Õë"));
-		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-
-		uint64 value;
-		memcpy(&value, dataAddress, sizeof(value));
-		json["Value"] = ToString((void*)value);
-
-		if (variable.Variable.Type.NeedCustomName())
-		{
-			auto classData = m_VM->FindClass(variable.Variable.Type.CustomName);
-			s_String = WString2String(variable.Variable.Type.CustomName);
-			json["TypeClass"] = GB2312_2_UFT8(s_String.c_str());
-
-			for (size_t j = 0; j < classData->Members.size(); j++)
-			{
-				SetJsonVariableData(json["PointerValue"][j], classData->Members[j], (const char*)value, false);
-			}
-		}
-
-		if (variable.Variable.Type.NeedSecondaryType())
-		{
-			s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.SecondaryType));
-			json["SubType"] = GB2312_2_UFT8(s_String.c_str());
 		}
 	}
 	else if (IsArrayType(variable.Variable.Type.PrimaryType))
@@ -519,7 +486,7 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 
 		int size = GetSizeByType(variable.Variable.Type, m_VM);
 
-		if (variable.Variable.Type.CustomName.empty())
+		if (variable.Variable.Type.CustomName->empty())
 		{
 			for (int i = 0; i < (int)variable.Size / size; i++)
 			{
@@ -535,15 +502,6 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 				SetJsonVariableData(json["Value"][i], variable, dataAddress + size * i);
 			}
 		}
-	}
-	else if (IsReferenceType(variable.Variable.Type.PrimaryType))
-	{
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.PrimaryType));
-		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-
-		uint64 value;
-		memcpy(&value, address, sizeof(value));
-		json["Value"] = value;
 	}
 	else
 	{

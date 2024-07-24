@@ -6,18 +6,10 @@
 
 #define TOKEN_VOID						H_TEXT("空")
 #define TOKEN_BOOL						H_TEXT("布尔")
-#define TOKEN_CHAR						H_TEXT("字符")
-#define TOKEN_BYTE						H_TEXT("字节")
-#define TOKEN_SHORT						H_TEXT("双字节")
-#define TOKEN_INT						H_TEXT("整数")
-#define TOKEN_FLOAT						H_TEXT("小数")
-#define TOKEN_LONG						H_TEXT("长整数")
-#define TOKEN_DOUBLE					H_TEXT("长小数")
 
-#define TOKEN_UNSIGNED_BYTE				H_TEXT("正字节")
-#define TOKEN_UNSIGNED_SHORT			H_TEXT("正双字节")
+#define TOKEN_INT						H_TEXT("整数")
 #define TOKEN_UNSIGNED_INT				H_TEXT("正整数")
-#define TOKEN_UNSIGNED_LONG				H_TEXT("正长整数")
+#define TOKEN_FLOAT						H_TEXT("小数")
 
 #define TOKEN_ARRAY_START				H_TEXT("[")
 #define TOKEN_ARRAY_END					H_TEXT("]")
@@ -26,16 +18,24 @@
 
 #define TOKEN_CLASS						H_TEXT("类")
 #define TOKEN_CLASS_DATA				H_TEXT("数据")
-#define TOKEN_CLASS_DATA_PUBLIC			H_TEXT("公")
-#define TOKEN_CLASS_DATA_PRIVATE		H_TEXT("私")
-#define TOKEN_CLASS_DATA_PROTECTED		H_TEXT("共")
+#define TOKEN_CLASS_DATA_PUBLIC			H_TEXT("显")
+#define TOKEN_CLASS_DATA_PRIVATE		H_TEXT("隐")
+
+#define TOKEN_UNION						H_TEXT("合")
 
 #define TOKEN_FUNCTION					H_TEXT("函数")
 
 #define TOKEN_ENUM						H_TEXT("枚举")
 
+#define TOKEN_STRING					H_TEXT("字符")
+
+#define TOKEN_DEDUCTION					H_TEXT("设")
+
 #define TOKEN_TRUE						H_TEXT("真")
 #define TOKEN_FALSE						H_TEXT("假")
+
+#define TOKEN_THIS						H_TEXT("己")
+#define TOKEN_CLASS_ATTR				H_TEXT("->")
 
 #define TOKEN_ADD						H_TEXT("+")
 #define TOKEN_SUB						H_TEXT("-")
@@ -92,7 +92,6 @@
 #define TOKEN_ELSE						H_TEXT("否则")
 
 #define TOKEN_FOR						H_TEXT("循环")
-#define TOKEN_FOR_STEP					H_TEXT("步进")
 
 #define TOKEN_BREAK						H_TEXT("跳出")
 #define TOKEN_CONTINUE					H_TEXT("跳过")
@@ -107,7 +106,7 @@
 
 #define TOKEN_DEFINE					H_TEXT("定义")
 
-#define TOKEN_STANDARD_LIBRARY			H_TEXT("标准库")
+#define TOKEN_STATIC_LIBRARY			H_TEXT("静态库")
 #define TOKEN_DLL_LIBRARY				H_TEXT("动态库")
 #define TOKEN_IMPORT_MODULE				H_TEXT("引")
 
@@ -124,3 +123,14 @@
 #define TOKEN_SIZE_OF					H_TEXT("字节大小")
 
 #define TOKEN_TWO_COLON					H_TEXT("::")
+
+#define TOKEN_INT_8						TOKEN_INT H_TEXT("8")
+#define TOKEN_UINT_8					TOKEN_UNSIGNED_INT H_TEXT("8")
+#define TOKEN_INT_16					TOKEN_INT H_TEXT("16")
+#define TOKEN_UINT_16					TOKEN_UNSIGNED_INT H_TEXT("16")
+#define TOKEN_INT_32					TOKEN_INT H_TEXT("32")
+#define TOKEN_UINT_32					TOKEN_UNSIGNED_INT H_TEXT("32")
+#define TOKEN_INT_64					TOKEN_INT H_TEXT("64")
+#define TOKEN_UINT_64					TOKEN_UNSIGNED_INT H_TEXT("64")
+#define TOKEN_FLOAT_32					TOKEN_FLOAT H_TEXT("32")
+#define TOKEN_FLOAT_64					TOKEN_FLOAT H_TEXT("64")

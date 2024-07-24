@@ -45,7 +45,7 @@ Share<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& d
 {
 	HAZE_STRING_STREAM hss;
 	hss << GetInstructionString(InstructionOpCode::NEW) << " " << NEW_REGISTER << " " << CAST_TYPE(data.PrimaryType) << " ";
-	if (data.CustomName.empty())
+	if (data.CustomName->empty())
 	{
 		hss << CAST_TYPE(data.SecondaryType);
 	}
@@ -57,11 +57,11 @@ Share<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& d
 	hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
 	if (countValue)
 	{
-		HazeCompilerModule::GenVariableHzic(m_Module, hss, countValue);
+		GenVariableHzic(m_Module, hss, countValue);
 	}
 	else
 	{
-		HazeCompilerModule::GenVariableHzic(m_Module, hss, m_Module->GetCompiler()->GetConstantValueUint64(0));
+		GenVariableHzic(m_Module, hss, m_Module->GetCompiler()->GetConstantValueUint64(0));
 	}
 
 	hss << std::endl;
@@ -89,15 +89,6 @@ Share<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HString& v
 				break;
 			}
 			else if (value.second->GetValueType().PrimaryType == HazeValueType::Class)
-			{
-				auto memberValue = GetObjectMember(m_Module, variableName);
-				if (memberValue)
-				{
-					ret = memberValue;
-					break;
-				}
-			}
-			else if (value.second->GetValueType().PrimaryType == HazeValueType::PointerClass)
 			{
 				auto memberValue = GetObjectMember(m_Module, variableName);
 				if (memberValue)
@@ -341,16 +332,15 @@ const HazeDefineType& HazeCompilerFunction::GetParamTypeLeftToRightByIndex(uint6
 	}
 	else
 	{
-		if (m_Params.size() > 0 && IsMultiVariableType(m_Params[0].second->GetValueType().PrimaryType))
-		{
-
-		}
-		else if (index > 0)
+		if (index > 0)
 		{
 			COMPILER_ERR_W("函数<%s>从左往右，获得函数的第<%d>个参数错误", m_Name.c_str(), index);
+			return m_Params[0].second->GetValueType();
 		}
-
-		return m_Params[0].second->GetValueType();
+		else
+		{
+			return HazeDefineType();
+		}
 	}
 }
 

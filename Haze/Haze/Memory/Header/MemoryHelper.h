@@ -1,3 +1,3 @@
 #pragma once
 
-int64 RoundUp(int64 byteSize);
+uint64 RoundUp(int64 byteSize);

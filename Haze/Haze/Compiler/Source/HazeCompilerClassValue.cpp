@@ -11,7 +11,7 @@ HazeCompilerClassValue::HazeCompilerClassValue(HazeCompilerModule* compilerModul
 	HazeVariableScope scope, HazeDataDesc desc, int count)
 	: HazeCompilerValue(compilerModule, defineType, scope, desc, count)
 {
-	m_OwnerClass = compilerModule->GetClass(defineType.CustomName).get();
+	m_OwnerClass = compilerModule->GetClass(*defineType.CustomName).get();
 	m_Data = Move(CreateVariableCopyClassMember(compilerModule, scope, m_OwnerClass));
 }
 

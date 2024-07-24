@@ -30,12 +30,7 @@ using HString = std::wstring;
 #define HAZE_FILE_PATH_BIN				H_TEXT("Bin\\")
 #define HAZE_FILE_MAIN_BIN				H_TEXT("Main.Hzb")
 #define HAZE_MODULE_PATH_CONBINE		H_TEXT("·")
-
-#define HAZE_CLASS_THIS					H_TEXT("己")
-#define HAZE_CLASS_POINTER_ATTR			H_TEXT("指之")
-#define HAZE_CLASS_ATTR					H_TEXT("之")
-
-#define HAZE_DEFAULT_MAIN_FUNCTION_TEXT	H_TEXT("主函数")
+#define HAZE_INTER_SYMBOL_TABLE			H_TEXT("InterSymbol")
 
 #define HAZE_CONSTANT_STRING_NAME		H_TEXT("常字符串指针")
 
@@ -59,6 +54,8 @@ using HString = std::wstring;
 #define HAZE_LOCAL_VARIABLE_CONBINE		H_TEXT("$")
 
 #define HAZE_CLASS_FUNCTION_CONBINE		H_TEXT("@")
+
+#define HAZE_TEMPLATE_CONBINE			H_TEXT("&")
 
 #define BLOCK_ENTRY_NAME				H_TEXT("Entry")
 #define BLOCK_START						H_TEXT("Block")
@@ -116,11 +113,19 @@ using HString = std::wstring;
 using HByte = char;
 using HChar = wchar_t;
 
-using uint8 = unsigned char;
 using uchar = unsigned char;
 using uhbyte = unsigned char;
-using ushort = unsigned short;
+
+using int8 = char;
+using uint8 = unsigned char;
+using int16 = short;
+using uint16 = unsigned short;
+using int32 = int;
 using uint32 = unsigned int;
 using int64 = long long;
 using uint64 = unsigned long long;
+
+using float32 = float;
+using float64 = double;
+
 using usize = size_t;

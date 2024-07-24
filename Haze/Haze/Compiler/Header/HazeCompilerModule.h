@@ -101,8 +101,6 @@ public:
 
 	static bool GetGlobalVariableName(HazeCompilerModule* m, const Share<HazeCompilerValue>& value, HString& outName);
 
-	static void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const Share<HazeCompilerValue>& value, int index = -1);
-
 	static Share<HazeCompilerEnum> GetEnum(HazeCompilerModule* m, const HString& name);
 
 private:

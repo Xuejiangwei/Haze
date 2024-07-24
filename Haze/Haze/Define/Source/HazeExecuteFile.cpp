@@ -75,6 +75,41 @@ private:
 	HazeFileFormat Format;
 };
 
+inline void WriteType(Unique<HAZE_BINARY_OFSTREAM>& fileStream, const HazeDefineType& type)
+{
+	fileStream->write(HAZE_WRITE_AND_SIZE(type.PrimaryType));
+
+	if (type.NeedSecondaryType())
+	{
+		fileStream->write(HAZE_WRITE_AND_SIZE(type.SecondaryType));
+	}
+
+	if (type.NeedCustomName())
+	{
+		auto n = (uint32)s_BinaryString.size();
+		fileStream->write(HAZE_WRITE_AND_SIZE(n));
+		fileStream->write(s_BinaryString.c_str(), n);
+	}
+}
+
+inline void HazeExecuteFile::ReadType(HazeVM* vm, Unique<HAZE_BINARY_IFSTREAM>& fileStream, HazeDefineType& type)
+{
+	fileStream->read(HAZE_READ(type.PrimaryType));
+
+	if (type.NeedSecondaryType())
+	{
+		fileStream->read(HAZE_READ(type.SecondaryType));
+	}
+
+	if (type.NeedCustomName())
+	{
+		uint32 n = 0;
+		fileStream->read(HAZE_READ(n));
+		fileStream->read(s_BinaryString.data(), n);
+		type.CustomName = vm->GetSymbolClassName(String2WString(s_BinaryString));
+	}
+}
+
 HazeExecuteFile::HazeExecuteFile(ExeFileType type)
 {
 	if (type == ExeFileType::Out)
@@ -215,21 +250,7 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& ta
 
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Size));
 
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Type.PrimaryType));
-
-		if (iter.Type.NeedSecondaryType())
-		{
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Type.SecondaryType));
-		}
-
-		if (iter.Type.NeedCustomName())
-		{
-			s_BinaryString = WString2String(iter.Type.CustomName);
-			number = (uint32)s_BinaryString.size();
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
-			m_FileStream->write(s_BinaryString.c_str(), number);
-		}
-
+		WriteType(m_FileStream, iter.Type);
 		if (!(iter.Type.NeedCustomName() || iter.Type.NeedSecondaryType()))
 		{
 			m_FileStream->write(GetBinaryPointer(iter.Type.PrimaryType, iter.Value), iter.Size);
@@ -279,14 +300,7 @@ void HazeExecuteFile::WriteClassTable(const ModuleUnit::ClassTable& table)
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 			m_FileStream->write(s_BinaryString.data(), number);
 
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Members[i].Variable.Type.PrimaryType));
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Members[i].Variable.Type.SecondaryType));
-
-			s_BinaryString = WString2String(HString(iter.Members[i].Variable.Type.CustomName));
-			number = (uint32)s_BinaryString.size();
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
-			m_FileStream->write(s_BinaryString.data(), number);
-
+			WriteType(m_FileStream, iter.Members[i].Variable.Type);
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Members[i].Offset));
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Members[i].Size));
 		}
@@ -309,13 +323,7 @@ uint32 HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& tabl
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 			m_FileStream->write(s_BinaryString.data(), number);
 
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(function.Type.PrimaryType));
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(function.Type.SecondaryType));
-			s_BinaryString = WString2String(function.Type.CustomName);
-			number = (uint32)s_BinaryString.size();
-			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
-			m_FileStream->write(s_BinaryString.c_str(), number);
-
+			WriteType(m_FileStream, function.Type);
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(function.DescType));
 
 			number = (uint32)function.Params.size();
@@ -326,13 +334,7 @@ uint32 HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& tabl
 				number = (uint32)s_BinaryString.size();
 				m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 				m_FileStream->write(s_BinaryString.c_str(), number);
-
-				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Type.PrimaryType));
-				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Type.SecondaryType));
-				s_BinaryString = WString2String(iter.Type.CustomName);
-				number = (uint32)s_BinaryString.size();
-				m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
-				m_FileStream->write(s_BinaryString.c_str(), number);
+				WriteType(m_FileStream, iter.Type);
 			}
 
 			number = (uint32)function.Variables.size();
@@ -343,14 +345,8 @@ uint32 HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& tabl
 				number = (uint32)s_BinaryString.size();
 				m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 				m_FileStream->write(s_BinaryString.c_str(), number);
-
-				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Variable.Type.PrimaryType));
-				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Variable.Type.SecondaryType));
-				s_BinaryString = WString2String(iter.Variable.Type.CustomName);
-				number = (uint32)s_BinaryString.size();
-				m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
-				m_FileStream->write(s_BinaryString.c_str(), number);
-
+				WriteType(m_FileStream, iter.Variable.Type);
+				
 				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Offset));
 				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Size));
 				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Line));
@@ -409,19 +405,12 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 		m_FileStream->write(s_BinaryString.data(), number);											//操作数名字
 
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Scope));										//操作数作用域
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Desc));										//操作数数据描述
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Desc));											//操作数数据描述
+		WriteType(m_FileStream, iter.Variable.Type);
 
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Variable.Type.PrimaryType));					//操作数类型
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Variable.Type.SecondaryType));				//操作数类型子类型
-		s_BinaryString = WString2String(iter.Variable.Type.CustomName);
-		number = (uint32)s_BinaryString.size();
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
-		m_FileStream->write(s_BinaryString.data(), number);											//操作数类型名
-
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.AddressType));								//操作数取址类型
-
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Index));								//操作数索引
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Address.Offset));						//操作数地址偏移
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.AddressType));									//操作数取址类型
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Index));									//操作数索引
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Address.Offset));							//操作数地址偏移
 	}
 
 #if HAZE_INS_LOG
@@ -510,27 +499,10 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* vm)
 		int size = 0;
 		m_InFileStream->read(HAZE_READ(size));
 
-		m_InFileStream->read((char*)&globalData.m_Type.PrimaryType, sizeof(HazeValueType));
-
-		if (globalData.m_Type.NeedSecondaryType())
-		{
-			m_InFileStream->read((char*)&globalData.m_Type.SecondaryType, sizeof(HazeValueType));
-		}
-		if (globalData.m_Type.NeedCustomName())
-		{
-			m_InFileStream->read(HAZE_READ(number));
-			s_BinaryString.resize(number);
-			m_InFileStream->read(s_BinaryString.data(), number);
-			globalData.m_Type.CustomName = String2WString(s_BinaryString);
-		}
-
+		ReadType(vm, m_InFileStream, globalData.m_Type);
 		if (!(globalData.m_Type.NeedCustomName() || globalData.m_Type.NeedSecondaryType()))
 		{
 			m_InFileStream->read(GetBinaryPointer(globalData.m_Type.PrimaryType, globalData.Value), size);
-		}
-		else if (IsPointerType(globalData.m_Type.PrimaryType))
-		{
-			
 		}
 		else
 		{
@@ -585,19 +557,12 @@ void HazeExecuteFile::ReadClassTable(HazeVM* vm)
 			m_InFileStream->read(s_BinaryString.data(), number);
 			vm->Vector_ClassTable[i].Members[j].Variable.Name = String2WString(s_BinaryString);
 
-			m_InFileStream->read(HAZE_READ(vm->Vector_ClassTable[i].Members[j].Variable.Type.PrimaryType));
-			m_InFileStream->read(HAZE_READ(vm->Vector_ClassTable[i].Members[j].Variable.Type.SecondaryType));
-			m_InFileStream->read(HAZE_READ(number));
-
-			m_InFileStream->read(s_BinaryString.data(), number);
-			if (number > 0)
-			{
-				vm->Vector_ClassTable[i].Members[j].Variable.Type.CustomName = String2WString(s_BinaryString);
-			}
-
+			ReadType(vm, m_InFileStream, vm->Vector_ClassTable[i].Members[j].Variable.Type);
 			m_InFileStream->read(HAZE_READ(vm->Vector_ClassTable[i].Members[j].Offset));
 			m_InFileStream->read(HAZE_READ(vm->Vector_ClassTable[i].Members[j].Size));
 		}
+
+		vm->ResetSymbolClassIndex(vm->Vector_ClassTable[i].Name, i);
 	}
 }
 
@@ -616,13 +581,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* vm)
 		m_InFileStream->read(s_BinaryString.data(), number);
 		vm->HashMap_FunctionTable[String2WString(s_BinaryString)] = (uint32)i;
 
-		m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Type.PrimaryType));
-		m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Type.SecondaryType));
-		m_InFileStream->read(HAZE_READ(number));
-		s_BinaryString.resize(number);
-		m_InFileStream->read(s_BinaryString.data(), number);
-		vm->Vector_FunctionTable[i].Type.CustomName = String2WString(s_BinaryString);
-
+		ReadType(vm, m_InFileStream, vm->Vector_FunctionTable[i].Type);
 		m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].FunctionDescData.Type));
 
 		m_InFileStream->read(HAZE_READ(number));
@@ -634,14 +593,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* vm)
 			s_BinaryString.resize(number);
 			m_InFileStream->read(s_BinaryString.data(), number);
 			vm->Vector_FunctionTable[i].Params[j].Name = String2WString(s_BinaryString);
-
-			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Params[j].Type.PrimaryType));
-			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Params[j].Type.SecondaryType));
-
-			m_InFileStream->read(HAZE_READ(number));
-			s_BinaryString.resize(number);
-			m_InFileStream->read(s_BinaryString.data(), number);
-			vm->Vector_FunctionTable[i].Params[j].Type.CustomName = String2WString(s_BinaryString);
+			ReadType(vm, m_InFileStream, vm->Vector_FunctionTable[i].Params[j].Type);
 		}
 
 		m_InFileStream->read(HAZE_READ(number));
@@ -654,14 +606,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* vm)
 			m_InFileStream->read(s_BinaryString.data(), number);
 			vm->Vector_FunctionTable[i].Variables[j].Variable.Name = String2WString(s_BinaryString);
 
-			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Variables[j].Variable.Type.PrimaryType));
-			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Variables[j].Variable.Type.SecondaryType));
-
-			m_InFileStream->read(HAZE_READ(number));
-			s_BinaryString.resize(number);
-			m_InFileStream->read(s_BinaryString.data(), number);
-			vm->Vector_FunctionTable[i].Variables[j].Variable.Type.CustomName = String2WString(s_BinaryString);
-
+			ReadType(vm, m_InFileStream, vm->Vector_FunctionTable[i].Variables[j].Variable.Type);
 			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Variables[j].Offset));
 			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Variables[j].Size));
 			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Variables[j].Line));
@@ -685,7 +630,7 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 	for (uint64 i = 0; i < vm->Instructions.size(); i++)
 	{
 		m_InFileStream->read(HAZE_READ(vm->Instructions[i].InsCode));
-		ReadInstruction(vm->Instructions[i]);
+		ReadInstruction(vm, vm->Instructions[i]);
 	}
 
 	//重新指认std lib 函数指针
@@ -693,7 +638,7 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 	for (auto& iter : vm->HashMap_FunctionTable)
 	{
 		auto& function = vm->Vector_FunctionTable[iter.second];
-		if (function.FunctionDescData.Type == InstructionFunctionType::StdLibFunction)
+		if (function.FunctionDescData.Type == InstructionFunctionType::StaticLibFunction)
 		{
 			bool set = false;
 			for (auto& lib : stdLib)
@@ -715,29 +660,23 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 	}
 }
 
-void HazeExecuteFile::ReadInstruction(Instruction& instruction)
+void HazeExecuteFile::ReadInstruction(HazeVM* vm, Instruction& instruction)
 {
-	uint32 unsignedInt = 0;
-	m_InFileStream->read(HAZE_READ(unsignedInt));
-	instruction.Operator.resize(unsignedInt);
+	uint32 number = 0;
+	m_InFileStream->read(HAZE_READ(number));
+	instruction.Operator.resize(number);
 
 	for (auto& iter : instruction.Operator)
 	{
-		m_InFileStream->read(HAZE_READ(unsignedInt));
-		s_BinaryString.resize(unsignedInt);
-		m_InFileStream->read(s_BinaryString.data(), unsignedInt);
+		m_InFileStream->read(HAZE_READ(number));
+		s_BinaryString.resize(number);
+		m_InFileStream->read(s_BinaryString.data(), number);
 		iter.Variable.Name = String2WString(s_BinaryString);
 
 		m_InFileStream->read(HAZE_READ(iter.Scope));
 		m_InFileStream->read(HAZE_READ(iter.Desc));
 
-		m_InFileStream->read(HAZE_READ(iter.Variable.Type.PrimaryType));
-		m_InFileStream->read(HAZE_READ(iter.Variable.Type.SecondaryType));
-		m_InFileStream->read(HAZE_READ(unsignedInt));
-		s_BinaryString.resize(unsignedInt);
-		m_InFileStream->read(s_BinaryString.data(), unsignedInt);
-		iter.Variable.Type.CustomName = String2WString(s_BinaryString);
-
+		ReadType(vm, m_InFileStream, iter.Variable.Type);
 		m_InFileStream->read(HAZE_READ(iter.AddressType));
 
 		m_InFileStream->read(HAZE_READ(iter.Extra.Index));

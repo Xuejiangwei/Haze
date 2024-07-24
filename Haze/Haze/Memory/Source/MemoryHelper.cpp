@@ -6,7 +6,7 @@ static int64 _RoundUp(int64 bytes, int64 alignNum)
 	return (bytes + (alignNum - 1) & ~(alignNum - 1));
 }
 
-int64 RoundUp(int64 byteSize)
+uint64 RoundUp(int64 byteSize)
 {
 	if (byteSize <= 4)
 	{

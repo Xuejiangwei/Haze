@@ -20,7 +20,7 @@
 ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location) : m_Compiler(compiler), m_Location(location)
 {
 	m_DefineVariable.Name = H_TEXT("");
-	m_DefineVariable.Type = { HazeValueType::Void, H_TEXT("") };
+	m_DefineVariable.Type = { HazeValueType::Void };
 }
 
 ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& var) 
@@ -144,7 +144,7 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 			retValue = m_Compiler->CreateArrayElement(retValue, indexValue);
 		}
 	}
-	else
+	/*else
 	{
 		auto function = m_Compiler->GetCurrModule()->GetFunction(m_DefineVariable.Name);
 		if (!function.first)
@@ -153,7 +153,7 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 				m_SectionSignal == HazeSectionSignal::Local ? m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : H_TEXT("None"));
 			return nullptr;
 		}
-	}
+	}*/
 
 	return retValue;
 }
@@ -193,7 +193,7 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		{
 			if (!objectVariable)
 			{
-				objectVariable = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(HAZE_CLASS_THIS);//param.push_back(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(HAZE_CLASS_THIS));
+				objectVariable = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(TOKEN_THIS);//param.push_back(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(TOKEN_THIS));
 			}
 		}
 
@@ -214,75 +214,56 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 }
 
 ASTVariableDefine::ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, V_Array<Unique<ASTBase>> arraySizeOrParams,
-	int pointerLevel, V_Array<HazeDefineType>* paramType)
-	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(Move(expression)),
-		m_ArraySizeOrParams(Move(arraySizeOrParams)), m_PointerLevel(pointerLevel)
+	const HazeDefineVariable& defineVar, Unique<ASTBase> expression)
+	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(Move(expression))
 {
-	if (paramType)
-	{
-		m_Vector_PointerFunctionParamType = Move(*paramType);
-	}
 }
 
 ASTVariableDefine::~ASTVariableDefine()
 {
 }
 
+struct GlobalVariableInitScope
+{
+	GlobalVariableInitScope(HazeCompilerModule* m, HazeSectionSignal signal) : Module(m), Signal(signal)
+	{
+		if (Signal == HazeSectionSignal::Global)
+		{
+			Module->PreStartCreateGlobalVariable();
+		}
+	}
+
+	~GlobalVariableInitScope()
+	{
+		if (Signal == HazeSectionSignal::Global)
+		{
+			Module->EndCreateGlobalVariable();
+		}
+	}
+
+	HazeCompilerModule* Module;
+	HazeSectionSignal Signal;
+};
+
 Share<HazeCompilerValue> ASTVariableDefine::CodeGen()
 {
-	struct GlobalVariableInitScope
-	{
-		GlobalVariableInitScope(HazeCompilerModule* m, HazeSectionSignal signal) : Module(m), Signal(signal)
-		{
-			if (Signal == HazeSectionSignal::Global)
-			{
-				Module->PreStartCreateGlobalVariable();
-			}
-		}
-
-		~GlobalVariableInitScope()
-		{
-			if (Signal == HazeSectionSignal::Global)
-			{
-				Module->EndCreateGlobalVariable();
-			}
-		}
-		
-		HazeCompilerModule* Module;
-		HazeSectionSignal Signal;
-	};
-
-	Share<HazeCompilerValue> retValue = nullptr;
 	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
 	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
-	V_Array<Share<HazeCompilerValue>> sizeValue;
-	
-	if (IsArrayType(m_DefineVariable.Type.PrimaryType))
-	{
-		for (auto& iter : m_ArraySizeOrParams)
-		{
-			auto v = iter->CodeGen();
-			if (v->IsConstant())
-			{
-				sizeValue.push_back(v);
-			}
-			else
-			{
-				HAZE_LOG_ERR_W("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n", m_DefineVariable.Name.c_str(),
-					m_SectionSignal == HazeSectionSignal::Local ? currModule->GetCurrFunction()->GetName().c_str() : H_TEXT("None"));
-				return nullptr;
-			}
-		}
-	}
-	else if (!IsClassType(m_DefineVariable.Type.PrimaryType) && m_ArraySizeOrParams.size() > 0)
-	{
-		HAZE_LOG_ERR_W("变量<%s>定义失败，非数组变量传入数组变量! 当前函数<%s>\n", m_DefineVariable.Name.c_str(),
-			m_SectionSignal == HazeSectionSignal::Local ? currModule->GetCurrFunction()->GetName().c_str() : H_TEXT("None"));
-	}
-	
+	auto exprValue = GenExpressionValue();
+	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+		m_DefineVariable, m_Location.Line, exprValue);
 
+	if (m_Expression)
+	{
+		m_Compiler->CreateMov(retValue, exprValue);
+	}
+
+	return retValue;
+}
+
+Share<HazeCompilerValue> ASTVariableDefine::GenExpressionValue()
+{
 	Share<HazeCompilerValue> exprValue = nullptr;
 	if (m_Expression)
 	{
@@ -292,51 +273,134 @@ Share<HazeCompilerValue> ASTVariableDefine::CodeGen()
 		}
 
 		exprValue = m_Expression->CodeGen();
-		if (!exprValue)
+	}
+
+	return exprValue;
+}
+
+ASTVariableDefine_MultiVariable::ASTVariableDefine_MultiVariable(HazeCompiler* compiler, const SourceLocation& location)
+	: ASTBase(compiler, location)
+{
+	m_DefineVariable.Type = HazeValueType::MultiVariable;
+	m_DefineVariable.Name = HAZE_MULTI_PARAM_NAME;
+}
+
+Share<HazeCompilerValue> ASTVariableDefine_MultiVariable::CodeGen()
+{
+	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	return m_Compiler->CreateVariableBySection(HazeSectionSignal::Local, currModule, currModule->GetCurrFunction(), m_DefineVariable, m_Location.Line);
+}
+
+ASTVariableDefine_Class::ASTVariableDefine_Class(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>> params)
+	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_Params(Move(params))
+{
+	if (templateTypes.Types.size() > 0)
+	{
+		m_TemplateTypes.Types = Move(templateTypes.Types);
+	}
+}
+
+Share<HazeCompilerValue> ASTVariableDefine_Class::CodeGen()
+{
+	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
+
+	auto exprValue = GenExpressionValue();
+	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(), 
+		m_DefineVariable, m_Location.Line, exprValue);
+
+	auto function = m_Compiler->GetCurrModule()->GetClass(*retValue->GetValueType().CustomName)
+		->FindFunction(*retValue->GetValueType().CustomName);
+	V_Array<Share<HazeCompilerValue>> param(m_Params.size());
+
+	//构造参数
+	for (int i = 0; i < m_Params.size(); i++)
+	{
+		param[i] = m_Params[m_Params.size() - 1 - i]->CodeGen();
+	}
+
+	m_Compiler->CreateFunctionCall(function, param, retValue);
+	return retValue;
+}
+
+ASTVariableDefine_Array::ASTVariableDefine_Array(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>>& arraySize)
+	: ASTVariableDefine_Class(compiler, location, section, defineVar, Move(expression), templateTypes, Move(arraySize))
+{
+	if (templateTypes.Types.size() > 0)
+	{
+		m_TemplateTypes.Types = Move(templateTypes.Types);
+	}
+}
+
+Share<HazeCompilerValue> ASTVariableDefine_Array::CodeGen()
+{
+	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
+
+	auto exprValue = GenExpressionValue();
+
+	V_Array<Share<HazeCompilerValue>> sizeValue;
+
+	for (auto& iter : m_ArraySize)
+	{
+		auto v = iter->CodeGen();
+		if (v->IsConstant())
 		{
+			sizeValue.push_back(v);
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("变量<%s>定义失败，定义数组长度必须是常量! 当前函数<%s>\n", m_DefineVariable.Name.c_str(),
+				m_SectionSignal == HazeSectionSignal::Local ? currModule->GetCurrFunction()->GetName().c_str() : H_TEXT("None"));
 			return nullptr;
 		}
 	}
 
-	bool isRef = m_DefineVariable.Type.PrimaryType == HazeValueType::ReferenceBase || m_DefineVariable.Type.PrimaryType == HazeValueType::ReferenceClass;
+	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+		m_DefineVariable, m_Location.Line, exprValue, sizeValue);
 
-	if (m_SectionSignal == HazeSectionSignal::Global)
-	{
-		retValue = m_Compiler->CreateGlobalVariable(currModule, m_DefineVariable, exprValue, sizeValue, &m_Vector_PointerFunctionParamType);
-	}
-	else if (m_SectionSignal == HazeSectionSignal::Local)
-	{
-		retValue = m_Compiler->CreateLocalVariable(currModule->GetCurrFunction(), m_DefineVariable, m_Location.Line, exprValue, sizeValue, &m_Vector_PointerFunctionParamType);
-		m_Compiler->InsertLineCount(m_Location.Line);
-	}
-	else if (m_SectionSignal == HazeSectionSignal::Class)
-	{
-		retValue = m_Compiler->CreateClassVariable(currModule, m_DefineVariable, exprValue, sizeValue, &m_Vector_ClassTemplateType);
-	}
+	return Share<HazeCompilerValue>();
+}
 
-	if (retValue && exprValue)
+
+ASTVariableDefine_Function::ASTVariableDefine_Function(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes)
+	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression))
+{
+	if (templateTypes.Types.size() > 0)
 	{
-		if (isRef)
+		m_TemplateTypes.Types = Move(templateTypes.Types);
+	}
+}
+
+Share<HazeCompilerValue> ASTVariableDefine_Function::CodeGen()
+{
+	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
+
+	V_Array<HazeDefineType> paramTypes;
+	m_Compiler->GetRealTemplateTypes(m_TemplateTypes, paramTypes);
+	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+		m_DefineVariable, m_Location.Line, nullptr, {}, &paramTypes);
+
+	auto exprValue = m_Expression->CodeGen();
+	if (!exprValue)
+	{
+		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->m_DefineVariable.Name);
+		if (!function.first)
 		{
-			m_Compiler->CreateLea(retValue, exprValue);
+			HAZE_LOG_ERR_W("未能找到变量<%s>,当前函数<%s>!\n", m_DefineVariable.Name.c_str(),
+				m_SectionSignal == HazeSectionSignal::Local ? m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : H_TEXT("None"));
+			return nullptr;
 		}
-		else
-		{
-			m_Compiler->CreateMov(retValue, exprValue);
-		}
+
+		m_Compiler->CreatePointerToFunction(function.first, retValue);
 	}
-	else if (retValue->IsClass())
+	else
 	{
-		auto function = m_Compiler->GetCurrModule()->GetClass(retValue->GetValueType().CustomName)->FindFunction(retValue->GetValueType().CustomName);
-		V_Array<Share<HazeCompilerValue>> param(m_ArraySizeOrParams.size());
-
-		//构造参数
-		for (int i = 0; i < m_ArraySizeOrParams.size(); i++)
-		{
-			param[i] = m_ArraySizeOrParams[m_ArraySizeOrParams.size() - 1 - i]->CodeGen();
-		}
-
-		m_Compiler->CreateFunctionCall(function, param, retValue);
+		m_Compiler->CreateMov(retValue, exprValue);
 	}
 
 	return retValue;
@@ -397,13 +461,13 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 	auto value = m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type, countValue);
 
 	//new申请内存后，若是类的话，需要调用构造函数
-	if (value->GetValueType().HasCustomName())
+	if (value->GetValueType().NeedCustomName())
 	{
-		auto newClass = m_Compiler->GetCurrModule()->GetClass(value->GetValueType().CustomName);
+		auto newClass = m_Compiler->GetCurrModule()->GetClass(*value->GetValueType().CustomName);
 		if (countValue)
 		{
 			//需要初始化多个类对象，类的参数个数必须为0
-			auto function = newClass->FindFunction(value->GetValueType().CustomName);
+			auto function = newClass->FindFunction(*value->GetValueType().CustomName);
 			auto arrayConstructorFunc = m_Compiler->GetFunction(HAZE_OBJECT_ARRAY_CONSTRUCTOR);
 			V_Array<Share<HazeCompilerValue>> param;
 
@@ -419,14 +483,14 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 			V_Array<Share<HazeCompilerValue>> params;
 			params.push_back(countValue);
 			params.push_back(m_Compiler->GetConstantValueUint64(newClass->GetDataSize()));
-			params.push_back(m_Compiler->CreatePointerToFunction(function));
+			params.push_back(m_Compiler->CreatePointerToFunction(function, nullptr));
 			params.push_back(value);
 
 			m_Compiler->CreateFunctionCall(arrayConstructorFunc.first, params);
 		}
 		else
 		{
-			auto function = newClass->FindFunction(value->GetValueType().CustomName);
+			auto function = newClass->FindFunction(*value->GetValueType().CustomName);
 			V_Array<Share<HazeCompilerValue>> param;
 
 			//构造参数
@@ -466,17 +530,17 @@ Share<HazeCompilerValue> ASTGetAddress::CodeGen()
 		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->GetName());
 		if (function.first)
 		{
-			retValue = m_Compiler->CreatePointerToFunction(function.first);
+			retValue = m_Compiler->CreatePointerToFunction(function.first, nullptr);
 		}
 		else
 		{
 			HAZE_LOG_ERR_W("未能找到函数<%s>去获得函数地址!\n", m_Expression->GetName());
 		}
 	}
-	else
+	/*else
 	{
 		retValue = m_Compiler->CreatePointerToValue(retValue);
-	}
+	}*/
 
 	return retValue;
 }

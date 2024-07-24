@@ -3,31 +3,29 @@
 #include "HazeHeader.h"
 #include "HazeLog.h"
 
-extern const HashMap<HString, HazeToken>& GetHashMap_Token();
-
 static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 {
 	{ HazeToken::Void, HazeValueType::Void },
 	{ HazeToken::Bool, HazeValueType::Bool },
-	{ HazeToken::Byte, HazeValueType::Byte },
-	{ HazeToken::UnsignedByte, HazeValueType::UnsignedByte },
-	{ HazeToken::Short, HazeValueType::Short },
-	{ HazeToken::UnsignedShort, HazeValueType::UnsignedShort },
-	{ HazeToken::Char, HazeValueType::Char },
-	{ HazeToken::Int, HazeValueType::Int },
-	{ HazeToken::UnsignedInt, HazeValueType::UnsignedInt },
-	{ HazeToken::Float, HazeValueType::Float },
-	{ HazeToken::Long, HazeValueType::Long },
-	{ HazeToken::UnsignedLong, HazeValueType::UnsignedLong},
-	{ HazeToken::Double, HazeValueType::Double },
-	{ HazeToken::CustomClass, HazeValueType::Class},
-	{ HazeToken::CustomEnum, HazeValueType::Enum},
-	{ HazeToken::ReferenceBase, HazeValueType::ReferenceBase},
-	{ HazeToken::ReferenceClass, HazeValueType::ReferenceClass},
-	{ HazeToken::PointerBase, HazeValueType::PointerBase},
-	{ HazeToken::PointerClass, HazeValueType::PointerClass},
-	{ HazeToken::PointerPointer, HazeValueType::PointerPointer},
-	{ HazeToken::MultiVariable, HazeValueType::MultiVariable},
+
+	{ HazeToken::Int8, HazeValueType::Int8 },
+	{ HazeToken::UInt8, HazeValueType::UInt8 },
+	{ HazeToken::Int16, HazeValueType::Int16 },
+	{ HazeToken::UInt16, HazeValueType::UInt16 },
+	{ HazeToken::Int32, HazeValueType::Int32 },
+	{ HazeToken::UInt32, HazeValueType::UInt32 },
+	{ HazeToken::Int64, HazeValueType::Int64 },
+	{ HazeToken::UInt64, HazeValueType::UInt64},
+	
+	{ HazeToken::Float32, HazeValueType::Float32 },
+	{ HazeToken::Float64, HazeValueType::Float64 },
+
+	{ HazeToken::CustomClass, HazeValueType::Class },
+	{ HazeToken::CustomEnum, HazeValueType::Enum },
+
+	{ HazeToken::Function, HazeValueType::Function },
+
+	{ HazeToken::MultiVariable, HazeValueType::MultiVariable },
 };
 
 uint32 GetSizeByHazeType(HazeValueType type)
@@ -35,31 +33,27 @@ uint32 GetSizeByHazeType(HazeValueType type)
 	switch (type)
 	{
 	case HazeValueType::Bool:
-	case HazeValueType::Byte:
-	case HazeValueType::UnsignedByte:
+	case HazeValueType::Int8:
+	case HazeValueType::UInt8:
 		return 1;
-	case HazeValueType::Char:
-	case HazeValueType::Short:
-	case HazeValueType::UnsignedShort:
+	case HazeValueType::Int16:
+	case HazeValueType::UInt16:
 		return 2;
-	case HazeValueType::Int:
-	case HazeValueType::UnsignedInt:
-	case HazeValueType::Float:
+	case HazeValueType::Int32:
+	case HazeValueType::UInt32:
+	case HazeValueType::Float32:
 		return 4;
-	case HazeValueType::Long:
-	case HazeValueType::UnsignedLong:
-	case HazeValueType::Double:
-	case HazeValueType::PointerBase:
-	case HazeValueType::PointerClass:
-	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerPointer:
-	case HazeValueType::ReferenceBase:
-	case HazeValueType::ReferenceClass:
-	case HazeValueType::ArrayBase:
-	case HazeValueType::ArrayClass:
-	case HazeValueType::ArrayPointer:
+	case HazeValueType::Int64:
+	case HazeValueType::UInt64:
+	case HazeValueType::Float64:
+	case HazeValueType::Refrence:
+	case HazeValueType::Array:
+	case HazeValueType::String:
+	case HazeValueType::Class:
+	case HazeValueType::Function:
 		return 8;
 	default:
+		HAZE_LOG_ERR_W("获得类型<%s>的大小错误!\n", GetHazeValueTypeString(type));
 		break;
 	}
 	return 0;
@@ -100,11 +94,11 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isL
 {
 	static HashMap<HazeValueType, Set<HazeValueType>> s_HashMap_Table =
 	{
-		{ HazeValueType::Int, { HazeValueType::Long, HazeValueType::UnsignedLong, HazeValueType::Float, HazeValueType::Double } },
-		{ HazeValueType::UnsignedInt, { HazeValueType::UnsignedLong } },
-		{ HazeValueType::Float, { HazeValueType::Double} },
-		{ HazeValueType::Bool, { HazeValueType::Char, HazeValueType::Int, HazeValueType::UnsignedInt, HazeValueType::Long, HazeValueType::UnsignedLong } },
-		{ HazeValueType::Char, { HazeValueType::Int, HazeValueType::UnsignedInt, HazeValueType::Long, HazeValueType::UnsignedLong } }
+		{ HazeValueType::Int32, { HazeValueType::Int64, HazeValueType::UInt64, HazeValueType::Float32, HazeValueType::Float64 } },
+		{ HazeValueType::UInt32, { HazeValueType::UInt64 } },
+		{ HazeValueType::Float32, { HazeValueType::Float64 } },
+		{ HazeValueType::Bool, { HazeValueType::Int8, HazeValueType::UInt8, HazeValueType::Int16, HazeValueType::UInt16,
+			HazeValueType::Int32, HazeValueType::UInt32, HazeValueType::Int64, HazeValueType::UInt64 } },
 	};
 
 	if (type1 == type2)
@@ -143,70 +137,39 @@ bool IsVoidType(HazeValueType type)
 	return type == HazeValueType::Void;
 }
 
-bool IsMultiVariableType(HazeValueType type)
+bool IsHazeBaseTypeAndVoid(HazeValueType type)
 {
-	return type == HazeValueType::MultiVariable;
+	return (HazeValueType::__BaseType_Begin < type && type < HazeValueType::__BaseType_End) || type == HazeValueType::Void;
 }
 
-bool IsHazeDefaultTypeAndVoid(HazeValueType type)
+bool IsHazeBaseType(HazeValueType type)
 {
-	return HazeValueType::Void <= type && type <= HazeValueType::UnsignedLong;
-}
-
-bool IsHazeDefaultType(HazeValueType type)
-{
-	return HazeValueType::Bool < type && type <= HazeValueType::UnsignedLong;
+	return HazeValueType::__BaseType_Begin < type && type < HazeValueType::__BaseType_End;
 }
 
 bool IsIntegerType(HazeValueType type)
 {
-	return type == HazeValueType::Int || type == HazeValueType::Long || type == HazeValueType::UnsignedInt || type == HazeValueType::UnsignedLong;
+	return HazeValueType::Int8 <= type && type <= HazeValueType::UInt64;
 }
 
 bool IsFloatingType(HazeValueType type)
 {
-	return type == HazeValueType::Float || type == HazeValueType::Double;
-}
-
-bool IsUnsignedLongType(HazeValueType type)
-{
-	return type == HazeValueType::UnsignedLong;
-}
-
-bool IsPointerType(HazeValueType type)
-{
-	return type >= HazeValueType::PointerBase && type <= HazeValueType::PointerPointer;
-}
-
-bool IsOneLevelPointerType(HazeValueType type)
-{
-	return type >= HazeValueType::PointerBase && type <= HazeValueType::PointerFunction;
-}
-
-bool IsPointerFunction(HazeValueType type)
-{
-	return type == HazeValueType::PointerFunction;
-}
-
-bool IsPointerPointer(HazeValueType type)
-{
-	return type == HazeValueType::PointerPointer;
-}
-
-bool IsNumberType(HazeValueType type)
-{
-	static HashSet<HazeValueType> HashSet_Table =
-	{
-		HazeValueType::Int, HazeValueType::Float, HazeValueType::Long, HazeValueType::Double,
-		HazeValueType::UnsignedInt, HazeValueType::UnsignedLong, HazeValueType::Char, HazeValueType::Byte, HazeValueType::UnsignedByte
-	};
-
-	return HashSet_Table.find(type) != HashSet_Table.end();
+	return type == HazeValueType::Float32 || type == HazeValueType::Float64;
 }
 
 bool IsClassType(HazeValueType type)
 {
 	return type == HazeValueType::Class;
+}
+
+bool IsFunctionType(HazeValueType type)
+{
+	return type == HazeValueType::Function;
+}
+
+bool IsNumberType(HazeValueType type)
+{
+	return IsIntegerType(type) || IsFloatingType(type);
 }
 
 bool IsEnumType(HazeValueType type)
@@ -216,50 +179,53 @@ bool IsEnumType(HazeValueType type)
 
 bool IsArrayType(HazeValueType type)
 {
-	return type >= HazeValueType::ArrayBase && type <= HazeValueType::ArrayPointer;
+	return type == HazeValueType::Array;
 }
 
-bool IsArrayPointerType(HazeValueType type)
+bool IsRefrenceType(HazeValueType type)
 {
-	return type == HazeValueType::ArrayPointer;
+	return type == HazeValueType::Refrence;
 }
 
-bool IsReferenceType(HazeValueType type)
+bool IsMultiVariableTye(HazeValueType type)
 {
-	return type == HazeValueType::ReferenceBase || type == HazeValueType::ReferenceClass;
+	return type == HazeValueType::MultiVariable;
 }
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value)
 {
-	HAZE_STRING_STREAM wss;
+	static HAZE_STRING_STREAM wss;
+	wss.clear();
 	wss << str;
 
 	switch (type)
 	{
-	case HazeValueType::Float:
-		wss >> value.Value.Float;
+	case HazeValueType::Int8:
+	case HazeValueType::Int16:
+		wss >> value.Value.Int16;
 		break;
-	case HazeValueType::Double:
-		wss >> value.Value.Double;
+	case HazeValueType::UInt8:
+	case HazeValueType::UInt16:
+		wss >> value.Value.UInt16;
 		break;
 	case HazeValueType::Bool:
-	case HazeValueType::Int:
-		wss >> value.Value.Int;
+	case HazeValueType::Int32:
+		wss >> value.Value.Int32;
 		break;
-	case HazeValueType::Long:
-		wss >> value.Value.Long;
+	case HazeValueType::UInt32:
+		wss >> value.Value.UInt32;
 		break;
-	case HazeValueType::UnsignedInt:
-		wss >> value.Value.UnsignedInt;
+	case HazeValueType::Int64:
+		wss >> value.Value.Int64;
 		break;
-	case HazeValueType::UnsignedLong:
-		wss >> value.Value.UnsignedLong;
+	case HazeValueType::UInt64:
+		wss >> value.Value.UInt64;
 		break;
-	case HazeValueType::PointerBase:
-	case HazeValueType::PointerClass:
-	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerPointer:
-		wss >> value.Value.UnsignedLong;
+	case HazeValueType::Float32:
+		wss >> value.Value.Float32;
+		break;
+	case HazeValueType::Float64:
+		wss >> value.Value.Float64;
 		break;
 	default:
 		break;
@@ -546,46 +512,46 @@ void OperatorValueByType(HazeValueType type, InstructionOpCode typeCode, const v
 			ASSIGN(bool);
 		}
 		break;*/
-	case HazeValueType::Int:
+	case HazeValueType::Int32:
 	{
-		VARIABLE_DEFINE_INIT(int, target);
-		VARIABLE_CALCULATE(int, typeCode);
-		ASSIGN(int);
+		VARIABLE_DEFINE_INIT(int32, target);
+		VARIABLE_CALCULATE(int32, typeCode);
+		ASSIGN(int32);
 	}
 	break;
-	case HazeValueType::Float:
-	{
-		VARIABLE_DEFINE_INIT(float, target);
-		VARIABLE_CALCULATE(float, typeCode);
-		ASSIGN(float);
-	}
-	break;
-	case HazeValueType::Long:
-	{
-		VARIABLE_DEFINE_INIT(int64, target);
-		VARIABLE_CALCULATE(int64, typeCode);
-		ASSIGN(int64);
-	}
-	break;
-	case HazeValueType::Double:
-	{
-		VARIABLE_DEFINE_INIT(double, target);
-		VARIABLE_CALCULATE(double, typeCode);
-		ASSIGN(double);
-	}
-	break;
-	case HazeValueType::UnsignedInt:
+	case HazeValueType::UInt32:
 	{
 		VARIABLE_DEFINE_INIT(uint32, target);
 		VARIABLE_CALCULATE(uint32, typeCode);
 		ASSIGN(uint32);
 	}
 	break;
-	case HazeValueType::UnsignedLong:
+	case HazeValueType::Int64:
+	{
+		VARIABLE_DEFINE_INIT(int64, target);
+		VARIABLE_CALCULATE(int64, typeCode);
+		ASSIGN(int64);
+	}
+	break;
+	case HazeValueType::UInt64:
 	{
 		VARIABLE_DEFINE_INIT(uint64, target);
 		VARIABLE_CALCULATE(uint64, typeCode);
 		ASSIGN(uint64);
+	}
+	break;
+	case HazeValueType::Float32:
+	{
+		VARIABLE_DEFINE_INIT(float32, target);
+		VARIABLE_CALCULATE(float32, typeCode);
+		ASSIGN(float32);
+	}
+	break;
+	case HazeValueType::Float64:
+	{
+		VARIABLE_DEFINE_INIT(float64, target);
+		VARIABLE_CALCULATE(float64, typeCode);
+		ASSIGN(float64);
 	}
 	break;
 	default:
@@ -604,42 +570,42 @@ void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const 
 		ASSIGN(bool);
 	}
 	break;
-	case HazeValueType::Int:
+	case HazeValueType::Int32:
 	{
 		TWO_VARIABLE_DEFINE_INIT(int, source, target);
 		TWO_VARIABLE_CALCULATE(int, typeCode);
 		ASSIGN(int);
 	}
 	break;
-	case HazeValueType::Float:
+	case HazeValueType::Float32:
 	{
 		TWO_VARIABLE_DEFINE_INIT(float, source, target);
 		TWO_VARIABLE_CALCULATE(float, typeCode);
 		ASSIGN(float);
 	}
 	break;
-	case HazeValueType::Long:
+	case HazeValueType::Int64:
 	{
 		TWO_VARIABLE_DEFINE_INIT(int64, source, target);
 		TWO_VARIABLE_CALCULATE(int64, typeCode);
 		ASSIGN(int64);
 	}
 	break;
-	case HazeValueType::Double:
+	case HazeValueType::Float64:
 	{
 		TWO_VARIABLE_DEFINE_INIT(double, source, target);
 		TWO_VARIABLE_CALCULATE(double, typeCode);
 		ASSIGN(double);
 	}
 	break;
-	case HazeValueType::UnsignedInt:
+	case HazeValueType::UInt32:
 	{
 		TWO_VARIABLE_DEFINE_INIT(uint32, source, target);
 		TWO_VARIABLE_CALCULATE(uint32, typeCode);
 		ASSIGN(uint32);
 	}
 	break;
-	case HazeValueType::UnsignedLong:
+	case HazeValueType::UInt64:
 	{
 		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
 		TWO_VARIABLE_CALCULATE(uint64, typeCode);
@@ -662,52 +628,52 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 		COMPARE_ASSIGN();
 	}
 	break;
-	case HazeValueType::Int:
+	case HazeValueType::Int32:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int, source, target);
+		TWO_VARIABLE_DEFINE_INIT(int32, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
-	case HazeValueType::Float:
-	{
-		TWO_VARIABLE_DEFINE_INIT(float, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::Long:
-	{
-		TWO_VARIABLE_DEFINE_INIT(int64, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::Double:
-	{
-		TWO_VARIABLE_DEFINE_INIT(double, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::UnsignedInt:
+	case HazeValueType::UInt32:
 	{
 		TWO_VARIABLE_DEFINE_INIT(uint32, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
-	case HazeValueType::UnsignedLong:
+	case HazeValueType::Int64:
+	{
+		TWO_VARIABLE_DEFINE_INIT(int64, source, target);
+		VARIABLE_COMPARE();
+		COMPARE_ASSIGN();
+	}
+	break;
+	case HazeValueType::UInt64:
 	{
 		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
-	case HazeValueType::PointerBase:
-	case HazeValueType::PointerClass:
-	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerPointer:
+	case HazeValueType::Float32:
+	{
+		TWO_VARIABLE_DEFINE_INIT(float32, source, target);
+		VARIABLE_COMPARE();
+		COMPARE_ASSIGN();
+	}
+	break;
+	
+	case HazeValueType::Float64:
+	{
+		TWO_VARIABLE_DEFINE_INIT(float64, source, target);
+		VARIABLE_COMPARE();
+		COMPARE_ASSIGN();
+	}
+	break;
+	case HazeValueType::Array:
+	case HazeValueType::Class:
+	case HazeValueType::Function:
 	{
 		//uint64 s = *(uint64*)source, t = *(uint64*)target;
 		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
@@ -728,6 +694,7 @@ size_t GetHazeCharPointerLength(const HChar* hChar)
 
 const HChar* GetHazeValueTypeString(HazeValueType type)
 {
+	extern const HashMap<HString, HazeToken>& GetHashMap_Token();
 	static HashMap<HazeValueType, const HChar*> s_HashMap_Code2String;
 
 	if (s_HashMap_Code2String.size() <= 0)
@@ -753,23 +720,22 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value)
 	{
 	case HazeValueType::Bool:
 		return (HAZE_BINARY_CHAR*)&value.Value.Bool;
-	case HazeValueType::Int:
-		return (HAZE_BINARY_CHAR*)&value.Value.Int;
-	case HazeValueType::Float:
-		return (HAZE_BINARY_CHAR*)&value.Value.Float;
-	case HazeValueType::UnsignedInt:
-		return (HAZE_BINARY_CHAR*)&value.Value.UnsignedInt;
-	case HazeValueType::Long:
-		return (HAZE_BINARY_CHAR*)&value.Value.Long;
-	case HazeValueType::Double:
-		return (HAZE_BINARY_CHAR*)&value.Value.Double;
-	case HazeValueType::UnsignedLong:
-		return (HAZE_BINARY_CHAR*)&value.Value.UnsignedLong;
-	case HazeValueType::PointerBase:
-	case HazeValueType::PointerClass:
-	case HazeValueType::PointerFunction:
-	case HazeValueType::PointerPointer:
-		return (HAZE_BINARY_CHAR*)&value.Value.UnsignedLong;
+	case HazeValueType::Int32:
+		return (HAZE_BINARY_CHAR*)&value.Value.Int32;
+	case HazeValueType::UInt32:
+		return (HAZE_BINARY_CHAR*)&value.Value.UInt32;
+	case HazeValueType::Int64:
+		return (HAZE_BINARY_CHAR*)&value.Value.Int64;
+	case HazeValueType::UInt64:
+		return (HAZE_BINARY_CHAR*)&value.Value.UInt64;
+	case HazeValueType::Float32:
+		return (HAZE_BINARY_CHAR*)&value.Value.Float32;
+	case HazeValueType::Float64:
+		return (HAZE_BINARY_CHAR*)&value.Value.Float64;
+	case HazeValueType::Array:
+	case HazeValueType::Class:
+	case HazeValueType::Function:
+		return (HAZE_BINARY_CHAR*)&value.Value.UInt64;
 	default:
 		break;
 	}
@@ -782,17 +748,17 @@ HazeValue GetNegValue(HazeValueType type, const HazeValue& value)
 	ret = 0;
 	switch (type)
 	{
-	case HazeValueType::Int:
-		ret.Value.Int = -value.Value.Int;
+	case HazeValueType::Int32:
+		ret.Value.Int32 = -value.Value.Int32;
 		break;
-	case HazeValueType::Float:
-		ret.Value.Float = -value.Value.Float;
+	case HazeValueType::Int64:
+		ret.Value.Int64 = -value.Value.Int64;
 		break;
-	case HazeValueType::Long:
-		ret.Value.Long = -value.Value.Long;
+	case HazeValueType::Float32:
+		ret.Value.Float32 = -value.Value.Float32;
 		break;
-	case HazeValueType::Double:
-		ret.Value.Double = -value.Value.Double;
+	case HazeValueType::Float64:
+		ret.Value.Float64 = -value.Value.Float64;
 		break;
 	default:
 		break;
@@ -805,81 +771,81 @@ bool CanCVT(HazeValueType type1, HazeValueType type2)
 {
 	switch (type1)
 	{
-	case HazeValueType::Int:
+	case HazeValueType::Int32:
 	{
 		switch (type2)
 		{
-		case HazeValueType::UnsignedInt:
-		case HazeValueType::Float:
-		case HazeValueType::Double:
-		case HazeValueType::Long:
-		case HazeValueType::UnsignedLong:
+		case HazeValueType::UInt32:
+		case HazeValueType::Int64:
+		case HazeValueType::UInt64:
+		case HazeValueType::Float32:
+		case HazeValueType::Float64:
 			return true;
 		default:
 			break;
 		}
 	}
 	break;
-	case HazeValueType::Float:
+	case HazeValueType::Float32:
 		switch (type2)
 		{
-		case HazeValueType::UnsignedInt:
-		case HazeValueType::Int:
-		case HazeValueType::Double:
-		case HazeValueType::Long:
-		case HazeValueType::UnsignedLong:
+		case HazeValueType::Int32:
+		case HazeValueType::UInt32:
+		case HazeValueType::Int64:
+		case HazeValueType::UInt64:
+		case HazeValueType::Float64:
 			return true;
 		default:
 			break;
 		}
 		break;
-	case HazeValueType::Long:
+	case HazeValueType::Int64:
 		switch (type2)
 		{
-		case HazeValueType::UnsignedInt:
-		case HazeValueType::Int:
-		case HazeValueType::Float:
-		case HazeValueType::Double:
-		case HazeValueType::UnsignedLong:
+		case HazeValueType::Int32:
+		case HazeValueType::UInt32:
+		case HazeValueType::UInt64:
+		case HazeValueType::Float32:
+		case HazeValueType::Float64:
 			return true;
 		default:
 			break;
 		}
 		break;
-	case HazeValueType::Double:
+	case HazeValueType::Float64:
 		switch (type2)
 		{
-		case HazeValueType::UnsignedInt:
-		case HazeValueType::Int:
-		case HazeValueType::Float:
-		case HazeValueType::Long:
-		case HazeValueType::UnsignedLong:
+		case HazeValueType::Int32:
+		case HazeValueType::UInt32:
+		case HazeValueType::Int64:
+		case HazeValueType::UInt64:
+		case HazeValueType::Float32:
 			return true;
 		default:
 			break;
 		}
 		break;
-	case HazeValueType::UnsignedInt:
+	case HazeValueType::UInt32:
 		switch (type2)
 		{
-		case HazeValueType::Int:
-		case HazeValueType::Float:
-		case HazeValueType::Double:
-		case HazeValueType::Long:
-		case HazeValueType::UnsignedLong:
+		case HazeValueType::Int32:
+		case HazeValueType::Int64:
+		case HazeValueType::UInt64:
+		case HazeValueType::Float32:
+		case HazeValueType::Float64:
 			return true;
 		default:
 			break;
 		}
 		break;
-	case HazeValueType::UnsignedLong:
+	case HazeValueType::UInt64:
 		switch (type2)
 		{
-		case HazeValueType::UnsignedInt:
-		case HazeValueType::Int:
-		case HazeValueType::Float:
-		case HazeValueType::Double:
-		case HazeValueType::Long:
+		case HazeValueType::Int32:
+		case HazeValueType::UInt32:
+		case HazeValueType::Int64:
+		case HazeValueType::Float32:
+		case HazeValueType::Float64:
 			return true;
 		default:
 			break;

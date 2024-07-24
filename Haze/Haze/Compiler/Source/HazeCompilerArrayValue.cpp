@@ -28,16 +28,12 @@ HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* compilerModul
 		m_ArrayLength = 1;
 		for (auto& iter : arraySize)
 		{
-			m_ArrayLength *= iter->GetValueType().PrimaryType == HazeValueType::UnsignedLong || iter->GetValueType().PrimaryType == HazeValueType::Long ?
-				(uint32)iter->GetValue().Value.UnsignedLong : iter->GetValue().Value.UnsignedInt;
+			m_ArrayLength *= iter->GetValueType().PrimaryType == HazeValueType::UInt64 || iter->GetValueType().PrimaryType == HazeValueType::Int64 ?
+				(uint32)iter->GetValue().Value.UInt64 : iter->GetValue().Value.UInt32;
 			m_SizeValues.push_back(iter);
 		}
 
 		//m_Size = m_ArrayLength * GetSizeByType(defineType, compilerModule);
-	}
-	else if (IsArrayPointerType(defineType.PrimaryType))
-	{
-		//m_Size = GetSizeByHazeType(defineType.PrimaryType);
 	}
 }
 
@@ -53,8 +49,8 @@ uint64 HazeCompilerArrayValue::GetSizeByLevel(uint64 level)
 		ret = 1;
 		for (size_t i = level + 1; i < m_SizeValues.size(); i++)
 		{
-			ret *= m_SizeValues[i]->GetValueType().PrimaryType == HazeValueType::UnsignedLong || m_SizeValues[i]->GetValueType().PrimaryType == HazeValueType::Long ?
-				m_SizeValues[i]->GetValue().Value.UnsignedLong : m_SizeValues[i]->GetValue().Value.UnsignedInt;
+			ret *= m_SizeValues[i]->GetValueType().PrimaryType == HazeValueType::UInt64 || m_SizeValues[i]->GetValueType().PrimaryType == HazeValueType::Int64 ?
+				m_SizeValues[i]->GetValue().Value.UInt64 : m_SizeValues[i]->GetValue().Value.UInt32;
 		}
 	}
 

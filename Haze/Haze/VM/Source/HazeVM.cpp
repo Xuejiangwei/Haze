@@ -267,6 +267,24 @@ uint32 HazeVM::GetClassSize(const HString& m_ClassName)
 	return Class ? Class->Size : 0;
 }
 
+const HString* HazeVM::GetSymbolClassName(const HString& name)
+{
+	auto iter = m_ClassSymbol.find(name);
+	if (iter == m_ClassSymbol.end())
+	{
+		m_ClassSymbol[name] = -1;
+
+		return &m_ClassSymbol.find(name)->first;
+	}
+	
+	return &iter->first;
+}
+
+void HazeVM::ResetSymbolClassIndex(const HString& name, uint64 index)
+{
+	m_ClassSymbol[name] = index;
+}
+
 void HazeVM::DynamicInitializerForGlobalData()
 {
 	for (int i = 0; i < Vector_GlobalData.size(); i++)
@@ -334,7 +352,7 @@ Pair<HString, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 			const auto& oper = Instructions[i].Operator;
 			if (oper.size() >= 1)
 			{
-				if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
+				if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
 				{
 					void* value = GetOperatorAddress(VMStack.get(), oper[0]);
 					uint64 functionAddress;

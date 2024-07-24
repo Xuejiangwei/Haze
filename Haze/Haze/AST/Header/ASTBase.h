@@ -10,7 +10,7 @@ class HazeBaseBlock;
 class ASTBase
 {
 	friend class ASTClass;
-
+	friend class ASTVariableDefine_Function;
 public:
 	ASTBase(HazeCompiler* compiler, const SourceLocation& location);
 
@@ -74,8 +74,8 @@ private:
 class ASTIdentifier : public ASTBase
 {
 public:
-	ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name
-		, V_Array<Unique<ASTBase>>& arrayIndexExpression, HString nameSpace = HAZE_TEXT(""));
+	ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
+		V_Array<Unique<ASTBase>>& arrayIndexExpression, HString nameSpace = HAZE_TEXT(""));
 	
 	virtual ~ASTIdentifier() override;
 
@@ -109,13 +109,12 @@ private:
 	V_Array<Unique<ASTBase>> m_FunctionParam;
 };
 
-//变量定义
+//变量定义 基本类型 类对象
 class ASTVariableDefine : public ASTBase
 {
 public:
-	ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, 
-		V_Array<Unique<ASTBase>> arraySizeOrParams = {}, int pointerLevel = 0, V_Array<HazeDefineType>* paramType = nullptr);
+	ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression);
 
 	virtual ~ASTVariableDefine() override;
 
@@ -123,17 +122,69 @@ public:
 
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
-private:
+	Share<HazeCompilerValue> GenExpressionValue();
+
+protected:
 	HazeSectionSignal m_SectionSignal;
 	Unique<ASTBase> m_Expression;
-	V_Array<Unique<ASTBase>> m_ArraySizeOrParams;
-	int m_PointerLevel;
+};
+
+class ASTVariableDefine_MultiVariable : public ASTBase
+{
+public:
+	ASTVariableDefine_MultiVariable(HazeCompiler* compiler, const SourceLocation& location);
+
+	virtual ~ASTVariableDefine_MultiVariable() override {}
+
+	virtual Share<HazeCompilerValue> CodeGen() override;
+};
+
+class ASTVariableDefine_Class : public ASTVariableDefine
+{
+public:
+	ASTVariableDefine_Class(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>> params = {});
+
+	virtual ~ASTVariableDefine_Class() override {}
+
+	virtual Share<HazeCompilerValue> CodeGen() override;
+
+protected:
+	TemplateDefineTypes m_TemplateTypes;
 
 	union
 	{
-		V_Array<HazeDefineType> m_Vector_PointerFunctionParamType;
-		V_Array<HazeDefineType> m_Vector_ClassTemplateType;
-	};
+		V_Array<Unique<ASTBase>> m_Params;
+		V_Array<Unique<ASTBase>> m_ArraySize;
+	}; 
+};
+
+//变量定义 数组
+class ASTVariableDefine_Array : public ASTVariableDefine_Class
+{
+public:
+	ASTVariableDefine_Array(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes,
+		V_Array<Unique<ASTBase>>& arraySize);
+
+	virtual ~ASTVariableDefine_Array() override {}
+
+	virtual Share<HazeCompilerValue> CodeGen() override;
+};
+
+//变量定义 函数
+class ASTVariableDefine_Function : public ASTVariableDefine
+{
+public:
+	ASTVariableDefine_Function(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes);
+	
+	virtual ~ASTVariableDefine_Function() override {}
+
+	virtual Share<HazeCompilerValue> CodeGen() override;
+
+private:
+	TemplateDefineTypes m_TemplateTypes;
 };
 
 //返回

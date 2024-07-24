@@ -20,7 +20,7 @@ int g_ClassInheritLevelLimit = 2;
 
 void HazeNewHandler()
 {
-	HAZE_LOG_ERR_W("Haze no memory!!!!\n");
+	HAZE_LOG_ERR_W("没有足够内存可分配了!!!!\n");
 }
 
 void HazePreInit()
@@ -113,7 +113,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	//std::wstring Path = std::filesystem::current_path();
 
 	char* mainFilePath = nullptr;
-	HString mainFunction = HAZE_DEFAULT_MAIN_FUNCTION_TEXT;
+	HString mainFunction;
 	if (argCount < 2)
 	{
 		return 0;

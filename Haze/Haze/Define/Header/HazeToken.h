@@ -10,22 +10,21 @@ enum class HazeToken : unsigned int
 
 	Bool,
 
-	Byte,
+	Int8,
+	UInt8,
+	Int16,
+	UInt16,
+	Int32,
+	UInt32,
+	Int64,
+	UInt64,
 
-	Char,
+	Float32,
+	Float64,
 
-	Short,
-	Int,
-	Float,
-	Long,
-	Double,
+	Union,
 
-	UnsignedByte,
-	UnsignedShort,
-	UnsignedInt,
-	UnsignedLong,
-
-	V_Array,
+	Array,
 	ArrayDefineEnd,
 	ArrayLength,
 
@@ -39,10 +38,14 @@ enum class HazeToken : unsigned int
 	Template,
 
 	Class,
-	m_ClassDatas,
+	ClassData,
 	ClassPublic,
 	ClassPrivate,
-	ClassProtected,
+
+	This,
+	ClassAttr,
+	
+	Deduction,
 
 	True,
 	False,
@@ -104,7 +107,6 @@ enum class HazeToken : unsigned int
 	Else,
 
 	For,
-	ForStep,
 
 	Break,
 	Continue,
@@ -117,12 +119,9 @@ enum class HazeToken : unsigned int
 	VirtualFunction,
 	PureVirtualFunction,
 
-	ReferenceBase,
-	ReferenceClass,
-
 	Define,
 
-	StandardLibrary,
+	StaticLibrary,
 	DLLLibrary,
 	ImportModule,
 
@@ -137,12 +136,6 @@ enum class HazeToken : unsigned int
 	Number,
 	String,
 
-	PointerBase,
-	PointerClass,
-	PointerFunction,
-	PointerPointer,
-
-	PointerValue,		//占位, 解指针
 	GetAddress,			//占位, 获得地址
 
 	ThreeOperatorStart,

@@ -69,14 +69,17 @@ Share<HazeCompilerFunction> HazeCompilerClass::AddFunction(Share<HazeCompilerFun
 
 void HazeCompilerClass::InitThisValue()
 {
-	m_NewPointerToValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
+	m_NewPointerToValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, 
+		HazeDefineVariable(HazeDefineType(HazeValueType::Class, &m_Name),
 		H_TEXT("")), HazeVariableScope::None, HazeDataDesc::ClassThis, 0));
 	
-	m_ThisClassValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::Class, m_Name),
-		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
+	m_ThisClassValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, 
+		HazeDefineVariable(HazeDefineType(HazeValueType::Class, &m_Name),
+		TOKEN_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 
-	m_ThisPointerValue = DynamicCast<HazeCompilerPointerValue>(CreateVariable(m_Module, HazeDefineVariable(HazeDefineType(HazeValueType::PointerClass, m_Name),
-		HAZE_CLASS_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
+	m_ThisPointerValue = DynamicCast<HazeCompilerPointerValue>(CreateVariable(m_Module, 
+		HazeDefineVariable(HazeDefineType(HazeValueType::Class, &m_Name),
+		TOKEN_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
 }
 
 int HazeCompilerClass::GetMemberIndex(const HString& memberName)

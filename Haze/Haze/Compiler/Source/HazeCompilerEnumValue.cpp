@@ -8,7 +8,7 @@ HazeCompilerEnumValue::HazeCompilerEnumValue(HazeCompilerEnum* owner, Share<Haze
 {
 	m_ValueType.PrimaryType = HazeValueType::Enum;
 	m_ValueType.SecondaryType = owner->GetParentType();
-	m_ValueType.CustomName = owner->GetName();
+	m_ValueType.CustomName = &owner->GetName();
 }
 
 HazeCompilerEnumValue::HazeCompilerEnumValue(HazeCompilerEnum* owner, HazeCompilerModule* compilerModule, const HazeDefineType& defineType,

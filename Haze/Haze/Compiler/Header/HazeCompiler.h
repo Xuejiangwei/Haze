@@ -30,6 +30,9 @@ public:
 
 	const HString* GetModuleName(const HazeCompilerModule* compilerModule) const;
 
+	const HString* GetModuleTableClassName(const HString& name);
+	const HString* GetModuleTableEnumName(const HString& name);
+
 	Unique<HazeCompilerModule>& GetCurrModule();
 
 	bool CurrModuleIsStdLib();
@@ -89,8 +92,6 @@ public:
 
 	static Share<HazeCompilerInitListValue> GetInitializeListValue();
 
-	static constexpr int GetMaxPointerLevel() { return 2; }
-
 public:
 	void SetInsertBlock(Share<HazeBaseBlock> block);
 
@@ -99,6 +100,10 @@ public:
 	void ClearBlockPoint();
 
 public:
+	Share<HazeCompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<HazeCompilerModule>& mod, Share<HazeCompilerFunction> func,
+		const HazeDefineVariable& var, int line, Share<HazeCompilerValue> refValue = nullptr, V_Array<Share<HazeCompilerValue>> arraySize = {},
+		V_Array<HazeDefineType>* params = nullptr);
+
 	Share<HazeCompilerValue> CreateLocalVariable(Share<HazeCompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
 		Share<HazeCompilerValue> RefValue = nullptr, V_Array<Share<HazeCompilerValue>> m_ArraySize = {}, V_Array<HazeDefineType>* Params = nullptr);
 
@@ -168,15 +173,15 @@ public:
 	Share<HazeCompilerValue> CreateGetArrayLength(Share<HazeCompilerValue> value);
 
 public:
-	Share<HazeCompilerValue> CreatePointerToValue(Share<HazeCompilerValue> value);
+	//Share<HazeCompilerValue> CreatePointerToValue(Share<HazeCompilerValue> value);
 
-	Share<HazeCompilerValue> CreatePointerToArray(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> index = nullptr);
+	//Share<HazeCompilerValue> CreatePointerToArray(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> index = nullptr);
 
-	Share<HazeCompilerValue> CreatePointerToArrayElement(Share<HazeCompilerValue> elementValue);
+	//Share<HazeCompilerValue> CreatePointerToArrayElement(Share<HazeCompilerValue> elementValue);
 
-	Share<HazeCompilerValue> CreatePointerToPointerArray(Share<HazeCompilerValue> pointerArray, Share<HazeCompilerValue> index = nullptr);
+	//Share<HazeCompilerValue> CreatePointerToPointerArray(Share<HazeCompilerValue> pointerArray, Share<HazeCompilerValue> index = nullptr);
 
-	Share<HazeCompilerValue> CreatePointerToFunction(Share<HazeCompilerFunction> function);
+	Share<HazeCompilerValue> CreatePointerToFunction(Share<HazeCompilerFunction> function, Share<HazeCompilerValue> pointer);
 
 public:
 	void CreateJmpToBlock(Share<HazeBaseBlock> block);
@@ -198,6 +203,8 @@ public:
 
 	bool GetBaseModuleGlobalVariableName(const Share<HazeCompilerValue>& value, HString& outName);
 
+	void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
+
 	void InsertLineCount(int64 lineCount);
 
 	bool IsDebug() const;
@@ -213,22 +220,17 @@ private:
 	//³£Á¿
 	HashMap<bool, Share<HazeCompilerValue>> m_BoolConstantValues;
 
-	HashMap<HByte, Share<HazeCompilerValue>> m_ByteConstantValues;
-	HashMap<uhbyte, Share<HazeCompilerValue>> m_UnsignedByteConstantValues;
+	HashMap<int8, Share<HazeCompilerValue>> m_Int8_ConstantValues;
+	HashMap<uint8, Share<HazeCompilerValue>> m_UInt8_ConstantValues;
+	HashMap<int16, Share<HazeCompilerValue>> m_Int16_ConstantValues;
+	HashMap<uint16, Share<HazeCompilerValue>> m_UInt16_ConstantValues;
+	HashMap<int32, Share<HazeCompilerValue>> m_Int32_ConstantValues;
+	HashMap<uint32, Share<HazeCompilerValue>> m_UInt32_ConstantValues;
+	HashMap<int64, Share<HazeCompilerValue>> m_Int64_ConstantValues;
+	HashMap<uint64, Share<HazeCompilerValue>> m_UInt64_ConstantValues;
 
-	HashMap<HChar, Share<HazeCompilerValue>> m_CharConstantValues;
-
-	HashMap<short, Share<HazeCompilerValue>> m_ShortConstantValues;
-	HashMap<ushort, Share<HazeCompilerValue>> m_UnsignedShortConstantValues;
-
-	HashMap<int, Share<HazeCompilerValue>> m_IntConstantValues;
-	HashMap<uint32, Share<HazeCompilerValue>> m_UnsignedIntConstantValues;
-
-	HashMap<int64, Share<HazeCompilerValue>> m_LongConstantValues;
-	HashMap<uint64, Share<HazeCompilerValue>> m_UnsignedLongConstantValues;
-
-	HashMap<float, Share<HazeCompilerValue>> m_FloatConstantValues;
-	HashMap<double, Share<HazeCompilerValue>> m_DobuleConstantValues;
+	HashMap<float32, Share<HazeCompilerValue>> m_Float32_ConstantValues;
+	HashMap<float64, Share<HazeCompilerValue>> m_Float64_ConstantValues;
 
 	//BaseBlock
 	Share<HazeBaseBlock> m_InsertBaseBlock;

@@ -34,14 +34,14 @@ HazeCompilerValue::~HazeCompilerValue()
 
 void HazeCompilerValue::StoreValueType(Share<HazeCompilerValue> srcValue)
 {
-	if (IsRegister() && !IsArrayPointerType(srcValue->GetValueType().PrimaryType))
+	if (IsRegister())
 	{
-		bool bPointer = IsPointer();
+		bool bPointer = false;// IsPointer();
 		m_ValueType = srcValue->GetValueType();
 
 		if (srcValue->IsArray() && bPointer)
 		{
-			m_ValueType.PrimaryType = m_ValueType.CustomName.empty() ? HazeValueType::PointerBase : HazeValueType::PointerClass;
+			//m_ValueType.PrimaryType = m_ValueType.CustomName.empty() ? HazeValueType::PointerBase : HazeValueType::PointerClass;
 		}
 	}
 

@@ -6,9 +6,9 @@
 #include "HazeCompilerClass.h"
 #include "HazeCompilerFunction.h"
 #include "HazeCompilerArrayValue.h"
-#include "HazeCompilerPointerValue.h"
-#include "HazeCompilerPointerFunction.h"
 #include "HazeCompilerRefValue.h"
+#include "HazeCompilerStringValue.h"
+#include "HazeCompilerPointerFunction.h"
 #include "HazeCompilerClassValue.h"
 #include "HazeCompilerEnum.h"
 #include "HazeCompilerEnumValue.h"
@@ -42,29 +42,35 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, HazeCompilerValue* value, bool 
 		case HazeValueType::Bool:
 			hss << v.Value.Bool;
 			break;
-		case HazeValueType::Byte:
-			hss << v.Value.Byte;
+		case HazeValueType::Int8:
+			hss << v.Value.Int8;
 			break;
-		case HazeValueType::Char:
-			hss << v.Value.Char;
+		case HazeValueType::UInt8:
+			hss << v.Value.UInt8;
 			break;
-		case HazeValueType::Int:
-			hss << v.Value.Int;
+		case HazeValueType::Int16:
+			hss << v.Value.Int16;
 			break;
-		case HazeValueType::Float:
-			hss << v.Value.Float;
+		case HazeValueType::UInt16:
+			hss << v.Value.UInt16;
 			break;
-		case HazeValueType::UnsignedInt:
-			hss << v.Value.UnsignedInt;
+		case HazeValueType::Int32:
+			hss << v.Value.Int32;
 			break;
-		case HazeValueType::Long:
-			hss << v.Value.Long;
+		case HazeValueType::UInt32:
+			hss << v.Value.UInt32;
 			break;
-		case HazeValueType::Double:
-			hss << v.Value.Double;
+		case HazeValueType::Int64:
+			hss << v.Value.Int64;
 			break;
-		case HazeValueType::UnsignedLong:
-			hss << v.Value.UnsignedLong;
+		case HazeValueType::UInt64:
+			hss << v.Value.UInt64;
+			break;
+		case HazeValueType::Float32:
+			hss << v.Value.Float32;
+			break;
+		case HazeValueType::Float64:
+			hss << v.Value.Float64;
 			break;
 		default:
 			break;
@@ -90,55 +96,33 @@ Share<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* compilerModule, 
 	{
 	case HazeValueType::Void:
 	case HazeValueType::Bool:
-	case HazeValueType::Byte:
-	case HazeValueType::Char:
-	case HazeValueType::Int:
-	case HazeValueType::Float:
-	case HazeValueType::Long:
-	case HazeValueType::Double:
-	case HazeValueType::UnsignedInt:
-	case HazeValueType::UnsignedLong:
-		return MakeShare<HazeCompilerValue>(compilerModule, type, scope, desc, count, assignValue);
+	case HazeValueType::Int8:
+	case HazeValueType::UInt8:
+	case HazeValueType::Int16:
+	case HazeValueType::UInt16:
+	case HazeValueType::Int32:
+	case HazeValueType::UInt32:
+	case HazeValueType::Int64:
+	case HazeValueType::UInt64:
+	case HazeValueType::Float32:
+	case HazeValueType::Float64:
 	case HazeValueType::MultiVariable:
-	{
 		return MakeShare<HazeCompilerValue>(compilerModule, type, scope, desc, count, assignValue);
-	}
-	case HazeValueType::ArrayBase:
-	case HazeValueType::ArrayClass:
-	case HazeValueType::ArrayPointer:
+	case HazeValueType::Array:
 		return MakeShare<HazeCompilerArrayValue>(compilerModule, type, scope, desc, count, arraySize);
-	case HazeValueType::PointerBase:
-	case HazeValueType::PointerClass:
-	case HazeValueType::PointerPointer:
-		return MakeShare<HazeCompilerPointerValue>(compilerModule, type, scope, desc, count);
-	case HazeValueType::PointerFunction:
+	case HazeValueType::Refrence:
+		return MakeShare<HazeCompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
+	case HazeValueType::Function:
 		return MakeShare<HazeCompilerPointerFunction>(compilerModule, type, scope, desc, count, params ? params : nullptr);
-	case HazeValueType::ReferenceBase:
-	case HazeValueType::ReferenceClass:
-		if (assignValue || compilerModule->IsBeginCreateFunctionVariable())
-		{
-			return MakeShare<HazeCompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
-		}
-		else
-		{
-			HAZE_LOG_ERR_W("创建引用变量失败，必须赋予初始化值!\n");
-			return nullptr;
-		}
+	case HazeValueType::String:
+		return MakeShare<HazeCompilerStringValue>(compilerModule, type, scope, desc, count);
 	case HazeValueType::Class:
 	{
-		if (params)
-		{
-			compilerModule->ResetTemplateClassRealName(const_cast<HString&>(type.CustomName), *params);
-			return MakeShare<HazeCompilerClassValue>(compilerModule, type, scope, desc, count);
-		}
-		else
-		{
-			return MakeShare<HazeCompilerClassValue>(compilerModule, type, scope, desc, count);
-		}
+		return MakeShare<HazeCompilerClassValue>(compilerModule, type, scope, desc, count);
 	}
 	case HazeValueType::Enum:
 	{
-		auto enumValue = compilerModule->GetEnum(compilerModule, type.CustomName).get();
+		auto enumValue = compilerModule->GetEnum(compilerModule, *type.CustomName).get();
 		return MakeShare<HazeCompilerEnumValue>(enumValue, compilerModule, type, scope, desc, count, assignValue);
 	}
 	default:
@@ -167,10 +151,10 @@ V_Array<Pair<HazeDataDesc, V_Array<Share<HazeCompilerValue>>>> CreateVariableCop
 		{
 			auto& var = it.second[i].second;
 			members.back().second[i] = CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0,
-				var->IsRef() ? DynamicCast<HazeCompilerRefValue>(var)->GetRefValue() : var,
+				var,
 				var->IsArray() ? DynamicCast<HazeCompilerArrayValue>(var)->GetArraySize() :
 				V_Array<Share<HazeCompilerValue>>{},
-				var->IsPointerFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<HazeCompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
+				var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<HazeCompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
 		}
 	}
 
@@ -182,18 +166,18 @@ V_Array<Pair<HazeDataDesc, V_Array<Share<HazeCompilerValue>>>> CreateVariableCop
 //	return MakeShare<HazeCompilerValue>(Var, Scope);
 //}
 
-void StreamPointerValue(HAZE_STRING_STREAM& hss, Share<HazeCompilerValue> value)
-{
-	auto pointerValue = DynamicCast<HazeCompilerPointerValue>(value);
-	if (value->GetValueType().PrimaryType == HazeValueType::PointerBase)
-	{
-		hss << " " << (uint32)pointerValue->GetValueType().PrimaryType;
-	}
-	else
-	{
-		hss << " " << pointerValue->GetValueType().CustomName;
-	}
-}
+//void StreamPointerValue(HAZE_STRING_STREAM& hss, Share<HazeCompilerValue> value)
+//{
+//	auto pointerValue = DynamicCast<HazeCompilerPointerValue>(value);
+//	if (value->GetValueType().PrimaryType == HazeValueType::PointerBase)
+//	{
+//		hss << " " << (uint32)pointerValue->GetValueType().PrimaryType;
+//	}
+//	else
+//	{
+//		hss << " " << pointerValue->GetValueType().CustomName;
+//	}
+//}
 
 void StreamClassValue(HAZE_STRING_STREAM& hss, Share<HazeCompilerValue> value)
 {
@@ -210,11 +194,11 @@ void StreamCompilerValue(HAZE_STRING_STREAM& hss, InstructionOpCode insCode, Sha
 	}
 	hss << " " << (uint32)value->GetVariableDesc();
 
-	if (value->IsPointer())
+	/*if (value->IsPointer())
 	{
 		StreamPointerValue(hss, value);
 	}
-	else if (value->IsClass())
+	else*/ if (value->IsClass())
 	{
 		StreamClassValue(hss, value);
 	}
@@ -224,14 +208,14 @@ void StreamCompilerValue(HAZE_STRING_STREAM& hss, InstructionOpCode insCode, Sha
 
 HString GetObjectName(const HString& inName)
 {
-	size_t pos = inName.find(HAZE_CLASS_POINTER_ATTR);
+	size_t pos = inName.find(TOKEN_THIS);
 	if (pos != HString::npos)
 	{
 		return inName.substr(0, pos);
 	}
 	else
 	{
-		pos = inName.find(HAZE_CLASS_ATTR);
+		pos = inName.find(TOKEN_THIS);
 		if (pos != HString::npos)
 		{
 			return inName.substr(0, pos);
@@ -257,18 +241,18 @@ Share<HazeCompilerValue> GetObjectMember(HazeCompilerModule* compilerModule, con
 Share<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* compilerModule, const HString& inName, 
 	HString& outObjectName, HString& outMemberName, bool& isPointer)
 {
-	auto pos = inName.find(HAZE_CLASS_POINTER_ATTR);
+	auto pos = inName.find(TOKEN_THIS);
 	if (pos != HString::npos)
 	{
 		isPointer = true;
 		outObjectName = inName.substr(0, pos);
-		outMemberName = inName.substr(pos + HString(HAZE_CLASS_POINTER_ATTR).size());
+		outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
 
 		auto pointerValue = DynamicCast<HazeCompilerPointerValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
-		auto compilerClass = compilerModule->GetClass(pointerValue->GetValueType().CustomName);
+		auto compilerClass = compilerModule->GetClass(*pointerValue->GetValueType().CustomName);
 
 		Share<HazeCompilerClassValue> classValue = nullptr;
-		if (outObjectName == HAZE_CLASS_THIS)
+		if (outObjectName == TOKEN_THIS)
 		{
 			classValue = compilerClass->GetThisPointerToValue();
 		}
@@ -281,12 +265,12 @@ Share<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* compiler
 	}
 	else
 	{
-		pos = inName.find(HAZE_CLASS_ATTR);
+		pos = inName.find(TOKEN_THIS);
 		if (pos != HString::npos)
 		{
 			isPointer = false;
 			outObjectName = inName.substr(0, pos);
-			outMemberName = inName.substr(pos + HString(HAZE_CLASS_ATTR).size());
+			outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
 
 			auto classValue = DynamicCast<HazeCompilerClassValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
 			if (classValue)
@@ -330,12 +314,12 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunc
 	const HString& inName, HString& outObjectName, HString& outFunctionName, bool& isPointer)
 {
 	Share<HazeCompilerValue> findVariable = nullptr;
-	auto pos = inName.find(HAZE_CLASS_POINTER_ATTR);
+	auto pos = inName.find(TOKEN_THIS);
 	if (pos != HString::npos)
 	{
 		isPointer = true;
 		outObjectName = inName.substr(0, pos);
-		outFunctionName = inName.substr(pos + HString(HAZE_CLASS_POINTER_ATTR).size());
+		outFunctionName = inName.substr(pos + HString(TOKEN_THIS).size());
 
 		if (compilerModule->GetCurrFunction())
 		{
@@ -350,18 +334,18 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunc
 		auto pointerValue = DynamicCast<HazeCompilerPointerValue>(findVariable);
 		if (pointerValue)
 		{
-			auto compilerClass = compilerModule->GetClass(pointerValue->GetValueType().CustomName);
+			auto compilerClass = compilerModule->GetClass(*pointerValue->GetValueType().CustomName);
 			return { compilerClass->FindFunction(outFunctionName), findVariable };
 		}
 	}
 	else
 	{
-		pos = inName.find(HAZE_CLASS_ATTR);
+		pos = inName.find(TOKEN_THIS);
 		if (pos != HString::npos)
 		{
 			isPointer = false;
 			outObjectName = inName.substr(0, pos);
-			outFunctionName = inName.substr(pos + HString(HAZE_CLASS_ATTR).size());
+			outFunctionName = inName.substr(pos + HString(TOKEN_THIS).size());
 
 			if (compilerModule->GetCurrFunction())
 			{
@@ -377,10 +361,6 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunc
 			if (classValue)
 			{
 				return { classValue->GetOwnerClass()->FindFunction(outFunctionName), findVariable };
-			}
-			else if (findVariable && findVariable->IsRefClass())
-			{
-				return { compilerModule->GetClass(findVariable->GetValueType().CustomName)->FindFunction(outFunctionName), findVariable };
 			}
 			else if (findVariable)
 			{
@@ -409,26 +389,13 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Shar
 
 	if (value->IsClassMember())
 	{
-		if (data.second->IsPointerClass())
-		{
-			if (function)
-			{
-				auto compilerClass = function->GetModule()->GetClass(data.second->GetValueType().CustomName);
-				compilerClass->GetMemberName(value, outName);
-				if (!outName.empty())
-				{
-					outName = GetLocalVariableName(data.first, data.second) + HAZE_CLASS_POINTER_ATTR + outName;
-					return true;
-				}
-			}
-		}
-		else if (data.second->IsClass())
+		if (data.second->IsClass())
 		{
 			auto compilerClass = DynamicCast<HazeCompilerClassValue>(data.second);
 			compilerClass->GetMemberName(value, outName);
 			if (!outName.empty())
 			{
-				outName = GetLocalVariableName(data.first, data.second) + HAZE_CLASS_ATTR + outName;
+				outName = GetLocalVariableName(data.first, data.second) + TOKEN_THIS + outName;
 				if (!value->IsClassPublicMember())
 				{
 					HAZE_LOG_ERR_W("不能够访问类<%s>非公开成员变量<%s>!\n", compilerClass->GetOwnerClassName().c_str(), outName.c_str());
@@ -440,7 +407,7 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Shar
 	else if (value->IsArrayElement())
 	{
 		auto arrayElement = static_cast<const HazeCompilerArrayElementValue*>(value);
-		if (data.second->IsArray() || data.second->IsPointer())
+		if (data.second->IsArray())
 		{
 			if (arrayElement->GetArray() == data.second.get())
 			{
@@ -457,35 +424,188 @@ Share<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* compilerModu
 	Share<HazeCompilerValue> movToValue)
 {
 	auto compiler = compilerModule->GetCompiler();
-	auto arrayPointer = compiler->CreatePointerToArrayElement(elementValue);
+	//auto arrayPointer = compiler->CreatePointerToArrayElement(elementValue);
 
-	return compiler->CreateMovPV(movToValue ? movToValue : compiler->GetTempRegister(), arrayPointer);
+	return compiler->CreateMovPV(movToValue ? movToValue : compiler->GetTempRegister(), nullptr);
 }
 
-void GetTemplateClassName(HString& inName, const V_Array<HazeDefineType>& templateTypes)
+void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes)
 {
 	for (auto& type : templateTypes)
 	{
-		if (type.HasCustomName())
+		if (type.IsDefines)
 		{
-			inName += (H_TEXT("__") + type.CustomName);
-			if (IsPointerType(type.SecondaryType))
-			{
-				inName += H_TEXT("*");
-			}
+			HString name;
+			GetTemplateClassName(name, type.Defines->Types);
+			inName += HAZE_TEMPLATE_CONBINE + name;
 		}
 		else
 		{
-			if (IsPointerType(type.PrimaryType))
-			{
-				inName += (HString(H_TEXT("__")) + GetHazeValueTypeString(type.SecondaryType));
-				inName += H_TEXT("*");
-			}
-			else
-			{
-				inName += (HString(H_TEXT("__")) + GetHazeValueTypeString(type.PrimaryType));
-			}
-
+			inName += HAZE_TEMPLATE_CONBINE + type.Type->GetFullTypeName();
 		}
+	}
+}
+
+
+void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss,
+	const Share<HazeCompilerValue>& value/*, int index*/)
+{
+	static HString s_StrName;
+
+	bool find = false;
+
+	s_StrName.clear();
+	if (value->IsGlobalVariable())
+	{
+		find = HazeCompilerModule::GetGlobalVariableName(compilerModule, value, s_StrName);
+		if (!find && value->IsNullPtr())
+		{
+			find = true;
+			s_StrName = NULL_PTR;
+		}
+	}
+	else if (value->IsLocalVariable())
+	{
+		find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, s_StrName);
+	}
+	else if (value->IsFunctionAddress())
+	{
+		s_StrName = *value->GetValueType().CustomName;
+		if (!s_StrName.empty())
+		{
+			find = true;
+		}
+	}
+	else if (value->IsTempVariable())
+	{
+		find = true;
+		s_StrName = compilerModule->GetCompiler()->GetRegisterName(value);
+	}
+	else
+	{
+		HAZE_LOG_ERR_W("生成中间代码错误,变量作用域错误!\n");
+		return;
+	}
+
+	if (!find)
+	{
+		HAZE_LOG_ERR_W("生成中间代码错误,未能找到变量!\n");
+		return;
+	}
+
+	hss << s_StrName << " " << CAST_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " ";
+	value->GetValueType().StringStreamTo(hss);
+
+	if (value->IsString())
+	{
+		hss << " " << compilerModule->GetGlobalStringIndex(value);
+		//index = compilerModule->GetGlobalStringIndex(value);
+	}
+
+	/*if (index >= 0)
+	{
+		hss << " " << index;
+	}*/
+}
+
+void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, Share<HazeCompilerValue> v1, Share<HazeCompilerValue> v2)
+{
+	switch (opCode)
+	{
+	case InstructionOpCode::NONE:
+		break;
+	case InstructionOpCode::MOV:
+		break;
+	case InstructionOpCode::MOVPV:
+		break;
+	case InstructionOpCode::MOVTOPV:
+		break;
+	case InstructionOpCode::LEA:
+		break;
+	case InstructionOpCode::ADD:
+		break;
+	case InstructionOpCode::SUB:
+		break;
+	case InstructionOpCode::MUL:
+		break;
+	case InstructionOpCode::DIV:
+		break;
+	case InstructionOpCode::MOD:
+		break;
+	case InstructionOpCode::NEG:
+		break;
+	case InstructionOpCode::NOT:
+		break;
+	case InstructionOpCode::INC:
+		break;
+	case InstructionOpCode::DEC:
+		break;
+	case InstructionOpCode::BIT_AND:
+		break;
+	case InstructionOpCode::BIT_OR:
+		break;
+	case InstructionOpCode::BIT_NEG:
+		break;
+	case InstructionOpCode::BIT_XOR:
+		break;
+	case InstructionOpCode::SHL:
+		break;
+	case InstructionOpCode::SHR:
+		break;
+	case InstructionOpCode::PUSH:
+
+		break;
+	case InstructionOpCode::POP:
+		break;
+	case InstructionOpCode::CALL:
+		break;
+	case InstructionOpCode::RET:
+		break;
+	case InstructionOpCode::NEW:
+		break;
+	case InstructionOpCode::CMP:
+		break;
+	case InstructionOpCode::JMP:
+		break;
+	case InstructionOpCode::JNE:
+		break;
+	case InstructionOpCode::JNG:
+		break;
+	case InstructionOpCode::JNL:
+		break;
+	case InstructionOpCode::JE:
+		break;
+	case InstructionOpCode::JG:
+		break;
+	case InstructionOpCode::JL:
+		break;
+	case InstructionOpCode::ADD_ASSIGN:
+		break;
+	case InstructionOpCode::SUB_ASSIGN:
+		break;
+	case InstructionOpCode::MUL_ASSIGN:
+		break;
+	case InstructionOpCode::DIV_ASSIGN:
+		break;
+	case InstructionOpCode::MOD_ASSIGN:
+		break;
+	case InstructionOpCode::BIT_AND_ASSIGN:
+		break;
+	case InstructionOpCode::BIT_OR_ASSIGN:
+		break;
+	case InstructionOpCode::BIT_XOR_ASSIGN:
+		break;
+	case InstructionOpCode::SHL_ASSIGN:
+		break;
+	case InstructionOpCode::SHR_ASSIGN:
+		break;
+	case InstructionOpCode::CVT:
+		break;
+	case InstructionOpCode::ARRAY_LENGTH:
+		break;
+	case InstructionOpCode::LINE:
+		break;
+	default:
+		break;
 	}
 }

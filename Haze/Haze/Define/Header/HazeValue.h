@@ -5,49 +5,52 @@
 
 #define CAST_TYPE(V) (uint32)V
 
+//不需要引用
 enum class HazeValueType : uint32
 {
 	None,
 
 	Void,
+	
+	//基本类型 Bool -> Double
+	__BaseType_Begin,
+
 	Bool,
 
-	Byte,
-	UnsignedByte,
+	Int8,
+	UInt8,
 
-	Char,
+	//Char,	 不需要字符类型
 
-	Short,
-	UnsignedShort,
+	Int16,
+	UInt16,
 
-	Int,
-	UnsignedInt,
+	Int32,
+	UInt32,
 
-	Float,
+	Int64,
+	UInt64,
 	
-	Long,
-	UnsignedLong,
-	
-	Double,
+	Float32,
+	Float64,
 
-	ArrayBase,
-	ArrayClass,
-	ArrayPointer, //普通类型的指针数组和指向指针的指针数组都用这个类型，若是指向指针的指针，则只需要在生成AST->CodeGen阶段判断是否是同一类型
+	__BaseType_End,
 
-	PointerBase,
-	PointerClass,
-	PointerFunction,
-	PointerPointer,
+	//引用
+	Refrence,				//只作用于基本类型，因为类和数组本来就是指针
 
-	ReferenceBase,
-	ReferenceClass,
+	//数组类型
+	Array,					//数组对象 参与GC, 不定长
 
-	Class,
-	Function,
+	//字符串
+	String,					//字符串对象, 不定长, 参与GC
 
-	Enum,
+	Class,					//类指针对象, 参与GC
+	Function,				//函数指针, 不参与GC
 
-	MultiVariable,
+	Enum,					//不起作用, 只用来解析时做相同类型判断
+
+	MultiVariable,			//只能用于库函数的定义中
 };
 
 struct HazeValue
@@ -56,21 +59,17 @@ struct HazeValue
 	{
 		bool Bool;
 
-		HByte Byte;
-		uhbyte UnsignedByte;
+		int8 Int8;
+		uint8 UInt8;
+		int16 Int16;
+		uint16 UInt16;
+		int32 Int32;
+		uint32 UInt32;
+		int64 Int64;
+		uint64 UInt64;
 
-		HChar Char;
-
-		short Short;
-		ushort UnsignedShort;
-
-		int Int;
-		float Float;
-		int64 Long;
-		double Double;
-
-		uint32 UnsignedInt;
-		uint64 UnsignedLong;
+		float32 Float32;
+		float64 Float64;
 
 		const void* Pointer;
 
@@ -107,41 +106,23 @@ HazeValueType GetValueTypeByToken(HazeToken token);
 
 HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isLog = true);
 
+
+// 判断类型
 bool IsNoneType(HazeValueType type);
-
 bool IsVoidType(HazeValueType type);
-
-bool IsMultiVariableType(HazeValueType type);
-
-bool IsHazeDefaultTypeAndVoid(HazeValueType type);
-
-bool IsHazeDefaultType(HazeValueType type);
-
+bool IsHazeBaseTypeAndVoid(HazeValueType type);
+bool IsHazeBaseType(HazeValueType type);
 bool IsIntegerType(HazeValueType type);
-
 bool IsFloatingType(HazeValueType type);
-
-bool IsUnsignedLongType(HazeValueType type);
-
-bool IsPointerType(HazeValueType type);
-
-bool IsOneLevelPointerType(HazeValueType type);
-
-bool IsPointerFunction(HazeValueType type);
-
-bool IsPointerPointer(HazeValueType type);
-
-bool IsNumberType(HazeValueType type);
-
 bool IsClassType(HazeValueType type);
-
+bool IsFunctionType(HazeValueType type);
+bool IsNumberType(HazeValueType type);
+bool IsClassType(HazeValueType type);
 bool IsEnumType(HazeValueType type);
-
 bool IsArrayType(HazeValueType type);
+bool IsRefrenceType(HazeValueType type);
+bool IsMultiVariableTye(HazeValueType type);
 
-bool IsArrayPointerType(HazeValueType type);
-
-bool IsReferenceType(HazeValueType type);
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);
 

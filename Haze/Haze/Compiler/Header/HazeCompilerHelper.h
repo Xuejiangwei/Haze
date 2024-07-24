@@ -49,4 +49,8 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Shar
 Share<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* compilerModule,
 	Share<HazeCompilerValue> elementValue, Share<HazeCompilerValue> movToValue = nullptr);
 
-void GetTemplateClassName(HString& inName, const V_Array<HazeDefineType>& templateTypes);
+void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes);
+
+void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const Share<HazeCompilerValue>& value/*, int index = -1*/);
+
+void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, Share<HazeCompilerValue> v1, Share<HazeCompilerValue> v2);

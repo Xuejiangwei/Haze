@@ -73,29 +73,29 @@ void ASTEnum::AddEnumOneValueByType(HazeValue& value, const HazeValue& prValue)
 {
 	switch (m_BaseType)
 	{
-	case HazeValueType::Byte:
-		value.Value.Byte = prValue.Value.Byte + 1;
+	case HazeValueType::Int8:
+		value.Value.Int8 = prValue.Value.Int8 + 1;
 		break;
-	case HazeValueType::UnsignedByte:
-		value.Value.UnsignedByte = prValue.Value.UnsignedByte + 1;
+	case HazeValueType::UInt8:
+		value.Value.UInt8 = prValue.Value.UInt8 + 1;
 		break;
-	case HazeValueType::Short:
-		value.Value.Short = prValue.Value.Short + 1;
+	case HazeValueType::Int16:
+		value.Value.Int16 = prValue.Value.Int16 + 1;
 		break;
-	case HazeValueType::UnsignedShort:
-		value.Value.UnsignedShort = prValue.Value.UnsignedShort + 1;
+	case HazeValueType::UInt16:
+		value.Value.UInt16 = prValue.Value.UInt16 + 1;
 		break;
-	case HazeValueType::Int:
-		value.Value.Int = prValue.Value.Int + 1;
+	case HazeValueType::Int32:
+		value.Value.Int32 = prValue.Value.Int32 + 1;
 		break;
-	case HazeValueType::Long:
-		value.Value.Long = prValue.Value.Long + 1;
+	case HazeValueType::UInt32:
+		value.Value.UInt32 = prValue.Value.UInt32 + 1;
 		break;
-	case HazeValueType::UnsignedInt:
-		value.Value.UnsignedInt = prValue.Value.UnsignedInt + 1;
+	case HazeValueType::Int64:
+		value.Value.Int64 = prValue.Value.Int64 + 1;
 		break;
-	case HazeValueType::UnsignedLong:
-		value.Value.UnsignedLong = prValue.Value.UnsignedLong + 1;
+	case HazeValueType::UInt64:
+		value.Value.UInt64 = prValue.Value.UInt64 + 1;
 		break;
 	default:
 		AST_ERR_W("枚举自动匹配常量值出错");

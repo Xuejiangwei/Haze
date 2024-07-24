@@ -30,24 +30,17 @@ bool IsCanCastToken(HazeToken token)
 	switch (token)
 	{
 	case HazeToken::Bool:
-	case HazeToken::Byte:
-	case HazeToken::Char:
-	case HazeToken::Short:
-	case HazeToken::Int:
-	case HazeToken::Float:
-	case HazeToken::Long:
-	case HazeToken::Double:
-	case HazeToken::UnsignedByte:
-	case HazeToken::UnsignedShort:
-	case HazeToken::UnsignedInt:
-	case HazeToken::UnsignedLong:
+	case HazeToken::Int8:
+	case HazeToken::UInt8:
+	case HazeToken::Int16:
+	case HazeToken::UInt16:
+	case HazeToken::Int32:
+	case HazeToken::UInt32:
+	case HazeToken::Int64:
+	case HazeToken::UInt64:
+	case HazeToken::Float32:
+	case HazeToken::Float64:
 	case HazeToken::Enum:
-	case HazeToken::ReferenceBase:
-	case HazeToken::ReferenceClass:
-	case HazeToken::PointerBase:
-	case HazeToken::PointerClass:
-	case HazeToken::PointerFunction:
-	case HazeToken::PointerPointer:
 		return true;
 	default:
 		break;
@@ -160,14 +153,14 @@ HazeValueType GetNumberDefaultType(const HString& str)
 	
 	if (isFloat)
 	{
-		return HazeValueType::Float;
+		return HazeValueType::Float32;
 	}
 	else
 	{
-		return HazeValueType::Int;
+		return HazeValueType::Int32;
 	}
 
-	return HazeValueType::Int;
+	return HazeValueType::Int32;
 }
 
 HString String2WString(const char* str)
@@ -276,8 +269,8 @@ HazeLibraryType GetHazeLibraryTypeByToken(HazeToken token)
 {
 	switch (token)
 	{
-	case HazeToken::StandardLibrary:
-		return HazeLibraryType::Standard;
+	case HazeToken::StaticLibrary:
+		return HazeLibraryType::Static;
 		break;
 	case HazeToken::DLLLibrary:
 		return HazeLibraryType::DLL;
@@ -294,8 +287,8 @@ InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type)
 	{
 	case HazeLibraryType::Normal:
 		return InstructionFunctionType::HazeFunction;
-	case HazeLibraryType::Standard:
-		return InstructionFunctionType::StdLibFunction;
+	case HazeLibraryType::Static:
+		return InstructionFunctionType::StaticLibFunction;
 	case HazeLibraryType::DLL:
 		return InstructionFunctionType::DLLLibFunction;
 	default:
@@ -332,38 +325,35 @@ HAZE_BINARY_STRING ToString(void* value)
 void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2)
 {
 #define CONVERT_SET_VALUE(V, V_TYPE) switch(type2) { \
-	case HazeValueType::Byte: \
-		V = (V_TYPE)v2.Value.Byte; \
+	case HazeValueType::Int8: \
+		V = (V_TYPE)v2.Value.Int8; \
 		break; \
-	case HazeValueType::UnsignedByte: \
-		V = (V_TYPE)v2.Value.UnsignedByte; \
+	case HazeValueType::UInt8: \
+		V = (V_TYPE)v2.Value.UInt8; \
 		break; \
-	case HazeValueType::Char: \
-		V = (V_TYPE)v2.Value.Char; \
+	case HazeValueType::Int16: \
+		V = (V_TYPE)v2.Value.Int16; \
 		break; \
-	case HazeValueType::Short: \
-		V = (V_TYPE)v2.Value.Short; \
+	case HazeValueType::UInt16: \
+		V = (V_TYPE)v2.Value.UInt16; \
 		break; \
-	case HazeValueType::UnsignedShort: \
-		V = (V_TYPE)v2.Value.UnsignedShort; \
+	case HazeValueType::Int32: \
+		V = (V_TYPE)v2.Value.Int32; \
 		break; \
-	case HazeValueType::Int: \
-		V = (V_TYPE)v2.Value.Int; \
+	case HazeValueType::UInt32: \
+		V = (V_TYPE)v2.Value.UInt32; \
 		break; \
-	case HazeValueType::UnsignedInt: \
-		V = (V_TYPE)v2.Value.UnsignedInt; \
+	case HazeValueType::Int64: \
+		V = (V_TYPE)v2.Value.Int64; \
 		break; \
-	case HazeValueType::Float: \
-		V = (V_TYPE)v2.Value.Float; \
+	case HazeValueType::UInt64: \
+		V = (V_TYPE)v2.Value.UInt64; \
 		break; \
-	case HazeValueType::Long: \
-		V = (V_TYPE)v2.Value.Long; \
+	case HazeValueType::Float32: \
+		V = (V_TYPE)v2.Value.Float32; \
 		break; \
-	case HazeValueType::UnsignedLong: \
-		V = (V_TYPE)v2.Value.UnsignedLong; \
-		break; \
-	case HazeValueType::Double: \
-		V = (V_TYPE)v2.Value.Double; \
+	case HazeValueType::Float64: \
+		V = (V_TYPE)v2.Value.Float64; \
 		break; \
 	default: \
 		HAZE_LOG_ERR_W("不支持<%s>类型转为<%s>类型", GetHazeValueTypeString(type2), GetHazeValueTypeString(type1)); \
@@ -372,59 +362,54 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 
 	switch (type1)
 	{
-	case HazeValueType::Byte:
+	case HazeValueType::Int8:
 	{
-		CONVERT_SET_VALUE(v1.Value.Byte, HByte)
+		CONVERT_SET_VALUE(v1.Value.Int8, int8)
 	}
 	break;
-	case HazeValueType::UnsignedByte:
+	case HazeValueType::UInt8:
 	{
-		CONVERT_SET_VALUE(v1.Value.UnsignedByte, uhbyte)
+		CONVERT_SET_VALUE(v1.Value.UInt8, uint8)
 	}
 	break;
-	case HazeValueType::Char:
+	case HazeValueType::Int16:
 	{
-		CONVERT_SET_VALUE(v1.Value.Char, HChar)
-	}
-		break;
-	case HazeValueType::Short:
-	{
-		CONVERT_SET_VALUE(v1.Value.Short, short)
+		CONVERT_SET_VALUE(v1.Value.Int16, int16)
 	}
 	break;
-	case HazeValueType::UnsignedShort:
+	case HazeValueType::UInt16:
 	{
-		CONVERT_SET_VALUE(v1.Value.UnsignedShort, ushort)
+		CONVERT_SET_VALUE(v1.Value.UInt16, uint16)
 	}
 	break;
-	case HazeValueType::Int:
+	case HazeValueType::Int32:
 	{
-		CONVERT_SET_VALUE(v1.Value.Int, int)
+		CONVERT_SET_VALUE(v1.Value.Int32, int32)
 	}
 		break;
-	case HazeValueType::UnsignedInt:
+	case HazeValueType::UInt32:
 	{
-		CONVERT_SET_VALUE(v1.Value.Int, int)
+		CONVERT_SET_VALUE(v1.Value.UInt32, uint32)
 	}
 		break;
-	case HazeValueType::Float:
+	case HazeValueType::Int64:
 	{
-		CONVERT_SET_VALUE(v1.Value.Float, float)
+		CONVERT_SET_VALUE(v1.Value.Int64, int64)
 	}
 		break;
-	case HazeValueType::Long:
+	case HazeValueType::UInt64:
 	{
-		CONVERT_SET_VALUE(v1.Value.Long, int64)
-	}
-		break;
-	case HazeValueType::UnsignedLong:
-	{
-		CONVERT_SET_VALUE(v1.Value.UnsignedLong, int64)
+		CONVERT_SET_VALUE(v1.Value.UInt64, int64)
 	}
 	break; 
-	case HazeValueType::Double:
+	case HazeValueType::Float32:
 	{
-		CONVERT_SET_VALUE(v1.Value.Double, double)
+		CONVERT_SET_VALUE(v1.Value.Float32, float32)
+	}
+		break;
+	case HazeValueType::Float64:
+	{
+		CONVERT_SET_VALUE(v1.Value.Float64, float64)
 	}
 		break;
 	default:

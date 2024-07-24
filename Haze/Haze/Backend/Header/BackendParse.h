@@ -40,6 +40,8 @@ private:
 		dst = (T)StringToStandardType<m_Type>(m_CurrLexeme);
 	};
 
+	void Parse_I_Symbol();
+
 	void Parse_I_Code();
 
 	void Parse_I_Code_GlobalTable();
@@ -78,4 +80,6 @@ private:
 
 	Share<ModuleUnit> m_CurrParseModule;
 	HashMap<HString, Share<ModuleUnit>> m_Modules;
+
+	HashSet<HString> m_InterSymbol;
 };

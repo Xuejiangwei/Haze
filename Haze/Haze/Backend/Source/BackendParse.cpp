@@ -16,23 +16,23 @@ static Pair<bool, int> ParseStringCount = { false, 0 };
 static void FindObjectAndMemberName(const HString& inName, HString& outObjectName, 
 	HString& outMemberName, bool& objectIsPointer)
 {
-	size_t pos = inName.find(HAZE_CLASS_POINTER_ATTR);
+	/*size_t pos = inName.find(TOKEN_THIS);
 	if (pos != HString::npos)
 	{
 		outObjectName = inName.substr(0, pos);
-		outMemberName = inName.substr(pos + HString(HAZE_CLASS_POINTER_ATTR).size());
+		outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
 		objectIsPointer = true;
 	}
 	else
 	{
-		pos = inName.find(HAZE_CLASS_ATTR);
+		pos = inName.find(TOKEN_THIS);
 		if (pos != HString::npos)
 		{
 			outObjectName = inName.substr(0, pos);
-			outMemberName = inName.substr(pos + HString(HAZE_CLASS_ATTR).size());
+			outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
 			objectIsPointer = false;
 		}
-	}
+	}*/
 }
 
 static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
@@ -42,7 +42,8 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 		return true;
 	}
 
-	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::Function)
+	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::Function && 
+		(ins.Operator[0].Scope == HazeVariableScope::Temp || ins.Operator[0].Scope == HazeVariableScope::Ignore))
 	{
 		return true;
 	}
@@ -105,11 +106,16 @@ BackendParse::~BackendParse()
 
 void BackendParse::Parse()
 {
-	HString interCodePath;
-
 	auto& refModules = m_VM->GetReferenceModules();
-
 	HString codeText;
+
+	{
+		HAZE_IFSTREAM fs(GetIntermediateModuleFile(HAZE_INTER_SYMBOL_TABLE));
+		fs.imbue(std::locale("chs"));
+		codeText = HString(std::istreambuf_iterator<HChar>(fs), {});
+		Parse_I_Symbol();
+		fs.close();
+	}
 
 	for (auto& refModule : refModules)
 	{
@@ -155,6 +161,15 @@ void BackendParse::GetNextLexeme()
 	}
 }
 
+void BackendParse::Parse_I_Symbol()
+{
+	while (m_CurrCode && HazeIsSpace(*m_CurrCode))
+	{
+		GetNextLexeme();
+		m_InterSymbol.insert(m_CurrLexeme);
+	}
+}
+
 void BackendParse::Parse_I_Code()
 {
 	//Standard lib
@@ -180,6 +195,7 @@ void BackendParse::Parse_I_Code()
 
 void BackendParse::Parse_I_Code_GlobalTable()
 {
+	HString str;
 	if (m_CurrLexeme == GetGlobalDataHeaderString())
 	{
 		GetNextLexeme();
@@ -200,7 +216,7 @@ void BackendParse::Parse_I_Code_GlobalTable()
 
 			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].Type.PrimaryType);
 
-			if (IsHazeDefaultType(table.Data[i].Type.PrimaryType))
+			if (IsHazeBaseType(table.Data[i].Type.PrimaryType))
 			{
 				GetNextLexeme();
 				StringToHazeValueNumber(m_CurrLexeme, table.Data[i].Type.PrimaryType, table.Data[i].Value);
@@ -209,7 +225,17 @@ void BackendParse::Parse_I_Code_GlobalTable()
 			{
 				if (table.Data[i].Type.NeedCustomName())
 				{
-					GetNextLexmeAssign_HazeString(table.Data[i].Type.CustomName);
+					GetNextLexmeAssign_HazeString(str);
+					auto iter = m_InterSymbol.find(str);
+					if (iter != m_InterSymbol.end())
+					{
+						table.Data[i].Type.CustomName = &(*iter);
+					}
+					else
+					{
+						HAZE_LOG_ERR_W("解析全局变量错误, 在符号表没找到对应类<%s>", str.c_str());
+					}
+
 					if (IsClassType(table.Data[i].Type.PrimaryType))
 					{
 						table.ClassObjectAllSize += table.Data[i].Size;
@@ -268,6 +294,8 @@ void BackendParse::Parse_I_Code_ClassTable()
 	if (m_CurrLexeme == GetClassTableHeaderString())
 	{
 		uint32 number;
+		HString str;
+
 		GetNextLexmeAssign_StandardType(number);
 
 		ModuleUnit::ClassTable& table = m_CurrParseModule->m_ClassTable;
@@ -301,7 +329,17 @@ void BackendParse::Parse_I_Code_ClassTable()
 
 					if (classMember.Variable.Type.NeedCustomName())
 					{
-						GetNextLexmeAssign_HazeString(classMember.Variable.Type.CustomName);
+						GetNextLexmeAssign_HazeString(str);
+						
+						auto iter = m_InterSymbol.find(str);
+						if (iter != m_InterSymbol.end())
+						{
+							classMember.Variable.Type.CustomName = &(*iter);
+						}
+						else
+						{
+							HAZE_LOG_ERR_W("解析类成员错误, 在符号表没找到对应类<%s>", str.c_str());
+						}
 					}
 
 					GetNextLexmeAssign_CustomType<uint32>(classMember.Offset);
@@ -332,7 +370,8 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 				GetNextLexmeAssign_HazeString(table.m_Functions[i].Name);
 
-				table.m_Functions[i].Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
+				table.m_Functions[i].Type.StringStream<BackendParse>(this, 
+					&BackendParse::GetNextLexmeAssign_HazeString,
 					&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 				GetNextLexeme();
@@ -419,6 +458,7 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 
 void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction)
 {
+	HString str;
 	switch (instruction.InsCode)
 	{
 	case InstructionOpCode::NONE:
@@ -484,14 +524,25 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Variable.Type.PrimaryType);
 
-		if (IsPointerFunction(operatorOne.Variable.Type.PrimaryType))
+		//if (IsFunctionType(operatorOne.Variable.Type.PrimaryType))
 		{
 			GetNextLexmeAssign_CustomType<uint32>(operatorOne.Scope);
 			GetNextLexmeAssign_CustomType<uint32>(operatorOne.Desc);
 		}
 
-		GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
-		GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
+		if (operatorOne.Scope == HazeVariableScope::Ignore)
+		{
+			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
+			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
+		}
+		else
+		{
+			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
+			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
+			operatorOne.Extra.Address.BaseAddress = 0;
+			operatorOne.Extra.Address.Offset = 0;
+		}
+
 
 		GetNextLexmeAssign_HazeString(operatorTwo.Variable.Name);
 		operatorTwo.Desc = HazeDataDesc::CallFunctionModule;
@@ -508,7 +559,17 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 		if (operatorOne.Variable.Type.NeedCustomName())
 		{
-			GetNextLexmeAssign_HazeString(operatorOne.Variable.Type.CustomName);
+			GetNextLexmeAssign_HazeString(str);
+
+			auto iter = m_InterSymbol.find(str);
+			if (iter != m_InterSymbol.end())
+			{
+				operatorOne.Variable.Type.CustomName = &(*iter);
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("解析指令错误, 在符号表没找到对应类<%s>", str.c_str());
+			}
 		}
 		else
 		{
@@ -660,7 +721,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 		{
 			if (function.Variables[i].Variable.Name == objName)
 			{
-				auto classData = GetClass(function.Variables[i].Variable.Type.CustomName);
+				auto classData = GetClass(*function.Variables[i].Variable.Type.CustomName);
 				if (isPointer)
 				{
 					operatorData.Extra.Address.BaseAddress = function.Variables[i].Offset;
@@ -687,9 +748,9 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 			operatorData.Extra.Address.BaseAddress = function.Variables[iterIndex->second].Offset;
 			operatorData.AddressType = InstructionAddressType::Local_Base_Offset;
 		}
-		else if (function.Variables[0].Variable.Name.substr(0, 1) == HAZE_CLASS_THIS)
+		else if (function.Variables[0].Variable.Name.substr(0, 1) == TOKEN_THIS)
 		{
-			auto classData = GetClass(function.Variables[0].Variable.Type.CustomName);
+			auto classData = GetClass(*function.Variables[0].Variable.Type.CustomName);
 			if (classData)
 			{
 				operatorData.Extra.Address.Offset = GetMemberOffset(*classData, operatorData.Variable.Name)
@@ -701,7 +762,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 			{
 				HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>,当前类<%s>未找到!\n",
 					operatorData.Variable.Name.c_str(), function.Name.c_str(),
-					function.Variables[0].Variable.Type.CustomName.c_str());
+					function.Variables[0].Variable.Type.CustomName->c_str());
 			}
 		}
 		else
@@ -740,7 +801,7 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 		index = (int)newGlobalDataTable.GetIndex(objName);
 		if (index >= 0)
 		{
-			auto Class = GetClass(newGlobalDataTable.Data[index].Type.CustomName);
+			auto Class = GetClass(*newGlobalDataTable.Data[index].Type.CustomName);
 			if (Class)
 			{
 				operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
@@ -911,7 +972,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 						//		HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
 						//	}
 						//}
-						else if (IS_SCOPE_IGNORE(operatorData.Scope) && operatorData.Desc == HazeDataDesc::FunctionAddress)
+						else if ((IS_SCOPE_IGNORE(operatorData.Scope) || IS_SCOPE_TEMP(operatorData.Scope)) && operatorData.Desc == HazeDataDesc::FunctionAddress)
 						{
 							operatorData.AddressType = InstructionAddressType::FunctionAddress;
 						}

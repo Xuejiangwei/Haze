@@ -16,6 +16,7 @@ class ASTTemplateBase;
 
 class Parse
 {
+	friend struct TempCurrCode;
 public:
 	Parse(HazeCompiler* compiler);
 
@@ -27,9 +28,10 @@ public:
 
 	void ParseContent();
 
-	void ParseTemplateContent(const HString& moduleName, const HString& templateName, const V_Array<HString>& templateTypes, const V_Array<HazeDefineType>& templateRealTypes);
+	void ParseTemplateContent(const HString& moduleName, const HString& templateName, const V_Array<HString>& templateTypes,
+		const V_Array<HazeDefineType>& templateRealTypes);
 
-	HazeToken GetNextToken();
+	HazeToken GetNextToken(bool clearLexeme = true);
 
 	const HString& GetCurrLexeme() const { return m_CurrLexeme; }
 
@@ -49,6 +51,10 @@ private:
 	Unique<ASTBase> ParseIdentifer();
 
 	Unique<ASTBase> ParseVariableDefine();
+	Unique<ASTBase> ParseVariableDefine_MultiVariable();
+	Unique<ASTBase> ParseVariableDefine_Array(TemplateDefineTypes& templateTypes);
+	Unique<ASTBase> ParseVariableDefine_Class(TemplateDefineTypes& templateTypes);
+	Unique<ASTBase> ParseVariableDefine_Function(TemplateDefineTypes& templateTypes);
 
 	Unique<ASTBase> ParseStringText();
 
@@ -76,7 +82,7 @@ private:
 
 	Unique<ASTBase> ParseLeftParentheses();
 
-	Unique<ASTBase> ParsePointerValue();
+	//Unique<ASTBase> ParsePointerValue();
 
 	Unique<ASTBase> ParseNeg();
 
@@ -95,8 +101,6 @@ private:
 	Unique<ASTFunctionSection> ParseFunctionSection();
 
 	Unique<ASTLibrary> ParseLibrary();
-
-	Unique<ASTClassDefine> ParseLibrary_ClassDefine();
 
 	V_Array<Unique<ASTFunctionDefine>> ParseLibrary_FunctionDefine();
 
@@ -121,21 +125,25 @@ private:
 	Unique<ASTTemplateBase> ParseTemplateFunction(V_Array<HString>& templateTypes);
 
 private:
+	bool ParseVariableDefineTypeModify();
+
 	Unique<ASTFunction> ParseFunction(const HString* className = nullptr);
 
 	bool ExpectNextTokenIs(HazeToken token, const HChar* errorInfo = nullptr);
+
+	bool NextTokenNotIs(HazeToken token) { return GetNextToken() != token; }
 
 	bool TokenIs(HazeToken token, const HChar* errorInfo = nullptr);
 
 	bool IsHazeSignalToken(const HChar* hChar, const HChar*& outChar, uint32 charSize = 1);
 
-	bool IsPointerOrRef(const HString& str, HazeToken& outToken);
+	bool IsNumberType(const HString& str, HazeToken& outToken);
 
 	void GetValueType(HazeDefineType& inType);
 
-	void ResetArrayVariableType(HazeDefineType& inType);
-
 	void GetTemplateRealValueType(const HString& str, HazeDefineType& inType);
+
+	void ParseTemplateTypes(TemplateDefineTypes& templateTypes);
 
 	//void ParseVariableType();
 
@@ -144,6 +152,7 @@ private:
 private:
 	HazeCompiler* m_Compiler;
 
+	HazeLibraryType m_LibraryType;
 	HazeToken m_CurrToken;
 	const HChar* m_CurrCode;
 	HString m_CodeText;
@@ -157,7 +166,7 @@ private:
 
 	int m_LeftParenthesesExpressionCount;
 	uint32 m_LineCount;
-	bool m_NeedParseNextStatement;
+	//bool m_NeedParseNextStatement;
 
 	bool m_IsParseTemplate;
 	const V_Array<HString>* m_TemplateTypes;

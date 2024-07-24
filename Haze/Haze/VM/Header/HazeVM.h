@@ -61,11 +61,15 @@ public:
 
 	char* GetGlobalValueByIndex(uint32 Index);
 
-	ClassData* FindClass(const HString& m_ClassName);
+	ClassData* FindClass(const HString& className);
 
-	uint32 GetClassSize(const HString& m_ClassName);
+	uint32 GetClassSize(const HString& className);
 
 private:
+	const HString* GetSymbolClassName(const HString& name);
+
+	void ResetSymbolClassIndex(const HString& name, uint64 index);
+
 	void DynamicInitializerForGlobalData();
 
 	void OnExecLine(uint32 Line);
@@ -102,6 +106,7 @@ private:
 
 	V_Array<HString> Vector_StringTable;
 
+	HashMap<HString, uint64> m_ClassSymbol;
 	V_Array<ClassData> Vector_ClassTable;
 
 	V_Array<FunctionData> Vector_FunctionTable;

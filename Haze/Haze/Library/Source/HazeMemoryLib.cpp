@@ -63,5 +63,5 @@ void HazeMemoryLib::StringCount(HAZE_STD_CALL_PARAM)
 	HString s(src);
 	int64 length = s.length();
 
-	SET_RET_BY_TYPE(HazeValueType::Long, length);
+	SET_RET_BY_TYPE(HazeValueType::Int64, length);
 }

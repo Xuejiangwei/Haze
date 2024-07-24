@@ -30,7 +30,7 @@ struct PushTempRegister
 		for (auto& regi : UseTempRegisters)
 		{
 			Hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
-			Module->GenVariableHzic(Module, Hss, regi.second);
+			GenVariableHzic(Module, Hss, regi.second);
 			Hss << std::endl;
 			Size += regi.second->GetSize();
 		}
@@ -41,7 +41,7 @@ struct PushTempRegister
 		for (auto& regi : UseTempRegisters)
 		{
 			Hss << GetInstructionString(InstructionOpCode::POP) << " ";
-			Module->GenVariableHzic(Module, Hss, regi.second);
+			GenVariableHzic(Module, Hss, regi.second);
 			Hss << std::endl;
 		}
 		
@@ -113,7 +113,6 @@ void HazeCompilerModule::RestartTemplateModule(const HString& moduleName)
 void HazeCompilerModule::FinishModule()
 {
 	m_CurrFunction.clear();
-	GenCodeFile();
 }
 
 void HazeCompilerModule::GenCodeFile()
@@ -271,7 +270,7 @@ bool HazeCompilerModule::ResetTemplateClassRealName(HString& inName, const V_Arr
 			}
 
 			//HString className = inName;
-			GetTemplateClassName(inName, templateTypes);
+			//GetTemplateClassName(inName, templateTypes);
 
 			for (auto& compilerClass : m_HashMap_Classes)
 			{
@@ -440,7 +439,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateNeg(Share<HazeCompilerValue> 
 Share<HazeCompilerValue> HazeCompilerModule::CreateInc(Share<HazeCompilerValue> value, bool isPreInc)
 {
 	Share<HazeCompilerValue> retValue = value;
-	if (IsHazeDefaultType(value->GetValueType().PrimaryType) || value->IsPointer())
+	if (IsHazeBaseType(value->GetValueType().PrimaryType))
 	{
 		if (!isPreInc)
 		{
@@ -460,7 +459,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateInc(Share<HazeCompilerValue> 
 Share<HazeCompilerValue> HazeCompilerModule::CreateDec(Share<HazeCompilerValue> value, bool isPreDec)
 {
 	Share<HazeCompilerValue> retValue = value;
-	if (IsHazeDefaultType(value->GetValueType().PrimaryType) || value->IsPointer())
+	if (IsHazeBaseType(value->GetValueType().PrimaryType))
 	{
 		if (!isPreDec)
 		{
@@ -485,13 +484,13 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(Share<HazeCompilerV
 	HAZE_STRING_STREAM hss;
 	HString varName;
 
-	if (IsHazeDefaultType(arrayValue->GetValueType().SecondaryType))
+	if (IsHazeBaseType(arrayValue->GetValueType().SecondaryType))
 	{
 		for (int i = 0; i < (int)arrayValue->GetArrayLength(); i++)
 		{
 			hss << GetInstructionString(InstructionOpCode::MOV) << " ";
 
-			GenVariableHzic(this, hss, array, i);
+			//GenVariableHzic(this, hss, array, i);
 
 			hss << " ";
 
@@ -702,7 +701,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefi
 		CreateVariable(this, var, HazeVariableScope::Global, HazeDataDesc::None, 0, refValue, arraySize, params) });
 
 	auto& retValue = m_Variables.back().second;
-	if (!IsHazeDefaultType(retValue->GetValueType().PrimaryType))
+	if (!IsHazeBaseType(retValue->GetValueType().PrimaryType))
 	{
 		if (retValue->IsClass())
 		{
@@ -751,11 +750,11 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				else if (!IsMultiVariableType(type.PrimaryType))
+				/*else if (!IsMultiVariableType(type.PrimaryType))
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
-				}
+				}*/
 			}
 		}
 	}
@@ -764,13 +763,13 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 	{
 		auto Variable = params[i];
 
-		if (Variable->IsRef())
-		{
-			Variable = m_Compiler->CreateMovPV(m_Compiler->GetTempRegister(), Variable);
-		}
-		else if (Variable->IsArrayElement())
+		if (Variable->IsArrayElement())
 		{
 			Variable = GetArrayElementToValue(this, Variable, m_Compiler->GetTempRegister());
+		}
+		else if (Variable->IsRefrence())
+		{
+			//GenIRCode(InstructionOpCode::PUSH, Variable, nullptr);
 		}
 
 		hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
@@ -814,21 +813,17 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 		}
 
 		hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
-		if (thisPointerTo->IsPointerClass())
-		{
-			hss << strName << " " << CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " <<//CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
-				CAST_TYPE(HazeValueType::PointerClass) << " " << thisPointerTo->GetValueType().CustomName;
-		}
-		else if (thisPointerTo->IsClass())
+		//if (thisPointerTo->IsPointerClass())
+		//{
+		//	hss << strName << " " << CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " <<//CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
+		//		CAST_TYPE(HazeValueType::PointerClass) << " " << thisPointerTo->GetValueType().CustomName;
+		//}
+		//else 
+		if (thisPointerTo->IsClass())
 		{
 			auto classValue = DynamicCast<HazeCompilerClassValue>(thisPointerTo);
 			hss << strName << " " << CAST_SCOPE(classValue->GetVariableScope()) << " " << CAST_TYPE(HazeDataDesc::ClassThis) << " " <<
-				CAST_TYPE(HazeValueType::PointerClass) << " " << classValue->GetOwnerClassName();
-		}
-		else if (thisPointerTo->IsRefClass())
-		{
-			hss << strName << " " << CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " <<//CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
-				CAST_TYPE(HazeValueType::ReferenceClass) << " " << thisPointerTo->GetValueType().CustomName;
+				CAST_TYPE(HazeValueType::Class) << " " << classValue->GetOwnerClassName();
 		}
 		else
 		{
@@ -848,11 +843,11 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 
 		hss.str(H_TEXT(""));
 
-		size += GetSizeByHazeType(HazeValueType::PointerClass);
+		size += GetSizeByHazeType(HazeValueType::Class);
 	}
 
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
-		<< " " << (uint32)HazeDataDesc::Address << " " << CAST_TYPE(HazeValueType::Int) << std::endl;
+		<< " " << (uint32)HazeDataDesc::Address << " " << CAST_TYPE(HazeValueType::Int32) << std::endl;
 	if (insertBlock)
 	{
 		insertBlock->PushIRCode(hss.str());
@@ -873,7 +868,8 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, callFunction, nullptr, size, params, thisPointerTo);
 
-	hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::Function) 
+	hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::None) 
+		<< " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<CAST_DESC(HazeDataDesc::FunctionAddress)
 		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << std::endl;
 
 	auto retRegister = HazeCompiler::GetRegister(RET_REGISTER);
@@ -903,13 +899,10 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 	}
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
-
 	FunctionCall(hss, nullptr, pointerFunction, size, params, thisPointerTo);
-
-	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::PointerFunction) << " "
+	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
 		<< CAST_SCOPE(pointerFunction->GetVariableScope())  << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << params.size()
 		<< " " << size << " " << m_Compiler->GetCurrModuleName() << std::endl;
-	insertBlock->PushIRCode(hss.str());
 
 	return HazeCompiler::GetRegister(RET_REGISTER);
 }
@@ -928,8 +921,7 @@ Share<HazeCompilerValue> HazeCompilerModule::GetOrCreateGlobalStringVariable(con
 	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = &it->first;
 
 	HazeDefineVariable defineVar;
-	defineVar.Type.PrimaryType = HazeValueType::PointerBase;
-	defineVar.Type.SecondaryType = HazeValueType::Char;
+	defineVar.Type.PrimaryType = HazeValueType::String;
 
 	it->second = CreateVariable(this, defineVar, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
 
@@ -1105,66 +1097,6 @@ uint32 HazeCompilerModule::GetClassSize(const HString& className)
 	return GetClass(className)->GetDataSize();
 }
 
-void HazeCompilerModule::GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss, 
-	const Share<HazeCompilerValue>& value, int index)
-{
-	static HString s_StrName;
-
-	bool find = false;
-
-	s_StrName.clear();
-	if (value->IsGlobalVariable())
-	{
-		find = HazeCompilerModule::GetGlobalVariableName(compilerModule, value, s_StrName);
-		if (!find && value->IsNullPtr())
-		{
-			find = true;
-			s_StrName = NULL_PTR;
-		}
-	}
-	else if (value->IsLocalVariable())
-	{
-		find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, s_StrName);
-	}
-	else if (value->IsTempVariable())
-	{
-		find = true;
-		s_StrName = compilerModule->m_Compiler->GetRegisterName(value);
-	}
-	else if (value->IsFunctionAddress())
-	{
-		s_StrName = value->GetValueType().CustomName;
-		if (!s_StrName.empty())
-		{
-			find = true;
-		}
-	}
-	else
-	{
-		HAZE_LOG_ERR_W("生成中间代码错误,变量作用域错误!\n");
-		return;
-	}
-
-	if (!find)
-	{
-		HAZE_LOG_ERR_W("生成中间代码错误,未能找到变量!\n");
-		return;
-	}
-
-	hss << s_StrName << " " << CAST_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " ";
-	value->GetValueType().StringStreamTo(hss);
-
-	if (value->IsString())
-	{
-		index = compilerModule->GetGlobalStringIndex(value);
-	}
-
-	if (index >= 0)
-	{
-		hss << " " << index;
-	}
-}
-
 void HazeCompilerModule::GenICode()
 {
 	//版本 2个字节
@@ -1191,7 +1123,7 @@ void HazeCompilerModule::GenICode()
 
 		hss << var.first << " " << var.second->GetSize() << " " << CAST_TYPE(var.second->GetValueType().PrimaryType) << " ";
 
-		if (IsHazeDefaultType(var.second->GetValueType().PrimaryType))
+		if (IsHazeBaseType(var.second->GetValueType().PrimaryType))
 		{
 			HazeCompilerStream(hss, var.second);
 		}

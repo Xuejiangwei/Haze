@@ -72,7 +72,7 @@ void HazeFileLib::OpenFile(HAZE_STD_CALL_PARAM)
 
 	FILE* file;
 	_wfopen_s(&file, filePath, mode);
-	SET_RET_BY_TYPE(HazeValueType::PointerBase, file);
+	SET_RET_BY_TYPE(HazeValueType::UInt64, file);
 }
 
 void HazeFileLib::CloseFile(HAZE_STD_CALL_PARAM)
@@ -94,7 +94,7 @@ void HazeFileLib::ReadChar(HAZE_STD_CALL_PARAM)
 
 	auto result = fgetwc((FILE*)file);
 
-	SET_RET_BY_TYPE(HazeValueType::Int, result);
+	SET_RET_BY_TYPE(HazeValueType::Int32, result);
 }
 
 void HazeFileLib::ReadString(HAZE_STD_CALL_PARAM)
@@ -109,7 +109,7 @@ void HazeFileLib::ReadString(HAZE_STD_CALL_PARAM)
 	GET_PARAM(str);
 
 	auto result = fgetws(str, maxNum, (FILE*)file);
-	SET_RET_BY_TYPE(HazeValueType::PointerBase, result);
+	SET_RET_BY_TYPE(HazeValueType::UInt64, result);
 }
 
 void HazeFileLib::Read(HAZE_STD_CALL_PARAM)
@@ -126,7 +126,7 @@ void HazeFileLib::Read(HAZE_STD_CALL_PARAM)
 	GET_PARAM(buffer);
 
 	auto result = fread(buffer, size, count, (FILE*)file);
-	SET_RET_BY_TYPE(HazeValueType::UnsignedLong, result);
+	SET_RET_BY_TYPE(HazeValueType::UInt64, result);
 }
 
 void HazeFileLib::ReadLine(HAZE_STD_CALL_PARAM)
@@ -148,7 +148,7 @@ void HazeFileLib::ReadLine(HAZE_STD_CALL_PARAM)
 		c = fgetwc((FILE*)file);
 	}
 
-	SET_RET_BY_TYPE(HazeValueType::PointerBase, result);
+	SET_RET_BY_TYPE(HazeValueType::UInt64, result);
 }
 
 void HazeFileLib::WriteChar(HAZE_STD_CALL_PARAM)
@@ -161,7 +161,7 @@ void HazeFileLib::WriteChar(HAZE_STD_CALL_PARAM)
 	GET_PARAM(c);
 
 	auto result = fputwc(c, (FILE*)file);
-	SET_RET_BY_TYPE(HazeValueType::Int, result);
+	SET_RET_BY_TYPE(HazeValueType::Int32, result);
 }
 
 void HazeFileLib::WriteString(HAZE_STD_CALL_PARAM)
@@ -174,7 +174,7 @@ void HazeFileLib::WriteString(HAZE_STD_CALL_PARAM)
 	GET_PARAM(str);
 
 	auto result = fputws(str, (FILE*)file);
-	SET_RET_BY_TYPE(HazeValueType::Int, result);
+	SET_RET_BY_TYPE(HazeValueType::Int32, result);
 }
 
 void HazeFileLib::Write(HAZE_STD_CALL_PARAM)
@@ -191,5 +191,5 @@ void HazeFileLib::Write(HAZE_STD_CALL_PARAM)
 	GET_PARAM(buffer);
 
 	auto result = fwrite(buffer, size, count, (FILE*)file);
-	SET_RET_BY_TYPE(HazeValueType::UnsignedLong, result);
+	SET_RET_BY_TYPE(HazeValueType::UInt64, result);
 }

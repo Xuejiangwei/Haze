@@ -54,6 +54,8 @@ private:
 	void WriteInstruction(const ModuleUnit::FunctionInstruction& instruction);
 
 private:
+	inline void ReadType(HazeVM* vm, Unique<HAZE_BINARY_IFSTREAM>& fileStream, HazeDefineType& type);
+
 	void ReadGlobalDataTable(HazeVM* vm);
 
 	void ReadStringTable(HazeVM* vm);
@@ -64,7 +66,7 @@ private:
 
 	void ReadFunctionInstruction(HazeVM* vm);
 
-	void ReadInstruction(Instruction& instruction);
+	void ReadInstruction(HazeVM* vm, Instruction& instruction);
 
 private:
 	Unique<HAZE_BINARY_OFSTREAM> m_FileStream;

@@ -37,7 +37,7 @@ public:
 
 	bool IsTempVariable() const { return m_Scope == HazeVariableScope::Temp; }
 
-	bool IsFunctionAddress() const { return m_Scope == HazeVariableScope::Ignore && m_Desc == HazeDataDesc::FunctionAddress; }
+	bool IsFunctionAddress() const { return m_Desc == HazeDataDesc::FunctionAddress; }
 
 	void SetScope(HazeVariableScope scope) { m_Scope = scope; }
 
@@ -67,21 +67,9 @@ public:
 	bool IsNullPtr() const { return m_Desc == HazeDataDesc::NullPtr; }
 
 public:
-	bool IsPointer() const { return IsPointerType(m_ValueType.PrimaryType); }
+	bool IsRefrence() const { return IsRefrenceType(m_ValueType.PrimaryType); }
 
-	bool IsPointerBase() const { return m_ValueType.PrimaryType == HazeValueType::PointerBase; }
-
-	bool IsPointerClass() const { return m_ValueType.PrimaryType == HazeValueType::PointerClass; }
-
-	bool IsPointerFunction() const { return m_ValueType.PrimaryType == HazeValueType::PointerFunction; }
-
-	bool IsPointerPointer() const { return m_ValueType.PrimaryType == HazeValueType::PointerPointer; }
-
-	bool IsRefBase() const { return m_ValueType.PrimaryType == HazeValueType::ReferenceBase; }
-
-	bool IsRefClass() const { return m_ValueType.PrimaryType == HazeValueType::ReferenceClass; }
-
-	bool IsRef() const { return IsRefBase() || IsRefClass(); }
+	bool IsFunction() const { return IsFunctionType(m_ValueType.PrimaryType); }
 
 	bool IsArray() const { return IsArrayType(m_ValueType.PrimaryType); }
 

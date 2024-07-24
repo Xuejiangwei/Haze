@@ -152,7 +152,7 @@ enum class InstructionOpCode : uint32
 enum class InstructionFunctionType : int
 {
 	HazeFunction,
-	StdLibFunction,
+	StaticLibFunction,
 	DLLLibFunction,
 };
 
@@ -269,7 +269,7 @@ struct ModuleData
 struct ClassData
 {
 	HString Name;
-	unsigned int Size;
+	uint64 Size;
 	V_Array<HazeVariableData> Members;
 };
 
