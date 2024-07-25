@@ -9,12 +9,25 @@ class HazeCompilerClass;
 class HazeCompilerModule;
 class HazeBaseBlock;
 
+struct AdvanceClassInfo
+{
+	struct AdvanceFunctionInfo
+	{
+		void(*Func)(class HazeStack*);
+		V_Array<HazeDefineType> Params;
+	};
+
+	HashMap<HString, AdvanceFunctionInfo> Functions;
+};
+
 class HazeCompiler
 {
 public:
 	HazeCompiler(HazeVM* vm);
 
 	~HazeCompiler();
+
+	void RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassInfo& info);
 
 	bool InitializeCompiler(const HString& moduleName, const HString& path);
 
@@ -153,8 +166,8 @@ public:
 
 	Share<HazeCompilerValue> CreateDec(Share<HazeCompilerValue> value, bool isPreDec);
 
-	Share<HazeCompilerValue> CreateNew(Share<HazeCompilerFunction> function, const HazeDefineType& data, Share<HazeCompilerValue> countValue);
-
+	Share<HazeCompilerValue> CreateNew(Share<HazeCompilerFunction> function, const HazeDefineType& data, V_Array<Share<HazeCompilerValue>>* countValue);
+	
 	Share<HazeCompilerValue> CreateCast(const HazeDefineType& type, Share<HazeCompilerValue> value);
 
 	Share<HazeCompilerValue> CreateCVT(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right);
@@ -170,10 +183,8 @@ public:
 
 	Share<HazeCompilerValue> CreateArrayElement(Share<HazeCompilerValue> value, V_Array<Share<HazeCompilerValue>> indices);
 
-	Share<HazeCompilerValue> CreateGetArrayLength(Share<HazeCompilerValue> value);
-
 public:
-	//Share<HazeCompilerValue> CreatePointerToValue(Share<HazeCompilerValue> value);
+	Share<HazeCompilerValue> CreatePointerToValue(Share<HazeCompilerValue> value);
 
 	//Share<HazeCompilerValue> CreatePointerToArray(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> index = nullptr);
 
@@ -211,6 +222,8 @@ public:
 
 private:
 	HazeVM* m_VM;
+
+	HashMap<HazeValueType, AdvanceClassInfo> m_AdvanceClassInfo;
 
 	V_Array<HString> m_ModuleNameStack;
 

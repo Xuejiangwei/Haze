@@ -159,9 +159,9 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 }
 
 ASTFunctionCall::ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
-	HString& name, V_Array<Unique<ASTBase>>& functionParam)
+	HString& name, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_Name(Move(name)),
-	m_FunctionParam(Move(functionParam))
+	m_FunctionParam(Move(functionParam)), m_ClassObj(Move(classObj))
 {
 }
 
@@ -173,7 +173,15 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
-	auto [function, objectVariable] = m_Compiler->GetFunction(m_Name);
+	Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> funcs = { nullptr, nullptr };
+	if (m_ClassObj)
+	{
+		funcs.first = DynamicCast<HazeCompilerClassValue>(m_ClassObj->CodeGen())->GetOwnerClass()->FindFunction(m_Name);
+	}
+	else
+	{
+		funcs = m_Compiler->GetFunction(m_Name);
+	}
 
 	V_Array<Share<HazeCompilerValue>> param;
 
@@ -187,17 +195,17 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		}
 	}
 	
-	if (function)
+	if (funcs.first)
 	{
-		if (function->GetClass())
+		if (funcs.first->GetClass())
 		{
-			if (!objectVariable)
+			if (!funcs.second)
 			{
-				objectVariable = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(TOKEN_THIS);//param.push_back(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(TOKEN_THIS));
+				funcs.second = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(TOKEN_THIS);//param.push_back(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(TOKEN_THIS));
 			}
 		}
 
-		return m_Compiler->CreateFunctionCall(function, param, objectVariable);
+		return m_Compiler->CreateFunctionCall(funcs.first, param, funcs.second);
 	}
 	else
 	{
@@ -447,24 +455,23 @@ ASTNew::~ASTNew()
 
 Share<HazeCompilerValue> ASTNew::CodeGen()
 {
-	Share<HazeCompilerValue> countValue = nullptr;
-	if (m_CountArrayExpression.size() > 0)
-	{
-		countValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), m_Compiler->GetConstantValueUint64(1));
+	auto func = m_Compiler->GetCurrModule()->GetCurrFunction();
 
-		for (auto& iter : m_CountArrayExpression)
-		{
-			m_Compiler->CreateMul(countValue, iter->CodeGen());
-		}
+	V_Array<Share<HazeCompilerValue>> countValue(m_CountArrayExpression.size());
+
+	for (uint64 i = 0; i < m_CountArrayExpression.size(); i++)
+	{
+		countValue[i] = m_CountArrayExpression[i]->CodeGen();
 	}
 
-	auto value = m_Compiler->CreateNew(m_Compiler->GetCurrModule()->GetCurrFunction(), m_DefineVariable.Type, countValue);
+	auto value = m_Compiler->CreateNew(func, m_DefineVariable.Type, &countValue);
+	
 
 	//new申请内存后，若是类的话，需要调用构造函数
 	if (value->GetValueType().NeedCustomName())
 	{
 		auto newClass = m_Compiler->GetCurrModule()->GetClass(*value->GetValueType().CustomName);
-		if (countValue)
+		if (countValue.size() > 0)
 		{
 			//需要初始化多个类对象，类的参数个数必须为0
 			auto function = newClass->FindFunction(*value->GetValueType().CustomName);
@@ -479,9 +486,14 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 				return value;
 			}
 
-			//参数从右往左
+			auto objCount = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), m_Compiler->GetConstantValueUint64(1));
+			for (uint64 i = 0; i < countValue.size(); i++)
+			{
+				m_Compiler->CreateMul(objCount, countValue[i]);
+			}
+
 			V_Array<Share<HazeCompilerValue>> params;
-			params.push_back(countValue);
+			params.push_back(objCount);
 			params.push_back(m_Compiler->GetConstantValueUint64(newClass->GetDataSize()));
 			params.push_back(m_Compiler->CreatePointerToFunction(function, nullptr));
 			params.push_back(value);
@@ -1183,20 +1195,6 @@ ASTCast::~ASTCast()
 Share<HazeCompilerValue> ASTCast::CodeGen()
 {
 	return m_Compiler->CreateCast(m_DefineVariable.Type, m_Expression->CodeGen());
-}
-
-ASTArrayLength::ASTArrayLength(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
-	: ASTBase(compiler, location), m_Expression(Move(expression))
-{
-}
-
-ASTArrayLength::~ASTArrayLength()
-{
-}
-
-Share<HazeCompilerValue> ASTArrayLength::CodeGen()
-{
-	return m_Compiler->CreateGetArrayLength(m_Expression->CodeGen());
 }
 
 ASTSizeOf::ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineType& type, Unique<ASTBase>& expression)

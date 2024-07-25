@@ -94,7 +94,7 @@ class ASTFunctionCall : public ASTBase
 {
 public:
 	ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name
-		, V_Array<Unique<ASTBase>>& functionParam);
+		, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj = nullptr);
 	
 	virtual ~ASTFunctionCall() override;
 
@@ -105,8 +105,9 @@ public:
 private:
 	HazeSectionSignal m_SectionSignal;
 	HString m_Name;
-
+	Unique<ASTBase> m_ClassObj;
 	V_Array<Unique<ASTBase>> m_FunctionParam;
+
 };
 
 //变量定义 基本类型 类对象
@@ -524,20 +525,6 @@ public:
 	ASTCast(HazeCompiler* compiler, const SourceLocation& location, HazeDefineType& type, Unique<ASTBase>& expression);
 
 	virtual ~ASTCast() override;
-
-	virtual Share<HazeCompilerValue> CodeGen();
-
-private:
-	Unique<ASTBase> m_Expression;
-};
-
-//获得数组长度
-class ASTArrayLength : public ASTBase
-{
-public:
-	ASTArrayLength(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression);
-
-	virtual ~ASTArrayLength() override;
 
 	virtual Share<HazeCompilerValue> CodeGen();
 

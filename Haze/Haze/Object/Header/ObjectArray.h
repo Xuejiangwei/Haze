@@ -1,19 +1,22 @@
 #pragma once
 #include "ObjectDefine.h"
 
-class ObjectArray : public ObjectBase
+class HazeStack;
+
+class ObjectArray
 {
 public:
-	ObjectArray() :
-		ObjectBase(GCObjectType::Array), m_Objects(nullptr)
-	{}
+	ObjectArray(uint64* dimensions, uint64 dimensionCount, uint64 size);
 
-	~ObjectArray()
-	{}
+	~ObjectArray();
+
+	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 
 private:
-	uint64 m_Capacity;
-	uint64 m_Length;
+	static void GetLength(HazeStack* stack);
 
-	ObjectBase* m_Objects;
+private:
+	void* m_Data;
+	uint64* m_Dimensions;
+	uint64 m_DimensionCount;
 };

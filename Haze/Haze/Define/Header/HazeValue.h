@@ -12,6 +12,8 @@ enum class HazeValueType : uint32
 
 	Void,
 	
+
+
 	//基本类型 Bool -> Double
 	__BaseType_Begin,
 
@@ -36,17 +38,29 @@ enum class HazeValueType : uint32
 
 	__BaseType_End,
 
+
+
 	//引用
 	Refrence,				//只作用于基本类型，因为类和数组本来就是指针
 
+	//函数指针
+	Function,				//函数指针, 不参与GC
+	
+
+
+	__Advance_Begin,
+
 	//数组类型
-	Array,					//数组对象 参与GC, 不定长
+	Array,					//数组对象 参与GC, 定长
 
 	//字符串
 	String,					//字符串对象, 不定长, 参与GC
 
 	Class,					//类指针对象, 参与GC
-	Function,				//函数指针, 不参与GC
+
+	__Advance_End,
+
+
 
 	Enum,					//不起作用, 只用来解析时做相同类型判断
 
@@ -112,6 +126,7 @@ bool IsNoneType(HazeValueType type);
 bool IsVoidType(HazeValueType type);
 bool IsHazeBaseTypeAndVoid(HazeValueType type);
 bool IsHazeBaseType(HazeValueType type);
+bool IsAdvanceType(HazeValueType type);
 bool IsIntegerType(HazeValueType type);
 bool IsFloatingType(HazeValueType type);
 bool IsClassType(HazeValueType type);

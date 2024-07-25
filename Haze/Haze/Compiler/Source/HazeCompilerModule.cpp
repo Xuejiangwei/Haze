@@ -57,8 +57,9 @@ struct PushTempRegister
 		Compiler->ResetTempRegister(UseTempRegisters);
 	}
 
-	int Size;
+	int GetSize() const { return Size; }
 private:
+	int Size;
 	HAZE_STRING_STREAM& Hss;
 	HazeCompiler* Compiler;
 	HazeCompilerModule* Module;
@@ -549,7 +550,7 @@ Share<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(Share<Haze
 		}
 		else
 		{
-
+			COMPILER_ERR_MODULE_W("生成<%s>操作错误", GetInstructionString(opCode), GetName().c_str());
 		}
 		return retValue;
 	}
@@ -560,7 +561,6 @@ Share<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(Share<Haze
 	
 	if (!m_CurrFunction.empty())
 	{
-
 		if (needTemp)
 		{
 			if ((!left->IsRegister(HazeDataDesc::RegisterTemp) && right == nullptr) ||
@@ -579,32 +579,12 @@ Share<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(Share<Haze
 			}
 		}
 
-		ss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(this, ss, retValue);
-
-		if (right)
-		{
-			ss << " ";
-			GenVariableHzic(this, ss, right);
-		}
-
-		ss << std::endl;
-
+		GenIRCode(ss, this, opCode, retValue, right);
 		m_Compiler->GetInsertBlock()->PushIRCode(ss.str());
 	}
 	else if (left->IsGlobalVariable())
 	{
-		ss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(this, ss, retValue);
-
-		if (right)
-		{
-			ss << " ";
-			GenVariableHzic(this, ss, right);
-		}
-
-		ss << std::endl;
-
+		GenIRCode(ss, this, opCode, retValue, right);
 		m_ModuleIRCodes.push_back(ss.str());
 	}
 
@@ -722,6 +702,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 
 	auto pointerFunc = DynamicCast<HazeCompilerPointerFunction>(pointerFunction);
 
+	V_Array<const HazeDefineType*> funcTypes;
 	for (int64 i = params.size() - 1; i >= 0; i--)
 	{
 		auto Variable = params[i];
@@ -741,41 +722,28 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 				if (Variable->IsEnum())
 				{
 					auto enumValue = DynamicCast<HazeCompilerEnumValue>(Variable);
-					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetParentType() == type.PrimaryType)
-					{
-					}
+					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetParentType() == type.PrimaryType) {}
 					else
 					{
 						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数枚举类型不匹配", GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				/*else if (!IsMultiVariableType(type.PrimaryType))
+				else if (IsRefrenceType(type.PrimaryType) && Variable->GetValueType().PrimaryType == type.SecondaryType) {}
+				else if (!IsMultiVariableTye(type.PrimaryType))
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
-				}*/
+				}
 			}
+
+			funcTypes.push_back(&type);
 		}
 	}
 
 	for (size_t i = 0; i < params.size(); i++)
 	{
-		auto Variable = params[i];
-
-		if (Variable->IsArrayElement())
-		{
-			Variable = GetArrayElementToValue(this, Variable, m_Compiler->GetTempRegister());
-		}
-		else if (Variable->IsRefrence())
-		{
-			//GenIRCode(InstructionOpCode::PUSH, Variable, nullptr);
-		}
-
-		hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
-		GenVariableHzic(this, hss, Variable);
-
-		hss << std::endl;
+		GenIRCode(hss, this, InstructionOpCode::PUSH, params[i], nullptr, funcTypes[i]);
 
 		if (insertBlock)
 		{
@@ -788,7 +756,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 
 		hss.str(H_TEXT(""));
 
-		size += Variable->GetSize();
+		size += params[i]->GetSize();
 		strName.clear();
 	}
 

@@ -14,6 +14,9 @@
 
 #include "HazeStack.h"
 #include "HazeMemory.h"
+
+#include "ObjectArray.h"
+
 #include <cstdarg>
 #include <filesystem>
 
@@ -33,6 +36,13 @@ HazeVM::~HazeVM()
 
 void HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 {
+	// 提前注册基本类型
+	AdvanceClassInfo info;
+
+	info.Functions[H_TEXT("长度")] = AdvanceClassInfo::AdvanceFunctionInfo();
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, *ObjectArray::GetAdvanceClassInfo());
+
+	// 提前解析基础模块
 	V_Array<HString> baseModules = HAZE_BASE_LIBS;
 	for (uint64 i = 0; i + 1 < baseModules.size(); i+=2)
 	{

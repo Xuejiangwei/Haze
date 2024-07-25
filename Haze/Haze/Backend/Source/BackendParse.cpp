@@ -490,7 +490,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	case InstructionOpCode::SHL_ASSIGN:
 	case InstructionOpCode::SHR_ASSIGN:
 	case InstructionOpCode::CVT:
-	case InstructionOpCode::ARRAY_LENGTH:
 	{
 		InstructionData operatorOne;
 		InstructionData operatorTwo;
@@ -614,6 +613,14 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	{
 		InstructionData operatorOne;
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Extra.Line);
+
+		instruction.Operator = { operatorOne };
+	}
+	break;
+	case InstructionOpCode::SIGN:
+	{
+		InstructionData operatorOne;
+		GetNextLexmeAssign_CustomType<uint64>(operatorOne.Extra.SignData);
 
 		instruction.Operator = { operatorOne };
 	}

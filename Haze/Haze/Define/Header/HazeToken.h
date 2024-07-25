@@ -26,7 +26,6 @@ enum class HazeToken : unsigned int
 
 	Array,
 	ArrayDefineEnd,
-	ArrayLength,
 
 	StringMatch,
 
@@ -146,4 +145,6 @@ enum class HazeToken : unsigned int
 	SizeOf,
 
 	TwoColon,
+
+	Reference,
 };

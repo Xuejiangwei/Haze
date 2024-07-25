@@ -119,8 +119,7 @@
 #define TOKEN_TYPENAME					H_TEXT("类型")
 #define TOKEN_TEMPLATE					H_TEXT("模板")
 
-#define TOkEN_ARRAY_LENGTH				H_TEXT("数组长度")
-#define TOKEN_SIZE_OF					H_TEXT("字节大小")
+#define TOKEN_SIZE_OF					H_TEXT("大小")
 
 #define TOKEN_TWO_COLON					H_TEXT("::")
 

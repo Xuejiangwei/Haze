@@ -53,10 +53,23 @@ static Share<HazeCompilerInitListValue> s_InitializeListValue = MakeShare<HazeCo
 
 HazeCompiler::HazeCompiler(HazeVM* vm) : m_VM(vm)
 {
+	m_AdvanceClassInfo.clear();
 }
 
 HazeCompiler::~HazeCompiler()
 {
+}
+
+void HazeCompiler::RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassInfo& info)
+{
+	if (IsAdvanceType(type))
+	{
+		m_AdvanceClassInfo[type] = info;
+	}
+	else
+	{
+		HAZE_LOG_ERR_W("添加类型信息错误!\n");
+	}
 }
 
 bool HazeCompiler::InitializeCompiler(const HString& moduleName, const HString& path)
@@ -305,6 +318,7 @@ Share<HazeCompilerValue> HazeCompiler::GetTempRegister()
 	{
 		if (iter.second.use_count() == 1)
 		{
+			iter.second->SetDataDesc(HazeDataDesc::RegisterTemp);
 			return iter.second;
 		}
 	}
@@ -751,29 +765,18 @@ Share<HazeCompilerValue> HazeCompiler::CreateMov(Share<HazeCompilerValue> alloca
 		allocaValue->StoreValueType(value);
 	}
 
-	/*if ((allocaValue->IsPointer() && !value->IsPointer() && !value->IsArray()))
+	if (allocaValue->IsRefrence() && !value->IsRefrence())
 	{
-		CreateLea(allocaValue, value);
-	}
-	else if (value->IsArrayElement() || allocaValue->IsArrayElement())
-	{
-		if (allocaValue->IsArrayElement() && !value->IsArrayElement())
+		if (value->IsConstant())
 		{
-			auto arrayPointer = CreatePointerToArrayElement(allocaValue);
-			CreateMovToPV(arrayPointer, value);
-		}
-		else if (!allocaValue->IsArrayElement() && value->IsArrayElement())
-		{
-			GetArrayElementToValue(GetCurrModule().get(), value, allocaValue);
+			CreateMovToPV(allocaValue, value);
 		}
 		else
 		{
-			auto tempValue = GetArrayElementToValue(GetCurrModule().get(), value);
-			auto arrayPointer = CreatePointerToArrayElement(allocaValue);
-			CreateMovToPV(arrayPointer, tempValue);
+			CreateLea(allocaValue, value);
 		}
 	}
-	else*/
+	else
 	{
 		if (CanCVT(allocaValue->GetValueType().PrimaryType, value->GetValueType().PrimaryType))
 		{
@@ -788,17 +791,12 @@ Share<HazeCompilerValue> HazeCompiler::CreateMov(Share<HazeCompilerValue> alloca
 
 Share<HazeCompilerValue> HazeCompiler::CreateMovToPV(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value)
 {
-	/*if (allocaValue->IsPointer())
-	{
-		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOVTOPV);
-	}*/
-
-	return allocaValue;
+	return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOVTOPV);
 }
 
 Share<HazeCompilerValue> HazeCompiler::CreateMovPV(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value)
 {
-	/*if (value->IsPointer())
+	if (value->IsRefrence())
 	{
 		allocaValue->StoreValueType(value);
 
@@ -815,9 +813,9 @@ Share<HazeCompilerValue> HazeCompiler::CreateMovPV(Share<HazeCompilerValue> allo
 
 		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOVPV);
 	}
-	else*/ if (value->IsArray())
+	else
 	{
-		return CreateArrayElement(value, { GetConstantValueInt(0) });
+		COMPILER_ERR_MODULE_W("生成<%s>操作错误", GetInstructionString(InstructionOpCode::MOVPV), GetCurrModuleName().c_str());
 	}
 
 	return allocaValue;
@@ -1019,30 +1017,20 @@ Share<HazeCompilerValue> HazeCompiler::CreateArrayElement(Share<HazeCompilerValu
 	return nullptr;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateGetArrayLength(Share<HazeCompilerValue> value)
+Share<HazeCompilerValue> HazeCompiler::CreatePointerToValue(Share<HazeCompilerValue> value)
 {
-	auto sizeValue = GetTempRegister();
-	auto& type = const_cast<HazeDefineType&>(sizeValue->GetValueType());
-	type = HazeDefineType(HazeValueType::UInt64);
-	GetCurrModule()->GenIRCode_BinaryOperater(sizeValue, value, InstructionOpCode::ARRAY_LENGTH);
-
-	return sizeValue;
+	if (IsHazeBaseType(value->GetValueType().PrimaryType))
+	{
+		auto pointer = GetTempRegister();
+		auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
+		type.Pointer();
+		return CreateLea(pointer, value);
+	}
+	else
+	{
+		COMPILER_ERR_MODULE_W("不能对非基本类取地址", GetCurrModuleName().c_str());
+	}
 }
-
-//Share<HazeCompilerValue> HazeCompiler::CreatePointerToValue(Share<HazeCompilerValue> value)
-//{
-//	if (IsHazeBaseType(value->GetValueType().PrimaryType))
-//	{
-//		auto pointer = GetTempRegister();
-//		auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
-//		type.Pointer();
-//		return CreateLea(pointer, value);
-//	}
-//	else
-//	{
-//		COMPILER_ERR_MODULE_W("不能对非基本类取地址", GetCurrModuleName().c_str());
-//	}
-//}
 
 //Share<HazeCompilerValue> HazeCompiler::CreatePointerToArray(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> index)
 //{
@@ -1129,7 +1117,7 @@ Share<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(Share<HazeCompile
 }
 
 Share<HazeCompilerValue> HazeCompiler::CreateNew(Share<HazeCompilerFunction> function, const HazeDefineType& data,
-	Share<HazeCompilerValue> countValue)
+	V_Array<Share<HazeCompilerValue>>* countValue)
 {
 	return function->CreateNew(data, countValue);
 }

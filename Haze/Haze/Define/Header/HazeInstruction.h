@@ -139,9 +139,10 @@ enum class InstructionOpCode : uint32
 	SHR_ASSIGN,
 
 	CVT,			//基本类型转换
-	ARRAY_LENGTH,	//数组长度
 
 	LINE,			//调试用
+
+	SIGN,			//跟在New后面，表示生成的数组的维度，其中含有数组的长度信息
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，
@@ -154,6 +155,8 @@ enum class InstructionFunctionType : int
 	HazeFunction,
 	StaticLibFunction,
 	DLLLibFunction,
+
+	AddressFunction,
 };
 
 enum class InstructionAddressType : uint8
@@ -209,7 +212,7 @@ struct InstructionData
 		void* Pointer;
 
 		uint32 Line;
-
+		uint64 SignData;
 		Extra()
 		{
 		}

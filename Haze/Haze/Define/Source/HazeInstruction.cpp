@@ -4,7 +4,7 @@
 #include "HazeLogDefine.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
-
+#include "ObjectArray.h"
 #include "HazeLibraryManager.h"
 
 #include <Windows.h>
@@ -73,7 +73,6 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 	{H_TEXT("JL"), InstructionOpCode::JL },
 
 	{H_TEXT("CVT"), InstructionOpCode::CVT },
-	{H_TEXT("ARRAY_LENGTH"), InstructionOpCode::ARRAY_LENGTH},
 
 	{H_TEXT("LINE"), InstructionOpCode::LINE },
 };
@@ -888,30 +887,31 @@ public:
 
 			uint64 size = GetSizeByType(newRegister->Type, stack->m_VM);
 			uint64 newSize = size;
-			bool isRegister = true;
+			bool isArray = false;
 			auto countAddress = GetOperatorAddress(stack, oper[1]);
 			
-			if (oper[1].AddressType == InstructionAddressType::Constant)
+			auto count = *((uint64*)countAddress);
+			void* address = nullptr;
+			if (count > 0)
 			{
-				if (*((uint64*)countAddress) > 0)
+				isArray = true;
+				uint64* dimensions = new uint64[count];
+				for (uint64 i = 0; i < count; i++)
 				{
-					CalculateValueByType(HazeValueType::UInt64, InstructionOpCode::MUL, countAddress, &newSize);
+					newSize *= stack->m_VM->Instructions[stack->m_PC + i + 1].Operator[0].Extra.SignData;
 				}
-				else
-				{
-					isRegister = false;
-				}
+
+				address = stack->Alloca(sizeof(ObjectArray));
+				new(address) ObjectArray(dimensions, count, newSize);
 			}
 			else
 			{
-				CalculateValueByType(HazeValueType::UInt64, InstructionOpCode::MUL, countAddress, &newSize);
+				address = stack->Alloca(newSize);
 			}
-			
-
-			uint64 address = (uint64)stack->Alloca(newSize);
-			if (isRegister)
+			if (isArray)
 			{
-				stack->RegisterArray(address, newSize / size);
+
+				//stack->RegisterArray(address, newSize / size);
 			}
 
 			newRegister->Data.resize(sizeof(address));
@@ -1105,35 +1105,6 @@ public:
 			else
 			{
 				INS_ERR_W("<%s>转换为<%s>的类型时错误!", oper[1].Variable.Name.c_str(), oper[0].Variable.Name.c_str());
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void ArrayLength(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (oper[0].Variable.Type.PrimaryType == HazeValueType::UInt64 && IsArrayType(oper[1].Variable.Type.PrimaryType))
-			{
-				auto arrayAddress = GetOperatorAddress(stack, oper[1]);
-				uint64 address = 0;
-				if (arrayAddress)
-				{
-					memcpy(&address, arrayAddress, sizeof(arrayAddress));
-				}
-
-				uint64 length = stack->GetRegisterArrayLength(address);
-
-				memcpy(GetOperatorAddress(stack, oper[0]), &length, sizeof(length));
-			}
-			else
-			{
-				INS_ERR_W("<%s>获取数组时错误", oper[1].Variable.Name.c_str());
 			}
 		}
 
@@ -1521,7 +1492,6 @@ HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 	{InstructionOpCode::JL, &InstructionProcessor::Jl},
 
 	{InstructionOpCode::CVT, &InstructionProcessor::CVT},
-	{InstructionOpCode::ARRAY_LENGTH, &InstructionProcessor::ArrayLength},
 
 	{InstructionOpCode::LINE, &InstructionProcessor::Line},
 };

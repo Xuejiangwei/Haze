@@ -112,8 +112,6 @@ private:
 
 	Unique<ASTClassFunctionSection> ParseClassFunction(const HString& className);
 
-	Unique<ASTBase> ParseArrayLength();
-
 	Unique<ASTBase> ParseSizeOf();
 
 	Unique<ASTEnum> ParseEnum();
@@ -125,8 +123,6 @@ private:
 	Unique<ASTTemplateBase> ParseTemplateFunction(V_Array<HString>& templateTypes);
 
 private:
-	bool ParseVariableDefineTypeModify();
-
 	Unique<ASTFunction> ParseFunction(const HString* className = nullptr);
 
 	bool ExpectNextTokenIs(HazeToken token, const HChar* errorInfo = nullptr);

@@ -71,7 +71,7 @@ private:
 		V_Array<Share<HazeCompilerValue>> arraySize = {},
 		V_Array<HazeDefineType>* params = nullptr);
 
-	Share<HazeCompilerValue> CreateNew(const HazeDefineType& data, Share<HazeCompilerValue> countValue);
+	Share<HazeCompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<HazeCompilerValue>>* countValue);
 
 	void InitEntryBlock(Share<HazeBaseBlock> block) { m_EntryBlock = block; }
 

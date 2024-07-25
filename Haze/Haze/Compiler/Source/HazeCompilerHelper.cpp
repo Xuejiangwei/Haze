@@ -508,29 +508,38 @@ void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss
 	}*/
 }
 
-void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, Share<HazeCompilerValue> v1, Share<HazeCompilerValue> v2)
+void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode opCode, Share<HazeCompilerValue> v1,
+	Share<HazeCompilerValue> v2, const HazeDefineType* expectType)
 {
+	hss << GetInstructionString(opCode) << " ";
 	switch (opCode)
 	{
 	case InstructionOpCode::NONE:
 		break;
 	case InstructionOpCode::MOV:
-		break;
 	case InstructionOpCode::MOVPV:
-		break;
 	case InstructionOpCode::MOVTOPV:
-		break;
 	case InstructionOpCode::LEA:
-		break;
 	case InstructionOpCode::ADD:
-		break;
 	case InstructionOpCode::SUB:
-		break;
 	case InstructionOpCode::MUL:
-		break;
 	case InstructionOpCode::DIV:
-		break;
 	case InstructionOpCode::MOD:
+	case InstructionOpCode::CVT:
+	case InstructionOpCode::BIT_AND:
+	case InstructionOpCode::BIT_OR:
+	case InstructionOpCode::BIT_XOR:
+	case InstructionOpCode::SHL:
+	case InstructionOpCode::SHR:
+	case InstructionOpCode::CMP:
+	{
+		GenVariableHzic(m, hss, v1);
+		if (v2)
+		{
+			hss << " ";
+			GenVariableHzic(m, hss, v2);
+		}
+	}
 		break;
 	case InstructionOpCode::NEG:
 		break;
@@ -540,20 +549,21 @@ void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, Share<HazeComp
 		break;
 	case InstructionOpCode::DEC:
 		break;
-	case InstructionOpCode::BIT_AND:
-		break;
-	case InstructionOpCode::BIT_OR:
-		break;
 	case InstructionOpCode::BIT_NEG:
 		break;
-	case InstructionOpCode::BIT_XOR:
-		break;
-	case InstructionOpCode::SHL:
-		break;
-	case InstructionOpCode::SHR:
-		break;
 	case InstructionOpCode::PUSH:
+	{
+		if (v1->IsRefrence() && !IsRefrenceType(expectType->PrimaryType))
+		{
+			v1 = m->GetCompiler()->CreateMovPV(m->GetCompiler()->GetTempRegister(), v1);
+		}
+		else if (!v1->IsRefrence() && IsRefrenceType(expectType->PrimaryType))
+		{
+			v1 = m->GetCompiler()->CreatePointerToValue(v1);
+		}
 
+		GenVariableHzic(m, hss, v1);
+	}
 		break;
 	case InstructionOpCode::POP:
 		break;
@@ -562,8 +572,11 @@ void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, Share<HazeComp
 	case InstructionOpCode::RET:
 		break;
 	case InstructionOpCode::NEW:
-		break;
-	case InstructionOpCode::CMP:
+	{
+		hss << NEW_REGISTER;
+		HazeDefineType::StringStreamTo(hss, *expectType);
+		hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
+	}
 		break;
 	case InstructionOpCode::JMP:
 		break;
@@ -599,13 +612,16 @@ void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, Share<HazeComp
 		break;
 	case InstructionOpCode::SHR_ASSIGN:
 		break;
-	case InstructionOpCode::CVT:
-		break;
-	case InstructionOpCode::ARRAY_LENGTH:
-		break;
 	case InstructionOpCode::LINE:
+		break;
+	case InstructionOpCode::SIGN:
+	{
+		hss << v1->GetValue().Value.UInt64;
+	}
 		break;
 	default:
 		break;
 	}
+
+	hss << std::endl;
 }

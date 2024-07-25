@@ -226,10 +226,10 @@ void* HazeStack::Alloca(uint64 size)
 	return ret;
 }
 
-void HazeStack::RegisterArray(uint64 address, uint64 length)
-{
-	m_VM->Vector_ArrayCache[address] = length;
-}
+//void HazeStack::RegisterArray(uint64 address, uint64 length)
+//{
+//	m_VM->Vector_ArrayCache[address] = length;
+//}
 
 uint64 HazeStack::GetRegisterArrayLength(uint64 address)
 {

@@ -133,7 +133,7 @@ struct HazeDefineType
 	void Pointer()
 	{
 		PrimaryType = HazeValueType::UInt64;
-		PrimaryType = HazeValueType::None;
+		SecondaryType = HazeValueType::None;
 		CustomName = nullptr;
 	}
 

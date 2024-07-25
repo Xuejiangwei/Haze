@@ -25,6 +25,8 @@ static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 
 	{ HazeToken::Function, HazeValueType::Function },
 
+	{ HazeToken::Reference, HazeValueType::Refrence },
+
 	{ HazeToken::MultiVariable, HazeValueType::MultiVariable },
 };
 
@@ -52,6 +54,9 @@ uint32 GetSizeByHazeType(HazeValueType type)
 	case HazeValueType::Class:
 	case HazeValueType::Function:
 		return 8;
+	case HazeValueType::Void:
+	case HazeValueType::MultiVariable:
+		return 0;
 	default:
 		HAZE_LOG_ERR_W("获得类型<%s>的大小错误!\n", GetHazeValueTypeString(type));
 		break;
@@ -145,6 +150,11 @@ bool IsHazeBaseTypeAndVoid(HazeValueType type)
 bool IsHazeBaseType(HazeValueType type)
 {
 	return HazeValueType::__BaseType_Begin < type && type < HazeValueType::__BaseType_End;
+}
+
+bool IsAdvanceType(HazeValueType type)
+{
+	return HazeValueType::__Advance_Begin < type && type < HazeValueType::__Advance_End;
 }
 
 bool IsIntegerType(HazeValueType type)

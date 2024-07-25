@@ -41,23 +41,18 @@ Share<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDef
 	return block->CreateAlloce(Variable, line, ++m_CurrVariableCount, refValue, arraySize, params);
 }
 
-Share<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& data, Share<HazeCompilerValue> countValue)
+Share<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& data, V_Array<Share<HazeCompilerValue>>* countValue)
 {
 	HAZE_STRING_STREAM hss;
-	hss << GetInstructionString(InstructionOpCode::NEW) << " " << NEW_REGISTER << " " << CAST_TYPE(data.PrimaryType) << " ";
-	if (data.CustomName->empty())
-	{
-		hss << CAST_TYPE(data.SecondaryType);
-	}
-	else
-	{
-		hss << data.CustomName;
-	}
+	GenIRCode(hss, m_Module, InstructionOpCode::NEW, nullptr, nullptr, &data);
 
-	hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
 	if (countValue)
 	{
-		GenVariableHzic(m_Module, hss, countValue);
+		GenVariableHzic(m_Module, hss, m_Module->GetCompiler()->GetConstantValueUint64(countValue->size()));
+		for (uint64 i = 0; i < countValue->size(); i++)
+		{
+			GenIRCode(hss, m_Module, InstructionOpCode::SIGN, countValue->at(i));
+		}
 	}
 	else
 	{

@@ -27,7 +27,7 @@ const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeByIndex(uint64 in
 	{
 		if (index > 0)
 		{
-			COMPILER_ERR_W("获得指针函数的第<%d>个参数错误", m_ParamTypes.size() - 1 - index);
+			COMPILER_ERR_W("从右往左，获得指针函数的第<%d>个参数错误", m_ParamTypes.size() - 1 - index);
 		}
 
 		return m_ParamTypes[0];
@@ -44,7 +44,7 @@ const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeLeftToRightByInde
 	{
 		if (index > 0)
 		{
-			COMPILER_ERR_W("获得指针函数的第<%d>个参数错误", index);
+			COMPILER_ERR_W("从左往右，获得指针函数的第<%d>个参数错误", index);
 			return m_ParamTypes[0];
 		}
 		else
