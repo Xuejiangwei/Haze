@@ -16,6 +16,8 @@ public:
 
 	~HazeCompilerClass();
 
+	void OnCreateFinish();
+
 	Share<HazeCompilerFunction> FindFunction(const HString& m_FunctionName);
 
 	Share<HazeCompilerFunction> AddFunction(Share<HazeCompilerFunction>& function);

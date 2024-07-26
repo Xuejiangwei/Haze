@@ -162,7 +162,7 @@ void ASTClassFunctionSection::CodeGen()
 		{
 			if (iter.second[0]->GetName() != className)
 			{
-				COMPILER_ERR_MODULE_W("模板类<%s>需要在<公>范围内第一个定义构造函数", m_Compiler->GetCurrModuleName().c_str(), className.c_str());
+				COMPILER_ERR_MODULE_W("类<%s>需要在<公>范围内第一个定义构造函数", m_Compiler->GetCurrModuleName().c_str(), className.c_str());
 			}
 		}
 

@@ -332,6 +332,19 @@ const HazeDefineType& HazeCompilerFunction::GetParamTypeLeftToRightByIndex(uint6
 	}
 }
 
+const HazeDefineType& HazeCompilerFunction::GetThisParam()
+{
+	if (m_OwnerClass)
+	{
+		return m_Params[m_Params.size() - 1].second->GetValueType();
+	}
+	else
+	{
+		COMPILER_ERR_W("函数<%s>不是类函数", m_Name.c_str());
+		return HazeDefineType();
+	}
+}
+
 void HazeCompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)
 {
 	m_Module->BeginCreateFunctionParamVariable();

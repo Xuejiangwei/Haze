@@ -8,10 +8,9 @@ class HazeBaseBlock;
 
 class HazeCompilerFunction
 {
-public:
 	friend class HazeCompiler;
 	friend class HazeCompilerModule;
-
+public:
 	HazeCompilerFunction(HazeCompilerModule* compilerModule, const HString& name, HazeDefineType& type,
 		V_Array<HazeDefineVariable>& params, HazeCompilerClass* compilerClass = nullptr);
 
@@ -62,6 +61,8 @@ public:
 	const HazeDefineType& GetParamTypeByIndex(uint64 index);
 
 	const HazeDefineType& GetParamTypeLeftToRightByIndex(uint64 index);
+
+	const HazeDefineType& GetThisParam();
 
 private:
 	void AddFunctionParam(const HazeDefineVariable& variable);

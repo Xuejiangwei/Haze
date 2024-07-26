@@ -177,6 +177,7 @@ void HazeCompilerModule::FinishCreateEnum()
 
 void HazeCompilerModule::FinishCreateClass()
 {
+	GetClass(m_CurrClass)->OnCreateFinish();
 	m_CurrClass.clear();
 }
 

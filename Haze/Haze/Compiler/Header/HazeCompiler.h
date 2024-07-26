@@ -210,6 +210,10 @@ public:
 	void ReplaceConstantValueByStrongerType(Share<HazeCompilerValue>& left, Share<HazeCompilerValue>& right);
 
 public:
+	void RegisterClassToSymbolTable(const HString& className);
+
+	const HString* GetSymbolTableNameAddress(const HString& className);
+
 	Share<HazeCompilerEnum> GetBaseModuleEnum(const HString& name);
 
 	Share<HazeCompilerValue> GetBaseModuleGlobalVariable(const HString& name);
@@ -248,6 +252,8 @@ private:
 
 	HashMap<float32, Share<HazeCompilerValue>> m_Float32_ConstantValues;
 	HashMap<float64, Share<HazeCompilerValue>> m_Float64_ConstantValues;
+
+	HashMap<HString, Share<HazeCompilerClass>> m_SymbolTable;
 
 	//BaseBlock
 	Share<HazeBaseBlock> m_InsertBaseBlock;

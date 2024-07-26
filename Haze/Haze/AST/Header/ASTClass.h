@@ -15,6 +15,7 @@ public:
 	~ASTClass();
 
 	void CodeGen();
+
 private:
 	HazeCompiler* m_Compiler;
 

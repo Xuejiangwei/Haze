@@ -185,6 +185,26 @@ const HString* HazeCompiler::GetModuleTableEnumName(const HString& name)
 	return nullptr;
 }
 
+void HazeCompiler::RegisterClassToSymbolTable(const HString& className)
+{
+	auto iter = m_SymbolTable.find(className);
+	if (iter == m_SymbolTable.end())
+	{
+		m_SymbolTable[className] = nullptr;
+	}
+}
+
+const HString* HazeCompiler::GetSymbolTableNameAddress(const HString& className)
+{
+	auto iter = m_SymbolTable.find(className);
+	if (iter != m_SymbolTable.end())
+	{
+		return &iter->first;
+	}
+
+	return nullptr;
+}
+
 Share<HazeCompilerEnum> HazeCompiler::GetBaseModuleEnum(const HString& name)
 {
 	for (auto& it : m_CompilerBaseModules)

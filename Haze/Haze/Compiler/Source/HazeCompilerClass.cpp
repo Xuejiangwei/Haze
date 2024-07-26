@@ -42,6 +42,18 @@ HazeCompilerClass::~HazeCompilerClass()
 {
 }
 
+void HazeCompilerClass::OnCreateFinish()
+{
+	for (auto& func : m_Functions)
+	{
+		auto& type = const_cast<HazeDefineType&>(func->GetThisParam());
+		type.CustomName = &m_Name;
+
+		auto& vType = const_cast<HazeDefineType&>(func->GetLocalVariable(TOKEN_THIS)->GetValueType());
+		vType.CustomName = &m_Name;
+	}
+}
+
 Share<HazeCompilerFunction> HazeCompilerClass::FindFunction(const HString& functionName)
 {
 	auto iter = m_HashMap_Functions.find(GetHazeClassFunctionName(m_Name, functionName));
