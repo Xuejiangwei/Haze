@@ -84,8 +84,6 @@ private:
 
 	uint32 GetCurrCallFunctionLine();
 
-	uint64 GetRegisterArrayLength(uint64 address);
-
 private:
 	Unique<HazeCompiler> m_Compiler;
 
@@ -116,7 +114,7 @@ private:
 
 	V_Array<char> Vector_GlobalDataClassObjectMemory;
 
-	HashMap<uint64, uint64> Vector_ArrayCache;
+	HashSet<void*> Vector_ArrayCache;
 
 	HazeRunType GenType;
 };

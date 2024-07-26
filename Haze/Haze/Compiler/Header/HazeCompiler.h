@@ -9,14 +9,15 @@ class HazeCompilerClass;
 class HazeCompilerModule;
 class HazeBaseBlock;
 
+struct AdvanceFunctionInfo
+{
+	void(*Func)(class HazeStack*);
+	HazeDefineType Type;
+	V_Array<HazeDefineType> Params;
+};
+
 struct AdvanceClassInfo
 {
-	struct AdvanceFunctionInfo
-	{
-		void(*Func)(class HazeStack*);
-		V_Array<HazeDefineType> Params;
-	};
-
 	HashMap<HString, AdvanceFunctionInfo> Functions;
 };
 
@@ -66,7 +67,7 @@ public:
 
 	void MarkParseTemplate(bool begin, const HString* moduleName = nullptr);
 
-	Share<HazeCompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var);
+	Share<HazeCompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var, HazeValueType* varType = nullptr);
 
 	Share<HazeCompilerValue> GenStringVariable(HString& str);
 
@@ -175,6 +176,9 @@ public:
 	Share<HazeCompilerValue> CreateFunctionCall(Share<HazeCompilerFunction> function, V_Array<Share<HazeCompilerValue>>& param, Share<HazeCompilerValue> thisPointerTo = nullptr);
 
 	Share<HazeCompilerValue> CreateFunctionCall(Share<HazeCompilerValue> pointerFunction, V_Array<Share<HazeCompilerValue>>& param, Share<HazeCompilerValue> thisPointerTo = nullptr);
+
+	Share<HazeCompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName,
+		V_Array<Share<HazeCompilerValue>>& param, Share<HazeCompilerValue> thisPointerTo);
 
 public:
 	Share<HazeCompilerValue> CreateArrayInit(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> initList);

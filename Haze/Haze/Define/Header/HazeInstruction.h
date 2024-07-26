@@ -43,7 +43,7 @@ enum class HazeVariableScope : uint32
 	Static,
 
 	Temp,		//临时寄存器
-	Ignore,
+	Ignore,		
 };
 
 #define CAST_DESC(V) (uint32)V
@@ -81,6 +81,7 @@ enum class HazeDataDesc : uint32
 	NullPtr,
 
 	CallFunctionModule,
+	CallFunctionPointer,
 };
 
 enum class InstructionOpCode : uint32
@@ -155,8 +156,6 @@ enum class InstructionFunctionType : int
 	HazeFunction,
 	StaticLibFunction,
 	DLLLibFunction,
-
-	AddressFunction,
 };
 
 enum class InstructionAddressType : uint8
@@ -176,6 +175,8 @@ enum class InstructionAddressType : uint8
 	ConstantString,
 
 	Register,
+
+	PointerAddress,
 };
 
 struct InstructionData

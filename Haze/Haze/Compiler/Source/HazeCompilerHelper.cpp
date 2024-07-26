@@ -553,13 +553,30 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 		break;
 	case InstructionOpCode::PUSH:
 	{
-		if (v1->IsRefrence() && !IsRefrenceType(expectType->PrimaryType))
+		if (expectType)
 		{
-			v1 = m->GetCompiler()->CreateMovPV(m->GetCompiler()->GetTempRegister(), v1);
-		}
-		else if (!v1->IsRefrence() && IsRefrenceType(expectType->PrimaryType))
-		{
-			v1 = m->GetCompiler()->CreatePointerToValue(v1);
+			if (v1->IsRefrence() && !IsRefrenceType(expectType->PrimaryType))
+			{
+				v1 = m->GetCompiler()->CreateMovPV(m->GetCompiler()->GetTempRegister(), v1);
+			}
+			else if (!v1->IsRefrence() && IsRefrenceType(expectType->PrimaryType))
+			{
+				v1 = m->GetCompiler()->CreatePointerToValue(v1);
+			}
+			else if (expectType->IsStrongerType(v1->GetValueType()))
+			{
+				if (v1->IsConstant())
+				{
+					v1 = m->GetCompiler()->GenConstantValue(expectType->PrimaryType, v1->GetValue());
+				}
+				else
+				{
+					auto tempReg = m->GetCompiler()->GetTempRegister();
+					auto& valueType = const_cast<HazeDefineType&>(tempReg->GetValueType());
+					valueType = *expectType;
+					v1 = m->GetCompiler()->CreateCVT(tempReg, v1);
+				}
+			}
 		}
 
 		GenVariableHzic(m, hss, v1);
@@ -573,9 +590,11 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 		break;
 	case InstructionOpCode::NEW:
 	{
-		hss << NEW_REGISTER;
+		hss << NEW_REGISTER << " ";
 		HazeDefineType::StringStreamTo(hss, *expectType);
 		hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
+
+		GenVariableHzic(m, hss, v2);
 	}
 		break;
 	case InstructionOpCode::JMP:

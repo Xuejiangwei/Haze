@@ -130,6 +130,12 @@ struct HazeDefineType
 		PrimaryType = HazeValueType::Refrence;
 	}
 
+	void UpToArray()
+	{
+		SecondaryType = PrimaryType;
+		PrimaryType = HazeValueType::Array;
+	}
+
 	void Pointer()
 	{
 		PrimaryType = HazeValueType::UInt64;
@@ -138,7 +144,7 @@ struct HazeDefineType
 	}
 
 	template<typename Class>
-	void StringStream(Class* pThis, void(Class::* stringCall)(HString&), void(Class::* typeCall)(uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
+	void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
 
 	/*bool HasCustomName(const HazeDefineType& type)
 	{
@@ -181,7 +187,7 @@ struct HazeDefineType
 	}
 
 	template<typename Class>
-	static void StringStream(Class* pThis, void(Class::* stringCall)(HString&), void(Class::* typeCall)(uint32&), HazeDefineType& type)
+	static void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(uint32&), HazeDefineType& type)
 	{
 		(pThis->*typeCall)((uint32&)type.PrimaryType);
 
@@ -195,10 +201,10 @@ struct HazeDefineType
 			(pThis->*typeCall)((uint32&)type.SecondaryType);
 		}
 
-		/*if (type.NeedCustomName())
+		if (type.NeedCustomName())
 		{
 			(pThis->*stringCall)(type.CustomName);
-		}*/
+		}
 	}
 };
 

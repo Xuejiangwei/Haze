@@ -164,6 +164,7 @@ private:
 	uint32 m_LineCount;
 	//bool m_NeedParseNextStatement;
 
+	bool m_IsParseArray;
 	bool m_IsParseTemplate;
 	const V_Array<HString>* m_TemplateTypes;
 	const V_Array<HazeDefineType>* m_TemplateRealTypes;

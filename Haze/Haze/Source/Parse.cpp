@@ -219,7 +219,7 @@ private:
 Parse::Parse(HazeCompiler* compiler)
 	: m_Compiler(compiler), m_CurrCode(nullptr), m_CurrToken(HazeToken::None),
 	m_LeftParenthesesExpressionCount(0), m_LineCount(1), //m_NeedParseNextStatement(false), 
-	m_IsParseTemplate(false), m_TemplateTypes(nullptr), m_TemplateRealTypes(nullptr)
+	m_IsParseTemplate(false), m_TemplateTypes(nullptr), m_TemplateRealTypes(nullptr), m_IsParseArray(false)
 {
 }
 
@@ -863,9 +863,53 @@ Unique<ASTBase> Parse::ParseIdentifer()
 	}
 	else if (TokenIs(HazeToken::ClassAttr))
 	{
-		GetNextToken();
-		ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount),
-			m_StackSectionSignal.top(), identiferName, indexExpression);
+		if (ExpectNextTokenIs(HazeToken::Identifier, H_TEXT("类成员名字获取错误")))
+		{
+			HString attrName = m_CurrLexeme;
+			TempCurrCode temp(this);
+			if (ExpectNextTokenIs(HazeToken::LeftParentheses))
+			{
+				if (ExpectNextTokenIs(HazeToken::RightParentheses))
+				{
+					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
+						m_StackSectionSignal.top(), identiferName, attrName, true);
+				}
+				else
+				{
+					V_Array<Unique<ASTBase>> params;
+					while (true)
+					{
+						params.push_back(ParseExpression());
+						if (ExpectNextTokenIs(HazeToken::RightParentheses))
+						{
+							break;
+						}
+
+						if (TokenIs(HazeToken::Comma, H_TEXT("期望 , ")))
+						{
+							GetNextToken();
+						}
+						else
+						{
+							return nullptr;
+						}
+					}
+
+					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
+						m_StackSectionSignal.top(), identiferName, attrName, true, &params);
+				}
+			}
+			else
+			{
+				temp.Reset();
+				ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
+					m_StackSectionSignal.top(), identiferName, attrName, true);
+			}
+		}
+		else
+		{
+			return nullptr;
+		}
 	}
 	else if (TokenIs(HazeToken::Array))
 	{
@@ -883,6 +927,7 @@ Unique<ASTBase> Parse::ParseIdentifer()
 		{
 			m_CurrToken = cacheToken;
 			m_CurrCode -= m_CurrLexeme.length();
+			m_IsParseArray = true;
 			while (m_CurrToken == HazeToken::Array)
 			{
 				GetNextToken();
@@ -890,6 +935,7 @@ Unique<ASTBase> Parse::ParseIdentifer()
 
 				GetNextToken();
 			}
+			m_IsParseArray = false;
 		}
 		
 		ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), 
@@ -999,6 +1045,9 @@ Unique<ASTBase> Parse::ParseVariableDefine_MultiVariable()
 
 Unique<ASTBase> Parse::ParseVariableDefine_Array(TemplateDefineTypes& templateTypes)
 {
+	m_DefineVariable.Type.SecondaryType = m_DefineVariable.Type.PrimaryType;
+	m_DefineVariable.Type.PrimaryType = HazeValueType::Array;
+
 	uint32 tempLineCount = m_LineCount;
 	uint64 arrayDimension = 0;
 
@@ -1140,6 +1189,11 @@ Unique<ASTBase> Parse::ParseNumberExpression()
 	HazeValue value;
 	HazeValueType type = GetNumberDefaultType(m_CurrLexeme);
 
+	if (m_IsParseArray)
+	{
+		type = HazeValueType::UInt64;
+	}
+
 	StringToHazeValueNumber(m_CurrLexeme, type, value);
 
 	return MakeUnique<ASTNumber>(m_Compiler, SourceLocation(tempLineCount), type, value);
@@ -1266,6 +1320,8 @@ Unique<ASTBase> Parse::ParseNew()
 	V_Array<Unique<ASTBase>> arraySize;
 	if (ExpectNextTokenIs(HazeToken::Array))
 	{
+		defineVar.Type.UpToArray();
+		m_IsParseArray = true;
 		while (m_CurrToken == HazeToken::Array)
 		{
 			GetNextToken();
@@ -1280,7 +1336,7 @@ Unique<ASTBase> Parse::ParseNew()
 				}
 			}
 		}
-
+		m_IsParseArray = false;
 		return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar,
 			Move(arraySize));
 	}

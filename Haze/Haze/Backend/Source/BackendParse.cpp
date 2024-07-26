@@ -37,7 +37,7 @@ static void FindObjectAndMemberName(const HString& inName, HString& outObjectNam
 
 static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 {
-	if (ins.InsCode == InstructionOpCode::LINE)
+	if (ins.InsCode == InstructionOpCode::LINE || ins.InsCode == InstructionOpCode::SIGN)
 	{
 		return true;
 	}
@@ -58,6 +58,12 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 
 static bool IsIgnoreFindAddress(InstructionData& operatorData)
 {
+	if (operatorData.Desc == HazeDataDesc::CallFunctionPointer)
+	{
+		operatorData.AddressType = InstructionAddressType::PointerAddress;
+		return true;
+	}
+
 	if (operatorData.Desc == HazeDataDesc::Constant)
 	{
 		operatorData.AddressType = InstructionAddressType::Constant;
@@ -158,6 +164,20 @@ void BackendParse::GetNextLexeme()
 	{
 		m_CurrLexeme += *(m_CurrCode++);
 		ParseStringCount.second--;
+	}
+}
+
+void BackendParse::GetNextLexmeAssign_HazeStringCustomClassName(const HString*& dst)
+{
+	GetNextLexeme();
+	auto iter = m_InterSymbol.find(m_CurrLexeme);
+	if (iter != m_InterSymbol.end())
+	{
+		dst = &(*iter);
+	}
+	else
+	{
+		BACKEND_ERR_W("在符号表中未能查找到<%s>类型信息", m_CurrLexeme.c_str());
 	}
 }
 
@@ -371,7 +391,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 				GetNextLexmeAssign_HazeString(table.m_Functions[i].Name);
 
 				table.m_Functions[i].Type.StringStream<BackendParse>(this, 
-					&BackendParse::GetNextLexmeAssign_HazeString,
+					&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 					&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 				GetNextLexeme();
@@ -379,7 +399,8 @@ void BackendParse::Parse_I_Code_FunctionTable()
 				{
 					HazeDefineVariable param;
 					GetNextLexmeAssign_HazeString(param.Name);
-					param.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
+					param.Type.StringStream<BackendParse>(this, 
+						&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 						&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 					table.m_Functions[i].Params.push_back(Move(param));
@@ -394,7 +415,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 					GetNextLexmeAssign_HazeString(var.Variable.Name);
 
-					var.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
+					var.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 						&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 					GetNextLexmeAssign_CustomType<uint32>(var.Size);
 					GetNextLexmeAssign_CustomType<uint32>(var.Line);
@@ -447,7 +468,7 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 	GetNextLexmeAssign_CustomType<uint32>(data.Scope);
 	GetNextLexmeAssign_CustomType<uint32>(data.Desc);
 
-	data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeString,
+	data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 		&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 	if (data.Desc == HazeDataDesc::ArrayElement || data.Desc == HazeDataDesc::ConstantString)
@@ -544,7 +565,13 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 
 		GetNextLexmeAssign_HazeString(operatorTwo.Variable.Name);
-		operatorTwo.Desc = HazeDataDesc::CallFunctionModule;
+		GetNextLexmeAssign_CustomType<uint32>(operatorTwo.Desc);
+
+		if (operatorTwo.Desc == HazeDataDesc::CallFunctionPointer)
+		{
+			GetNextLexmeAssign_CustomType<void*>(operatorTwo.Extra.Pointer);
+		}
+
 
 		instruction.Operator = { operatorOne, operatorTwo };
 	}
@@ -554,26 +581,10 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 		InstructionData operatorOne;
 		GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
 
-		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Variable.Type.PrimaryType);
 
-		if (operatorOne.Variable.Type.NeedCustomName())
-		{
-			GetNextLexmeAssign_HazeString(str);
-
-			auto iter = m_InterSymbol.find(str);
-			if (iter != m_InterSymbol.end())
-			{
-				operatorOne.Variable.Type.CustomName = &(*iter);
-			}
-			else
-			{
-				HAZE_LOG_ERR_W("解析指令错误, 在符号表没找到对应类<%s>", str.c_str());
-			}
-		}
-		else
-		{
-			GetNextLexmeAssign_CustomType<uint32>(operatorOne.Variable.Type.SecondaryType);
-		}
+		operatorOne.Variable.Type.StringStream<BackendParse>(this,
+			&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
+			&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Scope);
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Desc);

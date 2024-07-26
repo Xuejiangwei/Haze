@@ -75,6 +75,8 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 	{H_TEXT("CVT"), InstructionOpCode::CVT },
 
 	{H_TEXT("LINE"), InstructionOpCode::LINE },
+
+	{H_TEXT("SIGN"), InstructionOpCode::SIGN },
 };
 
 bool IsRegisterDesc(HazeDataDesc desc)
@@ -132,7 +134,7 @@ class InstructionProcessor
 {
 	friend void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args);
 	friend void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData);
-#define HAZE_DEBUG_ENABLE 0
+#define HAZE_DEBUG_ENABLE 1
 #if HAZE_DEBUG_ENABLE
 	struct DataDebugScope
 	{
@@ -200,7 +202,7 @@ class InstructionProcessor
 				HAZE_LOG_ERR_W(" ֵ<%d>", v);
 			}
 			break;
-			case HazeValueType::UInt32
+			case HazeValueType::UInt32:
 			{
 				uint32 v;
 				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(uint32));
@@ -796,7 +798,11 @@ public:
 
 			memcpy(&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], &stack->m_PC, HAZE_ADDRESS_SIZE);
 
-			if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
+			if (oper[1].Desc == HazeDataDesc::CallFunctionPointer)
+			{
+				((void(*)(HazeStack*))(oper[1].Extra.Pointer))(stack);
+			}
+			else if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
 			{
 				void* value = GetOperatorAddress(stack, oper[0]);
 				uint64 functionAddress;
@@ -885,9 +891,25 @@ public:
 		{
 			newRegister->Type = oper[0].Variable.Type;
 
-			uint64 size = GetSizeByType(newRegister->Type, stack->m_VM);
+			bool isArray = IsArrayType(newRegister->Type.PrimaryType);
+		
+			uint64 size = 0;
+			if (isArray)
+			{
+				if (IsClassType(newRegister->Type.SecondaryType))
+				{
+					size = stack->m_VM->GetClassSize(*newRegister->Type.CustomName);
+				}
+				else
+				{
+					size = GetSizeByHazeType(newRegister->Type.SecondaryType);
+				}
+			}
+			else
+			{
+				size = GetSizeByType(newRegister->Type, stack->m_VM);
+			}
 			uint64 newSize = size;
-			bool isArray = false;
 			auto countAddress = GetOperatorAddress(stack, oper[1]);
 			
 			auto count = *((uint64*)countAddress);
@@ -895,14 +917,14 @@ public:
 			if (count > 0)
 			{
 				isArray = true;
-				uint64* dimensions = new uint64[count];
 				for (uint64 i = 0; i < count; i++)
 				{
 					newSize *= stack->m_VM->Instructions[stack->m_PC + i + 1].Operator[0].Extra.SignData;
 				}
 
-				address = stack->Alloca(sizeof(ObjectArray));
-				new(address) ObjectArray(dimensions, count, newSize);
+				address = stack->Alloca(newSize + sizeof(ObjectArray));
+				new((char*)address + newSize) ObjectArray(count, address, newSize / size, stack->m_PC);
+				address = (char*)address + newSize;
 			}
 			else
 			{
@@ -910,12 +932,13 @@ public:
 			}
 			if (isArray)
 			{
-
-				//stack->RegisterArray(address, newSize / size);
+				stack->RegisterArray(address, newSize / size);
 			}
 
 			newRegister->Data.resize(sizeof(address));
 			memcpy(newRegister->Data.begin()._Unwrapped(), &address, sizeof(address));
+
+			stack->m_PC += count;
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -1205,6 +1228,8 @@ private:
 
 			return hazeRegister->Data.begin()._Unwrapped();
 		}
+		case InstructionAddressType::PointerAddress:
+			return insData.Extra.Pointer;
 		default:
 			return nullptr;
 			break;

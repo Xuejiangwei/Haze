@@ -695,7 +695,8 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefi
 }
 
 void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompilerFunction> callFunction, Share<HazeCompilerValue> pointerFunction,
-	uint32& size, V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo)
+	AdvanceFunctionInfo* advancFunctionInfo, uint32& size, V_Array<Share<HazeCompilerValue>>& params,
+	Share<HazeCompilerValue> thisPointerTo)
 {
 	Share<HazeBaseBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HString strName;
@@ -707,7 +708,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 	{
 		auto Variable = params[i];
 
-		if (!callFunction && !pointerFunc)
+		if (!callFunction && !pointerFunc && !advancFunctionInfo)
 		{
 			COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", GetName().c_str(),
 				callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"));
@@ -715,7 +716,8 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 		else
 		{
 			auto& type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) : 
-				pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i);
+				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
+				advancFunctionInfo->Params.at(params.size() - 1 - i);
 
 			if (type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(type))
 			{
@@ -729,11 +731,13 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
+				else if (type.IsStrongerType(Variable->GetValueType())) { }
 				else if (IsRefrenceType(type.PrimaryType) && Variable->GetValueType().PrimaryType == type.SecondaryType) {}
 				else if (!IsMultiVariableTye(type.PrimaryType))
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
-						callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
+						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
+						params.size() - 1 - i);
 				}
 			}
 
@@ -762,43 +766,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 
 	if (thisPointerTo)
 	{
-		if (GetCurrFunction())
-		{
-			if (!GetCurrFunction()->FindLocalVariableName(thisPointerTo, strName))
-			{
-				if (!GetGlobalVariableName(this, thisPointerTo, strName))
-				{
-					COMPILER_ERR_MODULE_W("生成函数调用错误,没有找到调用类对象变量", GetName().c_str());
-				}
-			}
-		}
-		else
-		{
-			if (!GetGlobalVariableName(this, thisPointerTo, strName))
-			{
-				COMPILER_ERR_MODULE_W("生成函数调用错误,没有找到调用类对象全局变量", GetName().c_str());
-			}
-		}
-
-		hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
-		//if (thisPointerTo->IsPointerClass())
-		//{
-		//	hss << strName << " " << CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " <<//CAST_DESC(HazeDataDesc::ClassPointer) << " " <<
-		//		CAST_TYPE(HazeValueType::PointerClass) << " " << thisPointerTo->GetValueType().CustomName;
-		//}
-		//else 
-		if (thisPointerTo->IsClass())
-		{
-			auto classValue = DynamicCast<HazeCompilerClassValue>(thisPointerTo);
-			hss << strName << " " << CAST_SCOPE(classValue->GetVariableScope()) << " " << CAST_TYPE(HazeDataDesc::ClassThis) << " " <<
-				CAST_TYPE(HazeValueType::Class) << " " << classValue->GetOwnerClassName();
-		}
-		else
-		{
-			HAZE_LOG_ERR_W("函数调用失败，己指针类型错误!\n");
-		}
-
-		hss << std::endl;
+		GenIRCode(hss, this, InstructionOpCode::PUSH, thisPointerTo);
 
 		if (insertBlock)
 		{
@@ -834,11 +802,12 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 	uint32 size = 0;
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
-	FunctionCall(hss, callFunction, nullptr, size, params, thisPointerTo);
+	FunctionCall(hss, callFunction, nullptr, nullptr, size, params, thisPointerTo);
 
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::None) 
-		<< " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<CAST_DESC(HazeDataDesc::FunctionAddress)
-		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << std::endl;
+		<< " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " << CAST_DESC(HazeDataDesc::FunctionAddress)
+		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << " "
+		<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
 
 	auto retRegister = HazeCompiler::GetRegister(RET_REGISTER);
 
@@ -867,10 +836,39 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 	}
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
-	FunctionCall(hss, nullptr, pointerFunction, size, params, thisPointerTo);
+	FunctionCall(hss, nullptr, pointerFunction, nullptr, size, params, thisPointerTo);
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
 		<< CAST_SCOPE(pointerFunction->GetVariableScope())  << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << params.size()
-		<< " " << size << " " << m_Compiler->GetCurrModuleName() << std::endl;
+		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
+
+	return HazeCompiler::GetRegister(RET_REGISTER);
+}
+
+Share<HazeCompilerValue> HazeCompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo& functionInfo, 
+	V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo)
+{
+	Share<HazeBaseBlock> insertBlock = m_Compiler->GetInsertBlock();
+	HAZE_STRING_STREAM hss;
+	uint32 size = 0;
+
+	HString varName;
+	GetGlobalVariableName(this, thisPointerTo, varName);
+	if (varName.empty())
+	{
+		GetCurrFunction()->FindLocalVariableName(thisPointerTo, varName);
+		if (varName.empty())
+		{
+			HAZE_LOG_ERR_W("函数指针调用失败!\n");
+			return nullptr;
+		}
+	}
+
+	PushTempRegister pushTempRegister(hss, m_Compiler, this);
+	FunctionCall(hss, nullptr, nullptr, &functionInfo, size, params, thisPointerTo);
+	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
+		<< CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " << params.size()
+		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionPointer)
+		<< " " << functionInfo.Func << std::endl;
 
 	return HazeCompiler::GetRegister(RET_REGISTER);
 }

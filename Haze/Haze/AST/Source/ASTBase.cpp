@@ -29,19 +29,11 @@ ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location, const H
 	memset(&m_Value.Value, 0, sizeof(m_Value.Value));
 }
 
-ASTBase::~ASTBase()
-{
-}
-
 ASTBool::ASTBool(HazeCompiler* compiler, const SourceLocation& location, const HazeValue& value)
 	: ASTBase(compiler, location)
 {
 	m_DefineVariable.Type.PrimaryType = HazeValueType::Bool;
 	m_Value = value;
-}
-
-ASTBool::~ASTBool()
-{
 }
 
 Share<HazeCompilerValue> ASTBool::CodeGen()
@@ -56,10 +48,6 @@ ASTNumber::ASTNumber(HazeCompiler* compiler, const SourceLocation& location, Haz
 	m_Value = value;
 }
 
-ASTNumber::~ASTNumber()
-{
-}
-
 Share<HazeCompilerValue> ASTNumber::CodeGen()
 {
 	return m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
@@ -67,10 +55,6 @@ Share<HazeCompilerValue> ASTNumber::CodeGen()
 
 ASTStringText::ASTStringText(HazeCompiler* compiler, const SourceLocation& location, HString& text) 
 	: ASTBase(compiler, location), m_Text(Move(text))
-{
-}
-
-ASTStringText::~ASTStringText()
 {
 }
 
@@ -85,10 +69,6 @@ ASTIdentifier::ASTIdentifier(HazeCompiler* compiler, const SourceLocation& locat
 	m_NameSpace(Move(nameSpace))
 {
 	m_DefineVariable.Name = Move(name);
-}
-
-ASTIdentifier::~ASTIdentifier()
-{
 }
 
 Share<HazeCompilerValue> ASTIdentifier::CodeGen()
@@ -165,10 +145,6 @@ ASTFunctionCall::ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& l
 {
 }
 
-ASTFunctionCall::~ASTFunctionCall()
-{
-}
-
 Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
@@ -221,13 +197,60 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 	return nullptr;
 }
 
+ASTClassAttr::ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& classObjName, 
+	HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam)
+	: ASTBase(compiler, location), m_SectionSignal(section), m_IsFunction(isFunction), m_AttrName(Move(attrName))
+{
+	m_DefineVariable.Name = Move(classObjName);
+	if (functionParam)
+	{
+		m_Params = Move(*functionParam);
+	}
+}
+
+Share<HazeCompilerValue> ASTClassAttr::CodeGen()
+{
+	Share<HazeCompilerValue> v;
+	if (m_SectionSignal == HazeSectionSignal::Global)
+	{
+		v = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
+	}
+	else if (m_SectionSignal == HazeSectionSignal::Local)
+	{
+		v = m_Compiler->GetLocalVariable(m_DefineVariable.Name);
+		if (!v)
+		{
+			v = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
+		}
+	}
+
+	auto classValue = DynamicCast<HazeCompilerClassValue>(v);
+	if (m_IsFunction)
+	{
+		V_Array<Share<HazeCompilerValue>> param;
+		for (auto& p : m_Params)
+		{
+			param.push_back(p->CodeGen());
+		}
+
+		if (!classValue && IsAdvanceType(v->GetValueType().PrimaryType))
+		{
+			return m_Compiler->CreateAdvanceTypeFunctionCall(v->GetValueType().PrimaryType, m_AttrName, param,v);
+		}
+		else
+		{
+			return m_Compiler->CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(m_AttrName), param, classValue);
+		}
+	}
+	else
+	{
+		return classValue->GetMember(m_AttrName);
+	}
+}
+
 ASTVariableDefine::ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 	const HazeDefineVariable& defineVar, Unique<ASTBase> expression)
 	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(Move(expression))
-{
-}
-
-ASTVariableDefine::~ASTVariableDefine()
 {
 }
 
@@ -366,10 +389,11 @@ Share<HazeCompilerValue> ASTVariableDefine_Array::CodeGen()
 		}
 	}
 
-	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+	auto v = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, exprValue, sizeValue);
 
-	return Share<HazeCompilerValue>();
+	m_Compiler->CreateMov(v, exprValue);
+	return v;
 }
 
 
@@ -419,10 +443,6 @@ ASTReturn::ASTReturn(HazeCompiler* compiler, const SourceLocation& location, Uni
 {
 }
 
-ASTReturn::~ASTReturn()
-{
-}
-
 Share<HazeCompilerValue> ASTReturn::CodeGen()
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
@@ -446,10 +466,6 @@ ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const Haz
 	, V_Array<Unique<ASTBase>> constructorParam)
 	: ASTBase(compiler, location, DefineVar), m_CountArrayExpression(Move(countArrayExpression)),
 	m_ConstructorParam(Move(constructorParam))
-{
-}
-
-ASTNew::~ASTNew()
 {
 }
 

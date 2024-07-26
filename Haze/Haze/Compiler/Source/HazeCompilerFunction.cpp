@@ -44,22 +44,15 @@ Share<HazeCompilerValue> HazeCompilerFunction::CreateLocalVariable(const HazeDef
 Share<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& data, V_Array<Share<HazeCompilerValue>>* countValue)
 {
 	HAZE_STRING_STREAM hss;
-	GenIRCode(hss, m_Module, InstructionOpCode::NEW, nullptr, nullptr, &data);
+	GenIRCode(hss, m_Module, InstructionOpCode::NEW, nullptr, m_Module->GetCompiler()->GetConstantValueUint64(countValue->size()), &data);
 
 	if (countValue)
 	{
-		GenVariableHzic(m_Module, hss, m_Module->GetCompiler()->GetConstantValueUint64(countValue->size()));
 		for (uint64 i = 0; i < countValue->size(); i++)
 		{
 			GenIRCode(hss, m_Module, InstructionOpCode::SIGN, countValue->at(i));
 		}
 	}
-	else
-	{
-		GenVariableHzic(m_Module, hss, m_Module->GetCompiler()->GetConstantValueUint64(0));
-	}
-
-	hss << std::endl;
 	
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	block->PushIRCode(hss.str());

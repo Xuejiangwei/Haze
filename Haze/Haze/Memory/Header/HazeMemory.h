@@ -82,5 +82,5 @@ private:
 	V_Array<void*> m_KeepMemorys;
 	V_Array<Pair<Pair<uint64, HazeValueType>, GC_State>> m_MarkAddressBases;
 	V_Array<Pair<Pair<uint64, ClassData*>, GC_State>> m_MarkAddressClasses;
-	V_Array<Pair<Pair<uint64, uint64>, GC_State>> m_MarkAddressArrays;
+	V_Array<Pair<void*, GC_State>> m_MarkAddressArrays;
 };

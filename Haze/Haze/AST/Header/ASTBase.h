@@ -16,7 +16,7 @@ public:
 
 	ASTBase(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defVar);
 	
-	virtual ~ASTBase();
+	virtual ~ASTBase() {}
 
 	virtual Share<HazeCompilerValue> CodeGen() { return  nullptr; }
 
@@ -40,7 +40,7 @@ class ASTBool : public ASTBase
 public:
 	ASTBool(HazeCompiler* compiler, const SourceLocation& location, const HazeValue& value);
 
-	virtual ~ASTBool() override;
+	virtual ~ASTBool() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 };
@@ -51,7 +51,7 @@ class ASTNumber : public ASTBase
 public:
 	ASTNumber(HazeCompiler* compiler, const SourceLocation& location, HazeValueType type, const HazeValue& value);
 	
-	virtual ~ASTNumber() override;
+	virtual ~ASTNumber() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 };
@@ -62,7 +62,7 @@ class ASTStringText : public ASTBase
 public:
 	ASTStringText(HazeCompiler* compiler, const SourceLocation& location, HString& text);
 	
-	virtual ~ASTStringText() override;
+	virtual ~ASTStringText() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 
@@ -77,7 +77,7 @@ public:
 	ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
 		V_Array<Unique<ASTBase>>& arrayIndexExpression, HString nameSpace = HAZE_TEXT(""));
 	
-	virtual ~ASTIdentifier() override;
+	virtual ~ASTIdentifier() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 
@@ -96,7 +96,7 @@ public:
 	ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name
 		, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj = nullptr);
 	
-	virtual ~ASTFunctionCall() override;
+	virtual ~ASTFunctionCall() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 
@@ -110,6 +110,23 @@ private:
 
 };
 
+class ASTClassAttr : public ASTBase
+{
+public:
+	ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		HString& classObjName, HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam = nullptr);
+
+	virtual ~ASTClassAttr() override {}
+
+	virtual Share<HazeCompilerValue> CodeGen() override;
+
+private:
+	bool m_IsFunction;
+	HazeSectionSignal m_SectionSignal;
+	HString m_AttrName;
+	V_Array<Unique<ASTBase>> m_Params;
+};
+
 //变量定义 基本类型 类对象
 class ASTVariableDefine : public ASTBase
 {
@@ -117,7 +134,7 @@ public:
 	ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		const HazeDefineVariable& defineVar, Unique<ASTBase> expression);
 
-	virtual ~ASTVariableDefine() override;
+	virtual ~ASTVariableDefine() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 
@@ -194,7 +211,7 @@ class ASTReturn : public ASTBase
 public:
 	ASTReturn(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression);
 	
-	virtual ~ASTReturn() override;
+	virtual ~ASTReturn() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 
@@ -209,7 +226,7 @@ public:
 	ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, V_Array<Unique<ASTBase>> countarrayExpression = {},
 		V_Array<Unique<ASTBase>> constructorParam = {});
 	
-	virtual ~ASTNew() override;
+	virtual ~ASTNew() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 

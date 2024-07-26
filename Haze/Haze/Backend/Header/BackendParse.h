@@ -15,7 +15,7 @@ public:
 	void Parse();
 
 public:
-	unsigned int const GetClassSize(const HString& className);
+	uint32 const GetClassSize(const HString& className);
 
 private:
 	void GetNextLexeme();
@@ -25,6 +25,8 @@ private:
 		GetNextLexeme();
 		dst = m_CurrLexeme;
 	};
+
+	void GetNextLexmeAssign_HazeStringCustomClassName(const HString*& dst);
 
 	template<typename T>
 	void GetNextLexmeAssign_StandardType(T& dst)

@@ -48,11 +48,6 @@ void HazeCompilerValue::StoreValueType(Share<HazeCompilerValue> srcValue)
 	//memcpy(&this->Value.Value, &SrcValue->Value.Value, sizeof(this->Value.Value));
 }
 
-void HazeCompilerValue::StoreValue(HazeValue& srcValue)
-{
-	memcpy(&this->m_Value.Value, &srcValue.Value, sizeof(this->m_Value.Value));
-}
-
 uint32 HazeCompilerValue::GetSize()
 {
 	return GetSizeByHazeType(m_ValueType.PrimaryType);

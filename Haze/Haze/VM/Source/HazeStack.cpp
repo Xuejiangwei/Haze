@@ -226,20 +226,15 @@ void* HazeStack::Alloca(uint64 size)
 	return ret;
 }
 
-//void HazeStack::RegisterArray(uint64 address, uint64 length)
-//{
-//	m_VM->Vector_ArrayCache[address] = length;
-//}
-
-uint64 HazeStack::GetRegisterArrayLength(uint64 address)
+void HazeStack::RegisterArray(void* address, uint64 length)
 {
-	return m_VM->GetRegisterArrayLength(address);
+	m_VM->Vector_ArrayCache.insert(address);
 }
+
 
 void HazeStack::GarbageCollection(bool force, bool collectionAll)
 {
 	//防止虚拟寄存器中的引用被GC，只在函数返回时进行GC，并且此时只用Ret虚拟寄存器可能有引用。
-
 	if (force && collectionAll)
 	{
 		HazeMemory::GetMemory()->ForceGC();

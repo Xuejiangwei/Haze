@@ -5,8 +5,9 @@ class HazeStack;
 
 class ObjectArray
 {
+	friend class HazeMemory;
 public:
-	ObjectArray(uint64* dimensions, uint64 dimensionCount, uint64 size);
+	ObjectArray(uint64 dimensionCount, void* address, uint64 length, uint64 pcAddress);
 
 	~ObjectArray();
 
@@ -15,8 +16,13 @@ public:
 private:
 	static void GetLength(HazeStack* stack);
 
+	static void GetLengthOfDimension(HazeStack* stack);
+
+	static void GetDimensionCount(HazeStack* stack);
+
 private:
 	void* m_Data;
-	uint64* m_Dimensions;
 	uint64 m_DimensionCount;
+	uint64 m_Length;
+	uint64 m_PcAddress;
 };

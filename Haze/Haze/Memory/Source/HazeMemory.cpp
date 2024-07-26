@@ -5,6 +5,7 @@
 #include "HazeVM.h"
 #include "HazeStack.h"
 #include "HazeLogDefine.h"
+#include "ObjectArray.h"
 #include <chrono>
 
 #define PAGE_BASE_SIZE  4 * 4
@@ -133,7 +134,7 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, c
 		break;
 	case HazeValueType::Array:
 	{
-		uint64 size = m_VM->GetRegisterArrayLength(startAddress) * GetSizeByHazeType(type.SecondaryType);
+		uint64 size = ((ObjectArray*)startAddress)->m_Length  * GetSizeByHazeType(type.SecondaryType);
 
 #ifdef _DEBUG
 		if (size == 0)
@@ -143,7 +144,7 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, c
 		}
 #endif // _DEBUG
 
-		m_MarkAddressArrays.push_back({ { startAddress, size }, GC_State::Gray });
+		m_MarkAddressArrays.push_back({ (void*)startAddress, GC_State::Gray });
 	}
 		break;
 //	case HazeValueType::ArrayClass:
@@ -318,7 +319,7 @@ void HazeMemory::Mark()
 
 	for (size_t i = 0; i < m_MarkAddressArrays.size(); i++)
 	{
-		m_KeepMemorys.push_back((void*)m_MarkAddressArrays[i].first.first);
+		m_KeepMemorys.push_back(m_MarkAddressArrays[i].first);
 	}
 }
 
@@ -386,15 +387,10 @@ void HazeMemory::Sweep()
 	}
 
 	//重新标记数组，暂时不需要，因为是可达性的遍历，若不可达，会回收内存，但是数据记录中会有脏数据
-	for (auto& i : m_MarkAddressArrays)
-	{
-		i.first.second = m_VM->Vector_ArrayCache[i.first.first];
-	}
-
 	m_VM->Vector_ArrayCache.clear();
 	for (auto& i : m_MarkAddressArrays)
 	{
-		m_VM->Vector_ArrayCache[i.first.first] = i.first.second;
+		m_VM->Vector_ArrayCache.insert(i.first);
 	}
 }
 

@@ -19,8 +19,6 @@ public:
 
 	virtual void StoreValueType(Share<HazeCompilerValue> srcValue);
 
-	virtual void StoreValue(HazeValue& srcValue);
-
 	const HazeDefineType& GetValueType() const { return m_ValueType; }
 
 	const HazeValue& GetValue() const { return m_Value; }
@@ -74,6 +72,8 @@ public:
 	bool IsArray() const { return IsArrayType(m_ValueType.PrimaryType); }
 
 	bool IsClass() const { return IsClassType(m_ValueType.PrimaryType); }
+
+	bool IsAdvance() const { return IsAdvanceType(m_ValueType.PrimaryType); }
 
 	virtual bool IsEnum() const { return false; }
 

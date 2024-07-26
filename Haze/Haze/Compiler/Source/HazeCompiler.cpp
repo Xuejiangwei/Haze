@@ -501,9 +501,12 @@ void HazeCompiler::MarkParseTemplate(bool begin, const HString* moduleName)
 	}
 }
 
-Share<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType type, const HazeValue& var)
+Share<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType type, const HazeValue& var, HazeValueType* varType)
 {
 	static HazeDefineVariable s_DefineVariable;
+	static HazeValue  s_Value;
+
+	ConvertBaseTypeValue(type, s_Value, varType ? *varType : type, var);
 
 	HazeValue& v = const_cast<HazeValue&>(var);
 	s_DefineVariable.Type.PrimaryType = type;
@@ -513,142 +516,132 @@ Share<HazeCompilerValue> HazeCompiler::GenConstantValue(HazeValueType type, cons
 	{
 	case HazeValueType::Bool:
 	{
-		auto it = m_BoolConstantValues.find(var.Value.Bool);
+		auto it = m_BoolConstantValues.find(s_Value.Value.Bool);
 		if (it != m_BoolConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_BoolConstantValues[var.Value.Bool] = ret;
-		return ret;
+		m_BoolConstantValues[s_Value.Value.Bool] = ret;
 	}
+		break;
 	case HazeValueType::Int8:
 	{
-		auto it = m_Int8_ConstantValues.find(var.Value.Int8);
+		auto it = m_Int8_ConstantValues.find(s_Value.Value.Int8);
 		if (it != m_Int8_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_Int8_ConstantValues[var.Value.Int8] = ret;
-		return ret;
+		m_Int8_ConstantValues[s_Value.Value.Int8] = ret;
 	}
+		break;
 	case HazeValueType::UInt8:
 	{
-		auto it = m_UInt8_ConstantValues.find(var.Value.UInt8);
+		auto it = m_UInt8_ConstantValues.find(s_Value.Value.UInt8);
 		if (it != m_UInt8_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_UInt8_ConstantValues[var.Value.UInt8] = ret;
-		return ret;
+		m_UInt8_ConstantValues[s_Value.Value.UInt8] = ret;
 	}
+		break;
 	case HazeValueType::Int16:
 	{
-		auto it = m_Int16_ConstantValues.find(var.Value.Int16);
+		auto it = m_Int16_ConstantValues.find(s_Value.Value.Int16);
 		if (it != m_Int16_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_Int16_ConstantValues[var.Value.Int16] = ret;
-		return ret;
+		m_Int16_ConstantValues[s_Value.Value.Int16] = ret;
 	}
+		break;
 	case HazeValueType::UInt16:
 	{
-		auto it = m_UInt16_ConstantValues.find(var.Value.UInt16);
+		auto it = m_UInt16_ConstantValues.find(s_Value.Value.UInt16);
 		if (it != m_UInt16_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_UInt16_ConstantValues[var.Value.UInt16] = ret;
-		return m_UInt16_ConstantValues[var.Value.UInt16];
+		m_UInt16_ConstantValues[s_Value.Value.UInt16] = ret;
 	}
+		break;
 	case HazeValueType::Int32:
 	{
-		auto it = m_Int32_ConstantValues.find(var.Value.Int32);
+		auto it = m_Int32_ConstantValues.find(s_Value.Value.Int32);
 		if (it != m_Int32_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_Int32_ConstantValues[var.Value.Int32] = ret;
-		return m_Int32_ConstantValues[var.Value.Int32];
+		m_Int32_ConstantValues[s_Value.Value.Int32] = ret;
 	}
+		break;
 	case HazeValueType::UInt32:
 	{
-		auto it = m_UInt32_ConstantValues.find(var.Value.UInt32);
+		auto it = m_UInt32_ConstantValues.find(s_Value.Value.UInt32);
 		if (it != m_UInt32_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_UInt32_ConstantValues[var.Value.UInt32] = ret;
-		return ret;
+		m_UInt32_ConstantValues[s_Value.Value.UInt32] = ret;
 	}
+		break;
 	case HazeValueType::Int64:
 	{
-		auto it = m_Int64_ConstantValues.find(var.Value.Int64);
+		auto it = m_Int64_ConstantValues.find(s_Value.Value.Int64);
 		if (it != m_Int64_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_Int64_ConstantValues[var.Value.Int64] = ret;
-		return ret;
+		m_Int64_ConstantValues[s_Value.Value.Int64] = ret;
 	}
+		break;
 	case HazeValueType::UInt64:
 	{
-		auto it = m_UInt64_ConstantValues.find(var.Value.UInt64);
+		auto it = m_UInt64_ConstantValues.find(s_Value.Value.UInt64);
 		if (it != m_UInt64_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_UInt64_ConstantValues[var.Value.UInt64] = ret;
-		return ret;
+		m_UInt64_ConstantValues[s_Value.Value.UInt64] = ret;
 	}
+		break;
 	case HazeValueType::Float32:
 	{
-		auto it = m_Float32_ConstantValues.find(var.Value.Float32);
+		auto it = m_Float32_ConstantValues.find(s_Value.Value.Float32);
 		if (it != m_Float32_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_Float32_ConstantValues[var.Value.Float32] = ret;
-		return ret;
+		m_Float32_ConstantValues[s_Value.Value.Float32] = ret;
 	}
+		break;
 	case HazeValueType::Float64:
 	{
-		auto it = m_Float64_ConstantValues.find(var.Value.Float64);
+		auto it = m_Float64_ConstantValues.find(s_Value.Value.Float64);
 		if (it != m_Float64_ConstantValues.end())
 		{
 			return it->second;
 		}
 		ret = CreateVariable(nullptr, s_DefineVariable, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
-		ret->StoreValue(v);
-		m_Float64_ConstantValues[var.Value.Float64] = ret;
-		return ret;
+		m_Float64_ConstantValues[s_Value.Value.Float64] = ret;
 	}
+		break;
 	default:
 		HAZE_LOG_ERR_W("未支持生成<%s>常量类型!\n", GetHazeValueTypeString(type));
 		break;
 	}
 
-	return nullptr;
+	memcpy(((void*)&ret->GetValue()), &s_Value, sizeof(s_Value));
+	return ret;
 }
 
 Share<HazeCompilerValue> HazeCompiler::GenStringVariable(HString& str)
@@ -944,6 +937,30 @@ Share<HazeCompilerValue> HazeCompiler::CreateFunctionCall(Share<HazeCompilerFunc
 Share<HazeCompilerValue> HazeCompiler::CreateFunctionCall(Share<HazeCompilerValue> pointerFunction, V_Array<Share<HazeCompilerValue>>& param, Share<HazeCompilerValue> thisPointerTo)
 {
 	return GetCurrModule()->CreateFunctionCall(pointerFunction, param, thisPointerTo);
+}
+
+Share<HazeCompilerValue> HazeCompiler::CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName, V_Array<Share<HazeCompilerValue>>& param, Share<HazeCompilerValue> thisPointerTo)
+{
+	auto iter = m_AdvanceClassInfo.find(advanceType);
+	if (iter != m_AdvanceClassInfo.end())
+	{
+		auto func = iter->second.Functions.find(functionName);
+		if (func != iter->second.Functions.end())
+		{
+			return GetCurrModule()->CreateAdvanceTypeFunctionCall(func->second, param, thisPointerTo);
+		}
+		else
+		{
+			COMPILER_ERR_MODULE_W("类型<%s>没有找到<%s>方法", GetHazeValueTypeString(advanceType), functionName.c_str(),
+				GetCurrModuleName().c_str());
+		}
+	}
+	else
+	{
+		COMPILER_ERR_MODULE_W("类型<%s>没有找到方法信息", GetHazeValueTypeString(advanceType), GetCurrModuleName().c_str());
+	}
+
+	return nullptr;
 }
 
 Share<HazeCompilerValue> HazeCompiler::CreateArrayInit(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> initList)

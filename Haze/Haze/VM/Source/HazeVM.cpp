@@ -37,9 +37,6 @@ HazeVM::~HazeVM()
 void HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 {
 	// 提前注册基本类型
-	AdvanceClassInfo info;
-
-	info.Functions[H_TEXT("长度")] = AdvanceClassInfo::AdvanceFunctionInfo();
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, *ObjectArray::GetAdvanceClassInfo());
 
 	// 提前解析基础模块
@@ -416,17 +413,6 @@ uint32 HazeVM::GetCurrCallFunctionLine()
 	}
 
 	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
-}
-
-uint64 HazeVM::GetRegisterArrayLength(uint64 address)
-{
-	auto iter = Vector_ArrayCache.find(address);
-	if (iter != Vector_ArrayCache.end())
-	{
-		return iter->second;
-	}
-
-	return 0;
 }
 
 //void HazeVM::Hook(HazeVM* m_VM)

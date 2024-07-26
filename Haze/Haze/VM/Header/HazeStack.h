@@ -76,9 +76,7 @@ private:
 private:
 	void* Alloca(uint64 size);
 
-	//void RegisterArray(uint64 address, uint64 length);
-
-	uint64 GetRegisterArrayLength(uint64 address);
+	void RegisterArray(void* address, uint64 length);
 
 	void GarbageCollection(bool force = false, bool collectionAll = false);
 

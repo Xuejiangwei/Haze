@@ -139,6 +139,8 @@ private:
 	Share<HazeCompilerValue> CreateFunctionCall(Share<HazeCompilerFunction> callFunction, V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo = nullptr);
 
 	Share<HazeCompilerValue> CreateFunctionCall(Share<HazeCompilerValue> pointerFunction, V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo = nullptr);
+	
+	Share<HazeCompilerValue> CreateAdvanceTypeFunctionCall(struct AdvanceFunctionInfo& functionInfo, V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo = nullptr);
 
 	Share<HazeCompilerValue> GenIRCode_BinaryOperater(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, InstructionOpCode opCode);
 
@@ -154,7 +156,8 @@ private:
 
 private:
 	void FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompilerFunction> callFunction, Share<HazeCompilerValue> pointerFunction, 
-		uint32& size, V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo);
+		AdvanceFunctionInfo* advancFunctionInfo, uint32& size, V_Array<Share<HazeCompilerValue>>& params, 
+		Share<HazeCompilerValue> thisPointerTo);
 
 	void GenCodeFile();
 
