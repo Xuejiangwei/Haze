@@ -66,14 +66,11 @@ enum class HazeDataDesc : uint32
 	FunctionAddress,
 
 	ClassThis,
-	ClassPointer,
 	Class,
 	ClassMember_Local_Public,
 	ClassMember_Local_Private,
-	ClassMember_Local_Protected,
 	ClassFunction_Local_Public,
 	ClassFunction_Local_Private,
-	ClassFunction_Local_Protected,
 
 	Initlist,
 	ArrayElement,
@@ -273,7 +270,7 @@ struct ModuleData
 struct ClassData
 {
 	HString Name;
-	uint64 Size;
+	uint32 Size;
 	V_Array<HazeVariableData> Members;
 };
 

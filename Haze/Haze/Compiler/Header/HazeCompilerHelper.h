@@ -41,10 +41,7 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunc
 	HazeCompilerModule* compilerModule, const HString& inName, HString& outObjectName, HString& outFunctionName, bool& isPointer);
 
 bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Share<HazeCompilerValue>>& data,
-	const Share<HazeCompilerValue>& value, HString& outName);
-
-bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Share<HazeCompilerValue>>& data,
-	const HazeCompilerValue* value, HString& outName);
+	const HazeCompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
 
 Share<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* compilerModule,
 	Share<HazeCompilerValue> elementValue, Share<HazeCompilerValue> movToValue = nullptr);

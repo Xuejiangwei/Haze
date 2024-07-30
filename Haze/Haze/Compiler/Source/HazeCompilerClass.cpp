@@ -42,18 +42,6 @@ HazeCompilerClass::~HazeCompilerClass()
 {
 }
 
-void HazeCompilerClass::OnCreateFinish()
-{
-	for (auto& func : m_Functions)
-	{
-		auto& type = const_cast<HazeDefineType&>(func->GetThisParam());
-		type.CustomName = &m_Name;
-
-		auto& vType = const_cast<HazeDefineType&>(func->GetLocalVariable(TOKEN_THIS)->GetValueType());
-		vType.CustomName = &m_Name;
-	}
-}
-
 Share<HazeCompilerFunction> HazeCompilerClass::FindFunction(const HString& functionName)
 {
 	auto iter = m_HashMap_Functions.find(GetHazeClassFunctionName(m_Name, functionName));
@@ -81,17 +69,9 @@ Share<HazeCompilerFunction> HazeCompilerClass::AddFunction(Share<HazeCompilerFun
 
 void HazeCompilerClass::InitThisValue()
 {
-	m_NewPointerToValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, 
+	/*m_ThisClassValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, 
 		HazeDefineVariable(HazeDefineType(HazeValueType::Class, &m_Name),
-		H_TEXT("")), HazeVariableScope::None, HazeDataDesc::ClassThis, 0));
-	
-	m_ThisClassValue = DynamicCast<HazeCompilerClassValue>(CreateVariable(m_Module, 
-		HazeDefineVariable(HazeDefineType(HazeValueType::Class, &m_Name),
-		TOKEN_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
-
-	m_ThisPointerValue = DynamicCast<HazeCompilerPointerValue>(CreateVariable(m_Module, 
-		HazeDefineVariable(HazeDefineType(HazeValueType::Class, &m_Name),
-		TOKEN_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));
+		TOKEN_THIS), HazeVariableScope::Local, HazeDataDesc::ClassThis, 0));*/
 }
 
 int HazeCompilerClass::GetMemberIndex(const HString& memberName)
@@ -113,48 +93,47 @@ int HazeCompilerClass::GetMemberIndex(const HString& memberName)
 	return -1;
 }
 
-bool HazeCompilerClass::GetMemberName(const Share<HazeCompilerValue>& value, HString& outName)
+//bool HazeCompilerClass::GetThisMemberName(const HazeCompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+//{
+//	uint32 count = 0;
+//	for (size_t i = 0; i < m_ThisClassValue->m_Data.size(); i++)
+//	{
+//		for (size_t j = 0; j < m_ThisClassValue->m_Data[i].second.size(); j++)
+//		{
+//			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, m_ThisClassValue->m_Data[i].second[j] },
+//				value, outName, getOffset, offsets))
+//			{
+//				if (getOffset)
+//				{
+//					offsets->push_back(m_Offsets[count]);
+//				}
+//				return true;
+//			}
+//
+//			count++;
+//		}
+//	}
+//
+//	return false;
+//}
+
+bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* classValue, const HazeCompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
-	return GetMemberName(value.get(), outName);
-}
-
-bool HazeCompilerClass::GetMemberName(const HazeCompilerValue* value, HString& outName)
-{
-	for (size_t i = 0; i < m_ThisClassValue->m_Data.size(); i++)
-	{
-		for (size_t j = 0; j < m_ThisClassValue->m_Data[i].second.size(); j++)
-		{
-			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, m_ThisClassValue->m_Data[i].second[j] }, value, outName))
-			{
-				return true;
-			}
-		}
-	}
-
-	for (size_t i = 0; i < m_NewPointerToValue->m_Data.size(); i++)
-	{
-		for (size_t j = 0; j < m_NewPointerToValue->m_Data[i].second.size(); j++)
-		{
-			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, m_NewPointerToValue->m_Data[i].second[j] }, value, outName))
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
-bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* classValue, const HazeCompilerValue* value, HString& outName)
-{
+	uint32 count = 0;
 	for (size_t i = 0; i < classValue->m_Data.size(); i++)
 	{
 		for (size_t j = 0; j < classValue->m_Data[i].second.size(); j++)
 		{
 			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, classValue->m_Data[i].second[j] }, value, outName))
 			{
+				if (getOffset)
+				{
+					offsets->push_back(m_Offsets[count]);
+				}
 				return true;
 			}
+
+			count++;
 		}
 	}
 
@@ -176,15 +155,8 @@ void HazeCompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)
 	{
 		for (size_t j = 0; j < m_Data[i].second.size(); j++)
 		{
-			hss << m_Data[i].second[j].first << " " << CAST_TYPE(m_Data[i].second[j].second->GetValueType().PrimaryType);
-			if (m_Data[i].second[j].second->GetValueType().NeedSecondaryType())
-			{
-				hss << " " << CAST_TYPE(m_Data[i].second[j].second->GetValueType().SecondaryType);
-			}
-			else if (m_Data[i].second[j].second->GetValueType().NeedCustomName())
-			{
-				hss << " " << m_Data[i].second[j].second->GetValueType().CustomName;
-			}
+			hss << m_Data[i].second[j].first << " ";
+			m_Data[i].second[j].second->GetValueType().StringStreamTo(hss);
 
 			hss << " " << m_Offsets[index] << " " << m_Data[i].second[j].second->GetSize() << std::endl;
 			index++;

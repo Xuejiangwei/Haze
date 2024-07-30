@@ -96,7 +96,7 @@ struct HazeDefineType
 			}
 		}
 
-		return true;
+		return false;
 	}
 
 	HString GetFullTypeName() const
@@ -128,6 +128,15 @@ struct HazeDefineType
 	{
 		SecondaryType = PrimaryType;
 		PrimaryType = HazeValueType::Refrence;
+	}
+
+	void UpTypeToRefrence(const HazeDefineType& type)
+	{
+		*this = type;
+		if (IsHazeBaseType(PrimaryType))
+		{
+			UpToRefrence();
+		}
 	}
 
 	void UpToArray()

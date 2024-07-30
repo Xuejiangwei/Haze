@@ -93,6 +93,8 @@ void HazeCompiler::FinishParse()
 	ofstream.open(GetIntermediateModuleFile(HAZE_INTER_SYMBOL_TABLE));
 
 	HAZE_STRING_STREAM hss;
+
+	hss << GetSymbolBeginHeader() << std::endl;
 	for (auto& m : m_CompilerModules)
 	{
 		for (auto& className : m.second->m_HashMap_Classes)
@@ -100,6 +102,8 @@ void HazeCompiler::FinishParse()
 			hss << className.first << std::endl;
 		}
 	}
+	hss << GetSymbolEndHeader() << std::endl;
+
 	ofstream << hss.str();
 	ofstream.close();
 
@@ -187,21 +191,40 @@ const HString* HazeCompiler::GetModuleTableEnumName(const HString& name)
 
 void HazeCompiler::RegisterClassToSymbolTable(const HString& className)
 {
-	auto iter = m_SymbolTable.find(className);
-	if (iter == m_SymbolTable.end())
+	for (auto iter = m_CacheSymbols.begin(); iter != m_CacheSymbols.end(); iter++)
 	{
-		m_SymbolTable[className] = nullptr;
+		if (*iter == className)
+		{
+			return;
+		}
+	}
+
+	m_CacheSymbols.push_back({ className });
+	m_SymbolTable[{ &m_CacheSymbols.back() }] = nullptr;
+}
+
+void HazeCompiler::OnCreateClass(Share<HazeCompilerClass> compClass)
+{
+	auto iter = m_SymbolTable.find({ &compClass->GetName() });
+	if (iter->second == nullptr)
+	{
+		iter->second = compClass;
+		return;
+	}
+	else
+	{
+		COMPILER_ERR_MODULE_W("重复创建类<%s>", compClass->GetName().c_str(), GetCurrModuleName().c_str());
+		return;
 	}
 }
 
 const HString* HazeCompiler::GetSymbolTableNameAddress(const HString& className)
 {
-	auto iter = m_SymbolTable.find(className);
+	auto iter = m_SymbolTable.find({ &className });
 	if (iter != m_SymbolTable.end())
 	{
-		return &iter->first;
+		return iter->first.Str;
 	}
-
 	return nullptr;
 }
 
@@ -247,11 +270,11 @@ Share<HazeCompilerClass> HazeCompiler::GetBaseModuleClass(const HString& classNa
 	return nullptr;
 }
 
-bool HazeCompiler::GetBaseModuleGlobalVariableName(const Share<HazeCompilerValue>& value, HString& outName)
+bool HazeCompiler::GetBaseModuleGlobalVariableName(const Share<HazeCompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
 	for (auto& it : m_CompilerBaseModules)
 	{
-		if (it.second->GetGlobalVariableName_Internal(value, outName))
+		if (it.second->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
 		{
 			return true;
 		}
@@ -283,7 +306,7 @@ void HazeCompiler::InsertLineCount(int64 lineCount)
 {
 	if (m_VM->IsDebug() && m_InsertBaseBlock)
 	{
-		HAZE_LOG_INFO("HazeCompiler line %d\n", lineCount);
+		HAZE_LOG_INFO(H_TEXT("行 %d\n"), lineCount);
 		m_InsertBaseBlock->PushIRCode(GetInstructionString(InstructionOpCode::LINE) + (H_TEXT(" ") + HAZE_TO_HAZE_STR(lineCount)) + H_TEXT("\n"));
 	}
 }
@@ -809,7 +832,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateMovToPV(Share<HazeCompilerValue> al
 
 Share<HazeCompilerValue> HazeCompiler::CreateMovPV(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value)
 {
-	if (value->IsRefrence())
+	//if (value->IsRefrence())
 	{
 		allocaValue->StoreValueType(value);
 
@@ -818,18 +841,18 @@ Share<HazeCompilerValue> HazeCompiler::CreateMovPV(Share<HazeCompilerValue> allo
 
 		
 		{
-			allocaValueType.PrimaryType = ValueValueType.SecondaryType;
-			allocaValueType.CustomName = ValueValueType.CustomName;
+			allocaValueType.PrimaryType = HazeValueType::UInt64;//ValueValueType.SecondaryType;
+			allocaValueType.CustomName = nullptr;//ValueValueType.CustomName;
 
-			allocaValueType.SecondaryType = HazeValueType::Void;
+			allocaValueType.SecondaryType = HazeValueType::None;
 		}
 
 		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOVPV);
 	}
-	else
+	/*else
 	{
 		COMPILER_ERR_MODULE_W("生成<%s>操作错误", GetInstructionString(InstructionOpCode::MOVPV), GetCurrModuleName().c_str());
-	}
+	}*/
 
 	return allocaValue;
 }

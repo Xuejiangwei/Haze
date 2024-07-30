@@ -119,6 +119,7 @@ void BackendParse::Parse()
 		HAZE_IFSTREAM fs(GetIntermediateModuleFile(HAZE_INTER_SYMBOL_TABLE));
 		fs.imbue(std::locale("chs"));
 		codeText = HString(std::istreambuf_iterator<HChar>(fs), {});
+		m_CurrCode = codeText.c_str();
 		Parse_I_Symbol();
 		fs.close();
 	}
@@ -183,10 +184,15 @@ void BackendParse::GetNextLexmeAssign_HazeStringCustomClassName(const HString*& 
 
 void BackendParse::Parse_I_Symbol()
 {
-	while (m_CurrCode && HazeIsSpace(*m_CurrCode))
+	GetNextLexeme();
+	if (m_CurrLexeme == GetSymbolBeginHeader())
 	{
 		GetNextLexeme();
-		m_InterSymbol.insert(m_CurrLexeme);
+		while (m_CurrLexeme != GetSymbolEndHeader())
+		{
+			m_InterSymbol.insert(m_CurrLexeme);
+			GetNextLexeme();
+		}
 	}
 }
 
@@ -234,28 +240,18 @@ void BackendParse::Parse_I_Code_GlobalTable()
 
 			GetNextLexmeAssign_StandardType(table.Data[i].Size);
 
-			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].Type.PrimaryType);
+			table.Data[i].Type.StringStream<BackendParse>(this,
+				&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
+				&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 			if (IsHazeBaseType(table.Data[i].Type.PrimaryType))
 			{
-				GetNextLexeme();
 				StringToHazeValueNumber(m_CurrLexeme, table.Data[i].Type.PrimaryType, table.Data[i].Value);
 			}
 			else
 			{
 				if (table.Data[i].Type.NeedCustomName())
 				{
-					GetNextLexmeAssign_HazeString(str);
-					auto iter = m_InterSymbol.find(str);
-					if (iter != m_InterSymbol.end())
-					{
-						table.Data[i].Type.CustomName = &(*iter);
-					}
-					else
-					{
-						HAZE_LOG_ERR_W("解析全局变量错误, 在符号表没找到对应类<%s>", str.c_str());
-					}
-
 					if (IsClassType(table.Data[i].Type.PrimaryType))
 					{
 						table.ClassObjectAllSize += table.Data[i].Size;
@@ -339,28 +335,9 @@ void BackendParse::Parse_I_Code_ClassTable()
 					auto& classMember = classData.Members[j];
 
 					GetNextLexmeAssign_HazeString(classMember.Variable.Name);
-
-					GetNextLexmeAssign_CustomType<uint32>(classMember.Variable.Type.PrimaryType);
-
-					if (classMember.Variable.Type.NeedSecondaryType())
-					{
-						GetNextLexmeAssign_CustomType<uint32>(classMember.Variable.Type.SecondaryType);
-					}
-
-					if (classMember.Variable.Type.NeedCustomName())
-					{
-						GetNextLexmeAssign_HazeString(str);
-						
-						auto iter = m_InterSymbol.find(str);
-						if (iter != m_InterSymbol.end())
-						{
-							classMember.Variable.Type.CustomName = &(*iter);
-						}
-						else
-						{
-							HAZE_LOG_ERR_W("解析类成员错误, 在符号表没找到对应类<%s>", str.c_str());
-						}
-					}
+					classMember.Variable.Type.StringStream<BackendParse>(this,
+						&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
+						&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
 					GetNextLexmeAssign_CustomType<uint32>(classMember.Offset);
 					GetNextLexmeAssign_CustomType<uint32>(classMember.Size);
@@ -734,7 +711,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 
 	if (IsClassMember(operatorData.Desc))
 	{
-		FindObjectAndMemberName(operatorData.Variable.Name, objName, memberName, isPointer);
+		/*FindObjectAndMemberName(operatorData.Variable.Name, objName, memberName, isPointer);
 		for (uint32 i = 0; i < function.Variables.size(); i++)
 		{
 			if (function.Variables[i].Variable.Name == objName)
@@ -754,6 +731,14 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 					break;
 				}
 			}
+		}*/
+
+		if (function.Variables.size() > 0 && function.Variables[0].Variable.Name.find(TOKEN_THIS HAZE_LOCAL_VARIABLE_CONBINE) != HString::npos)
+		{
+			auto classData = GetClass(*function.Variables[0].Variable.Type.CustomName);
+			operatorData.Extra.Address.BaseAddress = function.Variables[0].Offset;
+			operatorData.Extra.Address.Offset = GetMemberOffset(*classData, operatorData.Variable.Name);
+			operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
 		}
 	}
 	else if (operatorData.Desc == HazeDataDesc::ArrayElement)

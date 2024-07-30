@@ -50,17 +50,15 @@ public:
 
 	bool IsString() const { return m_Desc == HazeDataDesc::ConstantString; }
 
-	bool IsClassMember() const { return IsClassPublicMember() || IsClassPrivateMember() || IsClassProtectedMember(); }
+	bool IsClassMember() const { return IsClassPublicMember() || IsClassPrivateMember(); }
 
 	bool IsClassPublicMember() const { return  m_Desc == HazeDataDesc::ClassMember_Local_Public; }
 
 	bool IsClassPrivateMember() const { return  m_Desc == HazeDataDesc::ClassMember_Local_Private; }
 
-	bool IsClassProtectedMember() const { return  m_Desc == HazeDataDesc::ClassMember_Local_Protected; }
-
 	bool IsArrayElement() const { return m_Desc == HazeDataDesc::ArrayElement; }
 
-	bool IsCalssThis() const { return m_Desc == HazeDataDesc::ClassThis; }
+	bool IsClassThis() const { return m_Desc == HazeDataDesc::ClassThis; }
 
 	bool IsNullPtr() const { return m_Desc == HazeDataDesc::NullPtr; }
 

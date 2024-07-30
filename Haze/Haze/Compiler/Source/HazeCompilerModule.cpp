@@ -138,6 +138,8 @@ Share<HazeCompilerClass> HazeCompilerModule::CreateClass(const HString& name, V_
 	{
 		m_HashMap_Classes[name] = MakeShare<HazeCompilerClass>(this, name, parentClass, classData);
 		compilerClass = m_HashMap_Classes[name];
+
+		m_Compiler->OnCreateClass(compilerClass);
 		compilerClass->InitThisValue();
 	}
 
@@ -177,7 +179,6 @@ void HazeCompilerModule::FinishCreateEnum()
 
 void HazeCompilerModule::FinishCreateClass()
 {
-	GetClass(m_CurrClass)->OnCreateFinish();
 	m_CurrClass.clear();
 }
 
@@ -704,7 +705,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 
 	auto pointerFunc = DynamicCast<HazeCompilerPointerFunction>(pointerFunction);
 
-	V_Array<const HazeDefineType*> funcTypes;
+	V_Array<const HazeDefineType*> funcTypes(params.size());
 	for (int64 i = params.size() - 1; i >= 0; i--)
 	{
 		auto Variable = params[i];
@@ -742,7 +743,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 				}
 			}
 
-			funcTypes.push_back(&type);
+			funcTypes[i] = &type;
 		}
 	}
 
@@ -828,7 +829,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 	GetGlobalVariableName(this, pointerFunction, varName);
 	if (varName.empty())
 	{
-		GetCurrFunction()->FindLocalVariableName(pointerFunction, varName);
+		GetCurrFunction()->FindLocalVariableName(pointerFunction.get(), varName);
 		if (varName.empty())
 		{
 			HAZE_LOG_ERR_W("函数指针调用失败!\n");
@@ -856,7 +857,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateAdvanceTypeFunctionCall(Advan
 	GetGlobalVariableName(this, thisPointerTo, varName);
 	if (varName.empty())
 	{
-		GetCurrFunction()->FindLocalVariableName(thisPointerTo, varName);
+		GetCurrFunction()->FindLocalVariableName(thisPointerTo.get(), varName);
 		if (varName.empty())
 		{
 			HAZE_LOG_ERR_W("函数指针调用失败!\n");
@@ -938,9 +939,9 @@ Share<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(HazeCompilerModul
 	return m->m_Compiler->GetBaseModuleGlobalVariable(name);
 }
 
-bool HazeCompilerModule::GetGlobalVariableName(HazeCompilerModule* m, const Share<HazeCompilerValue>& value, HString& outName)
+bool HazeCompilerModule::GetGlobalVariableName(HazeCompilerModule* m, const Share<HazeCompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
-	if (m->GetGlobalVariableName_Internal(value, outName))
+	if (m->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
 	{
 		return true;
 	}
@@ -983,7 +984,7 @@ Share<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable_Internal(const HS
 	return nullptr;
 }
 
-bool HazeCompilerModule::GetGlobalVariableName_Internal(const Share<HazeCompilerValue>& value, HString& outName)
+bool HazeCompilerModule::GetGlobalVariableName_Internal(const Share<HazeCompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
 	if (value->IsRegister())
 	{
@@ -993,7 +994,7 @@ bool HazeCompilerModule::GetGlobalVariableName_Internal(const Share<HazeCompiler
 
 	for (auto& it : m_Variables)
 	{
-		if (TrtGetVariableName(nullptr, it, value, outName))
+		if (TrtGetVariableName(nullptr, it, value.get(), outName))
 		{
 			return true;
 		}
@@ -1001,7 +1002,7 @@ bool HazeCompilerModule::GetGlobalVariableName_Internal(const Share<HazeCompiler
 
 	for (auto& it : m_ImportModules)
 	{
-		if (it->GetGlobalVariableName_Internal(value, outName))
+		if (it->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
 		{
 			return true;
 		}
@@ -1088,19 +1089,8 @@ void HazeCompilerModule::GenICode()
 	
 		hss << m_VariablesAddress[i].first << " " << m_VariablesAddress[i].second << " ";
 
-		hss << var.first << " " << var.second->GetSize() << " " << CAST_TYPE(var.second->GetValueType().PrimaryType) << " ";
-
-		if (IsHazeBaseType(var.second->GetValueType().PrimaryType))
-		{
-			HazeCompilerStream(hss, var.second);
-		}
-		else
-		{
-			if (var.second->GetValueType().NeedCustomName())
-			{
-				hss << var.second->GetValueType().CustomName;
-			}
-		}
+		hss << var.first << " " << var.second->GetSize() << " ";
+		var.second->GetValueType().StringStreamTo(hss);
 
 		hss << std::endl;
 	}

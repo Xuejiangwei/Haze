@@ -19,6 +19,7 @@ HString GetLocalVariableName(const HString& name, Share<HazeCompilerValue> value
 	static HAZE_STRING_STREAM s_Hss;
 
 	s_Hss.str(H_TEXT(""));
+
 	s_Hss << name;
 	if (value->GetCount() > 0)
 	{
@@ -254,11 +255,11 @@ Share<HazeCompilerValue> GetObjectNameAndMemberName(HazeCompilerModule* compiler
 		Share<HazeCompilerClassValue> classValue = nullptr;
 		if (outObjectName == TOKEN_THIS)
 		{
-			classValue = compilerClass->GetThisPointerToValue();
+			//classValue = compilerClass->GetThisPointerToValue();
 		}
 		else
 		{
-			classValue = compilerClass->GetNewPointerToValue();
+			//classValue = compilerClass->GetNewPointerToValue();
 		}
 
 		return classValue->GetMember(outMemberName);
@@ -373,17 +374,14 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> GetObjectNameAndFunc
 }
 
 bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Share<HazeCompilerValue>>& data,
-	const Share<HazeCompilerValue>& value, HString& outName)
-{
-	return TrtGetVariableName(function, data, value.get(), outName);
-}
-
-bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Share<HazeCompilerValue>>& data,
-	const HazeCompilerValue* value, HString& outName)
+	const HazeCompilerValue* value, HString& outName, bool getOffsets, V_Array<uint64>* offsets)
 {
 	if (data.second.get() == value)
 	{
-		outName = GetLocalVariableName(data.first, data.second);
+		if (!getOffsets)
+		{
+			outName = GetLocalVariableName(data.first, data.second);
+		}
 		return true;
 	}
 
@@ -392,13 +390,14 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Shar
 		if (data.second->IsClass())
 		{
 			auto compilerClass = DynamicCast<HazeCompilerClassValue>(data.second);
-			compilerClass->GetMemberName(value, outName);
+			compilerClass->GetMemberName(value, outName, getOffsets, offsets);
 			if (!outName.empty())
 			{
-				outName = GetLocalVariableName(data.first, data.second) + TOKEN_THIS + outName;
+				outName = GetLocalVariableName(data.first, data.second) + outName;
 				if (!value->IsClassPublicMember())
 				{
 					HAZE_LOG_ERR_W("不能够访问类<%s>非公开成员变量<%s>!\n", compilerClass->GetOwnerClassName().c_str(), outName.c_str());
+					return false;
 				}
 				return true;
 			}
@@ -452,8 +451,7 @@ void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss
 {
 	static HString s_StrName;
 
-	bool find = false;
-
+	bool find = false; 
 	s_StrName.clear();
 	if (value->IsGlobalVariable())
 	{
@@ -466,7 +464,7 @@ void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss
 	}
 	else if (value->IsLocalVariable())
 	{
-		find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, s_StrName);
+		find = compilerModule->GetCurrFunction()->FindLocalVariableName(value.get(), s_StrName);
 	}
 	else if (value->IsFunctionAddress())
 	{
@@ -489,6 +487,11 @@ void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss
 
 	if (!find)
 	{
+		/*if (ownerClass && ownerClass->TryGetMemberOrMemberMemberName())
+		{
+
+		}*/
+
 		HAZE_LOG_ERR_W("生成中间代码错误,未能找到变量!\n");
 		return;
 	}
@@ -501,17 +504,98 @@ void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss
 		hss << " " << compilerModule->GetGlobalStringIndex(value);
 		//index = compilerModule->GetGlobalStringIndex(value);
 	}
+}
 
-	/*if (index >= 0)
+Share<HazeCompilerValue> GenIRCode_GetClassMember(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, Share<HazeCompilerValue> v)
+{
+	static V_Array<uint64> s_Offsets;
+	static HString s_Name;
+
+	s_Offsets.clear();
+	s_Name.clear();
+	auto compiler = m->GetCompiler();
+
+	bool find = false;
+	if (v->IsGlobalVariable())
 	{
-		hss << " " << index;
-	}*/
+		find = m->GetGlobalVariableName(m, v, s_Name, true, &s_Offsets);
+	}
+	else if (v->IsLocalVariable())
+	{
+		find = m->GetCurrFunction()->FindLocalVariableName(v.get(), s_Name, true, &s_Offsets);
+	}
+	else
+	{
+		COMPILER_ERR_MODULE_W("查找类成员偏移错误， 变量类型错误", m->GetName().c_str());
+	}
+
+	if (find)
+	{
+		auto cacheType = v->GetValueType();
+		for (int i = s_Offsets.size() - 1; i >= 0; i--)
+		{
+			if (i != s_Offsets.size() - 1)
+			{
+				//v = compiler->CreateMovPV(compiler->GetTempRegister(), v);
+				auto& type = const_cast<HazeDefineType&>(v->GetValueType());
+				type.Pointer();
+
+				v = compiler->CreateAdd(v, compiler->GetConstantValueUint64(s_Offsets[i]));
+
+				if (i == 0)
+				{
+					auto& type = const_cast<HazeDefineType&>(v->GetValueType());
+					type.UpTypeToRefrence(cacheType);
+				}
+			}
+			else
+			{
+				Share<HazeCompilerValue> startVaule = nullptr;
+				if (v->IsGlobalVariable())
+				{
+					startVaule = m->GetGlobalVariable(m, s_Name);
+				}
+				else if (v->IsLocalVariable())
+				{
+					startVaule = m->GetCurrFunction()->GetLocalVariable(s_Name);
+				}
+
+				if (startVaule)
+				{
+					v = compiler->CreateMov(compiler->GetTempRegister(), startVaule);
+				}
+				else
+				{
+					COMPILER_ERR_MODULE_W("查找类成员偏移错误, 未能找到变量<%s>", s_Name.c_str());
+					return v;
+				}
+
+			}
+		}
+
+		return v;
+	}
+	else
+	{
+		COMPILER_ERR_MODULE_W("查找类成员偏移错误, 未能找到", m->GetName().c_str());
+		return v;
+	}
+
 }
 
 void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode opCode, Share<HazeCompilerValue> v1,
 	Share<HazeCompilerValue> v2, const HazeDefineType* expectType)
 {
-	hss << GetInstructionString(opCode) << " ";
+	if (v1 && v1->IsClassMember())
+	{
+		v1 = GenIRCode_GetClassMember(hss, m, v1);
+	}
+
+	if (v2 && v2->IsClassMember())
+	{
+		v2 = GenIRCode_GetClassMember(hss, m, v2);
+	}
+	
 	switch (opCode)
 	{
 	case InstructionOpCode::NONE:
@@ -533,6 +617,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 	case InstructionOpCode::SHR:
 	case InstructionOpCode::CMP:
 	{
+		hss << GetInstructionString(opCode) << " ";
 		GenVariableHzic(m, hss, v1);
 		if (v2)
 		{
@@ -553,32 +638,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 		break;
 	case InstructionOpCode::PUSH:
 	{
-		if (expectType)
-		{
-			if (v1->IsRefrence() && !IsRefrenceType(expectType->PrimaryType))
-			{
-				v1 = m->GetCompiler()->CreateMovPV(m->GetCompiler()->GetTempRegister(), v1);
-			}
-			else if (!v1->IsRefrence() && IsRefrenceType(expectType->PrimaryType))
-			{
-				v1 = m->GetCompiler()->CreatePointerToValue(v1);
-			}
-			else if (expectType->IsStrongerType(v1->GetValueType()))
-			{
-				if (v1->IsConstant())
-				{
-					v1 = m->GetCompiler()->GenConstantValue(expectType->PrimaryType, v1->GetValue());
-				}
-				else
-				{
-					auto tempReg = m->GetCompiler()->GetTempRegister();
-					auto& valueType = const_cast<HazeDefineType&>(tempReg->GetValueType());
-					valueType = *expectType;
-					v1 = m->GetCompiler()->CreateCVT(tempReg, v1);
-				}
-			}
-		}
-
+		hss << GetInstructionString(opCode) << " ";
 		GenVariableHzic(m, hss, v1);
 	}
 		break;
@@ -590,6 +650,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 		break;
 	case InstructionOpCode::NEW:
 	{
+		hss << GetInstructionString(opCode) << " ";
 		hss << NEW_REGISTER << " ";
 		HazeDefineType::StringStreamTo(hss, *expectType);
 		hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
@@ -635,6 +696,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 		break;
 	case InstructionOpCode::SIGN:
 	{
+		hss << GetInstructionString(opCode) << " ";
 		hss << v1->GetValue().Value.UInt64;
 	}
 		break;

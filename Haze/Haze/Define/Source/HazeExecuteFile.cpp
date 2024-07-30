@@ -86,6 +86,8 @@ inline void WriteType(Unique<HAZE_BINARY_OFSTREAM>& fileStream, const HazeDefine
 
 	if (type.NeedCustomName())
 	{
+		s_BinaryString.clear();
+		s_BinaryString = WString2String(*type.CustomName);
 		auto n = (uint32)s_BinaryString.size();
 		fileStream->write(HAZE_WRITE_AND_SIZE(n));
 		fileStream->write(s_BinaryString.c_str(), n);
@@ -105,6 +107,7 @@ inline void HazeExecuteFile::ReadType(HazeVM* vm, Unique<HAZE_BINARY_IFSTREAM>& 
 	{
 		uint32 n = 0;
 		fileStream->read(HAZE_READ(n));
+		s_BinaryString.resize(n);
 		fileStream->read(s_BinaryString.data(), n);
 		type.CustomName = vm->GetSymbolClassName(String2WString(s_BinaryString));
 	}
@@ -676,7 +679,15 @@ void HazeExecuteFile::ReadInstruction(HazeVM* vm, Instruction& instruction)
 		m_InFileStream->read(HAZE_READ(iter.Scope));
 		m_InFileStream->read(HAZE_READ(iter.Desc));
 
-		ReadType(vm, m_InFileStream, iter.Variable.Type);
+		if (instruction.InsCode == InstructionOpCode::NEW)
+		{
+			ReadType(vm, m_InFileStream, iter.Variable.Type);
+
+		}
+		else
+		{
+			ReadType(vm, m_InFileStream, iter.Variable.Type);
+		}
 		m_InFileStream->read(HAZE_READ(iter.AddressType));
 
 		m_InFileStream->read(HAZE_READ(iter.Extra.Index));

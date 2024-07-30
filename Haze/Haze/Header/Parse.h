@@ -48,7 +48,8 @@ private:
 
 	Unique<ASTBase> ParsePrimary();
 
-	Unique<ASTBase> ParseIdentifer();
+	Unique<ASTBase> ParseIdentifer(Unique<ASTBase> preAST = nullptr);
+	Unique<ASTBase> ParseIdentifer_ClassAttr(const HString& name, int line);
 
 	Unique<ASTBase> ParseVariableDefine();
 	Unique<ASTBase> ParseVariableDefine_MultiVariable();
@@ -107,9 +108,7 @@ private:
 	Unique<ASTBase> ParseImportModule();
 
 	Unique<ASTClass> ParseClass();
-
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> ParseClassData();
-
 	Unique<ASTClassFunctionSection> ParseClassFunction(const HString& className);
 
 	Unique<ASTBase> ParseSizeOf();
@@ -147,7 +146,6 @@ private:
 
 private:
 	HazeCompiler* m_Compiler;
-
 	HazeLibraryType m_LibraryType;
 	HazeToken m_CurrToken;
 	const HChar* m_CurrCode;
@@ -164,6 +162,7 @@ private:
 	uint32 m_LineCount;
 	//bool m_NeedParseNextStatement;
 
+	bool m_IsParseClassData_Or_FunctionParam;
 	bool m_IsParseArray;
 	bool m_IsParseTemplate;
 	const V_Array<HString>* m_TemplateTypes;

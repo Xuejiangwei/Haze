@@ -18,28 +18,23 @@ int Log2(int n);
 HString GetHazeClassFunctionName(const HString& className, const HString& functionName);
 
 const HChar* GetGlobalDataHeaderString();
-
 const HChar* GetGlobalDataInitBlockStart();
-
 const HChar* GetGlobalDataInitBlockEnd();
 
 const HChar* GetStringTableHeaderString();
 
 const HChar* GetClassTableHeaderString();
-
 const HChar* GetClassLabelHeader();
 
 const HChar* GetFucntionTableHeaderString();
-
 const HChar* GetFunctionLabelHeader();
-
 const HChar* GetFunctionParamHeader();
-
 const HChar* GetFunctionVariableHeader();
-
 const HChar* GetFunctionStartHeader();
-
 const HChar* GetFunctionEndHeader();
+
+const HChar* GetSymbolBeginHeader();
+const HChar* GetSymbolEndHeader();
 
 bool HazeIsSpace(HChar hChar, bool* isNewLine = nullptr);
 

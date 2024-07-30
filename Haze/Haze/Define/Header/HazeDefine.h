@@ -50,6 +50,9 @@ using HString = std::wstring;
 #define FUNCTION_START_HEADER			H_TEXT("FunctionStart")
 #define FUNCTION_END_HEADER				H_TEXT("FunctionEnd")
 
+#define SYMBOL_BEGIN					H_TEXT("SymbolBegin")
+#define SYMBOL_END						H_TEXT("SymbolEnd")
+
 #define HAZE_LOCAL_VARIABLE_HEADER		H_TEXT("Variable")
 #define HAZE_LOCAL_VARIABLE_CONBINE		H_TEXT("$")
 

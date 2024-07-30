@@ -130,6 +130,16 @@ const HChar* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
+const HChar* GetSymbolBeginHeader()
+{
+	return SYMBOL_BEGIN;
+}
+
+const HChar* GetSymbolEndHeader()
+{
+	return SYMBOL_END;
+}
+
 bool HazeIsSpace(HChar hChar, bool* isNewLine)
 {
 	if (isNewLine)

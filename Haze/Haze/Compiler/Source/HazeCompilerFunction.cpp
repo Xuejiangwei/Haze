@@ -76,9 +76,9 @@ Share<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HString& v
 				ret = value.second;
 				break;
 			}
-			else if (value.second->GetValueType().PrimaryType == HazeValueType::Class)
+			else if (value.second->IsClassThis())
 			{
-				auto memberValue = GetObjectMember(m_Module, variableName);
+				auto memberValue = DynamicCast<HazeCompilerClassValue>(value.second)->GetMember(variableName);
 				if (memberValue)
 				{
 					ret = memberValue;
@@ -96,7 +96,7 @@ Share<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HString& v
 
 	if (!ret && m_OwnerClass)
 	{
-		ret = DynamicCast<HazeCompilerClassValue>(m_OwnerClass->GetThisPointerToValue())->GetMember(variableName);
+		//ret = DynamicCast<HazeCompilerClassValue>(m_OwnerClass->GetThisPointerToValue())->GetMember(variableName);
 	}
 
 	return ret;
@@ -144,7 +144,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 	{
-		if (!FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName))
+		if (!FindLocalVariableName(m_LocalVariables[i].first.get(), LocalVariableName))
 		{
 			HAZE_LOG_ERR_W("函数<%s>生成中间代码错误，未能找到参数临时变量!\n", m_Name.c_str());
 			return;
@@ -161,7 +161,7 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	for (size_t i = m_Params.size(); i < m_LocalVariables.size(); i++)
 	{
-		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);
+		FindLocalVariableName(m_LocalVariables[i].first.get(), LocalVariableName);
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 		hss << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << std::endl;
@@ -233,30 +233,19 @@ HString HazeCompilerFunction::GenForStepBlockName()
 	return hss.str();
 }
 
-bool HazeCompilerFunction::FindLocalVariableName(const Share<HazeCompilerValue>& value, HString& outName)
+bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
-	if (m_EntryBlock->FindLocalVariableName(value, outName))
+	if (m_EntryBlock->FindLocalVariableName(value, outName, getOffset, offsets))
 	{
 		return true;
 	}
-	else if (m_OwnerClass)
+	/*else if (m_OwnerClass)
 	{
-		return m_OwnerClass->GetMemberName(value, outName);
-	}
-
-	return false;
-}
-
-bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* value, HString& outName)
-{
-	if (m_EntryBlock->FindLocalVariableName(value, outName))
-	{
-		return true;
-	}
-	else if (m_OwnerClass)
-	{
-		return m_OwnerClass->GetMemberName(value, outName);
-	}
+		if (m_OwnerClass->GetThisMemberName(value, outName, getOffset, offsets))
+		{
+			return true;
+		}
+	}*/
 
 	return false;
 }
@@ -267,7 +256,7 @@ bool HazeCompilerFunction::HasExceptThisParam() const
 	{
 		if (m_Params.size() > 0)
 		{
-			if (m_Params[0].second->IsCalssThis())
+			if (m_Params[0].second->IsClassThis())
 			{
 				return m_Params.size() > 1;
 			}

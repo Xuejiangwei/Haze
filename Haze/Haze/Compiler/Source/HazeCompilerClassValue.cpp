@@ -48,12 +48,7 @@ Share<HazeCompilerValue> HazeCompilerClassValue::GetMember(const HString& name)
 	return nullptr;
 }
 
-void HazeCompilerClassValue::GetMemberName(const Share<HazeCompilerValue>& memberValue, HString& outName)
+void HazeCompilerClassValue::GetMemberName(const HazeCompilerValue* memberValue, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
-	m_OwnerClass->GetMemberName(memberValue, outName);
-}
-
-void HazeCompilerClassValue::GetMemberName(const HazeCompilerValue* memberValue, HString& outName)
-{
-	m_OwnerClass->GetMemberName(this, memberValue, outName);
+	m_OwnerClass->GetMemberName(this, memberValue, outName, getOffset, offsets);
 }

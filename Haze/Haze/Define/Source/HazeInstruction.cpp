@@ -125,7 +125,7 @@ bool IsJmpOpCode(InstructionOpCode code)
 
 bool IsClassMember(HazeDataDesc desc)
 {
-	return desc >= HazeDataDesc::ClassMember_Local_Public && desc <= HazeDataDesc::ClassMember_Local_Protected;
+	return desc >= HazeDataDesc::ClassMember_Local_Public && desc <= HazeDataDesc::ClassMember_Local_Private;
 }
 
 void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
@@ -153,7 +153,8 @@ class InstructionProcessor
 
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p> 操作数二地址<%p>", (char*)Address, GetOperatorAddress(stack, Data[1]));
+				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p> 操作数二地址<%p> EBP<%d> ESP<%d>", (char*)Address, GetOperatorAddress(stack, Data[1]),
+					Stack->m_EBP, Stack->m_ESP);
 				ShowData2();
 				HAZE_LOG_ERR_W("\n");
 
@@ -162,7 +163,7 @@ class InstructionProcessor
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p>\n", (char*)Address);
+				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p> EBP<%d> ESP<%d>\n", (char*)Address, Stack->m_EBP, Stack->m_ESP);
 
 				HAZE_LOG_INFO(H_TEXT("执行指令<%s> <%s> \n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str());
@@ -174,13 +175,14 @@ class InstructionProcessor
 			memcpy(&Address, GetOperatorAddress(Stack, Data[0]), 8);
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p> 操作数二地址<%p>", (char*)Address, GetOperatorAddress(Stack, Data[1]));
+				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p> 操作数二地址<%p> EBP<%d> ESP<%d>", (char*)Address, 
+					GetOperatorAddress(Stack, Data[1]), Stack->m_EBP, Stack->m_ESP);
 				ShowData2();
 				HAZE_LOG_ERR_W("\n\n");
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p>\n\n", (char*)Address);
+				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p> EBP<%d> ESP<%d>\n\n", (char*)Address, Stack->m_EBP, Stack->m_ESP);
 			}
 		}
 
@@ -319,7 +321,7 @@ public:
 			else if (oper[0].Desc == HazeDataDesc::ClassThis)
 			{
 				uint64 address = (uint64)GetOperatorAddress(stack, oper[0]);
-				memcpy(&stack->m_StackMain[stack->m_ESP], &address, sizeof(uint64));
+				memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), sizeof(uint64));
 			}
 			else/* if (Operator[0].Scope == InstructionScopeType::Local || oper[0].Scope == InstructionScopeType::Global)*/
 			{
@@ -1158,39 +1160,46 @@ private:
 		{
 		case InstructionAddressType::Global:
 		{
-			return stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
+			ret = stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
 		}
+			break;
 		case InstructionAddressType::Global_Base_Offset:
 		{
 			ret = stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
-			return (char*)ret + insData.Extra.Address.Offset;
+			ret = (char*)ret + insData.Extra.Address.Offset;
 		}
+			break;
 		case InstructionAddressType::Global_BasePointer_Offset:
 		{
 			ret = stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
 			memcpy(&tempAddress, ret, sizeof(tempAddress));
-			return (char*)tempAddress + insData.Extra.Address.Offset;
+			ret = (char*)tempAddress + insData.Extra.Address.Offset;
 		}
+			break;
 		case InstructionAddressType::Local:
 		{
-			return &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress];
+			ret = &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress];
 		}
+			break;
 		case InstructionAddressType::Local_Base_Offset:
 		{
-			return &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress + insData.Extra.Address.Offset];
+			ret = &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress + insData.Extra.Address.Offset];
 		}
+			break;
 		case InstructionAddressType::Local_BasePointer_Offset:
 		{
 			ret = &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress];
 			memcpy(&tempAddress, ret, sizeof(tempAddress));
-			return (char*)tempAddress + insData.Extra.Address.Offset;
+			ret = (char*)tempAddress + insData.Extra.Address.Offset;
 		}
+			break;
 		case InstructionAddressType::FunctionAddress:
 		{
 			/*tempAddress = (uint64)((void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name));
 			ret = &tempAddress;*/
-			return (void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name);
+			ret = (void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name);
 		}
+			break;
 		case InstructionAddressType::Constant:
 		{
 			auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
@@ -1199,8 +1208,8 @@ private:
 			type.PrimaryType = insData.Variable.Type.PrimaryType;
 			StringToHazeValueNumber(insData.Variable.Name, type.PrimaryType, value);
 			ret = GetBinaryPointer(type.PrimaryType, value);
-			return ret;
 		}
+			break;
 		case InstructionAddressType::NullPtr:
 		{
 			auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
@@ -1209,13 +1218,14 @@ private:
 			type.PrimaryType = insData.Variable.Type.PrimaryType;
 			StringToHazeValueNumber(H_TEXT("0"), type.PrimaryType, value);
 			ret = GetBinaryPointer(type.PrimaryType, value);
-			return ret;
 		}
+			break;
 		case InstructionAddressType::ConstantString:
 		{
 			tempAddress = (uint64)stack->m_VM->GetConstantStringByIndex(insData.Extra.Index);
-			return &tempAddress;
+			ret = &tempAddress;
 		}
+			break;
 		case InstructionAddressType::Register:
 		{
 			HazeRegister* hazeRegister = stack->GetVirtualRegister(insData.Variable.Name.c_str());
@@ -1226,14 +1236,22 @@ private:
 				hazeRegister->Data.resize(GetSizeByType(insData.Variable.Type, stack->m_VM));
 			}
 
-			return hazeRegister->Data.begin()._Unwrapped();
+			ret = hazeRegister->Data.begin()._Unwrapped();
 		}
+			break;
 		case InstructionAddressType::PointerAddress:
-			return insData.Extra.Pointer;
+			ret = insData.Extra.Pointer;
 		default:
-			return nullptr;
 			break;
 		}
+
+		if (IsRefrenceType(insData.Variable.Type.PrimaryType) && ret)
+		{
+			memcpy(&tempAddress, ret, sizeof(ret));
+			ret = (void*)tempAddress;
+		}
+
+		return ret;
 	}
 
 	static void JmpToOperator(HazeStack* stack, const InstructionData& insData)

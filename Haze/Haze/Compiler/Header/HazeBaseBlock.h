@@ -32,7 +32,7 @@ public:
 
 	bool FindLocalVariableName(const Share<HazeCompilerValue>& value, HString& outName);
 
-	bool FindLocalVariableName(const HazeCompilerValue* value, HString& outName);
+	bool FindLocalVariableName(const HazeCompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
 
 	void SetLoopEnd(HazeBaseBlock* block) { m_LoopEndBlock = block; }
 

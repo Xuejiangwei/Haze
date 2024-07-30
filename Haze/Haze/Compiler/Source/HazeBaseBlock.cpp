@@ -23,7 +23,7 @@ bool HazeBaseBlock::FindLocalVariableName(const Share<HazeCompilerValue>& value,
 {
 	for (auto& it : m_Allocas)
 	{
-		if (TrtGetVariableName(m_ParentFunction, it, value, outName))
+		if (TrtGetVariableName(m_ParentFunction, it, value.get(), outName))
 		{
 			return true;
 		}
@@ -40,19 +40,26 @@ bool HazeBaseBlock::FindLocalVariableName(const Share<HazeCompilerValue>& value,
 	return false;
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* value, HString& outName)
+bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
+	uint64 offset = 0;
 	for (auto& it : m_Allocas)
 	{
-		if (TrtGetVariableName(m_ParentFunction, it, value, outName))
+		if (TrtGetVariableName(m_ParentFunction, it, value, outName, getOffset, offsets))
 		{
+			if (getOffset)
+			{
+				offsets->push_back(offset);
+				outName = it.first;
+			}
 			return true;
 		}
+		offset += it.second->GetSize();
 	}
 
 	for (auto& iter : m_ChildBlocks)
 	{
-		if (iter->FindLocalVariableName(value, outName))
+		if (iter->FindLocalVariableName(value, outName, getOffset, offsets))
 		{
 			return true;
 		}
@@ -159,7 +166,8 @@ Share<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& d
 		}
 	}
 
-	Share<HazeCompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar, HazeVariableScope::Local, HazeDataDesc::None, count,
+	HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
+	Share<HazeCompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar, HazeVariableScope::Local, desc, count,
 		refValue, arraySize, params);
 	m_Allocas.push_back({ defineVar.Name, Alloce });
 

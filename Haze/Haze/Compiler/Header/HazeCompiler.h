@@ -1,4 +1,5 @@
 #pragma once
+#include <type_traits>
 
 class HazeVM;
 class HazeCompilerValue;
@@ -19,6 +20,25 @@ struct AdvanceFunctionInfo
 struct AdvanceClassInfo
 {
 	HashMap<HString, AdvanceFunctionInfo> Functions;
+};
+
+struct HashHString
+{
+	const HString* Str;
+
+	bool operator== (const HashHString& p) const
+	{
+		return *Str == *p.Str;
+	}
+};
+
+template<>
+struct std::hash<HashHString>
+{
+	size_t operator() (const HashHString& s) const noexcept
+	{
+		return std::hash<HString>()(*s.Str);
+	}
 };
 
 class HazeCompiler
@@ -212,6 +232,8 @@ public:
 public:
 	void RegisterClassToSymbolTable(const HString& className);
 
+	void OnCreateClass(Share<HazeCompilerClass> compClass);
+
 	const HString* GetSymbolTableNameAddress(const HString& className);
 
 	Share<HazeCompilerEnum> GetBaseModuleEnum(const HString& name);
@@ -220,7 +242,8 @@ public:
 
 	Share<HazeCompilerClass> GetBaseModuleClass(const HString& className);
 
-	bool GetBaseModuleGlobalVariableName(const Share<HazeCompilerValue>& value, HString& outName);
+	bool GetBaseModuleGlobalVariableName(const Share<HazeCompilerValue>& value, HString& outName, bool getOffset = false,
+		V_Array<uint64>* offsets = nullptr);
 
 	void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
 
@@ -253,7 +276,8 @@ private:
 	HashMap<float32, Share<HazeCompilerValue>> m_Float32_ConstantValues;
 	HashMap<float64, Share<HazeCompilerValue>> m_Float64_ConstantValues;
 
-	HashMap<HString, Share<HazeCompilerClass>> m_SymbolTable;
+	List<HString> m_CacheSymbols;
+	HashMap<HashHString, Share<HazeCompilerClass>> m_SymbolTable;
 
 	//BaseBlock
 	Share<HazeBaseBlock> m_InsertBaseBlock;

@@ -8,15 +8,13 @@ class HazeCompilerClassValue;
 
 class HazeCompilerClass
 {
-public:
 	friend class HazeCompiler;
+public:
 
 	HazeCompilerClass(HazeCompilerModule* compilerModule, const HString& name, V_Array<HazeCompilerClass*>& parentClass,
 		V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>>& data);
 
 	~HazeCompilerClass();
-
-	void OnCreateFinish();
 
 	Share<HazeCompilerFunction> FindFunction(const HString& m_FunctionName);
 
@@ -26,21 +24,17 @@ public:
 
 	void InitThisValue();
 
-	Share<HazeCompilerPointerValue> GetThisPointerValue() { return m_ThisPointerValue; }
+	/*Share<HazeCompilerClassValue> GetThisPointerToValue() { return m_ThisClassValue; }
 
-	Share<HazeCompilerClassValue> GetThisPointerToValue() { return m_ThisClassValue; }
-
-	Share<HazeCompilerClassValue> GetNewPointerToValue() { return m_NewPointerToValue; }
+	Share<HazeCompilerClassValue> GetNewPointerToValue() { return m_NewPointerToValue; }*/
 
 	const HString& GetName() { return m_Name; }
 
 	int GetMemberIndex(const HString& memberName);
 
-	bool GetMemberName(const Share<HazeCompilerValue>& value, HString& outName);
+	//bool GetThisMemberName(const HazeCompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
 
-	bool GetMemberName(const HazeCompilerValue* value, HString& outName);
-
-	bool GetMemberName(HazeCompilerClassValue* classValue, const HazeCompilerValue* value, HString& outName);
+	bool GetMemberName(HazeCompilerClassValue* classValue, const HazeCompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
 
 	const V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>>& GetClassMemberData() const { return m_Data; }
 
@@ -68,10 +62,9 @@ private:
 
 	V_Array<HazeCompilerClass*> m_ParentClass;
 
-	Share<HazeCompilerPointerValue> m_ThisPointerValue;
-	Share<HazeCompilerClassValue> m_ThisClassValue;			//所有同类对象指向此同一个this Value
+	//Share<HazeCompilerClassValue> m_ThisClassValue;			//所有同类对象指向此同一个this Value
 
-	Share<HazeCompilerClassValue> m_NewPointerToValue;		//所有New出来的对象指向此Value
+	//Share<HazeCompilerClassValue> m_NewPointerToValue;		//所有New出来的对象指向此Value
 
 	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>> m_Data;
 

@@ -193,7 +193,7 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		}
 	}
 
-	HAZE_LOG_ERR_W("生成函数调用<%s>错误\n", m_Name.c_str());
+	HAZE_LOG_ERR_W("生成函数调用<%s>错误, 检查函数名或 ( 符号是否与函数名在同一行\n", m_Name.c_str());
 	return nullptr;
 }
 
@@ -340,19 +340,7 @@ Share<HazeCompilerValue> ASTVariableDefine_Class::CodeGen()
 	auto exprValue = GenExpressionValue();
 	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(), 
 		m_DefineVariable, m_Location.Line, exprValue);
-
-	auto function = m_Compiler->GetCurrModule()->GetClass(*retValue->GetValueType().CustomName)
-		->FindFunction(*retValue->GetValueType().CustomName);
-	V_Array<Share<HazeCompilerValue>> param(m_Params.size());
-
-	//构造参数
-	for (int i = 0; i < m_Params.size(); i++)
-	{
-		param[i] = m_Params[m_Params.size() - 1 - i]->CodeGen();
-	}
-
-	m_Compiler->CreateFunctionCall(function, param, retValue);
-	return retValue;
+	return exprValue ? m_Compiler->CreateMov(retValue, exprValue) : retValue;
 }
 
 ASTVariableDefine_Array::ASTVariableDefine_Array(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
@@ -522,9 +510,9 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 			V_Array<Share<HazeCompilerValue>> param;
 
 			//构造参数
-			for (auto& p : m_ConstructorParam)
+			for (int i = (int)m_ConstructorParam.size() - 1; i >= 0; i--)
 			{
-				param.push_back(p->CodeGen());
+				param.push_back(m_ConstructorParam[i]->CodeGen());
 			}
 
 			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
