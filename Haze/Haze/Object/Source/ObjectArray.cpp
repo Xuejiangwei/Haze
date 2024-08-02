@@ -18,9 +18,11 @@ ObjectArray::~ObjectArray()
 AdvanceClassInfo* ObjectArray::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	info.Functions[H_TEXT("长度")] = { &ObjectArray::GetLength, HazeValueType::UInt64 };
-	info.Functions[H_TEXT("维之长度")] = { &ObjectArray::GetLengthOfDimension, HazeValueType::UInt64, { HazeValueType::UInt64 } };
-	info.Functions[H_TEXT("维数")] = { &ObjectArray::GetDimensionCount, HazeValueType::UInt64 };
+	info.Functions[H_TEXT("长度")] = { AdvanceFunctionType::ObjectFunction, &ObjectArray::GetLength, HazeValueType::UInt64, {} };
+	info.Functions[H_TEXT("维之长度")] = { AdvanceFunctionType::ObjectFunction, &ObjectArray::GetLengthOfDimension,
+		HazeValueType::UInt64, { HazeValueType::UInt64 } };
+	info.Functions[H_TEXT("维数")] = { AdvanceFunctionType::ObjectFunction, &ObjectArray::GetDimensionCount,
+		HazeValueType::UInt64, {} };
 	return &info;
 }
 

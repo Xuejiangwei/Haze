@@ -11,7 +11,6 @@ static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
 	{ H_TEXT("内存复制"), &HazeMemoryLib::MemoryCopy },
 	{ HAZE_OBJECT_ARRAY_CONSTRUCTOR, &HazeMemoryLib::ObjectArrayConstructor },
-	{ H_TEXT("获得字符个数"), &HazeMemoryLib::StringCount }
 };
 
 static bool Z_NoUse_HazeMemoryLib = HazeStandardLibraryBase::AddStdLib(H_TEXT("HazeMemoryLib"), &s_HashMap_Functions);
@@ -51,17 +50,4 @@ void HazeMemoryLib::ObjectArrayConstructor(HAZE_STD_CALL_PARAM)
 	{
 		stack->GetVM()->CallFunction((FunctionData*)constructorAddress, address + i * objectSize);
 	}
-}
-
-void HazeMemoryLib::StringCount(HAZE_STD_CALL_PARAM)
-{
-	HChar* src;
-
-	GET_PARAM_START();
-	GET_PARAM(src);
-
-	HString s(src);
-	int64 length = s.length();
-
-	SET_RET_BY_TYPE(HazeValueType::Int64, length);
 }

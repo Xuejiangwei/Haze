@@ -142,9 +142,9 @@ class InstructionProcessor
 			: Stack(stack), Data(data)
 		{
 			auto address = GetOperatorAddress(Stack, Data[0]);
-			if (address)
+			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType))
 			{
-				memcpy(&Address, address, 8);
+				memcpy(&Address, address, GetSizeByType(Data[0].Variable.Type, Stack));
 			}
 			else
 			{
@@ -153,7 +153,7 @@ class InstructionProcessor
 
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p> 操作数二地址<%p> EBP<%d> ESP<%d>", (char*)Address, GetOperatorAddress(stack, Data[1]),
+				HAZE_LOG_ERR_W("开始 操作数一地址<%p> 存储地址<%p> 操作数二地址<%p> EBP<%d> ESP<%d>", address, (char*)Address, GetOperatorAddress(stack, Data[1]),
 					Stack->m_EBP, Stack->m_ESP);
 				ShowData2();
 				HAZE_LOG_ERR_W("\n");
@@ -163,7 +163,7 @@ class InstructionProcessor
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("开始 操作数一存储地址<%p> EBP<%d> ESP<%d>\n", (char*)Address, Stack->m_EBP, Stack->m_ESP);
+				HAZE_LOG_ERR_W("开始 操作数一地址<%p> 存储地址<%p> EBP<%d> ESP<%d>\n", address, (char*)Address, Stack->m_EBP, Stack->m_ESP);
 
 				HAZE_LOG_INFO(H_TEXT("执行指令<%s> <%s> \n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str());
@@ -172,17 +172,22 @@ class InstructionProcessor
 
 		~DataDebugScope()
 		{
-			memcpy(&Address, GetOperatorAddress(Stack, Data[0]), 8);
+			auto address = GetOperatorAddress(Stack, Data[0]);
+			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType))
+			{
+				memcpy(&Address, address, GetSizeByType(Data[0].Variable.Type, Stack));
+			}
+			
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p> 操作数二地址<%p> EBP<%d> ESP<%d>", (char*)Address, 
+				HAZE_LOG_ERR_W("结束 操作数一地址<%p> 存储地址<%p> 操作数二地址<%p> EBP<%d> ESP<%d>", address, (char*)Address,
 					GetOperatorAddress(Stack, Data[1]), Stack->m_EBP, Stack->m_ESP);
 				ShowData2();
 				HAZE_LOG_ERR_W("\n\n");
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("结束 操作数一存储地址<%p> EBP<%d> ESP<%d>\n\n", (char*)Address, Stack->m_EBP, Stack->m_ESP);
+				HAZE_LOG_ERR_W("结束 操作数一地址<%p> 存储地址<%p> EBP<%d> ESP<%d>\n\n", address, (char*)Address, Stack->m_EBP, Stack->m_ESP);
 			}
 		}
 

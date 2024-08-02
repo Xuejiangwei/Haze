@@ -10,11 +10,35 @@ class HazeCompilerClass;
 class HazeCompilerModule;
 class HazeBaseBlock;
 
+enum class AdvanceFunctionType : uint32
+{
+	ObjectFunction,
+	TypeFunction,
+};
+
 struct AdvanceFunctionInfo
 {
-	void(*Func)(class HazeStack*);
+	AdvanceFunctionType FuncType;
+	
+	union
+	{
+		void(*ClassFunc)(class HazeStack*);
+		void(*TypeFunc)(HAZE_STD_CALL_PARAM);
+	};
 	HazeDefineType Type;
 	V_Array<HazeDefineType> Params;
+
+	AdvanceFunctionInfo() {}
+
+	AdvanceFunctionInfo(AdvanceFunctionType funcType, void(*classFunc)(class HazeStack*), HazeDefineType type,
+		V_Array<HazeDefineType> params)
+		: FuncType(funcType), ClassFunc(classFunc), Type(type), Params(params)
+	{}
+
+	AdvanceFunctionInfo(AdvanceFunctionType funcType, void(*typeFunc)(HAZE_STD_CALL_PARAM), HazeDefineType type,
+		V_Array<HazeDefineType> params)
+		: FuncType(funcType), TypeFunc(typeFunc), Type(type), Params(params)
+	{}
 };
 
 struct AdvanceClassInfo

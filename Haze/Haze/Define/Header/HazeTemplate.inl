@@ -3,7 +3,7 @@
 template <typename T>
 unsigned int GetSizeByType(const HazeDefineType& type, T* This)
 {
-	return type.PrimaryType == HazeValueType::Class ? This->GetClassSize(*type.CustomName) : GetSizeByHazeType(type.PrimaryType);
+	return /*type.PrimaryType == HazeValueType::Class ? This->GetClassSize(*type.CustomName) :*/ GetSizeByHazeType(type.PrimaryType);
 }
 
 //template <typename T>

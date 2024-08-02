@@ -25,12 +25,13 @@ static HashMap<const HChar*, Share<HazeCompilerValue>> g_GlobalRegisters = {
 		H_TEXT("Cmp_Register")), HazeVariableScope::Global, HazeDataDesc::RegisterCmp, 0) },
 };
 
+// 只用两个临时变量寄存器, 每个函数栈都要存储下这两个临时寄存器, GC时也要扫描
 static HashMap<const HChar*, Share<HazeCompilerValue>> g_GlobalTempRegisters = {
-	{ TEMP_REGISTER_0, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
+	{ TEMP_REGISTER_A, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_1, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
+	{ TEMP_REGISTER_B, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
-	{ TEMP_REGISTER_2, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
+	/*{ TEMP_REGISTER_2, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
 	{ TEMP_REGISTER_3, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
@@ -45,7 +46,7 @@ static HashMap<const HChar*, Share<HazeCompilerValue>> g_GlobalTempRegisters = {
 	{ TEMP_REGISTER_8, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
 	{ TEMP_REGISTER_9, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
-		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
+		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },*/
 };
 
 static Share<HazeCompilerInitListValue> s_InitializeListValue = MakeShare<HazeCompilerInitListValue>(nullptr,
@@ -346,7 +347,6 @@ Share<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModule* compil
 	if (iter != g_GlobalRegisters.end())
 	{
 		HazeDefineType type(data);
-		//type.PointerTo(data);
 		iter->second = CreateVariable(compilerModule, HazeDefineVariable(type, NEW_REGISTER), HazeVariableScope::Global, HazeDataDesc::RegisterNew, 0);
 
 		return iter->second;

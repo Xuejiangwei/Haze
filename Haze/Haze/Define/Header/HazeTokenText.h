@@ -35,7 +35,7 @@
 #define TOKEN_FALSE						H_TEXT("¼Ù")
 
 #define TOKEN_THIS						H_TEXT("¼º")
-#define TOKEN_CLASS_ATTR				H_TEXT("->")
+#define TOKEN_CLASS_ATTR				H_TEXT(".")
 
 #define TOKEN_ADD						H_TEXT("+")
 #define TOKEN_SUB						H_TEXT("-")

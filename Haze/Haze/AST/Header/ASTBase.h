@@ -114,13 +114,14 @@ class ASTClassAttr : public ASTBase
 {
 public:
 	ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		HString& classObjName, HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam = nullptr);
+		HString& classObjName, HString& attrName, bool isAdvanceType, bool isFunction, V_Array<Unique<ASTBase>>* functionParam = nullptr);
 
 	virtual ~ASTClassAttr() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 
 private:
+	bool m_IsAdvanceType;
 	bool m_IsFunction;
 	HazeSectionSignal m_SectionSignal;
 	HString m_AttrName;

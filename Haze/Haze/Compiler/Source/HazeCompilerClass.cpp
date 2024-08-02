@@ -124,7 +124,7 @@ bool HazeCompilerClass::GetMemberName(HazeCompilerClassValue* classValue, const 
 	{
 		for (size_t j = 0; j < classValue->m_Data[i].second.size(); j++)
 		{
-			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, classValue->m_Data[i].second[j] }, value, outName))
+			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, classValue->m_Data[i].second[j] }, value, outName, getOffset, offsets))
 			{
 				if (getOffset)
 				{

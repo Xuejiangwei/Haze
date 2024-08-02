@@ -135,6 +135,7 @@ bool IsNumberType(HazeValueType type);
 bool IsClassType(HazeValueType type);
 bool IsEnumType(HazeValueType type);
 bool IsArrayType(HazeValueType type);
+bool IsStringType(HazeValueType type);
 bool IsRefrenceType(HazeValueType type);
 bool IsMultiVariableTye(HazeValueType type);
 

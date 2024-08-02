@@ -198,8 +198,8 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 }
 
 ASTClassAttr::ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& classObjName, 
-	HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam)
-	: ASTBase(compiler, location), m_SectionSignal(section), m_IsFunction(isFunction), m_AttrName(Move(attrName))
+	HString& attrName, bool isAdvanceType, bool isFunction, V_Array<Unique<ASTBase>>* functionParam)
+	: ASTBase(compiler, location), m_SectionSignal(section), m_IsAdvanceType(isAdvanceType), m_IsFunction(isFunction), m_AttrName(Move(attrName))
 {
 	m_DefineVariable.Name = Move(classObjName);
 	if (functionParam)
@@ -211,16 +211,19 @@ ASTClassAttr::ASTClassAttr(HazeCompiler* compiler, const SourceLocation& locatio
 Share<HazeCompilerValue> ASTClassAttr::CodeGen()
 {
 	Share<HazeCompilerValue> v;
-	if (m_SectionSignal == HazeSectionSignal::Global)
+	if (!m_IsAdvanceType)
 	{
-		v = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
-	}
-	else if (m_SectionSignal == HazeSectionSignal::Local)
-	{
-		v = m_Compiler->GetLocalVariable(m_DefineVariable.Name);
-		if (!v)
+		if (m_SectionSignal == HazeSectionSignal::Global)
 		{
 			v = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
+		}
+		else if (m_SectionSignal == HazeSectionSignal::Local)
+		{
+			v = m_Compiler->GetLocalVariable(m_DefineVariable.Name);
+			if (!v)
+			{
+				v = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
+			}
 		}
 	}
 

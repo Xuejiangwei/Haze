@@ -378,10 +378,7 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Shar
 {
 	if (data.second.get() == value)
 	{
-		if (!getOffsets)
-		{
-			outName = GetLocalVariableName(data.first, data.second);
-		}
+		outName = GetLocalVariableName(data.first, data.second);
 		return true;
 	}
 
@@ -390,8 +387,7 @@ bool TrtGetVariableName(HazeCompilerFunction* function, const Pair<HString, Shar
 		if (data.second->IsClass())
 		{
 			auto compilerClass = DynamicCast<HazeCompilerClassValue>(data.second);
-			compilerClass->GetMemberName(value, outName, getOffsets, offsets);
-			if (!outName.empty())
+			if (compilerClass->GetMemberName(value, outName, getOffsets, offsets))
 			{
 				outName = GetLocalVariableName(data.first, data.second) + outName;
 				if (!value->IsClassPublicMember())
@@ -544,8 +540,16 @@ Share<HazeCompilerValue> GenIRCode_GetClassMember(HAZE_STRING_STREAM& hss, HazeC
 
 				if (i == 0)
 				{
-					auto& type = const_cast<HazeDefineType&>(v->GetValueType());
-					type.UpTypeToRefrence(cacheType);
+					//if (s_Offsets.size() <= 2)
+					{
+						auto& type = const_cast<HazeDefineType&>(v->GetValueType());
+						type.UpToRefrence();
+					}
+					//v = compiler->CreateLea(v, v);
+				}
+				else
+				{
+					v = compiler->CreateMovPV(v, v);
 				}
 			}
 			else

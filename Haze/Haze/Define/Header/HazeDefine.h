@@ -72,27 +72,25 @@ using HString = std::wstring;
 #define BLOCK_FOR_CONDITION				H_TEXT("ForConditionBlock")
 #define BLOCK_FOR_STEP					H_TEXT("ForStepBlock")
 
-#define ADD_REGISTER					H_TEXT("Add_R")
-#define SUB_REGISTER					H_TEXT("Sub_R")
-#define MUL_REGISTER					H_TEXT("Mul_R")
-#define DIV_REGISTER					H_TEXT("Div_R")
-
 #define RET_REGISTER					H_TEXT("Ret_R")
 #define NEW_REGISTER					H_TEXT("New_R")
 #define CMP_REGISTER					H_TEXT("Cmp_R")
 
 #define NULL_PTR						H_TEXT("NULL_PTR")
 
-#define TEMP_REGISTER_0					H_TEXT("Temp_R0")
-#define TEMP_REGISTER_1					H_TEXT("Temp_R1")
-#define TEMP_REGISTER_2					H_TEXT("Temp_R2")
-#define TEMP_REGISTER_3					H_TEXT("Temp_R3")
-#define TEMP_REGISTER_4					H_TEXT("Temp_R4")
-#define TEMP_REGISTER_5					H_TEXT("Temp_R5")
-#define TEMP_REGISTER_6					H_TEXT("Temp_R6")
-#define TEMP_REGISTER_7					H_TEXT("Temp_R7")
-#define TEMP_REGISTER_8					H_TEXT("Temp_R8")
-#define TEMP_REGISTER_9					H_TEXT("Temp_R9")
+#define TEMP_REGISTER_A					H_TEXT("Temp_RA")
+#define TEMP_REGISTER_B					H_TEXT("Temp_RB")
+
+//#define TEMP_REGISTER_0					H_TEXT("Temp_R0")
+//#define TEMP_REGISTER_1					H_TEXT("Temp_R1")
+//#define TEMP_REGISTER_2					H_TEXT("Temp_R2")
+//#define TEMP_REGISTER_3					H_TEXT("Temp_R3")
+//#define TEMP_REGISTER_4					H_TEXT("Temp_R4")
+//#define TEMP_REGISTER_5					H_TEXT("Temp_R5")
+//#define TEMP_REGISTER_6					H_TEXT("Temp_R6")
+//#define TEMP_REGISTER_7					H_TEXT("Temp_R7")
+//#define TEMP_REGISTER_8					H_TEXT("Temp_R8")
+//#define TEMP_REGISTER_9					H_TEXT("Temp_R9")
 
 #define	HAZE_JMP_NULL					H_TEXT("JmpNull")
 
@@ -100,7 +98,8 @@ using HString = std::wstring;
 
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")
 
-#define HAZE_STD_CALL_PARAM class HazeStack* stack, struct FunctionData* data, int multiParamNum
+#define HAZE_STD_CALL_PARAM			class HazeStack* stack, struct FunctionData* data, int multiParamNum
+#define HAZE_STD_CALL_PARAM_VAR		stack, data, multiParamNum
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 20
 

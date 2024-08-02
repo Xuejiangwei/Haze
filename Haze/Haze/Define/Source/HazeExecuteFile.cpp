@@ -522,14 +522,15 @@ void HazeExecuteFile::ReadStringTable(HazeVM* vm)
 	uint32 number = 0;
 	m_InFileStream->read(HAZE_READ(number));
 
-	vm->Vector_StringTable.resize(number);
+	auto strCount = number;
+	vm->InitGlobalStringCount(number);
 
-	for (uint64 i = 0; i < vm->Vector_StringTable.size(); i++)
+	for (uint64 i = 0; i < strCount; i++)
 	{
 		m_InFileStream->read(HAZE_READ(number));
 		s_BinaryString.resize(number);
 		m_InFileStream->read(s_BinaryString.data(), number);
-		vm->Vector_StringTable[i] = String2WString(s_BinaryString);
+		vm->SetGlobalString(i, String2WString(s_BinaryString));
 	}
 }
 

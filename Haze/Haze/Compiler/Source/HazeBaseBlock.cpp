@@ -54,7 +54,7 @@ bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* value, HStrin
 			}
 			return true;
 		}
-		offset += it.second->GetSize();
+		offset += GetSizeByType(it.second->GetValueType(), m_ParentFunction->GetModule());
 	}
 
 	for (auto& iter : m_ChildBlocks)

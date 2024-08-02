@@ -880,7 +880,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST)
 				if (ExpectNextTokenIs(HazeToken::RightParentheses))
 				{
 					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), identiferName, attrName, true);
+						m_StackSectionSignal.top(), identiferName, attrName, false, true);
 				}
 				else
 				{
@@ -903,15 +903,22 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST)
 						}
 					}
 
+					bool isAdvanceType = false;
+					auto iter = s_HashMap_Token.find(identiferName);
+					if (iter != s_HashMap_Token.end())
+					{
+						isAdvanceType = IsAdvanceType(GetValueTypeByToken(iter->second));
+					}
+
 					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), identiferName, attrName, true, &params);
+						m_StackSectionSignal.top(), identiferName, attrName, isAdvanceType, true, &params);
 				}
 			}
 			else
 			{
 				temp.Reset();
 				ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-					m_StackSectionSignal.top(), identiferName, attrName, false);
+					m_StackSectionSignal.top(), identiferName, attrName, false, false);
 			}
 
 			moreExpect = true;
@@ -1017,6 +1024,10 @@ Unique<ASTBase> Parse::ParseVariableDefine()
 	if (TokenIs(HazeToken::Array))
 	{
 		return ParseVariableDefine_Array(templateTypes);
+	}
+	else if (IsStringType(m_DefineVariable.Type.PrimaryType))
+	{
+		return ParseVariableDefine_String(templateTypes, &temp);
 	}
 	else if (IsClassType(m_DefineVariable.Type.PrimaryType))
 	{
@@ -1132,6 +1143,50 @@ Unique<ASTBase> Parse::ParseVariableDefine_Array(TemplateDefineTypes& templateTy
 		}
 	}
 
+	return nullptr;
+}
+
+Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateTypes, class TempCurrCode* temp)
+{
+	uint32 tempLineCount = m_LineCount;
+
+	if (TokenIs(HazeToken::Identifier, H_TEXT("类对象变量定义错误")))
+	{
+		m_DefineVariable.Name = m_CurrLexeme;
+
+		TempCurrCode temp(this);
+
+		GetNextToken();
+		if (TokenIs(HazeToken::Assign))
+		{
+			GetNextToken();
+			Unique<ASTBase> expression = ParseExpression();
+
+			return MakeUnique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+				m_DefineVariable, Move(expression));
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("解析错误 类对象定义需要括号\"(\" <%s>文件<%d>行!!\n", m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+		}
+	}
+	else if (TokenIs(HazeToken::ClassAttr))
+	{
+		if (temp)
+		{
+			temp->Reset();
+			m_CurrLexeme = TOKEN_STRING;
+			Unique<ASTBase> expression = ParseIdentifer();
+
+			return MakeUnique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+				m_DefineVariable, Move(expression));
+		}
+		else
+		{
+			PARSE_ERR_W("调用字符的函数错误");
+		}
+	}
+	
 	return nullptr;
 }
 
@@ -2480,6 +2535,11 @@ void Parse::GetValueType(HazeDefineType& inType)
 		{
 			PARSE_ERR_W("获得<%s>引用类型错误, 必须是基本类型", s.c_str());
 		}
+	}
+		break;
+	case HazeToken::String:
+	{
+		inType.PrimaryType = HazeValueType::String;
 	}
 		break;
 	case HazeToken::Void:

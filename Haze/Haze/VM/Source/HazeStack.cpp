@@ -116,24 +116,20 @@ void HazeStack::InitStackRegister()
 {
 	m_VirtualRegister =
 	{
-		//{ADD_REGISTER, nullptr},
-		//{SUB_REGISTER, nullptr},
-		//{MUL_REGISTER, nullptr},
-		//{DIV_REGISTER, nullptr},
 		{RET_REGISTER, HazeRegister()},
 		{NEW_REGISTER, HazeRegister()},
 		{CMP_REGISTER, HazeRegister()},
 
-		{TEMP_REGISTER_0, HazeRegister()},
-		{TEMP_REGISTER_1, HazeRegister()},
-		{TEMP_REGISTER_2, HazeRegister()},
+		{TEMP_REGISTER_A, HazeRegister()},
+		{TEMP_REGISTER_B, HazeRegister()},
+		/*{TEMP_REGISTER_2, HazeRegister()},
 		{TEMP_REGISTER_3, HazeRegister()},
 		{TEMP_REGISTER_4, HazeRegister()},
 		{TEMP_REGISTER_5, HazeRegister()},
 		{TEMP_REGISTER_6, HazeRegister()},
 		{TEMP_REGISTER_7, HazeRegister()},
 		{TEMP_REGISTER_8, HazeRegister()},
-		{TEMP_REGISTER_9, HazeRegister()},
+		{TEMP_REGISTER_9, HazeRegister()},*/
 	};
 }
 

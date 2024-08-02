@@ -22,7 +22,7 @@ public:
 
 	Share<HazeCompilerValue> GetMember(const HString& name);
 
-	void GetMemberName(const HazeCompilerValue* memberValue, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
+	bool GetMemberName(const HazeCompilerValue* memberValue, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
 
 private:
 	HazeCompilerClass* m_OwnerClass;

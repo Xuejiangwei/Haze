@@ -57,7 +57,7 @@ public:
 
 	const FunctionData& GetFunctionByName(const HString& m_Name);
 
-	const HChar* GetConstantStringByIndex(int Index) const;
+	const HChar* GetConstantStringByIndex(int index) const;
 
 	char* GetGlobalValueByIndex(uint32 Index);
 
@@ -66,6 +66,9 @@ public:
 	uint32 GetClassSize(const HString& className);
 
 private:
+	void InitGlobalStringCount(uint64 count);
+	void SetGlobalString(uint64 index, const HString& str);
+
 	const HString* GetSymbolClassName(const HString& name);
 
 	void ResetSymbolClassIndex(const HString& name, uint64 index);
@@ -102,7 +105,7 @@ private:
 	V_Array<Pair<HazeVariable, bool>> Vector_GlobalData; //是否初始化
 	V_Array<Pair<uint32, uint32>> m_GlobalDataInitAddress;	//全局变量初始化开始地址与结束地址
 
-	V_Array<HString> Vector_StringTable;
+	V_Array<class ObjectString*> m_StringTable;
 
 	HashMap<HString, uint64> m_ClassSymbol;
 	V_Array<ClassData> Vector_ClassTable;

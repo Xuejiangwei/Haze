@@ -192,6 +192,11 @@ bool IsArrayType(HazeValueType type)
 	return type == HazeValueType::Array;
 }
 
+bool IsStringType(HazeValueType type)
+{
+	return type == HazeValueType::String;
+}
+
 bool IsRefrenceType(HazeValueType type)
 {
 	return type == HazeValueType::Refrence;

@@ -54,6 +54,7 @@ private:
 	Unique<ASTBase> ParseVariableDefine();
 	Unique<ASTBase> ParseVariableDefine_MultiVariable();
 	Unique<ASTBase> ParseVariableDefine_Array(TemplateDefineTypes& templateTypes);
+	Unique<ASTBase> ParseVariableDefine_String(TemplateDefineTypes& templateTypes, class TempCurrCode* temp);
 	Unique<ASTBase> ParseVariableDefine_Class(TemplateDefineTypes& templateTypes);
 	Unique<ASTBase> ParseVariableDefine_Function(TemplateDefineTypes& templateTypes);
 

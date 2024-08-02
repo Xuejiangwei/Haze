@@ -16,6 +16,7 @@
 #include "HazeMemory.h"
 
 #include "ObjectArray.h"
+#include "ObjectString.h"
 
 #include <cstdarg>
 #include <filesystem>
@@ -38,6 +39,7 @@ void HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 {
 	// 提前注册基本类型
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, *ObjectArray::GetAdvanceClassInfo());
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, *ObjectArray::GetAdvanceClassInfo());
 
 	// 提前解析基础模块
 	V_Array<HString> baseModules = HAZE_BASE_LIBS;
@@ -217,9 +219,9 @@ const FunctionData& HazeVM::GetFunctionByName(const HString& m_Name)
 	return Vector_FunctionTable[Index];
 }
 
-const HChar* HazeVM::GetConstantStringByIndex(int Index) const
+const HChar* HazeVM::GetConstantStringByIndex(int index) const
 {
-	return Vector_StringTable.at(Index).c_str();
+	return m_StringTable[index]->GetData();
 }
 
 char* HazeVM::GetGlobalValueByIndex(uint32 Index)
@@ -272,6 +274,25 @@ uint32 HazeVM::GetClassSize(const HString& m_ClassName)
 {
 	auto Class = FindClass(m_ClassName);
 	return Class ? Class->Size : 0;
+}
+
+void HazeVM::InitGlobalStringCount(uint64 count)
+{
+	m_StringTable.resize(count);
+}
+
+void HazeVM::SetGlobalString(uint64 index, const HString& str)
+{
+	if (index < m_StringTable.size())
+	{
+		auto address = HazeMemory::Alloca(sizeof(ObjectString));
+		new((char*)address) ObjectString(str.c_str(), true);
+		m_StringTable[index] = (ObjectString*)address;
+	}
+	else
+	{
+		GLOBAL_INIT_ERR_W("设置第<%d>个字符<%s>超过字符表长度<%d>", index, str.c_str(), m_StringTable.size());
+	}
 }
 
 const HString* HazeVM::GetSymbolClassName(const HString& name)

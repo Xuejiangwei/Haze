@@ -9,10 +9,18 @@ public:
 
 	~ObjectString();
 
-	//Haze可调用方法
+	static struct AdvanceClassInfo* GetAdvanceClassInfo();
+
+	const HChar* GetData() const { return (HChar*)m_Data; }
+
 	uint64 GetLength() const { return m_Length; }
 
-	void Append(const HChar* str);
+private:
+	static void Append(class HazeStack* stack);
+
+
+	// 以下是字符类型的静态函数
+	static void Format(HAZE_STD_CALL_PARAM);
 
 private:
 	void* m_Data;

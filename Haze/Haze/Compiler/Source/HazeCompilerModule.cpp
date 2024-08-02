@@ -870,7 +870,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateAdvanceTypeFunctionCall(Advan
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
 		<< CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " << params.size()
 		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionPointer)
-		<< " " << functionInfo.Func << std::endl;
+		<< " " << functionInfo.TypeFunc << std::endl;
 
 	return HazeCompiler::GetRegister(RET_REGISTER);
 }
