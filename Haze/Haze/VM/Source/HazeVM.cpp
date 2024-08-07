@@ -15,6 +15,8 @@
 #include "HazeStack.h"
 #include "HazeMemory.h"
 
+#include "HazeStream.h"
+
 #include "ObjectArray.h"
 #include "ObjectString.h"
 
@@ -39,7 +41,7 @@ void HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 {
 	// 提前注册基本类型
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, *ObjectArray::GetAdvanceClassInfo());
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, *ObjectArray::GetAdvanceClassInfo());
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, *ObjectString::GetAdvanceClassInfo());
 
 	// 提前解析基础模块
 	V_Array<HString> baseModules = HAZE_BASE_LIBS;
@@ -219,9 +221,9 @@ const FunctionData& HazeVM::GetFunctionByName(const HString& m_Name)
 	return Vector_FunctionTable[Index];
 }
 
-const HChar* HazeVM::GetConstantStringByIndex(int index) const
+const ObjectString* HazeVM::GetConstantStringByIndex(int index) const
 {
-	return m_StringTable[index]->GetData();
+	return m_StringTable[index];
 }
 
 char* HazeVM::GetGlobalValueByIndex(uint32 Index)
@@ -285,8 +287,9 @@ void HazeVM::SetGlobalString(uint64 index, const HString& str)
 {
 	if (index < m_StringTable.size())
 	{
+		auto newStr = HazeStream::FormatConstantString(str);
 		auto address = HazeMemory::Alloca(sizeof(ObjectString));
-		new((char*)address) ObjectString(str.c_str(), true);
+		new((char*)address) ObjectString(newStr.c_str(), true);
 		m_StringTable[index] = (ObjectString*)address;
 	}
 	else

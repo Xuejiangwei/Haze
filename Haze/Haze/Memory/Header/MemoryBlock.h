@@ -37,6 +37,8 @@ public:
 
 	void MarkBlack(void* address);
 
+	void MarkWrite(void* address);
+
 	bool IsUsed() const { return m_BlockInfo.State == MemoryBlockState::Used; }
 
 	MemoryBlock* GetNext() { return m_BlockInfo.Next; }

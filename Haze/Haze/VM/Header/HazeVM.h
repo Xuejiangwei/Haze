@@ -57,7 +57,7 @@ public:
 
 	const FunctionData& GetFunctionByName(const HString& m_Name);
 
-	const HChar* GetConstantStringByIndex(int index) const;
+	const class ObjectString* GetConstantStringByIndex(int index) const;
 
 	char* GetGlobalValueByIndex(uint32 Index);
 
@@ -116,8 +116,6 @@ private:
 	V_Array<Instruction> Instructions;
 
 	V_Array<char> Vector_GlobalDataClassObjectMemory;
-
-	HashSet<void*> Vector_ArrayCache;
 
 	HazeRunType GenType;
 };

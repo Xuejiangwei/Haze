@@ -60,10 +60,11 @@ struct HazeDefineType
 		else if (IsArrayType(PrimaryType) && IsHazeBaseType(SecondaryType)) {}
 		else if (IsArrayType(PrimaryType) && IsClassType(SecondaryType) && CustomName && !CustomName->empty()) {}
 		else if (IsClassType(PrimaryType) && IsNoneType(SecondaryType) && CustomName && !CustomName->empty()) {}
+		else if (IsStringType(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
 		else if (IsMultiVariableTye(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
 		else
 		{
-			HAZE_LOG_ERR_W("基本类型指针的类型错误<%s><%s><%s>", GetHazeValueTypeString(PrimaryType), GetHazeValueTypeString(SecondaryType),
+			HAZE_LOG_ERR_W("基本类型指针的类型错误<%s><%s><%s>\n", GetHazeValueTypeString(PrimaryType), GetHazeValueTypeString(SecondaryType),
 				CustomName ? CustomName->empty() ? H_TEXT("") : CustomName->c_str() : H_TEXT(""));
 		}
 	}

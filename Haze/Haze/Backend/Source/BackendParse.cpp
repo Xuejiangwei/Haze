@@ -534,21 +534,20 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 		}
 		else
 		{
+			/*operatorOne.Extra.Address.BaseAddress = 0;
+			operatorOne.Extra.Address.Offset = 0;*/
 			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
 			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
-			operatorOne.Extra.Address.BaseAddress = 0;
-			operatorOne.Extra.Address.Offset = 0;
 		}
-
 
 		GetNextLexmeAssign_HazeString(operatorTwo.Variable.Name);
 		GetNextLexmeAssign_CustomType<uint32>(operatorTwo.Desc);
 
 		if (operatorTwo.Desc == HazeDataDesc::CallFunctionPointer)
 		{
+			operatorOne.Desc = HazeDataDesc::CallFunctionPointer;
 			GetNextLexmeAssign_CustomType<void*>(operatorTwo.Extra.Pointer);
 		}
-
 
 		instruction.Operator = { operatorOne, operatorTwo };
 	}

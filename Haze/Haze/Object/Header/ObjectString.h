@@ -2,7 +2,7 @@
 #include "ObjectDefine.h"
 #include "HazeInstruction.h"
 
-class ObjectString : public ObjectBase
+class ObjectString
 {
 public:
 	ObjectString(const HChar* str, bool fixedCapacity = false);
@@ -16,10 +16,8 @@ public:
 	uint64 GetLength() const { return m_Length; }
 
 private:
-	static void Append(class HazeStack* stack);
+	static void Append(HAZE_STD_CALL_PARAM);
 
-
-	// 以下是字符类型的静态函数
 	static void Format(HAZE_STD_CALL_PARAM);
 
 private:

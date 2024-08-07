@@ -880,7 +880,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST)
 				if (ExpectNextTokenIs(HazeToken::RightParentheses))
 				{
 					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), identiferName, attrName, false, true);
+						m_StackSectionSignal.top(), identiferName, attrName, true);
 				}
 				else
 				{
@@ -903,22 +903,15 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST)
 						}
 					}
 
-					bool isAdvanceType = false;
-					auto iter = s_HashMap_Token.find(identiferName);
-					if (iter != s_HashMap_Token.end())
-					{
-						isAdvanceType = IsAdvanceType(GetValueTypeByToken(iter->second));
-					}
-
 					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), identiferName, attrName, isAdvanceType, true, &params);
+						m_StackSectionSignal.top(), identiferName, attrName, true, &params);
 				}
 			}
 			else
 			{
 				temp.Reset();
 				ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-					m_StackSectionSignal.top(), identiferName, attrName, false, false);
+					m_StackSectionSignal.top(), identiferName, attrName, false);
 			}
 
 			moreExpect = true;
@@ -1150,7 +1143,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateT
 {
 	uint32 tempLineCount = m_LineCount;
 
-	if (TokenIs(HazeToken::Identifier, H_TEXT("类对象变量定义错误")))
+	if (TokenIs(HazeToken::Identifier))
 	{
 		m_DefineVariable.Name = m_CurrLexeme;
 
@@ -1165,9 +1158,15 @@ Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateT
 			return MakeUnique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
 				m_DefineVariable, Move(expression));
 		}
+		else if (m_IsParseClassData_Or_FunctionParam && (TokenIs(HazeToken::Comma) || TokenIs(HazeToken::RightParentheses)))
+		{
+			temp.Reset();
+			return MakeUnique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+				m_DefineVariable, nullptr);
+		}
 		else
 		{
-			HAZE_LOG_ERR_W("解析错误 类对象定义需要括号\"(\" <%s>文件<%d>行!!\n", m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
+			HAZE_LOG_ERR_W("解析错误 字符对象定义需要括号\"(\" <%s>文件<%d>行!!\n", m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
 		}
 	}
 	else if (TokenIs(HazeToken::ClassAttr))
@@ -1185,6 +1184,10 @@ Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateT
 		{
 			PARSE_ERR_W("调用字符的函数错误");
 		}
+	}
+	else
+	{
+		PARSE_ERR_W("字符变量或字符函数错误");
 	}
 	
 	return nullptr;
@@ -1893,6 +1896,7 @@ V_Array<Unique<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefine()
 
 					GetNextToken();
 
+					m_IsParseClassData_Or_FunctionParam = true;
 					while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
 					{
 						params.push_back(ParseExpression());
@@ -1903,6 +1907,7 @@ V_Array<Unique<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefine()
 
 						GetNextToken();
 					}
+					m_IsParseClassData_Or_FunctionParam = false;
 
 					m_StackSectionSignal.pop();
 

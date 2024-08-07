@@ -8,7 +8,7 @@
 #include "HazeStream.h"
 
 ObjectString::ObjectString(const HChar* str, bool fixedCapacity)
-	: ObjectBase(GCObjectType::String), m_Data(nullptr), m_Length(0), m_Capacity(0)
+	: m_Data(nullptr), m_Length(0), m_Capacity(0)
 {
 	if (str)
 	{
@@ -20,7 +20,7 @@ ObjectString::ObjectString(const HChar* str, bool fixedCapacity)
 		}
 
 		m_Data = HazeMemory::Alloca(m_Capacity);
-		memcpy(m_Data, str, m_Length);
+		memcpy(m_Data, str, m_Capacity);
 	}
 }
 
@@ -39,7 +39,7 @@ AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
 	return &info;
 }
 
-void ObjectString::Append(HazeStack* stack)
+void ObjectString::Append(HAZE_STD_CALL_PARAM)
 {
 	ObjectString* thisStr;
 	ObjectString* str;
@@ -49,11 +49,41 @@ void ObjectString::Append(HazeStack* stack)
 
 	if (thisStr->m_Length + str->m_Length <= thisStr->m_Capacity)
 	{
-		memcpy((HChar*)thisStr->m_Data + sizeof(HChar) * thisStr->m_Length, str, str->m_Length);
+		memcpy((HChar*)thisStr->m_Data + thisStr->m_Length, str, str->m_Length);
+	}
+	else
+	{
+		auto oldLength = thisStr->m_Length;
+		thisStr->m_Length += str->m_Length;
+		thisStr->m_Capacity = (thisStr->m_Length + 1) * sizeof(HChar);
+		auto dataAddress = HazeMemory::Alloca(thisStr->m_Capacity);
+
+		memcpy(dataAddress, thisStr->m_Data, oldLength* sizeof(HChar));
+		memcpy((HChar*)dataAddress + oldLength, str->m_Data, str->m_Length * sizeof(HChar));
+		
+		HazeMemory::ManualFree(thisStr->m_Data);
+		thisStr->m_Data = dataAddress;
 	}
 }
 
 void ObjectString::Format(HAZE_STD_CALL_PARAM)
 {
-	HazeStream::GetFormatString(HAZE_STD_CALL_PARAM_VAR);
+	auto str = HazeStream::GetFormatString(HAZE_STD_CALL_PARAM_VAR);
+
+	ObjectString* thisStr;
+	GET_PARAM_START();
+	GET_PARAM(thisStr);
+
+	if (str.length() <= thisStr->m_Capacity)
+	{
+		memcpy((HChar*)thisStr->m_Data, str.c_str(), str.length());
+	}
+	else
+	{
+		thisStr->m_Length = str.length();
+		thisStr->m_Capacity = (thisStr->m_Length + 1) * sizeof(HChar);
+		thisStr->m_Data = HazeMemory::Alloca(thisStr->m_Capacity);
+
+		memcpy(thisStr->m_Data, str.c_str(), thisStr->m_Capacity);
+	}
 }

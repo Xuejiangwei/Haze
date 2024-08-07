@@ -6,6 +6,8 @@
 #include "HazeStack.h"
 #include "HazeLogDefine.h"
 #include "ObjectArray.h"
+#include "ObjectClass.h"
+#include "ObjectString.h"
 #include <chrono>
 
 #define PAGE_BASE_SIZE  4 * 4
@@ -107,12 +109,52 @@ void* HazeMemory::Alloca(uint64 size)
 	}
 	else
 	{
+		HAZE_LOG_ERR_W("申请内存太大，大小为<%d>\n", size);
 		ret = malloc(size);
 		GetMemory()->m_BigMemorys[ret] = { GC_State::Black, ret };
 	}
 
 	memset(ret, 0, size);
 	return ret;
+}
+
+void HazeMemory::ManualFree(void* address)
+{
+	auto memoryIns = HazeMemory::GetMemory();
+	for (auto& iter : memoryIns->m_MemoryBlocks)
+	{
+		auto block = iter;
+		while (block && block->IsUsed())
+		{
+			if (block->IsInBlock(address))
+			{
+				block->MarkWrite(address);
+
+				uint32 unitSize = block->m_BlockInfo.UnitSize;
+				uint32 offset = unitSize % GRANULE == 0 ? -1 : 1;
+				uint32 index = unitSize / GRANULE + offset;
+
+				uint32 unitCount = block->m_BlockInfo.MarkCount;
+				for (size_t i = 0; i < unitCount; i++)
+				{
+					if (block->m_BlockInfo.Mark[i] == (uint8)GC_State::White)
+					{
+						if (memoryIns->m_FreeList[index])
+						{
+							memoryIns->m_FreeList[index]->Push(&block->m_Memory[unitSize * i]);
+						}
+						else
+						{
+							memoryIns->m_FreeList[index] = MakeUnique<MemoryFreeList>();
+							memoryIns->m_FreeList[index]->Push(&block->m_Memory[unitSize * i]);
+						}
+					}
+				}
+				return;
+			}
+			block = block->GetNext();
+		}
+	}
 }
 
 void HazeMemory::AddToRoot(void*)
@@ -123,90 +165,70 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, c
 {
 	switch (type.PrimaryType)
 	{
-	/*case HazeValueType::PointerBase:
-		m_MarkAddressBases.push_back({ { startAddress, type.SecondaryType }, GC_State::Gray });
-		break;
-	case HazeValueType::PointerClass:
-		m_MarkAddressClasses.push_back({ { startAddress, m_VM->FindClass(type.CustomName) }, GC_State::Gray });
-		break;*/
 	case HazeValueType::Class:
-		MarkClassMember(m_VM->FindClass(*type.CustomName), classAddress);
+	{
+		if ((ObjectClass*)startAddress)
+		{
+			m_MarkAddressBases.push_back({ startAddress, GC_State::Gray });
+			MarkClassMember(m_VM->FindClass(*type.CustomName), classAddress);
+		}
+	}
 		break;
 	case HazeValueType::Array:
 	{
-		uint64 size = ((ObjectArray*)startAddress)->m_Length  * GetSizeByHazeType(type.SecondaryType);
-
-#ifdef _DEBUG
-		if (size == 0)
+		if ((ObjectArray*)startAddress)
 		{
-			GC_ERR_W("基本类型数组长度为0");
-			return;
-		}
-#endif // _DEBUG
+			m_MarkAddressBases.push_back({ startAddress, GC_State::Gray });
 
-		m_MarkAddressArrays.push_back({ (void*)startAddress, GC_State::Gray });
+			auto objectArray = ((ObjectArray*)startAddress);
+			uint64 length = objectArray->m_Length;
+			if (IsArrayType(objectArray->m_ValueType))
+			{
+				for (uint64 i = 0; i < length; i++)
+				{
+					auto v = (ObjectArray*)objectArray->m_Data + i;
+					MarkVariable(v->m_ValueType, (uint64)v, nullptr);
+				}
+			}
+			else if (IsClassType(objectArray->m_ValueType))
+			{
+				for (uint64 i = 0; i < length; i++)
+				{
+					auto v = (ObjectClass*)objectArray->m_Data + i;
+					MarkVariable({ HazeValueType::Class, &v->m_ClassInfo->Name }, (uint64)v, nullptr);
+				}
+			}
+			else if (IsStringType(objectArray->m_ValueType))
+			{
+				for (uint64 i = 0; i < length; i++)
+				{
+					auto v = (ObjectString*)objectArray->m_Data + i;
+					MarkVariable(objectArray->m_ValueType, (uint64)v, nullptr);
+				}
+			}
+
+			uint64 size = ((ObjectArray*)startAddress)->m_Length  * GetSizeByHazeType(type.SecondaryType);
+
+	#ifdef _DEBUG
+			if (size == 0)
+			{
+				GC_ERR_W("基本类型数组长度为0");
+				return;
+			}
+	#endif // _DEBUG
+		}
 	}
 		break;
-//	case HazeValueType::ArrayClass:
-//	{
-//		auto classData = m_VM->FindClass(type.CustomName);
-//		for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
-//		{
-//			MarkClassMember(classData, (char*)startAddress + classData->Size * i);
-//		}
-//
-//		uint64 size = m_VM->GetRegisterArrayLength(startAddress) * classData->Size;
-//
-//#ifdef _DEBUG
-//		if (size == 0)
-//		{
-//			GC_ERR_W("基本类型数组长度为0");
-//			return;
-//		}
-//#endif // _DEBUG
-//
-//		m_MarkAddressArrays.push_back({ { startAddress, size }, GC_State::Gray });
-//	}
-//	break;
-//	case HazeValueType::ArrayPointer:
-//	{
-//		uint64 address;
-//		if (IsHazeBaseTypeAndVoid(type.SecondaryType))
-//		{
-//			for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
-//			{
-//				memcpy(&address, (char*)startAddress + sizeof(char*) * i, sizeof(char*));
-//				m_MarkAddressBases.push_back({ { address, type.SecondaryType }, GC_State::Gray });
-//			}
-//		}
-//		else if (IsClassType(type.SecondaryType))
-//		{
-//			auto classData = m_VM->FindClass(type.CustomName);
-//			for (uint64 i = 0; i < m_VM->GetRegisterArrayLength(startAddress); i++)
-//			{
-//				memcpy(&address, (char*)startAddress + sizeof(char*) * i, sizeof(char*));
-//				m_MarkAddressClasses.push_back({ {address, m_VM->FindClass(type.CustomName) }, GC_State::Gray });
-//			}
-//		}
-//		else
-//		{
-//			GC_ERR_W("指针数组指向错误的类型");
-//			return;
-//		}
-//
-//		uint64 size = m_VM->GetRegisterArrayLength(startAddress) * sizeof(char*);
-//
-//#ifdef _DEBUG
-//		if (size == 0)
-//		{
-//			GC_ERR_W("基本类型数组长度为0");
-//			return;
-//		}
-//#endif // _DEBUG
-//
-//		m_MarkAddressArrays.push_back({ { startAddress, size }, GC_State::Gray });
-//	}
-	break;
+	case HazeValueType::String:
+	{
+		//之后的考虑不能这样判断指针的有效性
+		if ((ObjectString*)startAddress)
+		{
+			m_MarkAddressBases.push_back({ startAddress, GC_State::Gray });
+			m_MarkAddressBases.push_back({ (uint64)((ObjectString*)startAddress)->GetData(), GC_State::Gray });
+		}
+	}
+		break;
 	default:
 		break;
 	}
@@ -248,7 +270,7 @@ void HazeMemory::Mark()
 			}
 		}
 
-		//根节点内存有 静态变量、栈、寄存器等
+		//根节点内存有 静态变量、栈、函数调用栈中缓存的寄存器、当前的寄存器
 		uint64 Address = 0;
 
 		for (auto& it : m_VM->Vector_GlobalData)
@@ -272,6 +294,7 @@ void HazeMemory::Mark()
 		{
 			for (auto& var : m_VM->VMStack->m_StackFrame[i].FunctionInfo->Variables)
 			{
+				//此时可能会出现调用函数部分变量并未调用或初始化的情况，需要考虑指针的有效性，或者在调用函数时，将调用的函数栈全部清零，就不用担心脏数据转换成有效的指针。
 				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
 				MarkVariable(var.Variable.Type, Address, 
 					&m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset]);
@@ -286,40 +309,10 @@ void HazeMemory::Mark()
 
 	m_MarkStage = MarkStage::Running_MarkList;
 
-	//遍历完根节点后，再遍历 Vector_MarkAddress
-	while (m_CurrMarkBaseIndex < m_MarkAddressBases.size())
-	{
-		MarkArrayBaseIndex();
-		m_CurrMarkBaseIndex++;
-	}
-
-	while (m_CurrMarkClassIndex < m_MarkAddressClasses.size())
-	{
-		//m_MarkAddressClasses没有进行深度遍历，所以需要进行深度便利
-		MarkArrayClassIndex();
-		m_CurrMarkClassIndex++;
-	}
-
-	while (m_CurrMarkArrayIndex < m_MarkAddressArrays.size())
-	{
-		MarkArrayArrayIndex();
-		m_CurrMarkArrayIndex++;
-	}
-
 	m_KeepMemorys.clear();
 	for (size_t i = 0; i < m_MarkAddressBases.size(); i++)
 	{
-		m_KeepMemorys.push_back((void*)m_MarkAddressBases[i].first.first);
-	}
-
-	for (size_t i = 0; i < m_MarkAddressClasses.size(); i++)
-	{
-		m_KeepMemorys.push_back((void*)m_MarkAddressClasses[i].first.first);
-	}
-
-	for (size_t i = 0; i < m_MarkAddressArrays.size(); i++)
-	{
-		m_KeepMemorys.push_back(m_MarkAddressArrays[i].first);
+		m_KeepMemorys.push_back((void*)m_MarkAddressBases[i].first);
 	}
 }
 
@@ -385,13 +378,6 @@ void HazeMemory::Sweep()
 			block = block->GetNext();
 		}
 	}
-
-	//重新标记数组，暂时不需要，因为是可达性的遍历，若不可达，会回收内存，但是数据记录中会有脏数据
-	m_VM->Vector_ArrayCache.clear();
-	for (auto& i : m_MarkAddressArrays)
-	{
-		m_VM->Vector_ArrayCache.insert(i.first);
-	}
 }
 
 void HazeMemory::ForceGC()
@@ -419,38 +405,4 @@ inline bool HazeMemory::MarkArrayBaseIndex()
 	return m_MarkStartTimestamp = time.count();
 }
 
-inline bool HazeMemory::MarkArrayClassIndex()
-{
-	if (m_MarkStage != MarkStage::Running_MarkList)
-	{
-		return true;
-	}
 
-	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-	if (time.count() - m_MarkStartTimestamp > m_MaxMarkTime)
-	{
-		m_MarkStartTimestamp = time.count();
-	}
-
-	auto markClass = m_MarkAddressClasses[m_CurrMarkClassIndex++];
-	MarkClassMember(markClass.first.second, (char*)markClass.first.first);
-	markClass.second = GC_State::Black;
-
-	return m_MarkStartTimestamp = time.count();
-}
-
-inline bool HazeMemory::MarkArrayArrayIndex()
-{
-	if (m_MarkStage != MarkStage::Running_MarkList)
-	{
-		return true;
-	}
-
-	auto time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
-	if (time.count() - m_MarkStartTimestamp > m_MaxMarkTime)
-	{
-		m_MarkStartTimestamp = time.count();
-	}
-
-	return m_MarkStartTimestamp = time.count();
-}

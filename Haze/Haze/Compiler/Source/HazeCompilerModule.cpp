@@ -719,7 +719,8 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 		{
 			auto& type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) : 
 				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
-				advancFunctionInfo->Params.at(params.size() - 1 - i);
+				advancFunctionInfo->Params.size() > params.size() - 1 - i ? advancFunctionInfo->Params.at(params.size() - 1 - i)
+				: advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 
 			if (type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(type))
 			{
@@ -870,7 +871,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateAdvanceTypeFunctionCall(Advan
 	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
 		<< CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " << params.size()
 		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionPointer)
-		<< " " << functionInfo.TypeFunc << std::endl;
+		<< " " << functionInfo.ClassFunc << std::endl;
 
 	return HazeCompiler::GetRegister(RET_REGISTER);
 }

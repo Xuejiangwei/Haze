@@ -7,6 +7,7 @@ class HazeStream : public HazeStandardLibraryBase
 public:
 	static const HChar* GetFormat(const HChar* strfrmt, HChar* form);
 
+	static HString FormatConstantString(const HString& str);
 
 public:
 	HAZE_INIT_STANDARD_LIB();

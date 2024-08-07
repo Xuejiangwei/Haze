@@ -28,6 +28,12 @@ void MemoryBlock::MarkBlack(void* address)
 	m_BlockInfo.Mark[Index] = (int)GC_State::Black;
 }
 
+void MemoryBlock::MarkWrite(void* address)
+{
+	uint64 Index = ((uint64)address - (uint64)m_Memory) / m_BlockInfo.UnitSize;
+	m_BlockInfo.Mark[Index] = (int)GC_State::White;
+}
+
 bool MemoryBlock::IsInBlock(void* address)
 {
 	return m_Memory <= address && address < &m_Memory + 1;

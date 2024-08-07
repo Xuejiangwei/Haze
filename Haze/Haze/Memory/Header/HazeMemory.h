@@ -36,6 +36,8 @@ public:
 
 	static void* Alloca(uint64 size);
 
+	static void ManualFree(void* address);
+
 	void SetVM(HazeVM* vm) { m_VM = vm; }
 
 	void AddToRoot(void*);
@@ -60,10 +62,6 @@ private:
 
 	inline bool MarkArrayBaseIndex();
 
-	inline bool MarkArrayClassIndex();
-
-	inline bool MarkArrayArrayIndex();
-
 private:
 	HazeVM* m_VM;
 	bool m_IsForceGC;
@@ -80,7 +78,5 @@ private:
 	uint64 m_CurrMarkArrayIndex;
 
 	V_Array<void*> m_KeepMemorys;
-	V_Array<Pair<Pair<uint64, HazeValueType>, GC_State>> m_MarkAddressBases;
-	V_Array<Pair<Pair<uint64, ClassData*>, GC_State>> m_MarkAddressClasses;
-	V_Array<Pair<void*, GC_State>> m_MarkAddressArrays;
+	V_Array<Pair<uint64, GC_State>> m_MarkAddressBases;
 };

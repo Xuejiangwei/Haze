@@ -20,6 +20,8 @@ static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 	{ HazeToken::Float32, HazeValueType::Float32 },
 	{ HazeToken::Float64, HazeValueType::Float64 },
 
+	{ HazeToken::String, HazeValueType::String },
+
 	{ HazeToken::CustomClass, HazeValueType::Class },
 	{ HazeToken::CustomEnum, HazeValueType::Enum },
 

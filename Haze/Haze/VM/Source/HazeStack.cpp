@@ -176,7 +176,7 @@ void HazeStack::OnRet()
 
 	SubCallHazeTimes();
 
-	GarbageCollection();
+	//HazeMemory::GetMemory()->ForceGC();
 }
 
 void HazeStack::ResetCallHaze()
@@ -208,31 +208,5 @@ void HazeStack::SubCallHazeTimes()
 	if (m_CallHazeStack.size() > 0)
 	{
 		m_CallHazeStack.pop_back();
-	}
-}
-
-void* HazeStack::Alloca(uint64 size)
-{
-	void* ret = HazeMemory::Alloca(size); //Pool->Alloca(Size);
-	if (ret == nullptr)
-	{
-		HAZE_LOG_ERR_W("内存分配失败!\n");
-	}
-
-	return ret;
-}
-
-void HazeStack::RegisterArray(void* address, uint64 length)
-{
-	m_VM->Vector_ArrayCache.insert(address);
-}
-
-
-void HazeStack::GarbageCollection(bool force, bool collectionAll)
-{
-	//防止虚拟寄存器中的引用被GC，只在函数返回时进行GC，并且此时只用Ret虚拟寄存器可能有引用。
-	if (force && collectionAll)
-	{
-		HazeMemory::GetMemory()->ForceGC();
 	}
 }

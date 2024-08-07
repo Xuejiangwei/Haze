@@ -6,6 +6,7 @@
 #include "HazeLog.h"
 #include "HazeStack.h"
 #include "HazeStream.h"
+#include "ObjectString.h"
 
 static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
@@ -44,20 +45,20 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 
 	uint64 v = 0;
 
-	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE;
+	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE - sizeof(v);
 	memcpy(&v, stack->GetAddressByEBP(offset), sizeof(v));
 
 	HAZE_STRING_STREAM hss;
 
-	int argNum = 1;
+	int argNum = 1 + 1;
 
-	const HChar* str = (HChar*)v;
+	const HChar* str = ((ObjectString*)v)->GetData();
 	auto start = str;
 	while (*start != '\0')
 	{
 		if (*start != PRE_SIGN)
 		{
-			if (*start == HChar('\\'))
+			/*if (*start == HChar('\\'))
 			{
 				if (*(++start) == HChar('n'))
 				{
@@ -65,7 +66,7 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 					hss << std::endl;
 				}
 			}
-			else
+			else*/
 			{
 				hss << *(start++);
 			}
@@ -76,7 +77,7 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 		}
 		else
 		{
-			if (++argNum > multiParamNum) //入栈参数个数
+			if (++argNum > multiParamNum + 1) //入栈参数个数
 			{
 				HAZE_LOG_ERR_W("调用<打印>函数参数个数错误!\n");
 				break;
@@ -147,10 +148,44 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 				char* Address = stack->GetAddressByEBP(offset);
 				memcpy(&tempAddress, Address, sizeof(tempAddress));
 
-				const HChar* tempStr = (HChar*)tempAddress;
+				const HChar* tempStr = ((ObjectString*)tempAddress)->GetData();
 				hss << tempStr;
 				start++;
 			}
+		}
+	}
+
+	return hss.str();
+}
+
+HString HazeStream::FormatConstantString(const HString& str)
+{
+	HAZE_STRING_STREAM hss;
+	auto start = str.c_str();
+	while (*start != '\0')
+	{
+		if (*start != PRE_SIGN)
+		{
+			if (*start == HChar('\\'))
+			{
+				if (*(++start) == HChar('n'))
+				{
+					start++;
+					hss << std::endl;
+				}
+				else
+				{
+					hss << *(start++);
+				}
+			}
+			else
+			{
+				hss << *(start++);
+			}
+		}
+		else
+		{
+			hss << *(start++);
 		}
 	}
 
@@ -170,7 +205,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 
 	int argNum = 1;
 
-	const HChar* str = (HChar*)v;
+	const HChar* str = ((ObjectString*)v)->GetData();
 	auto start = str;
 	while (*start != '\0')
 	{
@@ -266,7 +301,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				char* Address = stack->GetAddressByEBP(offset);
 				memcpy(&tempAddress, Address, sizeof(tempAddress));
 
-				const HChar* tempStr = (HChar*)tempAddress;
+				const HChar* tempStr = ((ObjectString*)tempAddress)->GetData();
 				hss << tempStr;
 				start++;
 			}

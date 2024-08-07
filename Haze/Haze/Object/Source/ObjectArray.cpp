@@ -6,8 +6,9 @@
 #include "HazeCompiler.h"
 #include "HazeLibraryDefine.h"
 
-ObjectArray::ObjectArray(uint64 dimensionCount, void* address, uint64 length, uint64 pcAddress)
-	: m_DimensionCount(dimensionCount), m_Data(address), m_Length(length), m_PcAddress(pcAddress)
+ObjectArray::ObjectArray(uint64 dimensionCount, void* address, uint64 length, uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
+	: m_DimensionCount(dimensionCount), m_Data(address), m_Length(length), m_PcAddress(pcAddress), m_ValueType(valueType),
+	  m_ClassInfo(classInfo)
 {
 }
 
@@ -23,10 +24,13 @@ AdvanceClassInfo* ObjectArray::GetAdvanceClassInfo()
 		HazeValueType::UInt64, { HazeValueType::UInt64 } };
 	info.Functions[H_TEXT("Î¬Êý")] = { AdvanceFunctionType::ObjectFunction, &ObjectArray::GetDimensionCount,
 		HazeValueType::UInt64, {} };
+	info.Functions[H_TEXT("Ìí¼Ó")] = { AdvanceFunctionType::ObjectFunction, &ObjectArray::Add, HazeValueType::Void,
+		{ HazeValueType::MultiVariable } };
+
 	return &info;
 }
 
-void ObjectArray::GetLength(HazeStack* stack)
+void ObjectArray::GetLength(HAZE_STD_CALL_PARAM)
 {
 	ObjectArray* arr;
 
@@ -36,7 +40,7 @@ void ObjectArray::GetLength(HazeStack* stack)
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_Length);
 }
 
-void ObjectArray::GetLengthOfDimension(HazeStack* stack)
+void ObjectArray::GetLengthOfDimension(HAZE_STD_CALL_PARAM)
 {
 	ObjectArray* arr;
 	uint64 dimension;
@@ -47,7 +51,7 @@ void ObjectArray::GetLengthOfDimension(HazeStack* stack)
 	SET_RET_BY_TYPE(HazeValueType::UInt64, stack->GetVM()->GetInstruction()[arr->m_PcAddress + dimension + 1].Operator[0].Extra.SignData);
 }
 
-void ObjectArray::GetDimensionCount(HazeStack* stack)
+void ObjectArray::GetDimensionCount(HAZE_STD_CALL_PARAM)
 {
 	ObjectArray* arr;
 
@@ -55,4 +59,8 @@ void ObjectArray::GetDimensionCount(HazeStack* stack)
 	GET_PARAM(arr);
 
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_DimensionCount);
+}
+
+void ObjectArray::Add(HAZE_STD_CALL_PARAM)
+{
 }

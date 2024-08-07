@@ -98,8 +98,8 @@ using HString = std::wstring;
 
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")
 
-#define HAZE_STD_CALL_PARAM			class HazeStack* stack, struct FunctionData* data, int multiParamNum
-#define HAZE_STD_CALL_PARAM_VAR		stack, data, multiParamNum
+#define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum
+#define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 20
 

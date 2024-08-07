@@ -4,8 +4,11 @@
 #include "HazeLogDefine.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
-#include "ObjectArray.h"
 #include "HazeLibraryManager.h"
+#include "ObjectArray.h"
+#include "ObjectClass.h"
+#include "ObjectString.h"
+#include "HazeMemory.h"
 
 #include <Windows.h>
 
@@ -142,7 +145,7 @@ class InstructionProcessor
 			: Stack(stack), Data(data)
 		{
 			auto address = GetOperatorAddress(Stack, Data[0]);
-			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType))
+			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Desc != HazeDataDesc::CallFunctionPointer)
 			{
 				memcpy(&Address, address, GetSizeByType(Data[0].Variable.Type, Stack));
 			}
@@ -173,7 +176,7 @@ class InstructionProcessor
 		~DataDebugScope()
 		{
 			auto address = GetOperatorAddress(Stack, Data[0]);
-			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType))
+			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Desc != HazeDataDesc::CallFunctionPointer)
 			{
 				memcpy(&Address, address, GetSizeByType(Data[0].Variable.Type, Stack));
 			}
@@ -807,7 +810,11 @@ public:
 
 			if (oper[1].Desc == HazeDataDesc::CallFunctionPointer)
 			{
-				((void(*)(HazeStack*))(oper[1].Extra.Pointer))(stack);
+				uint32 tempEBP = stack->m_EBP;
+				stack->m_EBP = stack->m_ESP;
+				((void(*)(HAZE_STD_CALL_PARAM))(oper[1].Extra.Pointer))(stack, oper[0].Extra.Call.ParamNum);
+				stack->m_ESP -= (oper[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
+				stack->m_EBP = tempEBP;
 			}
 			else if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
 			{
@@ -833,7 +840,7 @@ public:
 
 						if (function.FunctionDescData.Type == InstructionFunctionType::StaticLibFunction)
 						{
-							function.FunctionDescData.StdLibFunction(stack, &function, oper[0].Extra.Call.ParamNum);
+							function.FunctionDescData.StdLibFunction(stack, oper[0].Extra.Call.ParamNum);
 						}
 						else if (function.FunctionDescData.Type == InstructionFunctionType::DLLLibFunction)
 						{
@@ -929,17 +936,24 @@ public:
 					newSize *= stack->m_VM->Instructions[stack->m_PC + i + 1].Operator[0].Extra.SignData;
 				}
 
-				address = stack->Alloca(newSize + sizeof(ObjectArray));
-				new((char*)address + newSize) ObjectArray(count, address, newSize / size, stack->m_PC);
+				address = HazeMemory::Alloca(newSize + sizeof(ObjectArray));
+				new((char*)address + newSize) ObjectArray(count, address, newSize / size, stack->m_PC, newRegister->Type.SecondaryType,
+					newRegister->Type.CustomName ? stack->m_VM->FindClass(*newRegister->Type.CustomName) : nullptr);
 				address = (char*)address + newSize;
+			}
+			else if (IsStringType(newRegister->Type.PrimaryType))
+			{
+				address = HazeMemory::Alloca(sizeof(ObjectString));
+				new(address) ObjectString(nullptr);
+			}
+			else if (IsClassType(newRegister->Type.PrimaryType))
+			{
+				address = HazeMemory::Alloca(sizeof(ObjectClass));
+				new(address) ObjectClass(stack->GetVM()->FindClass(*newRegister->Type.CustomName));
 			}
 			else
 			{
-				address = stack->Alloca(newSize);
-			}
-			if (isArray)
-			{
-				stack->RegisterArray(address, newSize / size);
+				address = HazeMemory::Alloca(newSize);
 			}
 
 			newRegister->Data.resize(sizeof(address));
@@ -1246,6 +1260,7 @@ private:
 			break;
 		case InstructionAddressType::PointerAddress:
 			ret = insData.Extra.Pointer;
+			break;
 		default:
 			break;
 		}
@@ -1367,7 +1382,7 @@ private:
 
 		memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, HAZE_ADDRESS_SIZE);
 		stack->m_ESP += HAZE_ADDRESS_SIZE;
-
+		//stack->m_EBP = stack->m_ESP;
 		stack->OnCall(funcData, size);
 		stack->m_PC++;
 		stack->ResetCallHaze();

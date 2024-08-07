@@ -309,13 +309,13 @@ const HazeDefineType& HazeCompilerFunction::GetParamTypeLeftToRightByIndex(uint6
 	}
 	else
 	{
-		if (index > 0)
+		if (index > 0 && IsMultiVariableTye(m_Params[0].second->GetValueType().PrimaryType))
 		{
-			COMPILER_ERR_W("函数<%s>从左往右，获得函数的第<%d>个参数错误", m_Name.c_str(), index);
 			return m_Params[0].second->GetValueType();
 		}
 		else
 		{
+			COMPILER_ERR_W("函数<%s>从左往右，获得函数的第<%d>个参数错误", m_Name.c_str(), index);
 			return HazeDefineType();
 		}
 	}

@@ -18,7 +18,6 @@ public:
 
 public:
 	char* GetAddressByEBP(int offset) { return &m_StackMain[(uint64)m_EBP + offset]; }
-
 	char* GetAddressByESP(int offset) { return &m_StackMain[(uint64)m_ESP - offset]; }
 
 	HazeVM* GetVM() const { return m_VM; }
@@ -72,13 +71,6 @@ private:
 	void AddCallHazeTimes();
 
 	void SubCallHazeTimes();
-
-private:
-	void* Alloca(uint64 size);
-
-	void RegisterArray(void* address, uint64 length);
-
-	void GarbageCollection(bool force = false, bool collectionAll = false);
 
 private:
 	HazeVM* m_VM;
