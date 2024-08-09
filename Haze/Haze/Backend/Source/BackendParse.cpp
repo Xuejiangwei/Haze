@@ -16,7 +16,7 @@ static Pair<bool, int> ParseStringCount = { false, 0 };
 static void FindObjectAndMemberName(const HString& inName, HString& outObjectName, 
 	HString& outMemberName, bool& objectIsPointer)
 {
-	/*size_t pos = inName.find(TOKEN_THIS);
+	/*uint64 pos = inName.find(TOKEN_THIS);
 	if (pos != HString::npos)
 	{
 		outObjectName = inName.substr(0, pos);
@@ -230,7 +230,7 @@ void BackendParse::Parse_I_Code_GlobalTable()
 		ModuleUnit::GlobalDataTable& table = m_CurrParseModule->m_GlobalDataTable;
 		table.Data.resize(number);
 
-		for (size_t i = 0; i < table.Data.size(); i++)
+		for (uint64 i = 0; i < table.Data.size(); i++)
 		{
 			//因为将所有的指令合在一起了，需要重新计算
 			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].StartAddress);
@@ -296,7 +296,7 @@ void BackendParse::Parse_I_Code_StringTable()
 		table.Strings.resize(number);
 
 		ParseStringCount.first = true;
-		for (size_t i = 0; i < table.Strings.size(); i++)
+		for (uint64 i = 0; i < table.Strings.size(); i++)
 		{
 			GetNextLexmeAssign_StandardType(ParseStringCount.second);
 			GetNextLexmeAssign_HazeString(table.Strings[i].String);
@@ -317,7 +317,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 		ModuleUnit::ClassTable& table = m_CurrParseModule->m_ClassTable;
 		table.Classes.resize(number);
 
-		for (size_t i = 0; i < table.Classes.size(); i++)
+		for (uint64 i = 0; i < table.Classes.size(); i++)
 		{
 			GetNextLexeme();
 
@@ -330,7 +330,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 				GetNextLexmeAssign_StandardType(number);
 				classData.Members.resize(number);
 
-				for (size_t j = 0; j < classData.Members.size(); j++)
+				for (uint64 j = 0; j < classData.Members.size(); j++)
 				{
 					auto& classMember = classData.Members[j];
 
@@ -357,7 +357,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 		ModuleUnit::FunctionTable& table = m_CurrParseModule->m_FunctionTable;
 		table.m_Functions.resize(number);
 
-		for (size_t i = 0; i < table.m_Functions.size(); i++)
+		for (uint64 i = 0; i < table.m_Functions.size(); i++)
 		{
 			GetNextLexeme();
 
@@ -398,6 +398,19 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					GetNextLexmeAssign_CustomType<uint32>(var.Line);
 
 					table.m_Functions[i].Variables.push_back(Move(var));
+					GetNextLexeme();
+				}
+				
+				while (m_CurrLexeme == GetFunctionTempRegisterHeader())
+				{
+					HazeTempRegisterData data;
+
+					GetNextLexmeAssign_HazeString(data.Name);
+					BackendParse::GetNextLexmeAssign_CustomType<uint32>(data.Offset);
+					data.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
+						&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
+
+					table.m_Functions[i].TempRegisters.push_back(Move(data));
 					GetNextLexeme();
 				}
 
@@ -631,7 +644,7 @@ void BackendParse::GenOpCodeFile()
 	ModuleUnit::ClassTable newClassTable;
 	ModuleUnit::FunctionTable newFunctionTable;
 
-	size_t functionCount = 0;
+	uint64 functionCount = 0;
 	for (auto& iter : m_Modules)
 	{
 		newFunctionTable.m_Functions.insert(newFunctionTable.m_Functions.end(), 
@@ -667,7 +680,7 @@ void BackendParse::GenOpCodeFile()
 }
 
 void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& newStringTable,
-	ModuleUnit::FunctionTable& newFunctionTable, size_t& functionCount)
+	ModuleUnit::FunctionTable& newFunctionTable, uint64& functionCount)
 {
 	for (; functionCount < newFunctionTable.m_Functions.size(); functionCount++)
 	{
@@ -689,7 +702,7 @@ void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::Functio
 {
 	if (operatorData.Variable.Name != HAZE_JMP_NULL)
 	{
-		for (size_t i = 0; i < function.Blocks.size(); i++)
+		for (uint64 i = 0; i < function.Blocks.size(); i++)
 		{
 			if (operatorData.Variable.Name == function.Blocks[i].BlockName)
 			{
@@ -702,7 +715,7 @@ void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::Functio
 }
 
 inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData,ModuleUnit::FunctionTableData& function,
-	HashMap<HString, int>& localVariable, ModuleUnit::GlobalDataTable& newGlobalDataTable)
+	HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
 	HString objName;
 	HString memberName;
@@ -783,9 +796,18 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("在函数<%s>中查找<%s>的偏移值失败!\n", function.Name.c_str(),
-				operatorData.Variable.Name.c_str());
-			return;
+			auto tempRegIter = tempRegister.find(operatorData.Variable.Name);
+			if (tempRegIter != tempRegister.end())
+			{
+				operatorData.Extra.Address.BaseAddress = function.TempRegisters[tempRegIter->second].Offset;
+				operatorData.AddressType = InstructionAddressType::Local;
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("在函数<%s>中查找<%s>的偏移值失败!\n", function.Name.c_str(),
+					operatorData.Variable.Name.c_str());
+				return;
+			}
 		}
 	}
 }
@@ -856,13 +878,13 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	ModuleUnit::FunctionTable& newFunctionTable)
 {
-	HashMap<HString, size_t> HashMap_FunctionIndexAndAddress;
-	for (size_t i = 0; i < newFunctionTable.m_Functions.size(); i++)
+	HashMap<HString, uint64> HashMap_FunctionIndexAndAddress;
+	for (uint64 i = 0; i < newFunctionTable.m_Functions.size(); i++)
 	{
 		HashMap_FunctionIndexAndAddress[newFunctionTable.m_Functions[i].Name] = i;
 	}
 
-	for (size_t i = 0; i < newGlobalDataTable.Instructions.size(); i++)
+	for (uint64 i = 0; i < newGlobalDataTable.Instructions.size(); i++)
 	{
 		if (!IsIgnoreFindAddressInsCode(newGlobalDataTable.Instructions[i]))
 		{
@@ -898,7 +920,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	}
 
 	//替换变量为索引或相对函数起始偏移
-	for (size_t k = 0; k < newFunctionTable.m_Functions.size(); ++k)
+	for (uint64 k = 0; k < newFunctionTable.m_Functions.size(); ++k)
 	{
 #if BACKEND_INSTRUCTION_LOG
 		std::wcout << NewFunctionTable.Vector_Function[k].Name << std::endl;
@@ -906,12 +928,18 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 		auto& m_CurrFunction = newFunctionTable.m_Functions[k];
 
 		HashMap<HString, int> localVariables;
-		for (size_t i = 0; i < m_CurrFunction.Variables.size(); i++)
+		for (uint64 i = 0; i < m_CurrFunction.Variables.size(); i++)
 		{
 			localVariables[m_CurrFunction.Variables[i].Variable.Name] = (int)i;
 		}
 
-		for (size_t i = 0; i < m_CurrFunction.Instructions.size(); ++i)
+		HashMap<HString, int> tempRegisters;
+		for (uint64 i = 0; i < m_CurrFunction.TempRegisters.size(); i++)
+		{
+			tempRegisters[m_CurrFunction.TempRegisters[i].Name] = (int)i;
+		}
+
+		for (uint64 i = 0; i < m_CurrFunction.Instructions.size(); ++i)
 		{
 			if (IsJmpOpCode(m_CurrFunction.Instructions[i].InsCode))
 			{
@@ -956,7 +984,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 					{
 						if (IS_SCOPE_LOCAL(operatorData.Scope))
 						{
-							ResetLocalOperatorAddress(operatorData, m_CurrFunction, localVariables, newGlobalDataTable);
+							ResetLocalOperatorAddress(operatorData, m_CurrFunction, localVariables, tempRegisters, newGlobalDataTable);
 						}
 						else if (IS_SCOPE_GLOBAL(operatorData.Scope))
 						{

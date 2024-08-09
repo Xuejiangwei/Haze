@@ -251,10 +251,12 @@ struct HazeVariableData
 	uint32 Line;
 };
 
-//struct HazeClassData
-//{
-//	V_Array<HazeDefineVariable> Data;
-//};
+struct HazeTempRegisterData
+{
+	HString Name;
+	uint32 Offset;
+	HazeDefineType Type;
+};
 
 struct TemplateDefineTypes
 {

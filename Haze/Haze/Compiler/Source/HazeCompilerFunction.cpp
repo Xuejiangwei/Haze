@@ -62,6 +62,25 @@ Share<HazeCompilerValue> HazeCompilerFunction::CreateNew(const HazeDefineType& d
 	return ret;
 }
 
+Share<HazeCompilerValue> HazeCompilerFunction::CreateTempRegister(const HazeDefineType& type)
+{
+	int offset = 0;
+	for (auto& var : m_TempRegisters)
+	{
+		if (var.first.use_count() == 1)
+		{
+			break;
+		}
+		offset += var.second;
+	}
+
+	auto v = MakeShare<HazeCompilerValue>(nullptr, type, HazeVariableScope::Local, 
+		HazeDataDesc::RegisterTemp, 0);
+
+	m_TempRegisters.push_back({ v , offset});
+	return v;
+}
+
 Share<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HString& variableName)
 {
 	Share<HazeCompilerValue> ret = nullptr;
@@ -168,6 +187,12 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		size += GetSizeByType(m_LocalVariables[i].first->GetValueType(), GetModule());
 	}
 
+	for (uint64 i = 0; i < m_TempRegisters.size(); i++)
+	{
+		hss << HAZE_LOCAL_TEMP_REGISTER_HEADER << " " << HAZE_LOCAL_TEMP_REGISTER << i << " " << size + i * 8 << " ";
+		m_TempRegisters[i].first->GetValueType().StringStreamTo(hss);
+	}
+
 	hss << GetFunctionStartHeader() << " " << m_StartLine << std::endl;
 
 	m_EntryBlock->GenI_Code(hss);
@@ -239,6 +264,16 @@ bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* value,
 	{
 		return true;
 	}
+
+	for (uint64 i = 0; i < m_TempRegisters.size(); i++)
+	{
+		if (m_TempRegisters[i].first.get() == value)
+		{
+			outName = HAZE_LOCAL_TEMP_REGISTER + String2WString(ToString(m_TempRegisters.size()));
+			return true;
+		}
+	}
+
 	/*else if (m_OwnerClass)
 	{
 		if (m_OwnerClass->GetThisMemberName(value, outName, getOffset, offsets))

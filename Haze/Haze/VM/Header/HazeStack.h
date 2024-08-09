@@ -72,6 +72,10 @@ private:
 
 	void SubCallHazeTimes();
 
+	void PushGCTempRegister(void* address, const HazeDefineType* type);
+
+	bool PopGCTempRegister(void* address);
+
 private:
 	HazeVM* m_VM;
 
@@ -85,4 +89,6 @@ private:
 	HashMap<HString, HazeRegister>  m_VirtualRegister;
 
 	V_Array<int> m_CallHazeStack;
+
+	V_Array<Pair<void*, const HazeDefineType*>> m_GCTempRegisters;
 };

@@ -118,9 +118,9 @@ public:
 	bool IsConstantValueBoolFalse(Share<HazeCompilerValue> v);
 
 public:
+	Share<HazeCompilerValue> GetTempRegister(const HazeDefineType& type);
+	
 	static Share<HazeCompilerValue> GetNewRegister(HazeCompilerModule* compilerModule, const HazeDefineType& data);
-
-	static Share<HazeCompilerValue> GetTempRegister();
 
 	static HashMap<const HChar*, Share<HazeCompilerValue>> GetUseTempRegister();
 

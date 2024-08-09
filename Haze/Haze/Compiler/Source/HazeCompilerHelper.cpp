@@ -421,7 +421,8 @@ Share<HazeCompilerValue> GetArrayElementToValue(HazeCompilerModule* compilerModu
 	auto compiler = compilerModule->GetCompiler();
 	//auto arrayPointer = compiler->CreatePointerToArrayElement(elementValue);
 
-	return compiler->CreateMovPV(movToValue ? movToValue : compiler->GetTempRegister(), nullptr);
+	//return compiler->CreateMovPV(movToValue ? movToValue : compiler->GetTempRegister(), nullptr);
+	return nullptr;
 }
 
 void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes)
@@ -566,7 +567,7 @@ Share<HazeCompilerValue> GenIRCode_GetClassMember(HAZE_STRING_STREAM& hss, HazeC
 
 				if (startVaule)
 				{
-					v = compiler->CreateMov(compiler->GetTempRegister(), startVaule);
+					v = compiler->CreateMov(compiler->GetTempRegister(startVaule->GetValueType()), startVaule);
 				}
 				else
 				{

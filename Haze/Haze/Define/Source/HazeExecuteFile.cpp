@@ -355,6 +355,18 @@ uint32 HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& tabl
 				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Line));
 			}
 
+			number = (uint32)function.TempRegisters.size();
+			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+			for (auto& iter : function.TempRegisters)
+			{
+				s_BinaryString = WString2String(iter.Name);
+				number = (uint32)s_BinaryString.size();
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+				m_FileStream->write(s_BinaryString.c_str(), number);
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Offset));
+				WriteType(m_FileStream, iter.Type);
+			}
+
 			//写入指令数与起始地址
 			number = (uint32)function.Instructions.size();
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
@@ -614,6 +626,20 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* vm)
 			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Variables[j].Offset));
 			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Variables[j].Size));
 			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].Variables[j].Line));
+		}
+
+		m_InFileStream->read(HAZE_READ(number));
+		vm->Vector_FunctionTable[i].TempRegisters.resize(number);
+
+		for (uint64 j = 0; j < vm->Vector_FunctionTable[i].TempRegisters.size(); j++)
+		{
+			m_InFileStream->read(HAZE_READ(number));
+			s_BinaryString.resize(number);
+			m_InFileStream->read(s_BinaryString.data(), number);
+			vm->Vector_FunctionTable[i].TempRegisters[j].Name = String2WString(s_BinaryString);
+
+			m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].TempRegisters[j].Offset));
+			ReadType(vm, m_InFileStream, vm->Vector_FunctionTable[i].TempRegisters[j].Type);
 		}
 
 		m_InFileStream->read(HAZE_READ(vm->Vector_FunctionTable[i].InstructionNum));

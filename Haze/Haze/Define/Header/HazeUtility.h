@@ -30,6 +30,7 @@ const HChar* GetFucntionTableHeaderString();
 const HChar* GetFunctionLabelHeader();
 const HChar* GetFunctionParamHeader();
 const HChar* GetFunctionVariableHeader();
+const HChar* GetFunctionTempRegisterHeader();
 const HChar* GetFunctionStartHeader();
 const HChar* GetFunctionEndHeader();
 

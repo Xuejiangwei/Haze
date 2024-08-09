@@ -294,9 +294,15 @@ void HazeMemory::Mark()
 		{
 			for (auto& var : m_VM->VMStack->m_StackFrame[i].FunctionInfo->Variables)
 			{
-				//此时可能会出现调用函数部分变量并未调用或初始化的情况，需要考虑指针的有效性，或者在调用函数时，将调用的函数栈全部清零，就不用担心脏数据转换成有效的指针。
 				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
 				MarkVariable(var.Variable.Type, Address, 
+					&m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset]);
+			}
+
+			for (auto& var : m_VM->VMStack->m_StackFrame[i].FunctionInfo->TempRegisters)
+			{
+				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
+				MarkVariable(var.Type, Address,
 					&m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset]);
 			}
 		}

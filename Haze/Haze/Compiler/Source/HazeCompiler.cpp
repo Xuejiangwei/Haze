@@ -17,6 +17,8 @@
 #include "HazeCompilerModule.h"
 #include "HazeCompilerHelper.h"
 
+//static Share<HazeCompilerFunction> s_GlobalVariebleDefine = MakeShare<HazeCompilerFunction>();
+
 static HashMap<const HChar*, Share<HazeCompilerValue>> g_GlobalRegisters = {
 	{ RET_REGISTER, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
 		H_TEXT("Ret_Register")), HazeVariableScope::Global, HazeDataDesc::RegisterRet, 0) },
@@ -355,16 +357,34 @@ Share<HazeCompilerValue> HazeCompiler::GetNewRegister(HazeCompilerModule* compil
 	return nullptr;
 }
 
-Share<HazeCompilerValue> HazeCompiler::GetTempRegister()
+Share<HazeCompilerValue> HazeCompiler::GetTempRegister(const HazeDefineType& type)
 {
-	for (auto& iter : g_GlobalTempRegisters)
+	auto& currModule = GetCurrModule();
+	if (currModule)
+	{
+		auto currFunc = currModule->GetCurrFunction();
+		if (currFunc)
+		{
+			//局部临时寄存器
+			return currFunc->CreateTempRegister(type);
+		}
+		else
+		{
+			//全局临时寄存器
+		}
+	}
+	else
+	{
+		HAZE_LOG_ERR_W("不能获得临时寄存器!\n");
+	}
+	/*for (auto& iter : g_GlobalTempRegisters)
 	{
 		if (iter.second.use_count() == 1)
 		{
 			iter.second->SetDataDesc(HazeDataDesc::RegisterTemp);
 			return iter.second;
 		}
-	}
+	}*/
 
 	HAZE_LOG_ERR_W("不能获得临时寄存器!\n");
 	return nullptr;
@@ -796,11 +816,6 @@ Share<HazeCompilerValue> HazeCompiler::CreateLea(Share<HazeCompilerValue> alloca
 
 Share<HazeCompilerValue> HazeCompiler::CreateMov(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value, bool storeValue)
 {
-	if (storeValue)
-	{
-		allocaValue->StoreValueType(value);
-	}
-
 	if (allocaValue->IsRefrence() && !value->IsRefrence())
 	{
 		if (value->IsConstant())
@@ -834,8 +849,6 @@ Share<HazeCompilerValue> HazeCompiler::CreateMovPV(Share<HazeCompilerValue> allo
 {
 	//if (value->IsRefrence())
 	{
-		allocaValue->StoreValueType(value);
-
 		HazeDefineType& allocaValueType = const_cast<HazeDefineType&>(allocaValue->GetValueType());
 		auto& ValueValueType = value->GetValueType();
 
@@ -1081,7 +1094,7 @@ Share<HazeCompilerValue> HazeCompiler::CreatePointerToValue(Share<HazeCompilerVa
 {
 	if (IsHazeBaseType(value->GetValueType().PrimaryType))
 	{
-		auto pointer = GetTempRegister();
+		auto pointer = GetTempRegister(value->GetValueType());
 		auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
 		type.Pointer();
 		return CreateLea(pointer, value);
@@ -1166,11 +1179,7 @@ Share<HazeCompilerValue> HazeCompiler::CreatePointerToValue(Share<HazeCompilerVa
 
 Share<HazeCompilerValue> HazeCompiler::CreatePointerToFunction(Share<HazeCompilerFunction> function, Share<HazeCompilerValue> pointer)
 {
-	auto tempPointer = GetTempRegister();
-
-	auto& type = const_cast<HazeDefineType&>(tempPointer->GetValueType());
-	type.PrimaryType = HazeValueType::Function;
-	type.CustomName = &function->GetName();
+	auto tempPointer = GetTempRegister(HazeDefineType(HazeValueType::Function, &function->GetName()));
 	tempPointer->SetDataDesc(HazeDataDesc::FunctionAddress);
 	
 	return CreateLea(pointer, tempPointer);
@@ -1184,10 +1193,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateNew(Share<HazeCompilerFunction> fun
 
 Share<HazeCompilerValue> HazeCompiler::CreateCast(const HazeDefineType& type, Share<HazeCompilerValue> value)
 {
-	auto reg = GetTempRegister();
-	auto& valueType1 = const_cast<HazeDefineType&>(reg->GetValueType());
-	valueType1 = type;
-
+	auto reg = GetTempRegister(type);
 	GetCurrModule()->GenIRCode_BinaryOperater(reg, value, InstructionOpCode::CVT);
 
 	return reg;
@@ -1195,8 +1201,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateCast(const HazeDefineType& type, Sh
 
 Share<HazeCompilerValue> HazeCompiler::CreateCVT(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	auto tempReg = GetTempRegister();
-	tempReg->StoreValueType(left);
+	auto tempReg = GetTempRegister(left->GetValueType());
 	GetCurrModule()->GenIRCode_BinaryOperater(tempReg, right, InstructionOpCode::CVT);
 
 	return tempReg;
@@ -1242,12 +1247,16 @@ Share<HazeCompilerValue> HazeCompiler::CreateBoolCmp(Share<HazeCompilerValue> va
 {
 	if (IsConstantValueBoolTrue(value))
 	{
-		CreateIntCmp(CreateBitXor(CreateMov(GetTempRegister(), GenConstantValueBool(true)), GenConstantValueBool(false)), GenConstantValueBool(true));
+		auto v = GenConstantValueBool(true);
+		CreateIntCmp(CreateBitXor(CreateMov(GetTempRegister(v->GetValueType()), v),
+			GenConstantValueBool(false)), GenConstantValueBool(true));
 		return GenConstantValueBool(true);
 	}
 	else if (IsConstantValueBoolFalse(value))
 	{
-		CreateIntCmp(CreateBitXor(CreateMov(GetTempRegister(), GenConstantValueBool(true)), GenConstantValueBool(false)), GenConstantValueBool(false));
+		auto v = GenConstantValueBool(true);
+		CreateIntCmp(CreateBitXor(CreateMov(GetTempRegister(v->GetValueType()), v),
+			GenConstantValueBool(false)), GenConstantValueBool(false));
 		return GenConstantValueBool(false);
 	}
 	else
@@ -1276,8 +1285,7 @@ void HazeCompiler::ReplaceConstantValueByStrongerType(Share<HazeCompilerValue>& 
 			}
 			else
 			{
-				auto tempRegister = GetTempRegister();
-				tempRegister->StoreValueType(left);
+				auto tempRegister = GetTempRegister(right->GetValueType());
 				right = CreateMov(tempRegister, right, false);
 			}
 		}
@@ -1291,8 +1299,7 @@ void HazeCompiler::ReplaceConstantValueByStrongerType(Share<HazeCompilerValue>& 
 			}
 			else
 			{
-				auto tempRegister = GetTempRegister();
-				tempRegister->StoreValueType(right);
+				auto tempRegister = GetTempRegister(right->GetValueType());
 				left = CreateMov(tempRegister, left, false);
 			}
 		}

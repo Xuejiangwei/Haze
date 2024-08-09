@@ -110,6 +110,7 @@ public:
 		HazeDefineType Type;
 		V_Array<HazeDefineVariable> Params;
 		V_Array<HazeVariableData> Variables;
+		V_Array<HazeTempRegisterData> TempRegisters;
 		V_Array<FunctionBlock> Blocks;
 		V_Array<FunctionInstruction> Instructions;
 		InstructionFunctionType DescType;

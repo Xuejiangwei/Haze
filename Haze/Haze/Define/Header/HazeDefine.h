@@ -56,6 +56,9 @@ using HString = std::wstring;
 #define HAZE_LOCAL_VARIABLE_HEADER		H_TEXT("Variable")
 #define HAZE_LOCAL_VARIABLE_CONBINE		H_TEXT("$")
 
+#define HAZE_LOCAL_TEMP_REGISTER_HEADER H_TEXT("TempRegister")
+#define HAZE_LOCAL_TEMP_REGISTER		H_TEXT("TempR")
+
 #define HAZE_CLASS_FUNCTION_CONBINE		H_TEXT("@")
 
 #define HAZE_TEMPLATE_CONBINE			H_TEXT("&")

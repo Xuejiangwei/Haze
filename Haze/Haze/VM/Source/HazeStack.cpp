@@ -139,10 +139,17 @@ void HazeStack::OnCall(const FunctionData* info, int paramSize)
 	m_StackFrame.push_back(HazeStackFrame(info, paramSize, m_EBP, m_ESP - (HAZE_ADDRESS_SIZE + paramSize), registerDara));
 
 	m_EBP = m_ESP;
-	if (info->Variables.size() > info->Params.size())
+	if (info->TempRegisters.size() > 0)
+	{
+		m_ESP += info->Variables.back().Offset + 8;
+	}
+	else if (info->Variables.size() > info->Params.size())
 	{
 		m_ESP += info->Variables.back().Offset + GetSizeByType(info->Variables.back().Variable.Type, m_VM);
 	}
+
+	//在调用函数时，将调用的函数栈全部清零，就不用担心GC时脏数据转换成有效的指针
+	memset(&m_StackMain[m_EBP], 0, m_ESP - m_EBP);
 
 	m_PC = info->FunctionDescData.InstructionStartAddress;
 	--m_PC;
@@ -209,4 +216,19 @@ void HazeStack::SubCallHazeTimes()
 	{
 		m_CallHazeStack.pop_back();
 	}
+}
+
+void HazeStack::PushGCTempRegister(void* address, const HazeDefineType* type)
+{
+	m_GCTempRegisters.push_back({ address, type });
+}
+
+bool HazeStack::PopGCTempRegister(void* address)
+{
+	if (m_GCTempRegisters.back().first == address)
+	{
+		m_GCTempRegisters.pop_back();
+		return true;
+	}
+	return false;
 }

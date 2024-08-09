@@ -120,6 +120,11 @@ const HChar* GetFunctionVariableHeader()
 	return HAZE_LOCAL_VARIABLE_HEADER;
 }
 
+const HChar* GetFunctionTempRegisterHeader()
+{
+	return HAZE_LOCAL_TEMP_REGISTER_HEADER;
+}
+
 const HChar* GetFunctionStartHeader()
 {
 	return FUNCTION_START_HEADER;

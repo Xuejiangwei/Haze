@@ -422,7 +422,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateNeg(Share<HazeCompilerValue> 
 	}
 	else
 	{
-		auto tempRegister = m_Compiler->GetTempRegister();
+		auto tempRegister = m_Compiler->GetTempRegister(value->GetValueType());
 		m_Compiler->CreateMov(tempRegister, value);
 
 		HAZE_STRING_STREAM ss;
@@ -446,8 +446,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateInc(Share<HazeCompilerValue> 
 	{
 		if (!isPreInc)
 		{
-			retValue = m_Compiler->GetTempRegister();
-			m_Compiler->CreateMov(retValue, value);
+			retValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetValueType()), value);
 		}
 		//Compiler->CreateMov(Value, CreateAdd(Value, Compiler->GetConstantValueInt(1)));
 		GenIRCode_UnaryOperator(value, InstructionOpCode::INC);
@@ -466,7 +465,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateDec(Share<HazeCompilerValue> 
 	{
 		if (!isPreDec)
 		{
-			retValue = m_Compiler->GetTempRegister();
+			retValue = m_Compiler->GetTempRegister(value->GetValueType());
 			m_Compiler->CreateMov(retValue, value);
 		}
 		//Compiler->CreateMov(Value, CreateSub(Value, Compiler->GetConstantValueInt(1)));
@@ -568,7 +567,7 @@ Share<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(Share<Haze
 			if ((!left->IsRegister(HazeDataDesc::RegisterTemp) && right == nullptr) ||
 				(!left->IsRegister(HazeDataDesc::RegisterTemp) && !right->IsRegister(HazeDataDesc::RegisterTemp)))
 			{
-				retValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), left);
+				retValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(left->GetValueType()), left);
 			}
 			else
 			{

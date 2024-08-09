@@ -485,7 +485,7 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 			auto arrayConstructorFunc = m_Compiler->GetFunction(HAZE_OBJECT_ARRAY_CONSTRUCTOR);
 			V_Array<Share<HazeCompilerValue>> param;
 
-			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
+			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetValueType()), value);
 
 			if (function->HasExceptThisParam())
 			{
@@ -493,7 +493,9 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 				return value;
 			}
 
-			auto objCount = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), m_Compiler->GetConstantValueUint64(1));
+			auto constantValue = m_Compiler->GetConstantValueUint64(1);
+			auto objCount = m_Compiler->CreateMov(
+				m_Compiler->GetTempRegister(constantValue->GetValueType()), constantValue);
 			for (uint64 i = 0; i < countValue.size(); i++)
 			{
 				m_Compiler->CreateMul(objCount, countValue[i]);
@@ -518,7 +520,7 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 				param.push_back(m_ConstructorParam[i]->CodeGen());
 			}
 
-			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(), value);
+			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetValueType()), value);
 			m_Compiler->CreateFunctionCall(function, param, value);
 		}
 	}
@@ -586,7 +588,7 @@ Share<HazeCompilerValue> ASTPointerValue::CodeGen()
 			return m_Compiler->CreateMovToPV(pointerValue, m_AssignExpression->CodeGen());
 		}
 
-		return m_Compiler->CreateMovPV(m_Compiler->GetTempRegister(), pointerValue);
+		return m_Compiler->CreateMovPV(m_Compiler->GetTempRegister(pointerValue->GetValueType()), pointerValue);
 	}
 	else
 	{
@@ -646,7 +648,8 @@ ASTNot::~ASTNot()
 
 Share<HazeCompilerValue> ASTNot::CodeGen()
 {
-	return m_Compiler->CreateNot(m_Compiler->GetTempRegister(), m_Expression->CodeGen());
+	auto value = m_Expression->CodeGen();
+	return m_Compiler->CreateNot(m_Compiler->GetTempRegister(value->GetValueType()), value);
 }
 
 
@@ -1029,9 +1032,10 @@ Share<HazeCompilerValue> ASTThreeExpression::CodeGen()
 		m_Compiler->CreateCompareJmp(HazeCmpType::Equal, blockLeft, blockRight);
 	}
 
-	auto tempValue = HazeCompiler::GetTempRegister();
+	auto leftValue = m_LeftAST->CodeGen();
+	auto tempValue = m_Compiler->GetTempRegister(leftValue->GetValueType());
 	m_Compiler->SetInsertBlock(blockLeft);
-	m_Compiler->CreateMov(tempValue, m_LeftAST->CodeGen());
+	m_Compiler->CreateMov(tempValue, leftValue);
 	m_Compiler->CreateJmpToBlock(defauleBlock);
 
 	m_Compiler->SetInsertBlock(blockRight);

@@ -350,6 +350,48 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
+	static void Push_R(HazeStack* stack)
+	{
+		INSTRUCTION_DATA_DEBUG;
+
+		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		if (oper.size() == 1)
+		{
+			int size = GetSizeByType(oper[0].Variable.Type, stack->m_VM);
+
+			if (oper[0].Desc == HazeDataDesc::Address)
+			{
+				memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, size);
+			}
+			else if (oper[0].Desc == HazeDataDesc::ClassThis)
+			{
+				memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), sizeof(uint64));
+			}
+			else/* if (Operator[0].Scope == InstructionScopeType::Local || oper[0].Scope == InstructionScopeType::Global)*/
+			{
+				if (oper[0].Extra.Address.BaseAddress + (int)stack->m_EBP >= 0)
+				{
+					//Size = oper[0].Scope == HazeDataDesc::ConstantString ? Size = sizeof(Operator[0].Extra.Index) : Size;
+					memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), size);
+				}
+				else
+				{
+					memset(&stack->m_StackMain[stack->m_ESP], 0, size);
+				}
+			}
+
+			if (IsAdvanceType(oper[0].Variable.Type.PrimaryType))
+			{
+				uint64 address;
+				memcpy(&address, GetOperatorAddress(stack, oper[0]), size);
+				stack->PushGCTempRegister((void*)address, &oper[0].Variable.Type);
+			}
+
+			stack->m_ESP += size;
+			stack->m_VM->InstructionExecPost();
+		}
+	}
+
 	static void Pop(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
@@ -361,6 +403,34 @@ public:
 			auto address = GetOperatorAddress(stack, oper[0]);
 			memcpy(address, &stack->m_StackMain[stack->m_ESP - size], size);
 			
+			stack->m_ESP -= size;
+		}
+
+		stack->m_VM->InstructionExecPost();
+	}
+
+	static void Pop_R(HazeStack* stack)
+	{
+		INSTRUCTION_DATA_DEBUG;
+
+		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		if (oper.size() == 1)
+		{
+			auto size = GetSizeByType(oper[0].Variable.Type, stack->m_VM);
+			auto address = GetOperatorAddress(stack, oper[0]);
+			memcpy(address, &stack->m_StackMain[stack->m_ESP - size], size);
+
+			if (IsAdvanceType(oper[0].Variable.Type.PrimaryType))
+			{
+				uint64 popAddress;
+				memcpy(&popAddress, address, size);
+				if (stack->PopGCTempRegister((void*)popAddress)) { }
+				else
+				{
+					INS_ERR_W("栈顶不是此地址");
+				}
+			}
+
 			stack->m_ESP -= size;
 		}
 
@@ -1382,7 +1452,8 @@ private:
 
 		memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, HAZE_ADDRESS_SIZE);
 		stack->m_ESP += HAZE_ADDRESS_SIZE;
-		//stack->m_EBP = stack->m_ESP;
+		stack->m_EBP = stack->m_ESP;
+
 		stack->OnCall(funcData, size);
 		stack->m_PC++;
 		stack->ResetCallHaze();
