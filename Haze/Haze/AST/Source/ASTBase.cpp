@@ -710,9 +710,17 @@ ASTMultiExpression::~ASTMultiExpression()
 
 Share<HazeCompilerValue> ASTMultiExpression::CodeGen()
 {
+	//要考虑清楚无效的临时寄存器中引用的情况，全局变量的初始不用考虑，会在执行进入主函数字节码之前初始化完成
+	auto func = m_Compiler->GetCurrModule()->GetCurrFunction();
+	if (!func)
+	{
+		AST_ERR_W("执行多行式AST错误, 未能找打当前运行函数");
+	}
+
 	for (size_t i = 0; i < m_Expressions.size(); i++)
 	{
 		m_Expressions[i]->CodeGen();
+		func->TryClearTempRegister();
 	}
 
 	return nullptr;

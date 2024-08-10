@@ -64,3 +64,11 @@ void ObjectArray::GetDimensionCount(HAZE_STD_CALL_PARAM)
 void ObjectArray::Add(HAZE_STD_CALL_PARAM)
 {
 }
+
+void ObjectArray::Get(HAZE_STD_CALL_PARAM)
+{
+	for (uint64 i = 0; i < multiParamNum; i++)
+	{
+		
+	}
+}

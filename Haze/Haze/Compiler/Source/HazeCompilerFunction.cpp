@@ -67,18 +67,34 @@ Share<HazeCompilerValue> HazeCompilerFunction::CreateTempRegister(const HazeDefi
 	int offset = 0;
 	for (auto& var : m_TempRegisters)
 	{
-		if (var.first.use_count() == 1)
+		if (var.Value.use_count() == 1)
 		{
 			break;
 		}
-		offset += var.second;
+		offset += var.Offset;
 	}
 
 	auto v = MakeShare<HazeCompilerValue>(nullptr, type, HazeVariableScope::Local, 
 		HazeDataDesc::RegisterTemp, 0);
 
-	m_TempRegisters.push_back({ v , offset});
+	m_TempRegisters.push_back({ v , offset });
 	return v;
+}
+
+void HazeCompilerFunction::TryClearTempRegister()
+{
+	for (auto& var : m_TempRegisters)
+	{
+		if (var.Value.use_count() == 1 && !var.HasClear)
+		{
+			var.HasClear = true;
+			
+			if (var.Value->IsAdvance())
+			{
+				m_Module->GetCompiler()->CreateMov(var.Value, m_Module->GetCompiler()->GetConstantValueUint64(0));
+			}
+		}
+	}
 }
 
 Share<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HString& variableName)
@@ -111,11 +127,6 @@ Share<HazeCompilerValue> HazeCompilerFunction::GetLocalVariable(const HString& v
 			break;
 		}
 		currBlock = currBlock->GetParentBlock();
-	}
-
-	if (!ret && m_OwnerClass)
-	{
-		//ret = DynamicCast<HazeCompilerClassValue>(m_OwnerClass->GetThisPointerToValue())->GetMember(variableName);
 	}
 
 	return ret;
@@ -189,8 +200,10 @@ void HazeCompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	for (uint64 i = 0; i < m_TempRegisters.size(); i++)
 	{
-		hss << HAZE_LOCAL_TEMP_REGISTER_HEADER << " " << HAZE_LOCAL_TEMP_REGISTER << i << " " << size + i * 8 << " ";
-		m_TempRegisters[i].first->GetValueType().StringStreamTo(hss);
+		hss << HAZE_LOCAL_TEMP_REGISTER_HEADER << " " << HAZE_LOCAL_TEMP_REGISTER << i << " "
+			<< size + m_TempRegisters[i].Offset * 8 << " ";
+		m_TempRegisters[i].Value->GetValueType().StringStreamTo(hss);
+		hss << std::endl;
 	}
 
 	hss << GetFunctionStartHeader() << " " << m_StartLine << std::endl;
@@ -267,20 +280,12 @@ bool HazeCompilerFunction::FindLocalVariableName(const HazeCompilerValue* value,
 
 	for (uint64 i = 0; i < m_TempRegisters.size(); i++)
 	{
-		if (m_TempRegisters[i].first.get() == value)
+		if (m_TempRegisters[i].Value.get() == value)
 		{
-			outName = HAZE_LOCAL_TEMP_REGISTER + String2WString(ToString(m_TempRegisters.size()));
+			outName = HAZE_LOCAL_TEMP_REGISTER + String2WString(ToString(i));
 			return true;
 		}
 	}
-
-	/*else if (m_OwnerClass)
-	{
-		if (m_OwnerClass->GetThisMemberName(value, outName, getOffset, offsets))
-		{
-			return true;
-		}
-	}*/
 
 	return false;
 }

@@ -10,6 +10,7 @@ class HazeCompilerFunction
 {
 	friend class HazeCompiler;
 	friend class HazeCompilerModule;
+	friend class ASTMultiExpression;
 public:
 	HazeCompilerFunction(HazeCompilerModule* compilerModule, const HString& name, HazeDefineType& type,
 		V_Array<HazeDefineVariable>& params, HazeCompilerClass* compilerClass = nullptr);
@@ -74,7 +75,17 @@ private:
 
 	void InitEntryBlock(Share<HazeBaseBlock> block) { m_EntryBlock = block; }
 
+private:
+	struct TempRegisterCountData
+	{
+		Share<HazeCompilerValue> Value = nullptr;
+		int Offset = 0;
+		bool HasClear = false;
+	};
+
 	Share<HazeCompilerValue> CreateTempRegister(const HazeDefineType& type);
+
+	void TryClearTempRegister();
 
 private:
 	HazeCompilerModule* m_Module;
@@ -86,7 +97,7 @@ private:
 	V_Array<Pair<HString, Share<HazeCompilerValue>>> m_Params;	//从右到左加入参数
 
 	V_Array<Pair<Share<HazeCompilerValue>, int>> m_LocalVariables;
-	V_Array<Pair<Share<HazeCompilerValue>, int>> m_TempRegisters;		//{ 临时寄存器, 相对偏移个数 } 相对偏移是 个数 * 8
+	V_Array<TempRegisterCountData> m_TempRegisters;		//{ 临时寄存器, 相对偏移个数 } 相对偏移是 个数 * 8
 
 	Share<HazeBaseBlock> m_EntryBlock;
 

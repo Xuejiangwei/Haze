@@ -93,7 +93,7 @@ static bool IsIgnoreFindAddress(InstructionData& operatorData)
 		return true;
 	}
 
-	if (IsRegisterDesc(operatorData.Desc))
+	if (IsRegisterDesc(operatorData.Desc) && operatorData.Desc != HazeDataDesc::RegisterTemp)
 	{
 		operatorData.AddressType = InstructionAddressType::Register;
 		return true;

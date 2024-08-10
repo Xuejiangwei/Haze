@@ -141,7 +141,7 @@ void HazeStack::OnCall(const FunctionData* info, int paramSize)
 	m_EBP = m_ESP;
 	if (info->TempRegisters.size() > 0)
 	{
-		m_ESP += info->Variables.back().Offset + 8;
+		m_ESP += info->TempRegisters.back().Offset + 8;
 	}
 	else if (info->Variables.size() > info->Params.size())
 	{

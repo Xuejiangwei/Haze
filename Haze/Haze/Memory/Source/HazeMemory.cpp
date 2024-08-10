@@ -161,6 +161,7 @@ void HazeMemory::AddToRoot(void*)
 {
 }
 
+//需要考虑到循环引用的引起的死循环情况
 void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, char* classAddress)
 {
 	switch (type.PrimaryType)
