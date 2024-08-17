@@ -810,7 +810,8 @@ Share<HazeCompilerValue> HazeCompiler::CreateLea(Share<HazeCompilerValue> alloca
 	}
 	else
 	{
-		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::LEA);
+		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::LEA);
+		return allocaValue;
 	}
 }
 
@@ -834,7 +835,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateMov(Share<HazeCompilerValue> alloca
 			value = CreateCVT(allocaValue, value);
 		}
 
-		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOV);
+		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::MOV);
 	}
 
 	return allocaValue;
@@ -842,7 +843,8 @@ Share<HazeCompilerValue> HazeCompiler::CreateMov(Share<HazeCompilerValue> alloca
 
 Share<HazeCompilerValue> HazeCompiler::CreateMovToPV(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value)
 {
-	return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOVTOPV);
+	GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::MOVTOPV);
+	return allocaValue;
 }
 
 Share<HazeCompilerValue> HazeCompiler::CreateMovPV(Share<HazeCompilerValue> allocaValue, Share<HazeCompilerValue> value)
@@ -860,7 +862,8 @@ Share<HazeCompilerValue> HazeCompiler::CreateMovPV(Share<HazeCompilerValue> allo
 			allocaValueType.SecondaryType = HazeValueType::None;
 		}
 
-		return GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, InstructionOpCode::MOVPV);
+		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::MOVPV);
+		return allocaValue;
 	}
 	/*else
 	{
@@ -921,63 +924,74 @@ Share<HazeCompilerValue> HazeCompiler::CreateRet(Share<HazeCompilerValue> value)
 	return value;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateAdd(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateAdd(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	ReplaceConstantValueByStrongerType(left, right);
-	return GetCurrModule()->CreateAdd(left, right, isAssign);
+	ReplaceConstantValueByStrongerType(oper1, oper2);
+	GetCurrModule()->CreateAdd(assignTo, oper1, oper2);
+	return assignTo;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateSub(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateSub(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	ReplaceConstantValueByStrongerType(left, right);
-	return GetCurrModule()->CreateSub(left, right, isAssign);
+	ReplaceConstantValueByStrongerType(oper1, oper2);
+	GetCurrModule()->CreateSub(assignTo, oper1, oper2);
+	return assignTo;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateMul(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateMul(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	ReplaceConstantValueByStrongerType(left, right);
-	return GetCurrModule()->CreateMul(left, right, isAssign);
+	ReplaceConstantValueByStrongerType(oper1, oper2);
+	GetCurrModule()->CreateMul(assignTo, oper1, oper2);
+	return assignTo;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateDiv(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateDiv(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	ReplaceConstantValueByStrongerType(left, right);
-	return GetCurrModule()->CreateDiv(left, right, isAssign);
+	ReplaceConstantValueByStrongerType(oper1, oper2);
+	GetCurrModule()->CreateDiv(assignTo, oper1, oper2);
+	return assignTo;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateMod(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateMod(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	return GetCurrModule()->CreateMod(left, right, isAssign);
+	GetCurrModule()->CreateMod(assignTo, oper1, oper2);
+	return assignTo;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateBitAnd(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateBitAnd(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	return GetCurrModule()->CreateBitAnd(left, right, isAssign);
+	GetCurrModule()->CreateBitAnd(assignTo, oper1, oper2);
+	return assignTo;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateBitOr(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateBitOr(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	return GetCurrModule()->CreateBitOr(left, right, isAssign);
+	GetCurrModule()->CreateBitOr(assignTo, oper1, oper2);
+	return assignTo;
 }
 
 Share<HazeCompilerValue> HazeCompiler::CreateBitNeg(Share<HazeCompilerValue> value)
 {
-	return GetCurrModule()->CreateBitNeg(value);
+	GetCurrModule()->CreateBitNeg(value);
+	return value;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateBitXor(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateBitXor(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	return GetCurrModule()->CreateBitXor(left, right, isAssign);
+	GetCurrModule()->CreateBitXor(assignTo, oper1, oper2);
+	return assignTo;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateShl(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateShl(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	return GetCurrModule()->CreateShl(left, right, isAssign);
+	GetCurrModule()->CreateShl(assignTo, oper1, oper2);
+	return assignTo;
 }
 
-Share<HazeCompilerValue> HazeCompiler::CreateShr(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+Share<HazeCompilerValue> HazeCompiler::CreateShr(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2)
 {
-	return GetCurrModule()->CreateShr(left, right, isAssign);
+	GetCurrModule()->CreateShr(assignTo, oper1, oper2);
+	return assignTo;
 }
 
 Share<HazeCompilerValue> HazeCompiler::CreateNot(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
@@ -1016,7 +1030,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateAdvanceTypeFunctionCall(HazeValueTy
 		COMPILER_ERR_MODULE_W("类型<%s>没有找到方法信息", GetHazeValueTypeString(advanceType), GetCurrModuleName().c_str());
 	}
 
-	return nullptr;
+	return HazeCompiler::GetRegister(RET_REGISTER);
 }
 
 Share<HazeCompilerValue> HazeCompiler::CreateArrayInit(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> initList)
@@ -1044,7 +1058,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateArrayElement(Share<HazeCompilerValu
 	for (auto& iter : indices)
 	{
 		auto  index = iter;
-		if (index->IsConstant() && index->GetValueType().PrimaryType != HazeValueType::UInt64)
+		/*if (index->IsConstant() && index->GetValueType().PrimaryType != HazeValueType::UInt64)
 		{
 			switch (iter->GetValueType().PrimaryType)
 			{
@@ -1055,7 +1069,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateArrayElement(Share<HazeCompilerValu
 				HAZE_LOG_ERR_W("创建数组索引变量错误!");
 				break;
 			}
-		}
+		}*/
 
 		values.push_back(index.get());
 	}
@@ -1194,7 +1208,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateNew(Share<HazeCompilerFunction> fun
 Share<HazeCompilerValue> HazeCompiler::CreateCast(const HazeDefineType& type, Share<HazeCompilerValue> value)
 {
 	auto reg = GetTempRegister(type);
-	GetCurrModule()->GenIRCode_BinaryOperater(reg, value, InstructionOpCode::CVT);
+	GetCurrModule()->GenIRCode_BinaryOperater(reg, reg, value, InstructionOpCode::CVT);
 
 	return reg;
 }
@@ -1202,7 +1216,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateCast(const HazeDefineType& type, Sh
 Share<HazeCompilerValue> HazeCompiler::CreateCVT(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
 	auto tempReg = GetTempRegister(left->GetValueType());
-	GetCurrModule()->GenIRCode_BinaryOperater(tempReg, right, InstructionOpCode::CVT);
+	GetCurrModule()->GenIRCode_BinaryOperater(tempReg, tempReg, right, InstructionOpCode::CVT);
 
 	return tempReg;
 }
@@ -1239,7 +1253,7 @@ Share<HazeCompilerValue> HazeCompiler::CreateIntCmp(Share<HazeCompilerValue> lef
 		right = GetArrayElementToValue(GetCurrModule().get(), right);
 	}
 
-	GetCurrModule()->GenIRCode_BinaryOperater(left, right, InstructionOpCode::CMP);
+	GetCurrModule()->GenIRCode_BinaryOperater(nullptr, left, right, InstructionOpCode::CMP);
 	return GetRegister(CMP_REGISTER);
 }
 
@@ -1248,14 +1262,16 @@ Share<HazeCompilerValue> HazeCompiler::CreateBoolCmp(Share<HazeCompilerValue> va
 	if (IsConstantValueBoolTrue(value))
 	{
 		auto v = GenConstantValueBool(true);
-		CreateIntCmp(CreateBitXor(CreateMov(GetTempRegister(v->GetValueType()), v),
+		auto temp = CreateMov(GetTempRegister(v->GetValueType()), v);
+		CreateIntCmp(CreateBitXor(temp, temp,
 			GenConstantValueBool(false)), GenConstantValueBool(true));
 		return GenConstantValueBool(true);
 	}
 	else if (IsConstantValueBoolFalse(value))
 	{
 		auto v = GenConstantValueBool(true);
-		CreateIntCmp(CreateBitXor(CreateMov(GetTempRegister(v->GetValueType()), v),
+		auto temp = CreateMov(GetTempRegister(v->GetValueType()), v);
+		CreateIntCmp(CreateBitXor(temp, temp,
 			GenConstantValueBool(false)), GenConstantValueBool(false));
 		return GenConstantValueBool(false);
 	}

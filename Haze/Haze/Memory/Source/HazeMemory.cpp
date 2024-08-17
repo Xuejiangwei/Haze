@@ -161,7 +161,7 @@ void HazeMemory::AddToRoot(void*)
 {
 }
 
-//需要考虑到循环引用的引起的死循环情况
+//需要考虑到循环引用的引起的死循环情况, 要么在Object中添加标记位（例如ObjectClass中添加uint8类型成员去做标记位），要么hashSet存储已标记的object
 void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, char* classAddress)
 {
 	switch (type.PrimaryType)

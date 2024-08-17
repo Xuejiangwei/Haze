@@ -84,39 +84,39 @@ enum class HazeDataDesc : uint32
 enum class InstructionOpCode : uint32
 {
 	NONE,
-	MOV,
-	MOVPV,
-	MOVTOPV,
-	LEA,
-	ADD,
-	SUB,
-	MUL,
-	DIV,
-	MOD,
+	MOV,		// A = B
+	MOVPV,		// A = *B
+	MOVTOPV,	// *A = B
+	LEA,		// A = &B
+	ADD,		// A = B + C
+	SUB,		// A = B - C
+	MUL,		// A = B * C
+	DIV,		// A = B / C
+	MOD,		// A = b % C
 
-	NEG,
+	NEG,		// A = -B
 
-	NOT,
+	NOT,		// A = !B
 
-	INC,
-	DEC,
+	INC,		// A++
+	DEC,		// A--
 
-	BIT_AND,
-	BIT_OR,
-	BIT_NEG,
-	BIT_XOR,
-	SHL,
-	SHR,
+	BIT_AND,	// A = B & C
+	BIT_OR,		// A = B | C
+	BIT_NEG,	// A = ~B
+	BIT_XOR,	// A = B ^ C
+	SHL,		// A = B << C
+	SHR,		// A = B >> C
 
-	PUSH,
-	POP,
+	PUSH,		// A
+	POP,		// A
 
-	CALL,
-	RET,
+	CALL,		//A
+	RET,		//A
 
-	NEW,
+	NEW,		//A
 
-	CMP,
+	CMP,		// A, B
 	JMP,
 	JNE,		//不等于
 	JNG,		//不大于
@@ -125,22 +125,11 @@ enum class InstructionOpCode : uint32
 	JG,			//大于
 	JL,			//小于
 
-	ADD_ASSIGN,
-	SUB_ASSIGN,
-	MUL_ASSIGN,
-	DIV_ASSIGN,
-	MOD_ASSIGN,
-	BIT_AND_ASSIGN,
-	BIT_OR_ASSIGN,
-	BIT_XOR_ASSIGN,
-	SHL_ASSIGN,
-	SHR_ASSIGN,
+	CVT,		//基本类型转换
 
-	CVT,			//基本类型转换
+	LINE,		//调试用
 
-	LINE,			//调试用
-
-	SIGN,			//跟在New后面，表示生成的数组的维度，其中含有数组的长度信息
+	SIGN,		//跟在New后面，表示生成的数组的维度，其中含有数组的长度信息
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，

@@ -50,5 +50,5 @@ void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& te
 
 void GenVariableHzic(HazeCompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const Share<HazeCompilerValue>& value/*, int index = -1*/);
 
-void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode opCode, Share<HazeCompilerValue> v1,
-	Share<HazeCompilerValue> v2 = nullptr, const HazeDefineType* expectType = nullptr);
+void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode opCode, Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1,
+	Share<HazeCompilerValue> oper2 = nullptr, const HazeDefineType* expectType = nullptr);

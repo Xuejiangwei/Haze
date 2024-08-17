@@ -20,17 +20,13 @@ enum class HazeValueType : uint32
 	Bool,
 
 	Int8,
-	UInt8,
-
-	//Char,	 不需要字符类型
-
 	Int16,
-	UInt16,
-
 	Int32,
-	UInt32,
-
 	Int64,
+
+	UInt8,
+	UInt32,
+	UInt16,
 	UInt64,
 	
 	Float32,
@@ -130,6 +126,7 @@ bool IsHazeBaseTypeAndVoid(HazeValueType type);
 bool IsHazeBaseType(HazeValueType type);
 bool IsAdvanceType(HazeValueType type);
 bool IsIntegerType(HazeValueType type);
+bool IsUnsignedIntegerType(HazeValueType type);
 bool IsFloatingType(HazeValueType type);
 bool IsClassType(HazeValueType type);
 bool IsFunctionType(HazeValueType type);

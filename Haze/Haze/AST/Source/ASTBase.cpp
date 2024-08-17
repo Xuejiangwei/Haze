@@ -64,9 +64,9 @@ Share<HazeCompilerValue> ASTStringText::CodeGen()
 }
 
 ASTIdentifier::ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
-	V_Array<Unique<ASTBase>>& arrayIndexExpression, HString nameSpace)
+	V_Array<Unique<ASTBase>>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_ArrayIndexExpression(Move(arrayIndexExpression)),
-	m_NameSpace(Move(nameSpace))
+	m_PreAst(Move(preAst)), m_NameSpace(Move(nameSpace))
 {
 	m_DefineVariable.Name = Move(name);
 }
@@ -76,34 +76,41 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 	Share<HazeCompilerValue> retValue = nullptr;
 	HazeVariableScope classMemberScope = HazeVariableScope::Local;
 
-	if (m_SectionSignal == HazeSectionSignal::Global)
+	if (!m_DefineVariable.Name.empty())
 	{
-		retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
-
-		classMemberScope = HazeVariableScope::Global;
-	}
-	else if (m_SectionSignal == HazeSectionSignal::Local)
-	{
-		retValue = m_Compiler->GetLocalVariable(m_DefineVariable.Name);
-		classMemberScope = HazeVariableScope::Local;
-		if (!retValue)
+		if (m_SectionSignal == HazeSectionSignal::Global)
 		{
 			retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
+
 			classMemberScope = HazeVariableScope::Global;
 		}
-	}
-	else if (m_SectionSignal == HazeSectionSignal::Enum)
-	{
-		retValue = m_Compiler->GetEnumVariable(m_Compiler->GetCurrModule()->GetCurrEnumName(), m_DefineVariable.Name);
-		if (m_Compiler->GetCurrModule()->GetCurrEnum())
+		else if (m_SectionSignal == HazeSectionSignal::Local)
 		{
-			retValue = m_Compiler->GenConstantValue(m_Compiler->GetCurrModule()->GetCurrEnum()->GetParentType(), retValue->GetValue());
+			retValue = m_Compiler->GetLocalVariable(m_DefineVariable.Name);
+			classMemberScope = HazeVariableScope::Local;
+			if (!retValue)
+			{
+				retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
+				classMemberScope = HazeVariableScope::Global;
+			}
+		}
+		else if (m_SectionSignal == HazeSectionSignal::Enum)
+		{
+			retValue = m_Compiler->GetEnumVariable(m_Compiler->GetCurrModule()->GetCurrEnumName(), m_DefineVariable.Name);
+			if (m_Compiler->GetCurrModule()->GetCurrEnum())
+			{
+				retValue = m_Compiler->GenConstantValue(m_Compiler->GetCurrModule()->GetCurrEnum()->GetParentType(), retValue->GetValue());
+			}
+		}
+
+		if (!m_NameSpace.empty())
+		{
+			retValue = m_Compiler->GetEnumVariable(m_NameSpace, m_DefineVariable.Name);
 		}
 	}
-
-	if (!m_NameSpace.empty())
+	else
 	{
-		retValue = m_Compiler->GetEnumVariable(m_NameSpace, m_DefineVariable.Name);
+		retValue = m_PreAst->CodeGen();
 	}
 
 	if (retValue)
@@ -139,9 +146,9 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 }
 
 ASTFunctionCall::ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
-	HString& name, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj)
+	HString& name, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj, Unique<ASTBase>& preAst)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_Name(Move(name)),
-	m_FunctionParam(Move(functionParam)), m_ClassObj(Move(classObj))
+	m_FunctionParam(Move(functionParam)), m_ClassObj(Move(classObj)), m_PreAst(Move(preAst))
 {
 }
 
@@ -191,15 +198,21 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		{
 			return m_Compiler->CreateFunctionCall(functionPointer, param);
 		}
+		else
+		{
+			return m_Compiler->CreateFunctionCall(m_PreAst->CodeGen(), param);
+		}
 	}
 
 	HAZE_LOG_ERR_W("生成函数调用<%s>错误, 检查函数名或 ( 符号是否与函数名在同一行\n", m_Name.c_str());
 	return nullptr;
 }
 
-ASTClassAttr::ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& classObjName, 
-	HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam)
-	: ASTBase(compiler, location), m_SectionSignal(section), m_IsFunction(isFunction), m_AttrName(Move(attrName))
+ASTClassAttr::ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	HString& classObjName, Unique<ASTBase>& preAst, HString& attrName, bool isFunction,
+	V_Array<Unique<ASTBase>>* functionParam)
+	: ASTBase(compiler, location), m_SectionSignal(section), m_PreAst(Move(preAst)), m_IsFunction(isFunction),
+	 m_AttrName(Move(attrName))
 {
 	m_DefineVariable.Name = Move(classObjName);
 	if (functionParam)
@@ -211,7 +224,7 @@ ASTClassAttr::ASTClassAttr(HazeCompiler* compiler, const SourceLocation& locatio
 Share<HazeCompilerValue> ASTClassAttr::CodeGen()
 {
 	Share<HazeCompilerValue> v;
-	if (!m_IsAdvanceType)
+	if (!m_DefineVariable.Name.empty())
 	{
 		if (m_SectionSignal == HazeSectionSignal::Global)
 		{
@@ -226,12 +239,16 @@ Share<HazeCompilerValue> ASTClassAttr::CodeGen()
 			}
 		}
 	}
+	else
+	{
+		v = m_PreAst->CodeGen();
+	}
 
 	auto classValue = DynamicCast<HazeCompilerClassValue>(v);
 	if (m_IsFunction)
 	{
 		V_Array<Share<HazeCompilerValue>> param;
-		for (int i = m_Params.size() - 1; i >= 0; i--)
+		for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 		{
 			param.push_back(m_Params[i]->CodeGen());
 		}	
@@ -498,7 +515,7 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 				m_Compiler->GetTempRegister(constantValue->GetValueType()), constantValue);
 			for (uint64 i = 0; i < countValue.size(); i++)
 			{
-				m_Compiler->CreateMul(objCount, countValue[i]);
+				m_Compiler->CreateMul(objCount, objCount, countValue[i]);
 			}
 
 			V_Array<Share<HazeCompilerValue>> params;
@@ -737,7 +754,13 @@ ASTBinaryExpression::~ASTBinaryExpression()
 {
 }
 
-Share<HazeCompilerValue> ASTBinaryExpression::CodeGen()
+void ASTBinaryExpression::SetLeftAndRightBlock(HazeBaseBlock* leftJmpBlock, HazeBaseBlock* rightJmpBlock)
+{
+	m_LeftBlock = leftJmpBlock;
+	m_RightBlock = rightJmpBlock;
+}
+
+Share<HazeCompilerValue> ASTBinaryExpression::CodeGen(Share<HazeCompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
@@ -759,25 +782,25 @@ Share<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateAdd(left, right);
+		return m_Compiler->CreateAdd(assignTo, left, right);
 	}
 	case HazeToken::Sub:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateSub(left, right);
+		return m_Compiler->CreateSub(assignTo, left, right);
 	}
 	case HazeToken::Mul:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMul(left, right);
+		return m_Compiler->CreateMul(assignTo, left, right);
 	}
 	case HazeToken::Div:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateDiv(left, right);
+		return m_Compiler->CreateDiv(assignTo, left, right);
 	}
 	case HazeToken::Inc:
 		return m_Compiler->CreateInc(m_LeftAST->CodeGen(), false);
@@ -787,7 +810,7 @@ Share<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMod(left, right);
+		return m_Compiler->CreateMod(assignTo, left, right);
 	}
 	case HazeToken::Not:
 	{
@@ -799,97 +822,104 @@ Share<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateShl(left, right);
+		return m_Compiler->CreateShl(assignTo, left, right);
 	}
 	case HazeToken::Shr:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateShr(left, right);
+		return m_Compiler->CreateShr(assignTo, left, right);
 	}
 	case HazeToken::Assign:
 	{
 		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMov(left, right);
+		if (rightExp)
+		{
+			return rightExp->CodeGen(left);
+		}
+		else
+		{
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateMov(left, right);
+		}
 	}
 	case HazeToken::BitAnd:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitAnd(left, right);
+		return m_Compiler->CreateBitAnd(assignTo, left, right);
 	}
 	case HazeToken::BitOr:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitOr(left, right);
+		return m_Compiler->CreateBitOr(assignTo, left, right);
 	}
 	case HazeToken::BitXor:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitXor(left, right);
+		return m_Compiler->CreateBitXor(assignTo, left, right);
 	}
 	case HazeToken::AddAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateAdd(left, right, true);
+		return m_Compiler->CreateAdd(left, left, right);
 	}
 	case HazeToken::SubAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateSub(left, right, true);
+		return m_Compiler->CreateSub(left, left, right);
 	}
 	case HazeToken::MulAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMul(left, right, true);
+		return m_Compiler->CreateMul(left, left, right);
 	}
 	case HazeToken::DivAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateDiv(left, right, true);
+		return m_Compiler->CreateDiv(left, left, right);
 	}
 	case HazeToken::ModAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMod(left, right, true);
+		return m_Compiler->CreateMod(left, left, right);
 	}
 	case HazeToken::BitAndAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitAnd(left, right, true);
+		return m_Compiler->CreateBitAnd(left, left, right);
 	}
 	case HazeToken::BitOrAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitOr(left, right, true);
+		return m_Compiler->CreateBitOr(left, left, right);
 	}
 	case HazeToken::BitXorAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitXor(left, right, true);
+		return m_Compiler->CreateBitXor(left, left, right);
 	}
 	case HazeToken::ShlAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateShl(left, right, true);
+		return m_Compiler->CreateShl(left, left, right);
 	}
 	case HazeToken::ShrAssign:
 	{
 		auto left = m_LeftAST->CodeGen();
 		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateShr(left, right, true);
+		return m_Compiler->CreateShr(left, left, right);
 	}
 	case HazeToken::And:
 	{
@@ -991,18 +1021,12 @@ Share<HazeCompilerValue> ASTBinaryExpression::CodeGen()
 
 		return retValue;
 	}
-	
+
 	default:
 		break;
 	}
 
 	return nullptr;
-}
-
-void ASTBinaryExpression::SetLeftAndRightBlock(HazeBaseBlock* leftJmpBlock, HazeBaseBlock* rightJmpBlock)
-{
-	m_LeftBlock = leftJmpBlock;
-	m_RightBlock = rightJmpBlock;
 }
 
 ASTThreeExpression::ASTThreeExpression(HazeCompiler* compiler, const SourceLocation& location

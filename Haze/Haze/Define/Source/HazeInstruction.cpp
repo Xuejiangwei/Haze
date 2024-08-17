@@ -47,7 +47,7 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 	{H_TEXT("SHL"), InstructionOpCode::SHL },
 	{H_TEXT("SHR"), InstructionOpCode::SHR },
 
-	{H_TEXT("ADD_ASSIGN"), InstructionOpCode::ADD_ASSIGN },
+	/*{H_TEXT("ADD_ASSIGN"), InstructionOpCode::ADD_ASSIGN },
 	{H_TEXT("SUB_ASSIGN"), InstructionOpCode::SUB_ASSIGN },
 	{H_TEXT("MUL_ASSIGN"), InstructionOpCode::MUL_ASSIGN },
 	{H_TEXT("DIV_ASSIGN"), InstructionOpCode::DIV_ASSIGN },
@@ -56,7 +56,7 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 	{H_TEXT("BIT_OR_ASSIGN"), InstructionOpCode::BIT_OR_ASSIGN },
 	{H_TEXT("BIT_XOR_ASSIGN"), InstructionOpCode::BIT_XOR_ASSIGN },
 	{H_TEXT("SHL_ASSIGN"), InstructionOpCode::SHL_ASSIGN },
-	{H_TEXT("SHR_ASSIGN"), InstructionOpCode::SHR_ASSIGN },
+	{H_TEXT("SHR_ASSIGN"), InstructionOpCode::SHR_ASSIGN },*/
 
 	{H_TEXT("PUSH"), InstructionOpCode::PUSH },
 	{H_TEXT("POP"), InstructionOpCode::POP },
@@ -638,7 +638,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Add_Assign(HazeStack* stack)
+	/*static void Add_Assign(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -757,7 +757,7 @@ public:
 		}
 
 		stack->m_VM->InstructionExecPost();
-	}
+	}*/
 
 	static void Bit_Neg(HazeStack* stack)
 	{
@@ -780,7 +780,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Bit_Xor_Assign(HazeStack* stack)
+	/*static void Bit_Xor_Assign(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG; 
 		
@@ -829,7 +829,7 @@ public:
 		}
 
 		stack->m_VM->InstructionExecPost();
-	}
+	}*/
 
 	static void Shl(HazeStack* stack)
 	{
@@ -1397,8 +1397,7 @@ private:
 			}*/
 			else if (IsRegisterDesc(oper[0].Desc) && IsIntegerType(oper[1].Variable.Type.PrimaryType))
 			{
-				if (instruction.InsCode == InstructionOpCode::ADD || instruction.InsCode == InstructionOpCode::SUB
-					|| instruction.InsCode == InstructionOpCode::ADD_ASSIGN || instruction.InsCode == InstructionOpCode::SUB_ASSIGN)
+				if (instruction.InsCode == InstructionOpCode::ADD || instruction.InsCode == InstructionOpCode::SUB)
 				{
 					auto dst = GetOperatorAddress(stack, oper[0]);
 					auto src = GetOperatorAddress(stack, oper[1]);
@@ -1409,7 +1408,7 @@ private:
 					memcpy(&num, src, size);
 
 					char* newAddress = (char*)address + size * num *
-						(instruction.InsCode == InstructionOpCode::ADD || instruction.InsCode == InstructionOpCode::ADD_ASSIGN ? 1 : -1);
+						(instruction.InsCode == InstructionOpCode::ADD ? 1 : -1);
 
 					address = (uint64)newAddress;
 					memcpy(dst, &address, sizeof(newAddress));
@@ -1595,7 +1594,7 @@ HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 	{InstructionOpCode::BIT_NEG, &InstructionProcessor::Bit_Neg},
 	{InstructionOpCode::BIT_XOR, &InstructionProcessor::Bit_Xor},
 
-	{InstructionOpCode::ADD_ASSIGN, &InstructionProcessor::Add_Assign},
+	/*{InstructionOpCode::ADD_ASSIGN, &InstructionProcessor::Add_Assign},
 	{InstructionOpCode::SUB_ASSIGN, &InstructionProcessor::Sub_Assign},
 	{InstructionOpCode::MUL_ASSIGN, &InstructionProcessor::Mul_Assign},
 	{InstructionOpCode::DIV_ASSIGN, &InstructionProcessor::Div_Assign},
@@ -1604,7 +1603,7 @@ HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 	{InstructionOpCode::BIT_OR_ASSIGN, &InstructionProcessor::Bit_Or_Assign},
 	{InstructionOpCode::BIT_XOR_ASSIGN, &InstructionProcessor::Bit_Xor_Assign},
 	{InstructionOpCode::SHL_ASSIGN, &InstructionProcessor::Shl_Assign },
-	{InstructionOpCode::SHR_ASSIGN, &InstructionProcessor::Shr_Assign},
+	{InstructionOpCode::SHR_ASSIGN, &InstructionProcessor::Shr_Assign},*/
 
 	{InstructionOpCode::SHL, &InstructionProcessor::Shl},
 	{InstructionOpCode::SHR, &InstructionProcessor::Shr},

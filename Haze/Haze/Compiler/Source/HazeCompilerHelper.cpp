@@ -537,7 +537,7 @@ Share<HazeCompilerValue> GenIRCode_GetClassMember(HAZE_STRING_STREAM& hss, HazeC
 				auto& type = const_cast<HazeDefineType&>(v->GetValueType());
 				type.Pointer();
 
-				v = compiler->CreateAdd(v, compiler->GetConstantValueUint64(s_Offsets[i]));
+				v = compiler->CreateAdd(v, v, compiler->GetConstantValueUint64(s_Offsets[i]));
 
 				if (i == 0)
 				{
@@ -588,17 +588,86 @@ Share<HazeCompilerValue> GenIRCode_GetClassMember(HAZE_STRING_STREAM& hss, HazeC
 
 }
 
-void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode opCode, Share<HazeCompilerValue> v1,
-	Share<HazeCompilerValue> v2, const HazeDefineType* expectType)
+void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode opCode, Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1,
+	Share<HazeCompilerValue> oper2, const HazeDefineType* expectType)
 {
-	if (v1 && v1->IsClassMember())
+	if (assignTo)
 	{
-		v1 = GenIRCode_GetClassMember(hss, m, v1);
+		if (assignTo->IsClassMember())
+		{
+			assignTo = GenIRCode_GetClassMember(hss, m, assignTo);
+		}
+		else
+		{
+			auto arrElement = DynamicCast<HazeCompilerArrayElementValue>(oper1);
+			V_Array<Share<HazeCompilerValue>> params;
+			for (auto& i : arrElement->GetIndex())
+			{
+				params.push_back(i->GetShared());
+			}
+			assignTo = m->GetCompiler()->CreateAdvanceTypeFunctionCall(HazeValueType::Array, H_TEXT("设置"),
+				params, arrElement->GetArray()->GetShared());
+		}
 	}
 
-	if (v2 && v2->IsClassMember())
+	if (oper1)
 	{
-		v2 = GenIRCode_GetClassMember(hss, m, v2);
+		if (oper1->IsClassMember())
+		{
+			oper1 = GenIRCode_GetClassMember(hss, m, oper1);
+		}
+		else if (oper1->IsArrayElement())
+		{
+			auto arrElement = DynamicCast<HazeCompilerArrayElementValue>(oper1);
+			V_Array<Share<HazeCompilerValue>> params;
+			for (auto& i : arrElement->GetIndex())
+			{
+				params.push_back(i->GetShared());
+			}
+			oper1 = m->GetCompiler()->CreateAdvanceTypeFunctionCall(HazeValueType::Array, H_TEXT("获得"),
+				params, arrElement->GetArray()->GetShared());
+		}
+	}
+
+	if (oper2)
+	{
+		if (oper2->IsClassMember())
+		{
+			oper2 = GenIRCode_GetClassMember(hss, m, oper2);
+		}
+		else if (oper2->IsArrayElement())
+		{
+			auto arrElement = DynamicCast<HazeCompilerArrayElementValue>(oper2);
+			V_Array<Share<HazeCompilerValue>> params;
+			for (auto& i : arrElement->GetIndex())
+			{
+				params.push_back(i->GetShared());
+			}
+			oper2 = m->GetCompiler()->CreateAdvanceTypeFunctionCall(HazeValueType::Array, H_TEXT("获得"),
+				params, arrElement->GetArray()->GetShared());
+		}
+	}
+
+	if (expectType && IsMultiVariableTye(expectType->PrimaryType))
+	{
+		auto type = *expectType;
+		if (IsNumberType(type.PrimaryType))
+		{
+			if (IsUnsignedIntegerType(type.PrimaryType))
+			{
+				type.PrimaryType = HazeValueType::UInt64;
+			}
+			else if (IsIntegerType(type.PrimaryType))
+			{
+				type.PrimaryType = HazeValueType::Int64;
+			}
+			else
+			{
+				type.PrimaryType = HazeValueType::Float64;
+			}
+		}
+
+		oper1 = m->GetCompiler()->CreateMov(m->GetCompiler()->GetTempRegister(type), oper1);
 	}
 	
 	switch (opCode)
@@ -606,6 +675,30 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 	case InstructionOpCode::NONE:
 		break;
 	case InstructionOpCode::MOV:
+	{
+		/*if (v1->IsArrayElement())
+		{
+			auto arrElement = DynamicCast<HazeCompilerArrayElementValue>(v1);
+			V_Array<Share<HazeCompilerValue>> params;
+			for (auto& i : arrElement->GetIndex())
+			{
+				params.push_back(i->GetShared());
+			}
+			m->GetCompiler()->CreateAdvanceTypeFunctionCall(HazeValueType::Array, H_TEXT("设置"),
+				params, arrElement->GetArray()->GetShared());
+		}
+		else
+		{
+			hss << GetInstructionString(opCode) << " ";
+			GenVariableHzic(m, hss, v1);
+			if (v2)
+			{
+				hss << " ";
+				GenVariableHzic(m, hss, v2);
+			}
+		}*/
+	}
+		break;
 	case InstructionOpCode::MOVPV:
 	case InstructionOpCode::MOVTOPV:
 	case InstructionOpCode::LEA:
@@ -623,11 +716,11 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 	case InstructionOpCode::CMP:
 	{
 		hss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(m, hss, v1);
-		if (v2)
+		GenVariableHzic(m, hss, oper1);
+		if (oper2)
 		{
 			hss << " ";
-			GenVariableHzic(m, hss, v2);
+			GenVariableHzic(m, hss, oper2);
 		}
 	}
 		break;
@@ -644,7 +737,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 	case InstructionOpCode::PUSH:
 	{
 		hss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(m, hss, v1);
+		GenVariableHzic(m, hss, oper1);
 	}
 		break;
 	case InstructionOpCode::POP:
@@ -660,7 +753,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 		HazeDefineType::StringStreamTo(hss, *expectType);
 		hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
 
-		GenVariableHzic(m, hss, v2);
+		GenVariableHzic(m, hss, oper2);
 	}
 		break;
 	case InstructionOpCode::JMP:
@@ -677,32 +770,12 @@ void GenIRCode(HAZE_STRING_STREAM& hss, HazeCompilerModule* m, InstructionOpCode
 		break;
 	case InstructionOpCode::JL:
 		break;
-	case InstructionOpCode::ADD_ASSIGN:
-		break;
-	case InstructionOpCode::SUB_ASSIGN:
-		break;
-	case InstructionOpCode::MUL_ASSIGN:
-		break;
-	case InstructionOpCode::DIV_ASSIGN:
-		break;
-	case InstructionOpCode::MOD_ASSIGN:
-		break;
-	case InstructionOpCode::BIT_AND_ASSIGN:
-		break;
-	case InstructionOpCode::BIT_OR_ASSIGN:
-		break;
-	case InstructionOpCode::BIT_XOR_ASSIGN:
-		break;
-	case InstructionOpCode::SHL_ASSIGN:
-		break;
-	case InstructionOpCode::SHR_ASSIGN:
-		break;
 	case InstructionOpCode::LINE:
 		break;
 	case InstructionOpCode::SIGN:
 	{
 		hss << GetInstructionString(opCode) << " ";
-		hss << v1->GetValue().Value.UInt64;
+		hss << oper1->GetValue().Value.UInt64;
 	}
 		break;
 	default:

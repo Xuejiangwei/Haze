@@ -490,7 +490,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	case InstructionOpCode::BIT_XOR:
 	case InstructionOpCode::SHL:
 	case InstructionOpCode::SHR:
-	case InstructionOpCode::ADD_ASSIGN:
+	/*case InstructionOpCode::ADD_ASSIGN:
 	case InstructionOpCode::SUB_ASSIGN:
 	case InstructionOpCode::MUL_ASSIGN:
 	case InstructionOpCode::DIV_ASSIGN:
@@ -499,7 +499,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	case InstructionOpCode::BIT_OR_ASSIGN:
 	case InstructionOpCode::BIT_XOR_ASSIGN:
 	case InstructionOpCode::SHL_ASSIGN:
-	case InstructionOpCode::SHR_ASSIGN:
+	case InstructionOpCode::SHR_ASSIGN:*/
 	case InstructionOpCode::CVT:
 	{
 		InstructionData operatorOne;

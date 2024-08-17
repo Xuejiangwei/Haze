@@ -67,8 +67,13 @@ void ObjectArray::Add(HAZE_STD_CALL_PARAM)
 
 void ObjectArray::Get(HAZE_STD_CALL_PARAM)
 {
-	for (uint64 i = 0; i < multiParamNum; i++)
+	ObjectArray* arr;
+
+	GET_PARAM_START();
+	GET_PARAM(arr);
+
+	/*for (uint64 i = 0; i < multiParamNum; i++)
 	{
-		
-	}
+		arr->m_Data + 
+	}*/
 }

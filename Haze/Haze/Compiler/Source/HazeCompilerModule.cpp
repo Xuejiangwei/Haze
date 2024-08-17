@@ -354,64 +354,65 @@ void HazeCompilerModule::FinishFunction()
 	m_CurrFunction.clear();
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateAdd(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateAdd(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::ADD_ASSIGN : InstructionOpCode::ADD);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::ADD);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateSub(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateSub(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::SUB_ASSIGN : InstructionOpCode::SUB);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::SUB);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateMul(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateMul(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::MUL_ASSIGN : InstructionOpCode::MUL);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::MUL);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateDiv(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateDiv(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::DIV_ASSIGN : InstructionOpCode::DIV);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::DIV);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateMod(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateMod(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::MOD_ASSIGN : InstructionOpCode::MOD);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::MOD);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateBitAnd(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateBitAnd(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::BIT_AND_ASSIGN : InstructionOpCode::BIT_AND);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::BIT_AND);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateBitOr(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateBitOr(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::BIT_OR_ASSIGN : InstructionOpCode::BIT_OR);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::BIT_OR);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateBitNeg(Share<HazeCompilerValue> value)
+void HazeCompilerModule::CreateBitNeg(Share<HazeCompilerValue> value)
 {
-	return GenIRCode_BinaryOperater(value, nullptr, InstructionOpCode::BIT_NEG);
+	GenIRCode_BinaryOperater(nullptr, value, nullptr, InstructionOpCode::BIT_NEG);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateBitXor(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateBitXor(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::BIT_XOR_ASSIGN : InstructionOpCode::BIT_XOR);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::BIT_XOR);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateShl(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateShl(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::SHL_ASSIGN : InstructionOpCode::SHL);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::SHL);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateShr(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, bool isAssign)
+void HazeCompilerModule::CreateShr(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, isAssign ? InstructionOpCode::SHR_ASSIGN : InstructionOpCode::SHR);
+	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::SHR);
 }
 
 Share<HazeCompilerValue> HazeCompilerModule::CreateNot(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
 {
-	return GenIRCode_BinaryOperater(left, right, InstructionOpCode::NOT);
+	GenIRCode_BinaryOperater(nullptr, left, right, InstructionOpCode::NOT);
+	return left;
 }
 
 Share<HazeCompilerValue> HazeCompilerModule::CreateNeg(Share<HazeCompilerValue> value)
@@ -513,83 +514,44 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(Share<HazeCompilerV
 	return array;
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::GenIRCode_BinaryOperater(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right, InstructionOpCode opCode)
+void HazeCompilerModule::GenIRCode_BinaryOperater(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2,
+	InstructionOpCode opCode)
 {
-	static HashSet<InstructionOpCode> s_HashSet_NoTemp =
-	{
-		InstructionOpCode::MOV,
-		InstructionOpCode::MOVPV,
-		InstructionOpCode::MOVTOPV,
-		InstructionOpCode::LEA,
-		InstructionOpCode::CMP,
-		InstructionOpCode::ADD_ASSIGN,
-		InstructionOpCode::SUB_ASSIGN,
-		InstructionOpCode::MUL_ASSIGN,
-		InstructionOpCode::DIV_ASSIGN,
-		InstructionOpCode::MOD_ASSIGN,
-		InstructionOpCode::BIT_AND_ASSIGN,
-		InstructionOpCode::BIT_OR_ASSIGN,
-		InstructionOpCode::BIT_XOR_ASSIGN,
-		InstructionOpCode::SHL_ASSIGN,
-		InstructionOpCode::SHR_ASSIGN,
-		InstructionOpCode::CVT,
-	};
+	//Share<HazeCompilerValue> retValue = left;
 
-	Share<HazeCompilerValue> retValue = left;
-
-	if (left->IsConstant() && right->IsConstant())
+	//优化相关
+	if (oper1->IsConstant() && oper2->IsConstant())
 	{
-		if (IsNumberType(left->GetValueType().PrimaryType))
+		if (IsNumberType(oper1->GetValueType().PrimaryType))
 		{
-			auto& leftValue = const_cast<HazeValue&>(left->GetValue());
+			auto& leftValue = const_cast<HazeValue&>(oper1->GetValue());
 			HazeValue tempValue = leftValue;
-			auto& rightValue = const_cast<HazeValue&>(right->GetValue());
-			CalculateValueByType(left->GetValueType().PrimaryType, opCode, &rightValue, &leftValue);
+			auto& rightValue = const_cast<HazeValue&>(oper2->GetValue());
+			CalculateValueByType(oper1->GetValueType().PrimaryType, opCode, &rightValue, &leftValue);
 
-			retValue = m_Compiler->GenConstantValue(left->GetValueType().PrimaryType, leftValue);
+			auto retValue = m_Compiler->GenConstantValue(oper1->GetValueType().PrimaryType, leftValue);
 			leftValue = tempValue;
 		}
 		else
 		{
 			COMPILER_ERR_MODULE_W("生成<%s>操作错误", GetInstructionString(opCode), GetName().c_str());
 		}
-		return retValue;
+		return;// retValue;
 	}
-
-	bool needTemp = s_HashSet_NoTemp.find(opCode) == s_HashSet_NoTemp.end();
 
 	HAZE_STRING_STREAM ss;
 	
+	GenIRCode(ss, this, opCode, assignTo, oper1, oper2);
 	if (!m_CurrFunction.empty())
 	{
-		if (needTemp)
-		{
-			if ((!left->IsRegister(HazeDataDesc::RegisterTemp) && right == nullptr) ||
-				(!left->IsRegister(HazeDataDesc::RegisterTemp) && !right->IsRegister(HazeDataDesc::RegisterTemp)))
-			{
-				retValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(left->GetValueType()), left);
-			}
-			else
-			{
-				if (right->IsRegister(HazeDataDesc::RegisterTemp) && right->GetValueType() == left->GetValueType()
-					&& !left->IsRegister(HazeDataDesc::RegisterTemp))
-				{
-					retValue = right;
-					right = left;
-				}
-			}
-		}
-
-		GenIRCode(ss, this, opCode, retValue, right);
 		m_Compiler->GetInsertBlock()->PushIRCode(ss.str());
 	}
-	else if (left->IsGlobalVariable())
+	else
 	{
-		GenIRCode(ss, this, opCode, retValue, right);
 		m_ModuleIRCodes.push_back(ss.str());
 	}
 
-	return retValue;
+	//return retValue;
 }
 
 void HazeCompilerModule::GenIRCode_UnaryOperator(Share<HazeCompilerValue> value, InstructionOpCode opCode)
@@ -716,7 +678,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 		}
 		else
 		{
-			auto& type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) : 
+			auto type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) : 
 				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
 				advancFunctionInfo->Params.size() > params.size() - 1 - i ? advancFunctionInfo->Params.at(params.size() - 1 - i)
 				: advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
@@ -749,7 +711,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 
 	for (size_t i = 0; i < params.size(); i++)
 	{
-		GenIRCode(hss, this, InstructionOpCode::PUSH, params[i], nullptr, funcTypes[i]);
+		GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, params[i], nullptr, funcTypes[i]);
 
 		if (insertBlock)
 		{
@@ -768,7 +730,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 
 	if (thisPointerTo)
 	{
-		GenIRCode(hss, this, InstructionOpCode::PUSH, thisPointerTo);
+		GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, thisPointerTo);
 
 		if (insertBlock)
 		{

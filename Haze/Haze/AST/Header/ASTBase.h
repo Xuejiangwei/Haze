@@ -75,7 +75,7 @@ class ASTIdentifier : public ASTBase
 {
 public:
 	ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
-		V_Array<Unique<ASTBase>>& arrayIndexExpression, HString nameSpace = HAZE_TEXT(""));
+		V_Array<Unique<ASTBase>>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace = HAZE_TEXT(""));
 	
 	virtual ~ASTIdentifier() override {}
 
@@ -86,6 +86,7 @@ public:
 private:
 	HString m_NameSpace;
 	HazeSectionSignal m_SectionSignal;
+	Unique<ASTBase> m_PreAst;
 	V_Array<Unique<ASTBase>> m_ArrayIndexExpression;
 };
 
@@ -94,7 +95,7 @@ class ASTFunctionCall : public ASTBase
 {
 public:
 	ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name
-		, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj = nullptr);
+		, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj, Unique<ASTBase>& preAst);
 	
 	virtual ~ASTFunctionCall() override {}
 
@@ -106,6 +107,7 @@ private:
 	HazeSectionSignal m_SectionSignal;
 	HString m_Name;
 	Unique<ASTBase> m_ClassObj;
+	Unique<ASTBase> m_PreAst;
 	V_Array<Unique<ASTBase>> m_FunctionParam;
 
 };
@@ -114,17 +116,17 @@ class ASTClassAttr : public ASTBase
 {
 public:
 	ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		HString& classObjName, HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam = nullptr);
+		HString& classObjName, Unique<ASTBase>& preAst, HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam = nullptr);
 
 	virtual ~ASTClassAttr() override {}
 
 	virtual Share<HazeCompilerValue> CodeGen() override;
 
 private:
-	bool m_IsAdvanceType;
 	bool m_IsFunction;
 	HazeSectionSignal m_SectionSignal;
 	HString m_AttrName;
+	Unique<ASTBase> m_PreAst;
 	V_Array<Unique<ASTBase>> m_Params;
 };
 
@@ -371,9 +373,11 @@ public:
 
 	virtual ~ASTBinaryExpression() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	//virtual Share<HazeCompilerValue> CodeGen() override;
 
 	void SetLeftAndRightBlock(HazeBaseBlock* leftJmpBlock, HazeBaseBlock* rightJmpBlock);
+
+	Share<HazeCompilerValue> CodeGen(Share<HazeCompilerValue> assignTo = nullptr);
 
 private:
 	HazeSectionSignal m_SectionSignal;
