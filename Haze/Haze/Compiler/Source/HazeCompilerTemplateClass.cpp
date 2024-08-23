@@ -1,6 +1,6 @@
 #include "HazePch.h"
 #include "HazeCompilerTemplateClass.h"
-#include "HazeCompilerClass.h"
+#include "CompilerClass.h"
 
 HazeCompilerTemplateClass::HazeCompilerTemplateClass()
 {

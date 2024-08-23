@@ -1,11 +1,5 @@
 #include "HazeUtility.h"
 
-template <typename T>
-unsigned int GetSizeByType(const HazeDefineType& type, T* This)
-{
-	return /*type.PrimaryType == HazeValueType::Class ? This->GetClassSize(*type.CustomName) :*/ GetSizeByHazeType(type.PrimaryType);
-}
-
 //template <typename T>
 //unsigned int GetNewAllocSizeByType(HazeDefineType type, T* This)
 //{

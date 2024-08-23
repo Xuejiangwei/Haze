@@ -9,9 +9,9 @@
 #include "ASTLibrary.h"
 #include "ASTTemplateClass.h"
 
-#include "HazeCompiler.h"
-#include "HazeCompilerHelper.h"
-#include "HazeCompilerModule.h"
+#include "Compiler.h"
+#include "CompilerHelper.h"
+#include "CompilerModule.h"
 
 #include "HazeLogDefine.h"
 #include <cstdarg>
@@ -219,7 +219,7 @@ private:
 	uint32 CacheLine;
 };
 
-Parse::Parse(HazeCompiler* compiler)
+Parse::Parse(Compiler* compiler)
 	: m_Compiler(compiler), m_CurrCode(nullptr), m_CurrToken(HazeToken::None),
 	m_LeftParenthesesExpressionCount(0), m_LineCount(1), //m_NeedParseNextStatement(false), 
 	m_IsParseTemplate(false), m_TemplateTypes(nullptr), m_TemplateRealTypes(nullptr), m_IsParseArray(false),
@@ -806,8 +806,6 @@ Unique<ASTBase> Parse::ParsePrimary()
 		return ParseNew();
 	case HazeToken::LeftParentheses:
 		return ParseLeftParentheses();
-	case HazeToken::LeftBrace:
-		return ParseLeftBrace();
 	case HazeToken::Not:
 		return ParseNot();
 	case HazeToken::BitAnd:
@@ -1627,29 +1625,6 @@ Unique<ASTBase> Parse::ParseGetAddress()
 	return MakeUnique<ASTGetAddress>(m_Compiler, SourceLocation(tempLineCount), expression);
 }
 
-Unique<ASTBase> Parse::ParseLeftBrace()
-{
-	uint32 tempLineCount = m_LineCount;
-	V_Array<Unique<ASTBase>> elements;
-
-	GetNextToken();
-	while (true)
-	{
-		elements.push_back(ParseExpression());
-
-		if (m_CurrToken == HazeToken::RightBrace)
-		{
-			break;
-		}
-		else if (m_CurrToken == HazeToken::Comma)
-		{
-			GetNextToken();
-		}
-	}
-
-	return MakeUnique<ASTInitializeList>(m_Compiler, SourceLocation(tempLineCount), elements);
-}
-
 Unique<ASTBase> Parse::ParseNot()
 {
 	int tempLineCount = m_LineCount;
@@ -1659,16 +1634,6 @@ Unique<ASTBase> Parse::ParseNot()
 
 	return MakeUnique<ASTNot>(m_Compiler, SourceLocation(tempLineCount), expression);
 }
-
-//Unique<ASTBase> Parse::ParseOperatorAssign()
-//{
-//	HazeToken Token = m_CurrToken;
-//
-//	auto Value = ParseExpression();
-//
-//	GetNextToken();
-//	return MakeUnique<ASTOperetorAssign>(Compiler, SourceLocation(m_LineCount) Token, Value);
-//}
 
 Unique<ASTBase> Parse::ParseMultiExpression()
 {

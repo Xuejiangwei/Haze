@@ -6,24 +6,23 @@
 #include "HazeLogDefine.h"
 #include "HazeFilePathHelper.h"
 
-#include "HazeCompiler.h"
-#include "HazeCompilerHelper.h"
-#include "HazeCompilerModule.h"
-#include "HazeCompilerValue.h"
+#include "Compiler.h"
+#include "CompilerHelper.h"
+#include "CompilerModule.h"
+#include "CompilerValue.h"
 #include "HazeCompilerPointerValue.h"
-#include "HazeCompilerPointerFunction.h"
-#include "HazeCompilerClassValue.h"
-#include "HazeCompilerArrayValue.h"
-#include "HazeCompilerInitlistValue.h"
-#include "HazeCompilerFunction.h"
-#include "HazeBaseBlock.h"
-#include "HazeCompilerClass.h"
-#include "HazeCompilerEnum.h"
-#include "HazeCompilerEnumValue.h"
+#include "CompilerPointerFunction.h"
+#include "CompilerClassValue.h"
+#include "CompilerArrayValue.h"
+#include "CompilerFunction.h"
+#include "CompilerBlock.h"
+#include "CompilerClass.h"
+#include "CompilerEnum.h"
+#include "CompilerEnumValue.h"
 
 struct PushTempRegister
 {
-	PushTempRegister(HAZE_STRING_STREAM& hss, HazeCompiler* compiler, HazeCompilerModule* compilerModule)
+	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule)
 		: Size(0), Hss(hss), Compiler(compiler), Module(compilerModule)
 	{
 		UseTempRegisters = Compiler->GetUseTempRegister();
@@ -61,13 +60,13 @@ struct PushTempRegister
 private:
 	int Size;
 	HAZE_STRING_STREAM& Hss;
-	HazeCompiler* Compiler;
-	HazeCompilerModule* Module;
-	HashMap<const HChar*, Share<HazeCompilerValue>> UseTempRegisters;
+	Compiler* Compiler;
+	CompilerModule* Module;
+	HashMap<const HChar*, Share<CompilerValue>> UseTempRegisters;
 };
 
 
-HazeCompilerModule::HazeCompilerModule(HazeCompiler* compiler, const HString& moduleName, const HString& modulePath)
+CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, const HString& modulePath)
 	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_IsBeginCreateFunctionVariable(false),
 	 m_IsGenTemplateCode(false), m_Path(modulePath)
 {
@@ -79,7 +78,7 @@ HazeCompilerModule::HazeCompilerModule(HazeCompiler* compiler, const HString& mo
 #endif
 }
 
-HazeCompilerModule::~HazeCompilerModule()
+CompilerModule::~CompilerModule()
 {
 	if (m_FS_I_Code.is_open())
 	{
@@ -87,17 +86,17 @@ HazeCompilerModule::~HazeCompilerModule()
 	}
 }
 
-const HString& HazeCompilerModule::GetName() const
+const HString& CompilerModule::GetName() const
 {
 	return *m_Compiler->GetModuleName(this);
 }
 
-void HazeCompilerModule::MarkLibraryType(HazeLibraryType type)
+void CompilerModule::MarkLibraryType(HazeLibraryType type)
 {
 	m_ModuleLibraryType = type;
 }
 
-void HazeCompilerModule::RestartTemplateModule(const HString& moduleName)
+void CompilerModule::RestartTemplateModule(const HString& moduleName)
 {
 #if HAZE_I_CODE_ENABLE
 	
@@ -111,12 +110,12 @@ void HazeCompilerModule::RestartTemplateModule(const HString& moduleName)
 #endif
 }
 
-void HazeCompilerModule::FinishModule()
+void CompilerModule::FinishModule()
 {
 	m_CurrFunction.clear();
 }
 
-void HazeCompilerModule::GenCodeFile()
+void CompilerModule::GenCodeFile()
 {
 #if HAZE_I_CODE_ENABLE
 
@@ -130,13 +129,13 @@ void HazeCompilerModule::GenCodeFile()
 #endif
 }
 
-Share<HazeCompilerClass> HazeCompilerModule::CreateClass(const HString& name, V_Array<HazeCompilerClass*>& parentClass,
-	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>>& classData)
+Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<CompilerClass*>& parentClass,
+	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<CompilerValue>>>>>& classData)
 {
 	auto compilerClass = GetClass(name);
 	if (!compilerClass)
 	{
-		m_HashMap_Classes[name] = MakeShare<HazeCompilerClass>(this, name, parentClass, classData);
+		m_HashMap_Classes[name] = MakeShare<CompilerClass>(this, name, parentClass, classData);
 		compilerClass = m_HashMap_Classes[name];
 
 		m_Compiler->OnCreateClass(compilerClass);
@@ -147,12 +146,12 @@ Share<HazeCompilerClass> HazeCompilerModule::CreateClass(const HString& name, V_
 	return compilerClass;
 }
 
-Share<HazeCompilerEnum> HazeCompilerModule::CreateEnum(const HString& name, HazeValueType baseType)
+Share<CompilerEnum> CompilerModule::CreateEnum(const HString& name, HazeValueType baseType)
 {
-	Share<HazeCompilerEnum> compilerEnum = GetEnum(this, name);
+	Share<CompilerEnum> compilerEnum = GetEnum(this, name);
 	if (!compilerEnum)
 	{
-		compilerEnum = MakeShare<HazeCompilerEnum>(this, name, baseType);
+		compilerEnum = MakeShare<CompilerEnum>(this, name, baseType);
 		m_HashMap_Enums[name] = compilerEnum;
 	
 		m_CurrEnum = name;
@@ -161,7 +160,7 @@ Share<HazeCompilerEnum> HazeCompilerModule::CreateEnum(const HString& name, Haze
 	return compilerEnum;
 }
 
-Share<HazeCompilerEnum> HazeCompilerModule::GetCurrEnum()
+Share<CompilerEnum> CompilerModule::GetCurrEnum()
 {
 	auto iter = m_HashMap_Enums.find(m_CurrEnum);
 	if (iter != m_HashMap_Enums.end())
@@ -172,17 +171,17 @@ Share<HazeCompilerEnum> HazeCompilerModule::GetCurrEnum()
 	return nullptr;
 }
 
-void HazeCompilerModule::FinishCreateEnum()
+void CompilerModule::FinishCreateEnum()
 {
 	m_CurrEnum.clear();
 }
 
-void HazeCompilerModule::FinishCreateClass()
+void CompilerModule::FinishCreateClass()
 {
 	m_CurrClass.clear();
 }
 
-Share<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
+Share<CompilerFunction> CompilerModule::GetCurrFunction()
 {
 	if (m_CurrFunction.empty())
 	{
@@ -205,7 +204,7 @@ Share<HazeCompilerFunction> HazeCompilerModule::GetCurrFunction()
 	return iter->second;
 }
 
-Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> HazeCompilerModule::GetFunction(const HString& name)
+Pair<Share<CompilerFunction>, Share<CompilerValue>> CompilerModule::GetFunction(const HString& name)
 {
 	auto it = m_HashMap_Functions.find(name);
 	if (it != m_HashMap_Functions.end())
@@ -230,7 +229,7 @@ Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> HazeCompilerModule::
 	return GetObjectFunction(this, name, isPointer);
 }
 
-void HazeCompilerModule::StartCacheTemplate(HString& templateName, uint32 startLine, HString& templateText, V_Array<HString>& templateTypes)
+void CompilerModule::StartCacheTemplate(HString& templateName, uint32 startLine, HString& templateText, V_Array<HString>& templateTypes)
 {
 	auto iter = m_HashMap_TemplateText.find(templateName);
 	if (iter == m_HashMap_TemplateText.end())
@@ -240,7 +239,7 @@ void HazeCompilerModule::StartCacheTemplate(HString& templateName, uint32 startL
 	}
 }
 
-bool HazeCompilerModule::IsTemplateClass(const HString& name)
+bool CompilerModule::IsTemplateClass(const HString& name)
 {
 	auto iter = m_HashMap_TemplateText.find(name);
 	if (iter != m_HashMap_TemplateText.end())
@@ -259,7 +258,7 @@ bool HazeCompilerModule::IsTemplateClass(const HString& name)
 	return false;
 }
 
-bool HazeCompilerModule::ResetTemplateClassRealName(HString& inName, const V_Array<HazeDefineType>& templateTypes)
+bool CompilerModule::ResetTemplateClassRealName(HString& inName, const V_Array<HazeDefineType>& templateTypes)
 {
 	for (auto& templateText : m_HashMap_TemplateText)
 	{
@@ -301,7 +300,7 @@ bool HazeCompilerModule::ResetTemplateClassRealName(HString& inName, const V_Arr
 	return false;
 }
 
-Share<HazeCompilerEnum> HazeCompilerModule::GetEnum(HazeCompilerModule* m, const HString& name)
+Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const HString& name)
 {
 	auto ret = m->GetEnum_Internal(name);
 	if (ret)
@@ -312,14 +311,14 @@ Share<HazeCompilerEnum> HazeCompilerModule::GetEnum(HazeCompilerModule* m, const
 	return m->m_Compiler->GetBaseModuleEnum(name);
 }
 
-Share<HazeCompilerFunction> HazeCompilerModule::CreateFunction(const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params)
+Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params)
 {
-	Share<HazeCompilerFunction> function = nullptr;
+	Share<CompilerFunction> function = nullptr;
 	auto it = m_HashMap_Functions.find(name);
 	if (it == m_HashMap_Functions.end())
 	{
-		m_HashMap_Functions[name] = MakeShare<HazeCompilerFunction>(this, name, type, params);
-		m_HashMap_Functions[name]->InitEntryBlock(HazeBaseBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, m_HashMap_Functions[name], nullptr));
+		m_HashMap_Functions[name] = MakeShare<CompilerFunction>(this, name, type, params);
+		m_HashMap_Functions[name]->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, m_HashMap_Functions[name], nullptr));
 
 		function = m_HashMap_Functions[name];
 	}
@@ -332,90 +331,90 @@ Share<HazeCompilerFunction> HazeCompilerModule::CreateFunction(const HString& na
 	return function;
 }
 
-Share<HazeCompilerFunction> HazeCompilerModule::CreateFunction(Share<HazeCompilerClass> compilerClass, const HString& name,
+Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> compilerClass, const HString& name,
 	HazeDefineType& type, V_Array<HazeDefineVariable>& params)
 {
-	Share<HazeCompilerFunction> function = compilerClass->FindFunction(name);
+	Share<CompilerFunction> function = compilerClass->FindFunction(name);
 	if (!function)
 	{
-		function = MakeShare<HazeCompilerFunction>(this, GetHazeClassFunctionName(compilerClass->GetName(), name), type, params, compilerClass.get());
+		function = MakeShare<CompilerFunction>(this, GetHazeClassFunctionName(compilerClass->GetName(), name), type, params, compilerClass.get());
 		compilerClass->AddFunction(function);
 
-		function->InitEntryBlock(HazeBaseBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, function, nullptr));
+		function->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, function, nullptr));
 	}
 
 	m_CurrFunction = name;
 	return function;
 }
 
-void HazeCompilerModule::FinishFunction()
+void CompilerModule::FinishFunction()
 {
 	GetCurrFunction()->FunctionFinish();
 	m_CurrFunction.clear();
 }
 
-void HazeCompilerModule::CreateAdd(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateAdd(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::ADD);
 }
 
-void HazeCompilerModule::CreateSub(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateSub(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::SUB);
 }
 
-void HazeCompilerModule::CreateMul(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateMul(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::MUL);
 }
 
-void HazeCompilerModule::CreateDiv(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateDiv(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::DIV);
 }
 
-void HazeCompilerModule::CreateMod(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateMod(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::MOD);
 }
 
-void HazeCompilerModule::CreateBitAnd(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateBitAnd(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::BIT_AND);
 }
 
-void HazeCompilerModule::CreateBitOr(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateBitOr(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::BIT_OR);
 }
 
-void HazeCompilerModule::CreateBitNeg(Share<HazeCompilerValue> value)
+void CompilerModule::CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value)
 {
-	GenIRCode_BinaryOperater(nullptr, value, nullptr, InstructionOpCode::BIT_NEG);
+	GenIRCode_UnaryOperator(value, InstructionOpCode::BIT_NEG);
 }
 
-void HazeCompilerModule::CreateBitXor(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateBitXor(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::BIT_XOR);
 }
 
-void HazeCompilerModule::CreateShl(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateShl(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::SHL);
 }
 
-void HazeCompilerModule::CreateShr(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+void CompilerModule::CreateShr(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::SHR);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateNot(Share<HazeCompilerValue> left, Share<HazeCompilerValue> right)
+Share<CompilerValue> CompilerModule::CreateNot(Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(nullptr, left, right, InstructionOpCode::NOT);
 	return left;
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateNeg(Share<HazeCompilerValue> value)
+void CompilerModule::CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value)
 {
 	if (value->IsConstant())
 	{
@@ -427,22 +426,18 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateNeg(Share<HazeCompilerValue> 
 		m_Compiler->CreateMov(tempRegister, value);
 
 		HAZE_STRING_STREAM ss;
-		ss << GetInstructionString(InstructionOpCode::NEG) << " ";
-		GenVariableHzic(this, ss, tempRegister);
-		ss << std::endl;
-
-		Share<HazeBaseBlock> BB = m_Compiler->GetInsertBlock();
+		GenIRCode(ss, this, InstructionOpCode::NEG, nullptr, tempRegister);
+	
+		Share<CompilerBlock> BB = m_Compiler->GetInsertBlock();
 		BB->PushIRCode(ss.str());
 
 		value = tempRegister;
 	}
-
-	return value;
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateInc(Share<HazeCompilerValue> value, bool isPreInc)
+Share<CompilerValue> CompilerModule::CreateInc(Share<CompilerValue> value, bool isPreInc)
 {
-	Share<HazeCompilerValue> retValue = value;
+	Share<CompilerValue> retValue = value;
 	if (IsHazeBaseType(value->GetValueType().PrimaryType))
 	{
 		if (!isPreInc)
@@ -450,7 +445,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateInc(Share<HazeCompilerValue> 
 			retValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetValueType()), value);
 		}
 		//Compiler->CreateMov(Value, CreateAdd(Value, Compiler->GetConstantValueInt(1)));
-		GenIRCode_UnaryOperator(value, InstructionOpCode::INC);
+		GenIRCode_BinaryOperater(value, value, m_Compiler->GetConstantValueUint64(1), InstructionOpCode::ADD);
 	}
 	else
 	{
@@ -459,9 +454,9 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateInc(Share<HazeCompilerValue> 
 	return retValue;
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateDec(Share<HazeCompilerValue> value, bool isPreDec)
+Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool isPreDec)
 {
-	Share<HazeCompilerValue> retValue = value;
+	Share<CompilerValue> retValue = value;
 	if (IsHazeBaseType(value->GetValueType().PrimaryType))
 	{
 		if (!isPreDec)
@@ -470,7 +465,7 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateDec(Share<HazeCompilerValue> 
 			m_Compiler->CreateMov(retValue, value);
 		}
 		//Compiler->CreateMov(Value, CreateSub(Value, Compiler->GetConstantValueInt(1)));
-		GenIRCode_UnaryOperator(value, InstructionOpCode::DEC);
+		GenIRCode_BinaryOperater(value, value, m_Compiler->GetConstantValueUint64(1), InstructionOpCode::SUB);
 	}
 	else
 	{
@@ -479,65 +474,30 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateDec(Share<HazeCompilerValue> 
 	return retValue;
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateArrayInit(Share<HazeCompilerValue> array, Share<HazeCompilerValue> initList)
-{
-	auto arrayValue = DynamicCast<HazeCompilerArrayValue>(array);
-	auto initListValue = DynamicCast<HazeCompilerInitListValue>(initList);
-
-	HAZE_STRING_STREAM hss;
-	HString varName;
-
-	if (IsHazeBaseType(arrayValue->GetValueType().SecondaryType))
-	{
-		for (int i = 0; i < (int)arrayValue->GetArrayLength(); i++)
-		{
-			hss << GetInstructionString(InstructionOpCode::MOV) << " ";
-
-			//GenVariableHzic(this, hss, array, i);
-
-			hss << " ";
-
-			GenVariableHzic(this, hss, initListValue->GetList()[i]);
-
-			hss << std::endl;
-
-			Share<HazeBaseBlock> BB = m_Compiler->GetInsertBlock();
-			BB->PushIRCode(hss.str());
-			hss.str(H_TEXT(""));
-		}
-	}
-	else
-	{
-		HAZE_LOG_ERR_W("目前只支持Haze默认类型的数组初始化赋值!\n");
-	}
-
-	return array;
-}
-
-void HazeCompilerModule::GenIRCode_BinaryOperater(Share<HazeCompilerValue> assignTo, Share<HazeCompilerValue> oper1, Share<HazeCompilerValue> oper2,
+void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2,
 	InstructionOpCode opCode)
 {
 	//Share<HazeCompilerValue> retValue = left;
 
 	//优化相关
-	if (oper1->IsConstant() && oper2->IsConstant())
-	{
-		if (IsNumberType(oper1->GetValueType().PrimaryType))
-		{
-			auto& leftValue = const_cast<HazeValue&>(oper1->GetValue());
-			HazeValue tempValue = leftValue;
-			auto& rightValue = const_cast<HazeValue&>(oper2->GetValue());
-			CalculateValueByType(oper1->GetValueType().PrimaryType, opCode, &rightValue, &leftValue);
+	//if (oper1->IsConstant() && oper2->IsConstant())
+	//{
+	//	if (IsNumberType(oper1->GetValueType().PrimaryType))
+	//	{
+	//		auto& leftValue = const_cast<HazeValue&>(oper1->GetValue());
+	//		HazeValue tempValue = leftValue;
+	//		auto& rightValue = const_cast<HazeValue&>(oper2->GetValue());
+	//		CalculateValueByType(oper1->GetValueType().PrimaryType, opCode, &rightValue, &leftValue);
 
-			auto retValue = m_Compiler->GenConstantValue(oper1->GetValueType().PrimaryType, leftValue);
-			leftValue = tempValue;
-		}
-		else
-		{
-			COMPILER_ERR_MODULE_W("生成<%s>操作错误", GetInstructionString(opCode), GetName().c_str());
-		}
-		return;// retValue;
-	}
+	//		auto retValue = m_Compiler->GenConstantValue(oper1->GetValueType().PrimaryType, leftValue);
+	//		leftValue = tempValue;
+	//	}
+	//	else
+	//	{
+	//		COMPILER_ERR_MODULE_W("生成<%s>操作错误", GetInstructionString(opCode), GetName().c_str());
+	//	}
+	//	return;// retValue;
+	//}
 
 	HAZE_STRING_STREAM ss;
 	
@@ -554,7 +514,7 @@ void HazeCompilerModule::GenIRCode_BinaryOperater(Share<HazeCompilerValue> assig
 	//return retValue;
 }
 
-void HazeCompilerModule::GenIRCode_UnaryOperator(Share<HazeCompilerValue> value, InstructionOpCode opCode)
+void CompilerModule::GenIRCode_UnaryOperator(Share<CompilerValue> value, InstructionOpCode opCode)
 {
 	auto function = GetCurrFunction();
 	HAZE_STRING_STREAM hss;
@@ -565,16 +525,13 @@ void HazeCompilerModule::GenIRCode_UnaryOperator(Share<HazeCompilerValue> value,
 	}
 	else
 	{
-		hss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(this, hss, value);
-
-		hss << std::endl;
+		GenIRCode(hss, this, opCode, nullptr, value);
 	}
 
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
-void HazeCompilerModule::GenIRCode_Ret(Share<HazeCompilerValue> value)
+void CompilerModule::GenIRCode_Ret(Share<CompilerValue> value)
 {
 	auto function = GetCurrFunction();
 	HAZE_STRING_STREAM hss;
@@ -586,7 +543,7 @@ void HazeCompilerModule::GenIRCode_Ret(Share<HazeCompilerValue> value)
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
-void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType cmpType, Share<HazeBaseBlock> ifJmpBlock, Share<HazeBaseBlock> elseJmpBlock)
+void CompilerModule::GenIRCode_Cmp(HazeCmpType cmpType, Share<CompilerBlock> ifJmpBlock, Share<CompilerBlock> elseJmpBlock)
 {
 	HAZE_STRING_STREAM hss;
 
@@ -620,7 +577,7 @@ void HazeCompilerModule::GenIRCode_Cmp(HazeCmpType cmpType, Share<HazeBaseBlock>
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
-void HazeCompilerModule::GenIRCode_JmpTo(Share<HazeBaseBlock> block)
+void CompilerModule::GenIRCode_JmpTo(Share<CompilerBlock> block)
 {
 	HAZE_STRING_STREAM hss;
 	hss << GetInstructionString(InstructionOpCode::JMP) << " " << block->GetName() << std::endl;
@@ -628,8 +585,8 @@ void HazeCompilerModule::GenIRCode_JmpTo(Share<HazeBaseBlock> block)
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, Share<HazeCompilerValue> refValue,
-	V_Array<Share<HazeCompilerValue>> arraySize, V_Array<HazeDefineType>* params)
+Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, Share<CompilerValue> refValue,
+	V_Array<Share<CompilerValue>> arraySize, V_Array<HazeDefineType>* params)
 {
 	for (auto& it : m_Variables)
 	{
@@ -657,14 +614,14 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateGlobalVariable(const HazeDefi
 	return retValue;
 }
 
-void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompilerFunction> callFunction, Share<HazeCompilerValue> pointerFunction,
-	AdvanceFunctionInfo* advancFunctionInfo, uint32& size, V_Array<Share<HazeCompilerValue>>& params,
-	Share<HazeCompilerValue> thisPointerTo)
+void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction,
+	AdvanceFunctionInfo* advancFunctionInfo, uint32& size, V_Array<Share<CompilerValue>>& params,
+	Share<CompilerValue> thisPointerTo)
 {
-	Share<HazeBaseBlock> insertBlock = m_Compiler->GetInsertBlock();
+	Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HString strName;
 
-	auto pointerFunc = DynamicCast<HazeCompilerPointerFunction>(pointerFunction);
+	auto pointerFunc = DynamicCast<CompilerPointerFunction>(pointerFunction);
 
 	V_Array<const HazeDefineType*> funcTypes(params.size());
 	for (int64 i = params.size() - 1; i >= 0; i--)
@@ -687,7 +644,7 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 			{
 				if (Variable->IsEnum())
 				{
-					auto enumValue = DynamicCast<HazeCompilerEnumValue>(Variable);
+					auto enumValue = DynamicCast<CompilerEnumValue>(Variable);
 					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetParentType() == type.PrimaryType) {}
 					else
 					{
@@ -759,8 +716,8 @@ void HazeCompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<HazeCompile
 	hss.str(H_TEXT(""));
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompilerFunction> callFunction, 
-	V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo)
+Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> callFunction, 
+	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
@@ -773,17 +730,17 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << " "
 		<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
 
-	auto retRegister = HazeCompiler::GetRegister(RET_REGISTER);
+	auto retRegister = Compiler::GetRegister(RET_REGISTER);
 
 	auto& retRegisterType = const_cast<HazeDefineType&>(retRegister->GetValueType());
 	retRegisterType = callFunction->GetFunctionType();
 	return retRegister;
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompilerValue> pointerFunction, 
-	V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo)
+Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> pointerFunction, 
+	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
-	Share<HazeBaseBlock> insertBlock = m_Compiler->GetInsertBlock();
+	Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
 
@@ -805,13 +762,13 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateFunctionCall(Share<HazeCompil
 		<< CAST_SCOPE(pointerFunction->GetVariableScope())  << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << params.size()
 		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
 
-	return HazeCompiler::GetRegister(RET_REGISTER);
+	return Compiler::GetRegister(RET_REGISTER);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo& functionInfo, 
-	V_Array<Share<HazeCompilerValue>>& params, Share<HazeCompilerValue> thisPointerTo)
+Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo& functionInfo, 
+	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
-	Share<HazeBaseBlock> insertBlock = m_Compiler->GetInsertBlock();
+	Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
 
@@ -834,10 +791,10 @@ Share<HazeCompilerValue> HazeCompilerModule::CreateAdvanceTypeFunctionCall(Advan
 		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionPointer)
 		<< " " << functionInfo.ClassFunc << std::endl;
 
-	return HazeCompiler::GetRegister(RET_REGISTER);
+	return Compiler::GetRegister(RET_REGISTER);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::GetOrCreateGlobalStringVariable(const HString& str)
+Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const HString& str)
 {
 	auto it = m_HashMap_StringTable.find(str);
 	if (it != m_HashMap_StringTable.end())
@@ -861,7 +818,7 @@ Share<HazeCompilerValue> HazeCompilerModule::GetOrCreateGlobalStringVariable(con
 	return it->second;
 }
 
-uint32 HazeCompilerModule::GetGlobalStringIndex(Share<HazeCompilerValue> value)
+uint32 CompilerModule::GetGlobalStringIndex(Share<CompilerValue> value)
 {
 	for (auto& it : m_HashMap_StringTable)
 	{
@@ -880,17 +837,17 @@ uint32 HazeCompilerModule::GetGlobalStringIndex(Share<HazeCompilerValue> value)
 	return 0;
 }
 
-void HazeCompilerModule::PreStartCreateGlobalVariable()
+void CompilerModule::PreStartCreateGlobalVariable()
 {
 	m_VariablesAddress.push_back({ (int)m_ModuleIRCodes.size(), 0 });
 }
 
-void HazeCompilerModule::EndCreateGlobalVariable()
+void CompilerModule::EndCreateGlobalVariable()
 {
 	m_VariablesAddress[m_VariablesAddress.size() - 1].second = (int)m_ModuleIRCodes.size();
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(HazeCompilerModule* m, const HString& name)
+Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const HString& name)
 {
 	auto ret = m->GetGlobalVariable_Internal(name);
 	if (ret)
@@ -901,7 +858,7 @@ Share<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable(HazeCompilerModul
 	return m->m_Compiler->GetBaseModuleGlobalVariable(name);
 }
 
-bool HazeCompilerModule::GetGlobalVariableName(HazeCompilerModule* m, const Share<HazeCompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
 	if (m->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
 	{
@@ -916,7 +873,7 @@ bool HazeCompilerModule::GetGlobalVariableName(HazeCompilerModule* m, const Shar
 	return value->TryGetVariableName(outName);
 }
 
-Share<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable_Internal(const HString& name)
+Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& name)
 {
 	for (auto& it : m_Variables)
 	{
@@ -946,7 +903,7 @@ Share<HazeCompilerValue> HazeCompilerModule::GetGlobalVariable_Internal(const HS
 	return nullptr;
 }
 
-bool HazeCompilerModule::GetGlobalVariableName_Internal(const Share<HazeCompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
 	if (value->IsRegister())
 	{
@@ -982,7 +939,7 @@ bool HazeCompilerModule::GetGlobalVariableName_Internal(const Share<HazeCompiler
 	return value->TryGetVariableName(outName);
 }
 
-Share<HazeCompilerEnum> HazeCompilerModule::GetEnum_Internal(const HString& name)
+Share<CompilerEnum> CompilerModule::GetEnum_Internal(const HString& name)
 {
 	auto iter = m_HashMap_Enums.find(name);
 	if (iter != m_HashMap_Enums.end())
@@ -1002,7 +959,7 @@ Share<HazeCompilerEnum> HazeCompilerModule::GetEnum_Internal(const HString& name
 	return nullptr;
 }
 
-Share<HazeCompilerClass> HazeCompilerModule::GetClass(const HString& className)
+Share<CompilerClass> CompilerModule::GetClass(const HString& className)
 {
 	auto iter = m_HashMap_Classes.find(className);
 	if (iter != m_HashMap_Classes.end())
@@ -1022,12 +979,12 @@ Share<HazeCompilerClass> HazeCompilerModule::GetClass(const HString& className)
 	return nullptr;
 }
 
-uint32 HazeCompilerModule::GetClassSize(const HString& className)
+uint32 CompilerModule::GetClassSize(const HString& className)
 {
 	return GetClass(className)->GetDataSize();
 }
 
-void HazeCompilerModule::GenICode()
+void CompilerModule::GenICode()
 {
 	//版本 2个字节
 	//FS_Ass << "1 1" << std::endl;

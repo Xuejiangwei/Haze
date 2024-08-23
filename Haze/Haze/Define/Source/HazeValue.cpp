@@ -267,23 +267,6 @@ void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& 
 	hazeRegister->Data[1] = CmpGreater; hazeRegister->Data[2] = CmpLess
 
 template<typename T>
-void CalculateValue(InstructionOpCode typeCode, T& target)
-{
-	switch (typeCode)
-	{
-	case InstructionOpCode::INC:
-		++target;
-		break;
-	case InstructionOpCode::DEC:
-		--target;
-		break;
-	default:
-		HAZE_LOG_ERR_W("<%s>操作不支持!", WString2String(GetInstructionString(typeCode)).c_str());
-		break;
-	}
-}
-
-template<typename T>
 void CalculateValue(InstructionOpCode typeCode, T& source, T& target)
 {
 	switch (typeCode)
@@ -484,64 +467,6 @@ void CalculateValue(InstructionOpCode typeCode, uint64& source, uint64& target)
 	case InstructionOpCode::SHR:
 		target >>= source;
 		break;
-	default:
-		break;
-	}
-}
-
-void OperatorValueByType(HazeValueType type, InstructionOpCode typeCode, const void* target)
-{
-	switch (type)
-	{
-		/*case HazeValueType::Bool:
-		{
-			VARIABLE_DEFINE_INIT(bool, Target);
-			VARIABLE_CALCULATE(bool, TypeCode);
-			ASSIGN(bool);
-		}
-		break;*/
-	case HazeValueType::Int32:
-	{
-		VARIABLE_DEFINE_INIT(int32, target);
-		VARIABLE_CALCULATE(int32, typeCode);
-		ASSIGN(int32);
-	}
-	break;
-	case HazeValueType::UInt32:
-	{
-		VARIABLE_DEFINE_INIT(uint32, target);
-		VARIABLE_CALCULATE(uint32, typeCode);
-		ASSIGN(uint32);
-	}
-	break;
-	case HazeValueType::Int64:
-	{
-		VARIABLE_DEFINE_INIT(int64, target);
-		VARIABLE_CALCULATE(int64, typeCode);
-		ASSIGN(int64);
-	}
-	break;
-	case HazeValueType::UInt64:
-	{
-		VARIABLE_DEFINE_INIT(uint64, target);
-		VARIABLE_CALCULATE(uint64, typeCode);
-		ASSIGN(uint64);
-	}
-	break;
-	case HazeValueType::Float32:
-	{
-		VARIABLE_DEFINE_INIT(float32, target);
-		VARIABLE_CALCULATE(float32, typeCode);
-		ASSIGN(float32);
-	}
-	break;
-	case HazeValueType::Float64:
-	{
-		VARIABLE_DEFINE_INIT(float64, target);
-		VARIABLE_CALCULATE(float64, typeCode);
-		ASSIGN(float64);
-	}
-	break;
 	default:
 		break;
 	}

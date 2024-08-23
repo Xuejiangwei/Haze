@@ -1,11 +1,11 @@
 #pragma once
 
-#include "HazeCompilerValue.h"
+#include "CompilerValue.h"
 
-class HazeCompilerPointerValue : public HazeCompilerValue
+class HazeCompilerPointerValue : public CompilerValue
 {
 public:
-	explicit HazeCompilerPointerValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
+	explicit HazeCompilerPointerValue(CompilerModule* compilerModule, const HazeDefineType& defineType,
 		HazeVariableScope scope, HazeDataDesc desc, int count);
 
 	virtual ~HazeCompilerPointerValue() override;

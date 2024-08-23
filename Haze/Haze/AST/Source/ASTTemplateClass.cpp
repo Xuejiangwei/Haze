@@ -3,15 +3,15 @@
 #include "ASTFunction.h"
 #include "HazeLog.h"
 
-#include "HazeCompiler.h"
-#include "HazeCompilerModule.h"
-#include "HazeCompilerClass.h"
+#include "Compiler.h"
+#include "CompilerModule.h"
+#include "CompilerClass.h"
 #include "HazeCompilerTemplateClass.h"
 
 extern int g_ClassInheritLimit;
 extern int g_ClassInheritLevelLimit;
 
-ASTTemplateClass::ASTTemplateClass(HazeCompiler* compiler, HString& name, V_Array<HString>& parentClass,
+ASTTemplateClass::ASTTemplateClass(Compiler* compiler, HString& name, V_Array<HString>& parentClass,
 	V_Array<HString>& templateTypes,
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data,
 	Unique<ASTClassFunctionSection>& functionSection)

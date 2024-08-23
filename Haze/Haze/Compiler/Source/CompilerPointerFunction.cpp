@@ -1,9 +1,9 @@
 #include "HazePch.h"
-#include "HazeCompilerPointerFunction.h"
-#include "HazeCompilerModule.h"
+#include "CompilerPointerFunction.h"
+#include "CompilerModule.h"
 #include "HazeLogDefine.h"
 
-HazeCompilerPointerFunction::HazeCompilerPointerFunction(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
+CompilerPointerFunction::CompilerPointerFunction(CompilerModule* compilerModule, const HazeDefineType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count, V_Array<HazeDefineType>* paramTypes)
 	: HazeCompilerPointerValue(compilerModule, defineType, scope, desc, count)
 {
@@ -13,11 +13,11 @@ HazeCompilerPointerFunction::HazeCompilerPointerFunction(HazeCompilerModule* com
 	}
 }
 
-HazeCompilerPointerFunction::~HazeCompilerPointerFunction()
+CompilerPointerFunction::~CompilerPointerFunction()
 {
 }
 
-const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeByIndex(uint64 index) const
+const HazeDefineType& CompilerPointerFunction::GetParamTypeByIndex(uint64 index) const
 {
 	if (index < m_ParamTypes.size())
 	{
@@ -34,7 +34,7 @@ const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeByIndex(uint64 in
 	}
 }
 
-const HazeDefineType& HazeCompilerPointerFunction::GetParamTypeLeftToRightByIndex(uint64 index) const
+const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(uint64 index) const
 {
 	if (index + 1 < m_ParamTypes.size())
 	{

@@ -3,7 +3,7 @@
 #include "HazeHeader.h"
 #include "HazeVariable.h"
 
-class HazeCompiler;
+class Compiler;
 
 class HazeDebugger;
 class HazeStack;
@@ -46,7 +46,7 @@ public:
 
 	void ParseFile(const HString& FilePath);
 
-	Unique<HazeCompiler>& GetCompiler() { return m_Compiler; }
+	Unique<Compiler>& GetCompiler() { return m_Compiler; }
 
 	const HashSet<HString>& GetReferenceModules() const { return HashSet_RefModule; }
 
@@ -88,7 +88,7 @@ private:
 	uint32 GetCurrCallFunctionLine();
 
 private:
-	Unique<HazeCompiler> m_Compiler;
+	Unique<Compiler> m_Compiler;
 
 private:
 	//HashMap<HString, Unique<Module>> MapModule;

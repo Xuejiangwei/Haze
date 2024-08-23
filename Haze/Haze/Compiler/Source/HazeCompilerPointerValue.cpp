@@ -1,13 +1,13 @@
 #include "HazePch.h"
-#include "HazeCompiler.h"
-#include "HazeCompilerModule.h"
-#include "HazeCompilerArrayValue.h"
+#include "Compiler.h"
+#include "CompilerModule.h"
+#include "CompilerArrayValue.h"
 #include "HazeCompilerPointerValue.h"
 #include "HazeLog.h"
 
-HazeCompilerPointerValue::HazeCompilerPointerValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
+HazeCompilerPointerValue::HazeCompilerPointerValue(CompilerModule* compilerModule, const HazeDefineType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count)
-	: HazeCompilerValue(compilerModule, defineType, scope, desc, count)
+	: CompilerValue(compilerModule, defineType, scope, desc, count)
 {
 }
 

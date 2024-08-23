@@ -1,23 +1,23 @@
 #pragma once
 
-class HazeCompilerModule;
+class CompilerModule;
 
-class HazeCompilerValue : public std::enable_shared_from_this<HazeCompilerValue>
+class CompilerValue : public SharedFromThis<CompilerValue>
 {
-	friend class HazeCompilerClass;
+	friend class CompilerClass;
 public:
 	//HazeCompilerValue();
 
 	//HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	HazeCompilerValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-		HazeDataDesc desc, int count, Share<HazeCompilerValue> assignValue = nullptr);
+	CompilerValue(CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+		HazeDataDesc desc, int count, Share<CompilerValue> assignValue = nullptr);
 
-	virtual ~HazeCompilerValue();
+	virtual ~CompilerValue();
 
-	Share<HazeCompilerValue> GetShared() { return shared_from_this(); }
+	Share<CompilerValue> GetShared() { return shared_from_this(); }
 
-	virtual void StoreValueType(Share<HazeCompilerValue> srcValue);
+	virtual void StoreValueType(Share<CompilerValue> srcValue);
 
 	const HazeDefineType& GetValueType() const { return m_ValueType; }
 
@@ -83,7 +83,7 @@ public:
 protected:
 	HazeDefineType m_ValueType;
 	HazeValue m_Value;
-	HazeCompilerModule* m_Module;
+	CompilerModule* m_Module;
 	HazeVariableScope m_Scope;
 	HazeDataDesc m_Desc;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-class HazeCompilerClass;
+class CompilerClass;
 
 class HazeCompilerTemplateClass
 {
@@ -10,5 +10,5 @@ public:
 	~HazeCompilerTemplateClass();
 
 private:
-	V_Array<Share<HazeCompilerClass>> m_GenerateClass;
+	V_Array<Share<CompilerClass>> m_GenerateClass;
 };

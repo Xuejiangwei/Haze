@@ -2,14 +2,14 @@
 #include "HazeHeader.h"
 #include "ASTTemplateBase.h"
 
-class HazeCompiler;
+class Compiler;
 class ASTBase;
 class ASTClassFunctionSection;
 
 class ASTTemplateClass : public ASTTemplateBase
 {
 public:
-	ASTTemplateClass(HazeCompiler* compiler, HString& name, V_Array<HString>& parentClass,
+	ASTTemplateClass(Compiler* compiler, HString& name, V_Array<HString>& parentClass,
 		V_Array<HString>& templateTypes,
 		V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data, 
 		Unique<ASTClassFunctionSection>& functionSection);
@@ -19,7 +19,7 @@ public:
 	virtual void CodeGen() override;
 
 private:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 
 	HString m_ClassName;
 	V_Array<HString> m_ParentClasses;

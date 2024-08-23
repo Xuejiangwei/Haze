@@ -145,7 +145,7 @@ void HazeStack::OnCall(const FunctionData* info, int paramSize)
 	}
 	else if (info->Variables.size() > info->Params.size())
 	{
-		m_ESP += info->Variables.back().Offset + GetSizeByType(info->Variables.back().Variable.Type, m_VM);
+		m_ESP += info->Variables.back().Offset + info->Variables.back().Variable.Type.GetTypeSize();
 	}
 
 	//在调用函数时，将调用的函数栈全部清零，就不用担心GC时脏数据转换成有效的指针

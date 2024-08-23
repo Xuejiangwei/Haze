@@ -62,12 +62,6 @@ enum class InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType 
 HString GetModuleNameByFilePath(const HString& filePath);
 
 template <typename T>
-unsigned int GetSizeByType(const HazeDefineType& type, T* This);
-
-template <typename T>
-unsigned int GetNewAllocSizeByType(const HazeDefineType& type, T* This);
-
-template <typename T>
 T StringToStandardType(const HString& str);
 
 template <typename T>

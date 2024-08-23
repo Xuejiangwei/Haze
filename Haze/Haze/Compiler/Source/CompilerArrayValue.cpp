@@ -1,27 +1,27 @@
 #include "HazePch.h"
-#include "HazeCompilerArrayValue.h"
-#include "HazeCompilerClass.h"
-#include "HazeCompilerModule.h"
-#include "HazeCompilerFunction.h"
-#include "HazeCompilerHelper.h"
+#include "CompilerArrayValue.h"
+#include "CompilerClass.h"
+#include "CompilerModule.h"
+#include "CompilerFunction.h"
+#include "CompilerHelper.h"
 #include "HazeCompilerPointerValue.h"
-#include "HazeCompilerClassValue.h"
+#include "CompilerClassValue.h"
 #include "HazeLogDefine.h"
 
-HazeCompilerArrayElementValue::HazeCompilerArrayElementValue(HazeCompilerModule* compilerModule, 
+CompilerArrayElementValue::CompilerArrayElementValue(CompilerModule* compilerModule, 
 	const HazeDefineType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count,
-	HazeCompilerValue* arrayValue, V_Array<HazeCompilerValue*> index) 
-	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayOrPointer(arrayValue), m_ArrayIndex(index)
+	CompilerValue* arrayValue, V_Array<CompilerValue*> index) 
+	: CompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayOrPointer(arrayValue), m_ArrayIndex(index)
 {
 }
 
-HazeCompilerArrayElementValue::~HazeCompilerArrayElementValue()
+CompilerArrayElementValue::~CompilerArrayElementValue()
 {
 }
 
-HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-	HazeDataDesc desc, int count, V_Array<Share<HazeCompilerValue>>& arraySize)
-	: HazeCompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayLength(0), m_Size(0)
+CompilerArrayValue::CompilerArrayValue(CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+	HazeDataDesc desc, int count, V_Array<Share<CompilerValue>>& arraySize)
+	: CompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayLength(0), m_Size(0)
 {
 	if (arraySize.size() > 0)
 	{
@@ -37,11 +37,11 @@ HazeCompilerArrayValue::HazeCompilerArrayValue(HazeCompilerModule* compilerModul
 	}
 }
 
-HazeCompilerArrayValue::~HazeCompilerArrayValue()
+CompilerArrayValue::~CompilerArrayValue()
 {
 }
 
-uint64 HazeCompilerArrayValue::GetSizeByLevel(uint64 level)
+uint64 CompilerArrayValue::GetSizeByLevel(uint64 level)
 {
 	uint64 ret = 0;
 	if (level + 1 < m_SizeValues.size())

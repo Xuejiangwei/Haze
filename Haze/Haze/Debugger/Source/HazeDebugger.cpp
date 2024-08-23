@@ -484,7 +484,7 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.SecondaryType));
 		json["SubType"] = GB2312_2_UFT8(s_String.c_str());
 
-		int size = GetSizeByType(variable.Variable.Type, m_VM);
+		int size =variable.Variable.Type.GetTypeSize();
 
 		if (variable.Variable.Type.CustomName->empty())
 		{

@@ -1,0 +1,54 @@
+#pragma once
+
+#include "HazeHeader.h"
+
+class CompilerModule;
+class CompilerValue;
+class CompilerFunction;
+class CompilerClass;
+
+HString GetLocalVariableName(const HString& name, Share<CompilerValue> value);
+
+void HazeCompilerStream(HAZE_STRING_STREAM& hss, CompilerValue* value, bool streamValue = true);
+
+void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, bool streamValue = true);
+
+Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDefineVariable& var, 
+	HazeVariableScope scope, HazeDataDesc desc, int count, Share<CompilerValue> refValue = nullptr,
+	V_Array<Share<CompilerValue>> arraySize = {}, V_Array<HazeDefineType>* params = nullptr);
+
+V_Array<Pair<HazeDataDesc, V_Array<Share<CompilerValue>>>> CreateVariableCopyClassMember(
+	CompilerModule* compilerModule, HazeVariableScope scope, CompilerClass* compilerClass);
+
+void StreamCompilerValue(HAZE_STRING_STREAM& hss, InstructionOpCode insCode, Share<CompilerValue> value, 
+	const HChar* defaultName = nullptr);
+
+HString GetObjectName(const HString& inName);
+
+Share<CompilerValue> GetObjectMember(CompilerModule* compilerModule, const HString& inName);
+
+Share<CompilerValue> GetObjectMember(CompilerModule* compilerModule, const HString& inName, bool& isPointer);
+
+Share<CompilerValue> GetObjectNameAndMemberName(CompilerModule* compilerModule, const HString& inName,
+	HString& outObjectName, HString& outMemberName, bool& isPointer);
+
+Share<CompilerFunction> GetObjectFunction(CompilerModule* compilerModule, const HString& inName);
+
+Pair<Share<CompilerFunction>, Share<CompilerValue>> GetObjectFunction(
+	CompilerModule* compilerModule, const HString& inName, bool& isPointer);
+
+Pair<Share<CompilerFunction>, Share<CompilerValue>> GetObjectNameAndFunctionName(
+	CompilerModule* compilerModule, const HString& inName, HString& outObjectName, HString& outFunctionName, bool& isPointer);
+
+bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
+	const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
+
+Share<CompilerValue> GetArrayElementToValue(CompilerModule* compilerModule,
+	Share<CompilerValue> elementValue, Share<CompilerValue> movToValue = nullptr);
+
+void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes);
+
+void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const Share<CompilerValue>& value/*, int index = -1*/);
+
+void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo, 
+	Share<CompilerValue> oper1, Share<CompilerValue> oper2 = nullptr, const HazeDefineType* expectType = nullptr);

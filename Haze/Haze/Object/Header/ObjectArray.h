@@ -24,6 +24,8 @@ private:
 
 	static void Get(HAZE_STD_CALL_PARAM);
 
+	static void Set(HAZE_STD_CALL_PARAM);
+
 private:
 	void* m_Data;
 	uint64 m_DimensionCount;

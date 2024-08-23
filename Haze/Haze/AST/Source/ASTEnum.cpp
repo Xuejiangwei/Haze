@@ -1,12 +1,12 @@
 #include "HazePch.h"
 #include "ASTEnum.h"
 #include "ASTBase.h"
-#include "HazeCompiler.h"
-#include "HazeCompilerModule.h"
-#include "HazeCompilerValue.h"
-#include "HazeCompilerEnum.h"
+#include "Compiler.h"
+#include "CompilerModule.h"
+#include "CompilerValue.h"
+#include "CompilerEnum.h"
 
-ASTEnum::ASTEnum(HazeCompiler* compiler, const SourceLocation& location, HString& name, HazeValueType baseType,
+ASTEnum::ASTEnum(Compiler* compiler, const SourceLocation& location, HString& name, HazeValueType baseType,
 	V_Array<Pair<HString, Unique<ASTBase>>>& enums)
 	: m_Compiler(compiler), m_Location(location), m_EnumName(Move(name)), m_BaseType(baseType), m_Enums(Move(enums))
 {
@@ -22,7 +22,7 @@ void ASTEnum::CodeGen()
 
 	for (size_t i = 0; i < m_Enums.size(); i++)
 	{
-		Share<HazeCompilerValue> v = nullptr;
+		Share<CompilerValue> v = nullptr;
 		if (m_Enums[i].second)
 		{
 			//这里需要计算出常量

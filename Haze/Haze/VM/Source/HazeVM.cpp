@@ -4,7 +4,7 @@
 #include "HazeLog.h"
 
 #include "Parse.h"
-#include "HazeCompiler.h"
+#include "Compiler.h"
 #include "HazeBaseLibraryDefine.h"
 #include "BackendParse.h"
 #include "HazeExecuteFile.h"
@@ -30,7 +30,7 @@ extern void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_
 HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
 	VMStack = MakeUnique<HazeStack>(this);
-	m_Compiler = MakeUnique<HazeCompiler>(this);
+	m_Compiler = MakeUnique<Compiler>(this);
 }
 
 HazeVM::~HazeVM()

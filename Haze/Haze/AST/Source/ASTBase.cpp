@@ -2,68 +2,81 @@
 #include "ASTBase.h"
 #include "HazeLogDefine.h"
 
-#include "HazeCompilerHelper.h"
-#include "HazeCompiler.h"
-#include "HazeCompilerModule.h"
-#include "HazeCompilerClass.h"
-#include "HazeBaseBlock.h"
-#include "HazeCompilerFunction.h"
-#include "HazeCompilerValue.h"
+#include "CompilerHelper.h"
+#include "Compiler.h"
+#include "CompilerModule.h"
+#include "CompilerClass.h"
+#include "CompilerBlock.h"
+#include "CompilerFunction.h"
+#include "CompilerValue.h"
 #include "HazeCompilerPointerValue.h"
-#include "HazeCompilerClassValue.h"
-#include "HazeCompilerInitListValue.h"
-#include "HazeCompilerEnum.h"
-#include "HazeCompilerEnumValue.h"
-#include "HazeCompilerHelper.h"
+#include "CompilerClassValue.h"
+#include "CompilerEnum.h"
+#include "CompilerEnumValue.h"
+#include "CompilerHelper.h"
+
+#define CHECK_ASSIGN_VALUE_IS_NULL(AST, V) if(V) AST_ERR_W(#AST H_TEXT("<%s>传入了赋予值"), m_DefineVariable.Name.c_str())
 
 //Base
-ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location) : m_Compiler(compiler), m_Location(location)
+ASTBase::ASTBase(Compiler* compiler, const SourceLocation& location) : m_Compiler(compiler), m_Location(location)
 {
 	m_DefineVariable.Name = H_TEXT("");
 	m_DefineVariable.Type = { HazeValueType::Void };
 }
 
-ASTBase::ASTBase(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& var) 
+ASTBase::ASTBase(Compiler* compiler, const SourceLocation& location, const HazeDefineVariable& var) 
 	: m_Compiler(compiler), m_DefineVariable(var), m_Location(location)
 {
 	memset(&m_Value.Value, 0, sizeof(m_Value.Value));
 }
 
-ASTBool::ASTBool(HazeCompiler* compiler, const SourceLocation& location, const HazeValue& value)
+Share<CompilerValue> ASTBase::TryAssign(Share<CompilerValue> assignTo, Share<CompilerValue> value)
+{
+	if (assignTo)
+	{
+		return m_Compiler->CreateMov(assignTo, value);
+	}
+	return value;
+}
+
+ASTBool::ASTBool(Compiler* compiler, const SourceLocation& location, const HazeValue& value)
 	: ASTBase(compiler, location)
 {
 	m_DefineVariable.Type.PrimaryType = HazeValueType::Bool;
 	m_Value = value;
 }
 
-Share<HazeCompilerValue> ASTBool::CodeGen()
+Share<CompilerValue> ASTBool::CodeGen(Share<CompilerValue> assignTo)
 {
-	return m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
+	auto v = m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
+	return TryAssign(assignTo, v);
 }
 
-ASTNumber::ASTNumber(HazeCompiler* compiler, const SourceLocation& location, HazeValueType type, const HazeValue& value) 
+ASTNumber::ASTNumber(Compiler* compiler, const SourceLocation& location, HazeValueType type, const HazeValue& value) 
 	: ASTBase(compiler, location)
 {
 	m_DefineVariable.Type.PrimaryType = type;
 	m_Value = value;
 }
 
-Share<HazeCompilerValue> ASTNumber::CodeGen()
+Share<CompilerValue> ASTNumber::CodeGen(Share<CompilerValue> assignTo)
 {
-	return m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
+	auto v = m_Compiler->GenConstantValue(m_DefineVariable.Type.PrimaryType, m_Value);
+	return TryAssign(assignTo, v);
 }
 
-ASTStringText::ASTStringText(HazeCompiler* compiler, const SourceLocation& location, HString& text) 
+ASTStringText::ASTStringText(Compiler* compiler, const SourceLocation& location, HString& text) 
 	: ASTBase(compiler, location), m_Text(Move(text))
 {
 }
 
-Share<HazeCompilerValue> ASTStringText::CodeGen()
+Share<CompilerValue> ASTStringText::CodeGen(Share<CompilerValue> assignTo)
 {
-	return m_Compiler->GenStringVariable(m_Text);
+	auto v = m_Compiler->GenStringVariable(m_Text);
+	return TryAssign(assignTo, v);
 }
 
-ASTIdentifier::ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
+ASTIdentifier::ASTIdentifier(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
 	V_Array<Unique<ASTBase>>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_ArrayIndexExpression(Move(arrayIndexExpression)),
 	m_PreAst(Move(preAst)), m_NameSpace(Move(nameSpace))
@@ -71,9 +84,9 @@ ASTIdentifier::ASTIdentifier(HazeCompiler* compiler, const SourceLocation& locat
 	m_DefineVariable.Name = Move(name);
 }
 
-Share<HazeCompilerValue> ASTIdentifier::CodeGen()
+Share<CompilerValue> ASTIdentifier::CodeGen(Share<CompilerValue> assignTo)
 {
-	Share<HazeCompilerValue> retValue = nullptr;
+	Share<CompilerValue> retValue = nullptr;
 	HazeVariableScope classMemberScope = HazeVariableScope::Local;
 
 	if (!m_DefineVariable.Name.empty())
@@ -122,7 +135,7 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 
 		if (retValue->IsArray() && m_ArrayIndexExpression.size() > 0)
 		{
-			V_Array<Share<HazeCompilerValue>> indexValue;
+			V_Array<Share<CompilerValue>> indexValue;
 			for (size_t i = 0; i < m_ArrayIndexExpression.size(); i++)
 			{
 				indexValue.push_back(m_ArrayIndexExpression[i]->CodeGen());
@@ -142,31 +155,31 @@ Share<HazeCompilerValue> ASTIdentifier::CodeGen()
 		}
 	}*/
 
-	return retValue;
+	return TryAssign(assignTo, retValue);
 }
 
-ASTFunctionCall::ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
+ASTFunctionCall::ASTFunctionCall(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 	HString& name, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj, Unique<ASTBase>& preAst)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_Name(Move(name)),
 	m_FunctionParam(Move(functionParam)), m_ClassObj(Move(classObj)), m_PreAst(Move(preAst))
 {
 }
 
-Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
+Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
-	Pair<Share<HazeCompilerFunction>, Share<HazeCompilerValue>> funcs = { nullptr, nullptr };
+	Pair<Share<CompilerFunction>, Share<CompilerValue>> funcs = { nullptr, nullptr };
 	if (m_ClassObj)
 	{
-		funcs.first = DynamicCast<HazeCompilerClassValue>(m_ClassObj->CodeGen())->GetOwnerClass()->FindFunction(m_Name);
+		funcs.first = DynamicCast<CompilerClassValue>(m_ClassObj->CodeGen())->GetOwnerClass()->FindFunction(m_Name);
 	}
 	else
 	{
 		funcs = m_Compiler->GetFunction(m_Name);
 	}
 
-	V_Array<Share<HazeCompilerValue>> param;
+	V_Array<Share<CompilerValue>> param;
 
 	for (int i = (int)m_FunctionParam.size() - 1; i >= 0; i--)
 	{
@@ -178,6 +191,7 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		}
 	}
 	
+	Share<CompilerValue> ret = nullptr;
 	if (funcs.first)
 	{
 		if (funcs.first->GetClass())
@@ -188,7 +202,7 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 			}
 		}
 
-		return m_Compiler->CreateFunctionCall(funcs.first, param, funcs.second);
+		ret = m_Compiler->CreateFunctionCall(funcs.first, param, funcs.second);
 	}
 	else
 	{
@@ -196,19 +210,23 @@ Share<HazeCompilerValue> ASTFunctionCall::CodeGen()
 		auto functionPointer = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(m_Name);
 		if (functionPointer)
 		{
-			return m_Compiler->CreateFunctionCall(functionPointer, param);
+			ret = m_Compiler->CreateFunctionCall(functionPointer, param);
 		}
 		else
 		{
-			return m_Compiler->CreateFunctionCall(m_PreAst->CodeGen(), param);
+			ret = m_Compiler->CreateFunctionCall(m_PreAst->CodeGen(), param);
 		}
 	}
 
-	HAZE_LOG_ERR_W("生成函数调用<%s>错误, 检查函数名或 ( 符号是否与函数名在同一行\n", m_Name.c_str());
-	return nullptr;
+	if (!ret)
+	{
+		HAZE_LOG_ERR_W("生成函数调用<%s>错误, 检查函数名或 ( 符号是否与函数名在同一行\n", m_Name.c_str());
+	}
+
+	return TryAssign(assignTo, ret);
 }
 
-ASTClassAttr::ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+ASTClassAttr::ASTClassAttr(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	HString& classObjName, Unique<ASTBase>& preAst, HString& attrName, bool isFunction,
 	V_Array<Unique<ASTBase>>* functionParam)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_PreAst(Move(preAst)), m_IsFunction(isFunction),
@@ -221,9 +239,9 @@ ASTClassAttr::ASTClassAttr(HazeCompiler* compiler, const SourceLocation& locatio
 	}
 }
 
-Share<HazeCompilerValue> ASTClassAttr::CodeGen()
+Share<CompilerValue> ASTClassAttr::CodeGen(Share<CompilerValue> assignTo)
 {
-	Share<HazeCompilerValue> v;
+	Share<CompilerValue> v;
 	if (!m_DefineVariable.Name.empty())
 	{
 		if (m_SectionSignal == HazeSectionSignal::Global)
@@ -244,10 +262,11 @@ Share<HazeCompilerValue> ASTClassAttr::CodeGen()
 		v = m_PreAst->CodeGen();
 	}
 
-	auto classValue = DynamicCast<HazeCompilerClassValue>(v);
+	auto classValue = DynamicCast<CompilerClassValue>(v);
+	Share<CompilerValue> ret = nullptr;
 	if (m_IsFunction)
 	{
-		V_Array<Share<HazeCompilerValue>> param;
+		V_Array<Share<CompilerValue>> param;
 		for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 		{
 			param.push_back(m_Params[i]->CodeGen());
@@ -255,20 +274,22 @@ Share<HazeCompilerValue> ASTClassAttr::CodeGen()
 
 		if (!classValue && IsAdvanceType(v->GetValueType().PrimaryType))
 		{
-			return m_Compiler->CreateAdvanceTypeFunctionCall(v->GetValueType().PrimaryType, m_AttrName, param,v);
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(v->GetValueType().PrimaryType, m_AttrName, param,v);
 		}
 		else
 		{
-			return m_Compiler->CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(m_AttrName), param, classValue);
+			ret = m_Compiler->CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(m_AttrName), param, classValue);
 		}
 	}
 	else
 	{
-		return classValue->GetMember(m_AttrName);
+		ret = classValue->GetMember(m_AttrName);
 	}
+
+	return TryAssign(assignTo, ret);
 }
 
-ASTVariableDefine::ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
+ASTVariableDefine::ASTVariableDefine(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 	const HazeDefineVariable& defineVar, Unique<ASTBase> expression)
 	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(Move(expression))
 {
@@ -276,7 +297,7 @@ ASTVariableDefine::ASTVariableDefine(HazeCompiler* compiler, const SourceLocatio
 
 struct GlobalVariableInitScope
 {
-	GlobalVariableInitScope(HazeCompilerModule* m, HazeSectionSignal signal) : Module(m), Signal(signal)
+	GlobalVariableInitScope(CompilerModule* m, HazeSectionSignal signal) : Module(m), Signal(signal)
 	{
 		if (Signal == HazeSectionSignal::Global)
 		{
@@ -292,13 +313,15 @@ struct GlobalVariableInitScope
 		}
 	}
 
-	HazeCompilerModule* Module;
+	CompilerModule* Module;
 	HazeSectionSignal Signal;
 };
 
-Share<HazeCompilerValue> ASTVariableDefine::CodeGen()
+Share<CompilerValue> ASTVariableDefine::CodeGen(Share<CompilerValue> assignTo)
 {
-	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine, assignTo);
+	
+	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
 	auto exprValue = GenExpressionValue();
@@ -307,15 +330,15 @@ Share<HazeCompilerValue> ASTVariableDefine::CodeGen()
 
 	if (m_Expression)
 	{
-		m_Compiler->CreateMov(retValue, exprValue);
+		TryAssign(retValue, exprValue);
 	}
 
 	return retValue;
 }
 
-Share<HazeCompilerValue> ASTVariableDefine::GenExpressionValue()
+Share<CompilerValue> ASTVariableDefine::GenExpressionValue()
 {
-	Share<HazeCompilerValue> exprValue = nullptr;
+	Share<CompilerValue> exprValue = nullptr;
 	if (m_Expression)
 	{
 		if (auto NullExpression = dynamic_cast<ASTNullPtr*>(m_Expression.get()))
@@ -329,20 +352,26 @@ Share<HazeCompilerValue> ASTVariableDefine::GenExpressionValue()
 	return exprValue;
 }
 
-ASTVariableDefine_MultiVariable::ASTVariableDefine_MultiVariable(HazeCompiler* compiler, const SourceLocation& location)
+ASTVariableDefine_MultiVariable::ASTVariableDefine_MultiVariable(Compiler* compiler, const SourceLocation& location)
 	: ASTBase(compiler, location)
 {
 	m_DefineVariable.Type = HazeValueType::MultiVariable;
 	m_DefineVariable.Name = HAZE_MULTI_PARAM_NAME;
 }
 
-Share<HazeCompilerValue> ASTVariableDefine_MultiVariable::CodeGen()
+Share<CompilerValue> ASTVariableDefine_MultiVariable::CodeGen(Share<CompilerValue> assignTo)
 {
-	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
+	
+	if (assignTo)
+	{
+		AST_ERR_W("多参数变量<%s>定义错误, 传入了赋值", m_DefineVariable.Name.c_str());
+	}
+	
 	return m_Compiler->CreateVariableBySection(HazeSectionSignal::Local, currModule, currModule->GetCurrFunction(), m_DefineVariable, m_Location.Line);
 }
 
-ASTVariableDefine_Class::ASTVariableDefine_Class(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+ASTVariableDefine_Class::ASTVariableDefine_Class(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>> params)
 	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_Params(Move(params))
 {
@@ -352,18 +381,26 @@ ASTVariableDefine_Class::ASTVariableDefine_Class(HazeCompiler* compiler, const S
 	}
 }
 
-Share<HazeCompilerValue> ASTVariableDefine_Class::CodeGen()
+Share<CompilerValue> ASTVariableDefine_Class::CodeGen(Share<CompilerValue> assignTo)
 {
-	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine_Class, assignTo);
+
+	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
 	auto exprValue = GenExpressionValue();
 	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(), 
 		m_DefineVariable, m_Location.Line, exprValue);
-	return exprValue ? m_Compiler->CreateMov(retValue, exprValue) : retValue;
+
+	if (exprValue)
+	{
+		TryAssign(retValue, exprValue);
+	}
+
+	return retValue;
 }
 
-ASTVariableDefine_Array::ASTVariableDefine_Array(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>>& arraySize)
 	: ASTVariableDefine_Class(compiler, location, section, defineVar, Move(expression), templateTypes, Move(arraySize))
 {
@@ -373,14 +410,16 @@ ASTVariableDefine_Array::ASTVariableDefine_Array(HazeCompiler* compiler, const S
 	}
 }
 
-Share<HazeCompilerValue> ASTVariableDefine_Array::CodeGen()
+Share<CompilerValue> ASTVariableDefine_Array::CodeGen(Share<CompilerValue> assignTo)
 {
-	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine_Array, assignTo);
+	
+	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
 	auto exprValue = GenExpressionValue();
 
-	V_Array<Share<HazeCompilerValue>> sizeValue;
+	V_Array<Share<CompilerValue>> sizeValue;
 
 	for (auto& iter : m_ArraySize)
 	{
@@ -397,15 +436,19 @@ Share<HazeCompilerValue> ASTVariableDefine_Array::CodeGen()
 		}
 	}
 
-	auto v = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, exprValue, sizeValue);
 
-	m_Compiler->CreateMov(v, exprValue);
-	return v;
+	if (exprValue)
+	{
+		TryAssign(retValue, exprValue);
+	}
+
+	return retValue;
 }
 
 
-ASTVariableDefine_Function::ASTVariableDefine_Function(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+ASTVariableDefine_Function::ASTVariableDefine_Function(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes)
 	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression))
 {
@@ -415,9 +458,11 @@ ASTVariableDefine_Function::ASTVariableDefine_Function(HazeCompiler* compiler, c
 	}
 }
 
-Share<HazeCompilerValue> ASTVariableDefine_Function::CodeGen()
+Share<CompilerValue> ASTVariableDefine_Function::CodeGen(Share<CompilerValue> assignTo)
 {
-	Unique<HazeCompilerModule>& currModule = m_Compiler->GetCurrModule();
+	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine_Function, assignTo);
+
+	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
 	V_Array<HazeDefineType> paramTypes;
@@ -440,23 +485,24 @@ Share<HazeCompilerValue> ASTVariableDefine_Function::CodeGen()
 	}
 	else
 	{
-		m_Compiler->CreateMov(retValue, exprValue);
+		TryAssign(retValue, exprValue);
 	}
 
 	return retValue;
 }
 
-ASTReturn::ASTReturn(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
+ASTReturn::ASTReturn(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
 	:ASTBase(compiler, location), m_Expression(Move(expression))
 {
 }
 
-Share<HazeCompilerValue> ASTReturn::CodeGen()
+Share<CompilerValue> ASTReturn::CodeGen(Share<CompilerValue> assignTo)
 {
+	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine_Function, assignTo);
+	
 	m_Compiler->InsertLineCount(m_Location.Line);
-
-	Share<HazeCompilerValue> retValue = m_Expression ? m_Expression->CodeGen() : m_Compiler->GetConstantValueInt(0);
-
+	Share<CompilerValue> retValue = m_Expression ? m_Expression->CodeGen(Compiler::GetRegister(RET_REGISTER))
+		: m_Compiler->GetConstantValueInt(0);
 	if (m_Expression ? retValue->GetValueType() == m_Compiler->GetCurrModule()->GetCurrFunction()->GetFunctionType() : 
 		IsVoidType(m_Compiler->GetCurrModule()->GetCurrFunction()->GetFunctionType().PrimaryType))
 	{
@@ -470,18 +516,18 @@ Share<HazeCompilerValue> ASTReturn::CodeGen()
 	return nullptr;
 }
 
-ASTNew::ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar, V_Array<Unique<ASTBase>> countArrayExpression
+ASTNew::ASTNew(Compiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar, V_Array<Unique<ASTBase>> countArrayExpression
 	, V_Array<Unique<ASTBase>> constructorParam)
 	: ASTBase(compiler, location, DefineVar), m_CountArrayExpression(Move(countArrayExpression)),
 	m_ConstructorParam(Move(constructorParam))
 {
 }
 
-Share<HazeCompilerValue> ASTNew::CodeGen()
+Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> assignTo)
 {
 	auto func = m_Compiler->GetCurrModule()->GetCurrFunction();
 
-	V_Array<Share<HazeCompilerValue>> countValue(m_CountArrayExpression.size());
+	V_Array<Share<CompilerValue>> countValue(m_CountArrayExpression.size());
 
 	for (uint64 i = 0; i < m_CountArrayExpression.size(); i++)
 	{
@@ -500,7 +546,7 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 			//需要初始化多个类对象，类的参数个数必须为0
 			auto function = newClass->FindFunction(*value->GetValueType().CustomName);
 			auto arrayConstructorFunc = m_Compiler->GetFunction(HAZE_OBJECT_ARRAY_CONSTRUCTOR);
-			V_Array<Share<HazeCompilerValue>> param;
+			V_Array<Share<CompilerValue>> param;
 
 			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetValueType()), value);
 
@@ -518,7 +564,7 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 				m_Compiler->CreateMul(objCount, objCount, countValue[i]);
 			}
 
-			V_Array<Share<HazeCompilerValue>> params;
+			V_Array<Share<CompilerValue>> params;
 			params.push_back(objCount);
 			params.push_back(m_Compiler->GetConstantValueUint64(newClass->GetDataSize()));
 			params.push_back(m_Compiler->CreatePointerToFunction(function, nullptr));
@@ -529,7 +575,7 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 		else
 		{
 			auto function = newClass->FindFunction(*value->GetValueType().CustomName);
-			V_Array<Share<HazeCompilerValue>> param;
+			V_Array<Share<CompilerValue>> param;
 
 			//构造参数
 			for (int i = (int)m_ConstructorParam.size() - 1; i >= 0; i--)
@@ -542,10 +588,11 @@ Share<HazeCompilerValue> ASTNew::CodeGen()
 		}
 	}
 
-	return value;
+
+	return TryAssign(assignTo, value);
 }
 
-ASTGetAddress::ASTGetAddress(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
+ASTGetAddress::ASTGetAddress(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
 	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 }
@@ -554,9 +601,9 @@ ASTGetAddress::~ASTGetAddress()
 {
 }
 
-Share<HazeCompilerValue> ASTGetAddress::CodeGen()
+Share<CompilerValue> ASTGetAddress::CodeGen(Share<CompilerValue> assignTo)
 {
-	Share<HazeCompilerValue> retValue = nullptr;
+	Share<CompilerValue> retValue = nullptr;
 	if (m_Expression)
 	{
 		retValue = m_Expression->CodeGen();
@@ -580,10 +627,10 @@ Share<HazeCompilerValue> ASTGetAddress::CodeGen()
 		retValue = m_Compiler->CreatePointerToValue(retValue);
 	}*/
 
-	return retValue;
+	return TryAssign(assignTo, retValue);
 }
 
-ASTPointerValue::ASTPointerValue(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
+ASTPointerValue::ASTPointerValue(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
 	int level, Unique<ASTBase> assignExpression)
 	: ASTBase(compiler, location), m_Expression(Move(expression)), m_Level(level),
 	m_AssignExpression(Move(assignExpression))
@@ -594,7 +641,7 @@ ASTPointerValue::~ASTPointerValue()
 {
 }
 
-Share<HazeCompilerValue> ASTPointerValue::CodeGen()
+Share<CompilerValue> ASTPointerValue::CodeGen(Share<CompilerValue> assignTo)
 {
 	auto pointerValue = m_Expression->CodeGen();
 
@@ -615,7 +662,7 @@ Share<HazeCompilerValue> ASTPointerValue::CodeGen()
 	return nullptr;
 }
 
-ASTNeg::ASTNeg(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isNumberNeg)
+ASTNeg::ASTNeg(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isNumberNeg)
 	: ASTBase(compiler, location), m_Expression(Move(expression)), m_IsNumberNeg(isNumberNeg)
 {
 }
@@ -624,19 +671,22 @@ ASTNeg::~ASTNeg()
 {
 }
 
-Share<HazeCompilerValue> ASTNeg::CodeGen()
+Share<CompilerValue> ASTNeg::CodeGen(Share<CompilerValue> assignTo)
 {
+	Share<CompilerValue> ret = nullptr;
 	if (m_IsNumberNeg)
 	{
-		return m_Compiler->CreateNeg(m_Expression->CodeGen());
+		ret = m_Compiler->CreateNeg(assignTo, m_Expression->CodeGen());
 	}
 	else
 	{
-		return m_Compiler->CreateBitNeg(m_Expression->CodeGen());
+		ret = m_Compiler->CreateBitNeg(assignTo, m_Expression->CodeGen());
 	}
+	
+	return ret;
 }
 
-ASTNullPtr::ASTNullPtr(HazeCompiler* compiler, const SourceLocation& location) : ASTBase(compiler, location)
+ASTNullPtr::ASTNullPtr(Compiler* compiler, const SourceLocation& location) : ASTBase(compiler, location)
 {
 }
 
@@ -644,9 +694,9 @@ ASTNullPtr::~ASTNullPtr()
 {
 }
 
-Share<HazeCompilerValue> ASTNullPtr::CodeGen()
+Share<CompilerValue> ASTNullPtr::CodeGen(Share<CompilerValue> assignTo)
 {
-	return m_Compiler->GetNullPtr(m_DefineVariable.Type);
+	return TryAssign(assignTo, m_Compiler->GetNullPtr(m_DefineVariable.Type));
 }
 
 void ASTNullPtr::SetDefineType(const HazeDefineType& type)
@@ -654,7 +704,7 @@ void ASTNullPtr::SetDefineType(const HazeDefineType& type)
 	m_DefineVariable.Type = type;
 }
 
-ASTNot::ASTNot(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
+ASTNot::ASTNot(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
 	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 }
@@ -663,14 +713,14 @@ ASTNot::~ASTNot()
 {
 }
 
-Share<HazeCompilerValue> ASTNot::CodeGen()
+Share<CompilerValue> ASTNot::CodeGen(Share<CompilerValue> assignTo)
 {
 	auto value = m_Expression->CodeGen();
-	return m_Compiler->CreateNot(m_Compiler->GetTempRegister(value->GetValueType()), value);
+	return m_Compiler->CreateNot(assignTo, value);
 }
 
 
-ASTInc::ASTInc(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isPreInc)
+ASTInc::ASTInc(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isPreInc)
 	: ASTBase(compiler, location), m_IsPreInc(isPreInc), m_Expression(Move(expression))
 {
 }
@@ -679,13 +729,13 @@ ASTInc::~ASTInc()
 {
 }
 
-Share<HazeCompilerValue> ASTInc::CodeGen()
+Share<CompilerValue> ASTInc::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 	return m_Compiler->CreateInc(m_Expression->CodeGen(), m_IsPreInc);
 }
 
-ASTDec::ASTDec(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isPreDec)
+ASTDec::ASTDec(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isPreDec)
 	: ASTBase(compiler, location), m_IsPreDec(isPreDec), m_Expression(Move(expression))
 {
 }
@@ -694,28 +744,13 @@ ASTDec::~ASTDec()
 {
 }
 
-Share<HazeCompilerValue> ASTDec::CodeGen()
+Share<CompilerValue> ASTDec::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 	return m_Compiler->CreateDec(m_Expression->CodeGen(), m_IsPreDec);
 }
 
-ASTOperetorAssign::ASTOperetorAssign(HazeCompiler* compiler, const SourceLocation& location, HazeToken token, 
-	Unique<ASTBase>& expression) 
-	: ASTBase(compiler, location), m_Token(token), m_Expression(Move(expression))
-{
-}
-
-ASTOperetorAssign::~ASTOperetorAssign()
-{
-}
-
-Share<HazeCompilerValue> ASTOperetorAssign::CodeGen()
-{
-	return m_Expression->CodeGen();
-}
-
-ASTMultiExpression::ASTMultiExpression(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+ASTMultiExpression::ASTMultiExpression(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	V_Array<Unique<ASTBase>>& expressions)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_Expressions(Move(expressions))
 {
@@ -725,7 +760,7 @@ ASTMultiExpression::~ASTMultiExpression()
 {
 }
 
-Share<HazeCompilerValue> ASTMultiExpression::CodeGen()
+Share<CompilerValue> ASTMultiExpression::CodeGen(Share<CompilerValue> assignTo)
 {
 	//要考虑清楚无效的临时寄存器中引用的情况，全局变量的初始不用考虑，会在执行进入主函数字节码之前初始化完成
 	auto func = m_Compiler->GetCurrModule()->GetCurrFunction();
@@ -743,7 +778,7 @@ Share<HazeCompilerValue> ASTMultiExpression::CodeGen()
 	return nullptr;
 }
 
-ASTBinaryExpression::ASTBinaryExpression(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
+ASTBinaryExpression::ASTBinaryExpression(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 	HazeToken operatorToken, Unique<ASTBase>& leftAST, Unique<ASTBase>& rightAST)
 	:ASTBase(compiler, location), m_SectionSignal(section), m_OperatorToken(operatorToken), m_LeftAST(Move(leftAST)),
 	m_RightAST(Move(rightAST)), m_LeftBlock(nullptr), m_RightBlock(nullptr), m_DefaultBlock(nullptr)
@@ -754,13 +789,13 @@ ASTBinaryExpression::~ASTBinaryExpression()
 {
 }
 
-void ASTBinaryExpression::SetLeftAndRightBlock(HazeBaseBlock* leftJmpBlock, HazeBaseBlock* rightJmpBlock)
+void ASTBinaryExpression::SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, CompilerBlock* rightJmpBlock)
 {
 	m_LeftBlock = leftJmpBlock;
 	m_RightBlock = rightJmpBlock;
 }
 
-Share<HazeCompilerValue> ASTBinaryExpression::CodeGen(Share<HazeCompilerValue> assignTo)
+Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
@@ -833,15 +868,8 @@ Share<HazeCompilerValue> ASTBinaryExpression::CodeGen(Share<HazeCompilerValue> a
 	case HazeToken::Assign:
 	{
 		auto left = m_LeftAST->CodeGen();
-		if (rightExp)
-		{
-			return rightExp->CodeGen(left);
-		}
-		else
-		{
-			auto right = m_RightAST->CodeGen();
-			return m_Compiler->CreateMov(left, right);
-		}
+		m_RightAST->CodeGen(left);
+		return left;
 	}
 	case HazeToken::BitAnd:
 	{
@@ -1029,7 +1057,7 @@ Share<HazeCompilerValue> ASTBinaryExpression::CodeGen(Share<HazeCompilerValue> a
 	return nullptr;
 }
 
-ASTThreeExpression::ASTThreeExpression(HazeCompiler* compiler, const SourceLocation& location
+ASTThreeExpression::ASTThreeExpression(Compiler* compiler, const SourceLocation& location
 	, Unique<ASTBase>& conditionAST, Unique<ASTBase>& leftAST, Unique<ASTBase>& rightAST)
 	: ASTBase(compiler, location), m_ConditionAST(Move(conditionAST)), m_LeftAST(Move(leftAST)),
 		m_RightAST(Move(rightAST))
@@ -1040,7 +1068,7 @@ ASTThreeExpression::~ASTThreeExpression()
 {
 }
 
-Share<HazeCompilerValue> ASTThreeExpression::CodeGen()
+Share<CompilerValue> ASTThreeExpression::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
@@ -1048,9 +1076,9 @@ Share<HazeCompilerValue> ASTThreeExpression::CodeGen()
 
 	auto parentBlock = m_Compiler->GetInsertBlock();
 
-	auto defauleBlock = HazeBaseBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
-	auto blockLeft = HazeBaseBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
-	auto blockRight = HazeBaseBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
+	auto defauleBlock = CompilerBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
+	auto blockLeft = CompilerBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
+	auto blockRight = CompilerBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
 
 	auto conditionExp = dynamic_cast<ASTBinaryExpression*>(m_ConditionAST.get());
 	if (conditionExp)
@@ -1065,7 +1093,7 @@ Share<HazeCompilerValue> ASTThreeExpression::CodeGen()
 	}
 
 	auto leftValue = m_LeftAST->CodeGen();
-	auto tempValue = m_Compiler->GetTempRegister(leftValue->GetValueType());
+	auto tempValue = assignTo;//m_Compiler->GetTempRegister(leftValue->GetValueType());
 	m_Compiler->SetInsertBlock(blockLeft);
 	m_Compiler->CreateMov(tempValue, leftValue);
 	m_Compiler->CreateJmpToBlock(defauleBlock);
@@ -1079,7 +1107,7 @@ Share<HazeCompilerValue> ASTThreeExpression::CodeGen()
 	return tempValue;
 }
 
-ASTImportModule::ASTImportModule(HazeCompiler* compiler, const SourceLocation& location, const HString& modulepath)
+ASTImportModule::ASTImportModule(Compiler* compiler, const SourceLocation& location, const HString& modulepath)
 	: ASTBase(compiler, location), m_ModulePath(modulepath)
 {
 }
@@ -1088,13 +1116,13 @@ ASTImportModule::~ASTImportModule()
 {
 }
 
-Share<HazeCompilerValue> ASTImportModule::CodeGen()
+Share<CompilerValue> ASTImportModule::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->AddImportModuleToCurrModule(m_Compiler->ParseModule(m_ModulePath));
 	return nullptr;
 }
 
-ASTBreakExpression::ASTBreakExpression(HazeCompiler* compiler, const SourceLocation& location) 
+ASTBreakExpression::ASTBreakExpression(Compiler* compiler, const SourceLocation& location) 
 	: ASTBase(compiler, location)
 {
 }
@@ -1103,14 +1131,14 @@ ASTBreakExpression::~ASTBreakExpression()
 {
 }
 
-Share<HazeCompilerValue> ASTBreakExpression::CodeGen()
+Share<CompilerValue> ASTBreakExpression::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 	m_Compiler->CreateJmpToBlock(m_Compiler->GetInsertBlock()->FindLoopBlock()->GetLoopEnd()->GetShared());
 	return nullptr;
 }
 
-ASTContinueExpression::ASTContinueExpression(HazeCompiler* compiler, const SourceLocation& location)
+ASTContinueExpression::ASTContinueExpression(Compiler* compiler, const SourceLocation& location)
 	: ASTBase(compiler, location)
 {
 }
@@ -1119,14 +1147,14 @@ ASTContinueExpression::~ASTContinueExpression()
 {
 }
 
-Share<HazeCompilerValue> ASTContinueExpression::CodeGen()
+Share<CompilerValue> ASTContinueExpression::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 	m_Compiler->CreateJmpToBlock(m_Compiler->GetInsertBlock()->FindLoopBlock()->GetLoopStep()->GetShared());
 	return nullptr;
 }
 
-ASTIfExpression::ASTIfExpression(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
+ASTIfExpression::ASTIfExpression(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
 	Unique<ASTBase>& ifExpression, Unique<ASTBase>& elseExpression)
 	: ASTBase(compiler, location),m_Condition(Move(condition)), m_IfExpression(Move(ifExpression)),
 		m_ElseExpression(Move(elseExpression))
@@ -1137,16 +1165,16 @@ ASTIfExpression::~ASTIfExpression()
 {
 }
 
-Share<HazeCompilerValue> ASTIfExpression::CodeGen()
+Share<CompilerValue> ASTIfExpression::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
 	auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
 
 	auto parentBlock = m_Compiler->GetInsertBlock();
-	auto ifThenBlock = HazeBaseBlock::CreateBaseBlock(function->GenIfThenBlockName(), function, parentBlock);
-	auto elseBlock = m_ElseExpression ? HazeBaseBlock::CreateBaseBlock(function->GenElseBlockName(), function, parentBlock) : nullptr;
-	auto nextBlock = HazeBaseBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
+	auto ifThenBlock = CompilerBlock::CreateBaseBlock(function->GenIfThenBlockName(), function, parentBlock);
+	auto elseBlock = m_ElseExpression ? CompilerBlock::CreateBaseBlock(function->GenElseBlockName(), function, parentBlock) : nullptr;
+	auto nextBlock = CompilerBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
 
 	auto ConditionExp = dynamic_cast<ASTBinaryExpression*>(m_Condition.get());
 
@@ -1189,7 +1217,7 @@ bool ASTIfExpression::HasElseExpression() const
 	}
 }
 
-ASTWhileExpression::ASTWhileExpression(HazeCompiler* compiler, const SourceLocation& location, 
+ASTWhileExpression::ASTWhileExpression(Compiler* compiler, const SourceLocation& location, 
 	Unique<ASTBase>& condition, Unique<ASTBase>& multiExpression)
 	:ASTBase(compiler, location), m_Condition(Move(condition)), m_MultiExpression(Move(multiExpression))
 {
@@ -1199,15 +1227,15 @@ ASTWhileExpression::~ASTWhileExpression()
 {
 }
 
-Share<HazeCompilerValue> ASTWhileExpression::CodeGen()
+Share<CompilerValue> ASTWhileExpression::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
 	auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
 
 	auto parentBlock = m_Compiler->GetInsertBlock();
-	auto whileBlock = HazeBaseBlock::CreateBaseBlock(function->GenWhileBlockName(), function, parentBlock);
-	auto nextBlock = HazeBaseBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
+	auto whileBlock = CompilerBlock::CreateBaseBlock(function->GenWhileBlockName(), function, parentBlock);
+	auto nextBlock = CompilerBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
 
 	whileBlock->SetLoopEnd(nextBlock.get());
 	whileBlock->SetLoopStep(whileBlock.get());
@@ -1232,7 +1260,7 @@ Share<HazeCompilerValue> ASTWhileExpression::CodeGen()
 	return nullptr;
 }
 
-ASTForExpression::ASTForExpression(HazeCompiler* compiler, const SourceLocation& location,
+ASTForExpression::ASTForExpression(Compiler* compiler, const SourceLocation& location,
 	Unique<ASTBase>& initExpression, Unique<ASTBase>& conditionExpression, 
 	Unique<ASTBase>& stepExpression, Unique<ASTBase>& multiExpression)
 	: ASTBase(compiler, location), m_InitExpression(Move(initExpression)), m_ConditionExpression(Move(conditionExpression)),
@@ -1244,17 +1272,17 @@ ASTForExpression::~ASTForExpression()
 {
 }
 
-Share<HazeCompilerValue> ASTForExpression::CodeGen()
+Share<CompilerValue> ASTForExpression::CodeGen(Share<CompilerValue> assignTo)
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
 	auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
 	auto parentBlock = m_Compiler->GetInsertBlock();
 
-	auto forConditionBlock = HazeBaseBlock::CreateBaseBlock(function->GenForConditionBlockName(), function, parentBlock);
-	auto loopBlock = HazeBaseBlock::CreateBaseBlock(function->GenLoopBlockName(), function, parentBlock);
-	auto forStepBlock = HazeBaseBlock::CreateBaseBlock(function->GenForStepBlockName(), function, parentBlock);
-	auto endLoopBlock = HazeBaseBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
+	auto forConditionBlock = CompilerBlock::CreateBaseBlock(function->GenForConditionBlockName(), function, parentBlock);
+	auto loopBlock = CompilerBlock::CreateBaseBlock(function->GenLoopBlockName(), function, parentBlock);
+	auto forStepBlock = CompilerBlock::CreateBaseBlock(function->GenForStepBlockName(), function, parentBlock);
+	auto endLoopBlock = CompilerBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
 	loopBlock->SetLoopEnd(endLoopBlock.get());
 	loopBlock->SetLoopStep(forStepBlock.get());
 
@@ -1291,31 +1319,7 @@ Share<HazeCompilerValue> ASTForExpression::CodeGen()
 	return nullptr;
 }
 
-ASTInitializeList::ASTInitializeList(HazeCompiler* compiler, const SourceLocation& location, 
-	V_Array<Unique<ASTBase>>& initializeListExpression)
-	: ASTBase(compiler, location), m_InitializeListExpression(Move(initializeListExpression))
-{
-}
-
-ASTInitializeList::~ASTInitializeList()
-{
-}
-
-Share<HazeCompilerValue> ASTInitializeList::CodeGen()
-{
-	V_Array<Share<HazeCompilerValue>> values;
-	for (size_t i = 0; i < m_InitializeListExpression.size(); i++)
-	{
-		values.push_back(m_InitializeListExpression[i]->CodeGen());
-	}
-
-	auto InitilaizeListValue = HazeCompiler::GetInitializeListValue();
-	InitilaizeListValue->ResetInitializeList(values);
-
-	return InitilaizeListValue;
-}
-
-ASTCast::ASTCast(HazeCompiler* compiler, const SourceLocation& location, HazeDefineType& type, Unique<ASTBase>& expression)
+ASTCast::ASTCast(Compiler* compiler, const SourceLocation& location, HazeDefineType& type, Unique<ASTBase>& expression)
 	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 	m_DefineVariable.Type = type;
@@ -1325,12 +1329,12 @@ ASTCast::~ASTCast()
 {
 }
 
-Share<HazeCompilerValue> ASTCast::CodeGen()
+Share<CompilerValue> ASTCast::CodeGen(Share<CompilerValue> assignTo)
 {
-	return m_Compiler->CreateCast(m_DefineVariable.Type, m_Expression->CodeGen());
+	return TryAssign(assignTo, m_Compiler->CreateCast(m_DefineVariable.Type, m_Expression->CodeGen()));
 }
 
-ASTSizeOf::ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineType& type, Unique<ASTBase>& expression)
+ASTSizeOf::ASTSizeOf(Compiler* compiler, const SourceLocation& location, const HazeDefineType& type, Unique<ASTBase>& expression)
 	: ASTBase(compiler, location), m_Expression(Move(expression))
 {
 	m_DefineVariable.Type = type;
@@ -1340,14 +1344,17 @@ ASTSizeOf::~ASTSizeOf()
 {
 }
 
-Share<HazeCompilerValue> ASTSizeOf::CodeGen()
+Share<CompilerValue> ASTSizeOf::CodeGen(Share<CompilerValue> assignTo)
 {
+	Share<CompilerValue> ret = nullptr;
 	if (m_Expression)
 	{
-		return m_Compiler->GetConstantValueUint64(m_Expression->CodeGen()->GetSize());
+		ret = m_Compiler->GetConstantValueUint64(m_Expression->CodeGen()->GetSize());
 	}
 	else
 	{
-		return m_Compiler->GetConstantValueUint64(GetSizeByType(m_DefineVariable.Type, m_Compiler->GetCurrModule().get()));
+		ret = m_Compiler->GetConstantValueUint64(m_DefineVariable.Type.GetTypeSize());
 	}
+
+	return TryAssign(assignTo, ret);
 }

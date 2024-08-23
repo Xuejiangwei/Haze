@@ -89,7 +89,7 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 			if (*start == HChar('d'))
 			{
 				auto ins = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - argNum - 1];
-				int size = GetSizeByType(ins.Operator[0].Variable.Type, stack->GetVM());
+				int size = ins.Operator[0].Variable.Type.GetTypeSize();
 
 				offset -= size;
 				if (size == 1)
@@ -242,7 +242,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 			if (*start == HChar('d'))
 			{
 				auto ins = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - argNum - 1];
-				int size = GetSizeByType(ins.Operator[0].Variable.Type, stack->GetVM());
+				int size = ins.Operator[0].Variable.Type.GetTypeSize();
 
 				offset -= size;
 				if (size == 1)

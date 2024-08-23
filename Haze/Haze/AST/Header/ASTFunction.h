@@ -9,7 +9,7 @@
 class ASTFunction
 {
 public:
-	ASTFunction(HazeCompiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
+	ASTFunction(Compiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
 		HString& name, HazeDefineType& type, V_Array<Unique<ASTBase>>& params, Unique<ASTBase>& body);
 
 	~ASTFunction();
@@ -21,7 +21,7 @@ public:
 	const HString& GetName() const { return m_FunctionName; }
 
 private:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 	HazeSectionSignal m_Section;
 
 	HString m_FunctionName;
@@ -36,35 +36,35 @@ private:
 class ASTFunctionSection
 {
 public:
-	ASTFunctionSection(HazeCompiler* compiler,/* const SourceLocation& Location,*/ V_Array<Unique<ASTFunction>>& functions);
+	ASTFunctionSection(Compiler* compiler,/* const SourceLocation& Location,*/ V_Array<Unique<ASTFunction>>& functions);
 
 	~ASTFunctionSection();
 
 	void CodeGen();
 
 private:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 	V_Array<Unique<ASTFunction>> m_Functions;
 };
 
 class ASTClassFunctionSection
 {
 public:
-	ASTClassFunctionSection(HazeCompiler* compiler, /*const SourceLocation& Location,*/
+	ASTClassFunctionSection(Compiler* compiler, /*const SourceLocation& Location,*/
 		V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTFunction>>>>& functions);
 
 	~ASTClassFunctionSection();
 
 	void CodeGen();
 private:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTFunction>>>> m_Functions;
 };
 
 class ASTFunctionDefine
 {
 public:
-	ASTFunctionDefine(HazeCompiler* compiler,/* const SourceLocation& Location,*/ const HString& name, HazeDefineType& type,
+	ASTFunctionDefine(Compiler* compiler,/* const SourceLocation& Location,*/ const HString& name, HazeDefineType& type,
 		V_Array<Unique<ASTBase>>& params);
 
 	~ASTFunctionDefine();
@@ -72,7 +72,7 @@ public:
 	void CodeGen();
 
 private:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 	HString m_FunctionName;
 	HazeDefineType m_FunctionType;
 	V_Array<Unique<ASTBase>> m_FunctionParams; //´Ó×óµ½ÓÒ

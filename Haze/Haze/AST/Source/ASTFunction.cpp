@@ -2,15 +2,15 @@
 #include "ASTFunction.h"
 
 #include "HazeLogDefine.h"
-#include "HazeCompiler.h"
-#include "HazeBaseBlock.h"
+#include "Compiler.h"
+#include "CompilerBlock.h"
 #include "HazeCompilerPointerValue.h"
-#include "HazeCompilerFunction.h"
-#include "HazeCompilerClass.h"
-#include "HazeCompilerClassValue.h"
-#include "HazeCompilerModule.h"
+#include "CompilerFunction.h"
+#include "CompilerClass.h"
+#include "CompilerClassValue.h"
+#include "CompilerModule.h"
 
-ASTFunction::ASTFunction(HazeCompiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation,
+ASTFunction::ASTFunction(Compiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation,
 	HazeSectionSignal section, HString& name, HazeDefineType& type, V_Array<Unique<ASTBase>>& params,
 	Unique<ASTBase>& body) 
 	: m_Compiler(compiler), m_StartLocation(startLocation), m_EndLocation(endLocation), m_Section(section), 
@@ -27,8 +27,8 @@ HazeValue* ASTFunction::CodeGen()
 {
 	auto& currModule = m_Compiler->GetCurrModule();
 
-	Share<HazeCompilerFunction> compilerFunction = nullptr;
-	Share<HazeCompilerClass> currClass = nullptr;
+	Share<CompilerFunction> compilerFunction = nullptr;
+	Share<CompilerClass> currClass = nullptr;
 
 	V_Array<HazeDefineVariable> paramDefines(m_FunctionParams.size());
 	for (size_t i = 0; i < m_FunctionParams.size(); i++)
@@ -72,7 +72,7 @@ void ASTFunction::RegisterFunction()
 {
 	auto& currModule = m_Compiler->GetCurrModule();
 
-	Share<HazeCompilerClass> currClass = nullptr;
+	Share<CompilerClass> currClass = nullptr;
 
 	V_Array<HazeDefineVariable> paramDefines(m_FunctionParams.size());
 	for (size_t i = 0; i < m_FunctionParams.size(); i++)
@@ -91,7 +91,7 @@ void ASTFunction::RegisterFunction()
 	}
 }
 
-ASTFunctionSection::ASTFunctionSection(HazeCompiler* compiler,/* const SourceLocation& Location,*/ V_Array<Unique<ASTFunction>>& functions)
+ASTFunctionSection::ASTFunctionSection(Compiler* compiler,/* const SourceLocation& Location,*/ V_Array<Unique<ASTFunction>>& functions)
 	: m_Compiler(compiler), m_Functions(Move(functions))
 {
 }
@@ -113,7 +113,7 @@ void ASTFunctionSection::CodeGen()
 	}
 }
 
-ASTFunctionDefine::ASTFunctionDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ const HString& name, 
+ASTFunctionDefine::ASTFunctionDefine(Compiler* compiler, /*const SourceLocation& Location,*/ const HString& name, 
 	HazeDefineType& type, V_Array<Unique<ASTBase>>& params)
 	: m_Compiler(compiler), m_FunctionName(name), m_FunctionType(type), m_FunctionParams(Move(params))
 {
@@ -133,7 +133,7 @@ void ASTFunctionDefine::CodeGen()
 		paramDefines[i] = m_FunctionParams[i]->GetDefine();
 	}
 
-	Share<HazeCompilerFunction> CompilerFunction = currModule->CreateFunction(m_FunctionName, m_FunctionType, paramDefines);
+	Share<CompilerFunction> CompilerFunction = currModule->CreateFunction(m_FunctionName, m_FunctionType, paramDefines);
 
 	m_Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
 
@@ -143,7 +143,7 @@ void ASTFunctionDefine::CodeGen()
 	}
 }
 
-ASTClassFunctionSection::ASTClassFunctionSection(HazeCompiler* compiler, /*const SourceLocation& Location,*/ 
+ASTClassFunctionSection::ASTClassFunctionSection(Compiler* compiler, /*const SourceLocation& Location,*/ 
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTFunction>>>>& functions)
 	: m_Compiler(compiler), m_Functions(Move(functions))
 {

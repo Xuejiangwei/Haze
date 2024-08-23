@@ -1,13 +1,13 @@
 #include "HazePch.h"
-#include "HazeBaseBlock.h"
-#include "HazeCompilerHelper.h"
-#include "HazeCompilerValue.h"
+#include "CompilerBlock.h"
+#include "CompilerHelper.h"
+#include "CompilerValue.h"
 #include "HazeCompilerPointerValue.h"
-#include "HazeCompilerClassValue.h"
-#include "HazeCompilerArrayValue.h"
-#include "HazeCompilerFunction.h"
+#include "CompilerClassValue.h"
+#include "CompilerArrayValue.h"
+#include "CompilerFunction.h"
 
-HazeBaseBlock::HazeBaseBlock(const HString& name, HazeCompilerFunction* parentFunction, HazeBaseBlock* parentBlock)
+CompilerBlock::CompilerBlock(const HString& name, CompilerFunction* parentFunction, CompilerBlock* parentBlock)
 	: enable_shared_from_this(*this), m_Name(name), m_ParentFunction(parentFunction), m_ParentBlock(parentBlock), m_LoopEndBlock(nullptr)
 {
 	m_IRCodes.clear();
@@ -15,11 +15,11 @@ HazeBaseBlock::HazeBaseBlock(const HString& name, HazeCompilerFunction* parentFu
 	PushIRCode(HString(BLOCK_START) + H_TEXT(" ") + name + H_TEXT("\n"));
 }
 
-HazeBaseBlock::~HazeBaseBlock()
+CompilerBlock::~CompilerBlock()
 {
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const Share<HazeCompilerValue>& value, HString& outName)
+bool CompilerBlock::FindLocalVariableName(const Share<CompilerValue>& value, HString& outName)
 {
 	for (auto& it : m_Allocas)
 	{
@@ -40,7 +40,7 @@ bool HazeBaseBlock::FindLocalVariableName(const Share<HazeCompilerValue>& value,
 	return false;
 }
 
-bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerBlock::FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 {
 	uint64 offset = 0;
 	for (auto& it : m_Allocas)
@@ -54,7 +54,7 @@ bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* value, HStrin
 			}
 			return true;
 		}
-		offset += GetSizeByType(it.second->GetValueType(), m_ParentFunction->GetModule());
+		offset += it.second->GetValueType().GetTypeSize();
 	}
 
 	for (auto& iter : m_ChildBlocks)
@@ -68,7 +68,7 @@ bool HazeBaseBlock::FindLocalVariableName(const HazeCompilerValue* value, HStrin
 	return false;
 }
 
-HazeBaseBlock* HazeBaseBlock::FindLoopBlock()
+CompilerBlock* CompilerBlock::FindLoopBlock()
 {
 	auto block = this;
 	while (block)
@@ -84,7 +84,7 @@ HazeBaseBlock* HazeBaseBlock::FindLoopBlock()
 	return nullptr;
 }
 
-bool HazeBaseBlock::IsLoopBlock() const
+bool CompilerBlock::IsLoopBlock() const
 {
 	static HString s_WhileBlockName = BLOCK_WHILE;
 	static HString s_ForBlockName = BLOCK_LOOP;
@@ -102,12 +102,12 @@ bool HazeBaseBlock::IsLoopBlock() const
 	return false;
 }
 
-void HazeBaseBlock::AddChildBlock(Share<HazeBaseBlock> block)
+void CompilerBlock::AddChildBlock(Share<CompilerBlock> block)
 {
 	m_ChildBlocks.push_back(block);
 }
 
-void HazeBaseBlock::GenI_Code(HAZE_STRING_STREAM& hss)
+void CompilerBlock::GenI_Code(HAZE_STRING_STREAM& hss)
 {
 	hss << std::endl;
 
@@ -122,7 +122,7 @@ void HazeBaseBlock::GenI_Code(HAZE_STRING_STREAM& hss)
 	}
 }
 
-void HazeBaseBlock::ClearLocalVariable()
+void CompilerBlock::ClearLocalVariable()
 {
 	for (auto& iter : m_Allocas)
 	{
@@ -137,9 +137,9 @@ void HazeBaseBlock::ClearLocalVariable()
 	}
 }
 
-Share<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HString& name, Share<HazeCompilerFunction> Parent, Share<HazeBaseBlock> parentBlock)
+Share<CompilerBlock> CompilerBlock::CreateBaseBlock(const HString& name, Share<CompilerFunction> Parent, Share<CompilerBlock> parentBlock)
 {
-	auto BB = MakeShare<HazeBaseBlock>(name, Parent.get(), parentBlock.get());
+	auto BB = MakeShare<CompilerBlock>(name, Parent.get(), parentBlock.get());
 
 	if (parentBlock)
 	{
@@ -149,13 +149,13 @@ Share<HazeBaseBlock> HazeBaseBlock::CreateBaseBlock(const HString& name, Share<H
 	return BB;
 }
 
-void HazeBaseBlock::PushIRCode(const HString& code)
+void CompilerBlock::PushIRCode(const HString& code)
 {
 	m_IRCodes.push_back(code);
 }
 
-Share<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, Share<HazeCompilerValue> refValue,
-	V_Array<Share<HazeCompilerValue>> arraySize, V_Array<HazeDefineType>* params)
+Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, Share<CompilerValue> refValue,
+	V_Array<Share<CompilerValue>> arraySize, V_Array<HazeDefineType>* params)
 {
 	for (auto& Iter : m_Allocas)
 	{
@@ -167,7 +167,7 @@ Share<HazeCompilerValue> HazeBaseBlock::CreateAlloce(const HazeDefineVariable& d
 	}
 
 	HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
-	Share<HazeCompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar, HazeVariableScope::Local, desc, count,
+	Share<CompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar, HazeVariableScope::Local, desc, count,
 		refValue, arraySize, params);
 	m_Allocas.push_back({ defineVar.Name, Alloce });
 

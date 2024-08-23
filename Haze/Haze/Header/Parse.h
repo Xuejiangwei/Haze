@@ -1,6 +1,6 @@
 #pragma once
 
-class HazeCompiler;
+class Compiler;
 
 class ASTBase;
 class ASTVariableDefine;
@@ -18,7 +18,7 @@ class Parse
 {
 	friend struct TempCurrCode;
 public:
-	Parse(HazeCompiler* compiler);
+	Parse(Compiler* compiler);
 
 	~Parse();
 
@@ -77,8 +77,6 @@ private:
 	Unique<ASTBase> ParseReturn();
 
 	Unique<ASTBase> ParseNew();
-
-	Unique<ASTBase> ParseLeftBrace();
 
 	Unique<ASTBase> ParseNot();
 
@@ -146,7 +144,7 @@ private:
 	void IncLineCount(bool insert = false);
 
 private:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 	HazeLibraryType m_LibraryType;
 	HazeToken m_CurrToken;
 	const HChar* m_CurrCode;

@@ -2,13 +2,13 @@
 
 #include "HazeCompilerPointerValue.h"
 
-class HazeCompilerPointerFunction : public HazeCompilerPointerValue
+class CompilerPointerFunction : public HazeCompilerPointerValue
 {
 public:
-	explicit HazeCompilerPointerFunction(HazeCompilerModule* compilerModule, const HazeDefineType& defineType,
+	explicit CompilerPointerFunction(CompilerModule* compilerModule, const HazeDefineType& defineType,
 		HazeVariableScope scope, HazeDataDesc desc, int count, V_Array<HazeDefineType>* paramTypes);
 
-	virtual ~HazeCompilerPointerFunction() override;
+	virtual ~CompilerPointerFunction() override;
 
 	const V_Array<HazeDefineType>& GetParamTypes() const { return m_ParamTypes; }
 

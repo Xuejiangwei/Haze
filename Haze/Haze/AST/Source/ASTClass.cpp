@@ -3,17 +3,17 @@
 #include "ASTFunction.h"
 #include "ASTClass.h"
 
-#include "HazeCompiler.h"
-#include "HazeCompilerHelper.h"
-#include "HazeCompilerModule.h"
-#include "HazeCompilerClass.h"
+#include "Compiler.h"
+#include "CompilerHelper.h"
+#include "CompilerModule.h"
+#include "CompilerClass.h"
 
 #include "HazeLog.h"
 
 extern int g_ClassInheritLimit;
 extern int g_ClassInheritLevelLimit;
 
-ASTClass::ASTClass(HazeCompiler* compiler,/* const SourceLocation& Location,*/ HString& name, V_Array<HString>& parentClass,
+ASTClass::ASTClass(Compiler* compiler,/* const SourceLocation& Location,*/ HString& name, V_Array<HString>& parentClass,
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data, Unique<ASTClassFunctionSection>& functionSection)
 	: m_Compiler(compiler), m_ClassName(Move(name)), m_ParentClasses(Move(parentClass)),
 	m_ClassDatas(Move(data)), m_ClassFunctionSection(Move(functionSection))
@@ -32,7 +32,7 @@ void ASTClass::CodeGen()
 		return;
 	}
 
-	V_Array<HazeCompilerClass*> parentClasses;
+	V_Array<CompilerClass*> parentClasses;
 	for (size_t i = 0; i < m_ParentClasses.size(); i++)
 	{
 		auto parentClass = m_Compiler->GetCurrModule()->GetClass(m_ParentClasses[i]);
@@ -56,7 +56,7 @@ void ASTClass::CodeGen()
 		}
 	}
 
-	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<HazeCompilerValue>>>>> datas;
+	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<CompilerValue>>>>> datas;
 
 	for (size_t i = 0; i < m_ClassDatas.size(); i++)
 	{
@@ -87,7 +87,7 @@ void ASTClass::CodeGen()
 	m_Compiler->GetCurrModule()->FinishCreateClass();
 }
 
-ASTClassDefine::ASTClassDefine(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HString& name,
+ASTClassDefine::ASTClassDefine(Compiler* compiler, /*const SourceLocation& Location,*/ HString& name,
 	V_Array<V_Array<Unique<ASTBase>>>& datas, V_Array<Unique<ASTFunctionDefine>>& functions)
 	: m_Compiler(compiler), m_ClassName(Move(name)), m_ClassDatas(Move(datas)), 
 	m_ClassFunctions(Move(functions))

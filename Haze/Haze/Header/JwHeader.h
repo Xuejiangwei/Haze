@@ -12,6 +12,9 @@ Share<T> MakeShare(_Types&&... _Args)
 template<typename T>
 using Unique = std::unique_ptr<T>;
 
+template<typename T>
+using SharedFromThis = std::enable_shared_from_this<T>;
+
 template<typename T, typename... _Types>
 Unique<T> MakeUnique(_Types&&... _Args)
 {

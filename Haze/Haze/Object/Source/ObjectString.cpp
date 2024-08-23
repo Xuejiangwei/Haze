@@ -3,7 +3,7 @@
 #include "HazeMemory.h"
 #include "MemoryHelper.h"
 #include "HazeStack.h"
-#include "HazeCompiler.h"
+#include "Compiler.h"
 #include "HazeLibraryDefine.h"
 #include "HazeStream.h"
 
@@ -31,10 +31,10 @@ ObjectString::~ObjectString()
 AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	info.Functions[H_TEXT("接")] = { AdvanceFunctionType::ObjectFunction, &ObjectString::Append, HazeValueType::Void, { HazeValueType::String } };
+	info.Functions[H_TEXT("接")] = { &ObjectString::Append, HazeValueType::Void, { HazeValueType::String } };
 
 
-	info.Functions[H_TEXT("格式化")] = { AdvanceFunctionType::TypeFunction, &ObjectString::Format, HazeValueType::String,
+	info.Functions[H_TEXT("格式化")] = { &ObjectString::Format, HazeValueType::String,
 		{ HazeValueType::String, HazeValueType::MultiVariable } };
 	return &info;
 }

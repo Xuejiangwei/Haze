@@ -22,6 +22,7 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, v
 
 #define GET_PARAM_START() int Offset = 0; auto zzzAddress = stack->GetAddressByESP(HAZE_ADDRESS_SIZE)
 #define GET_PARAM(V)  memcpy(&V, zzzAddress - sizeof(V) - Offset, sizeof(V)); Offset += sizeof(V)
+#define GET_PARAM_ADDRESS(V, SIZE)  V = zzzAddress - SIZE - Offset; Offset += SIZE
 #define SET_RET(V) memcpy(zzzAddress, &V, sizeof(V))
 #define GET_RET(V) memcpy(&V, zzzAddress, sizeof(V))
 #define SET_HAZE_RET_TO_RET() 0
@@ -30,5 +31,5 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, v
 #define SET_RET_BY_TYPE(TYPE, V) \
 	HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER); \
 	retRegister->Type.PrimaryType = TYPE; \
-	retRegister->Data.resize(GetSizeByType(retRegister->Type, stack->GetVM())); \
+	retRegister->Data.resize(retRegister->Type.GetTypeSize()); \
 	memcpy(retRegister->Data.begin()._Unwrapped(), &V, retRegister->Data.size())

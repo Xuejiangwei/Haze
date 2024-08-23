@@ -3,12 +3,12 @@
 #include "HazeDebugInfo.h"
 
 class ASTBase;
-class HazeCompiler;
+class Compiler;
 
 class ASTEnum
 {
 public:
-	ASTEnum(HazeCompiler* compiler, const SourceLocation& location, HString& name, HazeValueType baseType,
+	ASTEnum(Compiler* compiler, const SourceLocation& location, HString& name, HazeValueType baseType,
 		V_Array<Pair<HString, Unique<ASTBase>>>& enums);
 
 	~ASTEnum();
@@ -19,7 +19,7 @@ private:
 	void AddEnumOneValueByType(HazeValue& value, const HazeValue& prValue);
 
 private:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 	HString m_EnumName;
 	HazeValueType m_BaseType;
 	SourceLocation m_Location;

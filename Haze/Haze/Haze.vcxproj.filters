@@ -36,28 +36,28 @@
     <ClCompile Include="VM\Source\HazeVM.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompiler.cpp">
+    <ClCompile Include="Compiler\Source\Compiler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerValue.cpp">
+    <ClCompile Include="Compiler\Source\CompilerValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerModule.cpp">
+    <ClCompile Include="Compiler\Source\CompilerModule.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerFunction.cpp">
+    <ClCompile Include="Compiler\Source\CompilerFunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerClass.cpp">
+    <ClCompile Include="Compiler\Source\CompilerClass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Source\Haze.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerHelper.cpp">
+    <ClCompile Include="Compiler\Source\CompilerHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeBaseBlock.cpp">
+    <ClCompile Include="Compiler\Source\CompilerBlock.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Backend\Source\BackendParse.cpp">
@@ -81,7 +81,7 @@
     <ClCompile Include="Library\Source\HazeStandardLibraryBase.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerClassValue.cpp">
+    <ClCompile Include="Compiler\Source\CompilerClassValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Compiler\Source\HazeCompilerPointerValue.cpp">
@@ -96,13 +96,10 @@
     <ClCompile Include="MetaData\Source\HazeVariable.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerArrayValue.cpp">
+    <ClCompile Include="Compiler\Source\CompilerArrayValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerInitListValue.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerStringValue.cpp">
+    <ClCompile Include="Compiler\Source\CompilerStringValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Memory\Source\MemoryFreeList.cpp">
@@ -117,7 +114,7 @@
     <ClCompile Include="Memory\Source\MemoryHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerPointerFunction.cpp">
+    <ClCompile Include="Compiler\Source\CompilerPointerFunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Source\HazeFilePathHelper.cpp">
@@ -147,13 +144,13 @@
     <ClCompile Include="Compiler\Source\HazeCompilerTemplateClass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerEnumValue.cpp">
+    <ClCompile Include="Compiler\Source\CompilerEnumValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="AST\Source\ASTEnum.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerEnum.cpp">
+    <ClCompile Include="Compiler\Source\CompilerEnum.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="AST\Source\ASTTemplateClass.cpp">
@@ -180,10 +177,13 @@
     <ClCompile Include="Object\Source\ObjectClass.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerRefValue.cpp">
+    <ClCompile Include="Compiler\Source\CompilerRefValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Object\Source\ObjectString.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Backend\Source\Optimizer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -212,25 +212,25 @@
     <ClInclude Include="VM\Header\HazeVM.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompiler.h">
+    <ClInclude Include="Compiler\Header\Compiler.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerValue.h">
+    <ClInclude Include="Compiler\Header\CompilerValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerModule.h">
+    <ClInclude Include="Compiler\Header\CompilerModule.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerFunction.h">
+    <ClInclude Include="Compiler\Header\CompilerFunction.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerClass.h">
+    <ClInclude Include="Compiler\Header\CompilerClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerHelper.h">
+    <ClInclude Include="Compiler\Header\CompilerHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeBaseBlock.h">
+    <ClInclude Include="Compiler\Header\CompilerBlock.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Backend\Header\BackendParse.h">
@@ -263,7 +263,7 @@
     <ClInclude Include="Library\Header\HazeStandardLibraryBase.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerClassValue.h">
+    <ClInclude Include="Compiler\Header\CompilerClassValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerPointerValue.h">
@@ -281,13 +281,10 @@
     <ClInclude Include="MetaData\Header\HazeVariable.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerArrayValue.h">
+    <ClInclude Include="Compiler\Header\CompilerArrayValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerInitListValue.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerStringValue.h">
+    <ClInclude Include="Compiler\Header\CompilerStringValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Memory\Header\MemoryFreeList.h">
@@ -302,7 +299,7 @@
     <ClInclude Include="Memory\Header\MemoryHelper.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerPointerFunction.h">
+    <ClInclude Include="Compiler\Header\CompilerPointerFunction.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Header\HazeFilePathHelper.h">
@@ -338,13 +335,13 @@
     <ClInclude Include="Compiler\Header\HazeCompilerTemplateClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerEnumValue.h">
+    <ClInclude Include="Compiler\Header\CompilerEnumValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="AST\Header\ASTEnum.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerEnum.h">
+    <ClInclude Include="Compiler\Header\CompilerEnum.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Header\HazeHeader.h">
@@ -383,10 +380,13 @@
     <ClInclude Include="Object\Header\ObjectClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerRefValue.h">
+    <ClInclude Include="Compiler\Header\CompilerRefValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Object\Header\ObjectString.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Backend\Header\Optimizer.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

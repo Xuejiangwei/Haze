@@ -8,7 +8,7 @@ class ASTClassDefine;
 class ASTLibrary
 {
 public:
-	ASTLibrary(HazeCompiler* compiler, /*const SourceLocation& Location,*/ HString& name, HazeLibraryType type,
+	ASTLibrary(Compiler* compiler, /*const SourceLocation& Location,*/ HString& name, HazeLibraryType type,
 		V_Array<Unique<ASTFunctionDefine>>& functionExpressions,
 		V_Array<Unique<ASTClassDefine>>& classExpressions);
 
@@ -17,7 +17,7 @@ public:
 	void CodeGen();
 
 private:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 	HString m_Name;
 	HazeLibraryType m_Type;
 	V_Array<Unique<ASTFunctionDefine>> m_FunctionExpressions;

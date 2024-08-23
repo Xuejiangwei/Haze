@@ -98,9 +98,6 @@ enum class InstructionOpCode : uint32
 
 	NOT,		// A = !B
 
-	INC,		// A++
-	DEC,		// A--
-
 	BIT_AND,	// A = B & C
 	BIT_OR,		// A = B | C
 	BIT_NEG,	// A = ~B

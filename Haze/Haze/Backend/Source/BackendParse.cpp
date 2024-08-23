@@ -512,8 +512,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	}
 	break;
 	case InstructionOpCode::NEG:
-	case InstructionOpCode::INC:
-	case InstructionOpCode::DEC:
 	case InstructionOpCode::BIT_NEG:
 	case InstructionOpCode::PUSH:
 	case InstructionOpCode::POP:
@@ -759,7 +757,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 		if (iterIndex != localVariable.end())
 		{
 			//±‹√‚œ»∞—Index÷µÃÊªªµÙ
-			operatorData.Extra.Address.Offset = operatorData.Extra.Index * GetSizeByType(operatorData.Variable.Type, this);
+			operatorData.Extra.Address.Offset = operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
 			operatorData.Extra.Address.BaseAddress = function.Variables[iterIndex->second].Offset;
 			operatorData.AddressType = InstructionAddressType::Local_Base_Offset;
 		}
@@ -769,7 +767,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 			if (classData)
 			{
 				operatorData.Extra.Address.Offset = GetMemberOffset(*classData, operatorData.Variable.Name)
-					+ operatorData.Extra.Index * GetSizeByType(operatorData.Variable.Type, this);
+					+ operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
 				operatorData.Extra.Address.BaseAddress = function.Variables[0].Offset;
 				operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
 			}
@@ -845,7 +843,7 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 		if (index >= 0)
 		{
 			//±‹√‚œ»∞—Index÷µÃÊªªµÙ
-			operatorData.Extra.Address.Offset = operatorData.Extra.Index * GetSizeByType(operatorData.Variable.Type, this);
+			operatorData.Extra.Address.Offset = operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
 			operatorData.Extra.Index = index;
 			operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
 		}

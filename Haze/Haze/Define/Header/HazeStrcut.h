@@ -74,6 +74,8 @@ struct HazeDefineType
 
 	bool operator!=(const HazeDefineType& type) const { return !(type == *this); }
 
+	uint32 GetTypeSize() const { return GetSizeByHazeType(PrimaryType); }
+
 	void Reset() { PrimaryType = HazeValueType::None; SecondaryType = HazeValueType::None, CustomName = nullptr; }
 
 	bool NeedSecondaryType() const { return IsArrayType(PrimaryType) || IsEnumType(PrimaryType) || IsRefrenceType(PrimaryType); }

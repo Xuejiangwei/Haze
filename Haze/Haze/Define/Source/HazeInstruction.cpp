@@ -37,8 +37,6 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 
 	{H_TEXT("NEG"), InstructionOpCode::NEG },
 	{H_TEXT("NOT"), InstructionOpCode::NOT },
-	{H_TEXT("INC"), InstructionOpCode::INC },
-	{H_TEXT("DEC"), InstructionOpCode::DEC},
 
 	{H_TEXT("BIT_AND"), InstructionOpCode::BIT_AND },
 	{H_TEXT("BIT_OR"), InstructionOpCode::BIT_OR },
@@ -147,7 +145,7 @@ class InstructionProcessor
 			auto address = GetOperatorAddress(Stack, Data[0]);
 			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Desc != HazeDataDesc::CallFunctionPointer)
 			{
-				memcpy(&Address, address, GetSizeByType(Data[0].Variable.Type, Stack));
+				memcpy(&Address, address, Data[0].Variable.Type.GetTypeSize());
 			}
 			else
 			{
@@ -178,7 +176,7 @@ class InstructionProcessor
 			auto address = GetOperatorAddress(Stack, Data[0]);
 			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Desc != HazeDataDesc::CallFunctionPointer)
 			{
-				memcpy(&Address, address, GetSizeByType(Data[0].Variable.Type, Stack));
+				memcpy(&Address, address, Data[0].Variable.Type.GetTypeSize());
 			}
 			
 			if (Data.size() == 2)
@@ -250,7 +248,7 @@ public:
 		{
 			void* dst = GetOperatorAddress(stack, oper[0]);
 			const void* src = GetOperatorAddress(stack, oper[1]);
-			memcpy(dst, src, GetSizeByType(oper[0].Variable.Type, stack->m_VM));
+			memcpy(dst, src, oper[0].Variable.Type.GetTypeSize());
 
 			ClearRegisterType(stack, oper[1]);
 		}
@@ -270,7 +268,7 @@ public:
 
 			uint64 address = 0;
 			memcpy(&address, src, sizeof(address));
-			memcpy(dst, (void*)address, GetSizeByType(oper[0].Variable.Type, stack->m_VM));
+			memcpy(dst, (void*)address, oper[0].Variable.Type.GetTypeSize());
 
 			ClearRegisterType(stack, oper[1]);
 		}
@@ -290,7 +288,7 @@ public:
 
 			uint64 address = 0;
 			memcpy(&address, dst, sizeof(address));
-			memcpy((void*)address, src, GetSizeByType(oper[1].Variable.Type, stack->m_VM));
+			memcpy((void*)address, src, oper[1].Variable.Type.GetTypeSize());
 
 			ClearRegisterType(stack, oper[1]);
 		}
@@ -307,7 +305,7 @@ public:
 		{
 			void* dst = GetOperatorAddress(stack, oper[0]);
 			uint64 address = (uint64)GetOperatorAddress(stack, oper[1]);
-			memcpy(dst, &address, GetSizeByType(oper[0].Variable.Type, stack->m_VM));
+			memcpy(dst, &address, oper[0].Variable.Type.GetTypeSize());
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -320,7 +318,7 @@ public:
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
-			int size = GetSizeByType(oper[0].Variable.Type, stack->m_VM);
+			int size = oper[0].Variable.Type.GetTypeSize();
 
 			if (oper[0].Desc == HazeDataDesc::Address)
 			{
@@ -350,48 +348,6 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Push_R(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 1)
-		{
-			int size = GetSizeByType(oper[0].Variable.Type, stack->m_VM);
-
-			if (oper[0].Desc == HazeDataDesc::Address)
-			{
-				memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, size);
-			}
-			else if (oper[0].Desc == HazeDataDesc::ClassThis)
-			{
-				memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), sizeof(uint64));
-			}
-			else/* if (Operator[0].Scope == InstructionScopeType::Local || oper[0].Scope == InstructionScopeType::Global)*/
-			{
-				if (oper[0].Extra.Address.BaseAddress + (int)stack->m_EBP >= 0)
-				{
-					//Size = oper[0].Scope == HazeDataDesc::ConstantString ? Size = sizeof(Operator[0].Extra.Index) : Size;
-					memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), size);
-				}
-				else
-				{
-					memset(&stack->m_StackMain[stack->m_ESP], 0, size);
-				}
-			}
-
-			if (IsAdvanceType(oper[0].Variable.Type.PrimaryType))
-			{
-				uint64 address;
-				memcpy(&address, GetOperatorAddress(stack, oper[0]), size);
-				stack->PushGCTempRegister((void*)address, &oper[0].Variable.Type);
-			}
-
-			stack->m_ESP += size;
-			stack->m_VM->InstructionExecPost();
-		}
-	}
-
 	static void Pop(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
@@ -399,38 +355,10 @@ public:
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
-			auto size = GetSizeByType(oper[0].Variable.Type, stack->m_VM);
+			auto size = oper[0].Variable.Type.GetTypeSize();
 			auto address = GetOperatorAddress(stack, oper[0]);
 			memcpy(address, &stack->m_StackMain[stack->m_ESP - size], size);
 			
-			stack->m_ESP -= size;
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Pop_R(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 1)
-		{
-			auto size = GetSizeByType(oper[0].Variable.Type, stack->m_VM);
-			auto address = GetOperatorAddress(stack, oper[0]);
-			memcpy(address, &stack->m_StackMain[stack->m_ESP - size], size);
-
-			if (IsAdvanceType(oper[0].Variable.Type.PrimaryType))
-			{
-				uint64 popAddress;
-				memcpy(&popAddress, address, size);
-				if (stack->PopGCTempRegister((void*)popAddress)) { }
-				else
-				{
-					INS_ERR_W("栈顶不是此地址");
-				}
-			}
-
 			stack->m_ESP -= size;
 		}
 
@@ -516,71 +444,8 @@ public:
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::NOT, GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Inc(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 1)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				OperatorValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::INC, GetOperatorAddress(stack, oper[0]));
-			}
-			/*else if (IsPointerType(oper[0].Variable.Type.PrimaryType) && !IsPointerFunction(oper[0].Variable.Type.PrimaryType))
-			{
-				uint32 size = 0;
-				if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerBase)
-				{
-					size = GetSizeByHazeType(oper[0].Variable.Type.SecondaryType);
-				}
-				else if (oper[0].Variable.Type.PrimaryType == HazeValueType::PointerClass)
-				{
-					size =	stack->m_VM->GetClassSize(oper[0].Variable.Type.CustomName);
-				}
-				else
-				{
-					size = 0;
-					INS_ERR_W("错误的指针类型");
-				}
-
-				auto address = (char*)GetOperatorAddress(stack, oper[0]);
-				uint64 pointerAddressValue;
-				memcpy(&pointerAddressValue, address, sizeof(address));
-				pointerAddressValue += size;
-				memcpy(address, &pointerAddressValue, sizeof(address));
-			}*/
-			else
-			{
-				INS_ERR_W("操作错误");
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Dec(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 1)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				OperatorValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::DEC,
-					GetOperatorAddress(stack, oper[0]));
-			}
-			else
-			{
-				INS_ERR_W("操作错误");
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::NOT, 
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
 			}
 		}
 
@@ -916,7 +781,7 @@ public:
 						{
 							HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER);
 							retRegister->Type = function.Type;
-							int size = GetSizeByType(retRegister->Type, stack->m_VM);
+							int size = retRegister->Type.GetTypeSize();
 							retRegister->Data.resize(size);
 
 							uint64 address = (uint64)(stack);
@@ -955,7 +820,7 @@ public:
 			HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER);
 			retRegister->Type = oper[0].Variable.Type;
 
-			int size = GetSizeByType(retRegister->Type, stack->m_VM);
+			int size = retRegister->Type.GetTypeSize();
 
 			retRegister->Data.resize(size);
 			memcpy(retRegister->Data.begin()._Unwrapped(), GetOperatorAddress(stack, oper[0]), size);
@@ -991,7 +856,7 @@ public:
 			}
 			else
 			{
-				size = GetSizeByType(newRegister->Type, stack->m_VM);
+				size = newRegister->Type.GetTypeSize();
 			}
 			uint64 newSize = size;
 			auto countAddress = GetOperatorAddress(stack, oper[1]);
@@ -1322,7 +1187,7 @@ private:
 			if (hazeRegister->Type != insData.Variable.Type)
 			{
 				hazeRegister->Type = insData.Variable.Type;
-				hazeRegister->Data.resize(GetSizeByType(insData.Variable.Type, stack->m_VM));
+				hazeRegister->Data.resize(insData.Variable.Type.GetTypeSize());
 			}
 
 			ret = hazeRegister->Data.begin()._Unwrapped();
@@ -1402,7 +1267,7 @@ private:
 					auto dst = GetOperatorAddress(stack, oper[0]);
 					auto src = GetOperatorAddress(stack, oper[1]);
 					uint64 address = 0;
-					uint64 size = GetSizeByType(oper[1].Variable.Type, stack->m_VM);
+					uint64 size = oper[1].Variable.Type.GetTypeSize();
 					uint64 num = 0;
 					memcpy(&address, dst, sizeof(address));
 					memcpy(&num, src, size);
@@ -1439,7 +1304,7 @@ private:
 		int size = 0;
 		for (size_t i = 0; i < funcData->Params.size(); i++)
 		{
-			size += GetSizeByType(funcData->Params[i].Type, stack->m_VM);
+			size += funcData->Params[i].Type.GetTypeSize();
 		}
 		stack->m_ESP += size;
 
@@ -1467,7 +1332,7 @@ private:
 	static int PushParamByArgs(HazeStack* stack, va_list& args, const HazeDefineType& type)
 	{
 		HazeValue value;
-		int size = GetSizeByType(type, stack->m_VM);
+		int size = type.GetTypeSize();
 		void* src = nullptr;
 
 		if (IsHazeBaseType(type.PrimaryType))
@@ -1585,9 +1450,6 @@ HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 	{InstructionOpCode::NEG, &InstructionProcessor::Neg},
 
 	{InstructionOpCode::NOT, &InstructionProcessor::Not},
-
-	{InstructionOpCode::INC, &InstructionProcessor::Inc},
-	{InstructionOpCode::DEC, &InstructionProcessor::Dec},
 
 	{InstructionOpCode::BIT_AND, &InstructionProcessor::Bit_And},
 	{InstructionOpCode::BIT_OR, &InstructionProcessor::Bit_Or},

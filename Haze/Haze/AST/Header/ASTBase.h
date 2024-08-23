@@ -2,23 +2,23 @@
 #include "HazeHeader.h"
 #include "HazeDebugInfo.h"
 
-class HazeCompiler;
-class HazeCompilerValue;
-class HazeBaseBlock;
+class Compiler;
+class CompilerValue;
+class CompilerBlock;
 
-//Base
+//Base abstract syntax tree
 class ASTBase
 {
 	friend class ASTClass;
 	friend class ASTVariableDefine_Function;
 public:
-	ASTBase(HazeCompiler* compiler, const SourceLocation& location);
+	ASTBase(Compiler* compiler, const SourceLocation& location);
 
-	ASTBase(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defVar);
+	ASTBase(Compiler* compiler, const SourceLocation& location, const HazeDefineVariable& defVar);
 	
 	virtual ~ASTBase() {}
 
-	virtual Share<HazeCompilerValue> CodeGen() { return  nullptr; }
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) { return nullptr; }
 
 	virtual const HChar* GetName() { return H_TEXT(""); }
 
@@ -26,8 +26,10 @@ public:
 
 	const HazeDefineVariable& GetDefine() const { return m_DefineVariable; }
 
+	Share<CompilerValue> TryAssign(Share<CompilerValue> assignTo, Share<CompilerValue> value);
+
 protected:
-	HazeCompiler* m_Compiler;
+	Compiler* m_Compiler;
 	HazeValue m_Value;
 	HazeDefineVariable m_DefineVariable;
 
@@ -38,33 +40,33 @@ protected:
 class ASTBool : public ASTBase
 {
 public:
-	ASTBool(HazeCompiler* compiler, const SourceLocation& location, const HazeValue& value);
+	ASTBool(Compiler* compiler, const SourceLocation& location, const HazeValue& value);
 
 	virtual ~ASTBool() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 };
 
 //数字
 class ASTNumber : public ASTBase
 {
 public:
-	ASTNumber(HazeCompiler* compiler, const SourceLocation& location, HazeValueType type, const HazeValue& value);
+	ASTNumber(Compiler* compiler, const SourceLocation& location, HazeValueType type, const HazeValue& value);
 	
 	virtual ~ASTNumber() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 };
 
 //字符串
 class ASTStringText : public ASTBase
 {
 public:
-	ASTStringText(HazeCompiler* compiler, const SourceLocation& location, HString& text);
+	ASTStringText(Compiler* compiler, const SourceLocation& location, HString& text);
 	
 	virtual ~ASTStringText() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	HString m_Text;
@@ -74,12 +76,12 @@ private:
 class ASTIdentifier : public ASTBase
 {
 public:
-	ASTIdentifier(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
+	ASTIdentifier(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
 		V_Array<Unique<ASTBase>>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace = HAZE_TEXT(""));
 	
 	virtual ~ASTIdentifier() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
@@ -94,12 +96,12 @@ private:
 class ASTFunctionCall : public ASTBase
 {
 public:
-	ASTFunctionCall(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name
+	ASTFunctionCall(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name
 		, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj, Unique<ASTBase>& preAst);
 	
 	virtual ~ASTFunctionCall() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 	virtual const HChar* GetName() { return m_Name.c_str(); }
 
@@ -115,12 +117,12 @@ private:
 class ASTClassAttr : public ASTBase
 {
 public:
-	ASTClassAttr(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	ASTClassAttr(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		HString& classObjName, Unique<ASTBase>& preAst, HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam = nullptr);
 
 	virtual ~ASTClassAttr() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	bool m_IsFunction;
@@ -134,16 +136,16 @@ private:
 class ASTVariableDefine : public ASTBase
 {
 public:
-	ASTVariableDefine(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	ASTVariableDefine(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		const HazeDefineVariable& defineVar, Unique<ASTBase> expression);
 
 	virtual ~ASTVariableDefine() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
-	Share<HazeCompilerValue> GenExpressionValue();
+	Share<CompilerValue> GenExpressionValue();
 
 protected:
 	HazeSectionSignal m_SectionSignal;
@@ -153,22 +155,22 @@ protected:
 class ASTVariableDefine_MultiVariable : public ASTBase
 {
 public:
-	ASTVariableDefine_MultiVariable(HazeCompiler* compiler, const SourceLocation& location);
+	ASTVariableDefine_MultiVariable(Compiler* compiler, const SourceLocation& location);
 
 	virtual ~ASTVariableDefine_MultiVariable() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 };
 
 class ASTVariableDefine_Class : public ASTVariableDefine
 {
 public:
-	ASTVariableDefine_Class(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	ASTVariableDefine_Class(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>> params = {});
 
 	virtual ~ASTVariableDefine_Class() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 protected:
 	TemplateDefineTypes m_TemplateTypes;
@@ -184,25 +186,25 @@ protected:
 class ASTVariableDefine_Array : public ASTVariableDefine_Class
 {
 public:
-	ASTVariableDefine_Array(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes,
 		V_Array<Unique<ASTBase>>& arraySize);
 
 	virtual ~ASTVariableDefine_Array() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 };
 
 //变量定义 函数
 class ASTVariableDefine_Function : public ASTVariableDefine
 {
 public:
-	ASTVariableDefine_Function(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	ASTVariableDefine_Function(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes);
 	
 	virtual ~ASTVariableDefine_Function() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	TemplateDefineTypes m_TemplateTypes;
@@ -212,11 +214,11 @@ private:
 class ASTReturn : public ASTBase
 {
 public:
-	ASTReturn(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression);
+	ASTReturn(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression);
 	
 	virtual ~ASTReturn() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -226,12 +228,12 @@ private:
 class ASTNew : public ASTBase
 {
 public:
-	ASTNew(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, V_Array<Unique<ASTBase>> countarrayExpression = {},
+	ASTNew(Compiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, V_Array<Unique<ASTBase>> countarrayExpression = {},
 		V_Array<Unique<ASTBase>> constructorParam = {});
 	
 	virtual ~ASTNew() override {}
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	V_Array<Unique<ASTBase>> m_CountArrayExpression;
@@ -242,11 +244,11 @@ private:
 class ASTGetAddress : public ASTBase
 {
 public:
-	ASTGetAddress(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression);
+	ASTGetAddress(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression);
 
 	virtual ~ASTGetAddress() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -256,12 +258,12 @@ private:
 class ASTPointerValue : public ASTBase
 {
 public:
-	ASTPointerValue(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, 
+	ASTPointerValue(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, 
 		int level, Unique<ASTBase> assignExpression = nullptr);
 	
 	virtual ~ASTPointerValue() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -273,12 +275,12 @@ private:
 class ASTNeg : public ASTBase
 {
 public:
-	ASTNeg(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
+	ASTNeg(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
 		bool isNumberNeg);
 
 	virtual ~ASTNeg() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -289,11 +291,11 @@ private:
 class ASTNullPtr : public ASTBase
 {
 public:
-	ASTNullPtr(HazeCompiler* compiler, const SourceLocation& location);
+	ASTNullPtr(Compiler* compiler, const SourceLocation& location);
 
 	virtual ~ASTNullPtr() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 	void SetDefineType(const HazeDefineType& type);
 };
@@ -302,11 +304,11 @@ public:
 class ASTNot : public ASTBase
 {
 public:
-	ASTNot(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression);
+	ASTNot(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression);
 	
 	virtual ~ASTNot() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -316,12 +318,12 @@ private:
 class ASTInc : public ASTBase
 {
 public:
-	ASTInc(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
+	ASTInc(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
 		bool isPreInc);
 
 	virtual ~ASTInc() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -332,32 +334,16 @@ private:
 class ASTDec : public ASTBase
 {
 public:
-	ASTDec(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
+	ASTDec(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression,
 		bool isPreDec);
 	
 	virtual ~ASTDec() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
 	bool m_IsPreDec;
-};
-
-//Operator
-class ASTOperetorAssign : public ASTBase
-{
-public:
-	ASTOperetorAssign(HazeCompiler* compiler, const SourceLocation& location, HazeToken token, 
-		Unique<ASTBase>& expression);
-
-	virtual ~ASTOperetorAssign() override;
-
-	virtual Share<HazeCompilerValue> CodeGen() override;
-
-private:
-	HazeToken m_Token;
-	Unique<ASTBase> m_Expression;
 };
 
 //二元表达式
@@ -368,16 +354,14 @@ class ASTBinaryExpression : public ASTBase
 	friend class ASTForExpression;
 	friend class ASTThreeExpression;
 public:
-	ASTBinaryExpression(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	ASTBinaryExpression(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		HazeToken operatorToken, Unique<ASTBase>& leftAST, Unique<ASTBase>& rightAST);
 
 	virtual ~ASTBinaryExpression() override;
 
-	//virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
-	void SetLeftAndRightBlock(HazeBaseBlock* leftJmpBlock, HazeBaseBlock* rightJmpBlock);
-
-	Share<HazeCompilerValue> CodeGen(Share<HazeCompilerValue> assignTo = nullptr);
+	void SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, CompilerBlock* rightJmpBlock);
 
 private:
 	HazeSectionSignal m_SectionSignal;
@@ -386,9 +370,9 @@ private:
 	Unique<ASTBase> m_LeftAST;
 	Unique<ASTBase> m_RightAST;
 
-	HazeBaseBlock* m_LeftBlock;
-	HazeBaseBlock* m_RightBlock;
-	HazeBaseBlock* m_DefaultBlock;
+	CompilerBlock* m_LeftBlock;
+	CompilerBlock* m_RightBlock;
+	CompilerBlock* m_DefaultBlock;
 };
 
 //三目表达式
@@ -398,12 +382,12 @@ class ASTThreeExpression : public ASTBase
 	friend class ASTWhileExpression;
 	friend class ASTForExpression;
 public:
-	ASTThreeExpression(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& conditionAST, 
+	ASTThreeExpression(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& conditionAST, 
 		Unique<ASTBase>& leftAST, Unique<ASTBase>& rightAST);
 	
 	virtual ~ASTThreeExpression() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 	virtual bool IsBlock() const override { return true; }
 
@@ -417,12 +401,12 @@ private:
 class ASTMultiExpression : public ASTBase
 {
 public:
-	ASTMultiExpression(HazeCompiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+	ASTMultiExpression(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		V_Array<Unique<ASTBase>>& expressions);
 
 	virtual ~ASTMultiExpression() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	HazeSectionSignal m_SectionSignal;
@@ -433,11 +417,11 @@ private:
 class ASTImportModule : public ASTBase
 {
 public:
-	ASTImportModule(HazeCompiler* compiler, const SourceLocation& location, const HString& modulepath);
+	ASTImportModule(Compiler* compiler, const SourceLocation& location, const HString& modulepath);
 	
 	virtual ~ASTImportModule() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	HString m_ModulePath;
@@ -447,34 +431,34 @@ private:
 class ASTBreakExpression : public ASTBase
 {
 public:
-	ASTBreakExpression(HazeCompiler* compiler, const SourceLocation& location);
+	ASTBreakExpression(Compiler* compiler, const SourceLocation& location);
 
 	virtual ~ASTBreakExpression() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 };
 
 //Continue
 class ASTContinueExpression : public ASTBase
 {
 public:
-	ASTContinueExpression(HazeCompiler* compiler, const SourceLocation& location);
+	ASTContinueExpression(Compiler* compiler, const SourceLocation& location);
 
 	virtual ~ASTContinueExpression() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 };
 
 //若
 class ASTIfExpression : public ASTBase
 {
 public:
-	ASTIfExpression(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
+	ASTIfExpression(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
 		Unique<ASTBase>& ifExpression, Unique<ASTBase>& elseExpression);
 	
 	virtual ~ASTIfExpression() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 	virtual bool IsBlock() const { return true; }
 
@@ -490,12 +474,12 @@ private:
 class ASTWhileExpression : public ASTBase
 {
 public:
-	ASTWhileExpression(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
+	ASTWhileExpression(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
 		Unique<ASTBase>& multiExpression);
 	
 	virtual ~ASTWhileExpression() override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 	virtual bool IsBlock() const { return true; }
 
@@ -508,13 +492,13 @@ private:
 class ASTForExpression : public ASTBase
 {
 public:
-	ASTForExpression(HazeCompiler* compiler, const SourceLocation& location, Unique<ASTBase>& initExpression,
+	ASTForExpression(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& initExpression,
 		Unique<ASTBase>& conditionExpression, Unique<ASTBase>& stepExpression, 
 		Unique<ASTBase>& multiExpression);
 
 	virtual	~ASTForExpression()	override;
 
-	virtual Share<HazeCompilerValue> CodeGen() override;
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 	virtual bool IsBlock() const { return true; }
 
@@ -525,30 +509,15 @@ private:
 	Unique<ASTBase> m_MultiExpression;
 };
 
-//初始化列表
-class ASTInitializeList : public ASTBase
-{
-public:
-	ASTInitializeList(HazeCompiler* compiler, const SourceLocation& location, 
-		V_Array<Unique<ASTBase>>& initializeListExpression);
-
-	virtual	~ASTInitializeList() override;
-
-	virtual Share<HazeCompilerValue> CodeGen() override;
-
-private:
-	V_Array<Unique<ASTBase>> m_InitializeListExpression;
-};
-
 //强转
 class ASTCast : public ASTBase
 {
 public:
-	ASTCast(HazeCompiler* compiler, const SourceLocation& location, HazeDefineType& type, Unique<ASTBase>& expression);
+	ASTCast(Compiler* compiler, const SourceLocation& location, HazeDefineType& type, Unique<ASTBase>& expression);
 
 	virtual ~ASTCast() override;
 
-	virtual Share<HazeCompilerValue> CodeGen();
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -558,11 +527,11 @@ private:
 class ASTSizeOf : public ASTBase
 {
 public:
-	ASTSizeOf(HazeCompiler* compiler, const SourceLocation& location, const HazeDefineType& type, Unique<ASTBase>& expression);
+	ASTSizeOf(Compiler* compiler, const SourceLocation& location, const HazeDefineType& type, Unique<ASTBase>& expression);
 
 	virtual ~ASTSizeOf() override;
 
-	virtual Share<HazeCompilerValue> CodeGen();
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
