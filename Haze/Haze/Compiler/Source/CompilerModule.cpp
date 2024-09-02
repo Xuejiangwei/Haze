@@ -624,37 +624,46 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	auto pointerFunc = DynamicCast<CompilerPointerFunction>(pointerFunction);
 
 	V_Array<const HazeDefineType*> funcTypes(params.size());
-	for (int64 i = params.size() - 1; i >= 0; i--)
+	if (!callFunction && !pointerFunc && !advancFunctionInfo)
 	{
-		auto Variable = params[i];
-
-		if (!callFunction && !pointerFunc && !advancFunctionInfo)
+		COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", GetName().c_str(),
+			callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"));
+	}
+	else
+	{
+		auto paramSize = callFunction ? callFunction->m_Params.size() : pointerFunc ? pointerFunc->m_ParamTypes.size() :
+			advancFunctionInfo->Params.size();
+		for (int64 i = params.size() - 1; i >= 0; i--)
 		{
-			COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", GetName().c_str(),
-				callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"));
-		}
-		else
-		{
-			auto type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) : 
-				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
-				advancFunctionInfo->Params.size() > params.size() - 1 - i ? advancFunctionInfo->Params.at(params.size() - 1 - i)
-				: advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
+			auto Variable = params[i];
+			auto type = callFunction ? &callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
+				pointerFunc ? &pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
+				advancFunctionInfo->Params.size() > params.size() - 1 - i ? &advancFunctionInfo->Params.at(params.size() - 1 - i)
+				: &advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 
-			if (type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(type))
+			if (*type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(*type))
 			{
-				if (Variable->IsEnum())
+				if (i == params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize != params.size())
+				{
+					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", GetName().c_str(),
+						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
+				}
+				else if (Variable->IsEnum())
 				{
 					auto enumValue = DynamicCast<CompilerEnumValue>(Variable);
-					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetParentType() == type.PrimaryType) {}
+					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetParentType() == type->PrimaryType) {}
 					else
 					{
 						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数枚举类型不匹配", GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				else if (type.IsStrongerType(Variable->GetValueType())) { }
-				else if (IsRefrenceType(type.PrimaryType) && Variable->GetValueType().PrimaryType == type.SecondaryType) {}
-				else if (!IsMultiVariableTye(type.PrimaryType))
+				else if (type->IsStrongerType(Variable->GetValueType())) {}
+				else if (IsRefrenceType(type->PrimaryType) && Variable->GetValueType().PrimaryType == type->SecondaryType) {}
+				else if (IsMultiVariableTye(type->PrimaryType) && i == params.size() - 1)
+				{
+				}
+				else if (!IsMultiVariableTye(type->PrimaryType))
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
@@ -662,7 +671,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				}
 			}
 
-			funcTypes[i] = &type;
+			funcTypes[i] = IsMultiVariableTye(type->PrimaryType) ? &Variable->GetValueType() : type;
 		}
 	}
 

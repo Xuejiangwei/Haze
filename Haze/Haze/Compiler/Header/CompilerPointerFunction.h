@@ -4,6 +4,7 @@
 
 class CompilerPointerFunction : public HazeCompilerPointerValue
 {
+	friend class CompilerModule;
 public:
 	explicit CompilerPointerFunction(CompilerModule* compilerModule, const HazeDefineType& defineType,
 		HazeVariableScope scope, HazeDataDesc desc, int count, V_Array<HazeDefineType>* paramTypes);

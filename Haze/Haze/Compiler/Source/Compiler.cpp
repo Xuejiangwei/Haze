@@ -71,6 +71,35 @@ void Compiler::RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassInfo& in
 	}
 }
 
+void Compiler::PreRegisterClass(const ClassData& data)
+{
+	auto m = MakeUnique<CompilerModule>(this, H_TEXT("PreRegisterModule"), H_TEXT(""));
+
+	m_CompilerBaseModules[H_TEXT("PreRegisterModule")] = m.get();
+
+	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<CompilerValue>>>>> classDatas;
+	V_Array<Pair<HString, Share<CompilerValue>>> classData;
+	for (int i = 0; i < data.Members.size(); i++)
+	{
+		classData.push_back({ data.Members[i].Variable.Name, CreateVariable(m.get(),
+			data.Members[i].Variable, HazeVariableScope::Local, HazeDataDesc::ClassFunction_Local_Public, 0) });
+	}
+	classDatas.push_back({ HazeDataDesc::ClassFunction_Local_Public, Move(classData) });
+
+	V_Array<CompilerClass*> parentClass;
+	m->CreateClass(data.Name, parentClass, classDatas);
+	
+	m_CompilerModules[H_TEXT("PreRegisterModule")] = Move(m);
+}
+
+void Compiler::PreRegisterVariable()
+{
+}
+
+void Compiler::PreRegisterFunction()
+{
+}
+
 bool Compiler::InitializeCompiler(const HString& moduleName, const HString& path)
 {
 	//生成模块
@@ -460,8 +489,8 @@ const HChar* Compiler::GetRegisterName(const Share<CompilerValue>& compilerRegis
 		}
 	}
 
-	HAZE_LOG_ERR_W("查找寄存器错误,未能找到!\n");
-	return nullptr;
+	//HAZE_LOG_ERR_W("查找寄存器错误,未能找到!\n");
+	return H_TEXT("");
 }
 
 bool Compiler::IsClass(const HString& name)
@@ -562,7 +591,6 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 
 	ConvertBaseTypeValue(type, s_Value, varType ? *varType : type, var);
 
-	HazeValue& v = const_cast<HazeValue&>(var);
 	s_DefineVariable.Type.PrimaryType = type;
 
 	Share<CompilerValue> ret = nullptr;
@@ -808,7 +836,7 @@ Share<CompilerValue> Compiler::CreateLea(Share<CompilerValue> allocaValue, Share
 
 Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share<CompilerValue> value, bool storeValue)
 {
-	if (allocaValue->IsRefrence() && !value->IsRefrence())
+	/*if (allocaValue->IsRefrence() && !value->IsRefrence())
 	{
 		if (value->IsConstant())
 		{
@@ -819,7 +847,7 @@ Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share
 			CreateLea(allocaValue, value);
 		}
 	}
-	else
+	else*/
 	{
 		if (CanCVT(allocaValue->GetValueType().PrimaryType, value->GetValueType().PrimaryType))
 		{
@@ -843,8 +871,6 @@ Share<CompilerValue> Compiler::CreateMovPV(Share<CompilerValue> allocaValue, Sha
 	//if (value->IsRefrence())
 	{
 		HazeDefineType& allocaValueType = const_cast<HazeDefineType&>(allocaValue->GetValueType());
-		auto& ValueValueType = value->GetValueType();
-
 		
 		{
 			allocaValueType.PrimaryType = HazeValueType::UInt64;//ValueValueType.SecondaryType;

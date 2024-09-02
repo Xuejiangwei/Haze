@@ -750,6 +750,26 @@ Share<CompilerValue> ASTDec::CodeGen(Share<CompilerValue> assignTo)
 	return m_Compiler->CreateDec(m_Expression->CodeGen(), m_IsPreDec);
 }
 
+
+ASTDataSection::ASTDataSection(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, V_Array<Unique<ASTBase>>& expressions)
+	: ASTBase(compiler, location), m_SectionSignal(section), m_Expressions(Move(expressions))
+{
+}
+
+ASTDataSection::~ASTDataSection()
+{
+}
+
+Share<CompilerValue> ASTDataSection::CodeGen(Share<CompilerValue> assignTo)
+{
+	for (size_t i = 0; i < m_Expressions.size(); i++)
+	{
+		m_Expressions[i]->CodeGen();
+	}
+
+	return nullptr;
+}
+
 ASTMultiExpression::ASTMultiExpression(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	V_Array<Unique<ASTBase>>& expressions)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_Expressions(Move(expressions))

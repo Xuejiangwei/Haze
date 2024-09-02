@@ -25,7 +25,7 @@ void HazeStack::RunGlobalDataInit(uint32 startPC, uint32 endPC)
 {
 	int pc = m_PC;
 
-	bool isConstructor = endPC - startPC > 1;
+	//bool isConstructor = endPC - startPC > 1;
 	for (m_PC = startPC; true; m_PC++)
 	{
 		auto iter = g_InstructionProcessor.find(m_VM->Instructions[m_PC].InsCode);

@@ -865,16 +865,17 @@ public:
 			void* address = nullptr;
 			if (count > 0)
 			{
-				isArray = true;
+				uint64* lengths = new uint64[count];
 				for (uint64 i = 0; i < count; i++)
 				{
-					newSize *= stack->m_VM->Instructions[stack->m_PC + i + 1].Operator[0].Extra.SignData;
+					lengths[i] = stack->m_VM->Instructions[stack->m_PC + i + 1].Operator[0].Extra.SignData;
 				}
 
-				address = HazeMemory::Alloca(newSize + sizeof(ObjectArray));
-				new((char*)address + newSize) ObjectArray(count, address, newSize / size, stack->m_PC, newRegister->Type.SecondaryType,
+				address = HazeMemory::Alloca(sizeof(ObjectArray));
+				new((char*)address) ObjectArray(count, lengths, stack->m_PC, newRegister->Type.SecondaryType,
 					newRegister->Type.CustomName ? stack->m_VM->FindClass(*newRegister->Type.CustomName) : nullptr);
-				address = (char*)address + newSize;
+
+				delete lengths;
 			}
 			else if (IsStringType(newRegister->Type.PrimaryType))
 			{

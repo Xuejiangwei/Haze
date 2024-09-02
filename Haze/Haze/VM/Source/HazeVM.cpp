@@ -37,11 +37,18 @@ HazeVM::~HazeVM()
 {
 }
 
-void HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
+bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 {
 	// 提前注册基本类型
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, *ObjectArray::GetAdvanceClassInfo());
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, *ObjectString::GetAdvanceClassInfo());
+
+	// 提前注册类
+	/*ClassData data;
+	data.Name = H_TEXT("UObject");
+	data.Size = 8;
+	data.Members.push_back({ { HazeValueType::Int32, H_TEXT("A")}, 0, 4, 0 });
+	m_Compiler->PreRegisterClass(data);*/
 
 	// 提前解析基础模块
 	V_Array<HString> baseModules = HAZE_BASE_LIBS;
@@ -52,7 +59,10 @@ void HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 
 	for (auto& iter : Vector_ModulePath)
 	{
-		ParseFile(iter);
+		if (!ParseFile(iter))
+		{
+			return false;
+		}
 	}
 
 	m_Compiler->FinishParse();
@@ -100,6 +110,8 @@ void HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 	{
 		DynamicInitializerForGlobalData();
 	}
+
+	return true;
 }
 
 void HazeVM::LoadStandardLibrary(V_Array<HString> Vector_ModulePath)
@@ -142,7 +154,7 @@ void* HazeVM::CreateHazeClass(const HString& className, ...)
 	return obj;
 }
 
-void HazeVM::ParseString(const HChar* moduleName, const HChar* moduleCode)
+bool HazeVM::ParseString(const HChar* moduleName, const HChar* moduleCode)
 {
 	bool PopCurrModule = false;
 	if (m_Compiler->InitializeCompiler(moduleName, H_TEXT("")))
@@ -150,7 +162,11 @@ void HazeVM::ParseString(const HChar* moduleName, const HChar* moduleCode)
 		PopCurrModule = true;
 		Parse P(m_Compiler.get());
 		P.InitializeString(moduleCode);
-		P.ParseContent();
+		
+		if (!P.ParseContent())
+		{
+			return false;
+		}
 		m_Compiler->FinishModule();
 	}
 
@@ -160,9 +176,11 @@ void HazeVM::ParseString(const HChar* moduleName, const HChar* moduleCode)
 	{
 		m_Compiler->PopCurrModule();
 	}
+
+	return true;
 }
 
-void HazeVM::ParseFile(const HString& FilePath)
+bool HazeVM::ParseFile(const HString& FilePath)
 {
 	bool PopCurrModule = false;
 	std::filesystem::path path(FilePath); 
@@ -173,7 +191,11 @@ void HazeVM::ParseFile(const HString& FilePath)
 		PopCurrModule = true;
 		Parse P(m_Compiler.get());
 		P.InitializeFile(FilePath);
-		P.ParseContent();
+
+		if (!P.ParseContent())
+		{
+			return false;
+		}
 		m_Compiler->FinishModule();
 	}
 
@@ -183,6 +205,8 @@ void HazeVM::ParseFile(const HString& FilePath)
 	{
 		m_Compiler->PopCurrModule();
 	}
+
+	return true;
 }
 
 const HString* HazeVM::GetModuleNameByCurrFunction()

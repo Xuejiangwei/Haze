@@ -16,14 +16,14 @@
 
 #define TOKEN_STRING_MATCH				H_TEXT("\"")
 
+#define TOKEN_DATA						H_TEXT("数据")
+#define TOKEN_FUNCTION					H_TEXT("函数")
+
 #define TOKEN_CLASS						H_TEXT("类")
-#define TOKEN_CLASS_DATA				H_TEXT("数据")
 #define TOKEN_CLASS_DATA_PUBLIC			H_TEXT("显")
 #define TOKEN_CLASS_DATA_PRIVATE		H_TEXT("隐")
 
 #define TOKEN_UNION						H_TEXT("合")
-
-#define TOKEN_FUNCTION					H_TEXT("函数")
 
 #define TOKEN_ENUM						H_TEXT("枚举")
 

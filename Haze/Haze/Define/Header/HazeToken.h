@@ -22,13 +22,12 @@ enum class HazeToken : unsigned int
 	Float32,
 	Float64,
 
-	Union,
-
 	Array,
 	ArrayDefineEnd,
 
 	StringMatch,
 
+	Data,
 	Function,
 
 	Enum,
@@ -37,7 +36,6 @@ enum class HazeToken : unsigned int
 	Template,
 
 	Class,
-	ClassData,
 	ClassPublic,
 	ClassPrivate,
 

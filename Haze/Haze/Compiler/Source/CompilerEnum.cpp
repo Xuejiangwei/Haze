@@ -17,8 +17,6 @@ void CompilerEnum::AddEnumValue(const HString& name, Share<CompilerValue>& value
 	if (!GetEnumValue(name))
 	{
 		auto v = MakeShare<CompilerEnumValue>(this, value);
-		auto& type = const_cast<HazeDefineType&>(v->GetValueType());
-		
 		m_EnumValues.push_back({ name, v });
 	}
 	else

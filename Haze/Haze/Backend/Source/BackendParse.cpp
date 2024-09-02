@@ -13,28 +13,6 @@
 
 static Pair<bool, int> ParseStringCount = { false, 0 };
 
-static void FindObjectAndMemberName(const HString& inName, HString& outObjectName, 
-	HString& outMemberName, bool& objectIsPointer)
-{
-	/*uint64 pos = inName.find(TOKEN_THIS);
-	if (pos != HString::npos)
-	{
-		outObjectName = inName.substr(0, pos);
-		outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
-		objectIsPointer = true;
-	}
-	else
-	{
-		pos = inName.find(TOKEN_THIS);
-		if (pos != HString::npos)
-		{
-			outObjectName = inName.substr(0, pos);
-			outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
-			objectIsPointer = false;
-		}
-	}*/
-}
-
 static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 {
 	if (ins.InsCode == InstructionOpCode::LINE || ins.InsCode == InstructionOpCode::SIGN)
@@ -717,7 +695,6 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 {
 	HString objName;
 	HString memberName;
-	bool isPointer = false;
 
 	if (IsClassMember(operatorData.Desc))
 	{
@@ -814,12 +791,10 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 {
 	HString objName;
 	HString memberName;
-	bool isPointer = false;
 	int index = 0;
 
 	if (IsClassMember(operatorData.Desc))
 	{
-		FindObjectAndMemberName(operatorData.Variable.Name, objName, memberName, isPointer);
 		index = (int)newGlobalDataTable.GetIndex(objName);
 		if (index >= 0)
 		{

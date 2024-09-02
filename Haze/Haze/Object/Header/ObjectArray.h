@@ -7,7 +7,7 @@ class ObjectArray
 {
 	friend class HazeMemory;
 public:
-	ObjectArray(uint64 dimensionCount, void* address, uint64 length, uint64 pcAddress, HazeValueType valueType, ClassData* classInfo = nullptr);
+	ObjectArray(uint64 dimensionCount, uint64* length, uint64 pcAddress, HazeValueType valueType, ClassData* classInfo = nullptr);
 
 	~ObjectArray();
 

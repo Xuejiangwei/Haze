@@ -27,20 +27,18 @@ static HashMap<HString, HazeToken> s_HashMap_Token =
 	{ TOKEN_UNSIGNED_INT, HazeToken::UInt32 },
 	{ TOKEN_FLOAT, HazeToken::Float32 },
 
-	{ TOKEN_UNION, HazeToken::Union },
-
 	{ TOKEN_ARRAY_START, HazeToken::Array },
 	{ TOKEN_ARRAY_END, HazeToken::ArrayDefineEnd },
 
 	{ TOKEN_STRING, HazeToken::String },
 	{ TOKEN_STRING_MATCH, HazeToken::StringMatch },
 
+	{ TOKEN_DATA, HazeToken::Data },
 	{ TOKEN_FUNCTION, HazeToken::Function },
 
 	{ TOKEN_ENUM, HazeToken::Enum },
 
 	{ TOKEN_CLASS, HazeToken::Class },
-	{ TOKEN_CLASS_DATA, HazeToken::ClassData },
 	{ TOKEN_CLASS_DATA_PUBLIC, HazeToken::ClassPublic },
 	{ TOKEN_CLASS_DATA_PRIVATE, HazeToken::ClassPrivate },
 
@@ -255,7 +253,7 @@ void Parse::InitializeString(const HString& str, uint32 startLine)
 	m_LineCount = startLine;
 }
 
-void Parse::ParseContent()
+bool Parse::ParseContent()
 {
 	m_StackSectionSignal.push(HazeSectionSignal::Global);
 
@@ -285,7 +283,7 @@ void Parse::ParseContent()
 			}
 			else
 			{
-				return;
+				return false;
 			}
 		}
 		break;
@@ -300,9 +298,22 @@ void Parse::ParseContent()
 			else
 			{
 				m_CurrParseClass.clear();
-				return;
+				return false;
 			}
 
+		}
+		break;
+		case HazeToken::Data:
+		{
+			auto ast = ParseDataSection();
+			if (ast)
+			{
+				ast->CodeGen();
+			}
+			else
+			{
+				return false;
+			}
 		}
 		break;
 		case HazeToken::Function:
@@ -325,12 +336,12 @@ void Parse::ParseContent()
 				}
 				else
 				{
-					return;
+					return false;
 				}
 			}
 			else
 			{
-				return;
+				return false;
 			}
 		}
 		break;
@@ -343,7 +354,7 @@ void Parse::ParseContent()
 			}
 			else
 			{
-				return;
+				return false;
 			}
 		}
 		break;
@@ -362,7 +373,7 @@ void Parse::ParseContent()
 			}
 			else
 			{
-				return;
+				return false;
 			}
 		}
 		break;
@@ -375,17 +386,18 @@ void Parse::ParseContent()
 			}
 			else
 			{
-				return;
+				return false;
 			}
 		}
 		break;
 		default:
 			PARSE_ERR_W("未能找到生成相应Token的AST处理");
-			break;
+			return false;
 		}
 	}
 
 	m_StackSectionSignal.pop();
+	return true;
 }
 
 void Parse::ParseTemplateContent(const HString& moduleName, const HString& templateName, const V_Array<HString>& templateTypes,
@@ -435,9 +447,9 @@ void Parse::ParseTemplateContent(const HString& moduleName, const HString& templ
 		Unique<ASTClassFunctionSection> classFunctions;
 
 		GetNextToken();
-		while (m_CurrToken == HazeToken::ClassData || m_CurrToken == HazeToken::Function)
+		while (m_CurrToken == HazeToken::Data || m_CurrToken == HazeToken::Function)
 		{
-			if (m_CurrToken == HazeToken::ClassData)
+			if (m_CurrToken == HazeToken::Data)
 			{
 				if (classDatas.size() == 0)
 				{
@@ -874,7 +886,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST)
 		if (ExpectNextTokenIs(HazeToken::Identifier, H_TEXT("类成员名字获取错误")))
 		{
 			HString attrName = m_CurrLexeme;
-			TempCurrCode temp(this);
+			TempCurrCode temp1(this);
 
 			//类的函数
 			if (ExpectNextTokenIs(HazeToken::LeftParentheses))
@@ -911,7 +923,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST)
 			}
 			else
 			{
-				temp.Reset();
+				temp1.Reset();
 				ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
 					m_StackSectionSignal.top(), identiferName, preAST, attrName, false);
 			}
@@ -974,17 +986,17 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST)
 	return ret;
 }
 
-Unique<ASTBase> Parse::ParseIdentifer_ClassAttr(const HString& name, int line)
-{
-	Unique<ASTBase> ret = nullptr;
-
-	while (TokenIs(HazeToken::ClassAttr))
-	{
-		
-	}
-
-	return ret;
-}
+//Unique<ASTBase> Parse::ParseIdentifer_ClassAttr(const HString& name, int line)
+//{
+//	Unique<ASTBase> ret = nullptr;
+//
+//	while (TokenIs(HazeToken::ClassAttr))
+//	{
+//		
+//	}
+//
+//	return ret;
+//}
 
 Unique<ASTBase> Parse::ParseVariableDefine()
 {
@@ -1131,7 +1143,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Array(TemplateDefineTypes& templateTy
 	return nullptr;
 }
 
-Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateTypes, class TempCurrCode* temp)
+Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateTypes, TempCurrCode* tempCode)
 {
 	uint32 tempLineCount = m_LineCount;
 
@@ -1163,9 +1175,9 @@ Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateT
 	}
 	else if (TokenIs(HazeToken::ClassAttr))
 	{
-		if (temp)
+		if (tempCode)
 		{
-			temp->Reset();
+			tempCode->Reset();
 			m_CurrLexeme = TOKEN_STRING;
 			Unique<ASTBase> expression = ParseIdentifer();
 
@@ -1654,6 +1666,30 @@ Unique<ASTBase> Parse::ParseMultiExpression()
 	return MakeUnique<ASTMultiExpression>(m_Compiler, SourceLocation(m_LineCount), m_StackSectionSignal.top(), expressions);
 }
 
+Unique<ASTBase> Parse::ParseDataSection()
+{
+	if (ExpectNextTokenIs(HazeToken::LeftBrace))
+	{
+		V_Array<Unique<ASTBase>> expressions;
+
+		GetNextToken();
+		while (auto e = ParseExpression())
+		{
+			expressions.push_back(Move(e));
+
+
+			if (ExpectNextTokenIs(HazeToken::RightBrace))
+			{
+				break;
+			}
+		}
+		
+		return MakeUnique<ASTDataSection>(m_Compiler, SourceLocation(m_LineCount), m_StackSectionSignal.top(), expressions);
+	}
+
+	return nullptr;
+}
+
 Unique<ASTFunctionSection> Parse::ParseFunctionSection()
 {
 	if (ExpectNextTokenIs(HazeToken::LeftBrace))
@@ -1947,9 +1983,9 @@ Unique<ASTClass> Parse::ParseClass()
 			Unique<ASTClassFunctionSection> classFunctions;
 
 			GetNextToken();
-			while (m_CurrToken == HazeToken::ClassData || m_CurrToken == HazeToken::Function)
+			while (m_CurrToken == HazeToken::Data || m_CurrToken == HazeToken::Function)
 			{
-				if (m_CurrToken == HazeToken::ClassData)
+				if (m_CurrToken == HazeToken::Data)
 				{
 					if (classDatas.size() == 0)
 					{
@@ -2343,9 +2379,9 @@ Unique<ASTTemplateBase> Parse::ParseTemplateClass(V_Array<HString>& templateType
 		Unique<ASTClassFunctionSection> classFunctions;
 
 		GetNextToken();
-		while (m_CurrToken == HazeToken::ClassData || m_CurrToken == HazeToken::Function)
+		while (m_CurrToken == HazeToken::Data || m_CurrToken == HazeToken::Function)
 		{
-			if (m_CurrToken == HazeToken::ClassData)
+			if (m_CurrToken == HazeToken::Data)
 			{
 				if (classDatas.size() == 0)
 				{

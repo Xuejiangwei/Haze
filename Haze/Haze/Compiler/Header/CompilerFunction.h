@@ -11,6 +11,7 @@ class CompilerFunction
 	friend class Compiler;
 	friend class CompilerModule;
 	friend class ASTMultiExpression;
+
 public:
 	CompilerFunction(CompilerModule* compilerModule, const HString& name, HazeDefineType& type,
 		V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass = nullptr);
@@ -83,6 +84,7 @@ private:
 		bool HasClear = false;
 	};
 
+	//同一类型，但是不再引用的临时寄存器可以重复使用
 	Share<CompilerValue> CreateTempRegister(const HazeDefineType& type);
 
 	void TryClearTempRegister();

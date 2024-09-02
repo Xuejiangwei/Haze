@@ -397,6 +397,21 @@ private:
 	Unique<ASTBase> m_RightAST;
 };
 
+class ASTDataSection : public ASTBase
+{
+public:
+	ASTDataSection(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		V_Array<Unique<ASTBase>>& expressions);
+
+	virtual ~ASTDataSection() override;
+
+	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+
+private:
+	HazeSectionSignal m_SectionSignal;
+	V_Array<Unique<ASTBase>> m_Expressions;
+};
+
 //多行表达式
 class ASTMultiExpression : public ASTBase
 {

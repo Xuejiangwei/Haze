@@ -68,6 +68,11 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& 
 	int offset = 0;
 	for (auto& var : m_TempRegisters)
 	{
+		if (var.Value->GetValueType() == type && var.Value.use_count() == 1)
+		{
+			return var.Value;
+		}
+
 		offset += var.Offset;
 	}
 

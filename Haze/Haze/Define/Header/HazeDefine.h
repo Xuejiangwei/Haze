@@ -97,14 +97,14 @@ using HString = std::wstring;
 
 #define	HAZE_JMP_NULL					H_TEXT("JmpNull")
 
-#define HAZE_CALL_PUSH_ADDRESS_NAME		HString(H_TEXT("RetAddress"))
+#define HAZE_CALL_PUSH_ADDRESS_NAME		HString(H_TEXT("RetPC"))
 
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")
 
 #define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum
 #define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum
 
-#define HAZE_VM_STACK_SIZE 1024 * 1024 * 20
+#define HAZE_VM_STACK_SIZE 1024 * 1024 * 4
 
 #define HAZE_NEW_ALIGN_BYTE 4
 

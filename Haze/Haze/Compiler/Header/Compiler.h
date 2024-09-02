@@ -1,5 +1,5 @@
 #pragma once
-//#include <type_traits>
+#include "HazeInstruction.h"
 
 class HazeVM;
 class CompilerValue;
@@ -49,6 +49,10 @@ public:
 	~Compiler();
 
 	void RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassInfo& info);
+
+	void PreRegisterClass(const ClassData& data);
+	void PreRegisterVariable();
+	void PreRegisterFunction();
 
 	bool InitializeCompiler(const HString& moduleName, const HString& path);
 

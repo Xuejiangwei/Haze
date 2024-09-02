@@ -26,7 +26,7 @@ public:
 
 	void InitializeString(const HString& str, uint32 startLine = 0);
 
-	void ParseContent();
+	bool ParseContent();
 
 	void ParseTemplateContent(const HString& moduleName, const HString& templateName, const V_Array<HString>& templateTypes,
 		const V_Array<HazeDefineType>& templateRealTypes);
@@ -49,12 +49,12 @@ private:
 	Unique<ASTBase> ParsePrimary();
 
 	Unique<ASTBase> ParseIdentifer(Unique<ASTBase> preAST = nullptr);
-	Unique<ASTBase> ParseIdentifer_ClassAttr(const HString& name, int line);
+	//Unique<ASTBase> ParseIdentifer_ClassAttr(const HString& name, int line);
 
 	Unique<ASTBase> ParseVariableDefine();
 	Unique<ASTBase> ParseVariableDefine_MultiVariable();
 	Unique<ASTBase> ParseVariableDefine_Array(TemplateDefineTypes& templateTypes);
-	Unique<ASTBase> ParseVariableDefine_String(TemplateDefineTypes& templateTypes, class TempCurrCode* temp);
+	Unique<ASTBase> ParseVariableDefine_String(TemplateDefineTypes& templateTypes, struct TempCurrCode* tempCode);
 	Unique<ASTBase> ParseVariableDefine_Class(TemplateDefineTypes& templateTypes);
 	Unique<ASTBase> ParseVariableDefine_Function(TemplateDefineTypes& templateTypes);
 
@@ -97,6 +97,8 @@ private:
 	Unique<ASTBase> ParseThreeOperator(Unique<ASTBase> condition);
 
 	Unique<ASTBase> ParseMultiExpression();
+
+	Unique<ASTBase> ParseDataSection();
 
 	Unique<ASTFunctionSection> ParseFunctionSection();
 

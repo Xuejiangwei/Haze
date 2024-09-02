@@ -187,13 +187,16 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 			}
 		}
 
-		vm->InitVM(files);
+		if (!vm->InitVM(files))
+		{
+			vm = nullptr;
+		}
 	}
 
 	//VM.LoadStandardLibrary({ {Path + H_TEXT("\\Code\\HazeCode.hz"), HAZE_TEST_FILE} });
 	//VM.ParseFile(Path + H_TEXT("\\Other\\HazeCode.hz"), H_TEXT("HazeCode"));
 
-	if (vm->GetFucntionIndexByName(mainFunction) >= 0)
+	if (vm && vm->GetFucntionIndexByName(mainFunction) >= 0)
 	{
 		std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
 		vm->CallFunction(mainFunction.c_str(), 1, 2);

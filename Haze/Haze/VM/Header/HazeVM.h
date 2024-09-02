@@ -17,18 +17,18 @@ enum class HazeRunType : uint8
 
 class HazeVM
 {
-public:
 	friend class HazeDebugger;
 	friend class InstructionProcessor;
 	friend class HazeMemory;
 	friend class HazeStack;
 	friend class HazeExecuteFile;
 
+public:
 	HazeVM(HazeRunType GenType);
 
 	~HazeVM();
 
-	void InitVM(V_Array<HString> Vector_ModulePath);
+	bool InitVM(V_Array<HString> Vector_ModulePath);
 
 	bool IsDebug() const { return GenType == HazeRunType::Debug; }
 
@@ -42,9 +42,9 @@ public:
 
 	void* CreateHazeClass(const HString& className, ...);
 
-	void ParseString(const HChar* moduleName, const HChar* moduleCode);
+	bool ParseString(const HChar* moduleName, const HChar* moduleCode);
 
-	void ParseFile(const HString& FilePath);
+	bool ParseFile(const HString& FilePath);
 
 	Unique<Compiler>& GetCompiler() { return m_Compiler; }
 

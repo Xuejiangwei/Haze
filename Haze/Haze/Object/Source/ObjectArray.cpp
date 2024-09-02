@@ -6,10 +6,28 @@
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
 
-ObjectArray::ObjectArray(uint64 dimensionCount, void* address, uint64 length, uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
-	: m_DimensionCount(dimensionCount), m_Data(address), m_Length(length), m_PcAddress(pcAddress), m_ValueType(valueType),
+ObjectArray::ObjectArray(uint64 dimensionCount, uint64* lengths, uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
+	: m_Data(nullptr), m_DimensionCount(dimensionCount), m_Length(0), m_PcAddress(pcAddress), m_ValueType(valueType),
 	  m_ClassInfo(classInfo)
 {
+	if (dimensionCount > 1)
+	{
+		m_ValueType = HazeValueType::Array;
+		m_Length = lengths[0];
+
+		m_Data = HazeMemory::Alloca(m_Length * sizeof(ObjectArray));
+		for (uint64 i = 0; i < m_Length; i++)
+		{
+			auto arr = HazeMemory::Alloca(sizeof(ObjectArray));
+			new((char*)arr) ObjectArray(dimensionCount - 1, lengths + 1, pcAddress, valueType, classInfo);
+			((ObjectArray**)m_Data)[i] = (ObjectArray*)arr;
+		}
+	}
+	else if (lengths)
+	{
+		m_Length = lengths[0];
+		m_Data = HazeMemory::Alloca(m_Length * GetSizeByHazeType(valueType));
+	}
 }
 
 ObjectArray::~ObjectArray()

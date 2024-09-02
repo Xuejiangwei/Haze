@@ -40,6 +40,11 @@ HazeMemory* HazeMemory::GetMemory()
 void* HazeMemory::Alloca(uint64 size)
 {
 	void* ret = nullptr;
+	if (size == 0)
+	{
+		return ret;
+	}
+	
 	size = RoundUp(size);
 	
 	if (size <= MAX_HAZE_ALLOC_SIZE)
