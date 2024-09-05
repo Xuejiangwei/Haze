@@ -34,9 +34,11 @@ public:
 
 	//bool GetThisMemberName(const HazeCompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
 
-	bool GetMemberName(CompilerClassValue* classValue, const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
+	bool GetMemberName(CompilerClassValue* classValue, const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
 
 	const V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<CompilerValue>>>>>& GetClassMemberData() const { return m_Data; }
+
+	const CompilerValue* GetMemberValue(uint64 index);
 
 	void GenClassData_I_Code(HAZE_STRING_STREAM& hss);
 

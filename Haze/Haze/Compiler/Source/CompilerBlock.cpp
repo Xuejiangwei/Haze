@@ -40,7 +40,8 @@ bool CompilerBlock::FindLocalVariableName(const Share<CompilerValue>& value, HSt
 	return false;
 }
 
-bool CompilerBlock::FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerBlock::FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset, 
+	V_Array<Pair<uint64, CompilerValue*>>* offsets)
 {
 	uint64 offset = 0;
 	for (auto& it : m_Allocas)
@@ -49,7 +50,7 @@ bool CompilerBlock::FindLocalVariableName(const CompilerValue* value, HString& o
 		{
 			if (getOffset)
 			{
-				offsets->push_back(offset);
+				offsets->push_back({ offset, it.second.get() });
 				outName = it.first;
 			}
 			return true;
@@ -155,7 +156,7 @@ void CompilerBlock::PushIRCode(const HString& code)
 }
 
 Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, Share<CompilerValue> refValue,
-	V_Array<Share<CompilerValue>> arraySize, V_Array<HazeDefineType>* params)
+	uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	for (auto& Iter : m_Allocas)
 	{
@@ -167,8 +168,8 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 	}
 
 	HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
-	Share<CompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar, HazeVariableScope::Local, desc, count,
-		refValue, arraySize, params);
+	Share<CompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, HazeVariableScope::Local, desc, count,
+		refValue, arrayDimension, params);
 	m_Allocas.push_back({ defineVar.Name, Alloce });
 
 	m_ParentFunction->AddLocalVariable(Alloce, line);

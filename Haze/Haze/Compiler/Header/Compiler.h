@@ -114,9 +114,11 @@ public:
 	bool IsConstantValueBoolFalse(Share<CompilerValue> v);
 
 public:
-	Share<CompilerValue> GetTempRegister(const HazeDefineType& type);
+	Share<CompilerValue> GetTempRegister(Share<CompilerValue> v);
+	Share<CompilerValue> GetTempRegister(const CompilerValue* v);
+	Share<CompilerValue> GetTempRegister(const HazeDefineType& type, uint64 arrayDimension = 0);
 	
-	static Share<CompilerValue> GetNewRegister(CompilerModule* compilerModule, const HazeDefineType& data);
+	//static Share<CompilerValue> GetNewRegister(CompilerModule* compilerModule, const HazeDefineType& data);
 
 	static HashMap<const HChar*, Share<CompilerValue>> GetUseTempRegister();
 
@@ -137,17 +139,17 @@ public:
 
 public:
 	Share<CompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
-		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, V_Array<Share<CompilerValue>> arraySize = {},
+		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
 		V_Array<HazeDefineType>* params = nullptr);
 
 	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
-		Share<CompilerValue> RefValue = nullptr, V_Array<Share<CompilerValue>> m_ArraySize = {}, V_Array<HazeDefineType>* Params = nullptr);
+		Share<CompilerValue> RefValue = nullptr, uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, Share<CompilerValue> RefValue = nullptr,
-		V_Array<Share<CompilerValue>> m_ArraySize = {}, V_Array<HazeDefineType>* Params = nullptr);
+		uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerValue> CreateClassVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, Share<CompilerValue> RefValue = nullptr,
-		V_Array<Share<CompilerValue>> m_ArraySize = {}, V_Array<HazeDefineType>* Params = nullptr);
+		uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerValue> CreateLea(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 
@@ -179,7 +181,7 @@ public:
 
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
+	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, Share<CompilerValue> assignTo, V_Array<Share<CompilerValue>>* countValue);
 	
 	Share<CompilerValue> CreateCast(const HazeDefineType& type, Share<CompilerValue> value);
 
@@ -192,8 +194,11 @@ public:
 	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName,
 		V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo);
 
-public:
-	Share<CompilerValue> CreateArrayElement(Share<CompilerValue> value, V_Array<Share<CompilerValue>> indices);
+	Share<CompilerValue> CreateGetArrayElement(Share<CompilerValue> value, Share<CompilerValue> index);
+	Share<CompilerValue> CreateSetArrayElement(Share<CompilerValue> value, Share<CompilerValue> index, Share<CompilerValue> assignValue);
+
+	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> value, const HString& memberName);
+	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> value, const HString& memberName, Share<CompilerValue> assignValue);
 
 public:
 	Share<CompilerValue> CreatePointerToValue(Share<CompilerValue> value);
@@ -231,7 +236,7 @@ public:
 	Share<CompilerClass> GetBaseModuleClass(const HString& className);
 
 	bool GetBaseModuleGlobalVariableName(const Share<CompilerValue>& value, HString& outName, bool getOffset = false,
-		V_Array<uint64>* offsets = nullptr);
+		V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
 
 	void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
 

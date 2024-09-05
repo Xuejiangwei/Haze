@@ -18,7 +18,7 @@ public:
 	
 	virtual ~ASTBase() {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) { return nullptr; }
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) { return nullptr; }
 
 	virtual const HChar* GetName() { return H_TEXT(""); }
 
@@ -26,7 +26,7 @@ public:
 
 	const HazeDefineVariable& GetDefine() const { return m_DefineVariable; }
 
-	Share<CompilerValue> TryAssign(Share<CompilerValue> assignTo, Share<CompilerValue> value);
+	Share<CompilerValue> TryAssign(ASTBase* assignToAst, Share<CompilerValue> value);
 
 protected:
 	Compiler* m_Compiler;
@@ -44,7 +44,7 @@ public:
 
 	virtual ~ASTBool() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 };
 
 //数字
@@ -55,7 +55,7 @@ public:
 	
 	virtual ~ASTNumber() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 };
 
 //字符串
@@ -66,7 +66,7 @@ public:
 	
 	virtual ~ASTStringText() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	HString m_Text;
@@ -81,7 +81,7 @@ public:
 	
 	virtual ~ASTIdentifier() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
@@ -101,7 +101,7 @@ public:
 	
 	virtual ~ASTFunctionCall() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	virtual const HChar* GetName() { return m_Name.c_str(); }
 
@@ -122,7 +122,7 @@ public:
 
 	virtual ~ASTClassAttr() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	bool m_IsFunction;
@@ -141,7 +141,7 @@ public:
 
 	virtual ~ASTVariableDefine() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
@@ -150,6 +150,9 @@ public:
 protected:
 	HazeSectionSignal m_SectionSignal;
 	Unique<ASTBase> m_Expression;
+
+private:
+	bool m_IsCalled;
 };
 
 class ASTVariableDefine_MultiVariable : public ASTBase
@@ -159,7 +162,7 @@ public:
 
 	virtual ~ASTVariableDefine_MultiVariable() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 };
 
 class ASTVariableDefine_Class : public ASTVariableDefine
@@ -170,29 +173,28 @@ public:
 
 	virtual ~ASTVariableDefine_Class() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 protected:
 	TemplateDefineTypes m_TemplateTypes;
-
-	union
-	{
-		V_Array<Unique<ASTBase>> m_Params;
-		V_Array<Unique<ASTBase>> m_ArraySize;
-	}; 
+	V_Array<Unique<ASTBase>> m_Params;
 };
 
 //变量定义 数组
-class ASTVariableDefine_Array : public ASTVariableDefine_Class
+class ASTVariableDefine_Array : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes,
-		V_Array<Unique<ASTBase>>& arraySize);
+		uint64 dimension);
 
 	virtual ~ASTVariableDefine_Array() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
+
+protected:
+	TemplateDefineTypes m_TemplateTypes;
+	uint64 m_ArrayDimension;
 };
 
 //变量定义 函数
@@ -204,7 +206,7 @@ public:
 	
 	virtual ~ASTVariableDefine_Function() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	TemplateDefineTypes m_TemplateTypes;
@@ -218,7 +220,7 @@ public:
 	
 	virtual ~ASTReturn() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -233,7 +235,7 @@ public:
 	
 	virtual ~ASTNew() override {}
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	V_Array<Unique<ASTBase>> m_CountArrayExpression;
@@ -248,7 +250,7 @@ public:
 
 	virtual ~ASTGetAddress() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -263,7 +265,7 @@ public:
 	
 	virtual ~ASTPointerValue() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -280,7 +282,7 @@ public:
 
 	virtual ~ASTNeg() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -295,7 +297,7 @@ public:
 
 	virtual ~ASTNullPtr() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	void SetDefineType(const HazeDefineType& type);
 };
@@ -308,7 +310,7 @@ public:
 	
 	virtual ~ASTNot() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -323,7 +325,7 @@ public:
 
 	virtual ~ASTInc() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -339,7 +341,7 @@ public:
 	
 	virtual ~ASTDec() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -359,7 +361,7 @@ public:
 
 	virtual ~ASTBinaryExpression() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	void SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, CompilerBlock* rightJmpBlock);
 
@@ -387,7 +389,7 @@ public:
 	
 	virtual ~ASTThreeExpression() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	virtual bool IsBlock() const override { return true; }
 
@@ -405,7 +407,7 @@ public:
 
 	virtual ~ASTDataSection() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	HazeSectionSignal m_SectionSignal;
@@ -421,7 +423,7 @@ public:
 
 	virtual ~ASTMultiExpression() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	HazeSectionSignal m_SectionSignal;
@@ -436,7 +438,7 @@ public:
 	
 	virtual ~ASTImportModule() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	HString m_ModulePath;
@@ -450,7 +452,7 @@ public:
 
 	virtual ~ASTBreakExpression() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 };
 
 //Continue
@@ -461,7 +463,7 @@ public:
 
 	virtual ~ASTContinueExpression() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 };
 
 //若
@@ -473,7 +475,7 @@ public:
 	
 	virtual ~ASTIfExpression() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	virtual bool IsBlock() const { return true; }
 
@@ -494,7 +496,7 @@ public:
 	
 	virtual ~ASTWhileExpression() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	virtual bool IsBlock() const { return true; }
 
@@ -513,7 +515,7 @@ public:
 
 	virtual	~ASTForExpression()	override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 	virtual bool IsBlock() const { return true; }
 
@@ -532,7 +534,7 @@ public:
 
 	virtual ~ASTCast() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;
@@ -546,7 +548,7 @@ public:
 
 	virtual ~ASTSizeOf() override;
 
-	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> assignTo = nullptr) override;
+	virtual Share<CompilerValue> CodeGen(ASTBase* assignToAst = nullptr) override;
 
 private:
 	Unique<ASTBase> m_Expression;

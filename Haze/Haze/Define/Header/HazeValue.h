@@ -141,9 +141,7 @@ bool IsMultiVariableTye(HazeValueType type);
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);
 
-void OperatorValueByType(HazeValueType type, InstructionOpCode typeCode, const void* target);
-
-void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const void* source, const void* target);
+void CalculateValueByType(HazeValueType type, InstructionOpCode typeCod, const void* source, const void* oper1, const void* oper2);
 
 void CompareValueByType(HazeValueType type, struct HazeRegister* hazeRegister, const void* source, const void* target);
 

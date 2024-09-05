@@ -3,6 +3,7 @@
 #include "CompilerHelper.h"
 #include "CompilerModule.h"
 #include "CompilerClassValue.h"
+#include "CompilerArrayValue.h"
 #include "HazeCompilerPointerValue.h"
 #include "CompilerClass.h"
 #include "CompilerFunction.h"
@@ -33,51 +34,84 @@ void CompilerFunction::SetStartEndLine(uint32 startLine, uint32 endLine)
 #endif // HAZE_DEBUG_ENABLE
 }
 
-Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, 
-	int line, Share<CompilerValue> refValue,V_Array<Share<CompilerValue>> arraySize,
-	V_Array<HazeDefineType>* params)
+Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& Variable, int line, Share<CompilerValue> refValue,
+	uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
-	return block->CreateAlloce(Variable, line, ++m_CurrVariableCount, refValue, arraySize, params);
+	return block->CreateAlloce(Variable, line, ++m_CurrVariableCount, refValue, arrayDimension, params);
 }
 
-Share<CompilerValue> CompilerFunction::CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue)
+Share<CompilerValue> CompilerFunction::CreateNew(const HazeDefineType& data, Share<CompilerValue> assignTo, V_Array<Share<CompilerValue>>* countValue)
 {
 	HAZE_STRING_STREAM hss;
-	GenIRCode(hss, m_Module, InstructionOpCode::NEW, nullptr, m_Module->GetCompiler()->GetConstantValueUint64(countValue->size()),
+
+	if (countValue)
+	{
+		for (uint64 i = 0; i < countValue->size(); i++)
+		{
+			GenIRCode(hss, m_Module, InstructionOpCode::PUSH, nullptr, countValue->at(i));
+		}
+	}
+
+	GenIRCode(hss, m_Module, InstructionOpCode::NEW, assignTo, m_Module->GetCompiler()->GetConstantValueUint64(countValue->size()),
 		nullptr, &data);
 
 	if (countValue)
 	{
 		for (uint64 i = 0; i < countValue->size(); i++)
 		{
-			GenIRCode(hss, m_Module, InstructionOpCode::SIGN, nullptr, countValue->at(i));
+			GenIRCode(hss, m_Module, InstructionOpCode::POP, nullptr, countValue->at(i));
 		}
 	}
 	
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	block->PushIRCode(hss.str());
 
-	auto ret = m_Module->GetCompiler()->GetNewRegister(m_Module, data);
+	//auto ret = m_Module->GetCompiler()->GetNewRegister(m_Module, data);
 
-	return ret;
+	return assignTo;
 }
 
-Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& type)
+Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& type, uint64 arrayDimension)
 {
 	int offset = 0;
 	for (auto& var : m_TempRegisters)
 	{
 		if (var.Value->GetValueType() == type && var.Value.use_count() == 1)
 		{
-			return var.Value;
+			if (var.Value->IsArray())
+			{
+				if (DynamicCast<CompilerArrayValue>(var.Value)->GetArrayDimension() == arrayDimension)
+				{
+					return var.Value;
+				}
+			}
+			else
+			{
+				return var.Value;
+			}
+
 		}
 
-		offset += var.Offset;
+		++offset;
 	}
 
-	auto v = MakeShare<CompilerValue>(nullptr, type, HazeVariableScope::Local, 
-		HazeDataDesc::RegisterTemp, 0);
+	Share<CompilerValue> v = nullptr;
+	if (IsArrayType(type.PrimaryType))
+	{
+		assert(arrayDimension > 0);
+		v = MakeShare<CompilerArrayValue>(nullptr, type, HazeVariableScope::Local,
+			HazeDataDesc::RegisterTemp, 0, arrayDimension);
+	}
+	else if (IsClassType(type.PrimaryType))
+	{
+		v = MakeShare<CompilerClassValue>(nullptr, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
+	}
+	else
+	{
+		v = MakeShare<CompilerValue>(nullptr, type, HazeVariableScope::Local, 
+			HazeDataDesc::RegisterTemp, 0);
+	}
 
 	m_TempRegisters.push_back({ v , offset });
 	return v;
@@ -139,8 +173,8 @@ void CompilerFunction::FunctionFinish()
 	if (m_Type.PrimaryType == HazeValueType::Void)
 	{
 		HAZE_STRING_STREAM hss;
-		hss << GetInstructionString(InstructionOpCode::RET) << " " << H_TEXT("Void") << " " << CAST_SCOPE(HazeVariableScope::None) << " "
-			<< CAST_DESC(HazeDataDesc::None) << " " << CAST_TYPE(HazeValueType::Void) << std::endl;
+		GenIRCode(hss, GetModule(), InstructionOpCode::RET, nullptr, nullptr, nullptr, nullptr);
+		hss << std::endl;
 		m_Module->GetCompiler()->GetInsertBlock()->PushIRCode(hss.str());
 	}
 }
@@ -273,7 +307,7 @@ HString CompilerFunction::GenForStepBlockName()
 	return hss.str();
 }
 
-bool CompilerFunction::FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerFunction::FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset, V_Array<Pair<uint64, CompilerValue*>>* offsets)
 {
 	if (m_EntryBlock->FindLocalVariableName(value, outName, getOffset, offsets))
 	{
@@ -379,6 +413,6 @@ const HazeDefineType& CompilerFunction::GetThisParam()
 void CompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)
 {
 	m_Module->BeginCreateFunctionParamVariable();
-	m_Params.push_back({ variable.Name, CreateVariable(m_Module, variable, HazeVariableScope::Local, HazeDataDesc::None, 0) });
+	m_Params.push_back({ variable.Name, CreateVariable(m_Module, variable.Type, HazeVariableScope::Local, HazeDataDesc::None, 0) });
 	m_Module->EndCreateFunctionParamVariable();
 }

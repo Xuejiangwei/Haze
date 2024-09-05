@@ -48,7 +48,7 @@ Share<CompilerValue> CompilerClassValue::GetMember(const HString& name)
 	return nullptr;
 }
 
-bool CompilerClassValue::GetMemberName(const CompilerValue* memberValue, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerClassValue::GetMemberName(const CompilerValue* memberValue, HString& outName, bool getOffset, V_Array<Pair<uint64, CompilerValue*>>* offsets)
 {
 	return m_OwnerClass->GetMemberName(this, memberValue, outName, getOffset, offsets);
 }

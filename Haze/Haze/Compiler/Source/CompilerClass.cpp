@@ -76,10 +76,10 @@ void CompilerClass::InitThisValue()
 
 int CompilerClass::GetMemberIndex(const HString& memberName)
 {
-	size_t index = 0;
-	for (size_t i = 0; i < m_Data.size(); i++)
+	uint64 index = 0;
+	for (uint64 i = 0; i < m_Data.size(); i++)
 	{
-		for (size_t j = 0; j < m_Data[i].second.size(); j++)
+		for (uint64 j = 0; j < m_Data[i].second.size(); j++)
 		{
 			if (m_Data[i].second[j].first == memberName)
 			{
@@ -117,7 +117,8 @@ int CompilerClass::GetMemberIndex(const HString& memberName)
 //	return false;
 //}
 
-bool CompilerClass::GetMemberName(CompilerClassValue* classValue, const CompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerClass::GetMemberName(CompilerClassValue* classValue, const CompilerValue* value, HString& outName, bool getOffset, 
+	V_Array<Pair<uint64, CompilerValue*>>* offsets)
 {
 	uint32 count = 0;
 	for (size_t i = 0; i < classValue->m_Data.size(); i++)
@@ -128,7 +129,7 @@ bool CompilerClass::GetMemberName(CompilerClassValue* classValue, const Compiler
 			{
 				if (getOffset)
 				{
-					offsets->push_back(m_Offsets[count]);
+					offsets->push_back({ m_Offsets[count], classValue->m_Data[i].second[j].get() });
 				}
 				return true;
 			}
@@ -138,6 +139,25 @@ bool CompilerClass::GetMemberName(CompilerClassValue* classValue, const Compiler
 	}
 
 	return false;
+}
+
+const CompilerValue* CompilerClass::GetMemberValue(uint64 index)
+{
+	uint64 counter = 0;
+	for (uint64 i = 0; i < m_Data.size(); i++)
+	{
+		for (uint64 j = 0; j < m_Data[i].second.size(); j++)
+		{
+			if (index = counter)
+			{
+				return m_Data[i].second[j].second.get();
+			}
+
+			index++;
+		}
+	}
+
+	return nullptr;
 }
 
 void CompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)

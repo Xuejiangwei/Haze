@@ -19,6 +19,7 @@
 
 #include "ObjectArray.h"
 #include "ObjectString.h"
+#include "ObjectClass.h"
 
 #include <cstdarg>
 #include <filesystem>
@@ -42,6 +43,7 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 	// 提前注册基本类型
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, *ObjectArray::GetAdvanceClassInfo());
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, *ObjectString::GetAdvanceClassInfo());
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Class, *ObjectClass::GetAdvanceClassInfo());
 
 	// 提前注册类
 	/*ClassData data;

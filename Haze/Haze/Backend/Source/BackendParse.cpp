@@ -15,7 +15,7 @@ static Pair<bool, int> ParseStringCount = { false, 0 };
 
 static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 {
-	if (ins.InsCode == InstructionOpCode::LINE || ins.InsCode == InstructionOpCode::SIGN)
+	if (ins.InsCode == InstructionOpCode::LINE)
 	{
 		return true;
 	}
@@ -439,7 +439,7 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 	data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 		&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
 
-	if (data.Desc == HazeDataDesc::ArrayElement || data.Desc == HazeDataDesc::ConstantString)
+	if (data.Desc == HazeDataDesc::ConstantString)
 	{
 		GetNextLexmeAssign_CustomType<uint32>(data.Extra.Index);
 	}
@@ -456,28 +456,11 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	case InstructionOpCode::MOVPV:
 	case InstructionOpCode::MOVTOPV:
 	case InstructionOpCode::LEA:
-	case InstructionOpCode::ADD:
-	case InstructionOpCode::SUB:
-	case InstructionOpCode::MUL:
-	case InstructionOpCode::DIV:
-	case InstructionOpCode::MOD:
-	case InstructionOpCode::CMP:
+	case InstructionOpCode::NEG:
 	case InstructionOpCode::NOT:
-	case InstructionOpCode::BIT_AND:
-	case InstructionOpCode::BIT_OR:
-	case InstructionOpCode::BIT_XOR:
-	case InstructionOpCode::SHL:
-	case InstructionOpCode::SHR:
-	/*case InstructionOpCode::ADD_ASSIGN:
-	case InstructionOpCode::SUB_ASSIGN:
-	case InstructionOpCode::MUL_ASSIGN:
-	case InstructionOpCode::DIV_ASSIGN:
-	case InstructionOpCode::MOD_ASSIGN:
-	case InstructionOpCode::BIT_AND_ASSIGN:
-	case InstructionOpCode::BIT_OR_ASSIGN:
-	case InstructionOpCode::BIT_XOR_ASSIGN:
-	case InstructionOpCode::SHL_ASSIGN:
-	case InstructionOpCode::SHR_ASSIGN:*/
+	case InstructionOpCode::CMP:
+	case InstructionOpCode::BIT_NEG:
+	case InstructionOpCode::NEW:
 	case InstructionOpCode::CVT:
 	{
 		InstructionData operatorOne;
@@ -488,9 +471,29 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 		instruction.Operator = { operatorOne, operatorTwo };
 	}
-	break;
-	case InstructionOpCode::NEG:
-	case InstructionOpCode::BIT_NEG:
+		break;
+	case InstructionOpCode::ADD:
+	case InstructionOpCode::SUB:
+	case InstructionOpCode::MUL:
+	case InstructionOpCode::DIV:
+	case InstructionOpCode::MOD:
+	case InstructionOpCode::BIT_AND:
+	case InstructionOpCode::BIT_OR:
+	case InstructionOpCode::BIT_XOR:
+	case InstructionOpCode::SHL:
+	case InstructionOpCode::SHR:
+	{
+		InstructionData operatorOne;
+		InstructionData operatorTwo;
+		InstructionData operatorThree;
+
+		ParseInstructionData(operatorOne);
+		ParseInstructionData(operatorTwo);
+		ParseInstructionData(operatorThree);
+
+		instruction.Operator = { operatorOne, operatorTwo, operatorThree };
+	}
+		break;
 	case InstructionOpCode::PUSH:
 	case InstructionOpCode::POP:
 	case InstructionOpCode::RET:
@@ -500,7 +503,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 		instruction.Operator = { operatorOne };
 	}
-	break;
+		break;
 	case InstructionOpCode::CALL:
 	{
 		InstructionData operatorOne;
@@ -540,26 +543,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 		instruction.Operator = { operatorOne, operatorTwo };
 	}
-	break;
-	case InstructionOpCode::NEW:
-	{
-		InstructionData operatorOne;
-		GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
-
-
-		operatorOne.Variable.Type.StringStream<BackendParse>(this,
-			&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
-			&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
-
-		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Scope);
-		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Desc);
-
-		InstructionData operatorTwo;
-		ParseInstructionData(operatorTwo);
-
-		instruction.Operator = { operatorOne, operatorTwo };
-	}
-	break;
+		break;
 	case InstructionOpCode::JMP:
 	{
 		InstructionData operatorOne;
@@ -584,19 +568,11 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 		instruction.Operator = { operatorOne, operatorTwo };
 	}
-	break;
+		break;
 	case InstructionOpCode::LINE:
 	{
 		InstructionData operatorOne;
 		GetNextLexmeAssign_CustomType<uint32>(operatorOne.Extra.Line);
-
-		instruction.Operator = { operatorOne };
-	}
-	break;
-	case InstructionOpCode::SIGN:
-	{
-		InstructionData operatorOne;
-		GetNextLexmeAssign_CustomType<uint64>(operatorOne.Extra.SignData);
 
 		instruction.Operator = { operatorOne };
 	}
@@ -728,39 +704,43 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 			operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
 		}
 	}
-	else if (operatorData.Desc == HazeDataDesc::ArrayElement)
+	else if (operatorData.Desc == HazeDataDesc::AdvanceRef)
 	{
-		auto iterIndex = localVariable.find(operatorData.Variable.Name);
-		if (iterIndex != localVariable.end())
-		{
-			//避免先把Index值替换掉
-			operatorData.Extra.Address.Offset = operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
-			operatorData.Extra.Address.BaseAddress = function.Variables[iterIndex->second].Offset;
-			operatorData.AddressType = InstructionAddressType::Local_Base_Offset;
-		}
-		else if (function.Variables[0].Variable.Name.substr(0, 1) == TOKEN_THIS)
-		{
-			auto classData = GetClass(*function.Variables[0].Variable.Type.CustomName);
-			if (classData)
-			{
-				operatorData.Extra.Address.Offset = GetMemberOffset(*classData, operatorData.Variable.Name)
-					+ operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
-				operatorData.Extra.Address.BaseAddress = function.Variables[0].Offset;
-				operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
-			}
-			else
-			{
-				HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>,当前类<%s>未找到!\n",
-					operatorData.Variable.Name.c_str(), function.Name.c_str(),
-					function.Variables[0].Variable.Type.CustomName->c_str());
-			}
-		}
-		else
-		{
-			HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>!\n", operatorData.Variable.Name.c_str(), 
-				function.Name.c_str());
-		}
+		operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
 	}
+	//else if (operatorData.Desc == HazeDataDesc::ArrayElement)
+	//{
+	//	auto iterIndex = localVariable.find(operatorData.Variable.Name);
+	//	if (iterIndex != localVariable.end())
+	//	{
+	//		//避免先把Index值替换掉
+	//		operatorData.Extra.Address.Offset = operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
+	//		operatorData.Extra.Address.BaseAddress = function.Variables[iterIndex->second].Offset;
+	//		operatorData.AddressType = InstructionAddressType::Local_Base_Offset;
+	//	}
+	//	else if (function.Variables[0].Variable.Name.substr(0, 1) == TOKEN_THIS)
+	//	{
+	//		auto classData = GetClass(*function.Variables[0].Variable.Type.CustomName);
+	//		if (classData)
+	//		{
+	//			operatorData.Extra.Address.Offset = GetMemberOffset(*classData, operatorData.Variable.Name)
+	//				+ operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
+	//			operatorData.Extra.Address.BaseAddress = function.Variables[0].Offset;
+	//			operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
+	//		}
+	//		else
+	//		{
+	//			HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>,当前类<%s>未找到!\n",
+	//				operatorData.Variable.Name.c_str(), function.Name.c_str(),
+	//				function.Variables[0].Variable.Type.CustomName->c_str());
+	//		}
+	//	}
+	//	else
+	//	{
+	//		HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>!\n", operatorData.Variable.Name.c_str(), 
+	//			function.Name.c_str());
+	//	}
+	//}
 	else
 	{
 		auto iterIndex = localVariable.find(operatorData.Variable.Name);
@@ -812,17 +792,17 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 			return;
 		}
 	}
-	else if (operatorData.Desc == HazeDataDesc::ArrayElement)
-	{
-		index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.Name);
-		if (index >= 0)
-		{
-			//避免先把Index值替换掉
-			operatorData.Extra.Address.Offset = operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
-			operatorData.Extra.Index = index;
-			operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
-		}
-	}
+	//else if (operatorData.Desc == HazeDataDesc::ArrayElement)
+	//{
+	//	index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.Name);
+	//	if (index >= 0)
+	//	{
+	//		//避免先把Index值替换掉
+	//		operatorData.Extra.Address.Offset = operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
+	//		operatorData.Extra.Index = index;
+	//		operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
+	//	}
+	//}
 	else
 	{
 		index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.Name);
@@ -831,10 +811,10 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 			operatorData.Extra.Index = index;
 			operatorData.AddressType = InstructionAddressType::Global;
 		}
-		else if (NEW_REGISTER == operatorData.Variable.Name)
+		/*else if (NEW_REGISTER == operatorData.Variable.Name)
 		{
 			operatorData.AddressType = InstructionAddressType::Register;
-		}
+		}*/
 		else
 		{
 			if (operatorData.Desc == HazeDataDesc::Constant)

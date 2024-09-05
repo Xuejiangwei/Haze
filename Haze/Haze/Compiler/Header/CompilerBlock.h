@@ -16,8 +16,7 @@ public:
 	CompilerBlock& operator=(const CompilerBlock&) = delete;
 
 	Share<CompilerValue> CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, 
-		Share<CompilerValue> refValue = nullptr, V_Array<Share<CompilerValue>> m_ArraySize = {},
-		V_Array<HazeDefineType>* Params = nullptr);
+		Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerBlock> GetShared() { return shared_from_this(); }
 
@@ -33,7 +32,7 @@ public:
 
 	bool FindLocalVariableName(const Share<CompilerValue>& value, HString& outName);
 
-	bool FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
+	bool FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
 
 	void SetLoopEnd(CompilerBlock* block) { m_LoopEndBlock = block; }
 

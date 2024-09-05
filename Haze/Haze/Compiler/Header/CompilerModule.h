@@ -95,12 +95,12 @@ public:
 	void EndCreateGlobalVariable();
 
 	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, Share<CompilerValue> refValue = nullptr,
-		V_Array<Share<CompilerValue>> arraySize = {}, V_Array<HazeDefineType>* params = nullptr);
+		uint64 arrayDimension = 0, V_Array<HazeDefineType>* params = nullptr);
 
 	static Share<CompilerValue> GetGlobalVariable(CompilerModule* m, const HString& name);
 
 	static bool GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset = false,
-		V_Array<uint64>* offsets = nullptr);
+		V_Array<Pair<uint64, CompilerValue*>>* offsets = nullptr);
 
 	static Share<CompilerEnum> GetEnum(CompilerModule* m, const HString& name);
 
@@ -153,7 +153,8 @@ private:
 private:
 	Share<CompilerValue> GetGlobalVariable_Internal(const HString& name);
 
-	bool GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets);
+	bool GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset, 
+		V_Array<Pair<uint64, CompilerValue*>>* offsets);
 
 	Share<CompilerEnum> GetEnum_Internal(const HString& name);
 

@@ -254,275 +254,283 @@ void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& 
 	}
 }
 
-#define VARIABLE_DEFINE_INIT(TYPE, TARGET) TYPE T; memcpy(&T, target, sizeof(TYPE))
-#define TWO_VARIABLE_DEFINE_INIT(TYPE, SOURCE, TARGET) TYPE S, T; memcpy(&S, SOURCE, sizeof(TYPE)); memcpy(&T, TARGET, sizeof(TYPE))
+#define TWO_VARIABLE_DEFINE_INIT(TYPE, OPER1, OPER2) TYPE T1, T2; memcpy(&T1, OPER1, sizeof(TYPE)); memcpy(&T2, OPER2, sizeof(TYPE))
+#define CALC_ASSIGN_VALUE(TYPE, T_CODE, TARGET, OPER1, OPER2) TYPE T, T1, T2; \
+	memcpy(&T, TARGET, sizeof(TYPE)); memcpy(&T1, OPER1, sizeof(TYPE)); memcpy(&T2, OPER2, sizeof(TYPE)); \
+	CalculateValue<TYPE>(T_CODE, T, T1, T2); memcpy((void*)TARGET, &T, sizeof(TYPE))
 
 #define VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, T)
-#define TWO_VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, S, T)
 
-#define ASSIGN(TYPE) memcpy((void*)target, &T, sizeof(TYPE))
-
-#define VARIABLE_COMPARE() bool CmpEqual = S == T; bool CmpGreater = S > T; bool CmpLess = S < T
+#define VARIABLE_COMPARE() bool CmpEqual = T1 == T2; bool CmpGreater = T1 > T2; bool CmpLess = T1 < T2
 #define COMPARE_ASSIGN() hazeRegister->Data.resize(3); hazeRegister->Data[0] = CmpEqual; \
 	hazeRegister->Data[1] = CmpGreater; hazeRegister->Data[2] = CmpLess
 
 template<typename T>
-void CalculateValue(InstructionOpCode typeCode, T& source, T& target)
+void CalculateValue(InstructionOpCode typeCode, T& target, T& oper1, T& oper2)
 {
 	switch (typeCode)
 	{
 	case InstructionOpCode::ADD:
-		target += source;
+		target = oper1 + oper2;
 		break;
 	case InstructionOpCode::SUB:
-		target -= source;
+		target = oper1 - oper2;
 		break;
 	case InstructionOpCode::MUL:
-		target *= source;
+		target = oper1 * oper2;
 		break;
 	case InstructionOpCode::DIV:
-		target /= source;
+		target = oper1 / oper2;
+		break;
+	case InstructionOpCode::MOD:
+		target = oper1 % oper2;
+		break;
+	case InstructionOpCode::BIT_AND:
+		target = oper1 & oper2;
+		break;
+	case InstructionOpCode::BIT_OR:
+		target = oper1 | oper2;
+		break;
+	case InstructionOpCode::BIT_XOR:
+		target = oper1 ^ oper2;
+		break;
+	case InstructionOpCode::SHL:
+		target = oper1 << oper2;
+		break;
+	case InstructionOpCode::SHR:
+		target = oper1 >> oper2;
+		break;
+	case InstructionOpCode::BIT_NEG:
+		target = ~oper1;
+		break;
+	case InstructionOpCode::NEG:
+		target = oper1 * -1;
 		break;
 	default:
-		HAZE_LOG_ERR("Calculate error: operator %s  type %s\n", WString2String(GetInstructionString(typeCode)).c_str(), typeid(T).name());
 		break;
 	}
 }
 
 template<>
-void CalculateValue(InstructionOpCode typeCode, bool& source, bool& target)
+void CalculateValue(InstructionOpCode typeCode, float& target, float& oper1, float& oper2)
+{
+	switch (typeCode)
+	{
+	case InstructionOpCode::ADD:
+		target = oper1 + oper2;
+		break;
+	case InstructionOpCode::SUB:
+		target = oper1 - oper2;
+		break;
+	case InstructionOpCode::MUL:
+		target = oper1 * oper2;
+		break;
+	case InstructionOpCode::DIV:
+		target = oper1 / oper2;
+		break;
+	default:
+		INS_ERR_CODE_W("32位浮点数计算错误", typeCode);
+		break;
+	}
+}
+
+template<>
+void CalculateValue(InstructionOpCode typeCode, double& target, double& oper1, double& oper2)
+{
+	switch (typeCode)
+	{
+	case InstructionOpCode::ADD:
+		target = oper1 + oper2;
+		break;
+	case InstructionOpCode::SUB:
+		target = oper1 - oper2;
+		break;
+	case InstructionOpCode::MUL:
+		target = oper1 * oper2;
+		break;
+	case InstructionOpCode::DIV:
+		target = oper1 / oper2;
+		break;
+	default:
+		INS_ERR_CODE_W("64位浮点数计算错误", typeCode);
+		break;
+	}
+}
+
+template<>
+void CalculateValue(InstructionOpCode typeCode, bool& target, bool& oper1, bool& oper2)
 {
 	switch (typeCode)
 	{
 	case InstructionOpCode::NOT:
-		target = !source;
+		target = !oper1;
 		break;
 	default:
-		HAZE_LOG_ERR("Calculate error: bool value is not support operator %s!\n", WString2String(GetInstructionString(typeCode)).c_str());
+		INS_ERR_CODE_W("布尔计算错误", typeCode);
 		break;
 	}
 }
 
-template<>
-void CalculateValue(InstructionOpCode typeCode, int& source, int& target)
-{
-	switch (typeCode)
-	{
-	case InstructionOpCode::ADD:
-		target += source;
-		break;
-	case InstructionOpCode::SUB:
-		target -= source;
-		break;
-	case InstructionOpCode::MUL:
-		target *= source;
-		break;
-	case InstructionOpCode::DIV:
-		target /= source;
-		break;
-	case InstructionOpCode::MOD:
-		target %= source;
-		break;
-	case InstructionOpCode::BIT_AND:
-		target &= source;
-		break;
-	case InstructionOpCode::BIT_OR:
-		target |= source;
-		break;
-	case InstructionOpCode::BIT_NEG:
-		target = ~source;
-		break;
-	case InstructionOpCode::BIT_XOR:
-		target ^= source;
-		break;
-	case InstructionOpCode::SHL:
-		target <<= source;
-		break;
-	case InstructionOpCode::SHR:
-		target >>= source;
-		break;
-	case InstructionOpCode::NEG:
-		target = -source;
-		break;
-	default:
-		break;
-	}
-}
+//template<>
+//void CalculateValue(InstructionOpCode typeCode, uint32& target, uint32& oper1, uint32& oper2)
+//{
+//	switch (typeCode)
+//	{
+//	case InstructionOpCode::ADD:
+//		target += source;
+//		break;
+//	case InstructionOpCode::SUB:
+//		target -= source;
+//		break;
+//	case InstructionOpCode::MUL:
+//		target *= source;
+//		break;
+//	case InstructionOpCode::DIV:
+//		target /= source;
+//		break;
+//	case InstructionOpCode::MOD:
+//		target %= source;
+//		break;
+//	case InstructionOpCode::BIT_AND:
+//		target &= source;
+//		break;
+//	case InstructionOpCode::BIT_OR:
+//		target |= source;
+//		break;
+//	case InstructionOpCode::BIT_XOR:
+//		target ^= source;
+//		break;
+//	case InstructionOpCode::SHL:
+//		target <<= source;
+//		break;
+//	case InstructionOpCode::SHR:
+//		target >>= source;
+//		break;
+//	default:
+//		break;
+//	}
+//}
+//
+//template<>
+//void CalculateValue(InstructionOpCode typeCode, int64& source, int64& target)
+//{
+//	switch (typeCode)
+//	{
+//	case InstructionOpCode::ADD:
+//		target += source;
+//		break;
+//	case InstructionOpCode::SUB:
+//		target -= source;
+//		break;
+//	case InstructionOpCode::MUL:
+//		target *= source;
+//		break;
+//	case InstructionOpCode::DIV:
+//		target /= source;
+//		break;
+//	case InstructionOpCode::MOD:
+//		target %= source;
+//		break;
+//	case InstructionOpCode::BIT_AND:
+//		target &= source;
+//		break;
+//	case InstructionOpCode::BIT_OR:
+//		target |= source;
+//		break;
+//	case InstructionOpCode::BIT_XOR:
+//		target ^= source;
+//		break;
+//	case InstructionOpCode::SHL:
+//		target <<= source;
+//		break;
+//	case InstructionOpCode::SHR:
+//		target >>= source;
+//		break;
+//	case InstructionOpCode::NEG:
+//		target = -source;
+//		break;
+//	default:
+//		break;
+//	}
+//}
+//
+//template<>
+//void CalculateValue(InstructionOpCode typeCode, uint64& source, uint64& target)
+//{
+//	switch (typeCode)
+//	{
+//	case InstructionOpCode::ADD:
+//		target += source;
+//		break;
+//	case InstructionOpCode::SUB:
+//		target -= source;
+//		break;
+//	case InstructionOpCode::MUL:
+//		target *= source;
+//		break;
+//	case InstructionOpCode::DIV:
+//		target /= source;
+//		break;
+//	case InstructionOpCode::MOD:
+//		target %= source;
+//		break;
+//	case InstructionOpCode::BIT_AND:
+//		target &= source;
+//		break;
+//	case InstructionOpCode::BIT_OR:
+//		target |= source;
+//		break;
+//	case InstructionOpCode::BIT_XOR:
+//		target ^= source;
+//		break;
+//	case InstructionOpCode::SHL:
+//		target <<= source;
+//		break;
+//	case InstructionOpCode::SHR:
+//		target >>= source;
+//		break;
+//	default:
+//		break;
+//	}
+//}
 
-template<>
-void CalculateValue(InstructionOpCode typeCode, uint32& source, uint32& target)
-{
-	switch (typeCode)
-	{
-	case InstructionOpCode::ADD:
-		target += source;
-		break;
-	case InstructionOpCode::SUB:
-		target -= source;
-		break;
-	case InstructionOpCode::MUL:
-		target *= source;
-		break;
-	case InstructionOpCode::DIV:
-		target /= source;
-		break;
-	case InstructionOpCode::MOD:
-		target %= source;
-		break;
-	case InstructionOpCode::BIT_AND:
-		target &= source;
-		break;
-	case InstructionOpCode::BIT_OR:
-		target |= source;
-		break;
-	case InstructionOpCode::BIT_XOR:
-		target ^= source;
-		break;
-	case InstructionOpCode::SHL:
-		target <<= source;
-		break;
-	case InstructionOpCode::SHR:
-		target >>= source;
-		break;
-	default:
-		break;
-	}
-}
-
-template<>
-void CalculateValue(InstructionOpCode typeCode, int64& source, int64& target)
-{
-	switch (typeCode)
-	{
-	case InstructionOpCode::ADD:
-		target += source;
-		break;
-	case InstructionOpCode::SUB:
-		target -= source;
-		break;
-	case InstructionOpCode::MUL:
-		target *= source;
-		break;
-	case InstructionOpCode::DIV:
-		target /= source;
-		break;
-	case InstructionOpCode::MOD:
-		target %= source;
-		break;
-	case InstructionOpCode::BIT_AND:
-		target &= source;
-		break;
-	case InstructionOpCode::BIT_OR:
-		target |= source;
-		break;
-	case InstructionOpCode::BIT_XOR:
-		target ^= source;
-		break;
-	case InstructionOpCode::SHL:
-		target <<= source;
-		break;
-	case InstructionOpCode::SHR:
-		target >>= source;
-		break;
-	case InstructionOpCode::NEG:
-		target = -source;
-		break;
-	default:
-		break;
-	}
-}
-
-template<>
-void CalculateValue(InstructionOpCode typeCode, uint64& source, uint64& target)
-{
-	switch (typeCode)
-	{
-	case InstructionOpCode::ADD:
-		target += source;
-		break;
-	case InstructionOpCode::SUB:
-		target -= source;
-		break;
-	case InstructionOpCode::MUL:
-		target *= source;
-		break;
-	case InstructionOpCode::DIV:
-		target /= source;
-		break;
-	case InstructionOpCode::MOD:
-		target %= source;
-		break;
-	case InstructionOpCode::BIT_AND:
-		target &= source;
-		break;
-	case InstructionOpCode::BIT_OR:
-		target |= source;
-		break;
-	case InstructionOpCode::BIT_XOR:
-		target ^= source;
-		break;
-	case InstructionOpCode::SHL:
-		target <<= source;
-		break;
-	case InstructionOpCode::SHR:
-		target >>= source;
-		break;
-	default:
-		break;
-	}
-}
-
-void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const void* source, const void* target)
+void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const void* source, const void* oper1, const void* oper2)
 {
 	switch (type)
 	{
 	case HazeValueType::Bool:
 	{
-		TWO_VARIABLE_DEFINE_INIT(bool, source, target);
-		TWO_VARIABLE_CALCULATE(bool, typeCode);
-		ASSIGN(bool);
+		CALC_ASSIGN_VALUE(bool, typeCode, source, oper1, oper2);
 	}
 	break;
 	case HazeValueType::Int32:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int, source, target);
-		TWO_VARIABLE_CALCULATE(int, typeCode);
-		ASSIGN(int);
+		CALC_ASSIGN_VALUE(int, typeCode, source, oper1, oper2);
 	}
 	break;
 	case HazeValueType::Float32:
 	{
-		TWO_VARIABLE_DEFINE_INIT(float, source, target);
-		TWO_VARIABLE_CALCULATE(float, typeCode);
-		ASSIGN(float);
+		CALC_ASSIGN_VALUE(float, typeCode, source, oper1, oper2);
 	}
 	break;
 	case HazeValueType::Int64:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int64, source, target);
-		TWO_VARIABLE_CALCULATE(int64, typeCode);
-		ASSIGN(int64);
+		CALC_ASSIGN_VALUE(int64, typeCode, source, oper1, oper2);
 	}
 	break;
 	case HazeValueType::Float64:
 	{
-		TWO_VARIABLE_DEFINE_INIT(double, source, target);
-		TWO_VARIABLE_CALCULATE(double, typeCode);
-		ASSIGN(double);
+		CALC_ASSIGN_VALUE(double, typeCode, source, oper1, oper2);
 	}
 	break;
 	case HazeValueType::UInt32:
 	{
-		TWO_VARIABLE_DEFINE_INIT(uint32, source, target);
-		TWO_VARIABLE_CALCULATE(uint32, typeCode);
-		ASSIGN(uint32);
+		CALC_ASSIGN_VALUE(uint32, typeCode, source, oper1, oper2);
 	}
 	break;
 	case HazeValueType::UInt64:
 	{
-		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
-		TWO_VARIABLE_CALCULATE(uint64, typeCode);
-		ASSIGN(uint64);
+		CALC_ASSIGN_VALUE(uint64, typeCode, source, oper1, oper2);
 	}
 	break;
 	default:

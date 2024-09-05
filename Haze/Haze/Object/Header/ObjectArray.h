@@ -3,6 +3,10 @@
 
 class HazeStack;
 
+/*
+* 定义时不能输入数字 例如 整数[1] 或 整数[甲] 这种形式是不允许的
+*/
+
 class ObjectArray
 {
 	friend class HazeMemory;
@@ -12,6 +16,8 @@ public:
 	~ObjectArray();
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
+
+	//static void NewObjectArray(HAZE_STD_CALL_PARAM);
 
 private:
 	static void GetLength(HAZE_STD_CALL_PARAM);

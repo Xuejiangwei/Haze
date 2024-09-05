@@ -161,7 +161,6 @@ private:
 
 	int m_LeftParenthesesExpressionCount;
 	uint32 m_LineCount;
-	//bool m_NeedParseNextStatement;
 
 	bool m_IsParseClassData_Or_FunctionParam;
 	bool m_IsParseArray;

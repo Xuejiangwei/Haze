@@ -56,8 +56,6 @@ public:
 
 	bool IsClassPrivateMember() const { return  m_Desc == HazeDataDesc::ClassMember_Local_Private; }
 
-	bool IsArrayElement() const { return m_Desc == HazeDataDesc::ArrayElement; }
-
 	bool IsClassThis() const { return m_Desc == HazeDataDesc::ClassThis; }
 
 	bool IsNullPtr() const { return m_Desc == HazeDataDesc::NullPtr; }

@@ -3,6 +3,7 @@
 
 #include "Compiler.h"
 #include "CompilerModule.h"
+#include "CompilerBlock.h"
 #include "CompilerClass.h"
 #include "CompilerFunction.h"
 #include "CompilerArrayValue.h"
@@ -13,6 +14,8 @@
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
 #include "HazeLogDefine.h"
+
+static HashMap<CompilerValue*, uint64>  g_CacheOffset;
 
 HString GetLocalVariableName(const HString& name, Share<CompilerValue> value)
 {
@@ -89,9 +92,8 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 	HazeCompilerStream(hss, value.get(), bStreamValue);
 }
 
-Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeDefineType& type, 
-	HazeVariableScope scope, HazeDataDesc desc, int count, Share<CompilerValue> assignValue,
-	V_Array<Share<CompilerValue>> arraySize, V_Array<HazeDefineType>* params)
+Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeDefineType& type, HazeVariableScope scope, 
+	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	switch (type.PrimaryType)
 	{
@@ -110,7 +112,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 	case HazeValueType::MultiVariable:
 		return MakeShare<CompilerValue>(compilerModule, type, scope, desc, count, assignValue);
 	case HazeValueType::Array:
-		return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count, arraySize);
+		return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count, arrayDimension);
 	case HazeValueType::Refrence:
 		return MakeShare<CompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
 	case HazeValueType::Function:
@@ -133,11 +135,10 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 	return nullptr;
 }
 
-Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDefineVariable& var, HazeVariableScope scope,
-	HazeDataDesc desc, int count, Share<CompilerValue> refValue, V_Array<Share<CompilerValue>> arraySize,
-	V_Array<HazeDefineType>* params)
+Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDefineType& type, HazeVariableScope scope,
+	HazeDataDesc desc, int count, Share<CompilerValue> refValue, uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
-	return CreateVariableImpl(compilerModule, var.Type, scope, desc, count, refValue, arraySize, params);
+	return CreateVariableImpl(compilerModule, type, scope, desc, count, refValue, arrayDimension, params);
 }
 
 V_Array<Pair<HazeDataDesc, V_Array<Share<CompilerValue>>>> CreateVariableCopyClassMember(CompilerModule* compilerModule,
@@ -151,10 +152,8 @@ V_Array<Pair<HazeDataDesc, V_Array<Share<CompilerValue>>>> CreateVariableCopyCla
 		for (size_t i = 0; i < it.second.size(); i++)
 		{
 			auto& var = it.second[i].second;
-			members.back().second[i] = CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0,
-				var,
-				var->IsArray() ? DynamicCast<CompilerArrayValue>(var)->GetArraySize() :
-				V_Array<Share<CompilerValue>>{},
+			members.back().second[i] = CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0, var,
+				var->IsArray() ? DynamicCast<CompilerArrayValue>(var)->GetArrayDimension() : 0,
 				var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
 		}
 	}
@@ -374,7 +373,7 @@ Pair<Share<CompilerFunction>, Share<CompilerValue>> GetObjectNameAndFunctionName
 }
 
 bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
-	const CompilerValue* value, HString& outName, bool getOffsets, V_Array<uint64>* offsets)
+	const CompilerValue* value, HString& outName, bool getOffsets, V_Array<Pair<uint64, CompilerValue*>>* offsets)
 {
 	if (data.second.get() == value)
 	{
@@ -390,7 +389,7 @@ bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<Co
 			if (compilerClass->GetMemberName(value, outName, getOffsets, offsets))
 			{
 				outName = GetLocalVariableName(data.first, data.second) + outName;
-				if (!value->IsClassPublicMember())
+				if (!value->IsClassPublicMember() && function->GetClass() != compilerClass->GetOwnerClass())
 				{
 					HAZE_LOG_ERR_W("不能够访问类<%s>非公开成员变量<%s>!\n", compilerClass->GetOwnerClassName().c_str(), outName.c_str());
 					return false;
@@ -399,30 +398,8 @@ bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<Co
 			}
 		}
 	}
-	else if (value->IsArrayElement())
-	{
-		auto arrayElement = static_cast<const CompilerArrayElementValue*>(value);
-		if (data.second->IsArray())
-		{
-			if (arrayElement->GetArray() == data.second.get())
-			{
-				outName = GetLocalVariableName(data.first, data.second);
-				return true;
-			}
-		}
-	}
 
 	return false;
-}
-
-Share<CompilerValue> GetArrayElementToValue(CompilerModule* compilerModule, Share<CompilerValue> elementValue,
-	Share<CompilerValue> movToValue)
-{
-	auto compiler = compilerModule->GetCompiler();
-	//auto arrayPointer = compiler->CreatePointerToArrayElement(elementValue);
-
-	//return compiler->CreateMovPV(movToValue ? movToValue : compiler->GetTempRegister(), nullptr);
-	return nullptr;
 }
 
 void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes)
@@ -443,8 +420,7 @@ void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& te
 }
 
 
-void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss,
-	const Share<CompilerValue>& value/*, int index*/)
+void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const Share<CompilerValue>& value)
 {
 	static HString s_StrName;
 
@@ -503,134 +479,9 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss,
 	}
 }
 
-Share<CompilerValue> GenIRCode_GetClassMember(HAZE_STRING_STREAM& hss, CompilerModule* m, Share<CompilerValue> v)
-{
-	static V_Array<uint64> s_Offsets;
-	static HString s_Name;
-
-	s_Offsets.clear();
-	s_Name.clear();
-	auto compiler = m->GetCompiler();
-
-	bool find = false;
-	if (v->IsGlobalVariable())
-	{
-		find = m->GetGlobalVariableName(m, v, s_Name, true, &s_Offsets);
-	}
-	else if (v->IsLocalVariable())
-	{
-		find = m->GetCurrFunction()->FindLocalVariableName(v.get(), s_Name, true, &s_Offsets);
-	}
-	else
-	{
-		COMPILER_ERR_MODULE_W("查找类成员偏移错误， 变量类型错误", m->GetName().c_str());
-	}
-
-	if (find)
-	{
-		auto cacheType = v->GetValueType();
-		for (int i = s_Offsets.size() - 1; i >= 0; i--)
-		{
-			if (i != s_Offsets.size() - 1)
-			{
-				//v = compiler->CreateMovPV(compiler->GetTempRegister(), v);
-				auto& type = const_cast<HazeDefineType&>(v->GetValueType());
-				type.Pointer();
-
-				v = compiler->CreateAdd(v, v, compiler->GetConstantValueUint64(s_Offsets[i]));
-
-				if (i == 0)
-				{
-					//if (s_Offsets.size() <= 2)
-					{
-						auto& type = const_cast<HazeDefineType&>(v->GetValueType());
-						type.UpToRefrence();
-					}
-					//v = compiler->CreateLea(v, v);
-				}
-				else
-				{
-					v = compiler->CreateMovPV(v, v);
-				}
-			}
-			else
-			{
-				Share<CompilerValue> startVaule = nullptr;
-				if (v->IsGlobalVariable())
-				{
-					startVaule = m->GetGlobalVariable(m, s_Name);
-				}
-				else if (v->IsLocalVariable())
-				{
-					startVaule = m->GetCurrFunction()->GetLocalVariable(s_Name);
-				}
-
-				if (startVaule)
-				{
-					v = compiler->CreateMov(compiler->GetTempRegister(startVaule->GetValueType()), startVaule);
-				}
-				else
-				{
-					COMPILER_ERR_MODULE_W("查找类成员偏移错误, 未能找到变量<%s>", s_Name.c_str());
-					return v;
-				}
-
-			}
-		}
-
-		return v;
-	}
-	else
-	{
-		COMPILER_ERR_MODULE_W("查找类成员偏移错误, 未能找到", m->GetName().c_str());
-		return v;
-	}
-}
-
-Share<CompilerValue> GenIR_GetValueByType(HAZE_STRING_STREAM& hss, CompilerModule* m, Share<CompilerValue> value)
-{
-	if (value)
-	{
-		if (value->IsClassMember())
-		{
-			value = GenIRCode_GetClassMember(hss, m, value);
-		}
-		else if (value->IsArrayElement())
-		{
-			auto arrElement = DynamicCast<CompilerArrayElementValue>(value);
-			auto arr = arrElement->GetArray()->GetShared();
-			value = arr;
-
-			V_Array<Share<CompilerValue>> params;
-			auto& indexs = arrElement->GetIndex();
-			for (uint64 i = 0; i < indexs.size(); i++)
-			{
-				params.clear();
-				params.push_back(indexs[i]->GetShared());
-				value = m->GetCompiler()->CreateAdvanceTypeFunctionCall(HazeValueType::Array, H_TEXT("获得"), params, value);
-				value = m->GetCompiler()->CreateMov(m->GetCompiler()->GetTempRegister(i + 1 < indexs.size() ? arr->GetValueType() : arr->GetValueType().SecondaryType), value);
-			}
-		}
-	}
-
-	return value;
-}
-
-
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo,
 	Share<CompilerValue> oper1, Share<CompilerValue> oper2, const HazeDefineType* expectType)
 {
-	if (assignTo)
-	{
-		if (assignTo->IsClassMember())
-		{
-			assignTo = GenIRCode_GetClassMember(hss, m, assignTo);
-		}
-	}
-
-	oper1 = GenIR_GetValueByType(hss, m, oper1);
-	oper2 = GenIR_GetValueByType(hss, m, oper2);
-
 	if (expectType)
 	{
 		auto type = *expectType;
@@ -651,9 +502,8 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				{
 					type.PrimaryType = HazeValueType::Float64;
 				}
+				oper1 = m->GetCompiler()->CreateMov(m->GetCompiler()->GetTempRegister(type), oper1);
 			}
-
-			oper1 = m->GetCompiler()->CreateMov(m->GetCompiler()->GetTempRegister(type), oper1);
 		}
 		else if (IsRefrenceType(type.PrimaryType) && !oper1->IsRefrence())
 		{
@@ -665,125 +515,71 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	switch (opCode)
 	{
 	case InstructionOpCode::NONE:
+		COMPILER_ERR_MODULE_W("生成中间代码错误, 中间操作码为空", m->GetName().c_str());
 		break;
 	case InstructionOpCode::MOV:
-	{
-		if (assignTo->IsArrayElement())
-		{
-			auto arrElement = DynamicCast<CompilerArrayElementValue>(assignTo);
-			auto arr = arrElement->GetArray()->GetShared();
-			assignTo = arr;
-
-			V_Array<Share<CompilerValue>> params;
-			auto& indexs = arrElement->GetIndex();
-			for (uint64 i = 0; i < indexs.size(); i++)
-			{
-				if (i + 1 == indexs.size())
-				{
-					params.clear();
-					params.push_back(oper1);
-					params.push_back(indexs[i]->GetShared());
-					assignTo = m->GetCompiler()->CreateAdvanceTypeFunctionCall(HazeValueType::Array, H_TEXT("设置"), params, assignTo);
-				}
-				else
-				{
-					params.clear();
-					params.push_back(indexs[i]->GetShared());
-					assignTo = m->GetCompiler()->CreateAdvanceTypeFunctionCall(HazeValueType::Array, H_TEXT("获得"), params, assignTo);
-					assignTo = m->GetCompiler()->CreateMov(m->GetCompiler()->GetTempRegister(arr->GetValueType()), assignTo);
-				}
-			}
-		}
-		else
-		{
-			hss << GetInstructionString(opCode) << " ";
-			GenVariableHzic(m, hss, assignTo);
-			if (oper1)
-			{
-				hss << " ";
-				GenVariableHzic(m, hss, oper1);
-			}
-		}
-	}
-		break;
 	case InstructionOpCode::MOVPV:
 	case InstructionOpCode::MOVTOPV:
 	case InstructionOpCode::LEA:
+	case InstructionOpCode::BIT_NEG:
+	case InstructionOpCode::NOT:
+	case InstructionOpCode::NEG:
+	case InstructionOpCode::NEW:
+	case InstructionOpCode::CVT:
+	{
+
+		hss << GetInstructionString(opCode) << " ";
+		GenVariableHzic(m, hss, assignTo);
+		hss << " ";
+		GenVariableHzic(m, hss, oper1);
+	}
+		break;
 	case InstructionOpCode::ADD:
 	case InstructionOpCode::SUB:
 	case InstructionOpCode::MUL:
 	case InstructionOpCode::DIV:
 	case InstructionOpCode::MOD:
-	case InstructionOpCode::CVT:
 	case InstructionOpCode::BIT_AND:
 	case InstructionOpCode::BIT_OR:
 	case InstructionOpCode::BIT_XOR:
 	case InstructionOpCode::SHL:
 	case InstructionOpCode::SHR:
-	case InstructionOpCode::CMP:
 	{
 		hss << GetInstructionString(opCode) << " ";
 		GenVariableHzic(m, hss, assignTo);
 		hss << " ";
 		GenVariableHzic(m, hss, oper1);
-		if (oper2)
-		{
-			hss << " ";
-			GenVariableHzic(m, hss, oper2);
-		}
+		hss << " ";
+		GenVariableHzic(m, hss, oper2);
 	}
 		break;
-	case InstructionOpCode::NOT:
-	case InstructionOpCode::NEG:
+	case InstructionOpCode::CMP:
 	{
 		hss << GetInstructionString(opCode) << " ";
 		GenVariableHzic(m, hss, oper1);
+		hss << " ";
+		GenVariableHzic(m, hss, oper2);
 	}
-		break;
-	case InstructionOpCode::BIT_NEG:
 		break;
 	case InstructionOpCode::PUSH:
+	case InstructionOpCode::POP:
 	{
 		hss << GetInstructionString(opCode) << " ";
 		GenVariableHzic(m, hss, oper1);
 	}
-		break;
-	case InstructionOpCode::POP:
-		break;
-	case InstructionOpCode::CALL:
 		break;
 	case InstructionOpCode::RET:
-		break;
-	case InstructionOpCode::NEW:
 	{
-		hss << GetInstructionString(opCode) << " ";
-		hss << NEW_REGISTER << " ";
-		HazeDefineType::StringStreamTo(hss, *expectType);
-		hss << " " << CAST_SCOPE(HazeVariableScope::Local) << " " << CAST_DESC(HazeDataDesc::RegisterNew) << " ";
-
-		GenVariableHzic(m, hss, oper1);
-	}
-		break;
-	case InstructionOpCode::JMP:
-		break;
-	case InstructionOpCode::JNE:
-		break;
-	case InstructionOpCode::JNG:
-		break;
-	case InstructionOpCode::JNL:
-		break;
-	case InstructionOpCode::JE:
-		break;
-	case InstructionOpCode::JG:
-		break;
-	case InstructionOpCode::JL:
-		break;
-	case InstructionOpCode::LINE:
-		break;
-	case InstructionOpCode::SIGN:
-	{
-		hss << GetInstructionString(opCode) << " ";
-		hss << oper1->GetValue().Value.UInt64;
+		if (oper1)
+		{
+			hss << GetInstructionString(opCode) << " ";
+			GenVariableHzic(m, hss, oper1);
+		}
+		else
+		{
+			hss << GetInstructionString(InstructionOpCode::RET) << " " << H_TEXT("Void") << " " << 
+				CAST_SCOPE(HazeVariableScope::None) << " " << CAST_DESC(HazeDataDesc::None) << " " << CAST_TYPE(HazeValueType::Void);
+		}
 	}
 		break;
 	default:
@@ -791,4 +587,111 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	}
 
 	hss << std::endl;
+}
+
+void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerBlock> block1,
+	Share<CompilerBlock> block2)
+{
+	switch (opCode)
+	{
+	case InstructionOpCode::JMP:
+		hss << GetInstructionString(opCode) << " " << block1->GetName() << std::endl;
+		break;
+	case InstructionOpCode::JNE:
+	case InstructionOpCode::JNG:
+	case InstructionOpCode::JNL:
+	case InstructionOpCode::JE:
+	case InstructionOpCode::JG:
+	case InstructionOpCode::JL:
+	{
+		hss << GetInstructionString(opCode) << " ";
+
+		if (block1)
+		{
+			hss << block1->GetName() << " ";
+		}
+		else
+		{
+			hss << HAZE_JMP_NULL << " ";
+		}
+
+		if (block2)
+		{
+			hss << block2->GetName();
+		}
+		else
+		{
+			hss << HAZE_JMP_NULL << " ";
+		}
+
+		hss << std::endl;
+
+	}
+		break;
+	}
+}
+
+HString GenIRCode(InstructionOpCode opCode, uint64 number)
+{
+	switch (opCode)
+	{
+	case InstructionOpCode::LINE:
+		return GetInstructionString(opCode) + (H_TEXT(" ") + HAZE_TO_HAZE_STR(number)) + H_TEXT("\n");
+	}
+	
+	return HString();
+}
+
+void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, uint64 paramCount, uint64 paramSize, Share<CompilerFunction> function,
+	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, void* advanceFuncAddress)
+{
+	switch (opCode)
+	{
+	case InstructionOpCode::CALL:
+	{
+		HString varName;
+		hss << GetInstructionString(InstructionOpCode::CALL) << " ";
+		if (function)
+		{
+			hss << function->GetName() << " " << CAST_TYPE(HazeValueType::None) << " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<
+				CAST_DESC(HazeDataDesc::FunctionAddress) << " " << paramCount << " " << paramSize << " " << m->GetName() << " "
+				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
+		}
+		else if (pointerFunction)
+		{
+			m->GetGlobalVariableName(m, pointerFunction, varName);
+			if (varName.empty())
+			{
+				m->GetCurrFunction()->FindLocalVariableName(pointerFunction.get(), varName);
+				if (varName.empty())
+				{
+					HAZE_LOG_ERR_W("函数指针调用失败!\n");
+					return;
+				}
+			}
+
+			hss << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
+				<< CAST_SCOPE(pointerFunction->GetVariableScope()) << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
+				<< " " << paramSize << " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
+		}
+		else
+		{
+			m->GetGlobalVariableName(m, advancePointerTo, varName);
+			if (varName.empty())
+			{
+				m->GetCurrFunction()->FindLocalVariableName(advancePointerTo.get(), varName);
+				if (varName.empty())
+				{
+					HAZE_LOG_ERR_W("复杂类型函数调用失败!\n");
+					return;
+				}
+			}
+
+			hss << varName << " " << CAST_TYPE(HazeValueType::Function) << " " << CAST_SCOPE(advancePointerTo->GetVariableScope()) << " "
+				<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " " << paramSize << " " << m->GetName() << " " 
+				<< CAST_DESC(HazeDataDesc::CallFunctionPointer) << " " << advanceFuncAddress << std::endl;
+		}
+	}
+		break;
+	}
 }

@@ -535,11 +535,9 @@ void CompilerModule::GenIRCode_Ret(Share<CompilerValue> value)
 {
 	auto function = GetCurrFunction();
 	HAZE_STRING_STREAM hss;
-	hss << GetInstructionString(InstructionOpCode::RET) << " ";
-	GenVariableHzic(this, hss, value);
 
+	GenIRCode(hss, this, InstructionOpCode::RET, nullptr, value);
 	hss << std::endl;
-
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
@@ -552,41 +550,19 @@ void CompilerModule::GenIRCode_Cmp(HazeCmpType cmpType, Share<CompilerBlock> ifJ
 		HAZE_LOG_ERR_W("比较失败,比较类型为空,当前函数<%s>!\n", GetCurrFunction()->GetName().c_str());
 	}
 
-	hss << GetInstructionString(GetInstructionOpCodeByCmpType(cmpType)) << " ";
-
-	if (ifJmpBlock)
-	{
-		hss << ifJmpBlock->GetName() << " ";
-	}
-	else
-	{
-		hss << HAZE_JMP_NULL << " ";
-	}
-
-	if (elseJmpBlock)
-	{
-		hss << elseJmpBlock->GetName();
-	}
-	else
-	{
-		hss << HAZE_JMP_NULL << " ";
-	}
-
-	hss << std::endl;
-
+	GenIRCode(hss, this, GetInstructionOpCodeByCmpType(cmpType), ifJmpBlock, elseJmpBlock);
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
 void CompilerModule::GenIRCode_JmpTo(Share<CompilerBlock> block)
 {
 	HAZE_STRING_STREAM hss;
-	hss << GetInstructionString(InstructionOpCode::JMP) << " " << block->GetName() << std::endl;
-
+	GenIRCode(hss, this, InstructionOpCode::JMP, block);
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
 Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, Share<CompilerValue> refValue,
-	V_Array<Share<CompilerValue>> arraySize, V_Array<HazeDefineType>* params)
+	uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	for (auto& it : m_Variables)
 	{
@@ -598,7 +574,7 @@ Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariab
 	}
 
 	m_Variables.push_back({ var.Name,
-		CreateVariable(this, var, HazeVariableScope::Global, HazeDataDesc::None, 0, refValue, arraySize, params) });
+		CreateVariable(this, var.Type, HazeVariableScope::Global, HazeDataDesc::None, 0, refValue, arrayDimension, params) });
 
 	auto& retValue = m_Variables.back().second;
 	if (!IsHazeBaseType(retValue->GetValueType().PrimaryType))
@@ -643,11 +619,12 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 			if (*type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(*type))
 			{
-				if (i == params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize != params.size())
+				if (i == params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize - (callFunction && callFunction->GetClass() ? 1 : 0) != params.size())
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
 				}
+				else if (IsMultiVariableTye(type->PrimaryType) && i == 0) {}
 				else if (Variable->IsEnum())
 				{
 					auto enumValue = DynamicCast<CompilerEnumValue>(Variable);
@@ -660,9 +637,6 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				}
 				else if (type->IsStrongerType(Variable->GetValueType())) {}
 				else if (IsRefrenceType(type->PrimaryType) && Variable->GetValueType().PrimaryType == type->SecondaryType) {}
-				else if (IsMultiVariableTye(type->PrimaryType) && i == params.size() - 1)
-				{
-				}
 				else if (!IsMultiVariableTye(type->PrimaryType))
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
@@ -734,10 +708,11 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, callFunction, nullptr, nullptr, size, params, thisPointerTo);
 
-	hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::None) 
+	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction);
+	/*hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::None) 
 		<< " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " << CAST_DESC(HazeDataDesc::FunctionAddress)
 		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << " "
-		<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
+		<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;*/
 
 	auto retRegister = Compiler::GetRegister(RET_REGISTER);
 
@@ -767,9 +742,10 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, nullptr, pointerFunction, nullptr, size, params, thisPointerTo);
-	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
+	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, pointerFunction);
+	/*hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
 		<< CAST_SCOPE(pointerFunction->GetVariableScope())  << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << params.size()
-		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
+		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;*/
 
 	return Compiler::GetRegister(RET_REGISTER);
 }
@@ -795,10 +771,11 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, nullptr, nullptr, &functionInfo, size, params, thisPointerTo);
-	hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
+	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, nullptr, thisPointerTo, functionInfo.ClassFunc);
+	/*hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
 		<< CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " << params.size()
 		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionPointer)
-		<< " " << functionInfo.ClassFunc << std::endl;
+		<< " " << functionInfo.ClassFunc << std::endl;*/
 
 	return Compiler::GetRegister(RET_REGISTER);
 }
@@ -816,10 +793,10 @@ Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const HStri
 
 	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = &it->first;
 
-	HazeDefineVariable defineVar;
-	defineVar.Type.PrimaryType = HazeValueType::String;
+	HazeDefineType defineVarType;
+	defineVarType.PrimaryType = HazeValueType::String;
 
-	it->second = CreateVariable(this, defineVar, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
+	it->second = CreateVariable(this, defineVarType, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
 
 	HazeValue& hazeValue = const_cast<HazeValue&>(it->second->GetValue());
 	hazeValue.Value.Extra.StringTableIndex = (int)m_HashMap_StringMapping.size() - 1;
@@ -867,7 +844,8 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const 
 	return m->m_Compiler->GetBaseModuleGlobalVariable(name);
 }
 
-bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset,
+	V_Array<Pair<uint64, CompilerValue*>>* offsets)
 {
 	if (m->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
 	{
@@ -912,7 +890,8 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& n
 	return nullptr;
 }
 
-bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
+bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset,
+	V_Array<Pair<uint64, CompilerValue*>>* offsets)
 {
 	if (value->IsRegister())
 	{

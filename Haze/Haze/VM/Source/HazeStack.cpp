@@ -117,7 +117,7 @@ void HazeStack::InitStackRegister()
 	m_VirtualRegister =
 	{
 		{RET_REGISTER, HazeRegister()},
-		{NEW_REGISTER, HazeRegister()},
+		//{NEW_REGISTER, HazeRegister()},
 		{CMP_REGISTER, HazeRegister()},
 
 		{TEMP_REGISTER_A, HazeRegister()},

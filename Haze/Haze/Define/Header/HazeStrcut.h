@@ -62,6 +62,7 @@ struct HazeDefineType
 		else if (IsClassType(PrimaryType) && IsNoneType(SecondaryType) && CustomName && !CustomName->empty()) {}
 		else if (IsStringType(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
 		else if (IsMultiVariableTye(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
+		else if (IsFunctionType(PrimaryType) && IsNoneType(SecondaryType)) {}
 		else
 		{
 			HAZE_LOG_ERR_W("基本类型指针的类型错误<%s><%s><%s>\n", GetHazeValueTypeString(PrimaryType), GetHazeValueTypeString(SecondaryType),
@@ -146,6 +147,20 @@ struct HazeDefineType
 	{
 		SecondaryType = PrimaryType;
 		PrimaryType = HazeValueType::Array;
+	}
+
+	void ToArrayElement(const HazeDefineType& type)
+	{
+		if (IsArrayType(type.PrimaryType))
+		{
+			PrimaryType = type.SecondaryType;
+			SecondaryType = HazeValueType::None;
+			CustomName = type.CustomName;
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("获得数组类型的成员类型错误, 不是数组类型\n");
+		}
 	}
 
 	void Pointer()

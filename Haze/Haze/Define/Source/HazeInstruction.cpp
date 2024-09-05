@@ -76,8 +76,6 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 	{H_TEXT("CVT"), InstructionOpCode::CVT },
 
 	{H_TEXT("LINE"), InstructionOpCode::LINE },
-
-	{H_TEXT("SIGN"), InstructionOpCode::SIGN },
 };
 
 bool IsRegisterDesc(HazeDataDesc desc)
@@ -406,13 +404,17 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
+		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::MOD, 
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::MOD, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[1]));
 			}
+		}
+		else
+		{
+			INS_ERR_W("操作数不对");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -423,13 +425,17 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 1)
+		if (oper.size() == 2)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::NEG,
-					GetOperatorAddress(stack, oper[0]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::NEG, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), nullptr);
 			}
+		}
+		else
+		{
+			INS_ERR_W("操作数不对");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -444,9 +450,13 @@ public:
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::NOT, 
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::NOT, GetOperatorAddress(stack, oper[0]), 
+					GetOperatorAddress(stack, oper[1]), nullptr);
 			}
+		}
+		else
+		{
+			INS_ERR_W("操作数不对");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -457,13 +467,17 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
+		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_AND,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_AND, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
 			}
+		}
+		else
+		{
+			INS_ERR_W("操作数不对");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -474,13 +488,17 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
+		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_OR,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_OR, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
 			}
+		}
+		else
+		{
+			INS_ERR_W("操作数不对");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -491,223 +509,60 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 	
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
+		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_XOR,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_XOR, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
 			}
+		}
+		else
+		{
+			INS_ERR_W("操作数不对");
 		}
 
 		stack->m_VM->InstructionExecPost();
 	}
-
-	/*static void Add_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::ADD_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Sub_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::SUB_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Mul_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::MUL_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Div_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::DIV_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Mod_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::MOD_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Bit_And_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_AND_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Bit_Or_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_OR_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}*/
 
 	static void Bit_Neg(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG; 
 		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 1)
+		if (oper.size() == 2)
 		{
 			if (IsIntegerType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_NEG,
-					GetOperatorAddress(stack, oper[0]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_NEG, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), nullptr);
 			}
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("字节取反操作错误!\n");
+			INS_ERR_W("操作数不对");
 		}
+
 
 		stack->m_VM->InstructionExecPost();
 	}
-
-	/*static void Bit_Xor_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG; 
-		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::BIT_XOR_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Shl_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::SHL_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void Shr_Assign(HazeStack* stack)
-	{
-		INSTRUCTION_DATA_DEBUG;
-		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
-		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
-			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::SHR_ASSIGN,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-		}
-
-		stack->m_VM->InstructionExecPost();
-	}*/
 
 	static void Shl(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
+		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType) && IsIntegerType(oper[1].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::SHL,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::SHL, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
 			}
+		}
+		else
+		{
+			INS_ERR_W("操作数不对");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -718,13 +573,17 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		if (oper.size() == 2)
+		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::SHR,
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
+				CalculateValueByType(oper[0].Variable.Type.PrimaryType, InstructionOpCode::SHR, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
 			}
+		}
+		else
+		{
+			INS_ERR_W("操作数不对");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -835,28 +694,29 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 
 		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
-		HazeRegister* newRegister = stack->GetVirtualRegister(oper[0].Variable.Name.c_str());
+		//HazeRegister* newRegister = stack->GetVirtualRegister(oper[0].Variable.Name.c_str());
+		auto& type = oper[0].Variable.Type;
 		if (oper.size() == 2)
 		{
-			newRegister->Type = oper[0].Variable.Type;
+			//newRegister->Type = oper[0].Variable.Type;
 
-			bool isArray = IsArrayType(newRegister->Type.PrimaryType);
+			bool isArray = IsArrayType(type.PrimaryType);
 		
 			uint64 size = 0;
 			if (isArray)
 			{
-				if (IsClassType(newRegister->Type.SecondaryType))
+				if (IsClassType(type.SecondaryType))
 				{
-					size = stack->m_VM->GetClassSize(*newRegister->Type.CustomName);
+					size = stack->m_VM->GetClassSize(*type.CustomName);
 				}
 				else
 				{
-					size = GetSizeByHazeType(newRegister->Type.SecondaryType);
+					size = GetSizeByHazeType(type.SecondaryType);
 				}
 			}
 			else
 			{
-				size = newRegister->Type.GetTypeSize();
+				size = type.GetTypeSize();
 			}
 			uint64 newSize = size;
 			auto countAddress = GetOperatorAddress(stack, oper[1]);
@@ -868,33 +728,43 @@ public:
 				uint64* lengths = new uint64[count];
 				for (uint64 i = 0; i < count; i++)
 				{
-					lengths[i] = stack->m_VM->Instructions[stack->m_PC + i + 1].Operator[0].Extra.SignData;
+					auto& instructionData = stack->m_VM->Instructions[stack->m_PC + i + 1];
+
+					HazeValue v1, v2;
+					memcpy(&v2, GetOperatorAddress(stack, instructionData.Operator[0]), 
+						GetSizeByHazeType(instructionData.Operator[0].Variable.Type.PrimaryType));
+					ConvertBaseTypeValue(HazeValueType::UInt64, v1, instructionData.Operator[0].Variable.Type.PrimaryType, v2);
+
+					lengths[i] = v1.Value.UInt64;
 				}
 
 				address = HazeMemory::Alloca(sizeof(ObjectArray));
-				new((char*)address) ObjectArray(count, lengths, stack->m_PC, newRegister->Type.SecondaryType,
-					newRegister->Type.CustomName ? stack->m_VM->FindClass(*newRegister->Type.CustomName) : nullptr);
+				new((char*)address) ObjectArray(count, lengths, stack->m_PC, type.SecondaryType,
+					type.CustomName ? stack->m_VM->FindClass(*type.CustomName) : nullptr);
 
-				delete lengths;
+				delete[] lengths;
 			}
-			else if (IsStringType(newRegister->Type.PrimaryType))
+			else if (IsStringType(type.PrimaryType))
 			{
 				address = HazeMemory::Alloca(sizeof(ObjectString));
 				new(address) ObjectString(nullptr);
 			}
-			else if (IsClassType(newRegister->Type.PrimaryType))
+			else if (IsClassType(type.PrimaryType))
 			{
 				address = HazeMemory::Alloca(sizeof(ObjectClass));
-				new(address) ObjectClass(stack->GetVM()->FindClass(*newRegister->Type.CustomName));
+				new(address) ObjectClass(stack->GetVM()->FindClass(*type.CustomName));
 			}
 			else
 			{
 				address = HazeMemory::Alloca(newSize);
 			}
 
-			newRegister->Data.resize(sizeof(address));
-			memcpy(newRegister->Data.begin()._Unwrapped(), &address, sizeof(address));
+			/*newRegister->Data.resize(sizeof(address));
+			memcpy(newRegister->Data.begin()._Unwrapped(), &address, sizeof(address));*/
 
+			auto dst = GetOperatorAddress(stack, oper[0]);
+			memcpy(dst, &address, sizeof(address));
+			
 			stack->m_PC += count;
 		}
 
@@ -1225,64 +1095,12 @@ private:
 	{
 		const auto& instruction = stack->m_VM->Instructions[stack->m_PC];
 		const auto& oper = instruction.Operator;
-		if (oper.size() == 2)
+		if (oper.size() == 3)
 		{
-			if (IsNumberType(oper[0].Variable.Type.PrimaryType) && oper[0].Variable.Type == oper[1].Variable.Type)
+			if (IsNumberType(oper[1].Variable.Type.PrimaryType) && oper[1].Variable.Type == oper[2].Variable.Type)
 			{
-				CalculateValueByType(oper[0].Variable.Type.PrimaryType, instruction.InsCode, 
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[0]));
-			}
-			/*else if (IsPointerType(oper[0].Variable.Type.PrimaryType) && (IsIntegerType(oper[1].Variable.Type.PrimaryType) 
-				&& (instruction.InsCode == InstructionOpCode::SUB || instruction.InsCode == InstructionOpCode::ADD)))
-			{
-				switch (oper[1].Variable.Type.PrimaryType)
-				{
-					case HazeValueType::Int32:
-					{
-						POINTER_ADD_SUB(int, GetOperatorAddress(stack, oper[1]), stack, oper, instruction.InsCode);
-					}
-					break;
-					case HazeValueType::UInt32:
-					{
-						POINTER_ADD_SUB(uint32, GetOperatorAddress(stack, oper[1]), stack, oper, instruction.InsCode);
-					}
-					break;
-					case HazeValueType::Int64:
-					{
-						POINTER_ADD_SUB(int64, GetOperatorAddress(stack, oper[1]), stack, oper, instruction.InsCode);
-					}
-					break;
-					case HazeValueType::UInt64:
-					{
-						POINTER_ADD_SUB(uint64, GetOperatorAddress(stack, oper[1]), stack, oper, instruction.InsCode);
-					}
-					break;
-					default:
-						break;
-				}
-			}*/
-			else if (IsRegisterDesc(oper[0].Desc) && IsIntegerType(oper[1].Variable.Type.PrimaryType))
-			{
-				if (instruction.InsCode == InstructionOpCode::ADD || instruction.InsCode == InstructionOpCode::SUB)
-				{
-					auto dst = GetOperatorAddress(stack, oper[0]);
-					auto src = GetOperatorAddress(stack, oper[1]);
-					uint64 address = 0;
-					uint64 size = oper[1].Variable.Type.GetTypeSize();
-					uint64 num = 0;
-					memcpy(&address, dst, sizeof(address));
-					memcpy(&num, src, size);
-
-					char* newAddress = (char*)address + size * num *
-						(instruction.InsCode == InstructionOpCode::ADD ? 1 : -1);
-
-					address = (uint64)newAddress;
-					memcpy(dst, &address, sizeof(newAddress));
-				}
-				else
-				{
-					INS_ERR_W("二元计算指针类型错误");
-				}
+				CalculateValueByType(oper[1].Variable.Type.PrimaryType, instruction.InsCode, GetOperatorAddress(stack, oper[0]),
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
 			}
 			else
 			{
@@ -1416,7 +1234,7 @@ private:
 		if (oper.AddressType == InstructionAddressType::Register)
 		{
 			auto Register = stack->GetVirtualRegister(oper.Variable.Name.c_str());
-			if (Register == stack->GetVirtualRegister(NEW_REGISTER) || Register == stack->GetVirtualRegister(RET_REGISTER))
+			if (/*Register == stack->GetVirtualRegister(NEW_REGISTER) || */Register == stack->GetVirtualRegister(RET_REGISTER))
 			{
 				Register->Type.Reset();
 			}
@@ -1456,17 +1274,6 @@ HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 	{InstructionOpCode::BIT_OR, &InstructionProcessor::Bit_Or},
 	{InstructionOpCode::BIT_NEG, &InstructionProcessor::Bit_Neg},
 	{InstructionOpCode::BIT_XOR, &InstructionProcessor::Bit_Xor},
-
-	/*{InstructionOpCode::ADD_ASSIGN, &InstructionProcessor::Add_Assign},
-	{InstructionOpCode::SUB_ASSIGN, &InstructionProcessor::Sub_Assign},
-	{InstructionOpCode::MUL_ASSIGN, &InstructionProcessor::Mul_Assign},
-	{InstructionOpCode::DIV_ASSIGN, &InstructionProcessor::Div_Assign},
-	{InstructionOpCode::MOD_ASSIGN, &InstructionProcessor::Mod_Assign},
-	{InstructionOpCode::BIT_AND_ASSIGN, &InstructionProcessor::Bit_And_Assign},
-	{InstructionOpCode::BIT_OR_ASSIGN, &InstructionProcessor::Bit_Or_Assign},
-	{InstructionOpCode::BIT_XOR_ASSIGN, &InstructionProcessor::Bit_Xor_Assign},
-	{InstructionOpCode::SHL_ASSIGN, &InstructionProcessor::Shl_Assign },
-	{InstructionOpCode::SHR_ASSIGN, &InstructionProcessor::Shr_Assign},*/
 
 	{InstructionOpCode::SHL, &InstructionProcessor::Shl},
 	{InstructionOpCode::SHR, &InstructionProcessor::Shr},

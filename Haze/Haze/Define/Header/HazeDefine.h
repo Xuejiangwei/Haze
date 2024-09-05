@@ -76,7 +76,7 @@ using HString = std::wstring;
 #define BLOCK_FOR_STEP					H_TEXT("ForStepBlock")
 
 #define RET_REGISTER					H_TEXT("Ret_R")
-#define NEW_REGISTER					H_TEXT("New_R")
+//#define NEW_REGISTER					H_TEXT("New_R")
 #define CMP_REGISTER					H_TEXT("Cmp_R")
 
 #define NULL_PTR						H_TEXT("NULL_PTR")
@@ -100,6 +100,8 @@ using HString = std::wstring;
 #define HAZE_CALL_PUSH_ADDRESS_NAME		HString(H_TEXT("RetPC"))
 
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")
+#define HAZE_ADVANCE_GET_FUNCTION		H_TEXT("获得")
+#define HAZE_ADVANCE_SET_FUNCTION		H_TEXT("设置")
 
 #define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum
 #define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum

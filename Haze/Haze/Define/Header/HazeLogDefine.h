@@ -15,6 +15,9 @@
 #define INS_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<运行错误>：" H_TEXT(" 【%s 指令】") H_TEXT(INFO) H_TEXT("!\n"), \
 							 GetInstructionString(stack->m_VM->Instructions[stack->m_PC].InsCode), __VA_ARGS__)
 
+#define INS_ERR_CODE_W(INFO, INS_CODE, ...) HAZE_LOG_ERR_W("<运行错误>：" H_TEXT(" 【%s 指令】") H_TEXT(INFO) H_TEXT("!\n"), \
+							 GetInstructionString(INS_CODE), __VA_ARGS__)
+
 #define AST_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<语法分析错误>：" H_TEXT(" 【<%s>模块<%d>行】") H_TEXT(INFO) H_TEXT("!\n"), \
 							 m_Compiler->GetCurrModuleName().c_str(), m_Location.Line, \
 							 __VA_ARGS__)

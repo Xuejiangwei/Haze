@@ -22,7 +22,7 @@ public:
 
 	Share<CompilerValue> GetMember(const HString& name);
 
-	bool GetMemberName(const CompilerValue* memberValue, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
+	bool GetMemberName(const CompilerValue* memberValue, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
 
 private:
 	CompilerClass* m_OwnerClass;

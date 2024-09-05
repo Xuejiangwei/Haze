@@ -92,7 +92,7 @@ enum class HazeToken : unsigned int
 	LeftParentheses,
 	RightParentheses,
 
-	Comma,
+	Comma,					//逗号
 
 	LeftBrace,
 	RightBrace,
@@ -133,7 +133,7 @@ enum class HazeToken : unsigned int
 	Number,
 	String,
 
-	GetAddress,			//占位, 获得地址
+	GetAddress,
 
 	ThreeOperatorStart,
 	Colon,

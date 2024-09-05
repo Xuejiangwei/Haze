@@ -57,7 +57,7 @@ enum class HazeDataDesc : uint32
 
 	RegisterBegin,
 	RegisterRet,
-	RegisterNew,
+	//RegisterNew,
 	RegisterCmp,
 	RegisterTemp,
 	RegisterEnd,
@@ -73,7 +73,8 @@ enum class HazeDataDesc : uint32
 	ClassFunction_Local_Private,
 
 	Initlist,
-	ArrayElement,
+
+	AdvanceRef,
 
 	NullPtr,
 
@@ -125,8 +126,6 @@ enum class InstructionOpCode : uint32
 	CVT,		//基本类型转换
 
 	LINE,		//调试用
-
-	SIGN,		//跟在New后面，表示生成的数组的维度，其中含有数组的长度信息
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，

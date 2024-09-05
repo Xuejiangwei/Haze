@@ -37,16 +37,22 @@ ObjectArray::~ObjectArray()
 AdvanceClassInfo* ObjectArray::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
+	//info.Functions[H_TEXT("生成")] = { &ObjectArray::NewObjectArray, HazeValueType::Void, { HazeValueType::MultiVariable } };
 	info.Functions[H_TEXT("长度")] = { &ObjectArray::GetLength, HazeValueType::UInt64, {} };
 	info.Functions[H_TEXT("维之长度")] = { &ObjectArray::GetLengthOfDimension, HazeValueType::UInt64, { HazeValueType::UInt64 } };
 	info.Functions[H_TEXT("维数")] = { &ObjectArray::GetDimensionCount, HazeValueType::UInt64, {} };
 	info.Functions[H_TEXT("添加")] = { &ObjectArray::Add, HazeValueType::Void, { HazeValueType::MultiVariable } };
 
-	info.Functions[H_TEXT("获得")] = { &ObjectArray::Get, HazeValueType::Void, { HazeValueType::UInt64 } };
-	info.Functions[H_TEXT("设置")] = { &ObjectArray::Set, HazeValueType::Void, { HazeValueType::UInt64, HazeValueType::MultiVariable } };
+	info.Functions[HAZE_ADVANCE_GET_FUNCTION] = { &ObjectArray::Get, HazeValueType::Void, { HazeValueType::UInt64 } };
+	info.Functions[HAZE_ADVANCE_SET_FUNCTION] = { &ObjectArray::Set, HazeValueType::Void, { HazeValueType::UInt64, HazeValueType::MultiVariable } };
 
 	return &info;
 }
+
+//void ObjectArray::NewObjectArray(HAZE_STD_CALL_PARAM)
+//{
+//
+//}
 
 void ObjectArray::GetLength(HAZE_STD_CALL_PARAM)
 {

@@ -52,7 +52,7 @@ public:
 
 	HString GenForStepBlockName();
 
-	bool FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
+	bool FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
 
 	bool HasExceptThisParam() const;
 
@@ -67,12 +67,10 @@ public:
 private:
 	void AddFunctionParam(const HazeDefineVariable& variable);
 
-	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line,
-		Share<CompilerValue> refValue = nullptr,
-		V_Array<Share<CompilerValue>> arraySize = {},
+	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
 		V_Array<HazeDefineType>* params = nullptr);
 
-	Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
+	Share<CompilerValue> CreateNew(const HazeDefineType& data, Share<CompilerValue> assignTo, V_Array<Share<CompilerValue>>* countValue);
 
 	void InitEntryBlock(Share<CompilerBlock> block) { m_EntryBlock = block; }
 
@@ -84,8 +82,8 @@ private:
 		bool HasClear = false;
 	};
 
-	//同一类型，但是不再引用的临时寄存器可以重复使用
-	Share<CompilerValue> CreateTempRegister(const HazeDefineType& type);
+	//同一类型，但是不再引用的临时寄存器可以重复使用, 统一大小都为8个字节
+	Share<CompilerValue> CreateTempRegister(const HazeDefineType& type, uint64 arrayDimension = 0);
 
 	void TryClearTempRegister();
 

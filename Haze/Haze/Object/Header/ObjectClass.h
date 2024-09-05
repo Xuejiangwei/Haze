@@ -10,7 +10,12 @@ public:
 
 	~ObjectClass() {}
 
-	void* GetOffset(uint64 offset) { return (char*)m_Data + offset; }
+	static struct AdvanceClassInfo* GetAdvanceClassInfo();
+
+private:
+	static void GetOffset(HAZE_STD_CALL_PARAM);
+
+	static void SetOffset(HAZE_STD_CALL_PARAM);
 
 private:
 	void* m_Data;

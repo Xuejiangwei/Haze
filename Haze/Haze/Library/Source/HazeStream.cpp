@@ -320,17 +320,17 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 {
 #define PRE_SIGN HChar('%')
 
-	uint64 V = 0;
+	uint64 v = 0;
 
-	int Offset = -(int)sizeof(V) - HAZE_ADDRESS_SIZE;
-	memcpy(&V, stack->GetAddressByEBP(Offset), sizeof(V));
+	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE;
+	memcpy(&v, stack->GetAddressByEBP(offset), sizeof(v));
 
-	HAZE_STRING_STREAM HSS;
+	HAZE_STRING_STREAM hss;
 
-	int ArgNum = 1;
+	int argNum = 1;
 
-	const HChar* String = (HChar*)V;
-	auto Start = String;
+	const HChar* str = ((ObjectString*)v)->GetData();
+	auto Start = str;
 
 	uint64 Address = 0;
 
@@ -356,11 +356,11 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 		}
 		else if (*(++Start) == PRE_SIGN)
 		{
-			HSS << *(Start++);
+			hss << *(Start++);
 		}
 		else
 		{
-			if (++ArgNum > multiParamNum) //入栈参数个数
+			if (++argNum > multiParamNum) //入栈参数个数
 			{
 				return;
 			}
@@ -370,30 +370,30 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 			Start++;
 			if (*Start == HChar('d'))
 			{
-				Offset -= sizeof(Address);
+				offset -= sizeof(Address);
 
 				int TempV;
 				std::cin >> TempV;
 
-				char* Addr = stack->GetAddressByEBP(Offset);
+				char* Addr = stack->GetAddressByEBP(offset);
 				memcpy(&Address, Addr, sizeof(Address));
 				memcpy((char*)Address, &TempV, sizeof(TempV));
 
-				HSS << TempV;
+				hss << TempV;
 				Start++;
 			}
 			else if (*Start == HChar('f'))
 			{
-				Offset -= sizeof(Address);
+				offset -= sizeof(Address);
 
 				float TempV;
 				std::cin >> TempV;
 
-				char* Addr = stack->GetAddressByEBP(Offset);
+				char* Addr = stack->GetAddressByEBP(offset);
 				memcpy(&Address, Addr, sizeof(Address));
 				memcpy((char*)Address, &TempV, sizeof(TempV));
 
-				HSS << TempV;
+				hss << TempV;
 				Start++;
 			}
 			/*else if (*Start == HChar('s'))

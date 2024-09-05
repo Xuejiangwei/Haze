@@ -123,6 +123,8 @@
 
 #define TOKEN_TWO_COLON					H_TEXT("::")
 
+#define TOKEN_GET_ADDRESS				H_TEXT("ȡַ")
+
 #define TOKEN_INT_8						TOKEN_INT H_TEXT("8")
 #define TOKEN_UINT_8					TOKEN_UNSIGNED_INT H_TEXT("8")
 #define TOKEN_INT_16					TOKEN_INT H_TEXT("16")
