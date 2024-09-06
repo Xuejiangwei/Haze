@@ -77,7 +77,7 @@ class ASTIdentifier : public ASTBase
 {
 public:
 	ASTIdentifier(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
-		V_Array<Unique<ASTBase>>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace = HAZE_TEXT(""));
+		Unique<ASTBase>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace = HAZE_TEXT(""));
 	
 	virtual ~ASTIdentifier() override {}
 
@@ -89,7 +89,7 @@ private:
 	HString m_NameSpace;
 	HazeSectionSignal m_SectionSignal;
 	Unique<ASTBase> m_PreAst;
-	V_Array<Unique<ASTBase>> m_ArrayIndexExpression;
+	Unique<ASTBase> m_ArrayIndexExpression;
 };
 
 //º¯Êýµ÷ÓÃ
@@ -150,8 +150,6 @@ public:
 protected:
 	HazeSectionSignal m_SectionSignal;
 	Unique<ASTBase> m_Expression;
-
-private:
 	bool m_IsCalled;
 };
 

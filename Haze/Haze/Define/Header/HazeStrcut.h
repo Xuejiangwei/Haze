@@ -163,6 +163,19 @@ struct HazeDefineType
 		}
 	}
 
+	HazeDefineType GetArrayElement() const
+	{
+		if (IsArrayType(PrimaryType))
+		{
+			return { SecondaryType, CustomName };
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("获得数组类型的成员类型错误, 不是数组类型\n");
+			return HazeValueType::None;
+		}
+	}
+
 	void Pointer()
 	{
 		PrimaryType = HazeValueType::UInt64;

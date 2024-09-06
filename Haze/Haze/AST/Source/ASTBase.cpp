@@ -34,7 +34,17 @@ Share<CompilerValue> ASTBase::TryAssign(ASTBase* assignToAst, Share<CompilerValu
 {
 	if (assignToAst)
 	{
-		return m_Compiler->CreateMov(assignToAst->CodeGen(), value);
+		auto assignToValue = assignToAst->CodeGen();
+		if (assignToValue->IsClassMember())
+		{
+			value = m_Compiler->CreateSetClassMember(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(H_TEXT("己")),
+				assignToAst->m_DefineVariable.Name, value);
+		}
+		else
+		{
+			return m_Compiler->CreateMov(assignToAst->CodeGen(), value);
+		}
+
 	}
 	return value;
 }
@@ -77,7 +87,7 @@ Share<CompilerValue> ASTStringText::CodeGen(ASTBase* assignToAst)
 }
 
 ASTIdentifier::ASTIdentifier(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
-	V_Array<Unique<ASTBase>>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace)
+	Unique<ASTBase>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_ArrayIndexExpression(Move(arrayIndexExpression)),
 	m_PreAst(Move(preAst)), m_NameSpace(Move(nameSpace))
 {
@@ -161,6 +171,20 @@ Share<CompilerValue> ASTIdentifier::CodeGen(ASTBase* assignToAst)
 			AST_ERR_W("变量<%s>有前置语法, 但是不是复杂类型", m_DefineVariable.Name.c_str());
 		}
 	}
+	else
+	{
+		if (m_ArrayIndexExpression)
+		{
+			if (assignToAst)
+			{
+				retValue = m_Compiler->CreateSetArrayElement(retValue, m_ArrayIndexExpression->CodeGen(), assignToAst->CodeGen());
+			}
+			else
+			{
+				retValue = m_Compiler->CreateGetArrayElement(retValue, m_ArrayIndexExpression->CodeGen());
+			}
+		}
+	}
 
 	return TryAssign(assignToAst, retValue);
 }
@@ -214,7 +238,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(ASTBase* assignToAst)
 	else
 	{
 		auto functionPointer = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(m_Name);
-		if (functionPointer)
+		if (functionPointer && functionPointer->IsFunction())
 		{
 			ret = m_Compiler->CreateFunctionCall(functionPointer, param);
 		}
@@ -301,7 +325,7 @@ Share<CompilerValue> ASTClassAttr::CodeGen(ASTBase* assignToAst)
 	}
 	else
 	{
-		ret = classValue->GetMember(m_AttrName);
+		ret = m_Compiler->CreateGetClassMember(classValue, m_AttrName);
 	}
 
 	return TryAssign(assignToAst, ret);
@@ -339,14 +363,17 @@ Share<CompilerValue> ASTVariableDefine::CodeGen(ASTBase* assignToAst)
 {
 	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine, assignToAst);
 	
-	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
+	if (m_IsCalled || !m_Expression)
+	{
+		Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
+		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
-	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
-		m_DefineVariable, m_Location.Line, nullptr);
+		return m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+			m_DefineVariable, m_Location.Line, nullptr);
+		
+	}
 	
-	GenExpressionValue();
-	return retValue;
+	return GenExpressionValue();
 }
 
 Share<CompilerValue> ASTVariableDefine::GenExpressionValue()
@@ -399,14 +426,16 @@ Share<CompilerValue> ASTVariableDefine_Class::CodeGen(ASTBase* assignToAst)
 {
 	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine_Class, assignToAst);
 
-	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
+	if (m_IsCalled || !m_Expression)
+	{
+		Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
+		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
-	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(), 
-		m_DefineVariable, m_Location.Line, nullptr);
+		return m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+			m_DefineVariable, m_Location.Line, nullptr);
+	}
 
-	GenExpressionValue();
-	return retValue;
+	return GenExpressionValue();
 }
 
 ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
@@ -423,14 +452,16 @@ Share<CompilerValue> ASTVariableDefine_Array::CodeGen(ASTBase* assignToAst)
 {
 	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine_Array, assignToAst);
 	
-	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
+	if (m_IsCalled || !m_Expression)
+	{
+		Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
+		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
-	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
-		m_DefineVariable, m_Location.Line, nullptr, m_ArrayDimension);
+		return m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+			m_DefineVariable, m_Location.Line, nullptr, m_ArrayDimension);
+	}
 
-	GenExpressionValue();
-	return retValue;
+	return GenExpressionValue();
 }
 
 
@@ -539,7 +570,7 @@ Share<CompilerValue> ASTNew::CodeGen(ASTBase* assignToAst)
 		if (countValue.size() > 0)
 		{
 			//需要初始化多个类对象，类的参数个数必须为0
-			auto function = newClass->FindFunction(*value->GetValueType().CustomName);
+			/*auto function = newClass->FindFunction(*value->GetValueType().CustomName);
 			auto arrayConstructorFunc = m_Compiler->GetFunction(HAZE_OBJECT_ARRAY_CONSTRUCTOR);
 			V_Array<Share<CompilerValue>> param;
 
@@ -565,7 +596,7 @@ Share<CompilerValue> ASTNew::CodeGen(ASTBase* assignToAst)
 			params.push_back(m_Compiler->CreatePointerToFunction(function, m_Compiler->GetTempRegister(HazeValueType::UInt64)));
 			params.push_back(m_Compiler->CreateMov(m_Compiler->GetTempRegister(HazeValueType::UInt64), value));
 
-			m_Compiler->CreateFunctionCall(arrayConstructorFunc.first, params);
+			m_Compiler->CreateFunctionCall(arrayConstructorFunc.first, params);*/
 		}
 		else
 		{
@@ -882,7 +913,7 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(ASTBase* assignToAst)
 	}
 	case HazeToken::Assign:
 	{
-		return m_Compiler->CreateMov(m_LeftAST->CodeGen(), m_RightAST->CodeGen());
+		return m_RightAST->CodeGen(m_LeftAST.get());
 	}
 	case HazeToken::BitAnd:
 	{

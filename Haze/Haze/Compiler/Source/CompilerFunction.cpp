@@ -100,16 +100,16 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& 
 	if (IsArrayType(type.PrimaryType))
 	{
 		assert(arrayDimension > 0);
-		v = MakeShare<CompilerArrayValue>(nullptr, type, HazeVariableScope::Local,
+		v = MakeShare<CompilerArrayValue>(m_Module, type, HazeVariableScope::Local,
 			HazeDataDesc::RegisterTemp, 0, arrayDimension);
 	}
 	else if (IsClassType(type.PrimaryType))
 	{
-		v = MakeShare<CompilerClassValue>(nullptr, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
+		v = MakeShare<CompilerClassValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
 	}
 	else
 	{
-		v = MakeShare<CompilerValue>(nullptr, type, HazeVariableScope::Local, 
+		v = MakeShare<CompilerValue>(m_Module, type, HazeVariableScope::Local,
 			HazeDataDesc::RegisterTemp, 0);
 	}
 

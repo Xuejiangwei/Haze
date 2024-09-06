@@ -1084,7 +1084,7 @@ Share<CompilerValue> Compiler::CreateGetArrayElement(Share<CompilerValue> value,
 	V_Array<Share<CompilerValue>> params = { index };
 	value = CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, params, value);
 	
-	return CreateMov(GetTempRegister(arrayValue->GetArrayDimension() > 1 ? arrayValue->GetValueType() : arrayValue->GetValueType().SecondaryType,
+	return CreateMov(GetTempRegister(arrayValue->GetArrayDimension() > 1 ? arrayValue->GetValueType() : arrayValue->GetValueType().GetArrayElement(),
 		arrayValue->GetArrayDimension() -1), value);
 }
 

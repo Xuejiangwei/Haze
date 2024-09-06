@@ -36,6 +36,7 @@ private:
 	void* m_Data;
 	uint64 m_DimensionCount;
 	uint64 m_Length;
+	uint64 m_Capacity;
 	uint64 m_PcAddress;
 	HazeValueType m_ValueType;
 	ClassData* m_ClassInfo;

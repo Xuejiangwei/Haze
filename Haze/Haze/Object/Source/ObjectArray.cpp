@@ -14,6 +14,7 @@ ObjectArray::ObjectArray(uint64 dimensionCount, uint64* lengths, uint64 pcAddres
 	{
 		m_ValueType = HazeValueType::Array;
 		m_Length = lengths[0];
+		m_Capacity = m_Length;
 
 		m_Data = HazeMemory::Alloca(m_Length * sizeof(ObjectArray));
 		for (uint64 i = 0; i < m_Length; i++)
@@ -26,7 +27,17 @@ ObjectArray::ObjectArray(uint64 dimensionCount, uint64* lengths, uint64 pcAddres
 	else if (lengths)
 	{
 		m_Length = lengths[0];
-		m_Data = HazeMemory::Alloca(m_Length * GetSizeByHazeType(valueType));
+		m_Capacity = m_Length;
+
+		if (m_Capacity == 0)
+		{
+			m_Capacity = 1;
+			m_Data = HazeMemory::Alloca(m_Capacity * GetSizeByHazeType(valueType));
+		}
+		else
+		{
+			m_Data = HazeMemory::Alloca(m_Length * GetSizeByHazeType(valueType));
+		}
 	}
 }
 
@@ -87,6 +98,28 @@ void ObjectArray::GetDimensionCount(HAZE_STD_CALL_PARAM)
 
 void ObjectArray::Add(HAZE_STD_CALL_PARAM)
 {
+	ObjectArray* arr;
+	char* value = nullptr;
+
+	GET_PARAM_START();
+	GET_PARAM(arr);
+
+	auto size = GetSizeByHazeType(arr->m_ValueType);
+	GET_PARAM_ADDRESS(value, size);
+
+	if (arr->m_Length == arr->m_Capacity)
+	{
+		arr->m_Capacity *= 2;
+		auto data = HazeMemory::Alloca(arr->m_Capacity * size);
+		memcpy(data, arr->m_Data, arr->m_Length * size);
+		HazeMemory::ManualFree(arr->m_Data);
+		arr->m_Data = data;
+	}
+
+	memcpy((char*)arr->m_Data + arr->m_Length * size, value, size);
+	arr->m_Length += 1;
+
+	SET_RET_BY_TYPE(arr->m_ValueType, value);
 }
 
 void ObjectArray::Get(HAZE_STD_CALL_PARAM)

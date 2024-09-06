@@ -148,12 +148,12 @@ const CompilerValue* CompilerClass::GetMemberValue(uint64 index)
 	{
 		for (uint64 j = 0; j < m_Data[i].second.size(); j++)
 		{
-			if (index = counter)
+			if (index == counter)
 			{
 				return m_Data[i].second[j].second.get();
 			}
 
-			index++;
+			counter++;
 		}
 	}
 
