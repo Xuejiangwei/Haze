@@ -16,13 +16,13 @@ public:
 
 	virtual ~CompilerEnumValue() override;
 
+	virtual bool IsEnum() const override { return true; }
+
+	virtual uint32 GetSize() override;
+
 	CompilerEnum* GetEnum() { return m_OwnerEnum; }
 
 	HazeValueType GetBaseType() const;
-
-	virtual bool IsEnum() const { return true; }
-
-	virtual uint32 GetSize();
 
 private:
 	CompilerEnum* m_OwnerEnum;

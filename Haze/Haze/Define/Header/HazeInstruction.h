@@ -74,8 +74,6 @@ enum class HazeDataDesc : uint32
 
 	Initlist,
 
-	AdvanceRef,
-
 	NullPtr,
 
 	CallFunctionModule,
@@ -143,12 +141,7 @@ enum class InstructionFunctionType : int
 enum class InstructionAddressType : uint8
 {
 	Global,
-	Global_Base_Offset,
-	Global_BasePointer_Offset,
-
 	Local,
-	Local_Base_Offset,
-	Local_BasePointer_Offset,
 
 	FunctionAddress,
 

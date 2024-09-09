@@ -181,7 +181,7 @@ public:
 
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, Share<CompilerValue> assignTo, V_Array<Share<CompilerValue>>* countValue);
+	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
 	
 	Share<CompilerValue> CreateCast(const HazeDefineType& type, Share<CompilerValue> value);
 

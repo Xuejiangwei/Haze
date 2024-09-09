@@ -36,8 +36,6 @@ public:
 
 	static void* Alloca(uint64 size);
 
-	static void ManualFree(void* address);
-
 	void SetVM(HazeVM* vm) { m_VM = vm; }
 
 	void AddToRoot(void*);

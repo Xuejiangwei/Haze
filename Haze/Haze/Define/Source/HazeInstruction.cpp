@@ -13,6 +13,7 @@
 #include <Windows.h>
 
 #define HAZE_CALL_LOG				0
+#define HAZE_DEBUG_ENABLE			1
 
 #define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); \
 				auto type = OPER[0].Variable.Type.SecondaryType; \
@@ -44,17 +45,6 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 	{H_TEXT("BIT_XOR"), InstructionOpCode::BIT_XOR },
 	{H_TEXT("SHL"), InstructionOpCode::SHL },
 	{H_TEXT("SHR"), InstructionOpCode::SHR },
-
-	/*{H_TEXT("ADD_ASSIGN"), InstructionOpCode::ADD_ASSIGN },
-	{H_TEXT("SUB_ASSIGN"), InstructionOpCode::SUB_ASSIGN },
-	{H_TEXT("MUL_ASSIGN"), InstructionOpCode::MUL_ASSIGN },
-	{H_TEXT("DIV_ASSIGN"), InstructionOpCode::DIV_ASSIGN },
-	{H_TEXT("MOD_ASSIGN"), InstructionOpCode::MOD_ASSIGN },
-	{H_TEXT("BIT_AND_ASSIGN"), InstructionOpCode::BIT_AND_ASSIGN },
-	{H_TEXT("BIT_OR_ASSIGN"), InstructionOpCode::BIT_OR_ASSIGN },
-	{H_TEXT("BIT_XOR_ASSIGN"), InstructionOpCode::BIT_XOR_ASSIGN },
-	{H_TEXT("SHL_ASSIGN"), InstructionOpCode::SHL_ASSIGN },
-	{H_TEXT("SHR_ASSIGN"), InstructionOpCode::SHR_ASSIGN },*/
 
 	{H_TEXT("PUSH"), InstructionOpCode::PUSH },
 	{H_TEXT("POP"), InstructionOpCode::POP },
@@ -133,7 +123,6 @@ class InstructionProcessor
 {
 	friend void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args);
 	friend void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData);
-#define HAZE_DEBUG_ENABLE 1
 #if HAZE_DEBUG_ENABLE
 	struct DataDebugScope
 	{
@@ -220,6 +209,13 @@ class InstructionProcessor
 				uint64 v;
 				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(uint64));
 				HAZE_LOG_ERR_W(" 值<%d>", v);
+			}
+			break;
+			case HazeValueType::String:
+			case HazeValueType::Array:
+			case HazeValueType::Class:
+			{
+				HAZE_LOG_ERR_W(" 值<%p>", GetOperatorAddress(Stack, Data[1]));
 			}
 			break;
 			default:
@@ -324,7 +320,6 @@ public:
 			}
 			else if (oper[0].Desc == HazeDataDesc::ClassThis)
 			{
-				uint64 address = (uint64)GetOperatorAddress(stack, oper[0]);
 				memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), sizeof(uint64));
 			}
 			else/* if (Operator[0].Scope == InstructionScopeType::Local || oper[0].Scope == InstructionScopeType::Global)*/
@@ -765,7 +760,7 @@ public:
 			auto dst = GetOperatorAddress(stack, oper[0]);
 			memcpy(dst, &address, sizeof(address));
 			
-			stack->m_PC += count;
+			stack->m_PC += (uint32)count;
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -983,92 +978,67 @@ private:
 
 		switch (insData.AddressType)
 		{
-		case InstructionAddressType::Global:
-		{
-			ret = stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
-		}
-			break;
-		case InstructionAddressType::Global_Base_Offset:
-		{
-			ret = stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
-			ret = (char*)ret + insData.Extra.Address.Offset;
-		}
-			break;
-		case InstructionAddressType::Global_BasePointer_Offset:
-		{
-			ret = stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
-			memcpy(&tempAddress, ret, sizeof(tempAddress));
-			ret = (char*)tempAddress + insData.Extra.Address.Offset;
-		}
-			break;
-		case InstructionAddressType::Local:
-		{
-			ret = &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress];
-		}
-			break;
-		case InstructionAddressType::Local_Base_Offset:
-		{
-			ret = &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress + insData.Extra.Address.Offset];
-		}
-			break;
-		case InstructionAddressType::Local_BasePointer_Offset:
-		{
-			ret = &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress];
-			memcpy(&tempAddress, ret, sizeof(tempAddress));
-			ret = (char*)tempAddress + insData.Extra.Address.Offset;
-		}
-			break;
-		case InstructionAddressType::FunctionAddress:
-		{
-			/*tempAddress = (uint64)((void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name));
-			ret = &tempAddress;*/
-			ret = (void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name);
-		}
-			break;
-		case InstructionAddressType::Constant:
-		{
-			auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
-			auto& value = const_cast<HazeValue&>(constantValue.GetValue());
-
-			type.PrimaryType = insData.Variable.Type.PrimaryType;
-			StringToHazeValueNumber(insData.Variable.Name, type.PrimaryType, value);
-			ret = GetBinaryPointer(type.PrimaryType, value);
-		}
-			break;
-		case InstructionAddressType::NullPtr:
-		{
-			auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
-			auto& value = const_cast<HazeValue&>(constantValue.GetValue());
-
-			type.PrimaryType = insData.Variable.Type.PrimaryType;
-			StringToHazeValueNumber(H_TEXT("0"), type.PrimaryType, value);
-			ret = GetBinaryPointer(type.PrimaryType, value);
-		}
-			break;
-		case InstructionAddressType::ConstantString:
-		{
-			tempAddress = (uint64)stack->m_VM->GetConstantStringByIndex(insData.Extra.Index);
-			ret = &tempAddress;
-		}
-			break;
-		case InstructionAddressType::Register:
-		{
-			HazeRegister* hazeRegister = stack->GetVirtualRegister(insData.Variable.Name.c_str());
-
-			if (hazeRegister->Type != insData.Variable.Type)
+			case InstructionAddressType::Global:
 			{
-				hazeRegister->Type = insData.Variable.Type;
-				hazeRegister->Data.resize(insData.Variable.Type.GetTypeSize());
+				ret = stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
 			}
+				break;
+			case InstructionAddressType::Local:
+			{
+				ret = &stack->m_StackMain[stack->m_EBP + insData.Extra.Address.BaseAddress];
+			}
+				break;
+			case InstructionAddressType::FunctionAddress:
+			{
+				/*tempAddress = (uint64)((void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name));
+				ret = &tempAddress;*/
+				ret = (void*)&stack->m_VM->GetFunctionByName(insData.Variable.Name);
+			}
+				break;
+			case InstructionAddressType::Constant:
+			{
+				auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
+				auto& value = const_cast<HazeValue&>(constantValue.GetValue());
 
-			ret = hazeRegister->Data.begin()._Unwrapped();
-		}
-			break;
-		case InstructionAddressType::PointerAddress:
-			ret = insData.Extra.Pointer;
-			break;
-		default:
-			break;
+				type.PrimaryType = insData.Variable.Type.PrimaryType;
+				StringToHazeValueNumber(insData.Variable.Name, type.PrimaryType, value);
+				ret = GetBinaryPointer(type.PrimaryType, value);
+			}
+				break;
+			case InstructionAddressType::NullPtr:
+			{
+				auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
+				auto& value = const_cast<HazeValue&>(constantValue.GetValue());
+
+				type.PrimaryType = insData.Variable.Type.PrimaryType;
+				StringToHazeValueNumber(H_TEXT("0"), type.PrimaryType, value);
+				ret = GetBinaryPointer(type.PrimaryType, value);
+			}
+				break;
+			case InstructionAddressType::ConstantString:
+			{
+				tempAddress = (uint64)stack->m_VM->GetConstantStringByIndex(insData.Extra.Index);
+				ret = &tempAddress;
+			}
+				break;
+			case InstructionAddressType::Register:
+			{
+				HazeRegister* hazeRegister = stack->GetVirtualRegister(insData.Variable.Name.c_str());
+
+				if (hazeRegister->Type != insData.Variable.Type)
+				{
+					hazeRegister->Type = insData.Variable.Type;
+					hazeRegister->Data.resize(insData.Variable.Type.GetTypeSize());
+				}
+
+				ret = hazeRegister->Data.begin()._Unwrapped();
+			}
+				break;
+			case InstructionAddressType::PointerAddress:
+				ret = insData.Extra.Pointer;
+				break;
+			default:
+				break;
 		}
 
 		if (IsRefrenceType(insData.Variable.Type.PrimaryType) && ret)
@@ -1164,25 +1134,25 @@ private:
 			//在可变长参数中，会被扩展成int
 			case HazeValueType::Int8:
 				{
-					value.Value.Int8 = va_arg(args, int);
+					value.Value.Int8 = (int8)va_arg(args, int);
 					src = &value.Value.Int8;
 				}
 				break;
 			case HazeValueType::UInt8:
 				{
-					value.Value.UInt8 = va_arg(args, int);
+					value.Value.UInt8 = (uint8)va_arg(args, int);
 					src = &value.Value.UInt8;
 				}
 				break;
 			case HazeValueType::Int16:
 				{
-					value.Value.Int16 = va_arg(args, int);
+					value.Value.Int16 = (int16)va_arg(args, int);
 					src = &value.Value.Int16;
 				}
 				break;
 			case HazeValueType::UInt16:
 				{
-					value.Value.UInt16 = va_arg(args, uint32);
+					value.Value.UInt16 = (uint16)va_arg(args, uint32);
 					src = &value.Value.UInt16;
 				}
 				break;
@@ -1202,7 +1172,7 @@ private:
 			//在可变长参数中，float会被扩展成double
 			case HazeValueType::Float32:
 				{
-					value.Value.Float32 = va_arg(args, float64);
+					value.Value.Float32 = (float32)va_arg(args, float64);
 					src = &value.Value.Float32;
 				}
 				break; 

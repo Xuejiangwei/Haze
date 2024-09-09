@@ -114,8 +114,6 @@ HazeToken GetTokenByValueType(HazeValueType type);
 
 HazeValueType GetValueTypeByToken(HazeToken token);
 
-HazeValueType GetValueTypeByName(const HString& str);
-
 HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isLog = true);
 
 

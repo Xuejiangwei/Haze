@@ -4,6 +4,7 @@
 
 class CompilerModule;
 class CompilerClass;
+class CompilerClassValue;
 class CompilerBlock;
 
 class CompilerFunction
@@ -64,13 +65,15 @@ public:
 
 	const HazeDefineType& GetThisParam();
 
+	Share<CompilerClassValue> GetThisLocalVariable();
+
 private:
 	void AddFunctionParam(const HazeDefineVariable& variable);
 
 	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
 		V_Array<HazeDefineType>* params = nullptr);
 
-	Share<CompilerValue> CreateNew(const HazeDefineType& data, Share<CompilerValue> assignTo, V_Array<Share<CompilerValue>>* countValue);
+	Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
 
 	void InitEntryBlock(Share<CompilerBlock> block) { m_EntryBlock = block; }
 

@@ -773,7 +773,7 @@ const char* XJson::NodeDataString()
 
 const std::string& XJson::NodeDataStringRef()
 {
-	const char* data = NodeDataString();
+	//const char* data = NodeDataString();
 	return m_NodeData->m_Content;
 }
 
@@ -850,7 +850,7 @@ bool XJson::DecodeFromFile(const std::string& filePath)
 		return false;
 	}
 	fseek(fp, 0, SEEK_END);
-	size_t size = ftell(fp);
+	//size_t size = ftell(fp);
 	fseek(fp, 0, SEEK_SET);
 
 	size_t ret = 0;

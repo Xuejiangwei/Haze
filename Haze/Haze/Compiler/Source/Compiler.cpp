@@ -1232,9 +1232,9 @@ Share<CompilerValue> Compiler::CreatePointerToFunction(Share<CompilerFunction> f
 	return CreateLea(pointer, tempPointer);
 }
 
-Share<CompilerValue> Compiler::CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, Share<CompilerValue> assignTo, V_Array<Share<CompilerValue>>* countValue)
+Share<CompilerValue> Compiler::CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue)
 {
-	return function->CreateNew(data, assignTo, countValue);
+	return function->CreateNew(data, countValue);
 }
 
 Share<CompilerValue> Compiler::CreateCast(const HazeDefineType& type, Share<CompilerValue> value)

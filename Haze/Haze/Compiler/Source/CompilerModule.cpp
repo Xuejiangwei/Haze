@@ -445,7 +445,7 @@ Share<CompilerValue> CompilerModule::CreateInc(Share<CompilerValue> value, bool 
 			retValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetValueType()), value);
 		}
 		//Compiler->CreateMov(Value, CreateAdd(Value, Compiler->GetConstantValueInt(1)));
-		GenIRCode_BinaryOperater(value, value, m_Compiler->GetConstantValueUint64(1), InstructionOpCode::ADD);
+		m_Compiler->CreateAdd(value, value, m_Compiler->GetConstantValueInt(1));
 	}
 	else
 	{
@@ -465,7 +465,7 @@ Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool 
 			m_Compiler->CreateMov(retValue, value);
 		}
 		//Compiler->CreateMov(Value, CreateSub(Value, Compiler->GetConstantValueInt(1)));
-		GenIRCode_BinaryOperater(value, value, m_Compiler->GetConstantValueUint64(1), InstructionOpCode::SUB);
+		m_Compiler->CreateSub(value, value, m_Compiler->GetConstantValueInt(1));
 	}
 	else
 	{
@@ -619,7 +619,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 			if (*type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(*type))
 			{
-				if (i == params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize - (callFunction && callFunction->GetClass() ? 1 : 0) != params.size())
+				if (i == (int64)params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize - (callFunction && callFunction->GetClass() ? 1 : 0) != params.size())
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
@@ -649,7 +649,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		}
 	}
 
-	for (size_t i = 0; i < params.size(); i++)
+	for (uint64 i = 0; i < params.size(); i++)
 	{
 		GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, params[i], nullptr, funcTypes[i]);
 
@@ -664,7 +664,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 		hss.str(H_TEXT(""));
 
-		size += params[i]->GetSize();
+		size += GetSizeByCompilerValue(params[i]);
 		strName.clear();
 	}
 
@@ -683,7 +683,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 		hss.str(H_TEXT(""));
 
-		size += GetSizeByHazeType(HazeValueType::Class);
+		size += GetSizeByCompilerValue(thisPointerTo);
 	}
 
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)

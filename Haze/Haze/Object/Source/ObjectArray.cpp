@@ -112,7 +112,6 @@ void ObjectArray::Add(HAZE_STD_CALL_PARAM)
 		arr->m_Capacity *= 2;
 		auto data = HazeMemory::Alloca(arr->m_Capacity * size);
 		memcpy(data, arr->m_Data, arr->m_Length * size);
-		HazeMemory::ManualFree(arr->m_Data);
 		arr->m_Data = data;
 	}
 

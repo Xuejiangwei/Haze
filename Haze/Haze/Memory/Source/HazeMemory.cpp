@@ -123,45 +123,6 @@ void* HazeMemory::Alloca(uint64 size)
 	return ret;
 }
 
-void HazeMemory::ManualFree(void* address)
-{
-	auto memoryIns = HazeMemory::GetMemory();
-	for (auto& iter : memoryIns->m_MemoryBlocks)
-	{
-		auto block = iter;
-		while (block && block->IsUsed())
-		{
-			if (block->IsInBlock(address))
-			{
-				block->MarkWrite(address);
-
-				uint32 unitSize = block->m_BlockInfo.UnitSize;
-				uint32 offset = unitSize % GRANULE == 0 ? -1 : 1;
-				uint32 index = unitSize / GRANULE + offset;
-
-				uint32 unitCount = block->m_BlockInfo.MarkCount;
-				for (size_t i = 0; i < unitCount; i++)
-				{
-					if (block->m_BlockInfo.Mark[i] == (uint8)GC_State::White)
-					{
-						if (memoryIns->m_FreeList[index])
-						{
-							memoryIns->m_FreeList[index]->Push(&block->m_Memory[unitSize * i]);
-						}
-						else
-						{
-							memoryIns->m_FreeList[index] = MakeUnique<MemoryFreeList>();
-							memoryIns->m_FreeList[index]->Push(&block->m_Memory[unitSize * i]);
-						}
-					}
-				}
-				return;
-			}
-			block = block->GetNext();
-		}
-	}
-}
-
 void HazeMemory::AddToRoot(void*)
 {
 }

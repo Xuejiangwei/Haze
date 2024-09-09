@@ -984,6 +984,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 		}
 		else
 		{
+			m_IsParseArray = false;
 			if (TokenIs(HazeToken::ArrayDefineEnd, H_TEXT("多数组变量获得索引错误, 期望 ] ")))
 			{
 				ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount),
@@ -1527,16 +1528,27 @@ Unique<ASTBase> Parse::ParseNew()
 		while (m_CurrToken == HazeToken::Array)
 		{
 			GetNextToken();
-			arraySize.push_back(ParseExpression());
-			if (ExpectNextTokenIs(HazeToken::ArrayDefineEnd))
+			if (TokenIs(HazeToken::ArrayDefineEnd))
 			{
-				TempCurrCode temp(this);
-				if (!ExpectNextTokenIs(HazeToken::Array))
+				HazeValue v;
+				v.Value.UInt64 = 0;
+				arraySize.push_back(MakeUnique<ASTNumber>(m_Compiler, SourceLocation(tempLineCount), HazeValueType::UInt64, v));
+				break;
+			}
+			else
+			{
+				arraySize.push_back(ParseExpression());
+				if (ExpectNextTokenIs(HazeToken::ArrayDefineEnd))
 				{
-					temp.Reset();
-					break;
+					TempCurrCode temp(this);
+					if (!ExpectNextTokenIs(HazeToken::Array))
+					{
+						temp.Reset();
+						break;
+					}
 				}
 			}
+
 		}
 		m_IsParseArray = false;
 		return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar,

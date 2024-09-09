@@ -669,79 +669,6 @@ void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::Functio
 inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData,ModuleUnit::FunctionTableData& function,
 	HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
-	HString objName;
-	HString memberName;
-
-	if (IsClassMember(operatorData.Desc))
-	{
-		/*FindObjectAndMemberName(operatorData.Variable.Name, objName, memberName, isPointer);
-		for (uint32 i = 0; i < function.Variables.size(); i++)
-		{
-			if (function.Variables[i].Variable.Name == objName)
-			{
-				auto classData = GetClass(*function.Variables[i].Variable.Type.CustomName);
-				if (isPointer)
-				{
-					operatorData.Extra.Address.BaseAddress = function.Variables[i].Offset;
-					operatorData.Extra.Address.Offset = GetMemberOffset(*classData, memberName);
-					operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
-					break;
-				}
-				else
-				{
-					operatorData.Extra.Address.BaseAddress = function.Variables[i].Offset + GetMemberOffset(*classData, memberName);
-					operatorData.AddressType = InstructionAddressType::Local;
-					break;
-				}
-			}
-		}*/
-
-		if (function.Variables.size() > 0 && function.Variables[0].Variable.Name.find(TOKEN_THIS HAZE_LOCAL_VARIABLE_CONBINE) != HString::npos)
-		{
-			auto classData = GetClass(*function.Variables[0].Variable.Type.CustomName);
-			operatorData.Extra.Address.BaseAddress = function.Variables[0].Offset;
-			operatorData.Extra.Address.Offset = GetMemberOffset(*classData, operatorData.Variable.Name);
-			operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
-		}
-	}
-	else if (operatorData.Desc == HazeDataDesc::AdvanceRef)
-	{
-		operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
-	}
-	//else if (operatorData.Desc == HazeDataDesc::ArrayElement)
-	//{
-	//	auto iterIndex = localVariable.find(operatorData.Variable.Name);
-	//	if (iterIndex != localVariable.end())
-	//	{
-	//		//避免先把Index值替换掉
-	//		operatorData.Extra.Address.Offset = operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
-	//		operatorData.Extra.Address.BaseAddress = function.Variables[iterIndex->second].Offset;
-	//		operatorData.AddressType = InstructionAddressType::Local_Base_Offset;
-	//	}
-	//	else if (function.Variables[0].Variable.Name.substr(0, 1) == TOKEN_THIS)
-	//	{
-	//		auto classData = GetClass(*function.Variables[0].Variable.Type.CustomName);
-	//		if (classData)
-	//		{
-	//			operatorData.Extra.Address.Offset = GetMemberOffset(*classData, operatorData.Variable.Name)
-	//				+ operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
-	//			operatorData.Extra.Address.BaseAddress = function.Variables[0].Offset;
-	//			operatorData.AddressType = InstructionAddressType::Local_BasePointer_Offset;
-	//		}
-	//		else
-	//		{
-	//			HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>,当前类<%s>未找到!\n",
-	//				operatorData.Variable.Name.c_str(), function.Name.c_str(),
-	//				function.Variables[0].Variable.Type.CustomName->c_str());
-	//		}
-	//	}
-	//	else
-	//	{
-	//		HAZE_LOG_ERR_W("查找变量<%s>的偏移地址错误,当前函数<%s>!\n", operatorData.Variable.Name.c_str(), 
-	//			function.Name.c_str());
-	//	}
-	//}
-	else
 	{
 		auto iterIndex = localVariable.find(operatorData.Variable.Name);
 		if (iterIndex != localVariable.end())
@@ -769,63 +696,27 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 
 inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
-	HString objName;
-	HString memberName;
-	int index = 0;
-
-	if (IsClassMember(operatorData.Desc))
+	int index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.Name);
+	if (index >= 0)
 	{
-		index = (int)newGlobalDataTable.GetIndex(objName);
-		if (index >= 0)
-		{
-			auto Class = GetClass(*newGlobalDataTable.Data[index].Type.CustomName);
-			if (Class)
-			{
-				operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
-				operatorData.Extra.Index = index;
-				operatorData.Extra.Address.Offset = GetMemberOffset(*Class, memberName);
-			}
-		}
-		else
-		{
-			HAZE_LOG_ERR_W("未能查找到全局变量类对象成员<%s>!\n", operatorData.Variable.Name.c_str());
-			return;
-		}
+		operatorData.Extra.Index = index;
+		operatorData.AddressType = InstructionAddressType::Global;
 	}
-	//else if (operatorData.Desc == HazeDataDesc::ArrayElement)
-	//{
-	//	index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.Name);
-	//	if (index >= 0)
-	//	{
-	//		//避免先把Index值替换掉
-	//		operatorData.Extra.Address.Offset = operatorData.Extra.Index * operatorData.Variable.Type.GetTypeSize();
-	//		operatorData.Extra.Index = index;
-	//		operatorData.AddressType = InstructionAddressType::Global_Base_Offset;
-	//	}
-	//}
+	/*else if (NEW_REGISTER == operatorData.Variable.Name)
+	{
+		operatorData.AddressType = InstructionAddressType::Register;
+	}*/
 	else
 	{
-		index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.Name);
-		if (index >= 0)
+		if (operatorData.Desc == HazeDataDesc::Constant)
 		{
-			operatorData.Extra.Index = index;
-			operatorData.AddressType = InstructionAddressType::Global;
-		}
-		/*else if (NEW_REGISTER == operatorData.Variable.Name)
-		{
-			operatorData.AddressType = InstructionAddressType::Register;
-		}*/
-		else
-		{
-			if (operatorData.Desc == HazeDataDesc::Constant)
-			{
-				return;
-			}
-
-			HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", operatorData.Variable.Name.c_str());
 			return;
 		}
+
+		HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", operatorData.Variable.Name.c_str());
+		return;
 	}
+	
 }
 
 void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,

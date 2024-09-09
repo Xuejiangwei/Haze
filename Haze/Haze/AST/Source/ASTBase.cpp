@@ -17,6 +17,45 @@
 
 #define CHECK_ASSIGN_VALUE_IS_NULL(AST, V) if(V) AST_ERR_W(#AST H_TEXT("<%s>传入了赋予值"), m_DefineVariable.Name.c_str())
 
+struct GlobalVariableInitScope
+{
+	GlobalVariableInitScope() : Module(nullptr), Signal(HazeSectionSignal::Local), IsCreate(false) {}
+
+	GlobalVariableInitScope(CompilerModule* m, HazeSectionSignal signal) : Module(m), Signal(signal), IsCreate(false)
+	{
+		if (Signal == HazeSectionSignal::Global)
+		{
+			Module->PreStartCreateGlobalVariable();
+			IsCreate = true;
+		}
+	}
+
+	void Update(CompilerModule* m, HazeSectionSignal signal)
+	{
+		Module = m;
+		Signal = signal;
+
+		if (Signal == HazeSectionSignal::Global)
+		{
+			Module->PreStartCreateGlobalVariable();
+			IsCreate = true;
+		}
+	}
+
+	~GlobalVariableInitScope()
+	{
+		if (Signal == HazeSectionSignal::Global && IsCreate)
+		{
+			Module->EndCreateGlobalVariable();
+		}
+	}
+
+	CompilerModule* Module;
+	HazeSectionSignal Signal;
+	bool IsCreate;
+};
+
+
 //Base
 ASTBase::ASTBase(Compiler* compiler, const SourceLocation& location) : m_Compiler(compiler), m_Location(location)
 {
@@ -34,15 +73,26 @@ Share<CompilerValue> ASTBase::TryAssign(ASTBase* assignToAst, Share<CompilerValu
 {
 	if (assignToAst)
 	{
+		GlobalVariableInitScope scope;
+		auto identifierAst = dynamic_cast<ASTIdentifier*>(assignToAst);
+		if (identifierAst)
+		{
+			identifierAst->SetIsAssign(true);
+		}
+		else if (dynamic_cast<ASTVariableDefine*>(assignToAst))
+		{
+			scope.Update(m_Compiler->GetCurrModule().get(), dynamic_cast<ASTVariableDefine*>(assignToAst)->GetSectionSingal());
+		}
+
 		auto assignToValue = assignToAst->CodeGen();
 		if (assignToValue->IsClassMember())
 		{
-			value = m_Compiler->CreateSetClassMember(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(H_TEXT("己")),
+			value = m_Compiler->CreateSetClassMember(m_Compiler->GetCurrModule()->GetCurrFunction()->GetThisLocalVariable(),
 				assignToAst->m_DefineVariable.Name, value);
 		}
 		else
 		{
-			return m_Compiler->CreateMov(assignToAst->CodeGen(), value);
+			return m_Compiler->CreateMov(assignToValue, value);
 		}
 
 	}
@@ -89,7 +139,7 @@ Share<CompilerValue> ASTStringText::CodeGen(ASTBase* assignToAst)
 ASTIdentifier::ASTIdentifier(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
 	Unique<ASTBase>& arrayIndexExpression, Unique<ASTBase>& preAst, HString nameSpace)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_ArrayIndexExpression(Move(arrayIndexExpression)),
-	m_PreAst(Move(preAst)), m_NameSpace(Move(nameSpace))
+	m_PreAst(Move(preAst)), m_NameSpace(Move(nameSpace)), m_IsAssign(false)
 {
 	m_DefineVariable.Name = Move(name);
 }
@@ -116,6 +166,18 @@ Share<CompilerValue> ASTIdentifier::CodeGen(ASTBase* assignToAst)
 			if (!retValue)
 			{
 				retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
+			}
+			else if (!m_IsAssign && retValue->IsClassMember())
+			{
+				auto currFunc = m_Compiler->GetCurrModule()->GetCurrFunction();
+				if (currFunc)
+				{
+					auto thisValue = currFunc->GetThisLocalVariable();
+					if (thisValue && thisValue->GetMember(m_DefineVariable.Name) == retValue)
+					{
+						retValue = m_Compiler->CreateGetClassMember(thisValue, m_DefineVariable.Name);
+					}
+				}
 			}
 		}
 		else if (m_SectionSignal == HazeSectionSignal::Enum)
@@ -229,7 +291,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(ASTBase* assignToAst)
 		{
 			if (!funcs.second)
 			{
-				funcs.second = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(TOKEN_THIS);//param.push_back(m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(TOKEN_THIS));
+				funcs.second = m_Compiler->GetCurrModule()->GetCurrFunction()->GetThisLocalVariable();
 			}
 		}
 
@@ -297,6 +359,18 @@ Share<CompilerValue> ASTClassAttr::CodeGen(ASTBase* assignToAst)
 			{
 				v = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
 			}
+			else if (v->IsClassMember())
+			{
+				auto currFunc = m_Compiler->GetCurrModule()->GetCurrFunction();
+				if (currFunc)
+				{
+					auto thisValue = currFunc->GetThisLocalVariable();
+					if (thisValue && thisValue->GetMember(m_DefineVariable.Name) == v)
+					{
+						v = m_Compiler->CreateGetClassMember(thisValue, m_DefineVariable.Name);
+					}
+				}
+			}
 		}
 	}
 	else
@@ -337,28 +411,6 @@ ASTVariableDefine::ASTVariableDefine(Compiler* compiler, const SourceLocation& l
 {
 }
 
-struct GlobalVariableInitScope
-{
-	GlobalVariableInitScope(CompilerModule* m, HazeSectionSignal signal) : Module(m), Signal(signal)
-	{
-		if (Signal == HazeSectionSignal::Global)
-		{
-			Module->PreStartCreateGlobalVariable();
-		}
-	}
-
-	~GlobalVariableInitScope()
-	{
-		if (Signal == HazeSectionSignal::Global)
-		{
-			Module->EndCreateGlobalVariable();
-		}
-	}
-
-	CompilerModule* Module;
-	HazeSectionSignal Signal;
-};
-
 Share<CompilerValue> ASTVariableDefine::CodeGen(ASTBase* assignToAst)
 {
 	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine, assignToAst);
@@ -366,8 +418,6 @@ Share<CompilerValue> ASTVariableDefine::CodeGen(ASTBase* assignToAst)
 	if (m_IsCalled || !m_Expression)
 	{
 		Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
-
 		return m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 			m_DefineVariable, m_Location.Line, nullptr);
 		
@@ -429,8 +479,6 @@ Share<CompilerValue> ASTVariableDefine_Class::CodeGen(ASTBase* assignToAst)
 	if (m_IsCalled || !m_Expression)
 	{
 		Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
-
 		return m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 			m_DefineVariable, m_Location.Line, nullptr);
 	}
@@ -455,8 +503,6 @@ Share<CompilerValue> ASTVariableDefine_Array::CodeGen(ASTBase* assignToAst)
 	if (m_IsCalled || !m_Expression)
 	{
 		Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
-
 		return m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 			m_DefineVariable, m_Location.Line, nullptr, m_ArrayDimension);
 	}
@@ -480,7 +526,6 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen(ASTBase* assignToAst)
 	CHECK_ASSIGN_VALUE_IS_NULL(ASTVariableDefine_Function, assignToAst);
 
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 
 	V_Array<HazeDefineType> paramTypes;
 	m_Compiler->GetRealTemplateTypes(m_TemplateTypes, paramTypes);
@@ -490,6 +535,7 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen(ASTBase* assignToAst)
 	auto exprValue = m_Expression->CodeGen();
 	if (!exprValue)
 	{
+		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->m_DefineVariable.Name);
 		if (!function.first)
 		{
@@ -559,8 +605,7 @@ Share<CompilerValue> ASTNew::CodeGen(ASTBase* assignToAst)
 		countValue[i] = m_CountArrayExpression[i]->CodeGen();
 	}
 
-	auto assignTo = assignToAst->CodeGen();
-	auto value = m_Compiler->CreateNew(func, m_DefineVariable.Type, assignTo, &countValue);
+	auto value = m_Compiler->CreateNew(func, m_DefineVariable.Type, &countValue);
 	
 
 	//new申请内存后，若是类的话，需要调用构造函数
@@ -615,7 +660,7 @@ Share<CompilerValue> ASTNew::CodeGen(ASTBase* assignToAst)
 	}
 
 
-	return assignTo;
+	return TryAssign(assignToAst, value);
 }
 
 ASTGetAddress::ASTGetAddress(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
@@ -843,6 +888,29 @@ void ASTBinaryExpression::SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, Comp
 
 Share<CompilerValue> ASTBinaryExpression::CodeGen(ASTBase* assignToAst)
 {
+#define BINARYOPER(OPER) if (assignToAst) \
+	{	\
+		auto identifierAst = dynamic_cast<ASTIdentifier*>(assignToAst); \
+		if (identifierAst) \
+		{ \
+			identifierAst->SetIsAssign(true); \
+		} \
+		auto assignToValue = assignToAst->CodeGen(); \
+		if (assignToValue->IsClassMember()) \
+		{ \
+			return m_Compiler->CreateSetClassMember(m_Compiler->GetCurrModule()->GetCurrFunction()->GetThisLocalVariable(), \
+				assignToAst->GetDefine().Name, m_Compiler->Create##OPER(nullptr, left, right)); \
+		} \
+		else \
+		{ \
+			return m_Compiler->Create##OPER(assignToValue, left, right); \
+		} \
+	} \
+	else \
+	{ \
+		return m_Compiler->Create##OPER(nullptr, left, right); \
+	} break
+
 	m_Compiler->InsertLineCount(m_Location.Line);
 
 	auto rightExp = dynamic_cast<ASTBinaryExpression*>(m_RightAST.get());
@@ -859,194 +927,151 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(ASTBase* assignToAst)
 
 	switch (m_OperatorToken)
 	{
-	case HazeToken::Add:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateAdd(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::Sub:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateSub(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::Mul:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMul(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::Div:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateDiv(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::Inc:
-		return m_Compiler->CreateInc(m_LeftAST->CodeGen(), false);
-	case HazeToken::Dec:
-		return m_Compiler->CreateDec(m_LeftAST->CodeGen(), false);
-	case HazeToken::Mod:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMod(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::Not:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateNot(left, right);
-	}
-	case HazeToken::Shl:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateShl(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::Shr:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateShr(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::Assign:
-	{
-		return m_RightAST->CodeGen(m_LeftAST.get());
-	}
-	case HazeToken::BitAnd:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitAnd(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::BitOr:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitOr(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::BitXor:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitXor(assignToAst->CodeGen(), left, right);
-	}
-	case HazeToken::AddAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateAdd(left, left, right);
-	}
-	case HazeToken::SubAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateSub(left, left, right);
-	}
-	case HazeToken::MulAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMul(left, left, right);
-	}
-	case HazeToken::DivAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateDiv(left, left, right);
-	}
-	case HazeToken::ModAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateMod(left, left, right);
-	}
-	case HazeToken::BitAndAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitAnd(left, left, right);
-	}
-	case HazeToken::BitOrAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitOr(left, left, right);
-	}
-	case HazeToken::BitXorAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateBitXor(left, left, right);
-	}
-	case HazeToken::ShlAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateShl(left, left, right);
-	}
-	case HazeToken::ShrAssign:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		return m_Compiler->CreateShr(left, left, right);
-	}
-	case HazeToken::And:
-	{
-		auto leftValue = m_LeftAST->CodeGen();
-		if (!leftExp)
+		case HazeToken::Add:
 		{
-			m_Compiler->CreateBoolCmp(m_LeftAST->CodeGen());
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(Add);
 		}
-		else
+		case HazeToken::Sub:
 		{
-			m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(leftExp->m_OperatorToken), m_RightAST ? nullptr : m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-				m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(Sub);
 		}
-
-		if (rightExp)
+		case HazeToken::Mul:
 		{
-			m_RightAST->CodeGen();
-			if (!dynamic_cast<ASTBinaryExpression*>(rightExp->m_RightAST.get()))
-			{
-				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(rightExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-					m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-			}
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(Mul);
 		}
-		else
+		case HazeToken::Div:
 		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(Div);
+		}
+		case HazeToken::Inc:
+			return m_Compiler->CreateInc(m_LeftAST->CodeGen(), false);
+		case HazeToken::Dec:
+			return m_Compiler->CreateDec(m_LeftAST->CodeGen(), false);
+		case HazeToken::Mod:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateMod(nullptr, left, right);
+		}
+		case HazeToken::Not:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateNot(left, right);
+		}
+		case HazeToken::Shl:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(Shl);
+		}
+		case HazeToken::Shr:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(Shr);
+		}
+		case HazeToken::Assign:
+		{
+			return m_RightAST->CodeGen(m_LeftAST.get());
+		}
+		case HazeToken::BitAnd:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(BitAnd);
+		}
+		case HazeToken::BitOr:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(BitOr);
+		}
+		case HazeToken::BitXor:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			BINARYOPER(BitXor);
+		}
+		case HazeToken::AddAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateAdd(left, left, right);
+		}
+		case HazeToken::SubAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateSub(left, left, right);
+		}
+		case HazeToken::MulAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateMul(left, left, right);
+		}
+		case HazeToken::DivAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateDiv(left, left, right);
+		}
+		case HazeToken::ModAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateMod(left, left, right);
+		}
+		case HazeToken::BitAndAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateBitAnd(left, left, right);
+		}
+		case HazeToken::BitOrAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateBitOr(left, left, right);
+		}
+		case HazeToken::BitXorAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateBitXor(left, left, right);
+		}
+		case HazeToken::ShlAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateShl(left, left, right);
+		}
+		case HazeToken::ShrAssign:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			return m_Compiler->CreateShr(left, left, right);
+		}
+		case HazeToken::And:
+		{
+			auto leftValue = m_LeftAST->CodeGen();
 			if (!leftExp)
 			{
-				m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal,
-					nullptr, m_RightBlock->GetShared());
-			}
-
-			auto rightValue = m_RightAST->CodeGen();
-			m_Compiler->CreateBoolCmp(rightValue);
-			m_Compiler->CreateCompareJmp(HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-				m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-		}
-
-		return leftValue;
-	}
-	case HazeToken::Or:
-	{
-		auto leftValue = m_LeftAST->CodeGen();
-		/*if (m_DefaultBlock)
-		{
-			m_Compiler->SetInsertBlock(m_DefaultBlock->GetShared());
-		}
-		else*/
-		{
-			if (!leftExp)
-			{
-				m_Compiler->CreateBoolCmp(leftValue);
+				m_Compiler->CreateBoolCmp(m_LeftAST->CodeGen());
 			}
 			else
 			{
-				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(leftExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
+				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(leftExp->m_OperatorToken), m_RightAST ? nullptr : m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+					m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
 			}
 
 			if (rightExp)
@@ -1063,7 +1088,7 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(ASTBase* assignToAst)
 				if (!leftExp)
 				{
 					m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal,
-						m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
+						nullptr, m_RightBlock->GetShared());
 				}
 
 				auto rightValue = m_RightAST->CodeGen();
@@ -1071,31 +1096,74 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(ASTBase* assignToAst)
 				m_Compiler->CreateCompareJmp(HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
 					m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
 			}
-		}
 
-		return leftValue;
-	}
-	case HazeToken::Equal:
-	case HazeToken::NotEqual:
-	case HazeToken::Greater:
-	case HazeToken::GreaterEqual:
-	case HazeToken::Less:
-	case HazeToken::LessEqual:
-	{
-		auto left = m_LeftAST->CodeGen();
-		auto right = m_RightAST->CodeGen();
-		auto retValue = m_Compiler->CreateIntCmp(left, right);
-		if (m_LeftBlock || m_RightBlock)
+			return leftValue;
+		}
+		case HazeToken::Or:
 		{
-			m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-				m_RightBlock ? m_RightBlock->GetShared() : nullptr);
+			auto leftValue = m_LeftAST->CodeGen();
+			/*if (m_DefaultBlock)
+			{
+				m_Compiler->SetInsertBlock(m_DefaultBlock->GetShared());
+			}
+			else*/
+			{
+				if (!leftExp)
+				{
+					m_Compiler->CreateBoolCmp(leftValue);
+				}
+				else
+				{
+					m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(leftExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
+				}
+
+				if (rightExp)
+				{
+					m_RightAST->CodeGen();
+					if (!dynamic_cast<ASTBinaryExpression*>(rightExp->m_RightAST.get()))
+					{
+						m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(rightExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+							m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
+					}
+				}
+				else
+				{
+					if (!leftExp)
+					{
+						m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal,
+							m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
+					}
+
+					auto rightValue = m_RightAST->CodeGen();
+					m_Compiler->CreateBoolCmp(rightValue);
+					m_Compiler->CreateCompareJmp(HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+						m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
+				}
+			}
+
+			return leftValue;
+		}
+		case HazeToken::Equal:
+		case HazeToken::NotEqual:
+		case HazeToken::Greater:
+		case HazeToken::GreaterEqual:
+		case HazeToken::Less:
+		case HazeToken::LessEqual:
+		{
+			auto left = m_LeftAST->CodeGen();
+			auto right = m_RightAST->CodeGen();
+			auto retValue = m_Compiler->CreateIntCmp(left, right);
+			if (m_LeftBlock || m_RightBlock)
+			{
+				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+					m_RightBlock ? m_RightBlock->GetShared() : nullptr);
+			}
+
+			return retValue;
 		}
 
-		return retValue;
-	}
-
-	default:
-		break;
+		default:
+			break;
 	}
 
 	return nullptr;

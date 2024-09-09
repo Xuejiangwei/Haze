@@ -41,7 +41,7 @@ Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVaria
 	return block->CreateAlloce(Variable, line, ++m_CurrVariableCount, refValue, arrayDimension, params);
 }
 
-Share<CompilerValue> CompilerFunction::CreateNew(const HazeDefineType& data, Share<CompilerValue> assignTo, V_Array<Share<CompilerValue>>* countValue)
+Share<CompilerValue> CompilerFunction::CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue)
 {
 	HAZE_STRING_STREAM hss;
 
@@ -53,7 +53,8 @@ Share<CompilerValue> CompilerFunction::CreateNew(const HazeDefineType& data, Sha
 		}
 	}
 
-	GenIRCode(hss, m_Module, InstructionOpCode::NEW, assignTo, m_Module->GetCompiler()->GetConstantValueUint64(countValue->size()),
+	auto tempRegister = GetModule()->GetCompiler()->GetTempRegister(data, countValue ? countValue->size() : 0);
+	GenIRCode(hss, m_Module, InstructionOpCode::NEW, tempRegister, m_Module->GetCompiler()->GetConstantValueUint64(countValue->size()),
 		nullptr, &data);
 
 	if (countValue)
@@ -69,7 +70,7 @@ Share<CompilerValue> CompilerFunction::CreateNew(const HazeDefineType& data, Sha
 
 	//auto ret = m_Module->GetCompiler()->GetNewRegister(m_Module, data);
 
-	return assignTo;
+	return tempRegister;
 }
 
 Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& type, uint64 arrayDimension)
@@ -408,6 +409,25 @@ const HazeDefineType& CompilerFunction::GetThisParam()
 		COMPILER_ERR_W("函数<%s>不是类函数", m_Name.c_str());
 		return HazeDefineType();
 	}
+}
+
+Share<CompilerClassValue> CompilerFunction::GetThisLocalVariable()
+{
+	auto currBlock = m_Module->GetCompiler()->GetInsertBlock().get();
+	while (currBlock)
+	{
+		for (auto& value : currBlock->GetAllocaList())
+		{
+			if (value.second->IsClassThis())
+			{
+				return DynamicCast<CompilerClassValue>(value.second);
+			}
+		}
+
+		currBlock = currBlock->GetParentBlock();
+	}
+
+	return nullptr;
 }
 
 void CompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)

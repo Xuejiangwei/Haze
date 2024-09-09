@@ -44,8 +44,7 @@ Pair<Share<CompilerFunction>, Share<CompilerValue>> GetObjectNameAndFunctionName
 bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
 	const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
 
-//Share<CompilerValue> GetArrayElementToValue(CompilerModule* compilerModule,
-//	Share<CompilerValue> elementValue, Share<CompilerValue> movToValue = nullptr);
+uint32 GetSizeByCompilerValue(Share<CompilerValue> v);
 
 void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes);
 
@@ -59,5 +58,6 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 
 HString GenIRCode(InstructionOpCode opCode, uint64 number);
 
-void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, uint64 paramCount, uint64 paramSize, Share<CompilerFunction> function, 
-	Share<CompilerValue> pointerFunction = nullptr, Share<CompilerValue> advancePointerTo = nullptr, void* advanceFuncAddress = nullptr);
+void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, uint64 paramCount, uint64 paramSize,
+	Share<CompilerFunction> function, Share<CompilerValue> pointerFunction = nullptr, Share<CompilerValue> advancePointerTo = nullptr, 
+	void* advanceFuncAddress = nullptr);

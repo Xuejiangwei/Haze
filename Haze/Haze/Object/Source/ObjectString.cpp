@@ -61,7 +61,6 @@ void ObjectString::Append(HAZE_STD_CALL_PARAM)
 		memcpy(dataAddress, thisStr->m_Data, oldLength* sizeof(HChar));
 		memcpy((HChar*)dataAddress + oldLength, str->m_Data, str->m_Length * sizeof(HChar));
 		
-		HazeMemory::ManualFree(thisStr->m_Data);
 		thisStr->m_Data = dataAddress;
 	}
 }

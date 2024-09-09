@@ -85,8 +85,11 @@ public:
 
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
+	void SetIsAssign(bool isAssign) { m_IsAssign = isAssign; }
+
 private:
 	HString m_NameSpace;
+	bool m_IsAssign;
 	HazeSectionSignal m_SectionSignal;
 	Unique<ASTBase> m_PreAst;
 	Unique<ASTBase> m_ArrayIndexExpression;
@@ -146,6 +149,8 @@ public:
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
 	Share<CompilerValue> GenExpressionValue();
+
+	HazeSectionSignal GetSectionSingal() const { return m_SectionSignal; }
 
 protected:
 	HazeSectionSignal m_SectionSignal;

@@ -402,6 +402,18 @@ bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<Co
 	return false;
 }
 
+uint32 GetSizeByCompilerValue(Share<CompilerValue> v)
+{
+	if (v->IsEnum())
+	{
+		return v->GetSize();
+	}
+	else
+	{
+		return GetSizeByHazeType(v->GetValueType().PrimaryType);
+	}
+}
+
 void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes)
 {
 	for (auto& type : templateTypes)

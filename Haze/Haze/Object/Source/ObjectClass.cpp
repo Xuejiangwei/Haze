@@ -10,6 +10,7 @@ ObjectClass::ObjectClass(ClassData* classInfo)
 	: m_ClassInfo(classInfo)
 {
 	m_Data = HazeMemory::Alloca(classInfo->Size);
+	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p> Constructor\n"), m_ClassInfo->Name.c_str(), this, m_Data);
 }
 
 AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
@@ -36,7 +37,8 @@ void ObjectClass::GetOffset(HAZE_STD_CALL_PARAM)
 	char value[8];
 	memcpy(value, (char*)classObj->m_Data + memberInfo.Offset, GetSizeByHazeType(memberInfo.Variable.Type.PrimaryType));
 	SET_RET_BY_TYPE(memberInfo.Variable.Type.PrimaryType, value);
-	return;
+
+	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p><%p> Get: <%s>\n"), classObj->m_ClassInfo->Name.c_str(), classObj, classObj->m_Data, (char*)classObj->m_Data + memberInfo.Offset, value);
 }
 
 void ObjectClass::SetOffset(HAZE_STD_CALL_PARAM)
@@ -54,4 +56,6 @@ void ObjectClass::SetOffset(HAZE_STD_CALL_PARAM)
 	GET_PARAM_ADDRESS(value, size);
 
 	memcpy((char*)classObj->m_Data + memberInfo.Offset, value, size);
+
+	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p> Set: <%s>\n"), classObj->m_ClassInfo->Name.c_str(), classObj, classObj->m_Data, (char*)classObj->m_Data + memberInfo.Offset, value);
 }

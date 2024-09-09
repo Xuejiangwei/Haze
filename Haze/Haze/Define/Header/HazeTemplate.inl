@@ -1,13 +1,5 @@
 #include "HazeUtility.h"
 
-//template <typename T>
-//unsigned int GetNewAllocSizeByType(HazeDefineType type, T* This)
-//{
-//	return type.PrimaryType == HazeValueType::PointerClass ? This->GetClassSize(type.CustomName) : 
-//		type.PrimaryType == HazeValueType::PointerPointer ? GetSizeByHazeType(type.PrimaryType) :
-//		GetSizeByHazeType(type.SecondaryType);
-//}
-
 template <typename T>
 T StringToStandardType(const HString& str)
 {
