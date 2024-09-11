@@ -4,6 +4,7 @@
 #include "CompilerModule.h"
 #include "CompilerClassValue.h"
 #include "CompilerArrayValue.h"
+#include "CompilerElementValue.h"
 #include "HazeCompilerPointerValue.h"
 #include "CompilerClass.h"
 #include "CompilerFunction.h"
@@ -153,7 +154,7 @@ Share<CompilerValue> CompilerFunction::GetLocalVariable(const HString& variableN
 				auto memberValue = DynamicCast<CompilerClassValue>(value.second)->GetMember(variableName);
 				if (memberValue)
 				{
-					ret = memberValue;
+					ret = MakeShare<CompilerElementValue>(m_Module, value.second, memberValue);
 					break;
 				}
 			}

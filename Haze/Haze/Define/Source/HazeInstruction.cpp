@@ -13,7 +13,7 @@
 #include <Windows.h>
 
 #define HAZE_CALL_LOG				0
-#define HAZE_DEBUG_ENABLE			1
+#define HAZE_DEBUG_ENABLE			0
 
 #define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); \
 				auto type = OPER[0].Variable.Type.SecondaryType; \

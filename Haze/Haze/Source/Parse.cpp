@@ -837,7 +837,6 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 
 	uint32 tempLineCount = m_LineCount;
 	HString identiferName;
-	Unique<ASTBase> indexExpression;
 
 	identiferName = m_CurrLexeme;
 	TempCurrCode temp(this);
@@ -868,102 +867,17 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 		if (TokenIs(HazeToken::RightParentheses, H_TEXT("函数调用需要 ) ")))
 		{
 			ret = MakeUnique<ASTFunctionCall>(m_Compiler, SourceLocation(tempLineCount),
-				m_StackSectionSignal.top(), identiferName, params, nullptr, preAST);
+				m_StackSectionSignal.top(), identiferName, params, Move(preAST));
 
 			moreExpect = true;
 		}
 
 	}
-	else if (TokenIs(HazeToken::ClassAttr) || preToken == HazeToken::ClassAttr)
+	else if (TokenIs(HazeToken::ClassAttr))
 	{
-		if (preToken == HazeToken::ClassAttr)
-		{
-			HString objName;
-			if (TokenIs(HazeToken::LeftParentheses))
-			{
-				if (ExpectNextTokenIs(HazeToken::RightParentheses))
-				{
-					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), objName, preAST, identiferName, true);
-				}
-				else
-				{
-					V_Array<Unique<ASTBase>> params;
-					while (true)
-					{
-						params.push_back(ParseExpression());
-						if (ExpectNextTokenIs(HazeToken::RightParentheses))
-						{
-							break;
-						}
-
-						if (TokenIs(HazeToken::Comma, H_TEXT("期望 , ")))
-						{
-							GetNextToken();
-						}
-						else
-						{
-							return nullptr;
-						}
-					}
-					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), objName, preAST, identiferName, true, &params);
-				}
-			}
-			else
-			{
-				temp.Reset();
-				ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-					m_StackSectionSignal.top(), objName, preAST, identiferName, false);
-			}
-		}
-		else if (ExpectNextTokenIs(HazeToken::Identifier, H_TEXT("类成员名字获取错误")))
-		{
-			HString attrName = m_CurrLexeme;
-			TempCurrCode temp1(this);
-
-			//类的函数
-			if (ExpectNextTokenIs(HazeToken::LeftParentheses))
-			{
-				if (ExpectNextTokenIs(HazeToken::RightParentheses))
-				{
-					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), identiferName, preAST, attrName, true);
-				}
-				else
-				{
-					V_Array<Unique<ASTBase>> params;
-					while (true)
-					{
-						params.push_back(ParseExpression());
-						if (ExpectNextTokenIs(HazeToken::RightParentheses))
-						{
-							break;
-						}
-
-						if (TokenIs(HazeToken::Comma, H_TEXT("期望 , ")))
-						{
-							GetNextToken();
-						}
-						else
-						{
-							return nullptr;
-						}
-					}
-
-					ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), identiferName, preAST, attrName, true, &params);
-				}
-			}
-			else
-			{
-				temp1.Reset();
-				ret = MakeUnique<ASTClassAttr>(m_Compiler, SourceLocation(tempLineCount),
-					m_StackSectionSignal.top(), identiferName, preAST, attrName, false);
-			}
-
-			moreExpect = true;
-		}
+		moreExpect = true;
+		ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+			identiferName, nullptr, Move(preAST));
 	}
 	else if (TokenIs(HazeToken::Array) || preToken == HazeToken::Array)
 	{
@@ -971,27 +885,32 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 		if (m_CurrToken == HazeToken::Array)
 		{
 			GetNextToken();
-			indexExpression = ParseExpression();
+			auto indexExpression = ParseExpression();
 
 			if (ExpectNextTokenIs(HazeToken::ArrayDefineEnd, H_TEXT("数组变量获得索引错误, 期望 ] ")))
 			{
 				m_IsParseArray = false;
 
 				ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), 
-					m_StackSectionSignal.top(), identiferName, indexExpression, preAST);
+					m_StackSectionSignal.top(), identiferName, Move(indexExpression), Move(preAST));
 				moreExpect = true;
 			}
 		}
 		else
 		{
 			m_IsParseArray = false;
-			if (TokenIs(HazeToken::ArrayDefineEnd, H_TEXT("多数组变量获得索引错误, 期望 ] ")))
+			auto indexExpression = ParseExpression();
+			if (ExpectNextTokenIs(HazeToken::ArrayDefineEnd, H_TEXT("多数组变量获得索引错误, 期望 ] ")))
 			{
-				ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount),
-					m_StackSectionSignal.top(), identiferName, indexExpression, preAST);
+				identiferName.clear();
+				ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+					identiferName, Move(indexExpression), Move(preAST));
 				moreExpect = true;
 			}
 		}
+
+		temp.Update();
+		GetNextToken();
 	}
 	else if (TokenIs(HazeToken::TwoColon))
 	{
@@ -999,25 +918,27 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 		{
 			HString name = m_CurrLexeme;
 			ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), 
-				m_StackSectionSignal.top(), name, indexExpression, preAST, identiferName);
+				m_StackSectionSignal.top(), name, nullptr, Move(preAST), identiferName);
 		}
 	}
 	else
 	{
 		temp.Reset();
 		ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), 
-			m_StackSectionSignal.top(), identiferName, indexExpression, preAST);
+			m_StackSectionSignal.top(), identiferName, nullptr, Move(preAST));
 	}
 
 	//这个里面需要考虑连续调用，如 甲->乙->丙 或者 甲->乙()->丙() 或着 甲()->乙()[0]->丙() 或着 甲()->乙->丙() 等
 	if (moreExpect)
 	{
-		temp.Update();
-		GetNextToken();
-		if (TokenIs(HazeToken::ClassAttr) || TokenIs(HazeToken::Array) || (TokenIs(HazeToken::LeftParentheses) && m_LineCount == tempLineCount))
+		if (TokenIs(HazeToken::ClassAttr) || TokenIs(HazeToken::Array))
 		{
 			auto preToken = m_CurrToken;
-			if (ExpectNextTokenIs(HazeToken::Identifier))
+			if (TokenIs(HazeToken::ClassAttr) && ExpectNextTokenIs(HazeToken::Identifier))
+			{
+				ret = ParseIdentifer(Move(ret), preToken);
+			}
+			else if (TokenIs(HazeToken::Array))
 			{
 				ret = ParseIdentifer(Move(ret), preToken);
 			}
@@ -1027,26 +948,10 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 				return nullptr;
 			}
 		}
-		else
-		{
-			temp.Reset();
-		}
 	}
 
 	return ret;
 }
-
-//Unique<ASTBase> Parse::ParseIdentifer_ClassAttr(const HString& name, int line)
-//{
-//	Unique<ASTBase> ret = nullptr;
-//
-//	while (TokenIs(HazeToken::ClassAttr))
-//	{
-//		
-//	}
-//
-//	return ret;
-//}
 
 Unique<ASTBase> Parse::ParseVariableDefine()
 {
@@ -1668,51 +1573,12 @@ Unique<ASTBase> Parse::ParseLeftParentheses()
 		}
 		else
 		{
-			PARSE_ERR_W("解析 ( 错误, 期望 ） \n");
+			PARSE_ERR_W("解析 ( 错误, 期望 ) ");
 		}
 	}
 
 	return nullptr;
 }
-
-//Unique<ASTBase> Parse::ParsePointerValue()
-//{
-//	uint32 tempLineCount = m_LineCount;
-//	int level = (int)m_CurrLexeme.length();
-//
-//	GetNextToken();
-//
-//	auto expression = ParseExpression(s_HashMap_OperatorPriority.find(HazeToken::PointerValue)->second);
-//
-//	if (m_CurrToken == HazeToken::RightParentheses)
-//	{
-//		if (m_LeftParenthesesExpressionCount > 0)
-//		{
-//			m_LeftParenthesesExpressionCount--;
-//			GetNextToken();
-//			if (m_CurrToken == HazeToken::Assign)
-//			{
-//				GetNextToken();
-//				auto assignExpression = ParseExpression();
-//				return MakeUnique<ASTPointerValue>(m_Compiler, SourceLocation(tempLineCount),
-//					expression, level, Move(assignExpression));
-//			}
-//		}
-//
-//		return MakeUnique<ASTPointerValue>(m_Compiler, SourceLocation(tempLineCount), expression, level);
-//	}
-//	else if (m_CurrToken == HazeToken::Assign)
-//	{
-//		GetNextToken();
-//		auto assignExpression = ParseExpression();
-//		return MakeUnique<ASTPointerValue>(m_Compiler, SourceLocation(tempLineCount),
-//			expression, level, Move(assignExpression));
-//	}
-//	else
-//	{
-//		return MakeUnique<ASTPointerValue>(m_Compiler, SourceLocation(tempLineCount), expression, level);
-//	}
-//}
 
 Unique<ASTBase> Parse::ParseNeg()
 {

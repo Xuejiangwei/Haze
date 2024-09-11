@@ -31,7 +31,7 @@ const HString& CompilerClassValue::GetOwnerClassName()
 
 Share<CompilerValue> CompilerClassValue::GetMember(const HString& name)
 {
-	auto index = m_OwnerClass->GetMemberIndex(name);
+	auto index = GetMemberIndex(name);
 
 	for (size_t i = 0; i < m_Data.size(); i++)
 	{
@@ -46,6 +46,30 @@ Share<CompilerValue> CompilerClassValue::GetMember(const HString& name)
 	}
 
 	return nullptr;
+}
+
+int CompilerClassValue::GetMemberIndex(const HString& memberName)
+{
+	return m_OwnerClass->GetMemberIndex(memberName);
+}
+
+int CompilerClassValue::GetMemberIndex(CompilerValue* value)
+{
+	uint64 index = 0;
+	for (uint64 i = 0; i < m_Data.size(); i++)
+	{
+		for (uint64 j = 0; j < m_Data[i].second.size(); j++)
+		{
+			if (m_Data[i].second[j].get() == value)
+			{
+				return (int)index;
+			}
+
+			index++;
+		}
+	}
+
+	return -1;
 }
 
 bool CompilerClassValue::GetMemberName(const CompilerValue* memberValue, HString& outName, bool getOffset, V_Array<Pair<uint64, CompilerValue*>>* offsets)

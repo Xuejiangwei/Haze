@@ -33,7 +33,7 @@ public:
 
 	bool IsLocalVariable() const { return m_Scope == HazeVariableScope::Local; }
 
-	bool IsTempVariable() const { return m_Scope == HazeVariableScope::Temp; }
+	bool IsTempVariable() const { return m_Desc == HazeDataDesc::RegisterTemp; }
 
 	bool IsFunctionAddress() const { return m_Desc == HazeDataDesc::FunctionAddress; }
 
@@ -49,6 +49,8 @@ public:
 	bool IsConstant() const { return m_Desc == HazeDataDesc::Constant; }
 
 	bool IsString() const { return m_Desc == HazeDataDesc::ConstantString; }
+
+	bool IsElement() const { return m_Desc == HazeDataDesc::Element; }
 
 	bool IsClassMember() const { return IsClassPublicMember() || IsClassPrivateMember(); }
 

@@ -10,6 +10,7 @@
 #include "CompilerArrayValue.h"
 #include "CompilerValue.h"
 #include "CompilerFunction.h"
+#include "CompilerElementValue.h"
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
 #include "CompilerClass.h"
@@ -454,7 +455,7 @@ void Compiler::ClearTempRegister(const HashMap<const HChar*, Share<CompilerValue
 		{
 			if (regi.first == useRegi.first)
 			{
-				regi.second = CreateVariable(nullptr, HazeValueType::Void, HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0);
+				regi.second = CreateVariable(nullptr, HazeValueType::Void, HazeVariableScope::Global, HazeDataDesc::RegisterTemp, 0);
 				break;
 			}
 		}
@@ -1010,13 +1011,6 @@ Share<CompilerValue> Compiler::CreateBitOr(Share<CompilerValue> assignTo, Share<
 	return assignTo;
 }
 
-Share<CompilerValue> Compiler::CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value)
-{
-	assignTo = assignTo ? assignTo : GetTempRegister(value->GetValueType());
-	GetCurrModule()->CreateBitNeg(assignTo, value);
-	return value;
-}
-
 Share<CompilerValue> Compiler::CreateBitXor(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2)
 {
 	assignTo = assignTo ? assignTo : GetTempRegister(oper1->GetValueType());
@@ -1038,11 +1032,6 @@ Share<CompilerValue> Compiler::CreateShr(Share<CompilerValue> assignTo, Share<Co
 	return assignTo;
 }
 
-Share<CompilerValue> Compiler::CreateNot(Share<CompilerValue> left, Share<CompilerValue> right)
-{
-	return GetCurrModule()->CreateNot(left, right);
-}
-
 Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerFunction> function, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo)
 {
 	return GetCurrModule()->CreateFunctionCall(function, param, thisPointerTo);
@@ -1061,7 +1050,25 @@ Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advan
 		auto func = iter->second.Functions.find(functionName);
 		if (func != iter->second.Functions.end())
 		{
+			if (thisPointerTo->IsElement())
+			{
+				thisPointerTo = DynamicCast<CompilerElementValue>(thisPointerTo)->CreateGetFunctionCall();
+			}
+
 			return GetCurrModule()->CreateAdvanceTypeFunctionCall(func->second, param, thisPointerTo);
+		}
+		else if (thisPointerTo->IsElement())
+		{
+			auto classValue = DynamicCast<CompilerClassValue>(DynamicCast<CompilerElementValue>(thisPointerTo)->CreateGetFunctionCall());
+			if (classValue)
+			{
+				CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(functionName), param, classValue);
+			}
+			else
+			{
+				COMPILER_ERR_MODULE_W("类型<%s>中的变量不是类, 没有找到<%s>方法", GetHazeValueTypeString(advanceType), functionName.c_str(),
+					GetCurrModuleName().c_str());
+			}
 		}
 		else
 		{
@@ -1077,65 +1084,77 @@ Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advan
 	return Compiler::GetRegister(RET_REGISTER);
 }
 
-Share<CompilerValue> Compiler::CreateGetArrayElement(Share<CompilerValue> value, Share<CompilerValue> index)
-{
-	auto arrayValue = DynamicCast<CompilerArrayValue>(value);
+//Share<CompilerValue> Compiler::CreateSetElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue)
+//{
+//	if (true)
+//	{
+//
+//	}
+//}
 
+Share<CompilerValue> Compiler::CreateGetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index)
+{
+	auto value = DynamicCast<CompilerArrayValue>(arrayValue);
 	V_Array<Share<CompilerValue>> params = { index };
-	value = CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, params, value);
-	
-	return CreateMov(GetTempRegister(arrayValue->GetArrayDimension() > 1 ? arrayValue->GetValueType() : arrayValue->GetValueType().GetArrayElement(),
-		arrayValue->GetArrayDimension() -1), value);
+	return CreateMov(GetTempRegister(value->GetArrayDimension() > 1 ? value->GetValueType() : value->GetValueType().GetArrayElement(),
+		value->GetArrayDimension() -1), CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, params, value));
 }
 
-Share<CompilerValue> Compiler::CreateSetArrayElement(Share<CompilerValue> value, Share<CompilerValue> index, Share<CompilerValue> assignValue)
+Share<CompilerValue> Compiler::CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue)
 {
 	V_Array<Share<CompilerValue>> params = { assignValue, index };
-	return CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_SET_FUNCTION, params, value);
+	return CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_SET_FUNCTION, params, arrayValue);
 }
 
-Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> value, const HString& memberName)
+Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classValue, const HString& memberName)
 {
-	auto classValue = DynamicCast<CompilerClassValue>(value);
-	auto index = (uint64)classValue->GetOwnerClass()->GetMemberIndex(memberName);
-	auto classMemberValue = classValue->GetOwnerClass()->GetMemberValue(index);
+	auto v = DynamicCast<CompilerClassValue>(classValue);
+	auto index = v->GetMemberIndex(memberName);
+	auto classMemberValue = v->GetMember(memberName);
 
 	V_Array<Share<CompilerValue>> params = { GetConstantValueUint64(index) };
-	value = CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, value);
-
-	return CreateMov(GetTempRegister(classMemberValue), value);
+	return CreateMov(GetTempRegister(classMemberValue), 
+		CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, classValue));
 }
 
-Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> value, const HString& memberName, Share<CompilerValue> assignValue)
+Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue)
 {
-	auto classValue = DynamicCast<CompilerClassValue>(value);
-	auto index = (uint64)classValue->GetOwnerClass()->GetMemberIndex(memberName);
-	auto classMemberValue = classValue->GetOwnerClass()->GetMemberValue(index);
+	auto v = DynamicCast<CompilerClassValue>(classValue);
+	auto index = (uint64)v->GetOwnerClass()->GetMemberIndex(memberName);
 
 	V_Array<Share<CompilerValue>> params = { assignValue, GetConstantValueUint64(index) };
-	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, value);
+	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue);
 }
 
-//Share<CompilerValue> Compiler::CreateArrayElement(Share<CompilerValue> value, V_Array<Share<CompilerValue>> indices, Share<CompilerValue> assignTo)
-//{
-//	auto arr = DynamicCast<CompilerArrayValue>(value);
-//
-//	V_Array<Share<CompilerValue>> params;
-//	for (uint64 i = 0; i < indices.size() - (assignValue ? 1 : 0); i++)
-//	{
-//		params.clear();
-//		params.push_back(indices[i]);
-//		value = CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, params, value);
-//		value = CreateMov(GetTempRegister(i + 1 < indices.size() ? arr->GetValueType() : arr->GetValueType().SecondaryType), value);
-//	}
-//
-//	if (assignTo)
-//	{
-//		CreateMov(assignTo, value);
-//	}
-//
-//	return nullptr;
-//}
+Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member)
+{
+	auto v = DynamicCast<CompilerClassValue>(classValue);
+	auto index = v->GetMemberIndex(member.get());
+
+	V_Array<Share<CompilerValue>> params = { GetConstantValueUint64(index) };
+	return CreateMov(GetTempRegister(member),
+		CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, classValue));
+}
+
+Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue)
+{
+	auto v = DynamicCast<CompilerClassValue>(classValue);
+	auto index = v->GetMemberIndex(member.get());
+
+	V_Array<Share<CompilerValue>> params = { assignValue, GetConstantValueUint64(index) };
+	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue);
+}
+
+Share<CompilerValue> Compiler::CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue)
+{
+	return MakeShare<CompilerElementValue>(GetCurrModule().get(), parentValue, elementValue);
+}
+
+Share<CompilerValue> Compiler::CreateElementValue(Share<CompilerValue> parentValue, const HString& memberName)
+{
+	return MakeShare<CompilerElementValue>(GetCurrModule().get(), parentValue, 
+		DynamicCast<CompilerClassValue>(parentValue)->GetMember(memberName));
+}
 
 Share<CompilerValue> Compiler::CreatePointerToValue(Share<CompilerValue> value)
 {
@@ -1151,78 +1170,6 @@ Share<CompilerValue> Compiler::CreatePointerToValue(Share<CompilerValue> value)
 		COMPILER_ERR_MODULE_W("不能对非基本类取地址", GetCurrModuleName().c_str());
 	}
 }
-
-//Share<HazeCompilerValue> HazeCompiler::CreatePointerToArray(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> index)
-//{
-//	auto pointer = GetTempRegister();
-//
-//	auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
-//	type.PointerTo(arrValue->GetValueType());
-//
-//	auto ret = CreateLea(pointer, arrValue);
-//	if (index)
-//	{
-//		CreateAdd(ret, index);
-//	}
-//
-//	return ret;
-//}
-
-//Share<HazeCompilerValue> HazeCompiler::CreatePointerToArrayElement(Share<HazeCompilerValue> elementValue)
-//{
-//	auto arrayElementValue = DynamicCast<HazeCompilerArrayElementValue>(elementValue);
-//	auto arrayValue = DynamicCast<HazeCompilerArrayValue>(arrayElementValue->GetArray()->GetShared());
-//
-//	if (arrayValue)
-//	{
-//		auto tempRegister = GetTempRegister();
-//		Share<HazeCompilerValue> arrayPointer = CreatePointerToArray(arrayValue);
-//
-//		for (uint64 i = 0; i < arrayElementValue->GetIndex().size(); i++)
-//		{
-//			uint64 size = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetValue().Value.UnsignedLong
-//				: arrayValue->GetSizeByLevel((uint64)i);
-//			Share<HazeCompilerValue> sizeValue = nullptr;
-//
-//			if (arrayElementValue->GetIndex()[i]->IsConstant())
-//			{
-//				sizeValue = GetConstantValueUint64(size);
-//			}
-//			else
-//			{
-//				sizeValue = i == arrayElementValue->GetIndex().size() - 1 ? arrayElementValue->GetIndex()[i]->GetShared() : GetConstantValueUint64(size);
-//			}
-//
-//			CreateMov(tempRegister, sizeValue);
-//			if (i != arrayElementValue->GetIndex().size() - 1)
-//			{
-//				CreateMul(tempRegister, arrayElementValue->GetIndex()[i]->GetShared());
-//			}
-//			CreateAdd(arrayPointer, tempRegister);
-//		}
-//
-//		return arrayPointer;
-//	}
-//
-//	return nullptr;
-//}
-
-//Share<HazeCompilerValue> HazeCompiler::CreatePointerToPointerArray(Share<HazeCompilerValue> pointerArray,
-//	Share<HazeCompilerValue> index)
-//{
-//	auto pointer = GetTempRegister();
-//
-//	auto& type = const_cast<HazeDefineType&>(pointer->GetValueType());
-//	type.PrimaryType = HazeValueType::PointerBase;
-//
-//	auto ret = CreateMov(pointer, pointerArray);
-//	if (index)
-//	{
-//		CreateAdd(ret, index);
-//	}
-//
-//	return ret;
-//}
 
 Share<CompilerValue> Compiler::CreatePointerToFunction(Share<CompilerFunction> function, Share<CompilerValue> pointer)
 {
@@ -1240,22 +1187,36 @@ Share<CompilerValue> Compiler::CreateNew(Share<CompilerFunction> function, const
 Share<CompilerValue> Compiler::CreateCast(const HazeDefineType& type, Share<CompilerValue> value)
 {
 	auto reg = GetTempRegister(type);
-	GetCurrModule()->GenIRCode_BinaryOperater(reg, reg, value, InstructionOpCode::CVT);
-
+	GetCurrModule()->GenIRCode_BinaryOperater(reg, value, nullptr, InstructionOpCode::CVT);
 	return reg;
 }
 
 Share<CompilerValue> Compiler::CreateCVT(Share<CompilerValue> left, Share<CompilerValue> right)
 {
-	auto tempReg = GetTempRegister(left->GetValueType());
-	GetCurrModule()->GenIRCode_BinaryOperater(tempReg, tempReg, right, InstructionOpCode::CVT);
+	auto tempReg = left->IsTempVariable() ? left : GetTempRegister(left->GetValueType());
+	GetCurrModule()->GenIRCode_BinaryOperater(tempReg, right, nullptr, InstructionOpCode::CVT);
 
 	return tempReg;
 }
 
-Share<CompilerValue> Compiler::CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value)
+Share<CompilerValue> Compiler::CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1)
 {
-	GetCurrModule()->CreateNeg(assignTo, value);
+	assignTo = assignTo ? assignTo : GetTempRegister(oper1->GetValueType());
+	GetCurrModule()->CreateBitNeg(assignTo, oper1);
+	return assignTo;
+}
+
+Share<CompilerValue> Compiler::CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1)
+{
+	assignTo = assignTo ? assignTo : GetTempRegister(oper1->GetValueType());
+	GetCurrModule()->CreateNeg(assignTo, oper1);
+	return assignTo;
+}
+
+Share<CompilerValue> Compiler::CreateNot(Share<CompilerValue> assignTo, Share<CompilerValue> oper1)
+{
+	assignTo = assignTo ? assignTo : GetTempRegister(oper1->GetValueType());
+	GetCurrModule()->CreateNot(assignTo, oper1);
 	return assignTo;
 }
 

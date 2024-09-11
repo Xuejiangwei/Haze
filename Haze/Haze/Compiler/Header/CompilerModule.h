@@ -116,12 +116,11 @@ private:
 	void CreateShl(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2);
 	void CreateShr(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2);
 
-	void CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value);
-	void CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value);
+	void CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1);
+	void CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1);
+	void CreateNot(Share<CompilerValue> assignTo, Share<CompilerValue> oper1);
 	Share<CompilerValue> CreateInc(Share<CompilerValue> value, bool isPreInc);
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
-
-	Share<CompilerValue> CreateNot(Share<CompilerValue> left, Share<CompilerValue> right);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
 
@@ -131,7 +130,7 @@ private:
 
 	void GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2, InstructionOpCode opCode);
 
-	void GenIRCode_UnaryOperator(Share<CompilerValue> value, InstructionOpCode opCode);
+	void GenIRCode_UnaryOperator(Share<CompilerValue> assignTo, Share<CompilerValue> value, InstructionOpCode opCode);
 
 	void GenIRCode_Ret(Share<CompilerValue> value);
 

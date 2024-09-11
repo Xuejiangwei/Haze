@@ -172,10 +172,9 @@ public:
 	Share<CompilerValue> CreateShl(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2);
 	Share<CompilerValue> CreateShr(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2);
 
-	Share<CompilerValue> CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value);
-	Share<CompilerValue> CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value);
-
-	Share<CompilerValue> CreateNot(Share<CompilerValue> left, Share<CompilerValue> right);
+	Share<CompilerValue> CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1);
+	Share<CompilerValue> CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1);
+	Share<CompilerValue> CreateNot(Share<CompilerValue> assignTo, Share<CompilerValue> oper1);
 
 	Share<CompilerValue> CreateInc(Share<CompilerValue> value, bool isPreInc);
 
@@ -194,13 +193,17 @@ public:
 	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName,
 		V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo);
 
-	Share<CompilerValue> CreateGetArrayElement(Share<CompilerValue> value, Share<CompilerValue> index);
-	Share<CompilerValue> CreateSetArrayElement(Share<CompilerValue> value, Share<CompilerValue> index, Share<CompilerValue> assignValue);
+	Share<CompilerValue> CreateGetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index);
+	Share<CompilerValue> CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue);
 
-	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> value, const HString& memberName);
-	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> value, const HString& memberName, Share<CompilerValue> assignValue);
+	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, const HString& memberName);
+	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
+	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member);
+	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue);
 
 public:
+	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);
+	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, const HString& memberName);
 	Share<CompilerValue> CreatePointerToValue(Share<CompilerValue> value);
 
 	//Share<HazeCompilerValue> CreatePointerToArray(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> index = nullptr);

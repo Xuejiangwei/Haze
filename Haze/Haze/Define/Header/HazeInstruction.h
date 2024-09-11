@@ -33,7 +33,6 @@ enum class InstructionOpCodeType : uint8
 #define CAST_SCOPE(V) (uint32)V
 #define IS_SCOPE_GLOBAL(V) V == HazeVariableScope::Global
 #define IS_SCOPE_LOCAL(V) V == HazeVariableScope::Local
-#define IS_SCOPE_TEMP(V) V == HazeVariableScope::Temp
 #define IS_SCOPE_IGNORE(V) V == HazeVariableScope::Ignore
 enum class HazeVariableScope : uint32
 {
@@ -42,7 +41,6 @@ enum class HazeVariableScope : uint32
 	Local,
 	Static,
 
-	Temp,		//临时寄存器
 	Ignore,		
 };
 
@@ -64,6 +62,8 @@ enum class HazeDataDesc : uint32
 
 	Address,
 	FunctionAddress,
+
+	Element,
 
 	ClassThis,
 	Class,

@@ -49,7 +49,6 @@ private:
 	Unique<ASTBase> ParsePrimary();
 
 	Unique<ASTBase> ParseIdentifer(Unique<ASTBase> preAST = nullptr, HazeToken preToken = HazeToken::None);
-	//Unique<ASTBase> ParseIdentifer_ClassAttr(const HString& name, int line);
 
 	Unique<ASTBase> ParseVariableDefine();
 	Unique<ASTBase> ParseVariableDefine_MultiVariable();

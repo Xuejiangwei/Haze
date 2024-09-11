@@ -11,6 +11,7 @@
 #include "CompilerStringValue.h"
 #include "CompilerPointerFunction.h"
 #include "CompilerClassValue.h"
+#include "CompilerElementValue.h"
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
 #include "HazeLogDefine.h"
@@ -225,76 +226,76 @@ HString GetObjectName(const HString& inName)
 	return inName;
 }
 
-Share<CompilerValue> GetObjectMember(CompilerModule* compilerModule, const HString& inName)
-{
-	bool isPointer;
-	return GetObjectMember(compilerModule, inName, isPointer);
-}
-
-Share<CompilerValue> GetObjectMember(CompilerModule* compilerModule, const HString& inName, bool& isPointer)
-{
-	HString objectName;
-	HString memberName;
-	return GetObjectNameAndMemberName(compilerModule, inName, objectName, memberName, isPointer);
-}
-
-Share<CompilerValue> GetObjectNameAndMemberName(CompilerModule* compilerModule, const HString& inName, 
-	HString& outObjectName, HString& outMemberName, bool& isPointer)
-{
-	auto pos = inName.find(TOKEN_THIS);
-	if (pos != HString::npos)
-	{
-		isPointer = true;
-		outObjectName = inName.substr(0, pos);
-		outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
-
-		auto pointerValue = DynamicCast<HazeCompilerPointerValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
-		auto compilerClass = compilerModule->GetClass(*pointerValue->GetValueType().CustomName);
-
-		Share<CompilerClassValue> classValue = nullptr;
-		if (outObjectName == TOKEN_THIS)
-		{
-			//classValue = compilerClass->GetThisPointerToValue();
-		}
-		else
-		{
-			//classValue = compilerClass->GetNewPointerToValue();
-		}
-
-		return classValue->GetMember(outMemberName);
-	}
-	else
-	{
-		pos = inName.find(TOKEN_THIS);
-		if (pos != HString::npos)
-		{
-			isPointer = false;
-			outObjectName = inName.substr(0, pos);
-			outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
-
-			auto classValue = DynamicCast<CompilerClassValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
-			if (classValue)
-			{
-				return classValue->GetMember(outMemberName);
-			}
-			else
-			{
-				classValue = DynamicCast<CompilerClassValue>(CompilerModule::GetGlobalVariable(compilerModule, outObjectName));
-				if (classValue)
-				{
-					return classValue->GetMember(outMemberName);
-				}
-				else
-				{
-					COMPILER_ERR_MODULE_W("函数<%s>中未能找到类对象<%s>", compilerModule->GetName().c_str(),
-						compilerModule->GetCurrFunction()->GetName().c_str(), outObjectName.c_str());
-				}
-			}
-		}
-	}
-
-	return nullptr;
-}
+//Share<CompilerValue> GetObjectMember(CompilerModule* compilerModule, const HString& inName)
+//{
+//	bool isPointer;
+//	return GetObjectMember(compilerModule, inName, isPointer);
+//}
+//
+//Share<CompilerValue> GetObjectMember(CompilerModule* compilerModule, const HString& inName, bool& isPointer)
+//{
+//	HString objectName;
+//	HString memberName;
+//	return GetObjectNameAndMemberName(compilerModule, inName, objectName, memberName, isPointer);
+//}
+//
+//Share<CompilerValue> GetObjectNameAndMemberName(CompilerModule* compilerModule, const HString& inName, 
+//	HString& outObjectName, HString& outMemberName, bool& isPointer)
+//{
+//	auto pos = inName.find(TOKEN_THIS);
+//	if (pos != HString::npos)
+//	{
+//		isPointer = true;
+//		outObjectName = inName.substr(0, pos);
+//		outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
+//
+//		auto pointerValue = DynamicCast<HazeCompilerPointerValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
+//		auto compilerClass = compilerModule->GetClass(*pointerValue->GetValueType().CustomName);
+//
+//		Share<CompilerClassValue> classValue = nullptr;
+//		if (outObjectName == TOKEN_THIS)
+//		{
+//			//classValue = compilerClass->GetThisPointerToValue();
+//		}
+//		else
+//		{
+//			//classValue = compilerClass->GetNewPointerToValue();
+//		}
+//
+//		return classValue->GetMember(outMemberName);
+//	}
+//	else
+//	{
+//		pos = inName.find(TOKEN_THIS);
+//		if (pos != HString::npos)
+//		{
+//			isPointer = false;
+//			outObjectName = inName.substr(0, pos);
+//			outMemberName = inName.substr(pos + HString(TOKEN_THIS).size());
+//
+//			auto classValue = DynamicCast<CompilerClassValue>(compilerModule->GetCurrFunction()->GetLocalVariable(outObjectName));
+//			if (classValue)
+//			{
+//				return classValue->GetMember(outMemberName);
+//			}
+//			else
+//			{
+//				classValue = DynamicCast<CompilerClassValue>(CompilerModule::GetGlobalVariable(compilerModule, outObjectName));
+//				if (classValue)
+//				{
+//					return classValue->GetMember(outMemberName);
+//				}
+//				else
+//				{
+//					COMPILER_ERR_MODULE_W("函数<%s>中未能找到类对象<%s>", compilerModule->GetName().c_str(),
+//						compilerModule->GetCurrFunction()->GetName().c_str(), outObjectName.c_str());
+//				}
+//			}
+//		}
+//	}
+//
+//	return nullptr;
+//}
 
 Share<CompilerFunction> GetObjectFunction(CompilerModule* compilerModule, const HString& inName)
 {
@@ -494,6 +495,60 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo,
 	Share<CompilerValue> oper1, Share<CompilerValue> oper2, const HazeDefineType* expectType)
 {
+	struct ElementAssign
+	{
+		ElementAssign(HAZE_STRING_STREAM& hss, CompilerModule* m)
+			: Hss(hss), Module(m), Element(nullptr), Value(nullptr) {}
+
+		void Set(Share<CompilerElementValue> v, Share<CompilerValue> v1)
+		{
+			Element = v;
+			Value = v1;
+		}
+
+		~ElementAssign()
+		{
+			if (Element && Value)
+			{
+				//之后封装CreateSetArrayElement 和 CreateSetClassMember 到一个函数
+				if (IsArrayType(Element->GetParentBaseType()))
+				{
+					Module->GetCompiler()->CreateSetArrayElement(Element->GetParent(), Element->GetElement(), Value);
+				}
+				else if (IsClassType(Element->GetParentBaseType()))
+				{
+					Module->GetCompiler()->CreateSetClassMember(Element->GetParent(), Element->GetElement(), Value);
+				}
+			}
+		}
+
+	private:
+		HAZE_STRING_STREAM& Hss;
+		CompilerModule* Module;
+		Share<CompilerElementValue> Element;
+		Share<CompilerValue> Value;
+	};
+
+	Share<ElementAssign> elementAssign = MakeShare<ElementAssign>(hss, m);
+	Share<CompilerElementValue> assignElementValue = DynamicCast<CompilerElementValue>(assignTo);
+	if (assignElementValue)
+	{
+		assignTo = m->GetCompiler()->GetTempRegister(assignElementValue->GetElement());
+		elementAssign->Set(assignElementValue, assignTo);
+	}
+
+	Share<CompilerElementValue> operElementValue1 = DynamicCast<CompilerElementValue>(oper1);
+	if (operElementValue1)
+	{
+		oper1 = operElementValue1->CreateGetFunctionCall();
+	}
+	
+	Share<CompilerElementValue> operElementValue2 = DynamicCast<CompilerElementValue>(oper2);
+	if (operElementValue2)
+	{
+		oper2 = operElementValue2->CreateGetFunctionCall();
+	}
+
 	if (expectType)
 	{
 		auto type = *expectType;
@@ -514,7 +569,25 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				{
 					type.PrimaryType = HazeValueType::Float64;
 				}
-				oper1 = m->GetCompiler()->CreateMov(m->GetCompiler()->GetTempRegister(type), oper1);
+				oper1 = m->GetCompiler()->CreateCVT(m->GetCompiler()->GetTempRegister(type), oper1);
+			}
+		}
+		else if (IsNumberType(type.PrimaryType) && IsNumberType(oper1->GetValueType().PrimaryType))
+		{
+			auto strongerType = GetStrongerType(type.PrimaryType, oper1->GetValueType().PrimaryType);
+			if (IsIntegerType(type.PrimaryType) && IsIntegerType(oper1->GetValueType().PrimaryType))
+			{
+				if (type != oper1->GetValueType())
+				{
+					oper1 = m->GetCompiler()->CreateCVT(m->GetCompiler()->GetTempRegister(strongerType), oper1);
+				}
+			}
+			else if (IsFloatingType(type.PrimaryType) && IsFloatingType(oper1->GetValueType().PrimaryType))
+			{
+				if (type != oper1->GetValueType())
+				{
+					oper1 = m->GetCompiler()->CreateCVT(m->GetCompiler()->GetTempRegister(strongerType), oper1);
+				}
 			}
 		}
 		else if (IsRefrenceType(type.PrimaryType) && !oper1->IsRefrence())

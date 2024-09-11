@@ -21,7 +21,7 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 	}
 
 	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::Function && 
-		(ins.Operator[0].Scope == HazeVariableScope::Temp || ins.Operator[0].Scope == HazeVariableScope::Ignore))
+		(ins.Operator[0].Desc == HazeDataDesc::RegisterTemp || ins.Operator[0].Scope == HazeVariableScope::Ignore))
 	{
 		return true;
 	}
@@ -743,7 +743,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 					{
 						ResetGlobalOperatorAddress(operatorData, newGlobalDataTable);
 					}
-					else if (IS_SCOPE_TEMP(operatorData.Scope))
+					/*else if (IS_SCOPE_TEMP(operatorData.Scope))
 					{
 						if (operatorData.Desc == HazeDataDesc::FunctionAddress)
 						{
@@ -753,7 +753,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 						{
 							HAZE_LOG_ERR_W("寻找全局变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
 						}
-					}
+					}*/
 					else
 					{
 						HAZE_LOG_ERR_W("寻找变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
@@ -846,7 +846,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 						//		HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
 						//	}
 						//}
-						else if ((IS_SCOPE_IGNORE(operatorData.Scope) || IS_SCOPE_TEMP(operatorData.Scope)) && operatorData.Desc == HazeDataDesc::FunctionAddress)
+						else if (IS_SCOPE_IGNORE(operatorData.Scope) && operatorData.Desc == HazeDataDesc::FunctionAddress)
 						{
 							operatorData.AddressType = InstructionAddressType::FunctionAddress;
 						}

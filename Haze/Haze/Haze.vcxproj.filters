@@ -186,6 +186,9 @@
     <ClCompile Include="Backend\Source\Optimizer.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Compiler\Source\CompilerElementValue.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -387,6 +390,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Backend\Header\Optimizer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\CompilerElementValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

@@ -93,6 +93,25 @@ int CompilerClass::GetMemberIndex(const HString& memberName)
 	return -1;
 }
 
+int CompilerClass::GetMemberIndex(CompilerValue* value)
+{
+	uint64 index = 0;
+	for (uint64 i = 0; i < m_Data.size(); i++)
+	{
+		for (uint64 j = 0; j < m_Data[i].second.size(); j++)
+		{
+			if (m_Data[i].second[j].second.get() == value)
+			{
+				return (int)index;
+			}
+
+			index++;
+		}
+	}
+
+	return -1;
+}
+
 //bool HazeCompilerClass::GetThisMemberName(const HazeCompilerValue* value, HString& outName, bool getOffset, V_Array<uint64>* offsets)
 //{
 //	uint32 count = 0;

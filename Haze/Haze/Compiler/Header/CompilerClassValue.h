@@ -6,9 +6,8 @@ class CompilerClass;
 
 class CompilerClassValue : public CompilerValue
 {
-public:
 	friend class CompilerClass;
-
+public:
 	explicit CompilerClassValue(CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
 		HazeDataDesc desc, int count);
 
@@ -21,6 +20,10 @@ public:
 	const HString& GetOwnerClassName();
 
 	Share<CompilerValue> GetMember(const HString& name);
+
+	int GetMemberIndex(const HString& memberName);
+
+	int GetMemberIndex(CompilerValue* value);
 
 	bool GetMemberName(const CompilerValue* memberValue, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
 

@@ -171,6 +171,7 @@
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
     <ClCompile Include="Backend\Source\Optimizer.cpp" />
     <ClCompile Include="Compiler\Header\HazeCompilerTemplateFunction.h" />
+    <ClCompile Include="Compiler\Source\CompilerElementValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerEnum.cpp" />
     <ClCompile Include="Compiler\Source\CompilerEnumValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerBlock.cpp" />
@@ -235,6 +236,7 @@
     <ClInclude Include="Compiler\Header\Compiler.h" />
     <ClInclude Include="Compiler\Header\CompilerArrayValue.h" />
     <ClInclude Include="Compiler\Header\CompilerClassValue.h" />
+    <ClInclude Include="Compiler\Header\CompilerElementValue.h" />
     <ClInclude Include="Compiler\Header\CompilerEnum.h" />
     <ClInclude Include="Compiler\Header\CompilerEnumValue.h" />
     <ClInclude Include="Compiler\Header\CompilerFunction.h" />

@@ -26,13 +26,6 @@ void StreamCompilerValue(HAZE_STRING_STREAM& hss, InstructionOpCode insCode, Sha
 
 HString GetObjectName(const HString& inName);
 
-Share<CompilerValue> GetObjectMember(CompilerModule* compilerModule, const HString& inName);
-
-Share<CompilerValue> GetObjectMember(CompilerModule* compilerModule, const HString& inName, bool& isPointer);
-
-Share<CompilerValue> GetObjectNameAndMemberName(CompilerModule* compilerModule, const HString& inName,
-	HString& outObjectName, HString& outMemberName, bool& isPointer);
-
 Share<CompilerFunction> GetObjectFunction(CompilerModule* compilerModule, const HString& inName);
 
 Pair<Share<CompilerFunction>, Share<CompilerValue>> GetObjectFunction(

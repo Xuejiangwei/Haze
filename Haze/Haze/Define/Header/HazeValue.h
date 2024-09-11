@@ -126,7 +126,6 @@ bool IsAdvanceType(HazeValueType type);
 bool IsIntegerType(HazeValueType type);
 bool IsUnsignedIntegerType(HazeValueType type);
 bool IsFloatingType(HazeValueType type);
-bool IsClassType(HazeValueType type);
 bool IsFunctionType(HazeValueType type);
 bool IsNumberType(HazeValueType type);
 bool IsClassType(HazeValueType type);

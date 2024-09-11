@@ -388,11 +388,6 @@ void CompilerModule::CreateBitOr(Share<CompilerValue> assignTo, Share<CompilerVa
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::BIT_OR);
 }
 
-void CompilerModule::CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value)
-{
-	GenIRCode_UnaryOperator(value, InstructionOpCode::BIT_NEG);
-}
-
 void CompilerModule::CreateBitXor(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
 {
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::BIT_XOR);
@@ -408,31 +403,19 @@ void CompilerModule::CreateShr(Share<CompilerValue> assignTo, Share<CompilerValu
 	GenIRCode_BinaryOperater(assignTo, left, right, InstructionOpCode::SHR);
 }
 
-Share<CompilerValue> CompilerModule::CreateNot(Share<CompilerValue> left, Share<CompilerValue> right)
+void CompilerModule::CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1)
 {
-	GenIRCode_BinaryOperater(nullptr, left, right, InstructionOpCode::NOT);
-	return left;
+	GenIRCode_UnaryOperator(assignTo, oper1, InstructionOpCode::BIT_NEG);
 }
 
-void CompilerModule::CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> value)
+void CompilerModule::CreateNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1)
 {
-	if (value->IsConstant())
-	{
-		value = m_Compiler->GenConstantValue(value->GetValueType().PrimaryType, GetNegValue(value->GetValueType().PrimaryType, value->GetValue()));
-	}
-	else
-	{
-		auto tempRegister = m_Compiler->GetTempRegister(value->GetValueType());
-		m_Compiler->CreateMov(tempRegister, value);
+	GenIRCode_UnaryOperator(assignTo, oper1, InstructionOpCode::NEG);
+}
 
-		HAZE_STRING_STREAM ss;
-		GenIRCode(ss, this, InstructionOpCode::NEG, nullptr, tempRegister);
-	
-		Share<CompilerBlock> BB = m_Compiler->GetInsertBlock();
-		BB->PushIRCode(ss.str());
-
-		value = tempRegister;
-	}
+void CompilerModule::CreateNot(Share<CompilerValue> assignTo, Share<CompilerValue> oper1)
+{
+	GenIRCode_UnaryOperator(assignTo, oper1, InstructionOpCode::NOT);
 }
 
 Share<CompilerValue> CompilerModule::CreateInc(Share<CompilerValue> value, bool isPreInc)
@@ -514,7 +497,7 @@ void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Sha
 	//return retValue;
 }
 
-void CompilerModule::GenIRCode_UnaryOperator(Share<CompilerValue> value, InstructionOpCode opCode)
+void CompilerModule::GenIRCode_UnaryOperator(Share<CompilerValue> assignTo, Share<CompilerValue> value, InstructionOpCode opCode)
 {
 	auto function = GetCurrFunction();
 	HAZE_STRING_STREAM hss;
@@ -525,7 +508,7 @@ void CompilerModule::GenIRCode_UnaryOperator(Share<CompilerValue> value, Instruc
 	}
 	else
 	{
-		GenIRCode(hss, this, opCode, nullptr, value);
+		GenIRCode(hss, this, opCode, assignTo, value);
 	}
 
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
@@ -868,14 +851,14 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& n
 		{
 			return it.second;
 		}
-		else if (it.second->IsClass())
+		/*else if (it.second->IsClass())
 		{
 			auto ret = GetObjectMember(this, name);
 			if (ret)
 			{
 				return ret;
 			}
-		}
+		}*/
 	}
 
 	for (auto& m : m_ImportModules)

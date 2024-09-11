@@ -32,6 +32,8 @@ public:
 
 	int GetMemberIndex(const HString& memberName);
 
+	int GetMemberIndex(CompilerValue* value);
+
 	//bool GetThisMemberName(const HazeCompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
 
 	bool GetMemberName(CompilerClassValue* classValue, const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
