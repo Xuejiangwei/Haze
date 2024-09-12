@@ -510,6 +510,20 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		{
 			if (Element && Value)
 			{
+				if (!Hss.str().empty())
+				{
+					if (Module->GetCurrFunction())
+					{
+						Module->GetCompiler()->GetInsertBlock()->PushIRCode(Hss.str());
+					}
+					else
+					{
+						Module->PushModuleIRCode(Hss.str());
+					}
+
+					Hss.str(H_TEXT(""));
+				}
+
 				//之后封装CreateSetArrayElement 和 CreateSetClassMember 到一个函数
 				if (IsArrayType(Element->GetParentBaseType()))
 				{

@@ -352,6 +352,8 @@ Share<CompilerValue> ASTVariableDefine::CodeGen()
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
+
+	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue()) : var;
 }
 
@@ -395,6 +397,8 @@ Share<CompilerValue> ASTVariableDefine_Class::CodeGen()
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
+
+	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue()) : var;
 }
 
@@ -413,6 +417,8 @@ Share<CompilerValue> ASTVariableDefine_Array::CodeGen()
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr, m_ArrayDimension);
+
+	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue()) : var;
 }
 
@@ -987,15 +993,18 @@ Share<CompilerValue> ASTThreeExpression::CodeGen()
 
 	m_Compiler->SetInsertBlock(blockLeft);
 	auto value = m_LeftAST->CodeGen();
+	auto retValue = m_Compiler->GetTempRegister(value);
+	m_Compiler->CreateMov(retValue, value);
 	m_Compiler->CreateJmpToBlock(defauleBlock);
 
 	m_Compiler->SetInsertBlock(blockRight);
 	value = m_RightAST->CodeGen();
+	m_Compiler->CreateMov(retValue, value);
 	m_Compiler->CreateJmpToBlock(defauleBlock);
 
 	m_Compiler->SetInsertBlock(defauleBlock);
 
-	return value;
+	return retValue;
 }
 
 ASTImportModule::ASTImportModule(Compiler* compiler, const SourceLocation& location, const HString& modulepath)

@@ -104,6 +104,8 @@ public:
 
 	static Share<CompilerEnum> GetEnum(CompilerModule* m, const HString& name);
 
+	void PushModuleIRCode(const HString& irCode);
+
 private:
 	void CreateAdd(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2);
 	void CreateSub(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2);
@@ -137,8 +139,6 @@ private:
 	void GenIRCode_Cmp(HazeCmpType cmpType, Share<CompilerBlock> ifJmpBlock, Share<CompilerBlock> elseJmpBlock);
 
 	void GenIRCode_JmpTo(Share<CompilerBlock> block);
-
-	//static void GenValueHzicText(HazeCompilerModule* Module, HAZE_STRING_STREAM& HSS, const Share<HazeCompilerValue>& Value, int Index = -1);
 
 private:
 	void FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction, 

@@ -351,8 +351,6 @@ private:
 	Unique<ASTBase> m_ConditionAST;
 	Unique<ASTBase> m_LeftAST;
 	Unique<ASTBase> m_RightAST;
-	
-	ASTBase* m_AssignToAst;
 };
 
 class ASTDataSection : public ASTBase

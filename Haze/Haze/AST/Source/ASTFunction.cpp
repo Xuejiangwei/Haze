@@ -60,9 +60,14 @@ HazeValue* ASTFunction::CodeGen()
 		m_Body->CodeGen();
 	}
 
-	if (compilerFunction)
+	if (compilerFunction == currModule->GetCurrFunction())
 	{
-		compilerFunction->FunctionFinish();
+		currModule->FinishFunction();
+	}
+	else
+	{
+		auto& m_Location = m_EndLocation;
+		AST_ERR_W("生成函数<%s>结束错误, 不是当前模块解析的函数<%s>", m_FunctionName.c_str(), currModule->GetCurrFunction()->GetName().c_str());
 	}
 
 	return nullptr;

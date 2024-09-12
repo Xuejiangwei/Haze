@@ -544,6 +544,11 @@ void CompilerModule::GenIRCode_JmpTo(Share<CompilerBlock> block)
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
+void CompilerModule::PushModuleIRCode(const HString& irCode)
+{
+	m_ModuleIRCodes.push_back(irCode);
+}
+
 Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, Share<CompilerValue> refValue,
 	uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {

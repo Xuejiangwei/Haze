@@ -875,6 +875,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 	}
 	else if (TokenIs(HazeToken::ClassAttr))
 	{
+		temp.Reset();
 		moreExpect = true;
 		ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
 			identiferName, nullptr, Move(preAST));
@@ -909,8 +910,8 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 			}
 		}
 
-		temp.Update();
-		GetNextToken();
+		/*temp.Update();
+		GetNextToken();*/
 	}
 	else if (TokenIs(HazeToken::TwoColon))
 	{
@@ -931,6 +932,8 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 	//这个里面需要考虑连续调用，如 甲->乙->丙 或者 甲->乙()->丙() 或着 甲()->乙()[0]->丙() 或着 甲()->乙->丙() 等
 	if (moreExpect)
 	{
+		temp.Update();
+		GetNextToken();
 		if (TokenIs(HazeToken::ClassAttr) || TokenIs(HazeToken::Array))
 		{
 			auto preToken = m_CurrToken;
@@ -947,6 +950,10 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 				PARSE_ERR_W("<%s>后变量名<%s>解析错误", identiferName.c_str(), m_CurrLexeme.c_str());
 				return nullptr;
 			}
+		}
+		else
+		{
+			temp.Reset();
 		}
 	}
 

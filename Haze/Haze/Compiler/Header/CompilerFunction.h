@@ -33,8 +33,6 @@ public:
 
 	Share<CompilerBlock> GetEntryBlock() { return m_EntryBlock; }
 
-	void FunctionFinish();
-
 	void GenI_Code(HAZE_STRING_STREAM& hss);
 
 	HString GenDafaultBlockName();
@@ -68,6 +66,8 @@ public:
 	Share<CompilerClassValue> GetThisLocalVariable();
 
 private:
+	void FunctionFinish();
+
 	void AddFunctionParam(const HazeDefineVariable& variable);
 
 	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
