@@ -75,7 +75,7 @@ public:
 
 	bool CurrModuleIsStdLib();
 
-	Pair<Share<CompilerFunction>, Share<CompilerValue>> GetFunction(const HString& name);
+	Share<CompilerFunction> GetFunction(const HString& name);
 
 	const HString& GetCurrModuleName() const { return m_ModuleNameStack.back(); }
 

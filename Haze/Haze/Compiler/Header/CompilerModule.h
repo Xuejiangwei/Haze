@@ -78,7 +78,7 @@ public:
 
 	void FinishFunction();
 
-	Pair<Share<CompilerFunction>, Share<CompilerValue>> GetFunction(const HString& name);
+	Share<CompilerFunction> GetFunction(const HString& name);
 
 	void StartCacheTemplate(HString& templateName, uint32 startLine, HString& templateText, V_Array<HString>& templateTypes);
 
@@ -130,7 +130,7 @@ private:
 	
 	Share<CompilerValue> CreateAdvanceTypeFunctionCall(struct AdvanceFunctionInfo& functionInfo, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
 
-	void GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2, InstructionOpCode opCode);
+	void GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2, InstructionOpCode opCode, bool check = true);
 
 	void GenIRCode_UnaryOperator(Share<CompilerValue> assignTo, Share<CompilerValue> value, InstructionOpCode opCode);
 

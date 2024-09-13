@@ -21,19 +21,6 @@ Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDe
 V_Array<Pair<HazeDataDesc, V_Array<Share<CompilerValue>>>> CreateVariableCopyClassMember(
 	CompilerModule* compilerModule, HazeVariableScope scope, CompilerClass* compilerClass);
 
-void StreamCompilerValue(HAZE_STRING_STREAM& hss, InstructionOpCode insCode, Share<CompilerValue> value, 
-	const HChar* defaultName = nullptr);
-
-HString GetObjectName(const HString& inName);
-
-Share<CompilerFunction> GetObjectFunction(CompilerModule* compilerModule, const HString& inName);
-
-Pair<Share<CompilerFunction>, Share<CompilerValue>> GetObjectFunction(
-	CompilerModule* compilerModule, const HString& inName, bool& isPointer);
-
-Pair<Share<CompilerFunction>, Share<CompilerValue>> GetObjectNameAndFunctionName(
-	CompilerModule* compilerModule, const HString& inName, HString& outObjectName, HString& outFunctionName, bool& isPointer);
-
 bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
 	const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
 
@@ -44,7 +31,7 @@ void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& te
 void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const Share<CompilerValue>& value);
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo, 
-	Share<CompilerValue> oper1, Share<CompilerValue> oper2 = nullptr, const HazeDefineType* expectType = nullptr);
+	Share<CompilerValue> oper1, Share<CompilerValue> oper2 = nullptr, const HazeDefineType* expectType = nullptr, bool check = true);
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerBlock> block1,
 	Share<CompilerBlock> block2 = nullptr);

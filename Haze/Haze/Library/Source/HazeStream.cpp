@@ -241,8 +241,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 			start++;
 			if (*start == HChar('d'))
 			{
-				auto ins = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - argNum - 1];
-				int size = ins.Operator[0].Variable.Type.GetTypeSize();
+				int size = sizeof(int);
 
 				offset -= size;
 				if (size == 1)
@@ -295,7 +294,6 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 			else if (*start == HChar('s'))
 			{
 				uint64 tempAddress;
-
 				offset -= sizeof(tempAddress);
 
 				char* Address = stack->GetAddressByEBP(offset);

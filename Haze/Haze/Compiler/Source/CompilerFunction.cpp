@@ -217,7 +217,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 			HAZE_LOG_ERR_W("函数<%s>生成中间代码错误，未能找到参数临时变量!\n", m_Name.c_str());
 			return;
 		}
-		size -= m_LocalVariables[i].first->GetValueType().GetTypeSize();
+		size -= m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize();
 		
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
@@ -232,8 +232,8 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		FindLocalVariableName(m_LocalVariables[i].first.get(), LocalVariableName);
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
-		hss << " " << m_LocalVariables[i].first->GetValueType().GetTypeSize() << " " << m_LocalVariables[i].second << std::endl;
-		size += m_LocalVariables[i].first->GetValueType().GetTypeSize();
+		hss << " " << m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize() << " " << m_LocalVariables[i].second << std::endl;
+		size += m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize();
 	}
 
 	for (uint64 i = 0; i < m_TempRegisters.size(); i++)

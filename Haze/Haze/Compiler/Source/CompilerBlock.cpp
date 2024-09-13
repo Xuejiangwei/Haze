@@ -55,7 +55,7 @@ bool CompilerBlock::FindLocalVariableName(const CompilerValue* value, HString& o
 			}
 			return true;
 		}
-		offset += it.second->GetValueType().GetTypeSize();
+		offset += it.second->GetValueType().GetCompilerTypeSize();
 	}
 
 	for (auto& iter : m_ChildBlocks)

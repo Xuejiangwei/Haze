@@ -354,18 +354,18 @@ bool Compiler::CurrModuleIsStdLib()
 	return GetCurrModule()->GetModuleLibraryType() == HazeLibraryType::Static;
 }
 
-Pair<Share<CompilerFunction>, Share<CompilerValue>> Compiler::GetFunction(const HString& name)
+Share<CompilerFunction> Compiler::GetFunction(const HString& name)
 {
 	for (auto& iter : m_CompilerModules)
 	{
 		auto function = iter.second->GetFunction(name);
-		if (function.first)
+		if (function)
 		{
 			return function;
 		}
 	}
 
-	return { nullptr, nullptr };
+	return nullptr;
 }
 
 //Share<CompilerValue> Compiler::GetNewRegister(CompilerModule* compilerModule, const HazeDefineType& data)
@@ -389,6 +389,11 @@ Share<CompilerValue> Compiler::GetTempRegister(Share<CompilerValue> v)
 
 Share<CompilerValue> Compiler::GetTempRegister(const CompilerValue* v)
 {
+	if (v->IsElement())
+	{
+		v = dynamic_cast<const CompilerElementValue*>(v)->GetElement().get();
+	}
+	
 	if (v->IsArray())
 	{
 		auto arrayValue = dynamic_cast<const CompilerArrayValue*>(v);
@@ -603,6 +608,9 @@ void Compiler::MarkParseTemplate(bool begin, const HString* moduleName)
 
 Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeValue& var, HazeValueType* varType)
 {
+#define SET_VAR_VALUE(TYPE) memset(((void*)&ret->GetValue()), 0, sizeof(ret->GetValue())); \
+	memcpy(((void*)&ret->GetValue().Value.##TYPE), &s_Value.Value.##TYPE, sizeof(s_Value.Value.##TYPE))
+
 	static HazeDefineType s_DefineVariableType;
 	static HazeValue  s_Value;
 
@@ -615,6 +623,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 	{
 	case HazeValueType::Bool:
 	{
+		s_Value.Value.Bool = var.Value.Bool == true;
 		auto it = m_BoolConstantValues.find(s_Value.Value.Bool);
 		if (it != m_BoolConstantValues.end())
 		{
@@ -622,6 +631,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_BoolConstantValues[s_Value.Value.Bool] = ret;
+		SET_VAR_VALUE(Bool);
 	}
 		break;
 	case HazeValueType::Int8:
@@ -633,6 +643,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_Int8_ConstantValues[s_Value.Value.Int8] = ret;
+		SET_VAR_VALUE(Int8);
 	}
 		break;
 	case HazeValueType::UInt8:
@@ -644,6 +655,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_UInt8_ConstantValues[s_Value.Value.UInt8] = ret;
+		SET_VAR_VALUE(UInt8);
 	}
 		break;
 	case HazeValueType::Int16:
@@ -655,6 +667,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_Int16_ConstantValues[s_Value.Value.Int16] = ret;
+		SET_VAR_VALUE(Int16);
 	}
 		break;
 	case HazeValueType::UInt16:
@@ -666,6 +679,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_UInt16_ConstantValues[s_Value.Value.UInt16] = ret;
+		SET_VAR_VALUE(UInt16);
 	}
 		break;
 	case HazeValueType::Int32:
@@ -677,6 +691,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_Int32_ConstantValues[s_Value.Value.Int32] = ret;
+		SET_VAR_VALUE(Int32);
 	}
 		break;
 	case HazeValueType::UInt32:
@@ -688,6 +703,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_UInt32_ConstantValues[s_Value.Value.UInt32] = ret;
+		SET_VAR_VALUE(UInt32);
 	}
 		break;
 	case HazeValueType::Int64:
@@ -699,6 +715,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_Int64_ConstantValues[s_Value.Value.Int64] = ret;
+		SET_VAR_VALUE(Int64);
 	}
 		break;
 	case HazeValueType::UInt64:
@@ -710,6 +727,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_UInt64_ConstantValues[s_Value.Value.UInt64] = ret;
+		SET_VAR_VALUE(UInt64);
 	}
 		break;
 	case HazeValueType::Float32:
@@ -721,6 +739,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_Float32_ConstantValues[s_Value.Value.Float32] = ret;
+		SET_VAR_VALUE(Float32);
 	}
 		break;
 	case HazeValueType::Float64:
@@ -732,14 +751,13 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 		}
 		ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
 		m_Float64_ConstantValues[s_Value.Value.Float64] = ret;
+		SET_VAR_VALUE(Float64);
 	}
 		break;
 	default:
 		HAZE_LOG_ERR_W("未支持生成<%s>常量类型!\n", GetHazeValueTypeString(type));
 		break;
 	}
-
-	memcpy(((void*)&ret->GetValue()), &s_Value, sizeof(s_Value));
 	return ret;
 }
 
@@ -879,7 +897,7 @@ Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share
 
 Share<CompilerValue> Compiler::CreateMovToPV(Share<CompilerValue> allocaValue, Share<CompilerValue> value)
 {
-	GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::MOVTOPV);
+	GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::MOVTOPV ,false);
 	return allocaValue;
 }
 
@@ -896,7 +914,7 @@ Share<CompilerValue> Compiler::CreateMovPV(Share<CompilerValue> allocaValue, Sha
 			allocaValueType.SecondaryType = HazeValueType::None;
 		}
 
-		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::MOVPV);
+		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::MOVPV, false);
 		return allocaValue;
 	}
 	/*else

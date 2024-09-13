@@ -135,7 +135,7 @@ void ObjectArray::Get(HAZE_STD_CALL_PARAM)
 	char value[8];
 	memcpy(value, (char*)arr->m_Data + offset * size, size);
 	SET_RET_BY_TYPE(arr->m_ValueType, value);
-	HAZE_LOG_INFO("Array Get <%d>\n", offset);
+	//HAZE_LOG_INFO("Array Get <%d>\n", offset);
 }
 
 void ObjectArray::Set(HAZE_STD_CALL_PARAM)
@@ -152,5 +152,5 @@ void ObjectArray::Set(HAZE_STD_CALL_PARAM)
 	GET_PARAM_ADDRESS(value, size);
 
 	memcpy((char*)arr->m_Data + offset * size, value, size);
-	HAZE_LOG_INFO("Array Set <%d>\n", offset);
+	//HAZE_LOG_INFO("Array Set <%d>\n", offset);
 }

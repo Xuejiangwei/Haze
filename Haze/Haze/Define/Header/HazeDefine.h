@@ -103,8 +103,8 @@ using HString = std::wstring;
 #define HAZE_ADVANCE_GET_FUNCTION		H_TEXT("ªÒµ√")
 #define HAZE_ADVANCE_SET_FUNCTION		H_TEXT("…Ë÷√")
 
-#define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum
-#define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum
+#define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum, int paramByteSize
+#define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum, paramByteSize
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 4
 

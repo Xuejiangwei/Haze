@@ -204,12 +204,12 @@ Share<CompilerFunction> CompilerModule::GetCurrFunction()
 	return iter->second;
 }
 
-Pair<Share<CompilerFunction>, Share<CompilerValue>> CompilerModule::GetFunction(const HString& name)
+Share<CompilerFunction> CompilerModule::GetFunction(const HString& name)
 {
 	auto it = m_HashMap_Functions.find(name);
 	if (it != m_HashMap_Functions.end())
 	{
-		return { it->second, nullptr };
+		return it->second;
 	}
 	else if (!m_CurrClass.empty())
 	{
@@ -219,14 +219,13 @@ Pair<Share<CompilerFunction>, Share<CompilerValue>> CompilerModule::GetFunction(
 			auto func = iter->second->FindFunction(name);
 			if (func)
 			{
-				return { func, nullptr };
+				return func;
 			}
 
 		}
 	}
 
-	bool isPointer;
-	return GetObjectFunction(this, name, isPointer);
+	return nullptr;
 }
 
 void CompilerModule::StartCacheTemplate(HString& templateName, uint32 startLine, HString& templateText, V_Array<HString>& templateTypes)
@@ -458,7 +457,7 @@ Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool 
 }
 
 void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2,
-	InstructionOpCode opCode)
+	InstructionOpCode opCode, bool check)
 {
 	//Share<HazeCompilerValue> retValue = left;
 
@@ -484,7 +483,7 @@ void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Sha
 
 	HAZE_STRING_STREAM ss;
 	
-	GenIRCode(ss, this, opCode, assignTo, oper1, oper2);
+	GenIRCode(ss, this, opCode, assignTo, oper1, oper2, nullptr, check);
 	if (!m_CurrFunction.empty())
 	{
 		m_Compiler->GetInsertBlock()->PushIRCode(ss.str());
@@ -582,6 +581,9 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	AdvanceFunctionInfo* advancFunctionInfo, uint32& size, V_Array<Share<CompilerValue>>& params,
 	Share<CompilerValue> thisPointerTo)
 {
+	static HazeDefineType s_UInt64 = HazeDefineType(HazeValueType::UInt64);
+	static HazeDefineType s_Float64 = HazeDefineType(HazeValueType::Float64);
+
 	Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HString strName;
 
@@ -633,7 +635,34 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				}
 			}
 
-			funcTypes[i] = IsMultiVariableTye(type->PrimaryType) ? &Variable->GetValueType() : type;
+			if (IsMultiVariableTye(type->PrimaryType))
+			{
+				if (Variable->IsRefrence())
+				{
+					if (IsIntegerType(Variable->GetValueType().SecondaryType))
+					{
+						funcTypes[i] = &s_UInt64;
+					}
+					else if (IsFloatingType(Variable->GetValueType().SecondaryType))
+					{
+						funcTypes[i] = &s_Float64;
+					}
+					else
+					{
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数引用类型不匹配", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
+							params.size() - 1 - i);
+					}
+				}
+				else
+				{
+					funcTypes[i] = &Variable->GetValueType();
+				}
+			}
+			else
+			{
+				funcTypes[i] = type;
+			}
 		}
 	}
 
@@ -650,9 +679,8 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 			m_ModuleIRCodes.push_back(hss.str());
 		}
 
+		size += funcTypes[i] ? funcTypes[i]->GetCompilerTypeSize() : GetSizeByCompilerValue(params[i]);
 		hss.str(H_TEXT(""));
-
-		size += GetSizeByCompilerValue(params[i]);
 		strName.clear();
 	}
 

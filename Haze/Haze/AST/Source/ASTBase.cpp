@@ -199,7 +199,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
 
-	Pair<Share<CompilerFunction>, Share<CompilerValue>> funcs = { nullptr, nullptr };
+	Share<CompilerFunction> function = nullptr;
 	Share<CompilerValue> classObj = nullptr;
 
 	if (m_ClassObj)
@@ -208,12 +208,12 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 		auto classValue = DynamicCast<CompilerClassValue>(classObj);
 		if (classValue)
 		{
-			funcs.first = classValue->GetOwnerClass()->FindFunction(m_Name);
+			function = classValue->GetOwnerClass()->FindFunction(m_Name);
 		}
 	}
 	else
 	{
-		funcs = m_Compiler->GetFunction(m_Name);
+		function = m_Compiler->GetFunction(m_Name);
 	}
 
 	V_Array<Share<CompilerValue>> param;
@@ -229,17 +229,17 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 	}
 	
 	Share<CompilerValue> ret = nullptr;
-	if (funcs.first)
+	if (function)
 	{
-		if (funcs.first->GetClass())
+		if (function->GetClass())
 		{
-			if (!funcs.second)
+			if (!classObj)
 			{
-				funcs.second = m_Compiler->GetCurrModule()->GetCurrFunction()->GetThisLocalVariable();
+				classObj = m_Compiler->GetCurrModule()->GetCurrFunction()->GetThisLocalVariable();
 			}
 		}
 
-		ret = m_Compiler->CreateFunctionCall(funcs.first, param, funcs.second);
+		ret = m_Compiler->CreateFunctionCall(function, param, classObj);
 	}
 	else
 	{
@@ -446,14 +446,14 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen()
 	{
 		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->m_DefineVariable.Name);
-		if (!function.first)
+		if (!function)
 		{
 			HAZE_LOG_ERR_W("未能找到变量<%s>,当前函数<%s>!\n", m_DefineVariable.Name.c_str(),
 				m_SectionSignal == HazeSectionSignal::Local ? m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : H_TEXT("None"));
 			return nullptr;
 		}
 
-		m_Compiler->CreatePointerToFunction(function.first, retValue);
+		m_Compiler->CreatePointerToFunction(function, retValue);
 	}
 	
 	return retValue;
@@ -577,9 +577,9 @@ Share<CompilerValue> ASTGetAddress::CodeGen()
 	{
 		//获得函数地址
 		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->GetName());
-		if (function.first)
+		if (function)
 		{
-			retValue = m_Compiler->CreatePointerToFunction(function.first, nullptr);
+			retValue = m_Compiler->CreatePointerToFunction(function, nullptr);
 		}
 		else
 		{
@@ -1209,7 +1209,7 @@ Share<CompilerValue> ASTSizeOf::CodeGen()
 	}
 	else
 	{
-		ret = m_Compiler->GetConstantValueUint64(m_DefineVariable.Type.GetTypeSize());
+		ret = m_Compiler->GetConstantValueUint64(m_DefineVariable.Type.GetCompilerTypeSize());
 	}
 
 	return ret;

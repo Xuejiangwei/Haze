@@ -936,7 +936,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 		GetNextToken();
 		if (TokenIs(HazeToken::ClassAttr) || TokenIs(HazeToken::Array))
 		{
-			auto preToken = m_CurrToken;
+			preToken = m_CurrToken;
 			if (TokenIs(HazeToken::ClassAttr) && ExpectNextTokenIs(HazeToken::Identifier))
 			{
 				ret = ParseIdentifer(Move(ret), preToken);

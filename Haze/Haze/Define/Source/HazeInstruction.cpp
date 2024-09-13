@@ -13,7 +13,7 @@
 #include <Windows.h>
 
 #define HAZE_CALL_LOG				0
-#define HAZE_DEBUG_ENABLE			1
+#define HAZE_DEBUG_ENABLE			0
 
 #define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); \
 				auto type = OPER[0].Variable.Type.SecondaryType; \
@@ -119,6 +119,40 @@ bool IsClassMember(HazeDataDesc desc)
 
 void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
 
+static HashSet<InstructionOpCode> s_DebugCode = {
+		/*{ InstructionOpCode::MOV },
+		{ InstructionOpCode::MOVPV },
+		{ InstructionOpCode::MOVTOPV },
+		{ InstructionOpCode::LEA },
+		{ InstructionOpCode::ADD },
+		{ InstructionOpCode::SUB },
+		{ InstructionOpCode::MUL },
+		{ InstructionOpCode::DIV },
+		{ InstructionOpCode::MOD },
+		{ InstructionOpCode::NEG },
+		{ InstructionOpCode::NOT },
+		{ InstructionOpCode::BIT_AND },
+		{ InstructionOpCode::BIT_OR },
+		{ InstructionOpCode::BIT_NEG },
+		{ InstructionOpCode::BIT_XOR },
+		{ InstructionOpCode::SHL },
+		{ InstructionOpCode::SHR },
+		{ InstructionOpCode::PUSH },
+		{ InstructionOpCode::POP },
+		{ InstructionOpCode::CALL },*/
+		/*{ InstructionOpCode::NEW },
+		{ InstructionOpCode::CMP },
+		{ InstructionOpCode::JMP },
+		{ InstructionOpCode::JNE },
+		{ InstructionOpCode::JNG },
+		{ InstructionOpCode::JNL },
+		{ InstructionOpCode::JE },
+		{ InstructionOpCode::JG },
+		{ InstructionOpCode::JL },
+		{ InstructionOpCode::CVT },
+		{ InstructionOpCode::LINE },*/
+};
+
 class InstructionProcessor
 {
 	friend void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args);
@@ -127,8 +161,13 @@ class InstructionProcessor
 	struct DataDebugScope
 	{
 		DataDebugScope(HazeStack* stack, const V_Array<InstructionData>& data, InstructionOpCode opCode)
-			: Stack(stack), Data(data)
+			: Stack(stack), Data(data), OpCode(opCode)
 		{
+			if (s_DebugCode.find(OpCode) == s_DebugCode.end())
+			{
+				return;
+			}
+
 			auto address = GetOperatorAddress(Stack, Data[0]);
 			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Desc != HazeDataDesc::CallFunctionPointer)
 			{
@@ -160,6 +199,11 @@ class InstructionProcessor
 
 		~DataDebugScope()
 		{
+			if (s_DebugCode.find(OpCode) == s_DebugCode.end())
+			{
+				return;
+			}
+
 			auto address = GetOperatorAddress(Stack, Data[0]);
 			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Desc != HazeDataDesc::CallFunctionPointer)
 			{
@@ -227,6 +271,7 @@ class InstructionProcessor
 		const V_Array<InstructionData>& Data;
 		uint64 Address;
 		HazeStack* Stack;
+		InstructionOpCode OpCode;
 	};
 	#define INSTRUCTION_DATA_DEBUG DataDebugScope debugScope(stack, stack->m_VM->Instructions[stack->m_PC].Operator, stack->m_VM->Instructions[stack->m_PC].InsCode)
 #else
@@ -601,7 +646,7 @@ public:
 			{
 				uint32 tempEBP = stack->m_EBP;
 				stack->m_EBP = stack->m_ESP;
-				((void(*)(HAZE_STD_CALL_PARAM))(oper[1].Extra.Pointer))(stack, oper[0].Extra.Call.ParamNum);
+				((void(*)(HAZE_STD_CALL_PARAM))(oper[1].Extra.Pointer))(stack, oper[0].Extra.Call.ParamNum, oper[0].Extra.Call.ParamByteSize);
 				stack->m_ESP -= (oper[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
 				stack->m_EBP = tempEBP;
 			}
@@ -629,7 +674,7 @@ public:
 
 						if (function.FunctionDescData.Type == InstructionFunctionType::StaticLibFunction)
 						{
-							function.FunctionDescData.StdLibFunction(stack, oper[0].Extra.Call.ParamNum);
+							function.FunctionDescData.StdLibFunction(stack, oper[0].Extra.Call.ParamNum, oper[0].Extra.Call.ParamByteSize);
 						}
 						else if (function.FunctionDescData.Type == InstructionFunctionType::DLLLibFunction)
 						{
@@ -1039,12 +1084,6 @@ private:
 				break;
 			default:
 				break;
-		}
-
-		if (IsRefrenceType(insData.Variable.Type.PrimaryType) && ret)
-		{
-			memcpy(&tempAddress, ret, sizeof(ret));
-			ret = (void*)tempAddress;
 		}
 
 		return ret;

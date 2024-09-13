@@ -10,9 +10,9 @@ public:
 
 	HazeValueType GetParentBaseType() const { return m_Parent->GetValueType().PrimaryType; }
 
-	Share<CompilerValue> GetParent() { return m_Parent; }
+	Share<CompilerValue> GetParent() const { return m_Parent; }
 
-	Share<CompilerValue> GetElement() { return m_Element; }
+	Share<CompilerValue> GetElement() const { return m_Element; }
 
 	Share<CompilerValue> CreateGetFunctionCall();
 
