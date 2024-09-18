@@ -64,6 +64,8 @@ public:
 
 	uint32 GetClassSize(const HString& className);
 
+	Share<CompilerFunction> GetGlobalDataFunction() { return m_GlobalDataFunction; }
+
 	Share<CompilerFunction> GetCurrFunction();
 
 	Share<CompilerFunction> CreateFunction(const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
@@ -86,15 +88,13 @@ public:
 
 	bool ResetTemplateClassRealName(HString& inName, const V_Array<HazeDefineType>& templateTypes);
 
+	bool IsImportModule(CompilerModule* m) const;
+
 	Share<CompilerValue> GetOrCreateGlobalStringVariable(const HString& str);
 
 	uint32 GetGlobalStringIndex(Share<CompilerValue> value);
 
-	void PreStartCreateGlobalVariable();
-
-	void EndCreateGlobalVariable();
-
-	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, Share<CompilerValue> refValue = nullptr,
+	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr,
 		uint64 arrayDimension = 0, V_Array<HazeDefineType>* params = nullptr);
 
 	static Share<CompilerValue> GetGlobalVariable(CompilerModule* m, const HString& name);
@@ -103,8 +103,6 @@ public:
 		V_Array<Pair<uint64, CompilerValue*>>* offsets = nullptr);
 
 	static Share<CompilerEnum> GetEnum(CompilerModule* m, const HString& name);
-
-	void PushModuleIRCode(const HString& irCode);
 
 private:
 	void CreateAdd(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2);
@@ -123,6 +121,8 @@ private:
 	void CreateNot(Share<CompilerValue> assignTo, Share<CompilerValue> oper1);
 	Share<CompilerValue> CreateInc(Share<CompilerValue> value, bool isPreInc);
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
+
+	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
 
@@ -176,9 +176,10 @@ private:
 	HashMap<HString, Share<CompilerEnum>> m_HashMap_Enums;
 
 	//之后考虑全局变量放在一个block里面，复用其中的函数与成员变量
-	V_Array<Pair<HString, Share<CompilerValue>>> m_Variables; //全局变量
-	V_Array<Pair<int, int>> m_VariablesAddress;
-	V_Array<HString> m_ModuleIRCodes;
+	Share<CompilerFunction> m_GlobalDataFunction;
+	//V_Array<Pair<HString, Share<CompilerValue>>> m_Variables; //全局变量
+	//V_Array<Pair<int, int>> m_VariablesAddress;
+	//V_Array<HString> m_ModuleIRCodes;
 
 	HashMap<HString, Share<CompilerValue>> m_HashMap_StringTable;
 	HashMap<int, const HString*> m_HashMap_StringMapping;

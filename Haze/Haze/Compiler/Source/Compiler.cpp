@@ -419,11 +419,8 @@ Share<CompilerValue> Compiler::GetTempRegister(const HazeDefineType& type, uint6
 		else
 		{
 			//全局临时寄存器
+			return currModule->GetGlobalDataFunction()->CreateTempRegister(type, arrayDimension);
 		}
-	}
-	else
-	{
-		HAZE_LOG_ERR_W("不能获得临时寄存器!\n");
 	}
 	/*for (auto& iter : g_GlobalTempRegisters)
 	{
@@ -834,6 +831,19 @@ void Compiler::SetInsertBlock(Share<CompilerBlock> block)
 	m_InsertBaseBlock = block;
 }
 
+Share<CompilerBlock> Compiler::GetInsertBlock()
+{
+	if (m_InsertBaseBlock)
+	{
+		return m_InsertBaseBlock;
+	}
+	else if (GetCurrModule())
+	{
+		return GetCurrModule()->GetGlobalDataFunction()->GetEntryBlock();
+	}
+	return nullptr;
+}
+
 void Compiler::ClearBlockPoint()
 {
 	m_InsertBaseBlock = nullptr;
@@ -932,7 +942,7 @@ Share<CompilerValue> Compiler::CreateVariableBySection(HazeSectionSignal section
 	switch (section)
 	{
 	case HazeSectionSignal::Global:
-		return CreateGlobalVariable(mod, var, refValue, arrayDimension, params);
+		return CreateGlobalVariable(mod, var, line, refValue, arrayDimension, params);
 	case HazeSectionSignal::Local:
 		return CreateLocalVariable(func, var, line, refValue, arrayDimension, params);
 	case HazeSectionSignal::Static:
@@ -954,10 +964,10 @@ Share<CompilerValue> Compiler::CreateLocalVariable(Share<CompilerFunction> funct
 	return function->CreateLocalVariable(variable, line, refValue, arrayDimension, params);
 }
 
-Share<CompilerValue> Compiler::CreateGlobalVariable(Unique<CompilerModule>& compilerModule, const HazeDefineVariable& var,
+Share<CompilerValue> Compiler::CreateGlobalVariable(Unique<CompilerModule>& compilerModule, const HazeDefineVariable& var, int line,
 	Share<CompilerValue> refValue, uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
-	return compilerModule->CreateGlobalVariable(var, refValue, arrayDimension, params);
+	return compilerModule->CreateGlobalVariable(var, line, refValue, arrayDimension, params);
 }
 
 Share<CompilerValue> Compiler::CreateClassVariable(Unique<CompilerModule>& compilerModule, const HazeDefineVariable& var,
@@ -1199,7 +1209,7 @@ Share<CompilerValue> Compiler::CreatePointerToFunction(Share<CompilerFunction> f
 
 Share<CompilerValue> Compiler::CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue)
 {
-	return function->CreateNew(data, countValue);
+	return GetCurrModule()->CreateNew(function, data, countValue);
 }
 
 Share<CompilerValue> Compiler::CreateCast(const HazeDefineType& type, Share<CompilerValue> value)

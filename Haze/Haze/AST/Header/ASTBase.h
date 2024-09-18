@@ -131,7 +131,7 @@ public:
 	virtual Share<CompilerValue> CodeGen() override;
 	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
-	Share<CompilerValue> GenExpressionValue();
+	Share<CompilerValue> GenExpressionValue(Share<CompilerValue> value);
 
 	HazeSectionSignal GetSectionSingal() const { return m_SectionSignal; }
 

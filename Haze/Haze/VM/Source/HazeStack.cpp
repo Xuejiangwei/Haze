@@ -28,7 +28,7 @@ void HazeStack::RunGlobalDataInit(uint32 startPC, uint32 endPC)
 	//bool isConstructor = endPC - startPC > 1;
 	for (m_PC = startPC; true; m_PC++)
 	{
-		auto iter = g_InstructionProcessor.find(m_VM->Instructions[m_PC].InsCode);
+		auto iter = g_InstructionProcessor.find(m_VM->m_Instructions[m_PC].InsCode);
 		if (iter != g_InstructionProcessor.end())
 		{
 			iter->second(this);
@@ -60,7 +60,7 @@ void HazeStack::JmpTo(const InstructionData& data)
 
 void HazeStack::Run(bool isHazeCall)
 {
-	while (m_PC < m_VM->Instructions.size())
+	while (m_PC < m_VM->m_Instructions.size())
 	{
 		while (m_VM->IsDebug())
 		{
@@ -78,7 +78,7 @@ void HazeStack::Run(bool isHazeCall)
 			}
 		}
 
-		auto iter = g_InstructionProcessor.find(m_VM->Instructions[m_PC].InsCode);
+		auto iter = g_InstructionProcessor.find(m_VM->m_Instructions[m_PC].InsCode);
 		if (iter != g_InstructionProcessor.end())
 		{
 			iter->second(this);
@@ -183,7 +183,7 @@ void HazeStack::OnRet()
 
 	SubCallHazeTimes();
 
-	//HazeMemory::GetMemory()->ForceGC();
+	//HazeMemory::GetMemory()->TryGC();
 }
 
 void HazeStack::ResetCallHaze()

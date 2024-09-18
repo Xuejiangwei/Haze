@@ -211,34 +211,19 @@ void BackendParse::Parse_I_Code_GlobalTable()
 		for (uint64 i = 0; i < table.Data.size(); i++)
 		{
 			//因为将所有的指令合在一起了，需要重新计算
-			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].StartAddress);
-			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].EndAddress);
+			/*GetNextLexmeAssign_CustomType<uint32>(table.Data[i].StartAddress);
+			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].EndAddress);*/
 
 			GetNextLexmeAssign_HazeString(table.Data[i].Name);
 
-			GetNextLexmeAssign_StandardType(table.Data[i].Size);
+			//GetNextLexmeAssign_StandardType(table.Data[i].Size);
 
 			table.Data[i].Type.StringStream<BackendParse>(this,
 				&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 				&BackendParse::GetNextLexmeAssign_CustomType<uint32>);
-
-			if (IsHazeBaseType(table.Data[i].Type.PrimaryType))
-			{
-				StringToHazeValueNumber(m_CurrLexeme, table.Data[i].Type.PrimaryType, table.Data[i].Value);
-			}
-			else
-			{
-				if (table.Data[i].Type.NeedCustomName())
-				{
-					if (IsClassType(table.Data[i].Type.PrimaryType))
-					{
-						table.ClassObjectAllSize += table.Data[i].Size;
-					}
-				}
-			}
 		}
 
-		GetNextLexeme();
+		/*GetNextLexeme();
 		if (m_CurrLexeme == GetGlobalDataInitBlockStart())
 		{
 			GetNextLexeme();
@@ -258,7 +243,7 @@ void BackendParse::Parse_I_Code_GlobalTable()
 					break;
 				}
 			}
-		}
+		}*/
 	}
 
 }
@@ -341,8 +326,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 			if (m_CurrLexeme == GetFunctionLabelHeader())
 			{
-				table.m_Functions[i].DescType = GetFunctionTypeByLibraryType(m_CurrParseModule->m_LibraryType);
-
+				GetNextLexmeAssign_CustomType<int>(table.m_Functions[i].DescType);
 				GetNextLexmeAssign_HazeString(table.m_Functions[i].Name);
 
 				table.m_Functions[i].Type.StringStream<BackendParse>(this, 
@@ -599,6 +583,7 @@ void BackendParse::GenOpCodeFile()
 	uint64 functionCount = 0;
 	for (auto& iter : m_Modules)
 	{
+		newGlobalDataTable.InitFunctionIndex.push_back(newFunctionTable.m_Functions.size());
 		newFunctionTable.m_Functions.insert(newFunctionTable.m_Functions.end(), 
 			iter.second->m_FunctionTable.m_Functions.begin(), iter.second->m_FunctionTable.m_Functions.end());
 
@@ -606,17 +591,6 @@ void BackendParse::GenOpCodeFile()
 
 		newGlobalDataTable.Data.insert(newGlobalDataTable.Data.end(),
 			iter.second->m_GlobalDataTable.Data.begin(), iter.second->m_GlobalDataTable.Data.end());
-		newGlobalDataTable.ClassObjectAllSize += iter.second->m_GlobalDataTable.ClassObjectAllSize;
-		
-		int globalInstructionSize = (int)newGlobalDataTable.Instructions.size();
-		for (auto i = newGlobalDataTable.Data.size() - iter.second->m_GlobalDataTable.Data.size(); i < newGlobalDataTable.Data.size(); i++)
-		{
-			newGlobalDataTable.Data[i].StartAddress += globalInstructionSize;
-			newGlobalDataTable.Data[i].EndAddress += globalInstructionSize;
-		}
-		
-		newGlobalDataTable.Instructions.insert(newGlobalDataTable.Instructions.end(),
-			iter.second->m_GlobalDataTable.Instructions.begin(), iter.second->m_GlobalDataTable.Instructions.end());
 
 		newStringTable.Strings.insert(newStringTable.Strings.end(), 
 			iter.second->m_StringTable.Strings.begin(), iter.second->m_StringTable.Strings.end());
@@ -624,10 +598,6 @@ void BackendParse::GenOpCodeFile()
 	}
 
 	FindAddress(newGlobalDataTable, newFunctionTable);
-
-	//指令总个数，在全局变量初始化和函数指令间添加一个空指令，防止Call指令执行的PC-1时指到全局变量初始化的指令上
-	newGlobalDataTable.Instructions.push_back(ModuleUnit::FunctionInstruction());
-
 	exeFile.WriteExecuteFile(newGlobalDataTable, newStringTable, newClassTable, newFunctionTable);
 }
 
@@ -726,41 +696,6 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	for (uint64 i = 0; i < newFunctionTable.m_Functions.size(); i++)
 	{
 		HashMap_FunctionIndexAndAddress[newFunctionTable.m_Functions[i].Name] = i;
-	}
-
-	for (uint64 i = 0; i < newGlobalDataTable.Instructions.size(); i++)
-	{
-		if (!IsIgnoreFindAddressInsCode(newGlobalDataTable.Instructions[i]))
-		{
-			HString objName;
-			HString memberName;
-
-			for (auto& operatorData : newGlobalDataTable.Instructions[i].Operator)
-			{
-				if (!IsIgnoreFindAddress(operatorData))
-				{
-					if (IS_SCOPE_GLOBAL(operatorData.Scope))
-					{
-						ResetGlobalOperatorAddress(operatorData, newGlobalDataTable);
-					}
-					/*else if (IS_SCOPE_TEMP(operatorData.Scope))
-					{
-						if (operatorData.Desc == HazeDataDesc::FunctionAddress)
-						{
-							operatorData.AddressType = InstructionAddressType::FunctionAddress;
-						}
-						else
-						{
-							HAZE_LOG_ERR_W("寻找全局变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
-						}
-					}*/
-					else
-					{
-						HAZE_LOG_ERR_W("寻找变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
-					}
-				}
-			}
-		}
 	}
 
 	//替换变量为索引或相对函数起始偏移

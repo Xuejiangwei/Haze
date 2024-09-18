@@ -16,45 +16,6 @@
 #include "CompilerEnumValue.h"
 #include "CompilerHelper.h"
 
-struct GlobalVariableInitScope
-{
-	GlobalVariableInitScope() : Module(nullptr), Signal(HazeSectionSignal::Local), IsCreate(false) {}
-
-	GlobalVariableInitScope(CompilerModule* m, HazeSectionSignal signal) : Module(m), Signal(signal), IsCreate(false)
-	{
-		if (Signal == HazeSectionSignal::Global)
-		{
-			Module->PreStartCreateGlobalVariable();
-			IsCreate = true;
-		}
-	}
-
-	void Update(CompilerModule* m, HazeSectionSignal signal)
-	{
-		Module = m;
-		Signal = signal;
-
-		if (Signal == HazeSectionSignal::Global)
-		{
-			Module->PreStartCreateGlobalVariable();
-			IsCreate = true;
-		}
-	}
-
-	~GlobalVariableInitScope()
-	{
-		if (Signal == HazeSectionSignal::Global && IsCreate)
-		{
-			Module->EndCreateGlobalVariable();
-		}
-	}
-
-	CompilerModule* Module;
-	HazeSectionSignal Signal;
-	bool IsCreate;
-};
-
-
 //Base
 ASTBase::ASTBase(Compiler* compiler, const SourceLocation& location) : m_Compiler(compiler), m_Location(location)
 {
@@ -353,11 +314,10 @@ Share<CompilerValue> ASTVariableDefine::CodeGen()
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
 
-	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
-	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue()) : var;
+	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue(var)) : var;
 }
 
-Share<CompilerValue> ASTVariableDefine::GenExpressionValue()
+Share<CompilerValue> ASTVariableDefine::GenExpressionValue(Share<CompilerValue> value)
 {
 	Share<CompilerValue> exprValue = nullptr;
 	if (auto nullExpression = dynamic_cast<ASTNullPtr*>(m_Expression.get()))
@@ -365,6 +325,17 @@ Share<CompilerValue> ASTVariableDefine::GenExpressionValue()
 		nullExpression->SetDefineType(m_DefineVariable.Type);
 	}
 	exprValue = m_Expression->CodeGen();
+	if (m_SectionSignal == HazeSectionSignal::Global && exprValue->GetModule() && value->GetModule())
+	{
+		if (exprValue->GetModule() != value->GetModule())
+		{
+			if (exprValue->GetModule()->IsImportModule(value->GetModule()) && value->GetModule()->IsImportModule(exprValue->GetModule()))
+			{
+				AST_ERR_W("不允许互相引用的模块的全局变量互相赋值");
+				return nullptr;
+			}
+		}
+	}
 
 	return exprValue;
 }
@@ -398,8 +369,7 @@ Share<CompilerValue> ASTVariableDefine_Class::CodeGen()
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
 
-	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
-	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue()) : var;
+	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue(var)) : var;
 }
 
 ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
@@ -418,8 +388,7 @@ Share<CompilerValue> ASTVariableDefine_Array::CodeGen()
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr, m_ArrayDimension);
 
-	GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
-	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue()) : var;
+	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue(var)) : var;
 }
 
 ASTVariableDefine_Function::ASTVariableDefine_Function(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
@@ -444,7 +413,6 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen()
 	auto exprValue = m_Expression->CodeGen();
 	if (!exprValue)
 	{
-		GlobalVariableInitScope scope(currModule.get(), m_SectionSignal);
 		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->m_DefineVariable.Name);
 		if (!function)
 		{

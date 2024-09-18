@@ -282,7 +282,7 @@ public:
 	static void Mov(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			void* dst = GetOperatorAddress(stack, oper[0]);
@@ -299,7 +299,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			void* dst = GetOperatorAddress(stack, oper[0]);
@@ -319,7 +319,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			void* dst = GetOperatorAddress(stack, oper[0]);
@@ -339,7 +339,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			void* dst = GetOperatorAddress(stack, oper[0]);
@@ -354,7 +354,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
 			int size = oper[0].Variable.Type.GetTypeSize();
@@ -390,7 +390,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
 			auto size = oper[0].Variable.Type.GetTypeSize();
@@ -443,7 +443,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
@@ -464,7 +464,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
@@ -485,7 +485,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
@@ -506,7 +506,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
@@ -527,7 +527,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
@@ -548,7 +548,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 	
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
@@ -569,7 +569,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG; 
 		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			if (IsIntegerType(oper[0].Variable.Type.PrimaryType))
@@ -591,7 +591,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType) && IsIntegerType(oper[1].Variable.Type.PrimaryType))
@@ -612,7 +612,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 3)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType))
@@ -633,7 +633,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() >= 1)
 		{
 #if HAZE_CALL_LOG
@@ -662,7 +662,7 @@ public:
 				int functionIndex = stack->m_VM->GetFucntionIndexByName(oper[0].Variable.Name);
 				if (functionIndex >= 0)
 				{
-					auto& function = stack->m_VM->Vector_FunctionTable[functionIndex];
+					auto& function = stack->m_VM->m_FunctionTable[functionIndex];
 					if (function.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 					{
 						stack->OnCall(&function, oper[0].Extra.Call.ParamByteSize);
@@ -713,7 +713,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
 			HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER);
@@ -733,7 +733,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		//HazeRegister* newRegister = stack->GetVirtualRegister(oper[0].Variable.Name.c_str());
 		auto& type = oper[0].Variable.Type;
 		if (oper.size() == 2)
@@ -768,7 +768,7 @@ public:
 				uint64* lengths = new uint64[count];
 				for (uint64 i = 0; i < count; i++)
 				{
-					auto& instructionData = stack->m_VM->Instructions[stack->m_PC + i + 1];
+					auto& instructionData = stack->m_VM->m_Instructions[stack->m_PC + i + 1];
 
 					HazeValue v1, v2;
 					memcpy(&v2, GetOperatorAddress(stack, instructionData.Operator[0]), 
@@ -815,7 +815,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
@@ -830,7 +830,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
 			JmpToOperator(stack, oper[0]);
@@ -847,7 +847,7 @@ public:
 #define REGISTER_GREATER(R) R->Data[1] == 1
 #define REGISTER_LESS(R) R->Data[2] == 1
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
@@ -869,7 +869,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
@@ -891,7 +891,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
@@ -913,7 +913,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
@@ -935,7 +935,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
@@ -957,7 +957,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
@@ -979,7 +979,7 @@ public:
 	{
 		INSTRUCTION_DATA_DEBUG;
 
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
 			if (IsNumberType(oper[0].Variable.Type.PrimaryType) && IsNumberType(oper[1].Variable.Type.PrimaryType))
@@ -1004,7 +1004,7 @@ public:
 	static void Line(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
-		const auto& oper = stack->m_VM->Instructions[stack->m_PC].Operator;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
 			stack->m_VM->OnExecLine(oper[0].Extra.Line);
@@ -1102,7 +1102,7 @@ private:
 
 	static void BinaryOperator(HazeStack* stack)
 	{
-		const auto& instruction = stack->m_VM->Instructions[stack->m_PC];
+		const auto& instruction = stack->m_VM->m_Instructions[stack->m_PC];
 		const auto& oper = instruction.Operator;
 		if (oper.size() == 3)
 		{
@@ -1253,7 +1253,10 @@ private:
 
 void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args)
 {
-	InstructionProcessor::CallHazeFunction(stack, funcData, (int)funcData->Params.size(), args);
+	if (funcData->InstructionNum > 0)
+	{
+		InstructionProcessor::CallHazeFunction(stack, funcData, (int)funcData->Params.size(), args);
+	}
 }
 
 void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData)

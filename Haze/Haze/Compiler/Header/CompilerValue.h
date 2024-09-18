@@ -15,6 +15,8 @@ public:
 
 	virtual ~CompilerValue();
 
+	CompilerModule* GetModule() { return m_Module; }
+
 	Share<CompilerValue> GetShared() { return shared_from_this(); }
 
 	virtual void StoreValueType(Share<CompilerValue> srcValue);

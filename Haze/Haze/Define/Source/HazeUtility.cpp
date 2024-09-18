@@ -75,16 +75,6 @@ const HChar* GetGlobalDataHeaderString()
 	return HEADER_STRING_GLOBAL_DATA;
 }
 
-const HChar* GetGlobalDataInitBlockStart()
-{
-	return GLOBAL_DATA_INIT_BLOCK_START;
-}
-
-const HChar* GetGlobalDataInitBlockEnd()
-{
-	return GLOBAL_DATA_INIT_BLOCK_END;
-}
-
 const HChar* GetStringTableHeaderString()
 {
 	return HEADER_STRING_STRING_TABLE;

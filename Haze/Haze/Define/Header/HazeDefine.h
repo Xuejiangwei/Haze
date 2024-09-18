@@ -37,8 +37,6 @@ using HString = std::wstring;
 #define HAZE_MULTI_PARAM_NAME			H_TEXT("¶à²ÎÊý")
 
 #define HEADER_STRING_GLOBAL_DATA		H_TEXT("GlobalDataTable")
-#define GLOBAL_DATA_INIT_BLOCK_START	H_TEXT("GlobalDataInitStart")
-#define GLOBAL_DATA_INIT_BLOCK_END		H_TEXT("GlobalDataInitEnd")
 
 #define HEADER_STRING_STRING_TABLE		H_TEXT("StringTable")
 #define HEADER_STRING_CLASS_TABLE		H_TEXT("ClassTable")
@@ -59,6 +57,7 @@ using HString = std::wstring;
 #define HAZE_LOCAL_TEMP_REGISTER_HEADER H_TEXT("TempRegister")
 #define HAZE_LOCAL_TEMP_REGISTER		H_TEXT("TempR")
 
+#define HAZE_GLOBAL_DATA_INIT_FUNCTION	H_TEXT("@GlobalDataInit")
 #define HAZE_CLASS_FUNCTION_CONBINE		H_TEXT("@")
 
 #define HAZE_TEMPLATE_CONBINE			H_TEXT("&")

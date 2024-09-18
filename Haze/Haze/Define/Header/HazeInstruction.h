@@ -219,7 +219,7 @@ struct FunctionDescData
 
 	union
 	{
-		uint32 InstructionStartAddress;
+		uint64 InstructionStartAddress;
 		StdLibFunctionCall StdLibFunction;
 	};
 

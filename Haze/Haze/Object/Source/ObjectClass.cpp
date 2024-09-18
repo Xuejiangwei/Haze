@@ -10,7 +10,7 @@ ObjectClass::ObjectClass(ClassData* classInfo)
 	: m_ClassInfo(classInfo)
 {
 	m_Data = HazeMemory::Alloca(classInfo->Size);
-	HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p> Constructor\n"), m_ClassInfo->Name.c_str(), this, m_Data);
+	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p> Constructor\n"), m_ClassInfo->Name.c_str(), this, m_Data);
 }
 
 AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()

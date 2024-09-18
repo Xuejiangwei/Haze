@@ -10,10 +10,11 @@
 #include "ObjectString.h"
 #include <chrono>
 
-#define PAGE_BASE_SIZE  4 * 4
+#define PAGE_BASE_SIZE	4 * 4
+#define GC_TIME			60
 
 HazeMemory::HazeMemory(uint64 maxMarkTime)
-	: m_IsForceGC(false), m_MaxMarkTime(maxMarkTime), m_MarkStage(MarkStage::Ready)
+	: m_IsForceGC(false), m_MaxMarkTime(maxMarkTime), m_MarkStage(MarkStage::Ready), m_LastGCTime(0)
 {
 }
 
@@ -240,37 +241,33 @@ void HazeMemory::Mark()
 		//根节点内存有 静态变量、栈、函数调用栈中缓存的寄存器、当前的寄存器
 		uint64 Address = 0;
 
-		for (auto& it : m_VM->Vector_GlobalData)
+		for (auto& it : m_VM->m_GlobalData)
 		{
-			if (it.second)
-			{
-				MarkVariable(it.first.m_Type, (uint64)it.first.Value.Value.Pointer, 
-					(char*)it.first.Value.Value.Pointer);
-			}
+			MarkVariable(it.m_Type, (uint64)it.Value.Value.Pointer, (char*)it.Value.Value.Pointer);
 		}
 
 		//因为只在函数结束调用Ret指令时会GC，所以只存在Ret虚拟寄存器有引用的情况
-		auto retRegister = m_VM->VMStack->GetVirtualRegister(RET_REGISTER);
+		auto retRegister = m_VM->m_Stack->GetVirtualRegister(RET_REGISTER);
 		if (retRegister && retRegister->Data.size() > 0)
 		{
 			memcpy(&Address, retRegister->Data.begin()._Unwrapped(), sizeof(Address));
 			MarkVariable(retRegister->Type, Address, retRegister->Data.begin()._Unwrapped());
 		}
 
-		for (size_t i = 0; i < m_VM->VMStack->m_StackFrame.size(); i++)
+		for (size_t i = 0; i < m_VM->m_Stack->m_StackFrame.size(); i++)
 		{
-			for (auto& var : m_VM->VMStack->m_StackFrame[i].FunctionInfo->Variables)
+			for (auto& var : m_VM->m_Stack->m_StackFrame[i].FunctionInfo->Variables)
 			{
-				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
+				memcpy(&Address, &m_VM->m_Stack->m_StackMain[m_VM->m_Stack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
 				MarkVariable(var.Variable.Type, Address, 
-					&m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset]);
+					&m_VM->m_Stack->m_StackMain[m_VM->m_Stack->m_StackFrame[i].EBP + var.Offset]);
 			}
 
-			for (auto& var : m_VM->VMStack->m_StackFrame[i].FunctionInfo->TempRegisters)
+			for (auto& var : m_VM->m_Stack->m_StackFrame[i].FunctionInfo->TempRegisters)
 			{
-				memcpy(&Address, &m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
+				memcpy(&Address, &m_VM->m_Stack->m_StackMain[m_VM->m_Stack->m_StackFrame[i].EBP + var.Offset], sizeof(Address));
 				MarkVariable(var.Type, Address,
-					&m_VM->VMStack->m_StackMain[m_VM->VMStack->m_StackFrame[i].EBP + var.Offset]);
+					&m_VM->m_Stack->m_StackMain[m_VM->m_Stack->m_StackFrame[i].EBP + var.Offset]);
 			}
 		}
 	}
@@ -353,8 +350,25 @@ void HazeMemory::Sweep()
 	}
 }
 
+void HazeMemory::TryGC(bool forceGC)
+{
+	if (forceGC)
+	{
+		ForceGC();
+	}
+	else
+	{
+		uint64 currTime = std::chrono::seconds(std::time(NULL)).count();
+		if (currTime - m_LastGCTime > GC_TIME)
+		{
+			ForceGC();
+		}
+	}
+}
+
 void HazeMemory::ForceGC()
 {
+	m_LastGCTime = std::chrono::seconds(std::time(NULL)).count();
 	m_IsForceGC = true;
 	Mark();
 	Sweep();

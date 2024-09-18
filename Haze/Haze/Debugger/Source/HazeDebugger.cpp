@@ -369,7 +369,7 @@ void HazeDebugger::SetJsonLocalVariable(XJson& json)
 {
 	auto& info = json["LocalVariable"];
 
-	auto& frame = m_VM->VMStack->GetCurrFrame();
+	auto& frame = m_VM->m_Stack->GetCurrFrame();
 	if (frame.FunctionInfo)
 	{
 		for (size_t i = 0; i < frame.FunctionInfo->Variables.size(); i++)
@@ -391,7 +391,7 @@ void HazeDebugger::SetJsonModuleGlobalVariable(XJson& json)
 {
 	auto& info = json["GlobalVariable"];
 
-	auto& frame = m_VM->VMStack->GetCurrFrame();
+	auto& frame = m_VM->m_Stack->GetCurrFrame();
 	if (frame.FunctionInfo)
 	{
 		for (size_t i = 0; i < frame.FunctionInfo->Variables.size(); i++)
@@ -459,7 +459,7 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 	s_String = WString2String(variable.Variable.Name);
 	json["Name"] = GB2312_2_UFT8(s_String.c_str());
 
-	auto dataAddress = isStack ? m_VM->VMStack->GetAddressByEBP(variable.Offset) : address;
+	auto dataAddress = isStack ? m_VM->m_Stack->GetAddressByEBP(variable.Offset) : address;
 	if (address)
 	{
 		dataAddress += variable.Offset;

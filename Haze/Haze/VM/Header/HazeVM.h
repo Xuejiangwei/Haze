@@ -34,11 +34,11 @@ public:
 
 	void LoadStandardLibrary(V_Array<HString> Vector_ModulePath);
 
-	const V_Array<Instruction>& GetInstruction() const { return Instructions; }
+	const V_Array<Instruction>& GetInstruction() const { return m_Instructions; }
 
 	void CallFunction(const HChar* functionName, ...);
 
-	void CallFunction(FunctionData* functionData, ...);
+	void CallFunction(const FunctionData* functionData, ...);
 
 	void* CreateHazeClass(const HString& className, ...);
 
@@ -94,28 +94,26 @@ private:
 	//HashMap<HString, Unique<Module>> MapModule;
 	HashSet<HString> MapString;
 
-	Unique<HazeStack> VMStack;
+	Unique<HazeStack> m_Stack;
 
 	HashSet<HString> HashSet_RefModule;
 
 private:
-	V_Array<ModuleData> Vector_ModuleData;
+	V_Array<ModuleData> m_ModuleData;
 	V_Array<HString> m_ModuleFilePath;
 
-	V_Array<Pair<HazeVariable, bool>> Vector_GlobalData; //是否初始化
-	V_Array<Pair<uint32, uint32>> m_GlobalDataInitAddress;	//全局变量初始化开始地址与结束地址
+	V_Array<uint64> m_GlobalInitFunction;
+	V_Array<HazeVariable> m_GlobalData;
 
 	V_Array<class ObjectString*> m_StringTable;
 
 	HashMap<HString, uint64> m_ClassSymbol;
-	V_Array<ClassData> Vector_ClassTable;
+	V_Array<ClassData> m_ClassTable;
 
-	V_Array<FunctionData> Vector_FunctionTable;
-	HashMap<HString, uint32> HashMap_FunctionTable;
+	V_Array<FunctionData> m_FunctionTable;
+	HashMap<HString, uint32> m_HashFunctionTable;
 
-	V_Array<Instruction> Instructions;
-
-	V_Array<char> Vector_GlobalDataClassObjectMemory;
+	V_Array<Instruction> m_Instructions;
 
 	HazeRunType GenType;
 };

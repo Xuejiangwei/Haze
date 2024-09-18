@@ -44,15 +44,7 @@ struct PushTempRegister
 			Hss << std::endl;
 		}
 		
-		if (Compiler->GetInsertBlock())
-		{
-			Compiler->GetInsertBlock()->PushIRCode(Hss.str());
-		}
-		else
-		{
-			Module->m_ModuleIRCodes.push_back(Hss.str());
-		}
-
+		Compiler->GetInsertBlock()->PushIRCode(Hss.str());
 		Compiler->ResetTempRegister(UseTempRegisters);
 	}
 
@@ -76,6 +68,13 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 	m_FS_I_Code.open(GetIntermediateModuleFile(moduleName));
 
 #endif
+
+	auto functionName = moduleName + HAZE_GLOBAL_DATA_INIT_FUNCTION;
+	HazeDefineType functionType(HazeValueType::Void);
+	V_Array<HazeDefineVariable> params;
+	m_GlobalDataFunction = CreateFunction(functionName, functionType, params);
+	m_GlobalDataFunction->m_DescType = InstructionFunctionType::HazeFunction;
+	m_Compiler->SetInsertBlock(m_GlobalDataFunction->GetEntryBlock());
 }
 
 CompilerModule::~CompilerModule()
@@ -113,6 +112,11 @@ void CompilerModule::RestartTemplateModule(const HString& moduleName)
 void CompilerModule::FinishModule()
 {
 	m_CurrFunction.clear();
+
+	HAZE_STRING_STREAM hss;
+	GenIRCode(hss, this, InstructionOpCode::RET, nullptr, nullptr, nullptr);
+	hss << std::endl;
+	m_GlobalDataFunction->GetEntryBlock()->PushIRCode(hss.str());
 }
 
 void CompilerModule::GenCodeFile()
@@ -299,6 +303,18 @@ bool CompilerModule::ResetTemplateClassRealName(HString& inName, const V_Array<H
 	return false;
 }
 
+bool CompilerModule::IsImportModule(CompilerModule* m) const
+{
+	for (auto iter : m_ImportModules)
+	{
+		if (iter == m)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const HString& name)
 {
 	auto ret = m->GetEnum_Internal(name);
@@ -456,6 +472,35 @@ Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool 
 	return retValue;
 }
 
+Share<CompilerValue> CompilerModule::CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue)
+{
+	HAZE_STRING_STREAM hss;
+
+	if (countValue)
+	{
+		for (uint64 i = 0; i < countValue->size(); i++)
+		{
+			GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, countValue->at(i));
+		}
+	}
+
+	auto tempRegister = m_Compiler->GetTempRegister(data, countValue ? countValue->size() : 0);
+	GenIRCode(hss, this, InstructionOpCode::NEW, tempRegister, m_Compiler->GetConstantValueUint64(countValue ? countValue->size() : 0),
+		nullptr, &data);
+
+	if (countValue)
+	{
+		for (uint64 i = 0; i < countValue->size(); i++)
+		{
+			GenIRCode(hss, this, InstructionOpCode::POP, nullptr, countValue->at(i));
+		}
+	}
+
+	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
+
+	return tempRegister;
+}
+
 void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2,
 	InstructionOpCode opCode, bool check)
 {
@@ -484,16 +529,7 @@ void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Sha
 	HAZE_STRING_STREAM ss;
 	
 	GenIRCode(ss, this, opCode, assignTo, oper1, oper2, nullptr, check);
-	if (!m_CurrFunction.empty())
-	{
-		m_Compiler->GetInsertBlock()->PushIRCode(ss.str());
-	}
-	else
-	{
-		m_ModuleIRCodes.push_back(ss.str());
-	}
-
-	//return retValue;
+	m_Compiler->GetInsertBlock()->PushIRCode(ss.str());
 }
 
 void CompilerModule::GenIRCode_UnaryOperator(Share<CompilerValue> assignTo, Share<CompilerValue> value, InstructionOpCode opCode)
@@ -543,38 +579,10 @@ void CompilerModule::GenIRCode_JmpTo(Share<CompilerBlock> block)
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
-void CompilerModule::PushModuleIRCode(const HString& irCode)
-{
-	m_ModuleIRCodes.push_back(irCode);
-}
-
-Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, Share<CompilerValue> refValue,
+Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue,
 	uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
-	for (auto& it : m_Variables)
-	{
-		if (it.first == var.Name)
-		{
-			HAZE_LOG_ERR_W("编译器错误,添加全局变量重复\n");
-			return nullptr;
-		}
-	}
-
-	m_Variables.push_back({ var.Name,
-		CreateVariable(this, var.Type, HazeVariableScope::Global, HazeDataDesc::None, 0, refValue, arrayDimension, params) });
-
-	auto& retValue = m_Variables.back().second;
-	if (!IsHazeBaseType(retValue->GetValueType().PrimaryType))
-	{
-		if (retValue->IsClass())
-		{
-
-		}
-	}
-
-
-
-	return retValue;
+	return m_GlobalDataFunction->CreateGlobalVariable(var, line, refValue, arrayDimension, params);
 }
 
 void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction,
@@ -669,15 +677,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	for (uint64 i = 0; i < params.size(); i++)
 	{
 		GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, params[i], nullptr, funcTypes[i]);
-
-		if (insertBlock)
-		{
-			insertBlock->PushIRCode(hss.str());
-		}
-		else
-		{
-			m_ModuleIRCodes.push_back(hss.str());
-		}
+		insertBlock->PushIRCode(hss.str());
 
 		size += funcTypes[i] ? funcTypes[i]->GetCompilerTypeSize() : GetSizeByCompilerValue(params[i]);
 		hss.str(H_TEXT(""));
@@ -687,15 +687,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	if (thisPointerTo)
 	{
 		GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, thisPointerTo);
-
-		if (insertBlock)
-		{
-			insertBlock->PushIRCode(hss.str());
-		}
-		else
-		{
-			m_ModuleIRCodes.push_back(hss.str());
-		}
+		insertBlock->PushIRCode(hss.str());
 
 		hss.str(H_TEXT(""));
 
@@ -704,14 +696,8 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
 		<< " " << (uint32)HazeDataDesc::Address << " " << CAST_TYPE(HazeValueType::Int32) << std::endl;
-	if (insertBlock)
-	{
-		insertBlock->PushIRCode(hss.str());
-	}
-	else
-	{
-		m_ModuleIRCodes.push_back(hss.str());
-	}
+	insertBlock->PushIRCode(hss.str());
+	
 	hss.str(H_TEXT(""));
 }
 
@@ -740,7 +726,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> 
 Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> pointerFunction, 
 	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
-	Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
+	//Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
 
@@ -769,7 +755,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo& functionInfo, 
 	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
-	Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
+	//Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
 
@@ -839,16 +825,6 @@ uint32 CompilerModule::GetGlobalStringIndex(Share<CompilerValue> value)
 	return 0;
 }
 
-void CompilerModule::PreStartCreateGlobalVariable()
-{
-	m_VariablesAddress.push_back({ (int)m_ModuleIRCodes.size(), 0 });
-}
-
-void CompilerModule::EndCreateGlobalVariable()
-{
-	m_VariablesAddress[m_VariablesAddress.size() - 1].second = (int)m_ModuleIRCodes.size();
-}
-
 Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const HString& name)
 {
 	auto ret = m->GetGlobalVariable_Internal(name);
@@ -878,20 +854,13 @@ bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<Compil
 
 Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& name)
 {
-	for (auto& it : m_Variables)
+	auto variables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
+	for (auto& it : variables)
 	{
 		if (it.first == name)
 		{
 			return it.second;
 		}
-		/*else if (it.second->IsClass())
-		{
-			auto ret = GetObjectMember(this, name);
-			if (ret)
-			{
-				return ret;
-			}
-		}*/
 	}
 
 	for (auto& m : m_ImportModules)
@@ -915,10 +884,12 @@ bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& 
 		return true;
 	}
 
-	for (auto& it : m_Variables)
+	auto variables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
+	for (auto& it : variables)
 	{
-		if (TrtGetVariableName(nullptr, it, value.get(), outName))
+		if (it.second == value)
 		{
+			outName = it.first;
 			return true;
 		}
 	}
@@ -1004,27 +975,26 @@ void CompilerModule::GenICode()
 	*				数据名 数据类型 数据
 	*/
 	hss << GetGlobalDataHeaderString() << std::endl;
-	hss << m_Variables.size() << std::endl;
 
-	for (int i = 0; i < m_Variables.size(); i++)
+	auto globaleVariables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
+	hss << globaleVariables.size() << std::endl;
+
+	for (int i = 0; i < globaleVariables.size(); i++)
 	{
-		auto& var = m_Variables[i];
+		auto& var = globaleVariables[i].second;
 	
-		hss << m_VariablesAddress[i].first << " " << m_VariablesAddress[i].second << " ";
-
-		hss << var.first << " " << var.second->GetSize() << " ";
-		var.second->GetValueType().StringStreamTo(hss);
-
+		hss << globaleVariables[i].first << " ";
+		var->GetValueType().StringStreamTo(hss);
 		hss << std::endl;
 	}
 
 	//全局变量初始化
-	hss << GetGlobalDataInitBlockStart() << std::endl;
+	/*hss << GetGlobalDataInitBlockStart() << std::endl;
 	for (size_t i = 0; i < m_ModuleIRCodes.size(); i++)
 	{
 		hss << m_ModuleIRCodes[i].c_str();
 	}
-	hss << GetGlobalDataInitBlockEnd() << std::endl;
+	hss << GetGlobalDataInitBlockEnd() << std::endl;*/
 	
 
 	/*
@@ -1050,11 +1020,10 @@ void CompilerModule::GenICode()
 	*				名称 指令流
 	*
 	*/
-	size_t functionSize = 0;
+	uint64 functionSize = 0;
 
 	hss << GetClassTableHeaderString() << std::endl;
 	hss << m_HashMap_Classes.size() << std::endl;
-
 	for (auto& iter : m_HashMap_Classes)
 	{
 		iter.second->GenClassData_I_Code(hss);
@@ -1069,6 +1038,8 @@ void CompilerModule::GenICode()
 	hss << GetFucntionTableHeaderString() << std::endl;
 	hss << m_HashMap_Functions.size() + functionSize << std::endl;
 
+	m_GlobalDataFunction->GenI_Code(hss);
+
 	for (auto& iter : m_HashMap_Classes)
 	{
 		iter.second->GenClassFunction_I_Code(hss);
@@ -1076,7 +1047,10 @@ void CompilerModule::GenICode()
 
 	for (auto& iter : m_HashMap_Functions)
 	{
-		iter.second->GenI_Code(hss);
+		if (iter.second != m_GlobalDataFunction)
+		{
+			iter.second->GenI_Code(hss);
+		}
 	}
 
 	m_FS_I_Code << hss.str();

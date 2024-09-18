@@ -70,10 +70,13 @@ private:
 
 	void AddFunctionParam(const HazeDefineVariable& variable);
 
+	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
+		V_Array<HazeDefineType>* params = nullptr);
+
 	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
 		V_Array<HazeDefineType>* params = nullptr);
 
-	Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
+	//Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
 
 	void InitEntryBlock(Share<CompilerBlock> block) { m_EntryBlock = block; }
 
@@ -109,4 +112,5 @@ private:
 	
 	uint32 m_StartLine;
 	uint32 m_EndLine;
+	InstructionFunctionType m_DescType;
 };

@@ -24,24 +24,21 @@ public:
 	struct GlobalData
 	{
 		HString Name;
-		uint32 Size;
 		HazeDefineType Type;
-		HazeValue Value;
 
-		uint32 StartAddress;
-		uint32 EndAddress;
+		/*uint32 StartAddress;
+		uint32 EndAddress;*/
 	};
 
 	struct GlobalDataTable
 	{
 		V_Array<GlobalData> Data;
-		uint32 ClassObjectAllSize;
-		V_Array<FunctionInstruction> Instructions;
+		V_Array<uint64> InitFunctionIndex;
 
 		GlobalDataTable()
 		{
 			Data.clear();
-			ClassObjectAllSize = 0;
+			InitFunctionIndex.clear();
 		}
 
 		int GetIndex(const HString& name)

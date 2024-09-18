@@ -133,7 +133,7 @@ public:
 public:
 	void SetInsertBlock(Share<CompilerBlock> block);
 
-	Share<CompilerBlock> GetInsertBlock() { return m_InsertBaseBlock; }
+	Share<CompilerBlock> GetInsertBlock();
 
 	void ClearBlockPoint();
 
@@ -145,7 +145,7 @@ public:
 	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
 		Share<CompilerValue> RefValue = nullptr, uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
-	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, Share<CompilerValue> RefValue = nullptr,
+	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, int Line, Share<CompilerValue> RefValue = nullptr,
 		uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerValue> CreateClassVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, Share<CompilerValue> RefValue = nullptr,

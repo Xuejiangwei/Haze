@@ -30,7 +30,7 @@ extern void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_
 
 HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
-	VMStack = MakeUnique<HazeStack>(this);
+	m_Stack = MakeUnique<HazeStack>(this);
 	m_Compiler = MakeUnique<Compiler>(this);
 }
 
@@ -125,15 +125,15 @@ void HazeVM::CallFunction(const HChar* functionName, ...)
 	auto& function = GetFunctionByName(functionName);
 	va_list args;
 	va_start(args, function.Params.size());
-	CallHazeFunction(VMStack.get(), &function, args);
+	CallHazeFunction(m_Stack.get(), &function, args);
 	va_end(args);
 }
 
-void HazeVM::CallFunction(FunctionData* functionData, ...)
+void HazeVM::CallFunction(const FunctionData* functionData, ...)
 {
 	va_list args;
 	va_start(args, functionData->Params.size());
-	CallHazeFunction(VMStack.get(), functionData, args);
+	CallHazeFunction(m_Stack.get(), functionData, args);
 	va_end(args);
 }
 
@@ -150,7 +150,7 @@ void* HazeVM::CreateHazeClass(const HString& className, ...)
 	auto dst = &va_arg(args, decltype(obj));
 	memcpy(dst, &obj, sizeof(obj));
 
-	CallHazeFunction(VMStack.get(), &constructorFunc, (va_list&)dst);
+	CallHazeFunction(m_Stack.get(), &constructorFunc, (va_list&)dst);
 	va_end(args);
 
 	return obj;
@@ -213,12 +213,12 @@ bool HazeVM::ParseFile(const HString& FilePath)
 
 const HString* HazeVM::GetModuleNameByCurrFunction()
 {
-	for (size_t i = 0; i < Vector_FunctionTable.size(); i++)
+	for (size_t i = 0; i < m_FunctionTable.size(); i++)
 	{
-		auto functionInfo = VMStack->GetCurrFrame().FunctionInfo;
-		if (&Vector_FunctionTable[i] == functionInfo)
+		auto functionInfo = m_Stack->GetCurrFrame().FunctionInfo;
+		if (&m_FunctionTable[i] == functionInfo)
 		{
-			for (auto& Iter : Vector_ModuleData)
+			for (auto& Iter : m_ModuleData)
 			{
 				if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second)
 				{
@@ -233,8 +233,8 @@ const HString* HazeVM::GetModuleNameByCurrFunction()
 
 int HazeVM::GetFucntionIndexByName(const HString& m_Name)
 {
-	auto Iter = HashMap_FunctionTable.find(m_Name);
-	if (Iter == HashMap_FunctionTable.end())
+	auto Iter = m_HashFunctionTable.find(m_Name);
+	if (Iter == m_HashFunctionTable.end())
 	{
 		return -1;
 	}
@@ -244,7 +244,7 @@ int HazeVM::GetFucntionIndexByName(const HString& m_Name)
 const FunctionData& HazeVM::GetFunctionByName(const HString& m_Name)
 {
 	int Index = GetFucntionIndexByName(m_Name);
-	return Vector_FunctionTable[Index];
+	return m_FunctionTable[Index];
 }
 
 const ObjectString* HazeVM::GetConstantStringByIndex(int index) const
@@ -254,32 +254,9 @@ const ObjectString* HazeVM::GetConstantStringByIndex(int index) const
 
 char* HazeVM::GetGlobalValueByIndex(uint32 Index)
 {
-	if (Index < Vector_GlobalData.size())
+	if (Index < m_GlobalData.size())
 	{
-		if (Vector_GlobalData[Index].second)
-		{
-			if (IsClassType(Vector_GlobalData[Index].first.m_Type.PrimaryType))
-			{
-				return (char*)Vector_GlobalData[Index].first.Address;
-			}
-			else
-			{
-				return (char*)(&Vector_GlobalData[Index].first.Value);
-			}
-		}
-		else
-		{
-			Vector_GlobalData[Index].second = true;
-			VMStack->RunGlobalDataInit(m_GlobalDataInitAddress[Index].first, m_GlobalDataInitAddress[Index].second);
-			if (IsClassType(Vector_GlobalData[Index].first.m_Type.PrimaryType))
-			{
-				return (char*)Vector_GlobalData[Index].first.Address;
-			}
-			else
-			{
-				return (char*)(&Vector_GlobalData[Index].first.Value);
-			}
-		}
+		return (char*)(&m_GlobalData[Index].Value);
 	}
 	
 	return nullptr;
@@ -287,7 +264,7 @@ char* HazeVM::GetGlobalValueByIndex(uint32 Index)
 
 ClassData* HazeVM::FindClass(const HString& m_ClassName)
 {
-	for (auto& Iter : Vector_ClassTable)
+	for (auto& Iter : m_ClassTable)
 	{
 		if (Iter.Name == m_ClassName)
 		{
@@ -344,10 +321,9 @@ void HazeVM::ResetSymbolClassIndex(const HString& name, uint64 index)
 
 void HazeVM::DynamicInitializerForGlobalData()
 {
-	for (int i = 0; i < Vector_GlobalData.size(); i++)
+	for (auto iter : m_GlobalInitFunction)
 	{
-		Vector_GlobalData[i].second = true;
-		VMStack->RunGlobalDataInit(m_GlobalDataInitAddress[i].first, m_GlobalDataInitAddress[i].second);
+		CallFunction(&m_FunctionTable[iter]);
 	}
 }
 
@@ -365,63 +341,63 @@ void HazeVM::InstructionExecPost()
 
 uint32 HazeVM::GetNextLine(uint32 CurrLine)
 {
-	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
-	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (size_t i = VMStack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
+	uint32 StartAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	uint32 InstructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (size_t i = m_Stack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
 	{
-		if (Instructions[i].InsCode == InstructionOpCode::LINE && Instructions[i].Operator[0].Extra.Line > CurrLine)
+		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line > CurrLine)
 		{
-			return Instructions[i].Operator[0].Extra.Line;
+			return m_Instructions[i].Operator[0].Extra.Line;
 		}
 	}
 
-	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
+	return m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
 uint32 HazeVM::GetNextInstructionLine(uint32 currLine)
 {
-	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
-	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (size_t i = VMStack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
+	uint32 StartAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	uint32 InstructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (size_t i = m_Stack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
 	{
-		if (Instructions[i].InsCode == InstructionOpCode::LINE && Instructions[i].Operator[0].Extra.Line >= currLine)
+		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line >= currLine)
 		{
-			return Instructions[i].Operator[0].Extra.Line;
+			return m_Instructions[i].Operator[0].Extra.Line;
 		}
 	}
 
-	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
+	return m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
 Pair<HString, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 {
-	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
-	uint32 InstructionNum = VMStack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (size_t i = VMStack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
+	uint32 StartAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	uint32 InstructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (size_t i = m_Stack->GetCurrPC(); i < StartAddress + InstructionNum; i++)
 	{
-		if (Instructions[i].InsCode == InstructionOpCode::LINE && Instructions[i].Operator[0].Extra.Line > CurrLine)
+		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line > CurrLine)
 		{
 			break;
 		}
 
-		if (Instructions[i].InsCode == InstructionOpCode::CALL)
+		if (m_Instructions[i].InsCode == InstructionOpCode::CALL)
 		{
-			const auto& oper = Instructions[i].Operator;
+			const auto& oper = m_Instructions[i].Operator;
 			if (oper.size() >= 1)
 			{
 				if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
 				{
-					void* value = GetOperatorAddress(VMStack.get(), oper[0]);
+					void* value = GetOperatorAddress(m_Stack.get(), oper[0]);
 					uint64 functionAddress;
 					memcpy(&functionAddress, value, sizeof(functionAddress));
 					auto function = (FunctionData*)functionAddress;
 					if (function->FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 					{
-						for (size_t j = 0; j < Vector_FunctionTable.size(); j++)
+						for (size_t j = 0; j < m_FunctionTable.size(); j++)
 						{
-							if (&Vector_FunctionTable[j] == function)
+							if (&m_FunctionTable[j] == function)
 							{
-								for (auto& Iter : Vector_ModuleData)
+								for (auto& Iter : m_ModuleData)
 								{
 									if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second)
 									{
@@ -437,7 +413,7 @@ Pair<HString, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 					int functionIndex = GetFucntionIndexByName(oper[0].Variable.Name);
 					if (functionIndex >= 0)
 					{
-						auto& function = Vector_FunctionTable[functionIndex];
+						auto& function = m_FunctionTable[functionIndex];
 						if (function.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 						{
 							return { oper[1].Variable.Name, function.FunctionDescData.StartLine };
@@ -453,16 +429,16 @@ Pair<HString, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 
 uint32 HazeVM::GetCurrCallFunctionLine()
 {
-	uint32 StartAddress = VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
-	for (size_t i = VMStack->GetCurrPC(); i >= StartAddress; i--)
+	uint32 StartAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	for (size_t i = m_Stack->GetCurrPC(); i >= StartAddress; i--)
 	{
-		if (Instructions[i].InsCode == InstructionOpCode::LINE)
+		if (m_Instructions[i].InsCode == InstructionOpCode::LINE)
 		{
-			return Instructions[i].Operator[0].Extra.Line;
+			return m_Instructions[i].Operator[0].Extra.Line;
 		}
 	}
 
-	return VMStack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
+	return m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
 //void HazeVM::Hook(HazeVM* m_VM)

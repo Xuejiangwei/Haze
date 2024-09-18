@@ -47,9 +47,9 @@ private:
 
 	void WriteClassTable(const ModuleUnit::ClassTable& table);
 
-	uint32 WriteFunctionTable(const ModuleUnit::FunctionTable& table, uint32 globalDataInsLength);
+	uint64 WriteFunctionTable(const ModuleUnit::FunctionTable& table);
 
-	void WriteAllInstruction(const ModuleUnit::FunctionTable& table, const ModuleUnit::GlobalDataTable& globalDataTable, uint32 funcInslength);
+	void WriteAllInstruction(const ModuleUnit::FunctionTable& table, uint64 funcInslength);
 
 	void WriteInstruction(const ModuleUnit::FunctionInstruction& instruction);
 

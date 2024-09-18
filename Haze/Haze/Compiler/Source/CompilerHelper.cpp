@@ -305,15 +305,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		{
 			if (!Hss.str().empty())
 			{
-				if (Module->GetCurrFunction())
-				{
-					Module->GetCompiler()->GetInsertBlock()->PushIRCode(Hss.str());
-				}
-				else
-				{
-					Module->PushModuleIRCode(Hss.str());
-				}
-
+				Module->GetCompiler()->GetInsertBlock()->PushIRCode(Hss.str());
 				Hss.str(H_TEXT(""));
 			}
 		}

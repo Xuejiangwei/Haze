@@ -44,9 +44,9 @@ public:
 
 	void Sweep();
 
-	void ForceGC();
+	void TryGC(bool forceGC = false);
 
-	enum class MarkStage
+	enum class MarkStage : uint8
 	{
 		Ready,
 		Running_MarkRoot,
@@ -54,6 +54,8 @@ public:
 	};
 
 private:
+	void ForceGC();
+
 	void MarkVariable(const HazeDefineType& type, uint64 startAddress, char* classAddress);
 
 	void MarkClassMember(ClassData* classData, char* baseAddress);
@@ -65,12 +67,13 @@ private:
 	bool m_IsForceGC;
 	MarkStage m_MarkStage;
 	uint64 m_MarkStartTimestamp;
-	uint64 m_MaxMarkTime;		//∫¡√Î
+	uint64 m_MaxMarkTime;			//∫¡√Î
 
 	Unique<MemoryFreeList> m_FreeList[MAX_HAZE_ALLOC_SIZE / GRANULE];
 	MemoryBlock* m_MemoryBlocks[PAGE_NUM];
 	HashMap<void*, Pair<GC_State, void*>> m_BigMemorys;
 
+	uint64 m_LastGCTime;
 	uint64 m_CurrMarkBaseIndex;
 	uint64 m_CurrMarkClassIndex;
 	uint64 m_CurrMarkArrayIndex;
