@@ -5,6 +5,7 @@
 class ObjectClass
 {
 	friend class HazeMemory;
+	friend class InstructionProcessor;
 public:
 	ObjectClass(ClassData* classInfo);
 

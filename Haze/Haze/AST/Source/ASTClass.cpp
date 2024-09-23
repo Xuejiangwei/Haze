@@ -7,11 +7,9 @@
 #include "CompilerHelper.h"
 #include "CompilerModule.h"
 #include "CompilerClass.h"
+#include "CompilerValue.h"
 
 #include "HazeLog.h"
-
-extern int g_ClassInheritLimit;
-extern int g_ClassInheritLevelLimit;
 
 ASTClass::ASTClass(Compiler* compiler,/* const SourceLocation& Location,*/ HString& name, V_Array<HString>& parentClass,
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data, Unique<ASTClassFunctionSection>& functionSection)
@@ -26,14 +24,8 @@ ASTClass::~ASTClass()
 
 void ASTClass::CodeGen()
 {
-	if (m_ParentClasses.size() > g_ClassInheritLimit)
-	{
-		HAZE_LOG_ERR_W("解析创建类错误,类<%s>继承类个数超过<%d>!\n", m_ClassName.c_str(), g_ClassInheritLimit);
-		return;
-	}
-
 	V_Array<CompilerClass*> parentClasses;
-	for (size_t i = 0; i < m_ParentClasses.size(); i++)
+	for (uint64 i = 0; i < m_ParentClasses.size(); i++)
 	{
 		auto parentClass = m_Compiler->GetCurrModule()->GetClass(m_ParentClasses[i]);
 		if (parentClass)
@@ -47,33 +39,39 @@ void ASTClass::CodeGen()
 		}
 	}
 
-	for (auto& parentClass : parentClasses)
+	// 判断菱形继承
+	if (parentClasses.size() > 1)
 	{
-		if (parentClass->GetClassInheritLevel() > g_ClassInheritLevelLimit)
+		for (uint64 i = 0; i < parentClasses.size() - 1; i++)
 		{
-			HAZE_LOG_ERR_W("解析创建类错误,类<%s>继承层级超过<%d>!\n", m_ClassName.c_str(), g_ClassInheritLevelLimit);
-			return;
-		}
-	}
-
-	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<CompilerValue>>>>> datas;
-
-	for (size_t i = 0; i < m_ClassDatas.size(); i++)
-	{
-		datas.push_back({ m_ClassDatas[i].first, {} });
-		for (size_t j = 0; j < m_ClassDatas[i].second.size(); j++)
-		{
-			for (auto& Class : parentClasses)
+			for (uint64 j = i + 1; j < parentClasses.size(); j++)
 			{
-				if (Class->GetMemberIndex(m_ClassDatas[i].second[j]->GetName()) >= 0)
+				if (CompilerClass::HasCommomInheritClass(parentClasses[i], parentClasses[j]))
 				{
-					HAZE_LOG_ERR_W("解析创建类错误,类<%s>中存在与父类<%s>相同命名的成员变量<%s>!\n", m_ClassName.c_str(), Class->GetName().c_str(),
-						m_ClassDatas[i].second[j]->GetName());
+					HAZE_LOG_ERR_W("创建类<%s>错误, 存在共同的父类<%s>!\n", m_ClassName.c_str(), m_ParentClasses[i].c_str());
 					return;
 				}
 			}
-
-			datas.back().second.push_back({ m_ClassDatas[i].second[j]->GetName(), m_ClassDatas[i].second[j]->CodeGen() });
+		}
+	}
+	
+	V_Array<Pair<HString, Share<CompilerValue>>> datas;
+	for (uint64 i = 0; i < m_ClassDatas.size(); i++)
+	{
+		for (uint64 j = 0; j < m_ClassDatas[i].second.size(); j++)
+		{
+			auto v = m_ClassDatas[i].second[j]->CodeGen();
+			if (v->IsRefrence())
+			{
+				auto m_Location = m_ClassDatas[i].second[j]->m_Location;
+				AST_ERR_W("类<%s>成员不允许是引用类型", m_ClassName.c_str());
+				return;
+			}
+			else
+			{
+				v->SetDataDesc(m_ClassDatas[i].first);
+				datas.push_back({ m_ClassDatas[i].second[j]->GetName(), v });
+			}
 		}
 	}
 

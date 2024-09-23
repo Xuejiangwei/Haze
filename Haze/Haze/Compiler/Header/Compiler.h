@@ -97,7 +97,7 @@ public:
 
 	Share<CompilerValue> GetGlobalVariable(const HString& name);
 
-	Share<CompilerValue> GetLocalVariable(const HString& name);
+	Share<CompilerValue> GetLocalVariable(const HString& name, HString* nameSpace = nullptr);
 
 	Share<CompilerValue> GetEnumVariable(const HString& enumName, const HString& name);
 
@@ -197,7 +197,7 @@ public:
 	Share<CompilerValue> CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue);
 
 	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, const HString& memberName);
-	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
+	//Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
 	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member);
 	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue);
 

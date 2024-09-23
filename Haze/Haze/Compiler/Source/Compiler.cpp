@@ -76,14 +76,12 @@ void Compiler::PreRegisterClass(const ClassData& data)
 
 	m_CompilerBaseModules[H_TEXT("PreRegisterModule")] = m.get();
 
-	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<CompilerValue>>>>> classDatas;
-	V_Array<Pair<HString, Share<CompilerValue>>> classData;
+	V_Array<Pair<HString, Share<CompilerValue>>> classDatas;
 	for (int i = 0; i < data.Members.size(); i++)
 	{
-		classData.push_back({ data.Members[i].Variable.Name, CreateVariable(m.get(),
+		classDatas.push_back({ data.Members[i].Variable.Name, CreateVariable(m.get(),
 			data.Members[i].Variable.Type, HazeVariableScope::Local, HazeDataDesc::ClassFunction_Local_Public, 0) });
 	}
-	classDatas.push_back({ HazeDataDesc::ClassFunction_Local_Public, Move(classData) });
 
 	V_Array<CompilerClass*> parentClass;
 	m->CreateClass(data.Name, parentClass, classDatas);
@@ -768,9 +766,9 @@ Share<CompilerValue> Compiler::GetGlobalVariable(const HString& name)
 	return CompilerModule::GetGlobalVariable(GetCurrModule().get(), name);
 }
 
-Share<CompilerValue> Compiler::GetLocalVariable(const HString& name)
+Share<CompilerValue> Compiler::GetLocalVariable(const HString& name, HString* nameSpace)
 {
-	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(name);
+	return  GetCurrModule()->GetCurrFunction()->GetLocalVariable(name, nameSpace);
 }
 
 Share<CompilerValue> Compiler::GetEnumVariable(const HString& enumName, const HString& name)
@@ -1090,7 +1088,7 @@ Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advan
 			auto classValue = DynamicCast<CompilerClassValue>(DynamicCast<CompilerElementValue>(thisPointerTo)->CreateGetFunctionCall());
 			if (classValue)
 			{
-				CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(functionName), param, classValue);
+				CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(functionName,nullptr), param, classValue);
 			}
 			else
 			{
@@ -1145,14 +1143,14 @@ Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classVa
 		CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, classValue));
 }
 
-Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue)
-{
-	auto v = DynamicCast<CompilerClassValue>(classValue);
-	auto index = (uint64)v->GetOwnerClass()->GetMemberIndex(memberName);
-
-	V_Array<Share<CompilerValue>> params = { assignValue, GetConstantValueUint64(index) };
-	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue);
-}
+//Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue)
+//{
+//	auto v = DynamicCast<CompilerClassValue>(classValue);
+//	auto index = (uint64)v->GetOwnerClass()->GetMemberIndex(memberName);
+//
+//	V_Array<Share<CompilerValue>> params = { assignValue, GetConstantValueUint64(index) };
+//	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue);
+//}
 
 Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member)
 {

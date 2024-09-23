@@ -14,9 +14,6 @@ extern Unique<HazeLibraryManager> g_HazeLibManager;
 
 bool g_IsHazeEnd = false;
 std::wstring g_rootCodePath;
-int g_ClassInheritLimit = 2;
-int g_ClassInheritLevelLimit = 2;
-
 
 void HazeNewHandler()
 {
@@ -64,8 +61,6 @@ enum class ParamType
 	DebugType,
 	LoadLibraryDll,
 	Files,
-	ClassInherit,
-	ClassInheritLevel,
 };
 
 uint32 GetParam(ParamType type, char** paramArray, int length)
@@ -76,8 +71,6 @@ uint32 GetParam(ParamType type, char** paramArray, int length)
 		{ ParamType::MainFunction, "-mf" },
 		{ ParamType::DebugType, "-d" },
 		{ ParamType::LoadLibraryDll, "-ld" },
-		{ ParamType::ClassInherit, "-ci" },
-		{ ParamType::ClassInheritLevel, "-cil" },
 		{ ParamType::Files, "-f" },
 	};
 
@@ -134,16 +127,6 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	if (GetParam(ParamType::MainFunction, argValue, argCount) > 0)
 	{
 		mainFunction = String2WString(argValue[GetParam(ParamType::MainFunction, argValue, argCount)]);
-	}
-
-	if (GetParam(ParamType::ClassInherit, argValue, argCount) > 0)
-	{
-		g_ClassInheritLimit = std::stoi(argValue[GetParam(ParamType::ClassInherit, argValue, argCount)]);
-	}
-
-	if (GetParam(ParamType::ClassInheritLevel, argValue, argCount) > 0)
-	{
-		g_ClassInheritLevelLimit = std::stoi(argValue[GetParam(ParamType::ClassInheritLevel, argValue, argCount)]);
 	}
 
 	std::filesystem::path mainFile(mainFilePath);

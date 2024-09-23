@@ -9,6 +9,7 @@ class Compiler;
 class CompilerValue;
 class CompilerBlock;
 class CompilerFunction;
+enum class ClassCompilerFunctionType : uint8;
 class CompilerClass;
 class CompilerEnum;
 class HazeCompilerTemplateFunction;
@@ -48,7 +49,7 @@ public:
 	void FinishModule();
 
 	Share<CompilerClass> CreateClass(const HString& name, V_Array<CompilerClass*>& parentClass,
-		V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<CompilerValue>>>>>& classData);
+		V_Array<Pair<HString, Share<CompilerValue>>>& classData);
 
 	Share<CompilerEnum> CreateEnum(const HString& name, HazeValueType baseType);
 
@@ -70,7 +71,8 @@ public:
 
 	Share<CompilerFunction> CreateFunction(const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
 
-	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
+	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType, 
+		const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
 
 	void BeginCreateFunctionParamVariable() { m_IsBeginCreateFunctionVariable = true; }
 

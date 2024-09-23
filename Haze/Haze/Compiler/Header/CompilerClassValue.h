@@ -19,9 +19,9 @@ public:
 
 	const HString& GetOwnerClassName();
 
-	Share<CompilerValue> GetMember(const HString& name);
+	Share<CompilerValue> GetMember(const HString& name, HString* nameSpace = nullptr);
 
-	int GetMemberIndex(const HString& memberName);
+	int GetMemberIndex(const HString& memberName, HString* nameSpace = nullptr);
 
 	int GetMemberIndex(CompilerValue* value);
 
@@ -30,5 +30,5 @@ public:
 private:
 	CompilerClass* m_OwnerClass;
 
-	V_Array<Pair<HazeDataDesc, V_Array<Share<CompilerValue>>>> m_Data;
+	V_Array<Share<CompilerValue>> m_Data;
 };

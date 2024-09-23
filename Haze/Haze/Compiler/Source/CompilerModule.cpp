@@ -134,7 +134,7 @@ void CompilerModule::GenCodeFile()
 }
 
 Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<CompilerClass*>& parentClass,
-	V_Array<Pair<HazeDataDesc, V_Array<Pair<HString, Share<CompilerValue>>>>>& classData)
+	V_Array<Pair<HString, Share<CompilerValue>>>& classData)
 {
 	auto compilerClass = GetClass(name);
 	if (!compilerClass)
@@ -143,7 +143,6 @@ Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<Co
 		compilerClass = m_HashMap_Classes[name];
 
 		m_Compiler->OnCreateClass(compilerClass);
-		compilerClass->InitThisValue();
 	}
 
 	m_CurrClass = name;
@@ -201,7 +200,7 @@ Share<CompilerFunction> CompilerModule::GetCurrFunction()
 		}
 		else
 		{
-			return GetClass(m_CurrClass)->FindFunction(m_CurrFunction);
+			return GetClass(m_CurrClass)->FindFunction(m_CurrFunction, nullptr);
 		}
 	}
 
@@ -220,7 +219,7 @@ Share<CompilerFunction> CompilerModule::GetFunction(const HString& name)
 		auto iter = m_HashMap_Classes.find(m_CurrClass);
 		if (iter != m_HashMap_Classes.end())
 		{
-			auto func = iter->second->FindFunction(name);
+			auto func = iter->second->FindFunction(name, nullptr);
 			if (func)
 			{
 				return func;
@@ -346,13 +345,14 @@ Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, Haze
 	return function;
 }
 
-Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> compilerClass, const HString& name,
-	HazeDefineType& type, V_Array<HazeDefineVariable>& params)
+Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType,
+	const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params)
 {
-	Share<CompilerFunction> function = compilerClass->FindFunction(name);
+	Share<CompilerFunction> function = compilerClass->FindFunction(name, &compilerClass->GetName());
 	if (!function)
 	{
-		function = MakeShare<CompilerFunction>(this, GetHazeClassFunctionName(compilerClass->GetName(), name), type, params, compilerClass.get());
+		function = MakeShare<CompilerFunction>(this, name, type, params, compilerClass.get(),
+			classFunctionType);
 		compilerClass->AddFunction(function);
 
 		function->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, function, nullptr));
@@ -709,12 +709,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> 
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, callFunction, nullptr, nullptr, size, params, thisPointerTo);
-
 	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction);
-	/*hss << GetInstructionString(InstructionOpCode::CALL) << " " << callFunction->GetName() << " " << CAST_TYPE(HazeValueType::None) 
-		<< " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " << CAST_DESC(HazeDataDesc::FunctionAddress)
-		<< " " << params.size() << " " << size << " " << callFunction->GetModule()->GetName() << " "
-		<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;*/
 
 	auto retRegister = Compiler::GetRegister(RET_REGISTER);
 
@@ -726,7 +721,6 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> 
 Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> pointerFunction, 
 	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
-	//Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
 
@@ -745,9 +739,6 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, nullptr, pointerFunction, nullptr, size, params, thisPointerTo);
 	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, pointerFunction);
-	/*hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
-		<< CAST_SCOPE(pointerFunction->GetVariableScope())  << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << params.size()
-		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;*/
 
 	return Compiler::GetRegister(RET_REGISTER);
 }
@@ -755,7 +746,6 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo& functionInfo, 
 	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
-	//Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
 
@@ -774,10 +764,6 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, nullptr, nullptr, &functionInfo, size, params, thisPointerTo);
 	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, nullptr, thisPointerTo, functionInfo.ClassFunc);
-	/*hss << GetInstructionString(InstructionOpCode::CALL) << " " << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
-		<< CAST_SCOPE(thisPointerTo->GetVariableScope()) << " " << CAST_DESC(thisPointerTo->GetVariableDesc()) << " " << params.size()
-		<< " " << size << " " << m_Compiler->GetCurrModuleName() << " " << CAST_DESC(HazeDataDesc::CallFunctionPointer)
-		<< " " << functionInfo.ClassFunc << std::endl;*/
 
 	return Compiler::GetRegister(RET_REGISTER);
 }

@@ -12,10 +12,10 @@
 
 ASTFunction::ASTFunction(Compiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation,
 	HazeSectionSignal section, HString& name, HazeDefineType& type, V_Array<Unique<ASTBase>>& params,
-	Unique<ASTBase>& body) 
+	Unique<ASTBase> body, bool isVirtual, bool isPureVirtual)
 	: m_Compiler(compiler), m_StartLocation(startLocation), m_EndLocation(endLocation), m_Section(section), 
-	m_FunctionName(Move(name)),m_FunctionType(Move(type)),
-	m_FunctionParams(Move(params)), m_Body(Move(body))
+	m_FunctionName(Move(name)),m_FunctionType(Move(type)),m_FunctionParams(Move(params)), m_Body(Move(body)), 
+	m_IsVirtual(isVirtual), m_IsPureVirtual(isPureVirtual)
 {
 }
 
@@ -43,7 +43,9 @@ HazeValue* ASTFunction::CodeGen()
 	else if (m_Section == HazeSectionSignal::Class)
 	{
 		currClass = currModule->GetClass(*m_FunctionParams[0]->GetDefine().Type.CustomName);
-		compilerFunction = currModule->CreateFunction(currClass, m_FunctionName, m_FunctionType, paramDefines);
+		compilerFunction = currModule->CreateFunction(currClass, m_IsVirtual ? ClassCompilerFunctionType::Virtual : m_IsPureVirtual ?
+			ClassCompilerFunctionType::PureVirtual : ClassCompilerFunctionType::Normal,
+			m_FunctionName, m_FunctionType, paramDefines);
 	}
 	compilerFunction->SetStartEndLine(m_StartLocation.Line, m_EndLocation.Line);
 	m_Compiler->SetInsertBlock(compilerFunction->GetEntryBlock());
@@ -92,7 +94,8 @@ void ASTFunction::RegisterFunction()
 	else if (m_Section == HazeSectionSignal::Class)
 	{
 		currClass = currModule->GetClass(*m_FunctionParams[0]->GetDefine().Type.CustomName);
-		currModule->CreateFunction(currClass, m_FunctionName, m_FunctionType, paramDefines);
+		currModule->CreateFunction(currClass, m_IsVirtual ? ClassCompilerFunctionType::Virtual : m_IsPureVirtual ?
+			ClassCompilerFunctionType::PureVirtual : ClassCompilerFunctionType::Normal, m_FunctionName, m_FunctionType, paramDefines);
 	}
 }
 
@@ -169,7 +172,7 @@ void ASTClassFunctionSection::CodeGen()
 			{
 				if (iter.second[i]->GetName() == className && i != 0)
 				{
-					COMPILER_ERR_MODULE_W("类<%s>需要在<公>范围内第一个定义构造函数", m_Compiler->GetCurrModuleName().c_str(), className.c_str());
+					COMPILER_ERR_MODULE_W("类<%s>需要在<显>范围内第一个定义构造函数", m_Compiler->GetCurrModuleName().c_str(), className.c_str());
 					return;
 				}
 			}

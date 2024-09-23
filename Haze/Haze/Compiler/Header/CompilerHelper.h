@@ -18,8 +18,7 @@ Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDe
 	HazeVariableScope scope, HazeDataDesc desc, int count, Share<CompilerValue> refValue = nullptr,
 	uint64 arrayDimension = 0, V_Array<HazeDefineType>* params = nullptr);
 
-V_Array<Pair<HazeDataDesc, V_Array<Share<CompilerValue>>>> CreateVariableCopyClassMember(
-	CompilerModule* compilerModule, HazeVariableScope scope, CompilerClass* compilerClass);
+Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var);
 
 bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
 	const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);

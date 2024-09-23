@@ -7,6 +7,14 @@ class CompilerClass;
 class CompilerClassValue;
 class CompilerBlock;
 
+enum class ClassCompilerFunctionType : uint8
+{
+	None,
+	Normal,
+	Virtual,
+	PureVirtual
+};
+
 class CompilerFunction
 {
 	friend class Compiler;
@@ -15,15 +23,18 @@ class CompilerFunction
 
 public:
 	CompilerFunction(CompilerModule* compilerModule, const HString& name, HazeDefineType& type,
-		V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass = nullptr);
+		V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass = nullptr,
+		ClassCompilerFunctionType classFunctionType = ClassCompilerFunctionType::None);
 
 	~CompilerFunction();
 
 	void SetStartEndLine(uint32 startLine, uint32 endLine);
 
-	Share<CompilerValue> GetLocalVariable(const HString& VariableName);
+	Share<CompilerValue> GetLocalVariable(const HString& VariableName, HString* nameSpace);
 
 	const HString& GetName() const { return m_Name; }
+
+	HString GetRealName() const;
 
 	const HazeDefineType& GetFunctionType() const { return m_Type; }
 
@@ -64,6 +75,9 @@ public:
 	const HazeDefineType& GetThisParam();
 
 	Share<CompilerClassValue> GetThisLocalVariable();
+
+	bool IsVirtualFunction() const { return m_ClassFunctionType == ClassCompilerFunctionType::PureVirtual ||
+			m_ClassFunctionType == ClassCompilerFunctionType::Virtual; }
 
 private:
 	void FunctionFinish();
@@ -113,4 +127,6 @@ private:
 	uint32 m_StartLine;
 	uint32 m_EndLine;
 	InstructionFunctionType m_DescType;
+
+	ClassCompilerFunctionType m_ClassFunctionType;
 };

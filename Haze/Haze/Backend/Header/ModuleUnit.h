@@ -103,6 +103,7 @@ public:
 
 	struct FunctionTableData
 	{
+		HString ClassName;
 		HString Name;
 		HazeDefineType Type;
 		V_Array<HazeDefineVariable> Params;

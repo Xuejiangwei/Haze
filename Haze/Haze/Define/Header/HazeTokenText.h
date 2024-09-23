@@ -101,8 +101,8 @@
 
 #define TOKEN_CAST						H_TEXT("转")
 
-#define TOKEN_VIRTUAL					H_TEXT("重载")
-#define TOKEN_PUREVIRTUAL				H_TEXT("必重载")
+#define TOKEN_VIRTUAL					H_TEXT("虚")
+#define TOKEN_PUREVIRTUAL				H_TEXT("纯虚")
 
 #define TOKEN_DEFINE					H_TEXT("定义")
 

@@ -12,9 +12,9 @@
 #include "HazeLogDefine.h"
 
 CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const HString& name, 
-	HazeDefineType& type, V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass)
+	HazeDefineType& type, V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass, ClassCompilerFunctionType classFunctionType)
 	: m_Module(compilerModule), m_Name(name), m_Type(type), m_OwnerClass(compilerClass), m_CurrBlockCount(0), 
-		m_CurrVariableCount(0), m_StartLine(0), m_EndLine(0)
+		m_CurrVariableCount(0), m_StartLine(0), m_EndLine(0), m_ClassFunctionType(classFunctionType)
 {
 	for (int i = (int)params.size() - 1; i >= 0; i--)
 	{
@@ -143,7 +143,7 @@ void CompilerFunction::TryClearTempRegister()
 	}
 }
 
-Share<CompilerValue> CompilerFunction::GetLocalVariable(const HString& variableName)
+Share<CompilerValue> CompilerFunction::GetLocalVariable(const HString& variableName, HString* nameSpace)
 {
 	Share<CompilerValue> ret = nullptr;
 
@@ -159,7 +159,7 @@ Share<CompilerValue> CompilerFunction::GetLocalVariable(const HString& variableN
 			}
 			else if (value.second->IsClassThis())
 			{
-				auto memberValue = DynamicCast<CompilerClassValue>(value.second)->GetMember(variableName);
+				auto memberValue = DynamicCast<CompilerClassValue>(value.second)->GetMember(variableName, nameSpace);
 				if (memberValue)
 				{
 					ret = MakeShare<CompilerElementValue>(m_Module, value.second, memberValue);
@@ -178,6 +178,11 @@ Share<CompilerValue> CompilerFunction::GetLocalVariable(const HString& variableN
 	return ret;
 }
 
+HString CompilerFunction::GetRealName() const
+{
+	return m_OwnerClass ? GetHazeClassFunctionName(m_OwnerClass->GetName(), m_Name) : m_Name;
+}
+
 void CompilerFunction::FunctionFinish()
 {
 	if (m_Type.PrimaryType == HazeValueType::Void)
@@ -191,7 +196,18 @@ void CompilerFunction::FunctionFinish()
 
 void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 {
-	hss << GetFunctionLabelHeader() << " " << CAST_DESC(m_DescType) << " " << m_Name << " ";
+	hss << GetFunctionLabelHeader() << " " << CAST_DESC(m_DescType) << " ";
+	
+	if (m_OwnerClass)
+	{
+		hss << m_OwnerClass->GetName();
+	}
+	else
+	{
+		hss << H_TEXT("None");
+	}
+
+	hss << " " << GetRealName() << " ";
 
 	if (!m_Type.StringStreamTo(hss))
 	{

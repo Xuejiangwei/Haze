@@ -142,24 +142,11 @@ Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDe
 	return CreateVariableImpl(compilerModule, type, scope, desc, count, refValue, arrayDimension, params);
 }
 
-V_Array<Pair<HazeDataDesc, V_Array<Share<CompilerValue>>>> CreateVariableCopyClassMember(CompilerModule* compilerModule,
-	HazeVariableScope scope, CompilerClass* compilerClass)
+Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var)
 {
-	V_Array<Pair<HazeDataDesc, V_Array<Share<CompilerValue>>>> members;
-	for (auto& it : compilerClass->GetClassMemberData())
-	{
-		members.push_back({ it.first, {} });
-		members.back().second.resize(it.second.size());
-		for (size_t i = 0; i < it.second.size(); i++)
-		{
-			auto& var = it.second[i].second;
-			members.back().second[i] = CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0, var,
-				var->IsArray() ? DynamicCast<CompilerArrayValue>(var)->GetArrayDimension() : 0,
-				var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
-		}
-	}
-
-	return members;
+	return CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0, var,
+		var->IsArray() ? DynamicCast<CompilerArrayValue>(var)->GetArrayDimension() : 0,
+		var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
 }
 
 bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
@@ -567,8 +554,10 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		hss << GetInstructionString(InstructionOpCode::CALL) << " ";
 		if (function)
 		{
-			hss << function->GetName() << " " << CAST_TYPE(HazeValueType::None) << " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<
-				CAST_DESC(HazeDataDesc::FunctionAddress) << " " << paramCount << " " << paramSize << " " << m->GetName() << " "
+			auto desc = function->IsVirtualFunction() ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
+			auto& funcName = function->IsVirtualFunction() ? function->GetName() : function->GetRealName();
+			hss << funcName << " " << CAST_TYPE(HazeValueType::None) << " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<
+				CAST_DESC(desc) << " " << paramCount << " " << paramSize << " " << m->GetName() << " " 
 				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
 		}
 		else if (pointerFunction)

@@ -327,6 +327,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 			if (m_CurrLexeme == GetFunctionLabelHeader())
 			{
 				GetNextLexmeAssign_CustomType<int>(table.m_Functions[i].DescType);
+				GetNextLexmeAssign_HazeString(table.m_Functions[i].ClassName);
 				GetNextLexmeAssign_HazeString(table.m_Functions[i].Name);
 
 				table.m_Functions[i].Type.StringStream<BackendParse>(this, 
@@ -781,9 +782,20 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 						//		HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
 						//	}
 						//}
-						else if (IS_SCOPE_IGNORE(operatorData.Scope) && operatorData.Desc == HazeDataDesc::FunctionAddress)
+						else if (IS_SCOPE_IGNORE(operatorData.Scope))
 						{
-							operatorData.AddressType = InstructionAddressType::FunctionAddress;
+							if (operatorData.Desc == HazeDataDesc::FunctionAddress)
+							{
+								operatorData.AddressType = InstructionAddressType::FunctionAddress;
+							}
+							else if (operatorData.Desc == HazeDataDesc::FunctionDynamicAddress)
+							{
+								operatorData.AddressType = InstructionAddressType::FunctionDynamicAddress;
+							}
+							else
+							{
+								HAZE_LOG_ERR_W("寻找忽略变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
+							}
 						}
 						else
 						{

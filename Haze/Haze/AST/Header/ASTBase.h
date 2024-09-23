@@ -69,7 +69,7 @@ class ASTIdentifier : public ASTBase
 {
 public:
 	ASTIdentifier(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
-		Unique<ASTBase> arrayIndexExpression, Unique<ASTBase> preAst, HString nameSpace = HAZE_TEXT(""));
+		Unique<ASTBase> arrayIndexExpression, Unique<ASTBase> preAst, HString nameSpace);
 	virtual ~ASTIdentifier() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
@@ -90,13 +90,14 @@ class ASTFunctionCall : public ASTBase
 {
 public:
 	ASTFunctionCall(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name
-		, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj);
+		, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj, HString nameSpace);
 	virtual ~ASTFunctionCall() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
 	virtual const HChar* GetName() { return m_Name.c_str(); }
 
 private:
+	HString m_NameSpace;
 	HazeSectionSignal m_SectionSignal;
 	HString m_Name;
 	Unique<ASTBase> m_ClassObj;

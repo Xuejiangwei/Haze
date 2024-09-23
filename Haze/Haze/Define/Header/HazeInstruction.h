@@ -62,6 +62,7 @@ enum class HazeDataDesc : uint32
 
 	Address,
 	FunctionAddress,
+	FunctionDynamicAddress,
 
 	Element,
 
@@ -144,6 +145,7 @@ enum class InstructionAddressType : uint8
 	Local,
 
 	FunctionAddress,
+	FunctionDynamicAddress,
 
 	Constant,
 	NullPtr,
@@ -250,6 +252,7 @@ struct ClassData
 	HString Name;
 	uint32 Size;
 	V_Array<HazeVariableData> Members;
+	HashMap<HString, uint32> Functions;
 };
 
 struct FunctionData

@@ -13,7 +13,7 @@
 #include <Windows.h>
 
 #define HAZE_CALL_LOG				0
-#define HAZE_DEBUG_ENABLE			0
+#define HAZE_DEBUG_ENABLE			1
 
 #define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); \
 				auto type = OPER[0].Variable.Type.SecondaryType; \
@@ -120,7 +120,7 @@ bool IsClassMember(HazeDataDesc desc)
 void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
 
 static HashSet<InstructionOpCode> s_DebugCode = {
-		/*{ InstructionOpCode::MOV },
+		{ InstructionOpCode::MOV },
 		{ InstructionOpCode::MOVPV },
 		{ InstructionOpCode::MOVTOPV },
 		{ InstructionOpCode::LEA },
@@ -139,8 +139,8 @@ static HashSet<InstructionOpCode> s_DebugCode = {
 		{ InstructionOpCode::SHR },
 		{ InstructionOpCode::PUSH },
 		{ InstructionOpCode::POP },
-		{ InstructionOpCode::CALL },*/
-		/*{ InstructionOpCode::NEW },
+		{ InstructionOpCode::CALL },
+		{ InstructionOpCode::NEW },
 		{ InstructionOpCode::CMP },
 		{ InstructionOpCode::JMP },
 		{ InstructionOpCode::JNE },
@@ -150,7 +150,7 @@ static HashSet<InstructionOpCode> s_DebugCode = {
 		{ InstructionOpCode::JG },
 		{ InstructionOpCode::JL },
 		{ InstructionOpCode::CVT },
-		{ InstructionOpCode::LINE },*/
+		{ InstructionOpCode::LINE },
 };
 
 class InstructionProcessor
@@ -273,7 +273,7 @@ class InstructionProcessor
 		HazeStack* Stack;
 		InstructionOpCode OpCode;
 	};
-	#define INSTRUCTION_DATA_DEBUG DataDebugScope debugScope(stack, stack->m_VM->Instructions[stack->m_PC].Operator, stack->m_VM->Instructions[stack->m_PC].InsCode)
+	#define INSTRUCTION_DATA_DEBUG DataDebugScope debugScope(stack, stack->m_VM->m_Instructions[stack->m_PC].Operator, stack->m_VM->m_Instructions[stack->m_PC].InsCode)
 #else
 	#define INSTRUCTION_DATA_DEBUG
 #endif
@@ -659,7 +659,17 @@ public:
 			}
 			else
 			{
-				int functionIndex = stack->m_VM->GetFucntionIndexByName(oper[0].Variable.Name);
+				int functionIndex = -1;
+				if (oper[0].AddressType == InstructionAddressType::FunctionDynamicAddress)
+				{
+					auto obj = ((ObjectClass**)(GetOperatorAddress(stack, stack->m_VM->m_Instructions[stack->m_PC - 2].Operator[0])));
+					functionIndex = (*obj)->m_ClassInfo->Functions.find(oper[0].Variable.Name)->second;
+				}
+				else
+				{
+					functionIndex = stack->m_VM->GetFucntionIndexByName(oper[0].Variable.Name);
+				}
+				 
 				if (functionIndex >= 0)
 				{
 					auto& function = stack->m_VM->m_FunctionTable[functionIndex];

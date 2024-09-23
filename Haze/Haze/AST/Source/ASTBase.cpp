@@ -127,7 +127,7 @@ Share<CompilerValue> ASTIdentifier::GetNameValue()
 		}
 		else if (m_SectionSignal == HazeSectionSignal::Local)
 		{
-			retValue = m_Compiler->GetLocalVariable(m_DefineVariable.Name);
+			retValue = m_Compiler->GetLocalVariable(m_DefineVariable.Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 			if (!retValue)
 			{
 				retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
@@ -142,7 +142,7 @@ Share<CompilerValue> ASTIdentifier::GetNameValue()
 			}
 		}
 
-		if (!m_NameSpace.empty())
+		if (!m_NameSpace.empty() && !retValue)
 		{
 			retValue = m_Compiler->GetEnumVariable(m_NameSpace, m_DefineVariable.Name);
 		}
@@ -152,9 +152,9 @@ Share<CompilerValue> ASTIdentifier::GetNameValue()
 }
 
 ASTFunctionCall::ASTFunctionCall(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
-	HString& name, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj)
+	HString& name, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj, HString nameSpaces)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_Name(Move(name)),
-	m_FunctionParam(Move(functionParam)), m_ClassObj(Move(classObj)) {}
+	m_FunctionParam(Move(functionParam)), m_ClassObj(Move(classObj)), m_NameSpace(Move(nameSpaces)) {}
 
 Share<CompilerValue> ASTFunctionCall::CodeGen()
 {
@@ -169,7 +169,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 		auto classValue = DynamicCast<CompilerClassValue>(classObj);
 		if (classValue)
 		{
-			function = classValue->GetOwnerClass()->FindFunction(m_Name);
+			function = classValue->GetOwnerClass()->FindFunction(m_Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 		}
 	}
 	else
@@ -204,7 +204,8 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 	}
 	else
 	{
-		auto functionPointer = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(m_Name);
+		auto functionPointer = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(m_Name, 
+			m_NameSpace.empty() ? nullptr : &m_NameSpace);
 		if (functionPointer && functionPointer->IsFunction())
 		{
 			ret = m_Compiler->CreateFunctionCall(functionPointer, param);
@@ -512,7 +513,8 @@ Share<CompilerValue> ASTNew::CodeGen()
 		}
 		else
 		{
-			auto function = newClass->FindFunction(*value->GetValueType().CustomName);
+			HAZE_LOG_INFO(H_TEXT("考虑new时也要调用所有父类的构造函数\n"));
+			auto function = newClass->FindFunction(*value->GetValueType().CustomName, nullptr);
 			V_Array<Share<CompilerValue>> param;
 
 			//构造参数
