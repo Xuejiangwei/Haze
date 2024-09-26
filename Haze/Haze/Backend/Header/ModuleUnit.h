@@ -82,14 +82,16 @@ public:
 
 	struct ClassTableData
 	{
-		HString m_Name;
+		HString Name;
 		uint32 Size;
 		V_Array<ClassMemberData> Members;
+		V_Array<HString> ParentClasses;
 	};
 
 	struct ClassTable
 	{
 		V_Array<ClassTableData> Classes;
+		HashMap<HString, uint32> IndexMap;
 	};
 
 public:

@@ -277,17 +277,26 @@ void HazeExecuteFile::WriteClassTable(const ModuleUnit::ClassTable& table)
 
 	for (auto& iter : table.Classes)
 	{
-		s_BinaryString = WString2String(iter.m_Name);
+		s_BinaryString = WString2String(iter.Name);
 		number = (uint32)s_BinaryString.size();
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 		m_FileStream->write(s_BinaryString.data(), number);
 
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Size));
 
+
+		number = (uint32)iter.ParentClasses.size();
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+		for (uint64 i = 0; i < iter.ParentClasses.size(); i++)
+		{
+			number = table.IndexMap.find(iter.ParentClasses[i])->second;
+			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+		}
+
 		number = (uint32)iter.Members.size();
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 
-		for (size_t i = 0; i < iter.Members.size(); i++)
+		for (uint64 i = 0; i < iter.Members.size(); i++)
 		{
 			s_BinaryString = WString2String(iter.Members[i].Variable.Name);
 			number = (uint32)s_BinaryString.size();
@@ -533,6 +542,13 @@ void HazeExecuteFile::ReadClassTable(HazeVM* vm)
 		vm->m_ClassTable[i].Name = String2WString(s_BinaryString);
 
 		m_InFileStream->read(HAZE_READ(vm->m_ClassTable[i].Size));
+
+		m_InFileStream->read(HAZE_READ(number));
+		vm->m_ClassTable[i].InheritClasses.resize(number);
+		for (uint64 j = 0; j < number; j++)
+		{
+			m_InFileStream->read(HAZE_READ(vm->m_ClassTable[i].InheritClasses[j]));
+		}
 
 		m_InFileStream->read(HAZE_READ(number));
 		vm->m_ClassTable[i].Members.resize(number);

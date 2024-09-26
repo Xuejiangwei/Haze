@@ -72,6 +72,8 @@ private:
 
 	const ModuleUnit::ClassTableData* const GetClass(const HString& className);
 
+	uint32 GetClassIndex(const HString& className);
+
 	uint32 GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HString& memberName);
 
 private:

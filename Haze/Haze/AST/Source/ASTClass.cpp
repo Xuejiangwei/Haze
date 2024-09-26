@@ -48,7 +48,8 @@ void ASTClass::CodeGen()
 			{
 				if (CompilerClass::HasCommomInheritClass(parentClasses[i], parentClasses[j]))
 				{
-					HAZE_LOG_ERR_W("创建类<%s>错误, 存在共同的父类<%s>!\n", m_ClassName.c_str(), m_ParentClasses[i].c_str());
+					HAZE_LOG_ERR_W("创建类<%s>错误, 父类<%s><%s>存在共同的父类!\n", m_ClassName.c_str(), 
+						m_ParentClasses[i].c_str(), m_ParentClasses[j].c_str());
 					return;
 				}
 			}

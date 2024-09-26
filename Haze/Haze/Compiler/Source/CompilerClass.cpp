@@ -30,7 +30,7 @@ CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name
 	MemoryAlign(memberNum);
 	uint32 alignSize = GetAlignSize();
 	alignSize = alignSize > HAZE_ALIGN_BYTE ? alignSize : HAZE_ALIGN_BYTE;
-	m_DataSize = lastMember ? HAZE_ALIGN(m_Offsets.back() + lastMember->GetSize(), alignSize) : m_DataSize;
+	m_DataSize = lastMember ? HAZE_ALIGN(m_Offsets.back() + lastMember->GetSize(), alignSize) + m_DataSize : m_DataSize;
 	HAZE_LOG_INFO(H_TEXT("¿‡<%s> DataSize %d\n"), name.c_str(), m_DataSize);
 }
 
@@ -276,8 +276,16 @@ int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HStr
 
 void CompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)
 {
-	hss << GetClassLabelHeader() << " " << m_Name << " " << m_DataSize << " " << m_MemberCount << std::endl;
+	hss << GetClassLabelHeader() << " " << m_Name << " " << m_DataSize << std::endl;
+
+	hss << m_ParentClass.size() << std::endl;
+	for (uint64 i = 0; i < m_ParentClass.size(); i++)
+	{
+		hss << m_ParentClass[i]->GetName() << std::endl;
+	}
 	
+	hss << m_MemberCount << std::endl;
+
 	uint32 offset = 0;
 	GenClassData_I_CodeToHss(hss, offset);
 }
@@ -393,11 +401,11 @@ bool CompilerClass::IsInheritClass(CompilerClass* c) const
 
 bool CompilerClass::HasCommomInheritClass(CompilerClass* c1, CompilerClass* c2)
 {
-	if (c1->IsInheritClass(c2) || c2->IsInheritClass(c1))
+	if (c1 == c2 || c1->IsInheritClass(c2) || c2->IsInheritClass(c1))
 	{
 		return true;
 	}
-	else
+	/*else
 	{
 		for (uint64 i = 0; i < c1->m_ParentClass.size(); i++)
 		{
@@ -406,7 +414,7 @@ bool CompilerClass::HasCommomInheritClass(CompilerClass* c1, CompilerClass* c2)
 				return true;
 			}
 		}
-	}
+	}*/
 
 	return false;
 }

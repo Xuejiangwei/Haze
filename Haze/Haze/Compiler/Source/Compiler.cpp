@@ -1058,9 +1058,10 @@ Share<CompilerValue> Compiler::CreateShr(Share<CompilerValue> assignTo, Share<Co
 	return assignTo;
 }
 
-Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerFunction> function, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo)
+Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerFunction> function, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo,
+	const HString* nameSpace)
 {
-	return GetCurrModule()->CreateFunctionCall(function, param, thisPointerTo);
+	return GetCurrModule()->CreateFunctionCall(function, param, thisPointerTo, nameSpace);
 }
 
 Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo)

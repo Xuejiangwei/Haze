@@ -544,7 +544,7 @@ HString GenIRCode(InstructionOpCode opCode, uint64 number)
 }
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, uint64 paramCount, uint64 paramSize, Share<CompilerFunction> function,
-	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, void* advanceFuncAddress)
+	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, void* advanceFuncAddress, const HString* nameSpace)
 {
 	switch (opCode)
 	{
@@ -554,8 +554,8 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		hss << GetInstructionString(InstructionOpCode::CALL) << " ";
 		if (function)
 		{
-			auto desc = function->IsVirtualFunction() ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
-			auto& funcName = function->IsVirtualFunction() ? function->GetName() : function->GetRealName();
+			auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
+			auto& funcName = desc == HazeDataDesc::FunctionDynamicAddress ? function->GetName() : function->GetRealName();
 			hss << funcName << " " << CAST_TYPE(HazeValueType::None) << " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<
 				CAST_DESC(desc) << " " << paramCount << " " << paramSize << " " << m->GetName() << " " 
 				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;

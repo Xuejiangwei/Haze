@@ -288,8 +288,16 @@ void BackendParse::Parse_I_Code_ClassTable()
 			{
 				auto& classData = table.Classes[i];
 
-				GetNextLexmeAssign_HazeString(classData.m_Name);
+				GetNextLexmeAssign_HazeString(classData.Name);
 				GetNextLexmeAssign_StandardType(classData.Size);
+
+				GetNextLexmeAssign_StandardType(number);
+				classData.ParentClasses.resize(number);
+				for (uint64 j = 0; j < classData.ParentClasses.size(); j++)
+				{
+					GetNextLexmeAssign_HazeString(classData.ParentClasses[j]);
+				}
+
 				GetNextLexmeAssign_StandardType(number);
 				classData.Members.resize(number);
 
@@ -595,7 +603,13 @@ void BackendParse::GenOpCodeFile()
 
 		newStringTable.Strings.insert(newStringTable.Strings.end(), 
 			iter.second->m_StringTable.Strings.begin(), iter.second->m_StringTable.Strings.end());
-		newClassTable.Classes.insert(newClassTable.Classes.end(), iter.second->m_ClassTable.Classes.begin(), iter.second->m_ClassTable.Classes.end());
+
+		newClassTable.Classes.insert(newClassTable.Classes.end(), 
+			iter.second->m_ClassTable.Classes.begin(), iter.second->m_ClassTable.Classes.end());
+		for (uint64 i = newClassTable.Classes.size() - iter.second->m_ClassTable.Classes.size(); i < newClassTable.Classes.size(); i++)
+		{
+			newClassTable.IndexMap[newClassTable.Classes[i].Name] = (uint32)i;
+		}
 	}
 
 	FindAddress(newGlobalDataTable, newFunctionTable);
@@ -825,7 +839,7 @@ const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HString& cl
 	{
 		for (auto& classData : iter.second->m_ClassTable.Classes)
 		{
-			if (classData.m_Name == className)
+			if (classData.Name == className)
 			{
 				return &classData;
 			}

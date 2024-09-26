@@ -253,6 +253,7 @@ struct ClassData
 	uint32 Size;
 	V_Array<HazeVariableData> Members;
 	HashMap<HString, uint32> Functions;
+	V_Array<uint32> InheritClasses;
 };
 
 struct FunctionData

@@ -197,10 +197,14 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 			if (!classObj)
 			{
 				classObj = m_Compiler->GetCurrModule()->GetCurrFunction()->GetThisLocalVariable();
+				if (!m_NameSpace.empty())
+				{
+					function = DynamicCast<CompilerClassValue>(classObj)->GetOwnerClass()->FindFunction(m_Name, &m_NameSpace);
+				}
 			}
 		}
 
-		ret = m_Compiler->CreateFunctionCall(function, param, classObj);
+		ret = m_Compiler->CreateFunctionCall(function, param, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 	}
 	else
 	{

@@ -186,7 +186,8 @@ public:
 
 	Share<CompilerValue> CreateCVT(Share<CompilerValue> left, Share<CompilerValue> right);
 
-	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> function, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr);
+	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> function, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr,
+		const HString* nameSpace = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr);
 

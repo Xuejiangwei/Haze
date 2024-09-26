@@ -702,14 +702,14 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 }
 
 Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> callFunction, 
-	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
+	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo, const HString* nameSpace)
 {
 	HAZE_STRING_STREAM hss;
 	uint32 size = 0;
 
 	PushTempRegister pushTempRegister(hss, m_Compiler, this);
 	FunctionCall(hss, callFunction, nullptr, nullptr, size, params, thisPointerTo);
-	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction);
+	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction,nullptr, nullptr, nullptr, nameSpace);
 
 	auto retRegister = Compiler::GetRegister(RET_REGISTER);
 

@@ -126,7 +126,8 @@ private:
 
 	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
 
-	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
+	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr,
+		const HString* nameSpace = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
 	

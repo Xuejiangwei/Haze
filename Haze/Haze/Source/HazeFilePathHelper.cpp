@@ -14,7 +14,7 @@ HString GetModuleFilePath(const HString& moduleName, const HString* refModulePat
 		return *path;
 	}
 
-	std::filesystem::path filePath = g_rootCodePath + HAZE_STANDARD_FOLDER + moduleName + HAZE_FILE_SUFFIX;
+	std::filesystem::path filePath = g_rootCodePath + H_TEXT("±ê×¼¿â\\") + moduleName + HAZE_FILE_SUFFIX;
 	if (std::filesystem::exists(filePath))
 	{
 		return filePath.c_str();
