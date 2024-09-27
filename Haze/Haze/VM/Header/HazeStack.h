@@ -53,7 +53,7 @@ public:
 
 	void JmpTo(const InstructionData& m_Data);
 
-	HazeRegister* GetVirtualRegister(const HChar* name);
+	HazeRegister* GetVirtualRegister(const HChar* name) { return &m_VirtualRegister.find(name)->second; }
 
 private:
 	void Run(bool isHazeCall = false);

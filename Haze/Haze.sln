@@ -10,6 +10,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HazeLaunch", "..\HazeLaunch
 		{F9E7CC42-BC39-4735-9040-5B1F7B756D81} = {F9E7CC42-BC39-4735-9040-5B1F7B756D81}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HazeTestDLL", "HazeTestDLL\HazeTestDLL.vcxproj", "{002125F8-A25A-44DB-9D9C-412753FC4D77}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -34,6 +36,14 @@ Global
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x64.Build.0 = Release|x64
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x86.ActiveCfg = Release|Win32
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x86.Build.0 = Release|Win32
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Debug|x64.ActiveCfg = Debug|x64
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Debug|x64.Build.0 = Debug|x64
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Debug|x86.ActiveCfg = Debug|Win32
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Debug|x86.Build.0 = Debug|Win32
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Release|x64.ActiveCfg = Release|x64
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Release|x64.Build.0 = Release|x64
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Release|x86.ActiveCfg = Release|Win32
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

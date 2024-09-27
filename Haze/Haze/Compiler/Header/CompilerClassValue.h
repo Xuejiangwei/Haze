@@ -25,7 +25,7 @@ public:
 
 	int GetMemberIndex(CompilerValue* value);
 
-	bool GetMemberName(const CompilerValue* memberValue, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
+	bool GetMemberName(const CompilerValue* memberValue, HString& outName);
 
 private:
 	CompilerClass* m_OwnerClass;

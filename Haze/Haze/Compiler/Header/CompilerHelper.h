@@ -21,7 +21,7 @@ Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDe
 Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var);
 
 bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
-	const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
+	const CompilerValue* value, HString& outName);
 
 uint32 GetSizeByCompilerValue(Share<CompilerValue> v);
 

@@ -73,6 +73,8 @@ private:
 
 	void ResetSymbolClassIndex(const HString& name, uint64 index);
 
+	void LoadDLLModules();
+	
 	void DynamicInitializerForGlobalData();
 
 	void OnExecLine(uint32 Line);

@@ -13,7 +13,8 @@ extern Unique<HazeDebugger> g_Debugger;
 extern Unique<HazeLibraryManager> g_HazeLibManager;
 
 bool g_IsHazeEnd = false;
-std::wstring g_rootCodePath;
+std::wstring g_HazeExePath;
+std::wstring g_MainFilePath;
 
 void HazeNewHandler()
 {
@@ -63,7 +64,7 @@ enum class ParamType
 	Files,
 };
 
-uint32 GetParam(ParamType type, char** paramArray, int length)
+int GetParam(ParamType type, char** paramArray, int length)
 {
 	static HashMap<ParamType, const char*> HashMap_Param =
 	{
@@ -77,11 +78,11 @@ uint32 GetParam(ParamType type, char** paramArray, int length)
 	auto Iter = HashMap_Param.find(type);
 	if (Iter != HashMap_Param.end())
 	{
-		for (size_t i = 0; i < length; i++)
+		for (int i = 0; i < length; i++)
 		{
 			if (i + 1 < length && strcmp(paramArray[i], Iter->second) == 0)
 			{
-				return (uint32)i + 1;
+				return i + 1;
 			}
 		}
 	}
@@ -94,7 +95,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 {
 	atexit(HazeExit);
 
-	for (size_t i = 0; i < argCount; i++)
+	for (int i = 0; i < argCount; i++)
 	{
 		HAZE_LOG_INFO("%s\n", argValue[i]);
 	}
@@ -102,8 +103,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	HazePreInit();
 
 	std::filesystem::path ExeFile(argValue[0]);
-	//RootCodePath = ExeFile.parent_path();
-	//std::wstring Path = std::filesystem::current_path();
+	g_HazeExePath = ExeFile.parent_path().wstring() + H_TEXT("\\");
 
 	char* mainFilePath = nullptr;
 	HString mainFunction;
@@ -130,10 +130,10 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	}
 
 	std::filesystem::path mainFile(mainFilePath);
-	g_rootCodePath = mainFile.parent_path().wstring() + H_TEXT("\\");
+	g_MainFilePath = mainFile.parent_path().wstring() + H_TEXT("\\");
 
-	std::filesystem::create_directory(g_rootCodePath + HAZE_FILE_INTER);
-	std::filesystem::create_directory(g_rootCodePath + HAZE_FILE_PATH_BIN);
+	std::filesystem::create_directory(g_MainFilePath + HAZE_FILE_INTER);
+	std::filesystem::create_directory(g_MainFilePath + HAZE_FILE_PATH_BIN);
 
 	for (int dll_Index = 0; dll_Index < argCount; dll_Index += 2)
 	{

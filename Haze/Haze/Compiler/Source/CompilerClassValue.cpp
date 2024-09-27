@@ -34,7 +34,7 @@ Share<CompilerValue> CompilerClassValue::GetMember(const HString& name, HString*
 	auto index = GetMemberIndex(name, nameSpace);
 	if (index < 0)
 	{
-		COMPILER_ERR_MODULE_W("未能在类<%s>中找到<%s>成员", m_OwnerClass->GetName().c_str(), name.c_str());
+		return nullptr;
 	}
 
 	return m_Data.size() > index  ? m_Data[index] : nullptr;
@@ -61,7 +61,7 @@ int CompilerClassValue::GetMemberIndex(CompilerValue* value)
 	return -1;
 }
 
-bool CompilerClassValue::GetMemberName(const CompilerValue* memberValue, HString& outName, bool getOffset, V_Array<Pair<uint64, CompilerValue*>>* offsets)
+bool CompilerClassValue::GetMemberName(const CompilerValue* memberValue, HString& outName)
 {
 	//return m_OwnerClass->GetMemberName(this, memberValue, outName, getOffset, offsets);
 

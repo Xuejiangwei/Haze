@@ -49,7 +49,7 @@ const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(ui
 		}
 		else
 		{
-			return HazeDefineType();
+			return m_ParamTypes[0];
 		}
 	}
 }

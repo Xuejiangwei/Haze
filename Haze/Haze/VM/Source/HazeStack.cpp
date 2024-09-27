@@ -52,7 +52,7 @@ void HazeStack::RunGlobalDataInit(uint32 startPC, uint32 endPC)
 void HazeStack::JmpTo(const InstructionData& data)
 {
 	auto& function = m_StackFrame.back().FunctionInfo;
-	int address = function->FunctionDescData.InstructionStartAddress + data.Extra.Jmp.StartAddress;
+	int address = (decltype(m_PC))function->FunctionDescData.InstructionStartAddress + data.Extra.Jmp.StartAddress;
 	memcpy(&m_PC, &address, sizeof(m_PC));
 
 	m_PC--;
@@ -102,16 +102,6 @@ void HazeStack::PCStepInc()
 	++m_PC;
 }
 
-HazeRegister* HazeStack::GetVirtualRegister(const HChar* name)
-{
-	auto iter = m_VirtualRegister.find(name);
-	if (iter != m_VirtualRegister.end())
-	{
-		return &iter->second;
-	}
-	return nullptr;
-}
-
 void HazeStack::InitStackRegister()
 {
 	m_VirtualRegister =
@@ -151,7 +141,7 @@ void HazeStack::OnCall(const FunctionData* info, int paramSize)
 	//在调用函数时，将调用的函数栈全部清零，就不用担心GC时脏数据转换成有效的指针
 	memset(&m_StackMain[m_EBP], 0, m_ESP - m_EBP);
 
-	m_PC = info->FunctionDescData.InstructionStartAddress;
+	m_PC = (decltype(m_PC))info->FunctionDescData.InstructionStartAddress;
 	--m_PC;
 
 	AddCallHazeTimes();

@@ -74,7 +74,6 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 	V_Array<HazeDefineVariable> params;
 	m_GlobalDataFunction = CreateFunction(functionName, functionType, params);
 	m_GlobalDataFunction->m_DescType = InstructionFunctionType::HazeFunction;
-	m_Compiler->SetInsertBlock(m_GlobalDataFunction->GetEntryBlock());
 }
 
 CompilerModule::~CompilerModule()
@@ -112,11 +111,6 @@ void CompilerModule::RestartTemplateModule(const HString& moduleName)
 void CompilerModule::FinishModule()
 {
 	m_CurrFunction.clear();
-
-	HAZE_STRING_STREAM hss;
-	GenIRCode(hss, this, InstructionOpCode::RET, nullptr, nullptr, nullptr);
-	hss << std::endl;
-	m_GlobalDataFunction->GetEntryBlock()->PushIRCode(hss.str());
 }
 
 void CompilerModule::GenCodeFile()
@@ -362,10 +356,22 @@ Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> comp
 	return function;
 }
 
+void CompilerModule::BeginGlobalDataDefine()
+{
+	m_CurrFunction = m_GlobalDataFunction->GetName();
+	m_Compiler->SetInsertBlock(m_GlobalDataFunction->GetEntryBlock());
+}
+
+void CompilerModule::EndGlobalDataDefine()
+{
+	FinishFunction();
+}
+
 void CompilerModule::FinishFunction()
 {
 	GetCurrFunction()->FunctionFinish();
 	m_CurrFunction.clear();
+	m_Compiler->ClearBlockPoint();
 }
 
 void CompilerModule::CreateAdd(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
@@ -728,7 +734,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 	GetGlobalVariableName(this, pointerFunction, varName);
 	if (varName.empty())
 	{
-		GetCurrFunction()->FindLocalVariableName(pointerFunction.get(), varName);
+		GetCurrFunction()->FindLocalVariableName(pointerFunction, varName);
 		if (varName.empty())
 		{
 			HAZE_LOG_ERR_W("函数指针调用失败!\n");
@@ -753,7 +759,7 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 	GetGlobalVariableName(this, thisPointerTo, varName);
 	if (varName.empty())
 	{
-		GetCurrFunction()->FindLocalVariableName(thisPointerTo.get(), varName);
+		GetCurrFunction()->FindLocalVariableName(thisPointerTo, varName);
 		if (varName.empty())
 		{
 			HAZE_LOG_ERR_W("函数指针调用失败!\n");
@@ -947,6 +953,8 @@ uint32 CompilerModule::GetClassSize(const HString& className)
 
 void CompilerModule::GenICode()
 {
+	HAZE_STRING_STREAM hss;
+
 	//版本 2个字节
 	//FS_Ass << "1 1" << std::endl;
 
@@ -954,7 +962,15 @@ void CompilerModule::GenICode()
 	//FS_Ass << 1024 << std::endl;
 
 	//库类型
-	HAZE_STRING_STREAM hss;
+	if (m_Path.empty())
+	{
+		hss << GetName() << std::endl;
+	}
+	else
+	{
+		hss << m_Path << std::endl;
+	}
+
 	hss << (uint32)m_ModuleLibraryType << std::endl;
 	/*
 	*	全局数据 ：	个数

@@ -632,11 +632,14 @@ ASTDataSection::ASTDataSection(Compiler* compiler, const SourceLocation& locatio
 
 Share<CompilerValue> ASTDataSection::CodeGen()
 {
+	m_Compiler->GetCurrModule()->BeginGlobalDataDefine();
+
 	for (size_t i = 0; i < m_Expressions.size(); i++)
 	{
 		m_Expressions[i]->CodeGen();
 	}
 
+	m_Compiler->GetCurrModule()->EndGlobalDataDefine();
 	return nullptr;
 }
 

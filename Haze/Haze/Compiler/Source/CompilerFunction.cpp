@@ -236,7 +236,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 	{
-		if (!FindLocalVariableName(m_LocalVariables[i].first.get(), LocalVariableName))
+		if (!FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName))
 		{
 			HAZE_LOG_ERR_W("函数<%s>生成中间代码错误，未能找到参数临时变量!\n", m_Name.c_str());
 			return;
@@ -253,7 +253,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	for (size_t i = m_Params.size(); i < m_LocalVariables.size(); i++)
 	{
-		FindLocalVariableName(m_LocalVariables[i].first.get(), LocalVariableName);
+		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 		hss << " " << m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize() << " " << m_LocalVariables[i].second << std::endl;
@@ -333,16 +333,16 @@ HString CompilerFunction::GenForStepBlockName()
 	return hss.str();
 }
 
-bool CompilerFunction::FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset, V_Array<Pair<uint64, CompilerValue*>>* offsets)
+bool CompilerFunction::FindLocalVariableName(const Share<CompilerValue> value, HString& outName)
 {
-	if (m_EntryBlock->FindLocalVariableName(value, outName, getOffset, offsets))
+	if (m_EntryBlock->FindLocalVariableName(value, outName))
 	{
 		return true;
 	}
 
 	for (uint64 i = 0; i < m_TempRegisters.size(); i++)
 	{
-		if (m_TempRegisters[i].Value.get() == value)
+		if (m_TempRegisters[i].Value == value)
 		{
 			outName = HAZE_LOCAL_TEMP_REGISTER + String2WString(ToString(i));
 			return true;
@@ -418,21 +418,8 @@ const HazeDefineType& CompilerFunction::GetParamTypeLeftToRightByIndex(uint64 in
 		else
 		{
 			COMPILER_ERR_W("函数<%s>从左往右，获得函数的第<%d>个参数错误", m_Name.c_str(), index);
-			return HazeDefineType();
+			return m_Params[0].second->GetValueType();
 		}
-	}
-}
-
-const HazeDefineType& CompilerFunction::GetThisParam()
-{
-	if (m_OwnerClass)
-	{
-		return m_Params[m_Params.size() - 1].second->GetValueType();
-	}
-	else
-	{
-		COMPILER_ERR_W("函数<%s>不是类函数", m_Name.c_str());
-		return HazeDefineType();
 	}
 }
 

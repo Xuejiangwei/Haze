@@ -78,6 +78,10 @@ public:
 
 	void EndCreateFunctionParamVariable() { m_IsBeginCreateFunctionVariable = false; }
 
+	void BeginGlobalDataDefine();
+
+	void EndGlobalDataDefine();
+
 	bool IsBeginCreateFunctionVariable() const { return m_IsBeginCreateFunctionVariable; }
 
 	void FinishFunction();

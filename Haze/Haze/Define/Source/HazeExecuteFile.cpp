@@ -200,6 +200,13 @@ void HazeExecuteFile::WriteModule(const HashMap<HString, Share<ModuleUnit>>& mod
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 		m_FileStream->write(s_BinaryString.c_str(), number);
 
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.second->m_LibraryType));
+
+		s_BinaryString = WString2String(iter.second->m_Path);
+		number = (uint32)s_BinaryString.size();
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+		m_FileStream->write(s_BinaryString.c_str(), number);
+
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(globalDataIndex));
 		globalDataIndex += (uint32)iter.second->m_GlobalDataTable.Data.size();
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(globalDataIndex));
@@ -440,12 +447,7 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 
 void HazeExecuteFile::ReadExecuteFile(HazeVM* vm)
 {
-	if (vm->IsDebug())
-	{
-		//µ÷ÊÔÓÃ
-		ReadModule(vm);
-	}
-
+	ReadModule(vm);
 	ReadGlobalDataTable(vm);
 	ReadStringTable(vm);
 	ReadClassTable(vm);
@@ -465,6 +467,13 @@ void HazeExecuteFile::ReadModule(HazeVM* vm)
 		s_BinaryString.resize(number);
 		m_InFileStream->read(s_BinaryString.data(), number);
 		vm->m_ModuleData[i].Name = String2WString(s_BinaryString);
+
+		m_InFileStream->read(HAZE_READ(vm->m_ModuleData[i].LibType));
+
+		m_InFileStream->read(HAZE_READ(number));
+		s_BinaryString.resize(number);
+		m_InFileStream->read(s_BinaryString.data(), number);
+		vm->m_ModuleData[i].Path = String2WString(s_BinaryString);
 
 		m_InFileStream->read(HAZE_READ(vm->m_ModuleData[i].GlobalDataIndex.first));
 		m_InFileStream->read(HAZE_READ(vm->m_ModuleData[i].GlobalDataIndex.second));
@@ -489,7 +498,7 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* vm)
 	vm->m_GlobalInitFunction.resize(number);
 	for (uint64 i = 0; i < vm->m_GlobalInitFunction.size(); i++)
 	{
-		uint64 index = -1;
+		uint64 index = (uint64)-1;
 		m_InFileStream->read(HAZE_READ(index));
 		vm->m_GlobalInitFunction[i] = index;
 	}
@@ -594,7 +603,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* vm)
 		if (iter != vm->m_ClassSymbol.end())
 		{
 			number = (uint32)(iter->first + HAZE_CLASS_FUNCTION_CONBINE).length();
-			vm->m_ClassTable[iter->second].Functions[name.substr(number)] = i;
+			vm->m_ClassTable[iter->second].Functions[name.substr(number)] = (uint32)i;
 		}
 
 		ReadType(vm, m_InFileStream, vm->m_FunctionTable[i].Type);
@@ -658,7 +667,6 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 	m_InFileStream->read(HAZE_READ(funcInsLength));
 	vm->m_Instructions.resize(funcInsLength);
 
-	uint32 number = 0;
 	for (uint64 i = 0; i < vm->m_Instructions.size(); i++)
 	{
 		m_InFileStream->read(HAZE_READ(vm->m_Instructions[i].InsCode));

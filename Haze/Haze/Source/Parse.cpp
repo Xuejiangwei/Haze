@@ -932,7 +932,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 			moreExpect = true;
 			HString name = m_CurrLexeme;
 			ret = MakeUnique<ASTIdentifier>(m_Compiler, SourceLocation(tempLineCount), 
-				m_StackSectionSignal.top(), name, nullptr, Move(preAST), nameSpace);
+				m_StackSectionSignal.top(), name, nullptr, Move(preAST), identiferName);
 		}
 	}
 	else

@@ -45,7 +45,7 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 
 	uint64 v = 0;
 
-	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE - sizeof(v);
+	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE - (int)sizeof(v);
 	memcpy(&v, stack->GetAddressByEBP(offset), sizeof(v));
 
 	HAZE_STRING_STREAM hss;

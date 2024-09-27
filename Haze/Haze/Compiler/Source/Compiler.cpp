@@ -835,10 +835,6 @@ Share<CompilerBlock> Compiler::GetInsertBlock()
 	{
 		return m_InsertBaseBlock;
 	}
-	else if (GetCurrModule())
-	{
-		return GetCurrModule()->GetGlobalDataFunction()->GetEntryBlock();
-	}
 	return nullptr;
 }
 
@@ -877,7 +873,7 @@ Share<CompilerValue> Compiler::CreateLea(Share<CompilerValue> allocaValue, Share
 	}
 }
 
-Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share<CompilerValue> value, bool storeValue)
+Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share<CompilerValue> value)
 {
 	/*if (allocaValue->IsRefrence() && !value->IsRefrence())
 	{
@@ -929,8 +925,6 @@ Share<CompilerValue> Compiler::CreateMovPV(Share<CompilerValue> allocaValue, Sha
 	{
 		COMPILER_ERR_MODULE_W("生成<%s>操作错误", GetInstructionString(InstructionOpCode::MOVPV), GetCurrModuleName().c_str());
 	}*/
-
-	return allocaValue;
 }
 
 
@@ -1195,6 +1189,7 @@ Share<CompilerValue> Compiler::CreatePointerToValue(Share<CompilerValue> value)
 	else
 	{
 		COMPILER_ERR_MODULE_W("不能对非基本类取地址", GetCurrModuleName().c_str());
+		return nullptr;
 	}
 }
 
@@ -1323,7 +1318,7 @@ void Compiler::ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Sh
 			else
 			{
 				auto tempRegister = GetTempRegister(right->GetValueType());
-				right = CreateMov(tempRegister, right, false);
+				right = CreateMov(tempRegister, right);
 			}
 		}
 		else
@@ -1337,7 +1332,7 @@ void Compiler::ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Sh
 			else
 			{
 				auto tempRegister = GetTempRegister(right->GetValueType());
-				left = CreateMov(tempRegister, left, false);
+				left = CreateMov(tempRegister, left);
 			}
 		}
 	}

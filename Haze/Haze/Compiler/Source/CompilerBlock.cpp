@@ -40,35 +40,6 @@ bool CompilerBlock::FindLocalVariableName(const Share<CompilerValue>& value, HSt
 	return false;
 }
 
-bool CompilerBlock::FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset, 
-	V_Array<Pair<uint64, CompilerValue*>>* offsets)
-{
-	uint64 offset = 0;
-	for (auto& it : m_Allocas)
-	{
-		if (TrtGetVariableName(m_ParentFunction, it, value, outName, getOffset, offsets))
-		{
-			if (getOffset)
-			{
-				offsets->push_back({ offset, it.second.get() });
-				outName = it.first;
-			}
-			return true;
-		}
-		offset += it.second->GetValueType().GetCompilerTypeSize();
-	}
-
-	for (auto& iter : m_ChildBlocks)
-	{
-		if (iter->FindLocalVariableName(value, outName, getOffset, offsets))
-		{
-			return true;
-		}
-	}
-
-	return false;
-}
-
 CompilerBlock* CompilerBlock::FindLoopBlock()
 {
 	auto block = this;

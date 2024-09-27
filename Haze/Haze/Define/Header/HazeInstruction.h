@@ -232,10 +232,12 @@ struct FunctionDescData
 struct ModuleData
 {
 	HString Name;
+	HString Path;
 	Pair<uint32, uint32> GlobalDataIndex;
 	Pair<uint32, uint32> StringIndex;
 	Pair<uint32, uint32> ClassIndex;
 	Pair<uint32, uint32> FunctionIndex;
+	HazeLibraryType LibType;
 
 	ModuleData()
 	{

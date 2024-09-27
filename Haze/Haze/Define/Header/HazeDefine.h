@@ -34,8 +34,9 @@ using HString = std::wstring;
 #define HAZE_MODULE_PATH_CONBINE		H_TEXT("·")
 #define HAZE_INTER_SYMBOL_TABLE			H_TEXT("InterSymbol")
 
-#define HAZE_CONSTANT_STRING_NAME		H_TEXT("常字符串指针")
+#define HAZE_LOAD_DLL_SUFFIX			H_TEXT(".dll")
 
+#define HAZE_CONSTANT_STRING_NAME		H_TEXT("常字符串指针")
 #define HAZE_MULTI_PARAM_NAME			H_TEXT("多参数")
 
 #define HEADER_STRING_GLOBAL_DATA		H_TEXT("GlobalDataTable")
@@ -135,5 +136,3 @@ using uint64 = unsigned long long;
 
 using float32 = float;
 using float64 = double;
-
-using usize = size_t;

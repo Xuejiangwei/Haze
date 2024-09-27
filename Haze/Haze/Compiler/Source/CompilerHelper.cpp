@@ -150,7 +150,7 @@ Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeV
 }
 
 bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
-	const CompilerValue* value, HString& outName, bool getOffsets, V_Array<Pair<uint64, CompilerValue*>>* offsets)
+	const CompilerValue* value, HString& outName)
 {
 	if (data.second.get() == value)
 	{
@@ -158,12 +158,12 @@ bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<Co
 		return true;
 	}
 
-	if (value->IsClassMember())
+	/*if (value->IsClassMember())
 	{
 		if (data.second->IsClass())
 		{
 			auto compilerClass = DynamicCast<CompilerClassValue>(data.second);
-			if (compilerClass->GetMemberName(value, outName, getOffsets, offsets))
+			if (compilerClass->GetMemberName(value, outName))
 			{
 				outName = GetLocalVariableName(data.first, data.second) + outName;
 				if (!value->IsClassPublicMember() && function->GetClass() != compilerClass->GetOwnerClass())
@@ -174,7 +174,7 @@ bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<Co
 				return true;
 			}
 		}
-	}
+	}*/
 
 	return false;
 }
@@ -226,7 +226,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 	else if (value->IsLocalVariable())
 	{
-		find = compilerModule->GetCurrFunction()->FindLocalVariableName(value.get(), s_StrName);
+		find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, s_StrName);
 	}
 	else if (value->IsFunctionAddress())
 	{
@@ -495,40 +495,43 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 {
 	switch (opCode)
 	{
-	case InstructionOpCode::JMP:
-		hss << GetInstructionString(opCode) << " " << block1->GetName() << std::endl;
-		break;
-	case InstructionOpCode::JNE:
-	case InstructionOpCode::JNG:
-	case InstructionOpCode::JNL:
-	case InstructionOpCode::JE:
-	case InstructionOpCode::JG:
-	case InstructionOpCode::JL:
-	{
-		hss << GetInstructionString(opCode) << " ";
-
-		if (block1)
+		case InstructionOpCode::JMP:
+			hss << GetInstructionString(opCode) << " " << block1->GetName() << std::endl;
+			break;
+		case InstructionOpCode::JNE:
+		case InstructionOpCode::JNG:
+		case InstructionOpCode::JNL:
+		case InstructionOpCode::JE:
+		case InstructionOpCode::JG:
+		case InstructionOpCode::JL:
 		{
-			hss << block1->GetName() << " ";
-		}
-		else
-		{
-			hss << HAZE_JMP_NULL << " ";
-		}
+			hss << GetInstructionString(opCode) << " ";
 
-		if (block2)
-		{
-			hss << block2->GetName();
-		}
-		else
-		{
-			hss << HAZE_JMP_NULL << " ";
-		}
+			if (block1)
+			{
+				hss << block1->GetName() << " ";
+			}
+			else
+			{
+				hss << HAZE_JMP_NULL << " ";
+			}
 
-		hss << std::endl;
+			if (block2)
+			{
+				hss << block2->GetName();
+			}
+			else
+			{
+				hss << HAZE_JMP_NULL << " ";
+			}
 
-	}
-		break;
+			hss << std::endl;
+
+		}
+			break;
+		default:
+			COMPILER_ERR_MODULE_W("生成<%s>中间代码错误, 中间操作码为空", GetInstructionString(opCode), m->GetName().c_str());
+			break;
 	}
 }
 
@@ -557,7 +560,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
 			auto& funcName = desc == HazeDataDesc::FunctionDynamicAddress ? function->GetName() : function->GetRealName();
 			hss << funcName << " " << CAST_TYPE(HazeValueType::None) << " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<
-				CAST_DESC(desc) << " " << paramCount << " " << paramSize << " " << m->GetName() << " " 
+				CAST_DESC(desc) << " " << paramCount << " " << paramSize << " " << function->GetModule()->GetName() << " "
 				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
 		}
 		else if (pointerFunction)
@@ -565,7 +568,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			m->GetGlobalVariableName(m, pointerFunction, varName);
 			if (varName.empty())
 			{
-				m->GetCurrFunction()->FindLocalVariableName(pointerFunction.get(), varName);
+				m->GetCurrFunction()->FindLocalVariableName(pointerFunction, varName);
 				if (varName.empty())
 				{
 					HAZE_LOG_ERR_W("函数指针调用失败!\n");
@@ -582,7 +585,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			m->GetGlobalVariableName(m, advancePointerTo, varName);
 			if (varName.empty())
 			{
-				m->GetCurrFunction()->FindLocalVariableName(advancePointerTo.get(), varName);
+				m->GetCurrFunction()->FindLocalVariableName(advancePointerTo, varName);
 				if (varName.empty())
 				{
 					HAZE_LOG_ERR_W("复杂类型函数调用失败!\n");

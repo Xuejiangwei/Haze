@@ -62,7 +62,7 @@ public:
 
 	HString GenForStepBlockName();
 
-	bool FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
+	bool FindLocalVariableName(const Share<CompilerValue> value, HString& outName);
 
 	bool HasExceptThisParam() const;
 
@@ -71,8 +71,6 @@ public:
 	const HazeDefineType& GetParamTypeByIndex(uint64 index);
 
 	const HazeDefineType& GetParamTypeLeftToRightByIndex(uint64 index);
-
-	const HazeDefineType& GetThisParam();
 
 	Share<CompilerClassValue> GetThisLocalVariable();
 

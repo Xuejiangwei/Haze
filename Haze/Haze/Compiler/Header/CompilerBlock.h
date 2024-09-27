@@ -32,8 +32,6 @@ public:
 
 	bool FindLocalVariableName(const Share<CompilerValue>& value, HString& outName);
 
-	bool FindLocalVariableName(const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
-
 	void SetLoopEnd(CompilerBlock* block) { m_LoopEndBlock = block; }
 
 	void SetLoopStep(CompilerBlock* block) { m_LoopStepBlock = block; }

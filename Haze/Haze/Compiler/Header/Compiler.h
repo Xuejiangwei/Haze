@@ -153,7 +153,7 @@ public:
 
 	Share<CompilerValue> CreateLea(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 
-	Share<CompilerValue> CreateMov(Share<CompilerValue> allocaValue, Share<CompilerValue> value, bool storeValue = true);
+	Share<CompilerValue> CreateMov(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 
 	Share<CompilerValue> CreateMovToPV(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 

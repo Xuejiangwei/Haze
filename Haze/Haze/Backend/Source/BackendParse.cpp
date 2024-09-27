@@ -177,8 +177,8 @@ void BackendParse::Parse_I_Symbol()
 void BackendParse::Parse_I_Code()
 {
 	//Standard lib
-	GetNextLexeme();
-	m_CurrParseModule->m_LibraryType = (HazeLibraryType)StringToStandardType<uint32>(m_CurrLexeme);
+	GetNextLexmeAssign_HazeString(m_CurrParseModule->m_Path);
+	GetNextLexmeAssign_CustomType<uint32>(m_CurrParseModule->m_LibraryType);
 
 	//Global data
 	GetNextLexeme();
@@ -579,11 +579,7 @@ void BackendParse::GenOpCodeFile()
 {
 	HazeExecuteFile exeFile(ExeFileType::Out);
 
-	if (m_VM->IsDebug())
-	{
-		exeFile.WriteModule(m_Modules);
-	}
-
+	exeFile.WriteModule(m_Modules);
 	ModuleUnit::GlobalDataTable newGlobalDataTable;
 	ModuleUnit::StringTable newStringTable;
 	ModuleUnit::ClassTable newClassTable;

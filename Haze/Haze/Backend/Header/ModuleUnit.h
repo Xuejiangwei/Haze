@@ -142,7 +142,7 @@ public:
 
 private:
 	HazeLibraryType m_LibraryType;
-
+	HString m_Path;
 	HString m_Name;
 
 	GlobalDataTable m_GlobalDataTable;
