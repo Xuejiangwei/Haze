@@ -105,7 +105,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)Xjson;$(ProjectDir)ThirdParty;$(ProjectDir)Debugger\Header;$(ProjectDir)Header;$(ProjectDir)AST\Header;$(ProjectDir)VM\Header;$(ProjectDir)Compiler\Header;$(ProjectDir)Memory\Header;$(ProjectDir)MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\Library\Header;$(ProjectDir)\Object\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -140,19 +140,22 @@
       xcopy /y /d "$(ProjectDir)VM\Header\HazeVM.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)XJson\XJson.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Header\HazePch.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Header\JwHeader.h"  "$(OutDir)..\include\"</Command>
+      xcopy /y /d "$(ProjectDir)Header\JwHeader.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeLogDefine.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level4</WarningLevel>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)\ThirdParty;$(ProjectDir)\Debugger\Header;$(ProjectDir)\Header;$(ProjectDir)\AST\Header;$(ProjectDir)\VM\Header;$(ProjectDir)\Compiler\Header;$(ProjectDir)\Memory\Header;$(ProjectDir)\MetaData\Header;$(ProjectDir)\HazeLog\Header;$(ProjectDir)\Backend\Header;$(ProjectDir)\Define\Header;$(ProjectDir)\Library\Header;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>HazePch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -160,6 +163,31 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      xcopy /y /d "$(ProjectDir)Header\Haze.h"  "$(OutDir)..\include\" 
+      xcopy /y /d "$(ProjectDir)Header\HazeHeader.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeCompare.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeDebugDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeInstruction.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeLibraryType.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeStrcut.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeTemplate.inl"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeToken.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeUtility.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeValue.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)HazeLog\Header\HazeLog.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeLibraryDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeStandardLibraryBase.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)MetaData\Header\HazeVariable.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)VM\Header\HazeStack.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)VM\Header\HazeVM.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)XJson\XJson.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Header\HazePch.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Header\JwHeader.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeLogDefine.h"  "$(OutDir)..\include\"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AST\Source\ASTEnum.cpp" />
@@ -172,7 +200,6 @@
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
     <ClCompile Include="Backend\Source\Optimizer.cpp" />
-    <ClCompile Include="Compiler\Header\HazeCompilerTemplateFunction.h" />
     <ClCompile Include="Compiler\Source\CompilerElementValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerEnum.cpp" />
     <ClCompile Include="Compiler\Source\CompilerEnumValue.cpp" />
@@ -213,6 +240,7 @@
     <ClCompile Include="Source\HazeFilePathHelper.cpp" />
     <ClCompile Include="Source\HazePch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="XJson\XJson.cpp" />
     <ClCompile Include="VM\Source\HazeLibraryManager.cpp" />
@@ -251,6 +279,7 @@
     <ClInclude Include="Compiler\Header\CompilerRefValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerTemplateClass.h" />
     <ClInclude Include="Compiler\Header\CompilerValue.h" />
+    <ClInclude Include="Compiler\Header\HazeCompilerTemplateFunction.h.h" />
     <ClInclude Include="Debugger\Header\HazeDebugger.h" />
     <ClInclude Include="Debugger\Header\HazeDebuggerServer.h" />
     <ClInclude Include="Debugger\Header\HazeDebugInfo.h" />

@@ -15,7 +15,7 @@ T StringToStandardType(const HString& str)
 template<typename T>
 inline T StringToStandardType(const HChar* str)
 {
-	std::stringstream ss;
+	std::wstringstream ss;
 	ss << str;
 
 	T ret;

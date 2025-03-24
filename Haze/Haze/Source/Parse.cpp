@@ -2455,6 +2455,8 @@ Unique<ASTTemplateBase> Parse::ParseTemplateClass(V_Array<HString>& templateType
 		m_StackSectionSignal.pop();
 		return nullptr; //return MakeUnique<ASTTemplateClass>(m_Compiler, /*SourceLocation(m_LineCount),*/ name, parentClasses, classDatas, classFunctions);
 	}
+
+	return nullptr;
 }
 Unique<ASTTemplateBase> Parse::ParseTemplateFunction(V_Array<HString>& templateTypes)
 {

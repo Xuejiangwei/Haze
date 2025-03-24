@@ -12,6 +12,7 @@ static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
 	{ H_TEXT("打印"), &HazeStream::HazePrintf },
 	{ H_TEXT("输入"), &HazeStream::HazeScanf },
+	{ H_TEXT("字符格式化"), &HazeStream::HazeStringFormat },
 };
 
 static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(H_TEXT("HazeStream"), &s_HashMap_Functions);
@@ -413,4 +414,14 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 
 void HazeStream::HazeScanfCall()
 {
+}
+
+void HazeStream::HazeStringFormat(HAZE_STD_CALL_PARAM)
+{
+
+}
+
+void HazeStream::HazeStringFormatCall()
+{
+
 }

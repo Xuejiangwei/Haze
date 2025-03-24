@@ -17,4 +17,6 @@ public:
 	HAZE_STD_LIB_FUNCTION(void, HazePrintf, const HChar* v);
 
 	HAZE_STD_LIB_FUNCTION(void, HazeScanf);
+
+	HAZE_STD_LIB_FUNCTION(void, HazeStringFormat);
 };

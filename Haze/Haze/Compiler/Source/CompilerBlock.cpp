@@ -6,6 +6,7 @@
 #include "CompilerClassValue.h"
 #include "CompilerArrayValue.h"
 #include "CompilerFunction.h"
+#include "HazeTokenText.h"
 
 CompilerBlock::CompilerBlock(const HString& name, CompilerFunction* parentFunction, CompilerBlock* parentBlock)
 	: enable_shared_from_this(*this), m_Name(name), m_ParentFunction(parentFunction), m_ParentBlock(parentBlock), m_LoopEndBlock(nullptr)

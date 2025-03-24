@@ -135,9 +135,6 @@
     <ClCompile Include="Debugger\Source\HazeDebugger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Header\HazeCompilerTemplateFunction.h">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Compiler\Source\HazeCompilerTemplateFunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -393,6 +390,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\CompilerElementValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\HazeCompilerTemplateFunction.h.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

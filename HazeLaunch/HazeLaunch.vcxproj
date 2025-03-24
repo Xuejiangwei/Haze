@@ -123,6 +123,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Define\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\HazeLog\Header</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

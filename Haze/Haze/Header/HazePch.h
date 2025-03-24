@@ -18,5 +18,4 @@
 #include <stack>
 
 #include "HazeHeader.h"
-#include "HazeTokenText.h"
 #include "HazeLogDefine.h"
