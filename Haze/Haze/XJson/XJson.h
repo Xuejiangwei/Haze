@@ -109,7 +109,7 @@ private:
 			bool BoolValue;
 			int IntValue;
 			unsigned int UIntValue;
-			int64 Int64Value;
+			x_int64 Int64Value;
 			unsigned long long UInt64Value;
 			float FloatValue;
 			double DoubleValue;
@@ -130,7 +130,7 @@ public:
 
 	void operator=(unsigned int val);
 
-	void operator=(int64 val);
+	void operator=(x_int64 val);
 
 	void operator=(unsigned long long val);
 

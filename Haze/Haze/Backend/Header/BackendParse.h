@@ -15,7 +15,7 @@ public:
 	void Parse();
 
 public:
-	uint32 const GetClassSize(const HString& className);
+	x_uint32 const GetClassSize(const HString& className);
 
 private:
 	void GetNextLexeme();
@@ -72,14 +72,14 @@ private:
 
 	const ModuleUnit::ClassTableData* const GetClass(const HString& className);
 
-	uint32 GetClassIndex(const HString& className);
+	x_uint32 GetClassIndex(const HString& className);
 
-	uint32 GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HString& memberName);
+	x_uint32 GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HString& memberName);
 
 private:
 	HazeVM* m_VM;
 
-	const HChar* m_CurrCode;
+	const x_HChar* m_CurrCode;
 	HString m_CurrLexeme;
 
 	Share<ModuleUnit> m_CurrParseModule;

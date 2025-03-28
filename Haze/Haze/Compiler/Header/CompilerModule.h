@@ -9,7 +9,7 @@ class Compiler;
 class CompilerValue;
 class CompilerBlock;
 class CompilerFunction;
-enum class ClassCompilerFunctionType : uint8;
+enum class ClassCompilerFunctionType : x_uint8;
 class CompilerClass;
 class CompilerEnum;
 class HazeCompilerTemplateFunction;
@@ -17,7 +17,7 @@ class HazeCompilerTemplateClass;
 
 struct TemplateCacheTextData
 {
-	uint32 StartLine;
+	x_uint32 StartLine;
 	HString Text;
 	V_Array<HString> Types;
 };
@@ -63,7 +63,7 @@ public:
 
 	Share<CompilerClass> GetClass(const HString& className);
 
-	uint32 GetClassSize(const HString& className);
+	x_uint32 GetClassSize(const HString& className);
 
 	Share<CompilerFunction> GetGlobalDataFunction() { return m_GlobalDataFunction; }
 
@@ -88,7 +88,7 @@ public:
 
 	Share<CompilerFunction> GetFunction(const HString& name);
 
-	void StartCacheTemplate(HString& templateName, uint32 startLine, HString& templateText, V_Array<HString>& templateTypes);
+	void StartCacheTemplate(HString& templateName, x_uint32 startLine, HString& templateText, V_Array<HString>& templateTypes);
 
 	bool IsTemplateClass(const HString& name);
 
@@ -98,15 +98,15 @@ public:
 
 	Share<CompilerValue> GetOrCreateGlobalStringVariable(const HString& str);
 
-	uint32 GetGlobalStringIndex(Share<CompilerValue> value);
+	x_uint32 GetGlobalStringIndex(Share<CompilerValue> value);
 
 	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr,
-		uint64 arrayDimension = 0, V_Array<HazeDefineType>* params = nullptr);
+		x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* params = nullptr);
 
 	static Share<CompilerValue> GetGlobalVariable(CompilerModule* m, const HString& name);
 
 	static bool GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset = false,
-		V_Array<Pair<uint64, CompilerValue*>>* offsets = nullptr);
+		V_Array<Pair<x_uint64, CompilerValue*>>* offsets = nullptr);
 
 	static Share<CompilerEnum> GetEnum(CompilerModule* m, const HString& name);
 
@@ -149,7 +149,7 @@ private:
 
 private:
 	void FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction, 
-		AdvanceFunctionInfo* advancFunctionInfo, uint32& size, V_Array<Share<CompilerValue>>& params, 
+		AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, V_Array<Share<CompilerValue>>& params, 
 		Share<CompilerValue> thisPointerTo);
 
 	void GenCodeFile();
@@ -160,7 +160,7 @@ private:
 	Share<CompilerValue> GetGlobalVariable_Internal(const HString& name);
 
 	bool GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset, 
-		V_Array<Pair<uint64, CompilerValue*>>* offsets);
+		V_Array<Pair<x_uint64, CompilerValue*>>* offsets);
 
 	Share<CompilerEnum> GetEnum_Internal(const HString& name);
 

@@ -25,7 +25,7 @@ ASTClass::~ASTClass()
 void ASTClass::CodeGen()
 {
 	V_Array<CompilerClass*> parentClasses;
-	for (uint64 i = 0; i < m_ParentClasses.size(); i++)
+	for (x_uint64 i = 0; i < m_ParentClasses.size(); i++)
 	{
 		auto parentClass = m_Compiler->GetCurrModule()->GetClass(m_ParentClasses[i]);
 		if (parentClass)
@@ -42,9 +42,9 @@ void ASTClass::CodeGen()
 	// ÅÐ¶ÏÁâÐÎ¼Ì³Ð
 	if (parentClasses.size() > 1)
 	{
-		for (uint64 i = 0; i < parentClasses.size() - 1; i++)
+		for (x_uint64 i = 0; i < parentClasses.size() - 1; i++)
 		{
-			for (uint64 j = i + 1; j < parentClasses.size(); j++)
+			for (x_uint64 j = i + 1; j < parentClasses.size(); j++)
 			{
 				if (CompilerClass::HasCommomInheritClass(parentClasses[i], parentClasses[j]))
 				{
@@ -57,9 +57,9 @@ void ASTClass::CodeGen()
 	}
 	
 	V_Array<Pair<HString, Share<CompilerValue>>> datas;
-	for (uint64 i = 0; i < m_ClassDatas.size(); i++)
+	for (x_uint64 i = 0; i < m_ClassDatas.size(); i++)
 	{
-		for (uint64 j = 0; j < m_ClassDatas[i].second.size(); j++)
+		for (x_uint64 j = 0; j < m_ClassDatas[i].second.size(); j++)
 		{
 			auto v = m_ClassDatas[i].second[j]->CodeGen();
 			if (v->IsRefrence())

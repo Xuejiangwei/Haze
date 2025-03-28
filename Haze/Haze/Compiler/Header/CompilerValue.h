@@ -71,14 +71,18 @@ public:
 
 	bool IsArray() const { return IsArrayType(m_ValueType.PrimaryType); }
 
+	bool IsDynamicClass() const { return IsDynamicClassType(m_ValueType.PrimaryType); }
+
 	bool IsClass() const { return IsClassType(m_ValueType.PrimaryType); }
 
 	bool IsAdvance() const { return IsAdvanceType(m_ValueType.PrimaryType); }
 
+	bool IsPureString() const { return IsPureStringType(m_ValueType.PrimaryType); }
+
 	virtual bool IsEnum() const { return false; }
 
 public:
-	virtual uint32 GetSize();
+	virtual x_uint32 GetSize();
 
 	bool TryGetVariableName(HString& outName);
 

@@ -9,7 +9,7 @@
 #include "HazeLogDefine.h"
 
 CompilerArrayValue::CompilerArrayValue(CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
-	HazeDataDesc desc, int count, uint64 dimension)
+	HazeDataDesc desc, int count, x_uint64 dimension)
 	: CompilerValue(compilerModule, defineType, scope, desc, count), m_ArrayDimension(dimension)
 {
 }

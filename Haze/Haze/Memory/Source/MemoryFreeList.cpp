@@ -16,7 +16,7 @@ void MemoryFreeList::Push(void* obj)
 	++m_Length;
 }
 
-void MemoryFreeList::PushRange(void* start, void* end, uint64 size)
+void MemoryFreeList::PushRange(void* start, void* end, x_uint64 size)
 {
 	NextObj(end) = m_FreeList;
 	m_FreeList = start;
@@ -31,7 +31,7 @@ void* MemoryFreeList::Pop()
 	return obj;
 }
 
-void MemoryFreeList::PopRange(void*& start, void*& end, uint64 num)
+void MemoryFreeList::PopRange(void*& start, void*& end, x_uint64 num)
 {
 	start = m_FreeList;
 	end = start;

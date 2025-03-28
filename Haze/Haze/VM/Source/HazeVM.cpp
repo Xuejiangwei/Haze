@@ -20,6 +20,7 @@
 #include "ObjectArray.h"
 #include "ObjectString.h"
 #include "ObjectClass.h"
+#include "ObjectDynamicClass.h"
 
 #include <cstdarg>
 #include <filesystem>
@@ -45,6 +46,7 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, *ObjectArray::GetAdvanceClassInfo());
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, *ObjectString::GetAdvanceClassInfo());
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Class, *ObjectClass::GetAdvanceClassInfo());
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::DynamicClass, *ObjectDynamicClass::GetAdvanceClassInfo());
 
 	// 提前注册类
 	/*ClassData data;
@@ -55,7 +57,7 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 
 	// 提前解析基础模块
 	V_Array<HString> baseModules = HAZE_BASE_LIBS;
-	for (uint64 i = 0; i + 1 < baseModules.size(); i+=2)
+	for (x_uint64 i = 0; i + 1 < baseModules.size(); i+=2)
 	{
 		m_Compiler->ParseBaseModule(baseModules[i].c_str(), baseModules[i + 1].c_str());
 	}
@@ -123,7 +125,7 @@ void HazeVM::LoadStandardLibrary(V_Array<HString> Vector_ModulePath)
 {
 }
 
-void HazeVM::CallFunction(const HChar* functionName, ...)
+void HazeVM::CallFunction(const x_HChar* functionName, ...)
 {
 	auto& function = GetFunctionByName(functionName);
 	va_list args;
@@ -140,26 +142,29 @@ void HazeVM::CallFunction(const FunctionData* functionData, ...)
 	va_end(args);
 }
 
-void* HazeVM::CreateHazeClass(const HString& className, ...)
+ObjectClass* HazeVM::CreateObjectClass(const HString& className, ...)
 {
 	auto hazeClass = FindClass(className);
-	auto obj = malloc(hazeClass->Size);
+
+	auto obj = HazeMemory::Alloca(sizeof(ObjectClass));
+	new(obj) ObjectClass(FindClass(className));
 
 	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(className, className));
 
 	va_list args;
 	va_start(args, constructorFunc.Params.size());
 
-	auto dst = &va_arg(args, decltype(obj));
-	memcpy(dst, &obj, sizeof(obj));
+	auto data = ((ObjectClass*)(obj))->m_Data;
+	auto dst = &va_arg(args, decltype(data));
+	memcpy(dst, &obj, sizeof(data));
 
 	CallHazeFunction(m_Stack.get(), &constructorFunc, (va_list&)dst);
 	va_end(args);
 
-	return obj;
+	return (ObjectClass*)obj;
 }
 
-bool HazeVM::ParseString(const HChar* moduleName, const HChar* moduleCode)
+bool HazeVM::ParseString(const x_HChar* moduleName, const x_HChar* moduleCode)
 {
 	bool PopCurrModule = false;
 	if (m_Compiler->InitializeCompiler(moduleName, H_TEXT("")))
@@ -255,7 +260,7 @@ const ObjectString* HazeVM::GetConstantStringByIndex(int index) const
 	return m_StringTable[index];
 }
 
-char* HazeVM::GetGlobalValueByIndex(uint32 Index)
+char* HazeVM::GetGlobalValueByIndex(x_uint32 Index)
 {
 	if (Index < m_GlobalData.size())
 	{
@@ -278,18 +283,18 @@ ClassData* HazeVM::FindClass(const HString& m_ClassName)
 	return nullptr;
 }
 
-uint32 HazeVM::GetClassSize(const HString& m_ClassName)
+x_uint32 HazeVM::GetClassSize(const HString& m_ClassName)
 {
 	auto Class = FindClass(m_ClassName);
 	return Class ? Class->Size : 0;
 }
 
-void HazeVM::InitGlobalStringCount(uint64 count)
+void HazeVM::InitGlobalStringCount(x_uint64 count)
 {
 	m_StringTable.resize(count);
 }
 
-void HazeVM::SetGlobalString(uint64 index, const HString& str)
+void HazeVM::SetGlobalString(x_uint64 index, const HString& str)
 {
 	if (index < m_StringTable.size())
 	{
@@ -309,7 +314,7 @@ const HString* HazeVM::GetSymbolClassName(const HString& name)
 	auto iter = m_ClassSymbol.find(name);
 	if (iter == m_ClassSymbol.end())
 	{
-		m_ClassSymbol[name] = (uint64)-1;
+		m_ClassSymbol[name] = (x_uint64)-1;
 
 		return &m_ClassSymbol.find(name)->first;
 	}
@@ -317,7 +322,7 @@ const HString* HazeVM::GetSymbolClassName(const HString& name)
 	return &iter->first;
 }
 
-void HazeVM::ResetSymbolClassIndex(const HString& name, uint64 index)
+void HazeVM::ResetSymbolClassIndex(const HString& name, x_uint64 index)
 {
 	m_ClassSymbol[name] = index;
 }
@@ -342,7 +347,7 @@ void HazeVM::DynamicInitializerForGlobalData()
 	}
 }
 
-void HazeVM::OnExecLine(uint32 Line)
+void HazeVM::OnExecLine(x_uint32 Line)
 {
 	if (g_Debugger)
 	{
@@ -354,11 +359,11 @@ void HazeVM::InstructionExecPost()
 {
 }
 
-uint32 HazeVM::GetNextLine(uint32 CurrLine)
+x_uint32 HazeVM::GetNextLine(x_uint32 CurrLine)
 {
-	uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
-	uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
+	x_uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	x_uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (x_uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
 	{
 		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line > CurrLine)
 		{
@@ -369,11 +374,11 @@ uint32 HazeVM::GetNextLine(uint32 CurrLine)
 	return m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
-uint32 HazeVM::GetNextInstructionLine(uint32 currLine)
+x_uint32 HazeVM::GetNextInstructionLine(x_uint32 currLine)
 {
-	uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
-	uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
+	x_uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	x_uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (x_uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
 	{
 		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line >= currLine)
 		{
@@ -384,11 +389,11 @@ uint32 HazeVM::GetNextInstructionLine(uint32 currLine)
 	return m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.EndLine;
 }
 
-Pair<HString, uint32> HazeVM::GetStepIn(uint32 CurrLine)
+Pair<HString, x_uint32> HazeVM::GetStepIn(x_uint32 CurrLine)
 {
-	uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
-	uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
+	x_uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	x_uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
+	for (x_uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
 	{
 		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line > CurrLine)
 		{
@@ -403,7 +408,7 @@ Pair<HString, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 				if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
 				{
 					void* value = GetOperatorAddress(m_Stack.get(), oper[0]);
-					uint64 functionAddress;
+					x_uint64 functionAddress;
 					memcpy(&functionAddress, value, sizeof(functionAddress));
 					auto function = (FunctionData*)functionAddress;
 					if (function->FunctionDescData.Type == InstructionFunctionType::HazeFunction)
@@ -442,7 +447,21 @@ Pair<HString, uint32> HazeVM::GetStepIn(uint32 CurrLine)
 	return { HString(), 0 };
 }
 
-uint32 HazeVM::GetCurrCallFunctionLine()
+x_uint32 HazeVM::AddGlobalValue(ObjectClass* value)
+{
+	m_ExtreGlobalData.push_back(value);
+	return (x_uint32)m_ExtreGlobalData.size() - 1;
+}
+
+void HazeVM::RemoveGlobalValue(x_uint32 index)
+{
+	if (m_ExtreGlobalData.size() > index)
+	{
+		m_ExtreGlobalData[index] = nullptr;
+	}
+}
+
+x_uint32 HazeVM::GetCurrCallFunctionLine()
 {
 	auto startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
 	for (int i = m_Stack->GetCurrPC(); i >= startAddress; i--)

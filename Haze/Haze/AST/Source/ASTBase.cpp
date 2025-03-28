@@ -378,7 +378,7 @@ Share<CompilerValue> ASTVariableDefine_Class::CodeGen()
 }
 
 ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, uint64 dimension)
+	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, x_uint64 dimension)
 	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_ArrayDimension(dimension)
 {
 	if (templateTypes.Types.size() > 0)
@@ -472,7 +472,7 @@ Share<CompilerValue> ASTNew::CodeGen()
 
 	V_Array<Share<CompilerValue>> countValue(m_CountArrayExpression.size());
 
-	for (uint64 i = 0; i < m_CountArrayExpression.size(); i++)
+	for (x_uint64 i = 0; i < m_CountArrayExpression.size(); i++)
 	{
 		countValue[i] = m_CountArrayExpression[i]->CodeGen();
 	}

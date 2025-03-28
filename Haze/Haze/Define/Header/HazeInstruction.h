@@ -6,7 +6,7 @@
 	uint8		uint8		uint8		uint64		(uint8		uint64)		...(uint8		uint64)
 	指令字节id	操作数个数	操作数类型	操作数值		(操作数类型	操作数值)	...(操作数类型	操作数值)
 */
-enum class InstructionOpCodeType : uint8
+enum class InstructionOpCodeType : x_uint8
 {
 	Memory,
 
@@ -30,11 +30,11 @@ enum class InstructionOpCodeType : uint8
 	Double,
 };
 
-#define CAST_SCOPE(V) (uint32)V
+#define CAST_SCOPE(V) (x_uint32)V
 #define IS_SCOPE_GLOBAL(V) V == HazeVariableScope::Global
 #define IS_SCOPE_LOCAL(V) V == HazeVariableScope::Local
 #define IS_SCOPE_IGNORE(V) V == HazeVariableScope::Ignore
-enum class HazeVariableScope : uint32
+enum class HazeVariableScope : x_uint32
 {
 	None,
 	Global,
@@ -44,8 +44,8 @@ enum class HazeVariableScope : uint32
 	Ignore,		
 };
 
-#define CAST_DESC(V) (uint32)V
-enum class HazeDataDesc : uint32
+#define CAST_DESC(V) (x_uint32)V
+enum class HazeDataDesc : x_uint32
 {
 	None,
 	/*Global,
@@ -81,7 +81,7 @@ enum class HazeDataDesc : uint32
 	CallFunctionPointer,
 };
 
-enum class InstructionOpCode : uint32
+enum class InstructionOpCode : x_uint32
 {
 	NONE,
 	MOV,		// A = B
@@ -139,7 +139,7 @@ enum class InstructionFunctionType : int
 	DLLLibFunction,
 };
 
-enum class InstructionAddressType : uint8
+enum class InstructionAddressType : x_uint8
 {
 	Global,
 	Local,
@@ -150,6 +150,8 @@ enum class InstructionAddressType : uint8
 	Constant,
 	NullPtr,
 	ConstantString,
+
+	PureString,
 
 	Register,
 
@@ -189,8 +191,8 @@ struct InstructionData
 		BlockJmp Jmp;
 		void* Pointer;
 
-		uint32 Line;
-		uint64 SignData;
+		x_uint32 Line;
+		x_uint64 SignData;
 		Extra()
 		{
 		}
@@ -221,22 +223,22 @@ struct FunctionDescData
 
 	union
 	{
-		uint64 InstructionStartAddress;
+		x_uint64 InstructionStartAddress;
 		StdLibFunctionCall StdLibFunction;
 	};
 
-	uint32 StartLine;
-	uint32 EndLine;
+	x_uint32 StartLine;
+	x_uint32 EndLine;
 };
 
 struct ModuleData
 {
 	HString Name;
 	HString Path;
-	Pair<uint32, uint32> GlobalDataIndex;
-	Pair<uint32, uint32> StringIndex;
-	Pair<uint32, uint32> ClassIndex;
-	Pair<uint32, uint32> FunctionIndex;
+	Pair<x_uint32, x_uint32> GlobalDataIndex;
+	Pair<x_uint32, x_uint32> StringIndex;
+	Pair<x_uint32, x_uint32> ClassIndex;
+	Pair<x_uint32, x_uint32> FunctionIndex;
 	HazeLibraryType LibType;
 
 	ModuleData()
@@ -252,10 +254,10 @@ struct ModuleData
 struct ClassData
 {
 	HString Name;
-	uint32 Size;
+	x_uint32 Size;
 	V_Array<HazeVariableData> Members;
-	HashMap<HString, uint32> Functions;
-	V_Array<uint32> InheritClasses;
+	HashMap<HString, x_uint32> Functions;
+	V_Array<x_uint32> InheritClasses;
 };
 
 struct FunctionData
@@ -264,7 +266,7 @@ struct FunctionData
 	V_Array<HazeDefineVariable> Params;
 	V_Array<HazeVariableData> Variables;
 	V_Array<HazeTempRegisterData> TempRegisters;
-	uint32 InstructionNum;
+	x_uint32 InstructionNum;
 
 	FunctionDescData FunctionDescData;
 };
@@ -293,6 +295,6 @@ bool IsJmpOpCode(InstructionOpCode code);
 
 bool IsClassMember(HazeDataDesc scope);
 
-const HChar* GetInstructionString(InstructionOpCode code);
+const x_HChar* GetInstructionString(InstructionOpCode code);
 
 InstructionOpCode GetInstructionByString(const HString& str);

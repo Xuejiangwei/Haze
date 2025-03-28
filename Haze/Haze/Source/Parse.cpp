@@ -42,6 +42,8 @@ static HashMap<HString, HazeToken> s_HashMap_Token =
 	{ TOKEN_CLASS_DATA_PUBLIC, HazeToken::ClassPublic },
 	{ TOKEN_CLASS_DATA_PRIVATE, HazeToken::ClassPrivate },
 
+	{ TOKEN_DYNAMIC_CLASS, HazeToken::DynamicClass },
+
 	{ TOKEN_THIS, HazeToken::This },
 	{ TOKEN_CLASS_ATTR, HazeToken::ClassAttr },
 
@@ -214,9 +216,9 @@ struct TempCurrCode
 
 private:
 	Parse* Par;
-	const HChar* CacheCurrCode;
+	const x_HChar* CacheCurrCode;
 	HazeToken CacheToken;
-	uint32 CacheLine;
+	x_uint32 CacheLine;
 };
 
 Parse::Parse(Compiler* compiler)
@@ -248,7 +250,7 @@ void Parse::InitializeFile(const HString& filePath)
 	fs.close();
 }
 
-void Parse::InitializeString(const HString& str, uint32 startLine)
+void Parse::InitializeString(const HString& str, x_uint32 startLine)
 {
 	m_CodeText = str;
 	m_CurrCode = m_CodeText.c_str();
@@ -508,7 +510,7 @@ HazeToken Parse::GetNextToken(bool clearLexeme)
 	{
 		m_CurrLexeme.clear();
 	}
-	const HChar* signal;
+	const x_HChar* signal;
 	while (!HazeIsSpace(*m_CurrCode, &bNewLine) || m_CurrToken == HazeToken::StringMatch)
 	{
 		if (bNewLine)
@@ -608,7 +610,7 @@ HazeToken Parse::GetNextToken(bool clearLexeme)
 		while (s_CommentStr != HAZE_MULTI_COMMENT_END)
 		{
 			m_CurrCode++;
-			memcpy(s_CommentStr.data(), m_CurrCode, sizeof(HChar) * 2);
+			memcpy(s_CommentStr.data(), m_CurrCode, sizeof(x_HChar) * 2);
 
 			HazeIsSpace(*m_CurrCode, &bNewLine);
 			if (bNewLine)
@@ -688,7 +690,7 @@ Unique<ASTBase> Parse::ParseUnaryExpression()
 
 Unique<ASTBase> Parse::ParseBinaryOperateExpression(int prec, Unique<ASTBase> left)
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	while (true)
 	{
 		TempCurrCode temp(this);
@@ -781,6 +783,7 @@ Unique<ASTBase> Parse::ParsePrimary()
 	case HazeToken::Float32:
 	case HazeToken::Float64:
 	case HazeToken::CustomClass:
+	case HazeToken::DynamicClass:
 	case HazeToken::String:
 	case HazeToken::Function:
 	case HazeToken::MultiVariable:
@@ -847,7 +850,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 		}
 	}
 
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	HString identiferName;
 
 	TempCurrCode temp(this);
@@ -986,7 +989,7 @@ Unique<ASTBase> Parse::ParseIdentifer(Unique<ASTBase> preAST, HazeToken preToken
 
 Unique<ASTBase> Parse::ParseVariableDefine()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 
 	m_DefineVariable.Name.clear();
 	m_DefineVariable.Type.Reset();
@@ -1087,8 +1090,8 @@ Unique<ASTBase> Parse::ParseVariableDefine_Array(TemplateDefineTypes& templateTy
 	m_DefineVariable.Type.SecondaryType = m_DefineVariable.Type.PrimaryType;
 	m_DefineVariable.Type.PrimaryType = HazeValueType::Array;
 
-	uint32 tempLineCount = m_LineCount;
-	uint64 arrayDimension = 0;
+	x_uint32 tempLineCount = m_LineCount;
+	x_uint64 arrayDimension = 0;
 
 	while (TokenIs(HazeToken::Array))
 	{
@@ -1132,7 +1135,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Array(TemplateDefineTypes& templateTy
 
 Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateTypes, TempCurrCode* tempCode)
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 
 	if (TokenIs(HazeToken::Identifier))
 	{
@@ -1186,7 +1189,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_String(TemplateDefineTypes& templateT
 
 Unique<ASTBase> Parse::ParseVariableDefine_Class(TemplateDefineTypes& templateTypes)
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	if (TokenIs(HazeToken::Identifier, H_TEXT("类对象变量定义错误")))
 	{
 		m_DefineVariable.Name = m_CurrLexeme;
@@ -1237,7 +1240,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Class(TemplateDefineTypes& templateTy
 
 Unique<ASTBase> Parse::ParseVariableDefine_Function(TemplateDefineTypes& templateTypes)
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 
 	if (TokenIs(HazeToken::Identifier, H_TEXT("函数变量需要一个正确的名称")))
 	{
@@ -1263,7 +1266,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Function(TemplateDefineTypes& templat
 
 Unique<ASTBase> Parse::ParseStringText()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	GetNextToken();
 	HString text = m_CurrLexeme;
 
@@ -1272,7 +1275,7 @@ Unique<ASTBase> Parse::ParseStringText()
 
 Unique<ASTBase> Parse::ParseBoolExpression()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	HazeValue value;
 	value.Value.Bool = m_CurrLexeme == TOKEN_TRUE;
 
@@ -1281,7 +1284,7 @@ Unique<ASTBase> Parse::ParseBoolExpression()
 
 Unique<ASTBase> Parse::ParseNumberExpression()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	HazeValue value;
 	HazeValueType type = GetNumberDefaultType(m_CurrLexeme);
 
@@ -1297,7 +1300,7 @@ Unique<ASTBase> Parse::ParseNumberExpression()
 
 Unique<ASTBase> Parse::ParseIfExpression(bool recursion)
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("若 表达式期望捕捉 (")))
 	{
 		GetNextToken();
@@ -1366,7 +1369,7 @@ Unique<ASTBase> Parse::ParseIfExpression(bool recursion)
 
 Unique<ASTBase> Parse::ParseForExpression()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("循环表达式期望捕捉 (")))
 	{
 		GetNextToken();
@@ -1402,7 +1405,7 @@ Unique<ASTBase> Parse::ParseForExpression()
 
 Unique<ASTBase> Parse::ParseWhileExpression()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("当 表达式期望捕捉 ( ")))
 	{
 		GetNextToken();
@@ -1439,7 +1442,7 @@ Unique<ASTBase> Parse::ParseContinueExpression()
 
 Unique<ASTBase> Parse::ParseReturn()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 
 	TempCurrCode temp(this);
 	GetNextToken();
@@ -1454,7 +1457,7 @@ Unique<ASTBase> Parse::ParseReturn()
 
 Unique<ASTBase> Parse::ParseNew()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	GetNextToken();
 
 	HazeDefineVariable defineVar;
@@ -1526,7 +1529,7 @@ Unique<ASTBase> Parse::ParseNew()
 
 Unique<ASTBase> Parse::ParseInc()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 
 	GetNextToken();
 	auto expression = ParseExpression();
@@ -1536,7 +1539,7 @@ Unique<ASTBase> Parse::ParseInc()
 
 Unique<ASTBase> Parse::ParseDec()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 
 	GetNextToken();
 	auto expression = ParseExpression();
@@ -1546,7 +1549,7 @@ Unique<ASTBase> Parse::ParseDec()
 
 Unique<ASTBase> Parse::ParseThreeOperator(Unique<ASTBase> Condition)
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	auto iter = s_HashMap_OperatorPriority.find(HazeToken::ThreeOperatorStart);
 	if (iter != s_HashMap_OperatorPriority.end())
 	{
@@ -1618,7 +1621,7 @@ Unique<ASTBase> Parse::ParseLeftParentheses()
 
 Unique<ASTBase> Parse::ParseNeg()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	bool isNumberNeg = m_CurrToken == HazeToken::Sub;
 
 	GetNextToken();
@@ -1629,13 +1632,13 @@ Unique<ASTBase> Parse::ParseNeg()
 
 Unique<ASTBase> Parse::ParseNullPtr()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 	return MakeUnique<ASTNullPtr>(m_Compiler, SourceLocation(tempLineCount));
 }
 
 Unique<ASTBase> Parse::ParseGetAddress()
 {
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("取址需要 ( 符号")))
 	{
@@ -1735,7 +1738,7 @@ Unique<ASTFunctionSection> Parse::ParseFunctionSection()
 Unique<ASTFunction> Parse::ParseFunction(const HString* className)
 {
 	m_StackSectionSignal.push(HazeSectionSignal::Local);
-	uint32 tempLineCount = m_LineCount;
+	x_uint32 tempLineCount = m_LineCount;
 
 
 	bool isVirtual = TokenIs(HazeToken::VirtualFunction);
@@ -1751,7 +1754,7 @@ Unique<ASTFunction> Parse::ParseFunction(const HString* className)
 	funcType.PrimaryType = GetValueTypeByToken(m_CurrToken);
 	GetValueType(funcType);
 	
-	uint32 startLineCount = m_LineCount;
+	x_uint32 startLineCount = m_LineCount;
 	HString functionName;
 
 	//获得函数名
@@ -2325,8 +2328,8 @@ void Parse::ParseTemplate()
 				if (ExpectNextTokenIs(HazeToken::Identifier, H_TEXT("模板类名定义错误")))
 				{
 					HString templateClassName = m_CurrLexeme;
-					const HChar* start = m_CurrCode;
-					uint32 line = m_LineCount;
+					const x_HChar* start = m_CurrCode;
+					x_uint32 line = m_LineCount;
 
 					if (ExpectNextTokenIs(HazeToken::Colon))
 					{
@@ -2360,7 +2363,7 @@ void Parse::ParseTemplate()
 					
 					if (TokenIs(HazeToken::LeftBrace))
 					{
-						V_Array<uint32> stack(1);
+						V_Array<x_uint32> stack(1);
 						while (stack.size() > 0)
 						{
 							if (ExpectNextTokenIs(HazeToken::LeftBrace))
@@ -2463,7 +2466,7 @@ Unique<ASTTemplateBase> Parse::ParseTemplateFunction(V_Array<HString>& templateT
 	return Unique<ASTTemplateBase>();
 }
 
-bool Parse::ExpectNextTokenIs(HazeToken token, const HChar* errorInfo)
+bool Parse::ExpectNextTokenIs(HazeToken token, const x_HChar* errorInfo)
 {
 	HazeToken NextToken = GetNextToken();
 	if (token != NextToken)
@@ -2478,7 +2481,7 @@ bool Parse::ExpectNextTokenIs(HazeToken token, const HChar* errorInfo)
 	return true;
 }
 
-bool Parse::TokenIs(HazeToken token, const HChar* errorInfo)
+bool Parse::TokenIs(HazeToken token, const x_HChar* errorInfo)
 {
 	if (token != m_CurrToken)
 	{
@@ -2492,7 +2495,7 @@ bool Parse::TokenIs(HazeToken token, const HChar* errorInfo)
 	return true;
 }
 
-bool Parse::IsHazeSignalToken(const HChar* hChar, const HChar*& outChar, uint32 charSize)
+bool Parse::IsHazeSignalToken(const x_HChar* hChar, const x_HChar*& outChar, x_uint32 charSize)
 {
 	static HashSet<HString> s_HashSet_TokenText =
 	{
@@ -2517,7 +2520,7 @@ bool Parse::IsHazeSignalToken(const HChar* hChar, const HChar*& outChar, uint32 
 	static HString s_WS;
 
 	s_WS.resize(charSize);
-	memcpy(s_WS.data(), hChar, sizeof(HChar) * charSize);
+	memcpy(s_WS.data(), hChar, sizeof(x_HChar) * charSize);
 
 	auto iter = s_HashSet_TokenText.find(s_WS);
 	if (iter != s_HashSet_TokenText.end())
@@ -2611,6 +2614,7 @@ void Parse::GetValueType(HazeDefineType& inType)
 	case HazeToken::Float32:
 	case HazeToken::Float64:
 	case HazeToken::Function:
+	case HazeToken::DynamicClass:
 		return;
 	default:
 		PARSE_ERR_W("获得变量类型错误");

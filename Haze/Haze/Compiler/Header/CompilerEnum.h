@@ -20,7 +20,7 @@ public:
 
 	Share<CompilerEnumValue> GetEnumValue(const HString& name);
 
-	Share<CompilerEnumValue> GetEnumValueByIndex(uint64 index);
+	Share<CompilerEnumValue> GetEnumValueByIndex(x_uint64 index);
 
 	const HazeValueType GetParentType() const { return m_ParentType; }
 

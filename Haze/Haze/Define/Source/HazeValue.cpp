@@ -24,6 +24,8 @@ static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 
 	{ HazeToken::CustomClass, HazeValueType::Class },
 	{ HazeToken::CustomEnum, HazeValueType::Enum },
+	
+	{ HazeToken::DynamicClass, HazeValueType::DynamicClass },
 
 	{ HazeToken::Function, HazeValueType::Function },
 
@@ -32,7 +34,7 @@ static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 	{ HazeToken::MultiVariable, HazeValueType::MultiVariable },
 };
 
-uint32 GetSizeByHazeType(HazeValueType type)
+x_uint32 GetSizeByHazeType(HazeValueType type)
 {
 	switch (type)
 	{
@@ -54,6 +56,9 @@ uint32 GetSizeByHazeType(HazeValueType type)
 	case HazeValueType::Array:
 	case HazeValueType::String:
 	case HazeValueType::Class:
+	case HazeValueType::DynamicClass:
+	case HazeValueType::DynamicClassUnknow:
+	case HazeValueType::PureString:
 	case HazeValueType::Function:
 		return 8;
 	case HazeValueType::Void:
@@ -199,9 +204,24 @@ bool IsArrayType(HazeValueType type)
 	return type == HazeValueType::Array;
 }
 
+bool IsDynamicClassType(HazeValueType type)
+{
+	return type == HazeValueType::DynamicClass;
+}
+
+bool IsDynamicClassUnknowType(HazeValueType type)
+{
+	return type == HazeValueType::DynamicClassUnknow;
+}
+
 bool IsStringType(HazeValueType type)
 {
 	return type == HazeValueType::String;
+}
+
+bool IsPureStringType(HazeValueType type)
+{
+	return type == HazeValueType::PureString;
 }
 
 bool IsRefrenceType(HazeValueType type)
@@ -515,7 +535,7 @@ void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const 
 	break;
 	case HazeValueType::Int64:
 	{
-		CALC_ASSIGN_VALUE(int64, typeCode, source, oper1, oper2);
+		CALC_ASSIGN_VALUE(x_int64, typeCode, source, oper1, oper2);
 	}
 	break;
 	case HazeValueType::Float64:
@@ -525,12 +545,12 @@ void CalculateValueByType(HazeValueType type, InstructionOpCode typeCode, const 
 	break;
 	case HazeValueType::UInt32:
 	{
-		CALC_ASSIGN_VALUE(uint32, typeCode, source, oper1, oper2);
+		CALC_ASSIGN_VALUE(x_uint32, typeCode, source, oper1, oper2);
 	}
 	break;
 	case HazeValueType::UInt64:
 	{
-		CALC_ASSIGN_VALUE(uint64, typeCode, source, oper1, oper2);
+		CALC_ASSIGN_VALUE(x_uint64, typeCode, source, oper1, oper2);
 	}
 	break;
 	default:
@@ -551,35 +571,35 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	break;
 	case HazeValueType::Int32:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int32, source, target);
+		TWO_VARIABLE_DEFINE_INIT(x_int32, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::UInt32:
 	{
-		TWO_VARIABLE_DEFINE_INIT(uint32, source, target);
+		TWO_VARIABLE_DEFINE_INIT(x_uint32, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::Int64:
 	{
-		TWO_VARIABLE_DEFINE_INIT(int64, source, target);
+		TWO_VARIABLE_DEFINE_INIT(x_int64, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::UInt64:
 	{
-		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
+		TWO_VARIABLE_DEFINE_INIT(x_uint64, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
 	break;
 	case HazeValueType::Float32:
 	{
-		TWO_VARIABLE_DEFINE_INIT(float32, source, target);
+		TWO_VARIABLE_DEFINE_INIT(x_float32, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
@@ -587,7 +607,7 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	
 	case HazeValueType::Float64:
 	{
-		TWO_VARIABLE_DEFINE_INIT(float64, source, target);
+		TWO_VARIABLE_DEFINE_INIT(x_float64, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
@@ -597,7 +617,7 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	case HazeValueType::Function:
 	{
 		//uint64 s = *(uint64*)source, t = *(uint64*)target;
-		TWO_VARIABLE_DEFINE_INIT(uint64, source, target);
+		TWO_VARIABLE_DEFINE_INIT(x_uint64, source, target);
 		VARIABLE_COMPARE();
 		COMPARE_ASSIGN();
 	}
@@ -608,15 +628,15 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	}
 }
 
-size_t GetHazeCharPointerLength(const HChar* hChar)
+size_t GetHazeCharPointerLength(const x_HChar* hChar)
 {
 	return wcslen(hChar);
 }
 
-const HChar* GetHazeValueTypeString(HazeValueType type)
+const x_HChar* GetHazeValueTypeString(HazeValueType type)
 {
 	extern const HashMap<HString, HazeToken>& GetHashMap_Token();
-	static HashMap<HazeValueType, const HChar*> s_HashMap_Code2String;
+	static HashMap<HazeValueType, const x_HChar*> s_HashMap_Code2String;
 
 	if (s_HashMap_Code2String.size() <= 0)
 	{

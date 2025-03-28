@@ -27,7 +27,7 @@ HazeValueType CompilerEnumValue::GetBaseType() const
 	return m_OwnerEnum->GetParentType();
 }
 
-uint32 CompilerEnumValue::GetSize()
+x_uint32 CompilerEnumValue::GetSize()
 {
 	return GetSizeByHazeType(m_ValueType.SecondaryType);
 }

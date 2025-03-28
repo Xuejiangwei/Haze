@@ -17,7 +17,7 @@ CompilerPointerFunction::~CompilerPointerFunction()
 {
 }
 
-const HazeDefineType& CompilerPointerFunction::GetParamTypeByIndex(uint64 index) const
+const HazeDefineType& CompilerPointerFunction::GetParamTypeByIndex(x_uint64 index) const
 {
 	if (index < m_ParamTypes.size())
 	{
@@ -34,7 +34,7 @@ const HazeDefineType& CompilerPointerFunction::GetParamTypeByIndex(uint64 index)
 	}
 }
 
-const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(uint64 index) const
+const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index) const
 {
 	if (index + 1 < m_ParamTypes.size())
 	{

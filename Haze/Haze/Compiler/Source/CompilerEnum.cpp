@@ -38,7 +38,7 @@ Share<CompilerEnumValue> CompilerEnum::GetEnumValue(const HString& name)
 	return nullptr;
 }
 
-Share<CompilerEnumValue> CompilerEnum::GetEnumValueByIndex(uint64 index)
+Share<CompilerEnumValue> CompilerEnum::GetEnumValueByIndex(x_uint64 index)
 {
 	if (index < m_EnumValues.size())
 	{

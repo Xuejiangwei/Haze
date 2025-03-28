@@ -106,13 +106,22 @@ Share<_Ty1> DynamicCast(Share<_Ty2>&& other) noexcept
 	return {};
 }
 
-using BitArray = V_Array<bool>;
+using x_BitArray = V_Array<bool>;
 
-using int8 = char;
-using uint8 = unsigned char;
-using int16 = short;
-using uint16 = unsigned short;
-using uint32 = unsigned int;
-using int64 = long long;
-using uint64 = unsigned long long;
-using float64 = double;
+using x_HByte = char;
+using x_HChar = wchar_t;
+
+using x_uchar = unsigned char;
+using x_uhbyte = unsigned char;
+
+using x_int8 = char;
+using x_uint8 = unsigned char;
+using x_int16 = short;
+using x_uint16 = unsigned short;
+using x_int32 = int;
+using x_uint32 = unsigned int;
+using x_int64 = long long;
+using x_uint64 = unsigned long long;
+
+using x_float32 = float;
+using x_float64 = double;

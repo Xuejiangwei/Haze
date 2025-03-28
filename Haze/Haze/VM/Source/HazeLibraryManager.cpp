@@ -94,7 +94,7 @@ const HString* HazeLibraryManager::TryGetFilePath(const HString& moduleName)
 
 const void* HazeLibraryManager::GetExeAddress()
 {
-	static uint64 address = (uint64)(&ExeFunc);
+	static x_uint64 address = (x_uint64)(&ExeFunc);
 	return &address;
 }
 

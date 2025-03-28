@@ -33,7 +33,7 @@ public:
 	struct GlobalDataTable
 	{
 		V_Array<GlobalData> Data;
-		V_Array<uint64> InitFunctionIndex;
+		V_Array<x_uint64> InitFunctionIndex;
 
 		GlobalDataTable()
 		{
@@ -43,7 +43,7 @@ public:
 
 		int GetIndex(const HString& name)
 		{
-			for (uint64 i = 0; i < Data.size(); i++)
+			for (x_uint64 i = 0; i < Data.size(); i++)
 			{
 				if (Data[i].Name == name)
 				{
@@ -76,14 +76,14 @@ public:
 	struct ClassMemberData
 	{
 		HazeDefineVariable Variable;
-		uint32 Offset;
-		uint32 Size;
+		x_uint32 Offset;
+		x_uint32 Size;
 	};
 
 	struct ClassTableData
 	{
 		HString Name;
-		uint32 Size;
+		x_uint32 Size;
 		V_Array<ClassMemberData> Members;
 		V_Array<HString> ParentClasses;
 	};
@@ -91,7 +91,7 @@ public:
 	struct ClassTable
 	{
 		V_Array<ClassTableData> Classes;
-		HashMap<HString, uint32> IndexMap;
+		HashMap<HString, x_uint32> IndexMap;
 	};
 
 public:
@@ -115,8 +115,8 @@ public:
 		V_Array<FunctionInstruction> Instructions;
 		InstructionFunctionType DescType;
 		
-		uint32 StartLine;
-		uint32 EndLine;
+		x_uint32 StartLine;
+		x_uint32 EndLine;
 
 		FunctionTableData()
 		{

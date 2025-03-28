@@ -11,14 +11,14 @@ CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name
 	: m_Module(compilerModule), m_Name(name), m_ParentClass(Move(parentClass)), m_Data(Move(data))
 {
 	m_DataSize = 0;
-	m_MemberCount = (uint32)m_Data.size();
+	m_MemberCount = (x_uint32)m_Data.size();
 	for (size_t i = 0; i < m_ParentClass.size(); i++)
 	{
 		m_DataSize += m_ParentClass[i]->GetDataSize();
 		m_MemberCount += m_ParentClass[i]->GetMemberCount();
 	}
 
-	uint32 memberNum = 0;
+	x_uint32 memberNum = 0;
 	Share<CompilerValue> lastMember = nullptr;
 
 	for (size_t i = 0; i < m_Data.size(); i++)
@@ -28,7 +28,7 @@ CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name
 	}
 
 	MemoryAlign(memberNum);
-	uint32 alignSize = GetAlignSize();
+	x_uint32 alignSize = GetAlignSize();
 	alignSize = alignSize > HAZE_ALIGN_BYTE ? alignSize : HAZE_ALIGN_BYTE;
 	m_DataSize = lastMember ? HAZE_ALIGN(m_Offsets.back() + lastMember->GetSize(), alignSize) + m_DataSize : m_DataSize;
 	HAZE_LOG_INFO(H_TEXT("¿‡<%s> DataSize %d\n"), name.c_str(), m_DataSize);
@@ -42,7 +42,7 @@ Share<CompilerFunction> CompilerClass::FindFunction(const HString& functionName,
 {
 	if (nameSpace && !nameSpace->empty() && *nameSpace != m_Name)
 	{
-		for (uint64 i = 0; i < m_ParentClass.size(); i++)
+		for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 		{
 			if (m_ParentClass[i]->GetName() == *nameSpace)
 			{
@@ -50,7 +50,7 @@ Share<CompilerFunction> CompilerClass::FindFunction(const HString& functionName,
 			}
 		}
 
-		for (uint64 i = 0; i < m_ParentClass.size(); i++)
+		for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 		{
 			auto func = m_ParentClass[i]->FindFunction(functionName, nameSpace);
 			if (func)
@@ -72,7 +72,7 @@ Share<CompilerFunction> CompilerClass::FindFunction(const HString& functionName,
 			return nullptr;
 		}
 
-		for (uint64 i = 0; i < m_ParentClass.size(); i++)
+		for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 		{
 			auto func = m_ParentClass[i]->FindFunction(functionName, nameSpace);
 			if (func)
@@ -103,7 +103,7 @@ int CompilerClass::GetMemberIndex(const HString& memberName, const HString* name
 {
 	bool find = false;
 	int index = 0;
-	for (uint64 i = 0; i < m_ParentClass.size(); i++)
+	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
 		if (nameSpace && !nameSpace->empty() && *nameSpace != m_ParentClass[i]->GetName())
 		{
@@ -148,10 +148,10 @@ int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HStr
 	int index = 0;
 
 	CompilerClass* findClass = this;
-	for (uint64 i = 0; i < classNames.size(); i++)
+	for (x_uint64 i = 0; i < classNames.size(); i++)
 	{
 		auto& name = classNames[i];
-		for (uint64 j = 0; j < findClass->m_ParentClass.size(); j++)
+		for (x_uint64 j = 0; j < findClass->m_ParentClass.size(); j++)
 		{
 			if (findClass->m_ParentClass[i]->GetName() == name)
 			{
@@ -172,7 +172,7 @@ int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HStr
 	else
 	{
 		HString s;
-		for (uint64 i = 0; i < classNames.size(); i++)
+		for (x_uint64 i = 0; i < classNames.size(); i++)
 		{
 			s += classNames[i];
 
@@ -279,29 +279,29 @@ void CompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)
 	hss << GetClassLabelHeader() << " " << m_Name << " " << m_DataSize << std::endl;
 
 	hss << m_ParentClass.size() << std::endl;
-	for (uint64 i = 0; i < m_ParentClass.size(); i++)
+	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
 		hss << m_ParentClass[i]->GetName() << std::endl;
 	}
 	
 	hss << m_MemberCount << std::endl;
 
-	uint32 offset = 0;
+	x_uint32 offset = 0;
 	GenClassData_I_CodeToHss(hss, offset);
 }
 
 
-void CompilerClass::GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, uint32& offset)
+void CompilerClass::GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, x_uint32& offset)
 {
-	for (uint64 i = 0; i < m_ParentClass.size(); i++)
+	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
 		m_ParentClass[i]->GenClassData_I_CodeToHss(hss, offset);
 	}
 
 	//uint32 index = 0;
 
-	uint32 startOffset = offset;
-	for (uint64 i = 0; i < m_Data.size(); ++i)
+	x_uint32 startOffset = offset;
+	for (x_uint64 i = 0; i < m_Data.size(); ++i)
 	{
 		hss << m_Data[i].first << " ";
 		m_Data[i].second->GetValueType().StringStreamTo(hss);
@@ -320,13 +320,13 @@ void CompilerClass::GenClassFunction_I_Code(HAZE_STRING_STREAM& hss)
 	}
 }
 
-uint32 CompilerClass::GetAlignSize()
+x_uint32 CompilerClass::GetAlignSize()
 {
-	uint32 maxMemberSize = 0;
+	x_uint32 maxMemberSize = 0;
 
 	for (size_t i = 0; i < m_ParentClass.size(); i++)
 	{
-		uint32 parentAlignSize = m_ParentClass[i]->GetAlignSize();
+		x_uint32 parentAlignSize = m_ParentClass[i]->GetAlignSize();
 		if (parentAlignSize > maxMemberSize)
 		{
 			maxMemberSize = parentAlignSize;
@@ -337,7 +337,7 @@ uint32 CompilerClass::GetAlignSize()
 	{
 		if (iter.second->IsClass())
 		{
-			uint32 classAlignSize = DynamicCast<CompilerClassValue>(iter.second)->GetOwnerClass()->GetAlignSize();
+			x_uint32 classAlignSize = DynamicCast<CompilerClassValue>(iter.second)->GetOwnerClass()->GetAlignSize();
 			if (classAlignSize > maxMemberSize)
 			{
 				maxMemberSize = classAlignSize;
@@ -355,7 +355,7 @@ uint32 CompilerClass::GetAlignSize()
 	return maxMemberSize;
 }
 
-uint32 CompilerClass::GetOffset(uint32 index, Share<CompilerValue> member)
+x_uint32 CompilerClass::GetOffset(x_uint32 index, Share<CompilerValue> member)
 {
 	return index * member->GetSize();
 }
@@ -363,7 +363,7 @@ uint32 CompilerClass::GetOffset(uint32 index, Share<CompilerValue> member)
 V_Array<Share<CompilerValue>> CompilerClass::CreateVariableCopyClassMember(CompilerModule* compilerModule, HazeVariableScope scope)
 {
 	V_Array<Share<CompilerValue>> members;
-	for (uint64 i = 0; i < m_ParentClass.size(); i++)
+	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
 		auto m = m_ParentClass[i]->CreateVariableCopyClassMember(compilerModule, scope);
 		members.insert(members.end(), m.begin(), m.end());
@@ -380,7 +380,7 @@ V_Array<Share<CompilerValue>> CompilerClass::CreateVariableCopyClassMember(Compi
 
 bool CompilerClass::IsInheritClass(CompilerClass* c) const
 {
-	for (uint64 i = 0; i < m_ParentClass.size(); i++)
+	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
 		if (m_ParentClass[i]->IsInheritClass(c))
 		{
@@ -388,7 +388,7 @@ bool CompilerClass::IsInheritClass(CompilerClass* c) const
 		}
 	}
 
-	for (uint64 i = 0; i < m_ParentClass.size(); i++)
+	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
 		if (m_ParentClass[i] == c)
 		{
@@ -435,13 +435,13 @@ bool CompilerClass::HasCommomInheritClass(CompilerClass* c1, CompilerClass* c2)
 //	return maxLevel;
 //}
 
-void CompilerClass::MemoryAlign(uint32 memberNum)
+void CompilerClass::MemoryAlign(x_uint32 memberNum)
 {
 	m_Offsets.resize(memberNum);
-	uint32 align = GetAlignSize();
-	uint32 index = 0;
+	x_uint32 align = GetAlignSize();
+	x_uint32 index = 0;
 
-	uint32 size = 0;
+	x_uint32 size = 0;
 	/*for (size_t i = 0; i < m_ParentClass.size(); i++)
 	{
 		size += m_ParentClass[i]->GetDataSize();
@@ -449,11 +449,11 @@ void CompilerClass::MemoryAlign(uint32 memberNum)
 
 	for (auto& iter : m_Data)
 	{
-		uint32 modSize = size % align;
+		x_uint32 modSize = size % align;
 
 		if (modSize + iter.second->GetSize() <= align || iter.second->IsClass())
 		{
-			uint32 modValue = modSize % iter.second->GetSize();
+			x_uint32 modValue = modSize % iter.second->GetSize();
 			if (modValue == 0)
 			{
 				m_Offsets[index] = size;

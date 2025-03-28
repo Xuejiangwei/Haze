@@ -18,7 +18,7 @@ public:
 
 	virtual Share<CompilerValue> CodeGen() { return nullptr; }
 
-	virtual const HChar* GetName() { return H_TEXT(""); }
+	virtual const x_HChar* GetName() { return H_TEXT(""); }
 
 	virtual bool IsBlock() const { return false; }
 
@@ -73,7 +73,7 @@ public:
 	virtual ~ASTIdentifier() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
-	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
+	virtual const x_HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
 private:
 	Share<CompilerValue> GetNameValue();
@@ -94,7 +94,7 @@ public:
 	virtual ~ASTFunctionCall() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
-	virtual const HChar* GetName() { return m_Name.c_str(); }
+	virtual const x_HChar* GetName() { return m_Name.c_str(); }
 
 private:
 	HString m_NameSpace;
@@ -130,7 +130,7 @@ public:
 	virtual ~ASTVariableDefine() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
-	virtual const HChar* GetName() { return m_DefineVariable.Name.c_str(); }
+	virtual const x_HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
 	Share<CompilerValue> GenExpressionValue(Share<CompilerValue> value);
 
@@ -169,14 +169,14 @@ class ASTVariableDefine_Array : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, uint64 dimension);
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, x_uint64 dimension);
 	virtual ~ASTVariableDefine_Array() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
 
 protected:
 	TemplateDefineTypes m_TemplateTypes;
-	uint64 m_ArrayDimension;
+	x_uint64 m_ArrayDimension;
 };
 
 //变量定义 函数

@@ -70,79 +70,79 @@ HString GetHazeClassFunctionName(const HString& className, const HString& functi
 	return className + HAZE_CLASS_FUNCTION_CONBINE + functionName;
 }
 
-const HChar* GetGlobalDataHeaderString()
+const x_HChar* GetGlobalDataHeaderString()
 {
 	return HEADER_STRING_GLOBAL_DATA;
 }
 
-const HChar* GetStringTableHeaderString()
+const x_HChar* GetStringTableHeaderString()
 {
 	return HEADER_STRING_STRING_TABLE;
 }
 
-const HChar* GetClassTableHeaderString()
+const x_HChar* GetClassTableHeaderString()
 {
 	return HEADER_STRING_CLASS_TABLE;
 }
 
-const HChar* GetClassLabelHeader()
+const x_HChar* GetClassLabelHeader()
 {
 	return CLASS_LABEL_HEADER;
 }
 
-const HChar* GetFucntionTableHeaderString()
+const x_HChar* GetFucntionTableHeaderString()
 {
 	return HEADER_STRING_FUNCTION_TABLE;
 }
 
-const HChar* GetFunctionLabelHeader()
+const x_HChar* GetFunctionLabelHeader()
 {
 	return FUNCTION_LABEL_HEADER;
 }
 
-const HChar* GetFunctionParamHeader()
+const x_HChar* GetFunctionParamHeader()
 {
 	return FUNCTION_PARAM_HEADER;
 }
 
-const HChar* GetFunctionVariableHeader()
+const x_HChar* GetFunctionVariableHeader()
 {
 	return HAZE_LOCAL_VARIABLE_HEADER;
 }
 
-const HChar* GetFunctionTempRegisterHeader()
+const x_HChar* GetFunctionTempRegisterHeader()
 {
 	return HAZE_LOCAL_TEMP_REGISTER_HEADER;
 }
 
-const HChar* GetFunctionStartHeader()
+const x_HChar* GetFunctionStartHeader()
 {
 	return FUNCTION_START_HEADER;
 }
 
-const HChar* GetFunctionEndHeader()
+const x_HChar* GetFunctionEndHeader()
 {
 	return FUNCTION_END_HEADER;
 }
 
-const HChar* GetSymbolBeginHeader()
+const x_HChar* GetSymbolBeginHeader()
 {
 	return SYMBOL_BEGIN;
 }
 
-const HChar* GetSymbolEndHeader()
+const x_HChar* GetSymbolEndHeader()
 {
 	return SYMBOL_END;
 }
 
-bool HazeIsSpace(HChar hChar, bool* isNewLine)
+bool HazeIsSpace(x_HChar hChar, bool* isNewLine)
 {
 	if (isNewLine)
 	{
-		*isNewLine = hChar == HChar('\n');
+		*isNewLine = hChar == x_HChar('\n');
 	}
 
-	return hChar == HChar(' ') || hChar == HChar('\n') || hChar == HChar('\t') || hChar == HChar('\v') || hChar == HChar('\f') || hChar == HChar('\r');
+	return hChar == x_HChar(' ') || hChar == x_HChar('\n') || hChar == x_HChar('\t') || hChar == x_HChar('\v') || hChar == x_HChar('\f') || hChar == x_HChar('\r');
 }
 
 bool IsNumber(const HString& str)
@@ -369,52 +369,52 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	{
 	case HazeValueType::Int8:
 	{
-		CONVERT_SET_VALUE(v1.Value.Int8, int8)
+		CONVERT_SET_VALUE(v1.Value.Int8, x_int8)
 	}
 	break;
 	case HazeValueType::UInt8:
 	{
-		CONVERT_SET_VALUE(v1.Value.UInt8, uint8)
+		CONVERT_SET_VALUE(v1.Value.UInt8, x_uint8)
 	}
 	break;
 	case HazeValueType::Int16:
 	{
-		CONVERT_SET_VALUE(v1.Value.Int16, int16)
+		CONVERT_SET_VALUE(v1.Value.Int16, x_int16)
 	}
 	break;
 	case HazeValueType::UInt16:
 	{
-		CONVERT_SET_VALUE(v1.Value.UInt16, uint16)
+		CONVERT_SET_VALUE(v1.Value.UInt16, x_uint16)
 	}
 	break;
 	case HazeValueType::Int32:
 	{
-		CONVERT_SET_VALUE(v1.Value.Int32, int32)
+		CONVERT_SET_VALUE(v1.Value.Int32, x_int32)
 	}
 		break;
 	case HazeValueType::UInt32:
 	{
-		CONVERT_SET_VALUE(v1.Value.UInt32, uint32)
+		CONVERT_SET_VALUE(v1.Value.UInt32, x_uint32)
 	}
 		break;
 	case HazeValueType::Int64:
 	{
-		CONVERT_SET_VALUE(v1.Value.Int64, int64)
+		CONVERT_SET_VALUE(v1.Value.Int64, x_int64)
 	}
 		break;
 	case HazeValueType::UInt64:
 	{
-		CONVERT_SET_VALUE(v1.Value.UInt64, int64)
+		CONVERT_SET_VALUE(v1.Value.UInt64, x_int64)
 	}
 	break; 
 	case HazeValueType::Float32:
 	{
-		CONVERT_SET_VALUE(v1.Value.Float32, float32)
+		CONVERT_SET_VALUE(v1.Value.Float32, x_float32)
 	}
 		break;
 	case HazeValueType::Float64:
 	{
-		CONVERT_SET_VALUE(v1.Value.Float64, float64)
+		CONVERT_SET_VALUE(v1.Value.Float64, x_float64)
 	}
 		break;
 	default:
@@ -426,12 +426,12 @@ V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter)
 {
 	V_Array<HString> result;
 
-	HChar* s = new HChar[str.size() + 1];
+	x_HChar* s = new x_HChar[str.size() + 1];
 	s[str.size()] = '\0';
 	
 	wcscpy_s(s, str.size() + 1, str.c_str());
 
-	HChar* p = nullptr;
+	x_HChar* p = nullptr;
 	auto token = wcstok_s(s, delimiter.c_str(), &p);
 	while (token)
 	{

@@ -6,10 +6,11 @@
 
 CompilerStringValue::CompilerStringValue(CompilerModule* compilerModule, const HazeDefineType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count)
-	: CompilerValue(compilerModule, defineType, scope, desc, count)
+	: CompilerValue(compilerModule, defineType, scope, desc, count), m_PureString(nullptr)
 {
 }
 
 CompilerStringValue::~CompilerStringValue()
 {
+	m_PureString = nullptr;
 }

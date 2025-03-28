@@ -13,8 +13,8 @@
 #endif
 
 Unique<HazeDebugger> g_Debugger;
-uint64 g_SocketServer;
-uint64 g_SocketClient;
+x_uint64 g_SocketServer;
+x_uint64 g_SocketClient;
 std::thread::id g_DebuggerThreadId;
 
 void CloseServer()
@@ -107,7 +107,7 @@ static bool HandleMessage(char* Message)
 	Message = UTF8_2_GB2312(Message);
 	std::string Str;
 	Str += Message[0];
-	uint32 m_Type = StringToStandardType<uint32>(Str);
+	x_uint32 m_Type = StringToStandardType<x_uint32>(Str);
 	HAZE_LOG_INFO("handle message %d %s\n", m_Type, Message + 1);
 	switch ((HazeDebugOperatorType)m_Type)
 	{

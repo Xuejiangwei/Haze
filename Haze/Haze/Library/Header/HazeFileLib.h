@@ -7,7 +7,7 @@ class HazeFileLib : public HazeStandardLibraryBase
 public:
 	HAZE_INIT_STANDARD_LIB();
 
-	HAZE_STD_LIB_FUNCTION_NO_CALL(void, OpenFile, const HChar* path, int operatorType);
+	HAZE_STD_LIB_FUNCTION_NO_CALL(void, OpenFile, const x_HChar* path, int operatorType);
 
 	HAZE_STD_LIB_FUNCTION_NO_CALL(void, CloseFile, int* file);
 

@@ -7,17 +7,20 @@
 #include "HazeStack.h"
 #include "HazeStream.h"
 #include "ObjectString.h"
+#include "ObjectDynamicClass.h"
+#include "HazeMemory.h"
 
 static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
 	{ H_TEXT("打印"), &HazeStream::HazePrintf },
 	{ H_TEXT("输入"), &HazeStream::HazeScanf },
 	{ H_TEXT("字符格式化"), &HazeStream::HazeStringFormat },
+	{ H_TEXT("生成动态类"), &HazeStream::CreateDynamicClass },
 };
 
 static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(H_TEXT("HazeStream"), &s_HashMap_Functions);
 
-const HChar* HazeStream::GetFormat(const HChar* strfrmt, HChar* form)
+const x_HChar* HazeStream::GetFormat(const x_HChar* strfrmt, x_HChar* form)
 {
 #define L_FMTFLAGSF	H_TEXT("-+#0 123456789.")
 #define MAX_FORMAT 32
@@ -29,8 +32,8 @@ const HChar* HazeStream::GetFormat(const HChar* strfrmt, HChar* form)
 		return nullptr;
 	}
 
-	*(form++) = HChar('%');
-	memcpy(form, strfrmt, len * sizeof(HChar));
+	*(form++) = x_HChar('%');
+	memcpy(form, strfrmt, len * sizeof(x_HChar));
 	*(form + len) = '\0';
 	return strfrmt + len - 1;
 }
@@ -40,11 +43,11 @@ void HazeStream::InitializeLib()
 	HazeStandardLibraryBase::AddStdLib(H_TEXT("标准流"), &s_HashMap_Functions);
 }
 
-HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
+HString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
 {
-#define PRE_SIGN HChar('%')
+#define PRE_SIGN x_HChar('%')
 
-	uint64 v = 0;
+	x_uint64 v = 0;
 
 	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE - (int)sizeof(v);
 	memcpy(&v, stack->GetAddressByEBP(offset), sizeof(v));
@@ -53,7 +56,7 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 
 	int argNum = 1 + 1;
 
-	const HChar* str = ((ObjectString*)v)->GetData();
+	const x_HChar* str = ((ObjectString*)v)->GetData();
 	auto start = str;
 	while (*start != '\0')
 	{
@@ -83,11 +86,11 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 				HAZE_LOG_ERR_W("调用<打印>函数参数个数错误!\n");
 				break;
 			}
-			HChar Form[MAX_FORMAT];
+			x_HChar Form[MAX_FORMAT];
 			start = GetFormat(start, Form);
 
 			start++;
-			if (*start == HChar('d'))
+			if (*start == x_HChar('d'))
 			{
 				auto ins = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - argNum - 1];
 				int size = ins.Operator[0].Variable.Type.GetTypeSize();
@@ -110,7 +113,7 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 
 				start++;
 			}
-			else if (*start == HChar('f'))
+			else if (*start == x_HChar('f'))
 			{
 				offset -= sizeof(float);
 
@@ -120,19 +123,19 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 				hss << tempV;
 				start++;
 			}
-			else if (*start == HChar('c'))
+			else if (*start == x_HChar('c'))
 			{
-				offset -= sizeof(HChar);
+				offset -= sizeof(x_HChar);
 
-				HChar tempV;
+				x_HChar tempV;
 				char* address = stack->GetAddressByEBP(offset);
-				memcpy(&tempV, address, sizeof(HChar));
+				memcpy(&tempV, address, sizeof(x_HChar));
 				hss << tempV;
 				start++;
 			}
-			else if (*start == HChar('p'))
+			else if (*start == x_HChar('p'))
 			{
-				uint64 pointerAddress;
+				x_uint64 pointerAddress;
 				offset -= sizeof(pointerAddress);
 
 				char* address = stack->GetAddressByEBP(offset);
@@ -140,22 +143,139 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 				hss << (void*)pointerAddress;
 				start++;
 			}
-			else if (*start == HChar('s'))
+			else if (*start == x_HChar('s'))
 			{
-				uint64 tempAddress;
+				x_uint64 tempAddress;
 
 				offset -= sizeof(tempAddress);
 
 				char* Address = stack->GetAddressByEBP(offset);
 				memcpy(&tempAddress, Address, sizeof(tempAddress));
 
-				const HChar* tempStr = ((ObjectString*)tempAddress)->GetData();
+				const x_HChar* tempStr = ((ObjectString*)tempAddress)->GetData();
 				hss << tempStr;
 				start++;
 			}
 		}
 	}
 
+	return hss.str();
+}
+
+HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
+{
+#define PRE_SIGN x_HChar('%')
+
+	x_uint64 v = 0;
+
+	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE;
+	memcpy(&v, stack->GetAddressByEBP(offset), sizeof(v));
+
+	HAZE_STRING_STREAM hss;
+
+	int argNum = 1;
+
+	const x_HChar* str = ((ObjectString*)v)->GetData();
+	auto start = str;
+	while (*start != '\0')
+	{
+		if (*start != PRE_SIGN)
+		{
+			if (*start == x_HChar('\\'))
+			{
+				if (*(++start) == x_HChar('n'))
+				{
+					start++;
+					hss << std::endl;
+				}
+			}
+			else
+			{
+				hss << *(start++);
+			}
+		}
+		else if (*(++start) == PRE_SIGN)
+		{
+			hss << *(start++);
+		}
+		else
+		{
+			if (++argNum > multiParamNum) //入栈参数个数
+			{
+				HAZE_LOG_ERR_W("调用<打印>函数参数个数错误!\n");
+				break;
+			}
+			x_HChar Form[MAX_FORMAT];
+			start = GetFormat(start, Form);
+
+			start++;
+			if (*start == x_HChar('d'))
+			{
+				int size = sizeof(int);
+
+				offset -= size;
+				if (size == 1)
+				{
+					char TempV;
+					char* Address = stack->GetAddressByEBP(offset);
+					memcpy(&TempV, Address, size);
+					hss << (int)TempV;
+				}
+				else
+				{
+					int TempV;
+					char* Address = stack->GetAddressByEBP(offset);
+					memcpy(&TempV, Address, size);
+					hss << TempV;
+				}
+
+				start++;
+			}
+			else if (*start == x_HChar('f'))
+			{
+				offset -= sizeof(float);
+
+				float tempV;
+				char* address = stack->GetAddressByEBP(offset);
+				memcpy(&tempV, address, sizeof(float));
+				hss << tempV;
+				start++;
+			}
+			else if (*start == x_HChar('c'))
+			{
+				offset -= sizeof(x_HChar);
+
+				x_HChar tempV;
+				char* address = stack->GetAddressByEBP(offset);
+				memcpy(&tempV, address, sizeof(x_HChar));
+				hss << tempV;
+				start++;
+			}
+			else if (*start == x_HChar('p'))
+			{
+				x_uint64 pointerAddress;
+				offset -= sizeof(pointerAddress);
+
+				char* address = stack->GetAddressByEBP(offset);
+				memcpy(&pointerAddress, address, sizeof(float));
+				hss << (void*)pointerAddress;
+				start++;
+			}
+			else if (*start == x_HChar('s'))
+			{
+				x_uint64 tempAddress;
+				offset -= sizeof(tempAddress);
+
+				char* Address = stack->GetAddressByEBP(offset);
+				memcpy(&tempAddress, Address, sizeof(tempAddress));
+
+				const x_HChar* tempStr = ((ObjectString*)tempAddress)->GetData();
+				hss << tempStr;
+				start++;
+			}
+		}
+	}
+	
 	return hss.str();
 }
 
@@ -167,9 +287,9 @@ HString HazeStream::FormatConstantString(const HString& str)
 	{
 		if (*start != PRE_SIGN)
 		{
-			if (*start == HChar('\\'))
+			if (*start == x_HChar('\\'))
 			{
-				if (*(++start) == HChar('n'))
+				if (*(++start) == x_HChar('n'))
 				{
 					start++;
 					hss << std::endl;
@@ -195,9 +315,9 @@ HString HazeStream::FormatConstantString(const HString& str)
 
 void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 {
-#define PRE_SIGN HChar('%')
+#define PRE_SIGN x_HChar('%')
 
-	uint64 v = 0;
+	x_uint64 v = 0;
 
 	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE;
 	memcpy(&v, stack->GetAddressByEBP(offset), sizeof(v));
@@ -206,15 +326,15 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 
 	int argNum = 1;
 
-	const HChar* str = ((ObjectString*)v)->GetData();
+	const x_HChar* str = ((ObjectString*)v)->GetData();
 	auto start = str;
 	while (*start != '\0')
 	{
 		if (*start != PRE_SIGN)
 		{
-			if (*start == HChar('\\'))
+			if (*start == x_HChar('\\'))
 			{
-				if (*(++start) == HChar('n'))
+				if (*(++start) == x_HChar('n'))
 				{
 					start++;
 					hss << std::endl;
@@ -236,11 +356,11 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				HAZE_LOG_ERR_W("调用<打印>函数参数个数错误!\n");
 				return;
 			}
-			HChar Form[MAX_FORMAT];
+			x_HChar Form[MAX_FORMAT];
 			start = GetFormat(start, Form);
 
 			start++;
-			if (*start == HChar('d'))
+			if (*start == x_HChar('d'))
 			{
 				int size = sizeof(int);
 
@@ -262,7 +382,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 
 				start++;
 			}
-			else if (*start == HChar('f'))
+			else if (*start == x_HChar('f'))
 			{
 				offset -= sizeof(float);
 
@@ -272,19 +392,19 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				hss << tempV;
 				start++;
 			}
-			else if (*start == HChar('c'))
+			else if (*start == x_HChar('c'))
 			{
-				offset -= sizeof(HChar);
+				offset -= sizeof(x_HChar);
 
-				HChar tempV;
+				x_HChar tempV;
 				char* address = stack->GetAddressByEBP(offset);
-				memcpy(&tempV, address, sizeof(HChar));
+				memcpy(&tempV, address, sizeof(x_HChar));
 				hss << tempV;
 				start++;
 			}
-			else if (*start == HChar('p'))
+			else if (*start == x_HChar('p'))
 			{
-				uint64 pointerAddress;
+				x_uint64 pointerAddress;
 				offset -= sizeof(pointerAddress);
 
 				char* address = stack->GetAddressByEBP(offset);
@@ -292,15 +412,15 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				hss << (void*)pointerAddress;
 				start++;
 			}
-			else if (*start == HChar('s'))
+			else if (*start == x_HChar('s'))
 			{
-				uint64 tempAddress;
+				x_uint64 tempAddress;
 				offset -= sizeof(tempAddress);
 
 				char* Address = stack->GetAddressByEBP(offset);
 				memcpy(&tempAddress, Address, sizeof(tempAddress));
 
-				const HChar* tempStr = ((ObjectString*)tempAddress)->GetData();
+				const x_HChar* tempStr = ((ObjectString*)tempAddress)->GetData();
 				hss << tempStr;
 				start++;
 			}
@@ -310,16 +430,16 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 	HazePrintfCall(hss.str().c_str());
 }
 
-void HazeStream::HazePrintfCall(const HChar* V)
+void HazeStream::HazePrintfCall(const x_HChar* V)
 {
 	std::wcout << V;
 }
 
 void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 {
-#define PRE_SIGN HChar('%')
+#define PRE_SIGN x_HChar('%')
 
-	uint64 v = 0;
+	x_uint64 v = 0;
 
 	int offset = -(int)sizeof(v) - HAZE_ADDRESS_SIZE;
 	memcpy(&v, stack->GetAddressByEBP(offset), sizeof(v));
@@ -328,10 +448,10 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 
 	int argNum = 1;
 
-	const HChar* str = ((ObjectString*)v)->GetData();
+	const x_HChar* str = ((ObjectString*)v)->GetData();
 	auto Start = str;
 
-	uint64 Address = 0;
+	x_uint64 Address = 0;
 
 	while (*Start != '\0')
 	{
@@ -363,11 +483,11 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 			{
 				return;
 			}
-			HChar Form[MAX_FORMAT];
+			x_HChar Form[MAX_FORMAT];
 			Start = GetFormat(Start, Form);
 
 			Start++;
-			if (*Start == HChar('d'))
+			if (*Start == x_HChar('d'))
 			{
 				offset -= sizeof(Address);
 
@@ -381,7 +501,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				hss << TempV;
 				Start++;
 			}
-			else if (*Start == HChar('f'))
+			else if (*Start == x_HChar('f'))
 			{
 				offset -= sizeof(Address);
 
@@ -424,4 +544,54 @@ void HazeStream::HazeStringFormat(HAZE_STD_CALL_PARAM)
 void HazeStream::HazeStringFormatCall()
 {
 
+}
+
+V_Array<TestDynamic> g_TestDynamics;
+void TestConstructor(void* ptr)
+{
+	std::cout << "constructor : " << ptr << std::endl;
+}
+
+void TestDeconstructor(void* ptr)
+{
+	std::cout << "deconstructor : " << ptr << std::endl;
+}
+
+void TestGetMember(HazeStack* stack, const HString& name, void* obj)
+{
+	HAZE_LOG_INFO(H_TEXT("get member %s\n"), name.c_str());
+	SET_RET_BY_TYPE(HazeValueType::Int32, ((TestDynamic*)obj)->value);
+}
+
+void TestSetMember(HazeStack* stack, const HString& name, void* obj, x_uint8* currESP)
+{
+	HAZE_LOG_INFO(H_TEXT("set member %s\n"), name.c_str());
+	auto size = sizeof(((TestDynamic*)obj)->value);
+	memcpy(&((TestDynamic*)obj)->value, currESP - size, size);
+}
+
+void TestCallFunction(HazeStack* stack, const HString& name, void* obj, x_uint8* currESP)
+{
+	std::cout << "call function : " << name.c_str() << std::endl;
+	int a, b;
+	memcpy(&a, currESP - sizeof(a), sizeof(a));
+	memcpy(&b, currESP - sizeof(a) - sizeof(b), sizeof(b));
+
+	((TestDynamic*)obj)->Add(a, b);
+}
+
+void HazeStream::CreateDynamicClass(HAZE_STD_CALL_PARAM)
+{
+	static ObjectDynamicClass::CustomMethods methods;
+	methods.Constructor = &TestConstructor;
+	methods.Deconstructor = &TestDeconstructor;
+	methods.GetMember = &TestGetMember;
+	methods.SetMember = &TestSetMember;
+	methods.CallFunction = &TestCallFunction;
+
+	auto address = HazeMemory::Alloca(sizeof(ObjectDynamicClass));
+	auto testObj = new TestDynamic();
+	new(address) ObjectDynamicClass(&methods, testObj);
+
+	SET_RET_BY_TYPE(HazeValueType::DynamicClass, address);
 }

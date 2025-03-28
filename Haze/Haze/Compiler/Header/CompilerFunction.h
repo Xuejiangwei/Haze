@@ -7,7 +7,7 @@ class CompilerClass;
 class CompilerClassValue;
 class CompilerBlock;
 
-enum class ClassCompilerFunctionType : uint8
+enum class ClassCompilerFunctionType : x_uint8
 {
 	None,
 	Normal,
@@ -28,7 +28,7 @@ public:
 
 	~CompilerFunction();
 
-	void SetStartEndLine(uint32 startLine, uint32 endLine);
+	void SetStartEndLine(x_uint32 startLine, x_uint32 endLine);
 
 	Share<CompilerValue> GetLocalVariable(const HString& VariableName, HString* nameSpace);
 
@@ -68,9 +68,9 @@ public:
 
 	void AddLocalVariable(Share<CompilerValue> value, int line);
 
-	const HazeDefineType& GetParamTypeByIndex(uint64 index);
+	const HazeDefineType& GetParamTypeByIndex(x_uint64 index);
 
-	const HazeDefineType& GetParamTypeLeftToRightByIndex(uint64 index);
+	const HazeDefineType& GetParamTypeLeftToRightByIndex(x_uint64 index);
 
 	Share<CompilerClassValue> GetThisLocalVariable();
 
@@ -82,10 +82,10 @@ private:
 
 	void AddFunctionParam(const HazeDefineVariable& variable);
 
-	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
+	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
 		V_Array<HazeDefineType>* params = nullptr);
 
-	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
+	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
 		V_Array<HazeDefineType>* params = nullptr);
 
 	//Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
@@ -101,7 +101,7 @@ private:
 	};
 
 	//同一类型，但是不再引用的临时寄存器可以重复使用, 统一大小都为8个字节
-	Share<CompilerValue> CreateTempRegister(const HazeDefineType& type, uint64 arrayDimension = 0);
+	Share<CompilerValue> CreateTempRegister(const HazeDefineType& type, x_uint64 arrayDimension = 0);
 
 	void TryClearTempRegister();
 
@@ -122,8 +122,8 @@ private:
 	int m_CurrBlockCount;
 	int m_CurrVariableCount;
 	
-	uint32 m_StartLine;
-	uint32 m_EndLine;
+	x_uint32 m_StartLine;
+	x_uint32 m_EndLine;
 	InstructionFunctionType m_DescType;
 
 	ClassCompilerFunctionType m_ClassFunctionType;

@@ -1,7 +1,7 @@
 #pragma once
 #include "HazeDefine.h"
 
-enum class GCObjectType : uint8
+enum class GCObjectType : x_uint8
 {
 	Base_NoGC,
 	Array,

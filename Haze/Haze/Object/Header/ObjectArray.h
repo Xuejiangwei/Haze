@@ -11,7 +11,7 @@ class ObjectArray
 {
 	friend class HazeMemory;
 public:
-	ObjectArray(uint64 dimensionCount, uint64* length, uint64 pcAddress, HazeValueType valueType, ClassData* classInfo = nullptr);
+	ObjectArray(x_uint64 dimensionCount, x_uint64* length, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo = nullptr);
 
 	~ObjectArray();
 
@@ -34,10 +34,10 @@ private:
 
 private:
 	void* m_Data;
-	uint64 m_DimensionCount;
-	uint64 m_Length;
-	uint64 m_Capacity;
-	uint64 m_PcAddress;
+	x_uint64 m_DimensionCount;
+	x_uint64 m_Length;
+	x_uint64 m_Capacity;
+	x_uint64 m_PcAddress;
 	HazeValueType m_ValueType;
 	ClassData* m_ClassInfo;
 };

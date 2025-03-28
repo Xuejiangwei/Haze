@@ -105,6 +105,10 @@ using HString = std::wstring;
 #define HAZE_ADVANCE_GET_FUNCTION		H_TEXT("获得")
 #define HAZE_ADVANCE_SET_FUNCTION		H_TEXT("设置")
 
+#define HAZE_CUSTOM_GET_MEMBER			H_TEXT("获得")
+#define HAZE_CUSTOM_SET_MEMBER			H_TEXT("设置")
+#define HAZE_CUSTOM_CALL_FUNCTION		H_TEXT("调用")
+
 #define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum, int paramByteSize
 #define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum, paramByteSize
 
@@ -117,22 +121,3 @@ using HString = std::wstring;
 #define HAZE_ALIGN(X, ALIGN) ((X + ALIGN -1) & ~(ALIGN -1))
 
 #define HAZE_NEW_ALIGN(X) ((X + HAZE_NEW_ALIGN_BYTE -1) & ~(HAZE_NEW_ALIGN_BYTE -1))
-
-
-using HByte = char;
-using HChar = wchar_t;
-
-using uchar = unsigned char;
-using uhbyte = unsigned char;
-
-using int8 = char;
-using uint8 = unsigned char;
-using int16 = short;
-using uint16 = unsigned short;
-using int32 = int;
-using uint32 = unsigned int;
-using int64 = long long;
-using uint64 = unsigned long long;
-
-using float32 = float;
-using float64 = double;

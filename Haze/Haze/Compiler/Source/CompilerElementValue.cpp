@@ -5,7 +5,7 @@
 #include "Compiler.h"
 
 CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, Share<CompilerValue> element)
-	: CompilerValue(compilerModule, element->GetValueType(), HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(element)
+	: CompilerValue(compilerModule, element->GetValueType(), HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(element), m_ElementName(nullptr)
 {
 	if (parent->IsArray())
 	{
@@ -21,6 +21,12 @@ CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share
 	}
 }
 
+CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const HString& elementName)
+	: CompilerValue(compilerModule, HazeValueType::DynamicClassUnknow, HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(nullptr), m_ElementName(MakeUnique<HString>(elementName))
+{
+
+}
+
 CompilerElementValue::~CompilerElementValue()
 {
 }
@@ -34,6 +40,10 @@ Share<CompilerValue> CompilerElementValue::CreateGetFunctionCall()
 	else if (IsClassType(GetParentBaseType()))
 	{
 		return  m_Module->GetCompiler()->CreateGetClassMember(m_Parent, m_Element);
+	}
+	else if (IsDynamicClassType(GetParentBaseType()))
+	{
+		return m_Module->GetCompiler()->CreateGetDynamicClassMember(m_Parent, *m_ElementName.get());
 	}
 	else
 	{

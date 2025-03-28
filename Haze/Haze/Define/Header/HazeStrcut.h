@@ -9,7 +9,7 @@
 	#include "JwHeader.h"
 #endif
 
-enum class HazeSectionSignal : uint8
+enum class HazeSectionSignal : x_uint8
 {
 	Global,
 	Local,
@@ -63,6 +63,8 @@ struct HazeDefineType
 		else if (IsStringType(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
 		else if (IsMultiVariableTye(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
 		else if (IsFunctionType(PrimaryType) && IsNoneType(SecondaryType)) {}
+		else if (IsDynamicClassUnknowType(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
+		else if (IsPureStringType(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
 		else
 		{
 			HAZE_LOG_ERR_W("基本类型指针的类型错误<%s><%s><%s>\n", GetHazeValueTypeString(PrimaryType), GetHazeValueTypeString(SecondaryType),
@@ -75,9 +77,9 @@ struct HazeDefineType
 
 	bool operator!=(const HazeDefineType& type) const { return !(type == *this); }
 
-	uint32 GetCompilerTypeSize() const { return IsEnumType(PrimaryType) ? GetSizeByHazeType(SecondaryType) : GetSizeByHazeType(PrimaryType); }
+	x_uint32 GetCompilerTypeSize() const { return IsEnumType(PrimaryType) ? GetSizeByHazeType(SecondaryType) : GetSizeByHazeType(PrimaryType); }
 	
-	uint32 GetTypeSize() const { return GetSizeByHazeType(PrimaryType); }
+	x_uint32 GetTypeSize() const { return GetSizeByHazeType(PrimaryType); }
 
 	void Reset() { PrimaryType = HazeValueType::None; SecondaryType = HazeValueType::None, CustomName = nullptr; }
 
@@ -186,7 +188,7 @@ struct HazeDefineType
 	}
 
 	template<typename Class>
-	void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
+	void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(x_uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
 
 	/*bool HasCustomName(const HazeDefineType& type)
 	{
@@ -229,9 +231,9 @@ struct HazeDefineType
 	}
 
 	template<typename Class>
-	static void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(uint32&), HazeDefineType& type)
+	static void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(x_uint32&), HazeDefineType& type)
 	{
-		(pThis->*typeCall)((uint32&)type.PrimaryType);
+		(pThis->*typeCall)((x_uint32&)type.PrimaryType);
 
 		/*if (Type.PrimaryType == HazeValueType::MultiVariable)
 		{
@@ -240,7 +242,7 @@ struct HazeDefineType
 
 		if (type.NeedSecondaryType())
 		{
-			(pThis->*typeCall)((uint32&)type.SecondaryType);
+			(pThis->*typeCall)((x_uint32&)type.SecondaryType);
 		}
 
 		if (type.NeedCustomName())
@@ -248,11 +250,17 @@ struct HazeDefineType
 			(pThis->*stringCall)(type.CustomName);
 		}
 	}
+
+	static const HazeDefineType& StringType()
+	{
+		static HazeDefineType s_Type(HazeValueType::String);
+		return s_Type;
+	}
 };
 
 struct HazeDefineTypeHashFunction
 {
-	uint64 operator()(const HazeDefineType& type) const
+	x_uint64 operator()(const HazeDefineType& type) const
 	{
 		if (type.CustomName && !type.CustomName->empty())
 		{
@@ -260,7 +268,7 @@ struct HazeDefineTypeHashFunction
 		}
 		else
 		{
-			return (uint64)type.PrimaryType * 100 + (uint64)type.SecondaryType * 10;
+			return (x_uint64)type.PrimaryType * 100 + (x_uint64)type.SecondaryType * 10;
 		}
 	}
 };
@@ -279,14 +287,14 @@ struct HazeVariableData
 {
 	HazeDefineVariable Variable;
 	int Offset;
-	uint32 Size;
-	uint32 Line;
+	x_uint32 Size;
+	x_uint32 Line;
 };
 
 struct HazeTempRegisterData
 {
 	HString Name;
-	uint32 Offset;
+	x_uint32 Offset;
 	HazeDefineType Type;
 };
 

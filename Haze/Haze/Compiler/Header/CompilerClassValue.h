@@ -13,7 +13,7 @@ public:
 
 	virtual ~CompilerClassValue() override;
 
-	virtual uint32 GetSize() override;
+	virtual x_uint32 GetSize() override;
 
 	CompilerClass* GetOwnerClass() { return m_OwnerClass; };
 

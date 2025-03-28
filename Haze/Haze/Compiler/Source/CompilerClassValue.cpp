@@ -47,8 +47,8 @@ int CompilerClassValue::GetMemberIndex(const HString& memberName, HString* nameS
 
 int CompilerClassValue::GetMemberIndex(CompilerValue* value)
 {
-	uint64 index = 0;
-	for (uint64 i = 0; i < m_Data.size(); i++)
+	x_uint64 index = 0;
+	for (x_uint64 i = 0; i < m_Data.size(); i++)
 	{
 		if (m_Data[i].get() == value)
 		{

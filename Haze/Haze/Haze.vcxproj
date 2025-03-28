@@ -135,13 +135,20 @@
       xcopy /y /d "$(ProjectDir)HazeLog\Header\HazeLog.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeLibraryDefine.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeStandardLibraryBase.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeFileLib.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeMemoryLib.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeStream.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)MetaData\Header\HazeVariable.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)VM\Header\HazeStack.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)VM\Header\HazeVM.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)XJson\XJson.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Header\HazePch.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Header\JwHeader.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Define\Header\HazeLogDefine.h"  "$(OutDir)..\include\"</Command>
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeLogDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectClass.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectString.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDefine.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -180,13 +187,20 @@
       xcopy /y /d "$(ProjectDir)HazeLog\Header\HazeLog.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeLibraryDefine.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeStandardLibraryBase.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeFileLib.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeMemoryLib.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Library\Header\HazeStream.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)MetaData\Header\HazeVariable.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)VM\Header\HazeStack.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)VM\Header\HazeVM.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)XJson\XJson.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Header\HazePch.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Header\JwHeader.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Define\Header\HazeLogDefine.h"  "$(OutDir)..\include\"</Command>
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeLogDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectClass.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectString.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDefine.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -234,6 +248,7 @@
     <ClCompile Include="Memory\Source\MemoryBlock.cpp" />
     <ClCompile Include="Memory\Source\MemoryHelper.cpp" />
     <ClCompile Include="MetaData\Source\HazeVariable.cpp" />
+    <ClCompile Include="Object\Source\ObjectDynamicClass.cpp" />
     <ClCompile Include="Object\Source\ObjectString.cpp" />
     <ClCompile Include="Source\Haze.cpp" />
     <ClCompile Include="HazeLog\Source\HazeLog.cpp" />
@@ -306,6 +321,7 @@
     <ClInclude Include="Library\Header\HazeMemoryLib.h" />
     <ClInclude Include="Object\Header\ObjectArray.h" />
     <ClInclude Include="Object\Header\ObjectClass.h" />
+    <ClInclude Include="Object\Header\ObjectDynamicClass.h" />
     <ClInclude Include="Object\Header\ObjectDefine.h" />
     <ClInclude Include="Object\Header\ObjectString.h" />
     <ClInclude Include="XJson\XJson.h" />

@@ -26,7 +26,7 @@ AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 void ObjectClass::GetOffset(HAZE_STD_CALL_PARAM)
 {
 	ObjectClass* classObj;
-	uint64 index = 0;
+	x_uint64 index = 0;
 
 	GET_PARAM_START();
 	GET_PARAM(classObj);
@@ -45,7 +45,7 @@ void ObjectClass::GetOffset(HAZE_STD_CALL_PARAM)
 void ObjectClass::SetOffset(HAZE_STD_CALL_PARAM)
 {
 	ObjectClass* classObj;
-	uint64 index = 0;
+	x_uint64 index = 0;
 	char* value = nullptr;
 
 	GET_PARAM_START();

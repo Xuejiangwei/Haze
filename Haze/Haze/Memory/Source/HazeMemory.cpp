@@ -13,7 +13,7 @@
 #define PAGE_BASE_SIZE	4 * 4
 #define GC_TIME			60
 
-HazeMemory::HazeMemory(uint64 maxMarkTime)
+HazeMemory::HazeMemory(x_uint64 maxMarkTime)
 	: m_IsForceGC(false), m_MaxMarkTime(maxMarkTime), m_MarkStage(MarkStage::Ready), m_LastGCTime(0)
 {
 }
@@ -38,7 +38,7 @@ HazeMemory* HazeMemory::GetMemory()
 	return s_Memory.get();
 }
 
-void* HazeMemory::Alloca(uint64 size)
+void* HazeMemory::Alloca(x_uint64 size)
 {
 	void* ret = nullptr;
 	if (size == 0)
@@ -50,8 +50,8 @@ void* HazeMemory::Alloca(uint64 size)
 	
 	if (size <= MAX_HAZE_ALLOC_SIZE)
 	{
-		uint32 offset = size % GRANULE == 0 ? -1 : 1;
-		uint32 index = (uint32)size / GRANULE + offset;
+		x_uint32 offset = size % GRANULE == 0 ? -1 : 1;
+		x_uint32 index = (x_uint32)size / GRANULE + offset;
 		
 		auto memoryIns = GetMemory();
 		if (!memoryIns->m_FreeList[index])
@@ -67,7 +67,7 @@ void* HazeMemory::Alloca(uint64 size)
 		}
 		else
 		{
-			index = (uint32)size / PAGE_UNIT;
+			index = (x_uint32)size / PAGE_UNIT;
 			
 			MemoryBlock* block = nullptr;
 			if (memoryIns->m_MemoryBlocks[index])
@@ -82,7 +82,7 @@ void* HazeMemory::Alloca(uint64 size)
 				
 				if (block)
 				{
-					uint32 length = sizeof(block->m_Memory) / block->m_BlockInfo.UnitSize;
+					x_uint32 length = sizeof(block->m_Memory) / block->m_BlockInfo.UnitSize;
 					char* address = block->m_Memory;
 					while (length-- > 0)
 					{
@@ -92,17 +92,17 @@ void* HazeMemory::Alloca(uint64 size)
 				}
 				else
 				{
-					block = new MemoryBlock((uint32)size);
+					block = new MemoryBlock((x_uint32)size);
 					prevBlock->SetNext(block);
 				}
 			}
 			else
 			{
-				block = new MemoryBlock((uint32)size);
+				block = new MemoryBlock((x_uint32)size);
 				memoryIns->m_MemoryBlocks[index] = block;
 			}
 
-			uint32 length = sizeof(block->m_Memory) / block->m_BlockInfo.UnitSize;
+			x_uint32 length = sizeof(block->m_Memory) / block->m_BlockInfo.UnitSize;
 			char* address = block->m_Memory;
 			while (length-- > 0)
 			{
@@ -129,7 +129,7 @@ void HazeMemory::AddToRoot(void*)
 }
 
 //需要考虑到循环引用的引起的死循环情况, 要么在Object中添加标记位（例如ObjectClass中添加uint8类型成员去做标记位），要么hashSet存储已标记的object
-void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, char* classAddress)
+void HazeMemory::MarkVariable(const HazeDefineType& type, x_uint64 startAddress, char* classAddress)
 {
 	switch (type.PrimaryType)
 	{
@@ -149,33 +149,33 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, c
 			m_MarkAddressBases.push_back({ startAddress, GC_State::Gray });
 
 			auto objectArray = ((ObjectArray*)startAddress);
-			uint64 length = objectArray->m_Length;
+			x_uint64 length = objectArray->m_Length;
 			if (IsArrayType(objectArray->m_ValueType))
 			{
-				for (uint64 i = 0; i < length; i++)
+				for (x_uint64 i = 0; i < length; i++)
 				{
 					auto v = (ObjectArray*)objectArray->m_Data + i;
-					MarkVariable(v->m_ValueType, (uint64)v, nullptr);
+					MarkVariable(v->m_ValueType, (x_uint64)v, nullptr);
 				}
 			}
 			else if (IsClassType(objectArray->m_ValueType))
 			{
-				for (uint64 i = 0; i < length; i++)
+				for (x_uint64 i = 0; i < length; i++)
 				{
 					auto v = (ObjectClass*)objectArray->m_Data + i;
-					MarkVariable({ HazeValueType::Class, &v->m_ClassInfo->Name }, (uint64)v, nullptr);
+					MarkVariable({ HazeValueType::Class, &v->m_ClassInfo->Name }, (x_uint64)v, nullptr);
 				}
 			}
 			else if (IsStringType(objectArray->m_ValueType))
 			{
-				for (uint64 i = 0; i < length; i++)
+				for (x_uint64 i = 0; i < length; i++)
 				{
 					auto v = (ObjectString*)objectArray->m_Data + i;
-					MarkVariable(objectArray->m_ValueType, (uint64)v, nullptr);
+					MarkVariable(objectArray->m_ValueType, (x_uint64)v, nullptr);
 				}
 			}
 
-			uint64 size = ((ObjectArray*)startAddress)->m_Length  * GetSizeByHazeType(type.SecondaryType);
+			x_uint64 size = ((ObjectArray*)startAddress)->m_Length  * GetSizeByHazeType(type.SecondaryType);
 
 	#ifdef _DEBUG
 			if (size == 0)
@@ -193,7 +193,7 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, c
 		if ((ObjectString*)startAddress)
 		{
 			m_MarkAddressBases.push_back({ startAddress, GC_State::Gray });
-			m_MarkAddressBases.push_back({ (uint64)((ObjectString*)startAddress)->GetData(), GC_State::Gray });
+			m_MarkAddressBases.push_back({ (x_uint64)((ObjectString*)startAddress)->GetData(), GC_State::Gray });
 		}
 	}
 		break;
@@ -204,7 +204,7 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, uint64 startAddress, c
 
 void HazeMemory::MarkClassMember(ClassData* classData, char* baseAddress)
 {
-	uint64 address = 0;
+	x_uint64 address = 0;
 	for (size_t i = 0; i < classData->Members.size(); i++)
 	{
 		auto& member = classData->Members[i];
@@ -239,11 +239,20 @@ void HazeMemory::Mark()
 		}
 
 		//根节点内存有 静态变量、栈、函数调用栈中缓存的寄存器、当前的寄存器
-		uint64 Address = 0;
+		x_uint64 Address = 0;
 
 		for (auto& it : m_VM->m_GlobalData)
 		{
-			MarkVariable(it.m_Type, (uint64)it.Value.Value.Pointer, (char*)it.Value.Value.Pointer);
+			MarkVariable(it.m_Type, (x_uint64)it.Value.Value.Pointer, (char*)it.Value.Value.Pointer);
+		}
+
+		for (auto& it : m_VM->m_ExtreGlobalData)
+		{
+			if (it)
+			{
+				m_MarkAddressBases.push_back({ (x_uint64)it, GC_State::Gray });
+				MarkClassMember(it->m_ClassInfo, (char*)it);
+			}
 		}
 
 		//因为只在函数结束调用Ret指令时会GC，所以只存在Ret虚拟寄存器有引用的情况
@@ -324,14 +333,14 @@ void HazeMemory::Sweep()
 		auto block = iter;
 		while (block && block->IsUsed())
 		{
-			uint32 unitSize = block->m_BlockInfo.UnitSize;
-			uint32 offset = unitSize % GRANULE == 0 ? -1 : 1;
-			uint32 index = unitSize / GRANULE + offset;
+			x_uint32 unitSize = block->m_BlockInfo.UnitSize;
+			x_uint32 offset = unitSize % GRANULE == 0 ? -1 : 1;
+			x_uint32 index = unitSize / GRANULE + offset;
 
-			uint32 unitCount = block->m_BlockInfo.MarkCount;
+			x_uint32 unitCount = block->m_BlockInfo.MarkCount;
 			for (size_t i = 0; i < unitCount; i++)
 			{
-				if (block->m_BlockInfo.Mark[i] == (uint8)GC_State::White)
+				if (block->m_BlockInfo.Mark[i] == (x_uint8)GC_State::White)
 				{
 					if (memoryIns->m_FreeList[index])
 					{
@@ -358,7 +367,7 @@ void HazeMemory::TryGC(bool forceGC)
 	}
 	else
 	{
-		uint64 currTime = std::chrono::seconds(std::time(NULL)).count();
+		x_uint64 currTime = std::chrono::seconds(std::time(NULL)).count();
 		if (currTime - m_LastGCTime > GC_TIME)
 		{
 			ForceGC();

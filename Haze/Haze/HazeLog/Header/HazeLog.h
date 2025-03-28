@@ -11,7 +11,7 @@ public:
 		Error
 	};
 
-	static void LogInfo(int type, const HChar* format, ...);
+	static void LogInfo(int type, const x_HChar* format, ...);
 
 	static void LogInfo(int type, const char* format, ...);
 

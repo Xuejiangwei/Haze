@@ -16,7 +16,7 @@
 #include "CompilerEnumValue.h"
 #include "HazeLogDefine.h"
 
-static HashMap<CompilerValue*, uint64>  g_CacheOffset;
+static HashMap<CompilerValue*, x_uint64>  g_CacheOffset;
 
 HString GetLocalVariableName(const HString& name, Share<CompilerValue> value)
 {
@@ -94,7 +94,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 }
 
 Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeDefineType& type, HazeVariableScope scope, 
-	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, uint64 arrayDimension, V_Array<HazeDefineType>* params)
+	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	switch (type.PrimaryType)
 	{
@@ -111,6 +111,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 	case HazeValueType::Float32:
 	case HazeValueType::Float64:
 	case HazeValueType::MultiVariable:
+	case HazeValueType::DynamicClass:
 		return MakeShare<CompilerValue>(compilerModule, type, scope, desc, count, assignValue);
 	case HazeValueType::Array:
 		return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count, arrayDimension);
@@ -137,7 +138,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 }
 
 Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDefineType& type, HazeVariableScope scope,
-	HazeDataDesc desc, int count, Share<CompilerValue> refValue, uint64 arrayDimension, V_Array<HazeDefineType>* params)
+	HazeDataDesc desc, int count, Share<CompilerValue> refValue, x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	return CreateVariableImpl(compilerModule, type, scope, desc, count, refValue, arrayDimension, params);
 }
@@ -179,7 +180,7 @@ bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<Co
 	return false;
 }
 
-uint32 GetSizeByCompilerValue(Share<CompilerValue> v)
+x_uint32 GetSizeByCompilerValue(Share<CompilerValue> v)
 {
 	if (v->IsEnum())
 	{
@@ -227,6 +228,11 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	else if (value->IsLocalVariable())
 	{
 		find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, s_StrName);
+		if (!find && value->IsPureString())
+		{
+			find = true;
+			s_StrName = *DynamicCast<CompilerStringValue>(value)->GetPureString();
+		}
 	}
 	else if (value->IsFunctionAddress())
 	{
@@ -535,7 +541,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	}
 }
 
-HString GenIRCode(InstructionOpCode opCode, uint64 number)
+HString GenIRCode(InstructionOpCode opCode, x_uint64 number)
 {
 	switch (opCode)
 	{
@@ -546,7 +552,7 @@ HString GenIRCode(InstructionOpCode opCode, uint64 number)
 	return HString();
 }
 
-void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, uint64 paramCount, uint64 paramSize, Share<CompilerFunction> function,
+void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, x_uint64 paramCount, x_uint64 paramSize, Share<CompilerFunction> function,
 	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, void* advanceFuncAddress, const HString* nameSpace)
 {
 	switch (opCode)

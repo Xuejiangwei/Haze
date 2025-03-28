@@ -27,10 +27,10 @@ public:
 	struct CurrParseModuleData
 	{
 		HString ModuleName;
-		uint32 CurrLine;
+		x_uint32 CurrLine;
 	};
 
-	void SetHook(void(*hookCall)(HazeVM* vm), uint32 type);
+	void SetHook(void(*hookCall)(HazeVM* vm), x_uint32 type);
 
 	void AddBreakPoint(const char* message);
 
@@ -40,7 +40,7 @@ public:
 
 	void DeleteAllBreakPoint();
 
-	void OnExecLine(uint32 line);
+	void OnExecLine(x_uint32 line);
 
 	void Start();
 
@@ -61,9 +61,9 @@ public:
 	bool IsPause() const { return m_IsPause; }
 
 public:
-	void AddTempBreakPoint(uint32 line);
+	void AddTempBreakPoint(x_uint32 line);
 
-	void AddTempBreakPoint(const HString& moduleName, uint32 line);
+	void AddTempBreakPoint(const HString& moduleName, x_uint32 line);
 
 	void SendProgramEnd();
 
@@ -88,7 +88,7 @@ private:
 		json["BreakPathFile"] = GB2312_2_UFT8(m_Name.c_str());
 	}
 
-	void SetJsonBreakLine(XJson& json, uint32 line) { json["BreakLine"] = line; }
+	void SetJsonBreakLine(XJson& json, x_uint32 line) { json["BreakLine"] = line; }
 
 	void SendBreakInfo();
 
@@ -98,15 +98,15 @@ private:
 	HazeVM* m_VM;
 	void(*m_HookFunctionCall)(HazeVM* vm);
 	void(*m_EndCall)();
-	uint32 m_HookType;
+	x_uint32 m_HookType;
 
-	HashMap<HString, Pair<HashSet<uint32>, HString>> m_BreakPoints;
-	HashMap<HString, Pair<HashSet<uint32>, HString>> m_TempBreakPoints;
+	HashMap<HString, Pair<HashSet<x_uint32>, HString>> m_BreakPoints;
+	HashMap<HString, Pair<HashSet<x_uint32>, HString>> m_TempBreakPoints;
 
 	CurrParseModuleData m_CurrPauseModule;
 	bool m_IsPause;
 
-	V_Array<Pair<HString, uint32>> m_StepInStack;
+	V_Array<Pair<HString, x_uint32>> m_StepInStack;
 	HashMap<HString, bool> m_IsStepOvers;
 
 	bool m_IsStepIn;

@@ -21,11 +21,9 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, v
 #define COUNT_ARG(...)  ARG_N_HELPER(__VA_ARGS__,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)	//返回可变参数个数
 
 #define GET_PARAM_START() int zzzOffset = 0; auto zzzAddress = stack->GetAddressByESP(HAZE_ADDRESS_SIZE)
+#define GET_CURRENT_ADDRESS (zzzAddress - zzzOffset)
 #define GET_PARAM(V)  memcpy(&V, zzzAddress - sizeof(V) - zzzOffset, sizeof(V)); zzzOffset += sizeof(V)
 #define GET_PARAM_ADDRESS(V, SIZE)  V = zzzAddress - SIZE - zzzOffset; zzzOffset += SIZE
-#define SET_RET(V) memcpy(zzzAddress, &V, sizeof(V))
-#define GET_RET(V) memcpy(&V, zzzAddress, sizeof(V))
-#define SET_HAZE_RET_TO_RET() 0
 #define SET_HAZE_CALL_PARAM(...) COUNT_ARG(__VA_ARGS__), __VA_ARGS__
 
 #define SET_RET_BY_TYPE(TYPE, V) \

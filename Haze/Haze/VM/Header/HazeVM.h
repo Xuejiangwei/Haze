@@ -8,8 +8,9 @@ class Compiler;
 class HazeDebugger;
 class HazeStack;
 class GarbageCollection;
+class ObjectClass;
 
-enum class HazeRunType : uint8
+enum class HazeRunType : x_uint8
 {
 	Debug,
 	Release,
@@ -36,13 +37,13 @@ public:
 
 	const V_Array<Instruction>& GetInstruction() const { return m_Instructions; }
 
-	void CallFunction(const HChar* functionName, ...);
+	void CallFunction(const x_HChar* functionName, ...);
 
 	void CallFunction(const FunctionData* functionData, ...);
 
-	void* CreateHazeClass(const HString& className, ...);
+	ObjectClass* CreateObjectClass(const HString& className, ...);
 
-	bool ParseString(const HChar* moduleName, const HChar* moduleCode);
+	bool ParseString(const x_HChar* moduleName, const x_HChar* moduleCode);
 
 	bool ParseFile(const HString& FilePath);
 
@@ -59,35 +60,39 @@ public:
 
 	const class ObjectString* GetConstantStringByIndex(int index) const;
 
-	char* GetGlobalValueByIndex(uint32 Index);
+	char* GetGlobalValueByIndex(x_uint32 Index);
 
 	ClassData* FindClass(const HString& className);
 
-	uint32 GetClassSize(const HString& className);
+	x_uint32 GetClassSize(const HString& className);
+
+	x_uint32 AddGlobalValue(ObjectClass* value);
+
+	void RemoveGlobalValue(x_uint32 index);
 
 private:
-	void InitGlobalStringCount(uint64 count);
-	void SetGlobalString(uint64 index, const HString& str);
+	void InitGlobalStringCount(x_uint64 count);
+	void SetGlobalString(x_uint64 index, const HString& str);
 
 	const HString* GetSymbolClassName(const HString& name);
 
-	void ResetSymbolClassIndex(const HString& name, uint64 index);
+	void ResetSymbolClassIndex(const HString& name, x_uint64 index);
 
 	void LoadDLLModules();
 	
 	void DynamicInitializerForGlobalData();
 
-	void OnExecLine(uint32 Line);
+	void OnExecLine(x_uint32 Line);
 
 	void InstructionExecPost();
 
-	uint32 GetNextLine(uint32 CurrLine);
+	x_uint32 GetNextLine(x_uint32 currLine);
 
-	uint32 GetNextInstructionLine(uint32 currLine);
+	x_uint32 GetNextInstructionLine(x_uint32 currLine);
 
-	Pair<HString, uint32> GetStepIn(uint32 CurrLine);
+	Pair<HString, x_uint32> GetStepIn(x_uint32 currLine);
 
-	uint32 GetCurrCallFunctionLine();
+	x_uint32 GetCurrCallFunctionLine();
 
 private:
 	Unique<Compiler> m_Compiler;
@@ -104,16 +109,17 @@ private:
 	V_Array<ModuleData> m_ModuleData;
 	V_Array<HString> m_ModuleFilePath;
 
-	V_Array<uint64> m_GlobalInitFunction;
+	V_Array<x_uint64> m_GlobalInitFunction;
 	V_Array<HazeVariable> m_GlobalData;
+	V_Array<ObjectClass*> m_ExtreGlobalData;
 
 	V_Array<class ObjectString*> m_StringTable;
 
-	HashMap<HString, uint64> m_ClassSymbol;
+	HashMap<HString, x_uint64> m_ClassSymbol;
 	V_Array<ClassData> m_ClassTable;
 
 	V_Array<FunctionData> m_FunctionTable;
-	HashMap<HString, uint32> m_HashFunctionTable;
+	HashMap<HString, x_uint32> m_HashFunctionTable;
 
 	V_Array<Instruction> m_Instructions;
 

@@ -8,7 +8,7 @@
 
 #define ENABLE_DEBUGGER_LOG 0
 
-static HString GetFileName(const HChar*& msg)
+static HString GetFileName(const x_HChar*& msg)
 {
 	bool IsNewLine = false;
 	HString FileName;
@@ -45,63 +45,63 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 	break;
 	case HazeValueType::Int8:
 	{
-		int8 Value;
+		x_int8 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
 	case HazeValueType::UInt8:
 	{
-		uint8 Value;
+		x_uint8 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
 	case HazeValueType::Int16:
 	{
-		int16 Value;
+		x_int16 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
 	case HazeValueType::UInt16:
 	{
-		uint16 Value;
+		x_uint16 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
 	case HazeValueType::Int32:
 	{
-		int32 Value;
+		x_int32 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
 	case HazeValueType::UInt32:
 	{
-		uint32 Value;
+		x_uint32 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
 	case HazeValueType::Int64:
 	{
-		int64 Value;
+		x_int64 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break; 
 	case HazeValueType::UInt64:
 	{
-		uint64 Value;
+		x_uint64 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
 	case HazeValueType::Float32:
 	{
-		float32 Value;
+		x_float32 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
@@ -109,19 +109,19 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 	
 	case HazeValueType::Float64:
 	{
-		float64 Value;
+		x_float64 Value;
 		memcpy(&Value, address, sizeof(Value));
 		json = Value;
 	}
 	break;
 	default:
-		HAZE_LOG_ERR_W("Debug 获得基础类型<%d>数据错误!\n", (uint32)type);
+		HAZE_LOG_ERR_W("Debug 获得基础类型<%d>数据错误!\n", (x_uint32)type);
 		break;
 	}
 }
 
 HazeDebugger::HazeDebugger(HazeVM* vm, void(*endCall)()) 
-	: m_VM(vm), m_EndCall(endCall), m_HookFunctionCall(&HookCall), m_HookType((uint32)DebuggerHookType::Line), m_IsPause(true), 
+	: m_VM(vm), m_EndCall(endCall), m_HookFunctionCall(&HookCall), m_HookType((x_uint32)DebuggerHookType::Line), m_IsPause(true), 
 	 m_IsStepIn(false), m_IsStepInInstruction(false)
 {
 	m_BreakPoints.clear();
@@ -138,7 +138,7 @@ HazeDebugger::~HazeDebugger()
 	}
 }
 
-void HazeDebugger::SetHook(void(*HookCall)(HazeVM* vm), uint32 type)
+void HazeDebugger::SetHook(void(*HookCall)(HazeVM* vm), x_uint32 type)
 {
 	m_HookFunctionCall = HookCall;
 	m_HookType = type;
@@ -151,7 +151,7 @@ void HazeDebugger::AddBreakPoint(const char* message)
 
 	auto fileName = GetFileName(hazeChar);
 	auto moduleName = GetModuleNameByFilePath(fileName);
-	uint32 Line = StringToStandardType<uint32>(HString(hazeChar));
+	x_uint32 Line = StringToStandardType<x_uint32>(HString(hazeChar));
 
 	auto iter = m_BreakPoints.find(moduleName);
 	if (iter != m_BreakPoints.end())
@@ -176,7 +176,7 @@ void HazeDebugger::DeleteBreakPoint(const char* message)
 	auto msg = msgString.c_str();
 
 	auto fileName = GetFileName(msg);
-	uint32 line = StringToStandardType<uint32>(msg);
+	x_uint32 line = StringToStandardType<x_uint32>(msg);
 
 	auto moduleName = GetModuleNameByFilePath(fileName);
 	auto iter = m_BreakPoints.find(fileName);
@@ -217,7 +217,7 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* message)
 	HAZE_LOG_ERR_W("清除模块<%s>的所有断点!\n", moduleName.c_str());
 }
 
-void HazeDebugger::OnExecLine(uint32 line)
+void HazeDebugger::OnExecLine(x_uint32 line)
 {
 	auto moduleName = m_VM->GetModuleNameByCurrFunction();
 
@@ -233,7 +233,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 		auto it = iter->second.first.find(line);
 		if (it != iter->second.first.end())
 		{
-			if (m_HookType & (uint32)DebuggerHookType::Line)
+			if (m_HookType & (x_uint32)DebuggerHookType::Line)
 			{
 				if (m_HookFunctionCall)
 				{
@@ -272,7 +272,7 @@ void HazeDebugger::OnExecLine(uint32 line)
 				auto tempIt = tempIter->second.first.find(line);
 				if (tempIt != tempIter->second.first.end())
 				{
-					if (m_HookType & (uint32)DebuggerHookType::Line)
+					if (m_HookType & (x_uint32)DebuggerHookType::Line)
 					{
 						m_CurrPauseModule = { tempIter->first, line };
 						m_IsPause = true;
@@ -401,7 +401,7 @@ void HazeDebugger::SetJsonModuleGlobalVariable(XJson& json)
 	}
 }
 
-void HazeDebugger::AddTempBreakPoint(uint32 line)
+void HazeDebugger::AddTempBreakPoint(x_uint32 line)
 {
 	if (CurrModuleIsStepOver())
 	{
@@ -410,7 +410,7 @@ void HazeDebugger::AddTempBreakPoint(uint32 line)
 	}
 }
 
-void HazeDebugger::AddTempBreakPoint(const HString& moduleName, uint32 line)
+void HazeDebugger::AddTempBreakPoint(const HString& moduleName, x_uint32 line)
 {
 	m_TempBreakPoints[moduleName].first.insert(line);
 }

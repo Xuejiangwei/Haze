@@ -22,8 +22,8 @@
 
 struct PushTempRegister
 {
-	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule)
-		: Size(0), Hss(hss), Compiler(compiler), Module(compilerModule)
+	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule, const HazeDefineType* defineType, Share<CompilerValue>* retValue)
+		: Size(0), Hss(hss), Compiler(compiler), Module(compilerModule), DefineType(defineType), RetValue(retValue)
 	{
 		UseTempRegisters = Compiler->GetUseTempRegister();
 		for (auto& regi : UseTempRegisters)
@@ -46,6 +46,11 @@ struct PushTempRegister
 		
 		Compiler->GetInsertBlock()->PushIRCode(Hss.str());
 		Compiler->ResetTempRegister(UseTempRegisters);
+
+		if (DefineType && RetValue)
+		{
+			*RetValue = Compiler->CreateFunctionRet(*DefineType);
+		}
 	}
 
 	int GetSize() const { return Size; }
@@ -54,7 +59,9 @@ private:
 	HAZE_STRING_STREAM& Hss;
 	Compiler* Compiler;
 	CompilerModule* Module;
-	HashMap<const HChar*, Share<CompilerValue>> UseTempRegisters;
+	HashMap<const x_HChar*, Share<CompilerValue>> UseTempRegisters;
+	const HazeDefineType* DefineType;
+	Share<CompilerValue>* RetValue;
 };
 
 
@@ -225,7 +232,7 @@ Share<CompilerFunction> CompilerModule::GetFunction(const HString& name)
 	return nullptr;
 }
 
-void CompilerModule::StartCacheTemplate(HString& templateName, uint32 startLine, HString& templateText, V_Array<HString>& templateTypes)
+void CompilerModule::StartCacheTemplate(HString& templateName, x_uint32 startLine, HString& templateText, V_Array<HString>& templateTypes)
 {
 	auto iter = m_HashMap_TemplateText.find(templateName);
 	if (iter == m_HashMap_TemplateText.end())
@@ -484,7 +491,7 @@ Share<CompilerValue> CompilerModule::CreateNew(Share<CompilerFunction> function,
 
 	if (countValue)
 	{
-		for (uint64 i = 0; i < countValue->size(); i++)
+		for (x_uint64 i = 0; i < countValue->size(); i++)
 		{
 			GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, countValue->at(i));
 		}
@@ -496,7 +503,7 @@ Share<CompilerValue> CompilerModule::CreateNew(Share<CompilerFunction> function,
 
 	if (countValue)
 	{
-		for (uint64 i = 0; i < countValue->size(); i++)
+		for (x_uint64 i = 0; i < countValue->size(); i++)
 		{
 			GenIRCode(hss, this, InstructionOpCode::POP, nullptr, countValue->at(i));
 		}
@@ -586,13 +593,13 @@ void CompilerModule::GenIRCode_JmpTo(Share<CompilerBlock> block)
 }
 
 Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue,
-	uint64 arrayDimension, V_Array<HazeDefineType>* params)
+	x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	return m_GlobalDataFunction->CreateGlobalVariable(var, line, refValue, arrayDimension, params);
 }
 
 void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction,
-	AdvanceFunctionInfo* advancFunctionInfo, uint32& size, V_Array<Share<CompilerValue>>& params,
+	AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, V_Array<Share<CompilerValue>>& params,
 	Share<CompilerValue> thisPointerTo)
 {
 	static HazeDefineType s_UInt64 = HazeDefineType(HazeValueType::UInt64);
@@ -613,7 +620,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	{
 		auto paramSize = callFunction ? callFunction->m_Params.size() : pointerFunc ? pointerFunc->m_ParamTypes.size() :
 			advancFunctionInfo->Params.size();
-		for (int64 i = params.size() - 1; i >= 0; i--)
+		for (x_int64 i = params.size() - 1; i >= 0; i--)
 		{
 			auto Variable = params[i];
 			auto type = callFunction ? &callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
@@ -623,7 +630,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 			if (*type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(*type))
 			{
-				if (i == (int64)params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize - (callFunction && callFunction->GetClass() ? 1 : 0) != params.size())
+				if (i == (x_int64)params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize - (callFunction && callFunction->GetClass() ? 1 : 0) != params.size())
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
@@ -680,7 +687,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		}
 	}
 
-	for (uint64 i = 0; i < params.size(); i++)
+	for (x_uint64 i = 0; i < params.size(); i++)
 	{
 		GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, params[i], nullptr, funcTypes[i]);
 		insertBlock->PushIRCode(hss.str());
@@ -701,7 +708,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	}
 
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
-		<< " " << (uint32)HazeDataDesc::Address << " " << CAST_TYPE(HazeValueType::Int32) << std::endl;
+		<< " " << (x_uint32)HazeDataDesc::Address << " " << CAST_TYPE(HazeValueType::Int32) << std::endl;
 	insertBlock->PushIRCode(hss.str());
 	
 	hss.str(H_TEXT(""));
@@ -711,24 +718,23 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> 
 	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo, const HString* nameSpace)
 {
 	HAZE_STRING_STREAM hss;
-	uint32 size = 0;
+	x_uint32 size = 0;
 
-	PushTempRegister pushTempRegister(hss, m_Compiler, this);
-	FunctionCall(hss, callFunction, nullptr, nullptr, size, params, thisPointerTo);
-	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction,nullptr, nullptr, nullptr, nameSpace);
+	Share<CompilerValue> ret = nullptr;
+	{
+		PushTempRegister pushTempRegister(hss, m_Compiler, this, &callFunction->GetFunctionType(), &ret);
+		FunctionCall(hss, callFunction, nullptr, nullptr, size, params, thisPointerTo);
+		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction, nullptr, nullptr, nullptr, nameSpace);
+	}
 
-	auto retRegister = Compiler::GetRegister(RET_REGISTER);
-
-	auto& retRegisterType = const_cast<HazeDefineType&>(retRegister->GetValueType());
-	retRegisterType = callFunction->GetFunctionType();
-	return retRegister;
+	return ret;
 }
 
 Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> pointerFunction, 
 	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
 	HAZE_STRING_STREAM hss;
-	uint32 size = 0;
+	x_uint32 size = 0;
 
 	HString varName;
 	GetGlobalVariableName(this, pointerFunction, varName);
@@ -742,18 +748,21 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 		}
 	}
 
-	PushTempRegister pushTempRegister(hss, m_Compiler, this);
-	FunctionCall(hss, nullptr, pointerFunction, nullptr, size, params, thisPointerTo);
-	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, pointerFunction);
+	Share<CompilerValue> ret = nullptr;
+	{
+		PushTempRegister pushTempRegister(hss, m_Compiler, this, &DynamicCast<CompilerPointerFunction>(pointerFunction)->GetValueType(), &ret);
+		FunctionCall(hss, nullptr, pointerFunction, nullptr, size, params, thisPointerTo);
+		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, pointerFunction);
+	}
 
-	return Compiler::GetRegister(RET_REGISTER);
+	return ret;
 }
 
 Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo& functionInfo, 
 	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
 	HAZE_STRING_STREAM hss;
-	uint32 size = 0;
+	x_uint32 size = 0;
 
 	HString varName;
 	GetGlobalVariableName(this, thisPointerTo, varName);
@@ -767,9 +776,12 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 		}
 	}
 
-	PushTempRegister pushTempRegister(hss, m_Compiler, this);
-	FunctionCall(hss, nullptr, nullptr, &functionInfo, size, params, thisPointerTo);
-	GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, nullptr, thisPointerTo, functionInfo.ClassFunc);
+	{
+		PushTempRegister pushTempRegister(hss, m_Compiler, this, nullptr, nullptr);
+		FunctionCall(hss, nullptr, nullptr, &functionInfo, size, params, thisPointerTo);
+		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, nullptr, thisPointerTo, functionInfo.ClassFunc);
+	}
+	
 
 	return Compiler::GetRegister(RET_REGISTER);
 }
@@ -798,7 +810,7 @@ Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const HStri
 	return it->second;
 }
 
-uint32 CompilerModule::GetGlobalStringIndex(Share<CompilerValue> value)
+x_uint32 CompilerModule::GetGlobalStringIndex(Share<CompilerValue> value)
 {
 	for (auto& it : m_HashMap_StringTable)
 	{
@@ -829,7 +841,7 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const 
 }
 
 bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset,
-	V_Array<Pair<uint64, CompilerValue*>>* offsets)
+	V_Array<Pair<x_uint64, CompilerValue*>>* offsets)
 {
 	if (m->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
 	{
@@ -868,7 +880,7 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& n
 }
 
 bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset,
-	V_Array<Pair<uint64, CompilerValue*>>* offsets)
+	V_Array<Pair<x_uint64, CompilerValue*>>* offsets)
 {
 	if (value->IsRegister())
 	{
@@ -946,7 +958,7 @@ Share<CompilerClass> CompilerModule::GetClass(const HString& className)
 	return nullptr;
 }
 
-uint32 CompilerModule::GetClassSize(const HString& className)
+x_uint32 CompilerModule::GetClassSize(const HString& className)
 {
 	return GetClass(className)->GetDataSize();
 }
@@ -971,7 +983,7 @@ void CompilerModule::GenICode()
 		hss << m_Path << std::endl;
 	}
 
-	hss << (uint32)m_ModuleLibraryType << std::endl;
+	hss << (x_uint32)m_ModuleLibraryType << std::endl;
 	/*
 	*	全局数据 ：	个数
 	*				数据名 数据类型 数据
@@ -1022,7 +1034,7 @@ void CompilerModule::GenICode()
 	*				名称 指令流
 	*
 	*/
-	uint64 functionSize = 0;
+	x_uint64 functionSize = 0;
 
 	hss << GetClassTableHeaderString() << std::endl;
 	hss << m_HashMap_Classes.size() << std::endl;

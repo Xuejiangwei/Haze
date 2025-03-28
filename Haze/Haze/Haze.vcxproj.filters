@@ -186,6 +186,9 @@
     <ClCompile Include="Compiler\Source\CompilerElementValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Object\Source\ObjectDynamicClass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -393,6 +396,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\HazeCompilerTemplateFunction.h.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Header\ObjectDynamicClass.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

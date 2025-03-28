@@ -5,15 +5,15 @@
 class ObjectString
 {
 public:
-	ObjectString(const HChar* str, bool fixedCapacity = false);
+	ObjectString(const x_HChar* str, bool fixedCapacity = false);
 
 	~ObjectString();
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 
-	const HChar* GetData() const { return (HChar*)m_Data; }
+	const x_HChar* GetData() const { return (x_HChar*)m_Data; }
 
-	uint64 GetLength() const { return m_Length; }
+	x_uint64 GetLength() const { return m_Length; }
 
 private:
 	static void Append(HAZE_STD_CALL_PARAM);
@@ -22,6 +22,6 @@ private:
 
 private:
 	void* m_Data;
-	uint64 m_Length;
-	uint64 m_Capacity;
+	x_uint64 m_Length;
+	x_uint64 m_Capacity;
 };

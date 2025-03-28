@@ -13,9 +13,9 @@ public:
 
 	const V_Array<HazeDefineType>& GetParamTypes() const { return m_ParamTypes; }
 
-	const HazeDefineType& GetParamTypeByIndex(uint64 index) const;
+	const HazeDefineType& GetParamTypeByIndex(x_uint64 index) const;
 
-	const HazeDefineType& GetParamTypeLeftToRightByIndex(uint64 index) const;
+	const HazeDefineType& GetParamTypeLeftToRightByIndex(x_uint64 index) const;
 
 private:
 	V_Array<HazeDefineType> m_ParamTypes;

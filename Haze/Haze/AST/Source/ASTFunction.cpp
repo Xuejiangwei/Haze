@@ -168,7 +168,7 @@ void ASTClassFunctionSection::CodeGen()
 	{
 		if (iter.first == HazeDataDesc::ClassFunction_Local_Public)
 		{
-			for (uint64 i = 0; i < iter.second.size(); i++)
+			for (x_uint64 i = 0; i < iter.second.size(); i++)
 			{
 				if (iter.second[i]->GetName() == className && i != 0)
 				{

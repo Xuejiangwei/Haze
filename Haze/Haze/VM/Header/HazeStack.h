@@ -17,14 +17,14 @@ public:
 	~HazeStack();
 
 public:
-	char* GetAddressByEBP(int offset) { return &m_StackMain[(uint64)m_EBP + offset]; }
-	char* GetAddressByESP(int offset) { return &m_StackMain[(uint64)m_ESP - offset]; }
+	char* GetAddressByEBP(int offset) { return &m_StackMain[(x_uint64)m_EBP + offset]; }
+	char* GetAddressByESP(int offset) { return &m_StackMain[(x_uint64)m_ESP - offset]; }
 
 	HazeVM* GetVM() const { return m_VM; }
 
 	int GetCurrPC() const { return m_PC; }
 
-	void RunGlobalDataInit(uint32 startPC, uint32 endPC);
+	void RunGlobalDataInit(x_uint32 startPC, x_uint32 endPC);
 
 public:
 	struct RegisterData
@@ -35,12 +35,12 @@ public:
 	struct HazeStackFrame
 	{
 		const FunctionData* FunctionInfo;
-		uint32 FunctionParamSize;
-		uint32 EBP;
-		uint32 ESP;
+		x_uint32 FunctionParamSize;
+		x_uint32 EBP;
+		x_uint32 ESP;
 		RegisterData Register;
 
-		HazeStackFrame(const FunctionData* Info, uint32 ParamSize, uint32 EBP, uint32 ESP, RegisterData& Register) 
+		HazeStackFrame(const FunctionData* Info, x_uint32 ParamSize, x_uint32 EBP, x_uint32 ESP, RegisterData& Register) 
 			: FunctionParamSize(ParamSize), EBP(EBP), ESP(ESP), Register(Register)
 		{
 			FunctionInfo = Info;
@@ -53,7 +53,7 @@ public:
 
 	void JmpTo(const InstructionData& m_Data);
 
-	HazeRegister* GetVirtualRegister(const HChar* name) { return &m_VirtualRegister.find(name)->second; }
+	HazeRegister* GetVirtualRegister(const x_HChar* name) { return &m_VirtualRegister.find(name)->second; }
 
 private:
 	void Run(bool isHazeCall = false);
@@ -83,8 +83,8 @@ private:
 	V_Array<HazeStackFrame> m_StackFrame;
 
 	int m_PC;
-	uint32 m_EBP;		//Õ»µ×
-	uint32 m_ESP;		//Õ»¶¥
+	x_uint32 m_EBP;		//Õ»µ×
+	x_uint32 m_ESP;		//Õ»¶¥
 
 	HashMap<HString, HazeRegister>  m_VirtualRegister;
 

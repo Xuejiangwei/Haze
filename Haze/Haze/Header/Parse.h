@@ -24,7 +24,7 @@ public:
 
 	void InitializeFile(const HString& filePath);
 
-	void InitializeString(const HString& str, uint32 startLine = 0);
+	void InitializeString(const HString& str, x_uint32 startLine = 0);
 
 	bool ParseContent();
 
@@ -124,13 +124,13 @@ private:
 private:
 	Unique<ASTFunction> ParseFunction(const HString* className = nullptr);
 
-	bool ExpectNextTokenIs(HazeToken token, const HChar* errorInfo = nullptr);
+	bool ExpectNextTokenIs(HazeToken token, const x_HChar* errorInfo = nullptr);
 
 	bool NextTokenNotIs(HazeToken token) { return GetNextToken() != token; }
 
-	bool TokenIs(HazeToken token, const HChar* errorInfo = nullptr);
+	bool TokenIs(HazeToken token, const x_HChar* errorInfo = nullptr);
 
-	bool IsHazeSignalToken(const HChar* hChar, const HChar*& outChar, uint32 charSize = 1);
+	bool IsHazeSignalToken(const x_HChar* hChar, const x_HChar*& outChar, x_uint32 charSize = 1);
 
 	bool IsNumberType(const HString& str, HazeToken& outToken);
 
@@ -148,7 +148,7 @@ private:
 	Compiler* m_Compiler;
 	HazeLibraryType m_LibraryType;
 	HazeToken m_CurrToken;
-	const HChar* m_CurrCode;
+	const x_HChar* m_CurrCode;
 	HString m_CodeText;
 	HString m_CurrLexeme;
 	Pair<HString, int> m_CurrPreLexeme;		//LexemeString, skip char count
@@ -159,7 +159,7 @@ private:
 	HString m_CurrParseClass;
 
 	int m_LeftParenthesesExpressionCount;
-	uint32 m_LineCount;
+	x_uint32 m_LineCount;
 
 	bool m_IsParseClassData_Or_FunctionParam;
 	bool m_IsParseArray;

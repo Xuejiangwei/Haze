@@ -16,7 +16,7 @@ public:
 	CompilerBlock& operator=(const CompilerBlock&) = delete;
 
 	Share<CompilerValue> CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, HazeVariableScope scope,
-		Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
+		Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerBlock> GetShared() { return shared_from_this(); }
 
@@ -26,7 +26,7 @@ public:
 
 	const HString& GetName() const { return m_Name; }
 
-	uint64 GetIRCodeSize() { return m_IRCodes.size() - 1; }
+	x_uint64 GetIRCodeSize() { return m_IRCodes.size() - 1; }
 
 	const V_Array<HString>& GetIRCode() const { return m_IRCodes; }
 

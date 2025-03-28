@@ -5,7 +5,7 @@
 class HazeVM;
 
 //字节码文件头部数据格式定义(模仿linux程序结构 堆区、栈区、全局数据区、只读数据区等)
-enum HazeFileFormat : uint8
+enum HazeFileFormat : x_uint8
 {
 	GlobalDataTable,
 	StringTable,
@@ -15,7 +15,7 @@ enum HazeFileFormat : uint8
 	End,
 };
 
-enum ExeFileType : uint8
+enum ExeFileType : x_uint8
 {
 	Out,
 	In,
@@ -47,9 +47,9 @@ private:
 
 	void WriteClassTable(const ModuleUnit::ClassTable& table);
 
-	uint64 WriteFunctionTable(const ModuleUnit::FunctionTable& table);
+	x_uint64 WriteFunctionTable(const ModuleUnit::FunctionTable& table);
 
-	void WriteAllInstruction(const ModuleUnit::FunctionTable& table, uint64 funcInslength);
+	void WriteAllInstruction(const ModuleUnit::FunctionTable& table, x_uint64 funcInslength);
 
 	void WriteInstruction(const ModuleUnit::FunctionInstruction& instruction);
 

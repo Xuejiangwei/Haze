@@ -5,7 +5,7 @@
 #include "CompilerClassValue.h"
 #include "CompilerArrayValue.h"
 #include "CompilerElementValue.h"
-#include "HazeCompilerPointerValue.h"
+#include "CompilerStringValue.h"
 #include "CompilerClass.h"
 #include "CompilerFunction.h"
 #include "CompilerBlock.h"
@@ -28,7 +28,7 @@ CompilerFunction::~CompilerFunction()
 {
 }
 
-void CompilerFunction::SetStartEndLine(uint32 startLine, uint32 endLine)
+void CompilerFunction::SetStartEndLine(x_uint32 startLine, x_uint32 endLine)
 {
 	m_StartLine = startLine;
 	m_EndLine = endLine;
@@ -37,14 +37,14 @@ void CompilerFunction::SetStartEndLine(uint32 startLine, uint32 endLine)
 #endif // HAZE_DEBUG_ENABLE
 }
 
-Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, uint64 arrayDimension, V_Array<HazeDefineType>* params)
+Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, arrayDimension, params);
 }
 
 Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue,
-	uint64 arrayDimension, V_Array<HazeDefineType>* params)
+	x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Local, refValue, arrayDimension, params);
@@ -82,7 +82,7 @@ Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVaria
 //	return tempRegister;
 //}
 
-Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& type, uint64 arrayDimension)
+Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& type, x_uint64 arrayDimension)
 {
 	int offset = 0;
 	for (auto& var : m_TempRegisters)
@@ -117,6 +117,10 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& 
 	{
 		v = MakeShare<CompilerClassValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
 	}
+	else if (IsStringType(type.PrimaryType))
+	{
+		v = MakeShare<CompilerStringValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
+	}
 	else
 	{
 		v = MakeShare<CompilerValue>(m_Module, type, HazeVariableScope::Local,
@@ -124,6 +128,16 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& 
 	}
 
 	m_TempRegisters.push_back({ v , offset });
+
+
+	/*if (IsStringType(type.PrimaryType) && str)
+	{
+		auto prueStr = MakeShare<CompilerStringValue>(m_Module, HazeValueType::StringPure, HazeVariableScope::Local, HazeDataDesc::None, 0);
+		prueStr->SetPureString(str);
+
+		v = m_Module->GetCompiler()->CreateMov(v, prueStr);
+	}*/
+
 	return v;
 }
 
@@ -260,7 +274,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		size += m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize();
 	}
 
-	for (uint64 i = 0; i < m_TempRegisters.size(); i++)
+	for (x_uint64 i = 0; i < m_TempRegisters.size(); i++)
 	{
 		hss << HAZE_LOCAL_TEMP_REGISTER_HEADER << " " << HAZE_LOCAL_TEMP_REGISTER << i << " "
 			<< size + m_TempRegisters[i].Offset * 8 << " ";
@@ -340,7 +354,7 @@ bool CompilerFunction::FindLocalVariableName(const Share<CompilerValue> value, H
 		return true;
 	}
 
-	for (uint64 i = 0; i < m_TempRegisters.size(); i++)
+	for (x_uint64 i = 0; i < m_TempRegisters.size(); i++)
 	{
 		if (m_TempRegisters[i].Value == value)
 		{
@@ -381,7 +395,7 @@ void CompilerFunction::AddLocalVariable(Share<CompilerValue> value, int line)
 	m_LocalVariables.push_back({ value, line });
 }
 
-const HazeDefineType& CompilerFunction::GetParamTypeByIndex(uint64 index)
+const HazeDefineType& CompilerFunction::GetParamTypeByIndex(x_uint64 index)
 {
 	if (index < m_Params.size())
 	{
@@ -398,7 +412,7 @@ const HazeDefineType& CompilerFunction::GetParamTypeByIndex(uint64 index)
 	}
 }
 
-const HazeDefineType& CompilerFunction::GetParamTypeLeftToRightByIndex(uint64 index)
+const HazeDefineType& CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index)
 {
 	if (m_OwnerClass)
 	{

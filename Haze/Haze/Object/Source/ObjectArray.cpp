@@ -6,7 +6,7 @@
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
 
-ObjectArray::ObjectArray(uint64 dimensionCount, uint64* lengths, uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
+ObjectArray::ObjectArray(x_uint64 dimensionCount, x_uint64* lengths, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
 	: m_Data(nullptr), m_DimensionCount(dimensionCount), m_Length(0), m_PcAddress(pcAddress), m_ValueType(valueType),
 	  m_ClassInfo(classInfo)
 {
@@ -17,7 +17,7 @@ ObjectArray::ObjectArray(uint64 dimensionCount, uint64* lengths, uint64 pcAddres
 		m_Capacity = m_Length;
 
 		m_Data = HazeMemory::Alloca(m_Length * sizeof(ObjectArray));
-		for (uint64 i = 0; i < m_Length; i++)
+		for (x_uint64 i = 0; i < m_Length; i++)
 		{
 			auto arr = HazeMemory::Alloca(sizeof(ObjectArray));
 			new((char*)arr) ObjectArray(dimensionCount - 1, lengths + 1, pcAddress, valueType, classInfo);
@@ -78,7 +78,7 @@ void ObjectArray::GetLength(HAZE_STD_CALL_PARAM)
 void ObjectArray::GetLengthOfDimension(HAZE_STD_CALL_PARAM)
 {
 	ObjectArray* arr;
-	uint64 dimension;
+	x_uint64 dimension;
 
 	GET_PARAM_START();
 	GET_PARAM(arr);
@@ -124,7 +124,7 @@ void ObjectArray::Add(HAZE_STD_CALL_PARAM)
 void ObjectArray::Get(HAZE_STD_CALL_PARAM)
 {
 	ObjectArray* arr;
-	uint64 offset = 0;
+	x_uint64 offset = 0;
 
 	GET_PARAM_START();
 	GET_PARAM(arr);
@@ -141,7 +141,7 @@ void ObjectArray::Get(HAZE_STD_CALL_PARAM)
 void ObjectArray::Set(HAZE_STD_CALL_PARAM)
 {
 	ObjectArray* arr;
-	uint64 offset = 0;
+	x_uint64 offset = 0;
 	char* value = nullptr;
 
 	GET_PARAM_START();

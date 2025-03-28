@@ -24,7 +24,7 @@ void HazeMemoryLib::MemoryCopy(HAZE_STD_CALL_PARAM)
 {
 	void* dst;
 	void* src;
-	int64 size = 0;
+	x_int64 size = 0;
 
 	GET_PARAM_START();
 	GET_PARAM(dst);
@@ -37,8 +37,8 @@ void HazeMemoryLib::ObjectArrayConstructor(HAZE_STD_CALL_PARAM)
 {
 	char* address;
 	char* constructorAddress;
-	uint64 objectSize;
-	uint64 count;
+	x_uint64 objectSize;
+	x_uint64 count;
 
 	GET_PARAM_START();
 	GET_PARAM(address);

@@ -58,7 +58,7 @@ public:
 
 	void FinishParse();
 
-	CompilerModule* ParseBaseModule(const HChar* moduleName, const HChar* moduleCode);
+	CompilerModule* ParseBaseModule(const x_HChar* moduleName, const x_HChar* moduleCode);
 
 	CompilerModule* ParseModule(const HString& modulePath);
 
@@ -93,7 +93,7 @@ public:
 
 	Share<CompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var, HazeValueType* varType = nullptr);
 
-	Share<CompilerValue> GenStringVariable(HString& str);
+	Share<CompilerValue> GenStringVariable(const HString& str);
 
 	Share<CompilerValue> GetGlobalVariable(const HString& name);
 
@@ -103,7 +103,7 @@ public:
 
 	Share<CompilerValue> GetConstantValueInt(int v);
 
-	Share<CompilerValue> GetConstantValueUint64(uint64 v);
+	Share<CompilerValue> GetConstantValueUint64(x_uint64 v);
 
 	Share<CompilerValue> GenConstantValueBool(bool isTrue);
 
@@ -116,19 +116,19 @@ public:
 public:
 	Share<CompilerValue> GetTempRegister(Share<CompilerValue> v);
 	Share<CompilerValue> GetTempRegister(const CompilerValue* v);
-	Share<CompilerValue> GetTempRegister(const HazeDefineType& type, uint64 arrayDimension = 0);
+	Share<CompilerValue> GetTempRegister(const HazeDefineType& type, x_uint64 arrayDimension = 0);
 	
 	//static Share<CompilerValue> GetNewRegister(CompilerModule* compilerModule, const HazeDefineType& data);
 
-	static HashMap<const HChar*, Share<CompilerValue>> GetUseTempRegister();
+	static HashMap<const x_HChar*, Share<CompilerValue>> GetUseTempRegister();
 
-	static void ClearTempRegister(const HashMap<const HChar*, Share<CompilerValue>>& useTempRegisters);
+	static void ClearTempRegister(const HashMap<const x_HChar*, Share<CompilerValue>>& useTempRegisters);
 
-	static void ResetTempRegister(const HashMap<const HChar*, Share<CompilerValue>>& useTempRegisters);
+	static void ResetTempRegister(const HashMap<const x_HChar*, Share<CompilerValue>>& useTempRegisters);
 
-	static Share<CompilerValue> GetRegister(const HChar* name);
+	static Share<CompilerValue> GetRegister(const x_HChar* name);
 
-	static const HChar* GetRegisterName(const Share<CompilerValue>& compilerRegister);
+	static const x_HChar* GetRegisterName(const Share<CompilerValue>& compilerRegister);
 
 public:
 	void SetInsertBlock(Share<CompilerBlock> block);
@@ -139,17 +139,17 @@ public:
 
 public:
 	Share<CompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
-		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, uint64 arrayDimension = 0,
+		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
 		V_Array<HazeDefineType>* params = nullptr);
 
 	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
-		Share<CompilerValue> RefValue = nullptr, uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
+		Share<CompilerValue> RefValue = nullptr, x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, int Line, Share<CompilerValue> RefValue = nullptr,
-		uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
+		x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerValue> CreateClassVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, Share<CompilerValue> RefValue = nullptr,
-		uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
+		x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerValue> CreateLea(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 
@@ -191,7 +191,7 @@ public:
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr);
 
-	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName,
+	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName, 
 		V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo);
 
 	Share<CompilerValue> CreateGetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index);
@@ -201,6 +201,8 @@ public:
 	//Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
 	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member);
 	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue);
+
+	Share<CompilerValue> CreateGetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName);
 
 public:
 	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);
@@ -224,6 +226,8 @@ public:
 
 	Share<CompilerValue> CreateBoolCmp(Share<CompilerValue> value);
 
+	Share<CompilerValue> CreateFunctionRet(const HazeDefineType& type);
+
 	void ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Share<CompilerValue>& right);
 
 public:
@@ -240,11 +244,11 @@ public:
 	Share<CompilerClass> GetBaseModuleClass(const HString& className);
 
 	bool GetBaseModuleGlobalVariableName(const Share<CompilerValue>& value, HString& outName, bool getOffset = false,
-		V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
+		V_Array<Pair<x_uint64, CompilerValue*>>* = nullptr);
 
 	void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
 
-	void InsertLineCount(int64 lineCount);
+	void InsertLineCount(x_int64 lineCount);
 
 	bool IsDebug() const;
 
@@ -261,17 +265,17 @@ private:
 	//³£Á¿
 	HashMap<bool, Share<CompilerValue>> m_BoolConstantValues;
 
-	HashMap<int8, Share<CompilerValue>> m_Int8_ConstantValues;
-	HashMap<uint8, Share<CompilerValue>> m_UInt8_ConstantValues;
-	HashMap<int16, Share<CompilerValue>> m_Int16_ConstantValues;
-	HashMap<uint16, Share<CompilerValue>> m_UInt16_ConstantValues;
-	HashMap<int32, Share<CompilerValue>> m_Int32_ConstantValues;
-	HashMap<uint32, Share<CompilerValue>> m_UInt32_ConstantValues;
-	HashMap<int64, Share<CompilerValue>> m_Int64_ConstantValues;
-	HashMap<uint64, Share<CompilerValue>> m_UInt64_ConstantValues;
+	HashMap<x_int8, Share<CompilerValue>> m_Int8_ConstantValues;
+	HashMap<x_uint8, Share<CompilerValue>> m_UInt8_ConstantValues;
+	HashMap<x_int16, Share<CompilerValue>> m_Int16_ConstantValues;
+	HashMap<x_uint16, Share<CompilerValue>> m_UInt16_ConstantValues;
+	HashMap<x_int32, Share<CompilerValue>> m_Int32_ConstantValues;
+	HashMap<x_uint32, Share<CompilerValue>> m_UInt32_ConstantValues;
+	HashMap<x_int64, Share<CompilerValue>> m_Int64_ConstantValues;
+	HashMap<x_uint64, Share<CompilerValue>> m_UInt64_ConstantValues;
 
-	HashMap<float32, Share<CompilerValue>> m_Float32_ConstantValues;
-	HashMap<float64, Share<CompilerValue>> m_Float64_ConstantValues;
+	HashMap<x_float32, Share<CompilerValue>> m_Float32_ConstantValues;
+	HashMap<x_float64, Share<CompilerValue>> m_Float64_ConstantValues;
 
 	List<HString> m_CacheSymbols;
 	HashMap<HashHString, Share<CompilerClass>> m_SymbolTable;

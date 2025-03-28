@@ -2,10 +2,10 @@
 
 #include "HazeDefine.h"
 
-enum class HazeToken : uint32;
-enum class InstructionOpCode : uint32;
+enum class HazeToken : x_uint32;
+enum class InstructionOpCode : x_uint32;
 
-enum class HazeCmpType : uint32
+enum class HazeCmpType : x_uint32
 {
 	None,
 	Equal,
@@ -19,7 +19,7 @@ enum class HazeCmpType : uint32
 	Or,
 };
 
-enum class HazeOperatorAssign : uint32
+enum class HazeOperatorAssign : x_uint32
 {
 	None,
 	AddAssign,

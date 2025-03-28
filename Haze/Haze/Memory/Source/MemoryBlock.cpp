@@ -3,7 +3,7 @@
 #include "HazeMemory.h"
 #include "HazeLog.h"
 
-MemoryBlock::MemoryBlock(uint32 unitSize)
+MemoryBlock::MemoryBlock(x_uint32 unitSize)
 {
 	Reuse(unitSize);
 }
@@ -15,7 +15,7 @@ MemoryBlock::~MemoryBlock()
 
 void MemoryBlock::SetAllWhite()
 {
-	for (uint32 i = 0; i < m_BlockInfo.MarkCount; i++)
+	for (x_uint32 i = 0; i < m_BlockInfo.MarkCount; i++)
 	{
 		m_BlockInfo.Mark[0] = (int)GC_State::White;
 	}
@@ -23,14 +23,14 @@ void MemoryBlock::SetAllWhite()
 
 void MemoryBlock::MarkBlack(void* address)
 {
-	uint64 Index = ((uint64)address - (uint64)m_Memory) / m_BlockInfo.UnitSize;
+	x_uint64 Index = ((x_uint64)address - (x_uint64)m_Memory) / m_BlockInfo.UnitSize;
 	//assert(Index < m_BlockInfo.MarkCount);
 	m_BlockInfo.Mark[Index] = (int)GC_State::Black;
 }
 
 void MemoryBlock::MarkWrite(void* address)
 {
-	uint64 Index = ((uint64)address - (uint64)m_Memory) / m_BlockInfo.UnitSize;
+	x_uint64 Index = ((x_uint64)address - (x_uint64)m_Memory) / m_BlockInfo.UnitSize;
 	m_BlockInfo.Mark[Index] = (int)GC_State::White;
 }
 
@@ -39,7 +39,7 @@ bool MemoryBlock::IsInBlock(void* address)
 	return m_Memory <= address && address < &m_Memory + 1;
 }
 
-void MemoryBlock::Reuse(uint32 unitSize)
+void MemoryBlock::Reuse(x_uint32 unitSize)
 {
 	if (unitSize != m_BlockInfo.UnitSize && m_BlockInfo.Mark)
 	{
@@ -47,7 +47,7 @@ void MemoryBlock::Reuse(uint32 unitSize)
 	}
 
 	m_BlockInfo.MarkCount = _countof(m_Memory) / unitSize;
-	m_BlockInfo.Mark = (uint8*)malloc(sizeof(*m_BlockInfo.Mark) * m_BlockInfo.MarkCount);
+	m_BlockInfo.Mark = (x_uint8*)malloc(sizeof(*m_BlockInfo.Mark) * m_BlockInfo.MarkCount);
 	m_BlockInfo.State = MemoryBlockState::Used;
 	m_BlockInfo.UnitSize = unitSize;
 }

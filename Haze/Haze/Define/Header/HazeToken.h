@@ -129,6 +129,8 @@ enum class HazeToken : unsigned int
 	CustomClass,
 	CustomEnum,
 
+	DynamicClass,
+
 	//NoMatch
 	Number,
 	String,

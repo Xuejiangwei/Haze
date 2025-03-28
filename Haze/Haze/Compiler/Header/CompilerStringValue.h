@@ -10,6 +10,10 @@ public:
 
 	virtual ~CompilerStringValue() override;
 
+	void SetPureString(const HString* str) { m_PureString = str; }
+
+	const HString* GetPureString() const { return m_PureString; }
+
 private:
-	
+	const HString* m_PureString;
 };

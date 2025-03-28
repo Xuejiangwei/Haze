@@ -18,7 +18,7 @@
 #define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); \
 				auto type = OPER[0].Variable.Type.SecondaryType; \
 				auto size = GetSizeByHazeType(type); \
-				uint64 address; auto operAddress = GetOperatorAddress(STACK, OPER[0]); memcpy(&address, operAddress, sizeof(operAddress)); \
+				x_uint64 address; auto operAddress = GetOperatorAddress(STACK, OPER[0]); memcpy(&address, operAddress, sizeof(operAddress)); \
 				if (INS == InstructionOpCode::SUB) address -= size * v; else address += size * v; \
 				memcpy(operAddress, &address, sizeof(operAddress));
 
@@ -73,9 +73,9 @@ bool IsRegisterDesc(HazeDataDesc desc)
 	return HazeDataDesc::RegisterBegin < desc && desc < HazeDataDesc::RegisterEnd;
 }
 
-const HChar* GetInstructionString(InstructionOpCode code)
+const x_HChar* GetInstructionString(InstructionOpCode code)
 {
-	static HashMap<InstructionOpCode, const HChar*> s_HashMap_Code2String;
+	static HashMap<InstructionOpCode, const x_HChar*> s_HashMap_Code2String;
 
 	if (s_HashMap_Code2String.size() <= 0)
 	{
@@ -305,7 +305,7 @@ public:
 			void* dst = GetOperatorAddress(stack, oper[0]);
 			const void* src = GetOperatorAddress(stack, oper[1]);
 
-			uint64 address = 0;
+			x_uint64 address = 0;
 			memcpy(&address, src, sizeof(address));
 			memcpy(dst, (void*)address, oper[0].Variable.Type.GetTypeSize());
 
@@ -325,7 +325,7 @@ public:
 			void* dst = GetOperatorAddress(stack, oper[0]);
 			const void* src = GetOperatorAddress(stack, oper[1]);
 
-			uint64 address = 0;
+			x_uint64 address = 0;
 			memcpy(&address, dst, sizeof(address));
 			memcpy((void*)address, src, oper[1].Variable.Type.GetTypeSize());
 
@@ -343,7 +343,7 @@ public:
 		if (oper.size() == 2)
 		{
 			void* dst = GetOperatorAddress(stack, oper[0]);
-			uint64 address = (uint64)GetOperatorAddress(stack, oper[1]);
+			x_uint64 address = (x_uint64)GetOperatorAddress(stack, oper[1]);
 			memcpy(dst, &address, oper[0].Variable.Type.GetTypeSize());
 		}
 
@@ -365,7 +365,7 @@ public:
 			}
 			else if (oper[0].Desc == HazeDataDesc::ClassThis)
 			{
-				memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), sizeof(uint64));
+				memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), sizeof(x_uint64));
 			}
 			else/* if (Operator[0].Scope == InstructionScopeType::Local || oper[0].Scope == InstructionScopeType::Global)*/
 			{
@@ -644,7 +644,7 @@ public:
 
 			if (oper[1].Desc == HazeDataDesc::CallFunctionPointer)
 			{
-				uint32 tempEBP = stack->m_EBP;
+				x_uint32 tempEBP = stack->m_EBP;
 				stack->m_EBP = stack->m_ESP;
 				((void(*)(HAZE_STD_CALL_PARAM))(oper[1].Extra.Pointer))(stack, oper[0].Extra.Call.ParamNum, oper[0].Extra.Call.ParamByteSize);
 				stack->m_ESP -= (oper[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
@@ -653,7 +653,7 @@ public:
 			else if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
 			{
 				void* value = GetOperatorAddress(stack, oper[0]);
-				uint64 functionAddress;
+				x_uint64 functionAddress;
 				memcpy(&functionAddress, (char*)value, sizeof(functionAddress));
 				stack->OnCall((FunctionData*)functionAddress, oper[0].Extra.Call.ParamByteSize);
 			}
@@ -679,7 +679,7 @@ public:
 					}
 					else
 					{
-						uint32 tempEBP = stack->m_EBP;
+						x_uint32 tempEBP = stack->m_EBP;
 						stack->m_EBP = stack->m_ESP;
 
 						if (function.FunctionDescData.Type == InstructionFunctionType::StaticLibFunction)
@@ -693,10 +693,10 @@ public:
 							int size = retRegister->Type.GetTypeSize();
 							retRegister->Data.resize(size);
 
-							uint64 address = (uint64)(stack);
+							x_uint64 address = (x_uint64)(stack);
 							memcpy(&stack->m_StackMain[stack->m_ESP], &address, sizeof(address));
 
-							address = (uint64)(&ExeHazePointerFunction);
+							address = (x_uint64)(&ExeHazePointerFunction);
 							memcpy(&stack->m_StackMain[stack->m_ESP + sizeof(address)], &address, sizeof(address));
 
 							g_HazeLibManager->ExecuteDLLFunction(oper[1].Variable.Name, oper[0].Variable.Name,
@@ -752,7 +752,7 @@ public:
 
 			bool isArray = IsArrayType(type.PrimaryType);
 		
-			uint64 size = 0;
+			x_uint64 size = 0;
 			if (isArray)
 			{
 				if (IsClassType(type.SecondaryType))
@@ -768,15 +768,15 @@ public:
 			{
 				size = type.GetTypeSize();
 			}
-			uint64 newSize = size;
+			x_uint64 newSize = size;
 			auto countAddress = GetOperatorAddress(stack, oper[1]);
 			
-			auto count = *((uint64*)countAddress);
+			auto count = *((x_uint64*)countAddress);
 			void* address = nullptr;
 			if (count > 0)
 			{
-				uint64* lengths = new uint64[count];
-				for (uint64 i = 0; i < count; i++)
+				x_uint64* lengths = new x_uint64[count];
+				for (x_uint64 i = 0; i < count; i++)
 				{
 					auto& instructionData = stack->m_VM->m_Instructions[stack->m_PC + i + 1];
 
@@ -1027,7 +1027,7 @@ private:
 	static void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData)
 	{
 		thread_local static HazeVariable constantValue;
-		thread_local static uint64 tempAddress;
+		thread_local static x_uint64 tempAddress;
 
 		void* ret = nullptr;
 
@@ -1072,7 +1072,7 @@ private:
 				break;
 			case InstructionAddressType::ConstantString:
 			{
-				tempAddress = (uint64)stack->m_VM->GetConstantStringByIndex(insData.Extra.Index);
+				tempAddress = (x_uint64)stack->m_VM->GetConstantStringByIndex(insData.Extra.Index);
 				ret = &tempAddress;
 			}
 				break;
@@ -1087,6 +1087,12 @@ private:
 				}
 
 				ret = hazeRegister->Data.begin()._Unwrapped();
+			}
+				break;
+			case InstructionAddressType::PureString:
+			{
+				tempAddress = (x_uint64)(&insData.Variable.Name);
+				ret = &tempAddress;
 			}
 				break;
 			case InstructionAddressType::PointerAddress:
@@ -1183,50 +1189,50 @@ private:
 			//在可变长参数中，会被扩展成int
 			case HazeValueType::Int8:
 				{
-					value.Value.Int8 = (int8)va_arg(args, int);
+					value.Value.Int8 = (x_int8)va_arg(args, int);
 					src = &value.Value.Int8;
 				}
 				break;
 			case HazeValueType::UInt8:
 				{
-					value.Value.UInt8 = (uint8)va_arg(args, int);
+					value.Value.UInt8 = (x_uint8)va_arg(args, int);
 					src = &value.Value.UInt8;
 				}
 				break;
 			case HazeValueType::Int16:
 				{
-					value.Value.Int16 = (int16)va_arg(args, int);
+					value.Value.Int16 = (x_int16)va_arg(args, int);
 					src = &value.Value.Int16;
 				}
 				break;
 			case HazeValueType::UInt16:
 				{
-					value.Value.UInt16 = (uint16)va_arg(args, uint32);
+					value.Value.UInt16 = (x_uint16)va_arg(args, x_uint32);
 					src = &value.Value.UInt16;
 				}
 				break;
 			case HazeValueType::Int32:
-				src = &va_arg(args, int32);
+				src = &va_arg(args, x_int32);
 				break;
 			case HazeValueType::UInt32:
-				src = &va_arg(args, uint32);
+				src = &va_arg(args, x_uint32);
 				break;
 			case HazeValueType::Int64:
-				src = &va_arg(args, int64);
+				src = &va_arg(args, x_int64);
 				break;
 			case HazeValueType::UInt64:
-				src = &va_arg(args, uint64);
+				src = &va_arg(args, x_uint64);
 				break;
 
 			//在可变长参数中，float会被扩展成double
 			case HazeValueType::Float32:
 				{
-					value.Value.Float32 = (float32)va_arg(args, float64);
+					value.Value.Float32 = (x_float32)va_arg(args, x_float64);
 					src = &value.Value.Float32;
 				}
 				break; 
 			case HazeValueType::Float64:
-				src = &va_arg(args, float64);
+				src = &va_arg(args, x_float64);
 				break;
 			default:
 				HAZE_LOG_ERR_W("三方库调用Haze函数Push参数<%s>类型错误", GetHazeValueTypeString(type.PrimaryType));

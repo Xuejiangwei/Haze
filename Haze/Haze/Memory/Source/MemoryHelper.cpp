@@ -1,12 +1,12 @@
 #include "HazePch.h"
 #include "MemoryHelper.h"
 
-static int64 _RoundUp(int64 bytes, int64 alignNum)
+static x_int64 _RoundUp(x_int64 bytes, x_int64 alignNum)
 {
 	return (bytes + (alignNum - 1) & ~(alignNum - 1));
 }
 
-uint64 RoundUp(int64 byteSize)
+x_uint64 RoundUp(x_int64 byteSize)
 {
 	if (byteSize <= 4)
 	{

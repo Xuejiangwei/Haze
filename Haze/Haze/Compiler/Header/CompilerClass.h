@@ -20,7 +20,7 @@ public:
 
 	Share<CompilerFunction> AddFunction(Share<CompilerFunction>& function);
 
-	uint64 GetFunctionNum() { return m_Functions.size(); }
+	x_uint64 GetFunctionNum() { return m_Functions.size(); }
 
 	const HString& GetName() { return m_Name; }
 
@@ -42,13 +42,13 @@ public:
 
 	void GenClassFunction_I_Code(HAZE_STRING_STREAM& hss);
 
-	uint32 GetDataSize() { return m_DataSize; }
+	x_uint32 GetDataSize() { return m_DataSize; }
 
-	uint32 GetMemberCount() const { return m_MemberCount; }
+	x_uint32 GetMemberCount() const { return m_MemberCount; }
 
-	uint32 GetAlignSize();
+	x_uint32 GetAlignSize();
 
-	uint32 GetOffset(uint32 index, Share<CompilerValue> member);
+	x_uint32 GetOffset(x_uint32 index, Share<CompilerValue> member);
 
 	//int GetClassInheritLevel() const;
 
@@ -59,22 +59,22 @@ public:
 	static bool HasCommomInheritClass(CompilerClass* c1, CompilerClass* c2);
 
 private:
-	void MemoryAlign(uint32 memberNum);
+	void MemoryAlign(x_uint32 memberNum);
 
-	void GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, uint32& offset);
+	void GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, x_uint32& offset);
 
 private:
 	CompilerModule* m_Module;
 	V_Array<CompilerClass*> m_ParentClass;
 
 	HString m_Name;
-	uint32 m_DataSize;
-	uint32 m_MemberCount;
+	x_uint32 m_DataSize;
+	x_uint32 m_MemberCount;
 
 	V_Array<Pair<HString, Share<CompilerValue>>> m_Data;
 
 	V_Array<Share<CompilerFunction>> m_Functions;
 	HashMap<HString, unsigned int> m_HashMap_Functions;
 
-	V_Array<uint32> m_Offsets;
+	V_Array<x_uint32> m_Offsets;
 };

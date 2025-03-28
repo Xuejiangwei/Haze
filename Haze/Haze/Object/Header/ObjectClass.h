@@ -4,6 +4,7 @@
 
 class ObjectClass
 {
+	friend class HazeVM;
 	friend class HazeMemory;
 	friend class InstructionProcessor;
 public:

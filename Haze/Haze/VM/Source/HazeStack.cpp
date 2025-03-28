@@ -21,7 +21,7 @@ HazeStack::~HazeStack()
 {
 }
 
-void HazeStack::RunGlobalDataInit(uint32 startPC, uint32 endPC)
+void HazeStack::RunGlobalDataInit(x_uint32 startPC, x_uint32 endPC)
 {
 	int pc = m_PC;
 

@@ -48,7 +48,7 @@ void CompilerValue::StoreValueType(Share<CompilerValue> srcValue)
 	//memcpy(&this->Value.Value, &SrcValue->Value.Value, sizeof(this->Value.Value));
 }
 
-uint32 CompilerValue::GetSize()
+x_uint32 CompilerValue::GetSize()
 {
 	return GetSizeByHazeType(m_ValueType.PrimaryType);
 }

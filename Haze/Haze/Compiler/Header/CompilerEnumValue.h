@@ -18,7 +18,7 @@ public:
 
 	virtual bool IsEnum() const override { return true; }
 
-	virtual uint32 GetSize() override;
+	virtual x_uint32 GetSize() override;
 
 	CompilerEnum* GetEnum() { return m_OwnerEnum; }
 

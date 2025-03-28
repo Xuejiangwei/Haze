@@ -1,6 +1,6 @@
 #pragma once
 
-enum class HazeDebugOperatorType : uint8
+enum class HazeDebugOperatorType : x_uint8
 {
 	None,
 	Start,
@@ -19,7 +19,7 @@ enum class HazeDebugOperatorType : uint8
 	GetLocalVariable,
 };
 
-enum class HazeDebugInfoType : uint8
+enum class HazeDebugInfoType : x_uint8
 {
 	None,
 	ProgramEnd,
@@ -29,9 +29,9 @@ enum class HazeDebugInfoType : uint8
 
 struct SourceLocation
 {
-	uint32 Line;
+	x_uint32 Line;
 
-	SourceLocation(uint32 Line) : Line(Line)
+	SourceLocation(x_uint32 Line) : Line(Line)
 	{
 	}
 };
@@ -43,7 +43,7 @@ struct HookInfo
 struct BreakPoint
 {
 	HString FilePath;
-	uint32 Line;
+	x_uint32 Line;
 
 	bool operator==(const BreakPoint& BP) const
 	{
@@ -53,7 +53,7 @@ struct BreakPoint
 
 struct BreakPointHash
 {
-	uint64 operator()(const BreakPoint& BP) const
+	x_uint64 operator()(const BreakPoint& BP) const
 	{
 		return std::hash<HString>()(BP.FilePath) + BP.Line;
 	}

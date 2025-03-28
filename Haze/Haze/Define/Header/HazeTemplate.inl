@@ -13,7 +13,7 @@ T StringToStandardType(const HString& str)
 }
 
 template<typename T>
-inline T StringToStandardType(const HChar* str)
+inline T StringToStandardType(const x_HChar* str)
 {
 	std::wstringstream ss;
 	ss << str;

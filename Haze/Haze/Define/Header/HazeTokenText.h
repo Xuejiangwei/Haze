@@ -23,6 +23,8 @@
 #define TOKEN_CLASS_DATA_PUBLIC			H_TEXT("显")
 #define TOKEN_CLASS_DATA_PRIVATE		H_TEXT("隐")
 
+#define TOKEN_DYNAMIC_CLASS				H_TEXT("动态类")
+
 #define TOKEN_UNION						H_TEXT("合")
 
 #define TOKEN_ENUM						H_TEXT("枚举")

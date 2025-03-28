@@ -4,6 +4,7 @@
 #include "HazeStrcut.h"
 #include "HazeValue.h"
 #include "HazeLibraryType.h"
+#include "JwHeader.h"
 
 bool IsAndOrToken(HazeToken token);
 
@@ -17,27 +18,27 @@ int Log2(int n);
 
 HString GetHazeClassFunctionName(const HString& className, const HString& functionName);
 
-const HChar* GetGlobalDataHeaderString();
-const HChar* GetGlobalDataInitBlockStart();
-const HChar* GetGlobalDataInitBlockEnd();
+const x_HChar* GetGlobalDataHeaderString();
+const x_HChar* GetGlobalDataInitBlockStart();
+const x_HChar* GetGlobalDataInitBlockEnd();
 
-const HChar* GetStringTableHeaderString();
+const x_HChar* GetStringTableHeaderString();
 
-const HChar* GetClassTableHeaderString();
-const HChar* GetClassLabelHeader();
+const x_HChar* GetClassTableHeaderString();
+const x_HChar* GetClassLabelHeader();
 
-const HChar* GetFucntionTableHeaderString();
-const HChar* GetFunctionLabelHeader();
-const HChar* GetFunctionParamHeader();
-const HChar* GetFunctionVariableHeader();
-const HChar* GetFunctionTempRegisterHeader();
-const HChar* GetFunctionStartHeader();
-const HChar* GetFunctionEndHeader();
+const x_HChar* GetFucntionTableHeaderString();
+const x_HChar* GetFunctionLabelHeader();
+const x_HChar* GetFunctionParamHeader();
+const x_HChar* GetFunctionVariableHeader();
+const x_HChar* GetFunctionTempRegisterHeader();
+const x_HChar* GetFunctionStartHeader();
+const x_HChar* GetFunctionEndHeader();
 
-const HChar* GetSymbolBeginHeader();
-const HChar* GetSymbolEndHeader();
+const x_HChar* GetSymbolBeginHeader();
+const x_HChar* GetSymbolEndHeader();
 
-bool HazeIsSpace(HChar hChar, bool* isNewLine = nullptr);
+bool HazeIsSpace(x_HChar hChar, bool* isNewLine = nullptr);
 
 bool IsNumber(const HString& str);
 
@@ -65,7 +66,7 @@ template <typename T>
 T StringToStandardType(const HString& str);
 
 template <typename T>
-T StringToStandardType(const HChar* str);
+T StringToStandardType(const x_HChar* str);
 
 template <typename T>
 HAZE_BINARY_STRING ToString(T value);

@@ -25,7 +25,7 @@ static void SetSystemColor(int type = 0)
 	}
 }
 
-void HazeLog::LogInfo(int type, const HChar* format, ...)
+void HazeLog::LogInfo(int type, const x_HChar* format, ...)
 {
 	std::lock_guard lock(g_LogMutex);
 
