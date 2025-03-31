@@ -65,6 +65,8 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 
 	{H_TEXT("CVT"), InstructionOpCode::CVT },
 
+	{H_TEXT("MOV_DCU"), InstructionOpCode::MOV_DCU },
+
 	{H_TEXT("LINE"), InstructionOpCode::LINE },
 };
 
@@ -279,6 +281,16 @@ class InstructionProcessor
 #endif
 
 public:
+	static inline x_uint32 GetOperSize(HazeStack* stack, const InstructionData& instData)
+	{
+		if (!(IsDynamicClassUnknowType(instData.Variable.Type.PrimaryType) && instData.Desc == HazeDataDesc::RegisterTemp))
+		{
+			return instData.Variable.Type.GetTypeSize();
+		}
+		return  stack->GetTempRegister(instData.Variable.Name.c_str()).GetTypeSize();
+	}
+
+public:
 	static void Mov(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
@@ -358,7 +370,6 @@ public:
 		if (oper.size() == 1)
 		{
 			int size = oper[0].Variable.Type.GetTypeSize();
-
 			if (oper[0].Desc == HazeDataDesc::Address)
 			{
 				memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, size);
@@ -371,7 +382,7 @@ public:
 			{
 				if (oper[0].Extra.Address.BaseAddress + (int)stack->m_EBP >= 0)
 				{
-					//Size = oper[0].Scope == HazeDataDesc::ConstantString ? Size = sizeof(Operator[0].Extra.Index) : Size;
+					size = GetOperSize(stack, oper[0]);
 					memcpy(&stack->m_StackMain[stack->m_ESP], GetOperatorAddress(stack, oper[0]), size);
 				}
 				else
@@ -393,7 +404,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
-			auto size = oper[0].Variable.Type.GetTypeSize();
+			auto size = GetOperSize(stack, oper[0]);
 			auto address = GetOperatorAddress(stack, oper[0]);
 			memcpy(address, &stack->m_StackMain[stack->m_ESP - size], size);
 			
@@ -1011,6 +1022,38 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
+	static void MOV_DCU(HazeStack* stack)
+	{
+		INSTRUCTION_DATA_DEBUG;
+		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
+		if (oper.size() == 2)
+		{
+			static HazeDefineType s_Type;
+			void* dst = GetOperatorAddress(stack, oper[0]);
+
+			if (oper[1].AddressType == InstructionAddressType::Register)
+			{
+				s_Type = stack->GetVirtualRegister(oper[1].Variable.Name.c_str())->Type;
+			}
+			else if (IsDynamicClassUnknowType(oper[0].Variable.Type.PrimaryType))
+			{
+				s_Type = oper[1].Variable.Type;
+			}
+			else
+			{
+				s_Type = oper[0].Variable.Type;
+			}
+
+			const void* src = GetOperatorAddress(stack, oper[1]);
+			memcpy(dst, src, s_Type.GetTypeSize());
+
+			stack->ResetTempRegisterTypeByDynamicClassUnknow(oper[0].Variable.Name, s_Type);
+			ClearRegisterType(stack, oper[1]);
+		}
+
+		stack->m_VM->InstructionExecPost();
+	}
+
 	static void Line(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
@@ -1052,22 +1095,16 @@ private:
 				break;
 			case InstructionAddressType::Constant:
 			{
-				auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
-				auto& value = const_cast<HazeValue&>(constantValue.GetValue());
-
-				type.PrimaryType = insData.Variable.Type.PrimaryType;
-				StringToHazeValueNumber(insData.Variable.Name, type.PrimaryType, value);
-				ret = GetBinaryPointer(type.PrimaryType, value);
+				auto& value = const_cast<HazeValue&>(insData.Extra.RuntimeDynamicValue);
+				StringToHazeValueNumber(insData.Variable.Name, insData.Variable.Type.PrimaryType, value);
+				ret = GetBinaryPointer(insData.Variable.Type.PrimaryType, value);
 			}
 				break;
 			case InstructionAddressType::NullPtr:
 			{
-				auto& type = const_cast<HazeDefineType&>(constantValue.GetType());
-				auto& value = const_cast<HazeValue&>(constantValue.GetValue());
-
-				type.PrimaryType = insData.Variable.Type.PrimaryType;
-				StringToHazeValueNumber(H_TEXT("0"), type.PrimaryType, value);
-				ret = GetBinaryPointer(type.PrimaryType, value);
+				auto& value = const_cast<HazeValue&>(insData.Extra.RuntimeDynamicValue);
+				StringToHazeValueNumber(H_TEXT("0"), insData.Variable.Type.PrimaryType, value);
+				ret = GetBinaryPointer(insData.Variable.Type.PrimaryType, value);
 			}
 				break;
 			case InstructionAddressType::ConstantString:
@@ -1126,6 +1163,24 @@ private:
 			{
 				CalculateValueByType(oper[1].Variable.Type.PrimaryType, instruction.InsCode, GetOperatorAddress(stack, oper[0]),
 					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+			}
+			else if (oper[0].AddressType == InstructionAddressType::Register && 
+				IsDynamicClassUnknowType(oper[1].Variable.Type.PrimaryType) || IsDynamicClassUnknowType(oper[2].Variable.Type.PrimaryType))
+			{
+				auto& operType1 = oper[1].Desc == HazeDataDesc::RegisterTemp ? stack->GetTempRegister(oper[1].Variable.Name.c_str()) : oper[1].Variable.Type;
+				auto& operType2 = oper[2].Desc == HazeDataDesc::RegisterTemp ? stack->GetTempRegister(oper[2].Variable.Name.c_str()) : oper[2].Variable.Type;
+
+				if (IsNumberType(operType1.PrimaryType) && IsNumberType(operType2.PrimaryType) && operType1 == operType2)
+				{
+					CalculateValueByType(operType1.PrimaryType, instruction.InsCode, GetOperatorAddress(stack, oper[0]),
+						GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+					
+					stack->ResetTempRegisterTypeByDynamicClassUnknow(oper[0].Variable.Name, operType1);
+				}
+				else
+				{
+					INS_ERR_W("二元计算错误, 动态类成员不全是数字 <%s> <%s>", oper[0].Variable.Name.c_str(), oper[1].Variable.Name.c_str());
+				}
 			}
 			else
 			{
@@ -1323,6 +1378,8 @@ HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 	{InstructionOpCode::JL, &InstructionProcessor::Jl},
 
 	{InstructionOpCode::CVT, &InstructionProcessor::CVT},
+
+	{InstructionOpCode::MOV_DCU, &InstructionProcessor::MOV_DCU},
 
 	{InstructionOpCode::LINE, &InstructionProcessor::Line},
 };

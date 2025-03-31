@@ -55,6 +55,10 @@ public:
 
 	HazeRegister* GetVirtualRegister(const x_HChar* name) { return &m_VirtualRegister.find(name)->second; }
 
+	const HazeDefineType& GetTempRegister(const x_HChar* name) const;
+
+	void ResetTempRegisterTypeByDynamicClassUnknow(const HString& name, const HazeDefineType& type);
+
 private:
 	void Run(bool isHazeCall = false);
 

@@ -318,6 +318,10 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				{
 					Module->GetCompiler()->CreateSetClassMember(Element->GetParent(), Element->GetElement(), Value);
 				}
+				else if (IsDynamicClassType(Element->GetParentBaseType()))
+				{
+					Module->GetCompiler()->CreateSetDynamicClassMember(Element->GetParent(), *Element->GetElementName(), Value);
+				}
 			}
 			else if (AssignTo && Value)
 			{
@@ -340,8 +344,20 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		Share<CompilerElementValue> assignElementValue = DynamicCast<CompilerElementValue>(assignTo);
 		if (assignElementValue)
 		{
-			assignTo = m->GetCompiler()->GetTempRegister(assignElementValue->GetElement());
-			elementAssign->SetElement(assignElementValue, assignTo);
+			if (assignElementValue->GetElement())
+			{
+				assignTo = m->GetCompiler()->GetTempRegister(assignElementValue->GetElement());
+				elementAssign->SetElement(assignElementValue, assignTo);
+			}
+			else if (assignElementValue->GetElementName())
+			{
+				assignTo = m->GetCompiler()->GetTempRegister(HazeValueType::DynamicClassUnknow);
+				elementAssign->SetElement(assignElementValue, assignTo);
+			}
+			else
+			{
+				COMPILER_ERR_MODULE_W("生成中间代码错误, 元素类型中的元素未设置值");
+			}
 		}
 		else if (assignTo && assignTo->IsRefrence())
 		{
@@ -433,6 +449,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	case InstructionOpCode::NEG:
 	case InstructionOpCode::NEW:
 	case InstructionOpCode::CVT:
+	case InstructionOpCode::MOV_DCU:
 	{
 
 		hss << GetInstructionString(opCode) << " ";

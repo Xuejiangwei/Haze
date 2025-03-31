@@ -455,6 +455,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	case InstructionOpCode::BIT_NEG:
 	case InstructionOpCode::NEW:
 	case InstructionOpCode::CVT:
+	case InstructionOpCode::MOV_DCU:
 	{
 		InstructionData operatorOne;
 		InstructionData operatorTwo;

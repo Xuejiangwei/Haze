@@ -124,6 +124,8 @@ enum class InstructionOpCode : x_uint32
 
 	CVT,		//基本类型转换
 
+	MOV_DCU,	//DynamicClassUnknown赋值用
+
 	LINE,		//调试用
 };
 
@@ -190,6 +192,7 @@ struct InstructionData
 		FunctionCall Call;
 		BlockJmp Jmp;
 		void* Pointer;
+		HazeValue RuntimeDynamicValue;
 
 		x_uint32 Line;
 		x_uint64 SignData;
@@ -206,6 +209,12 @@ struct InstructionData
 
 	~InstructionData()
 	{
+	}
+
+	InstructionData& operator =(const InstructionData& value)
+	{
+		memcpy(this, &value, sizeof(value));
+		return *this;
 	}
 };
 

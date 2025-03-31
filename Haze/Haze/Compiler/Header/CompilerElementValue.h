@@ -17,6 +17,8 @@ public:
 
 	Share<CompilerValue> GetElement() const { return m_Element; }
 
+	const HString* GetElementName() const { return m_ElementName.get(); }
+
 	Share<CompilerValue> CreateGetFunctionCall();
 
 private:

@@ -893,7 +893,8 @@ Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share
 			value = CreateCVT(allocaValue, value);
 		}
 
-		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, InstructionOpCode::MOV);
+		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, 
+			value->IsDynamicClassUnknow() || allocaValue->IsDynamicClassUnknow() ? InstructionOpCode::MOV_DCU : InstructionOpCode::MOV);
 	}
 
 	return allocaValue;
@@ -1084,13 +1085,17 @@ Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advan
 			auto classValue = DynamicCast<CompilerClassValue>(DynamicCast<CompilerElementValue>(thisPointerTo)->CreateGetFunctionCall());
 			if (classValue)
 			{
-				CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(functionName,nullptr), param, classValue);
+				return CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(functionName,nullptr), param, classValue);
 			}
 			else
 			{
 				COMPILER_ERR_MODULE_W("类型<%s>中的变量不是类, 没有找到<%s>方法", GetHazeValueTypeString(advanceType), functionName.c_str(),
 					GetCurrModuleName().c_str());
 			}
+		}
+		else if (thisPointerTo->IsDynamicClass())
+		{
+			return CreateDynamicClassFunctionCall(thisPointerTo, functionName, param);
 		}
 		else
 		{
@@ -1173,7 +1178,37 @@ Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> 
 	prueStr->SetPureString(&memberName);
 	V_Array<Share<CompilerValue>> params = { prueStr };
 
-	return CreateMov(GetTempRegister(HazeValueType::DynamicClassUnknow), CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_GET_MEMBER, params, dynamicClassValue));
+	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_GET_MEMBER, params, dynamicClassValue);
+	auto& type = const_cast<HazeDefineType&>(ret->GetValueType());
+	type.DynamicClassUnknow();
+
+	return CreateMov(GetTempRegister(HazeValueType::DynamicClassUnknow), ret);
+}
+
+Share<CompilerValue> Compiler::CreateSetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue)
+{
+	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HazeValueType::PureString, HazeVariableScope::Local, HazeDataDesc::None, 0);
+	prueStr->SetPureString(&memberName);
+	V_Array<Share<CompilerValue>> params = { assignValue, prueStr };
+
+	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, params, classValue);
+	auto& type = const_cast<HazeDefineType&>(ret->GetValueType());
+	type.DynamicClassUnknow();
+
+	return CreateMov(GetTempRegister(HazeValueType::DynamicClassUnknow), ret);
+}
+
+Share<CompilerValue> Compiler::CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const HString& functionName, V_Array<Share<CompilerValue>>& params)
+{
+	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HazeValueType::PureString, HazeVariableScope::Local, HazeDataDesc::None, 0);
+	prueStr->SetPureString(&functionName);
+	params.push_back(prueStr);
+
+	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_CALL_FUNCTION, params, classValue);
+	auto& type = const_cast<HazeDefineType&>(ret->GetValueType());
+	type.DynamicClassUnknow();
+
+	return CreateMov(GetTempRegister(HazeValueType::DynamicClassUnknow), ret);
 }
 
 Share<CompilerValue> Compiler::CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue)
@@ -1330,7 +1365,12 @@ Share<CompilerValue> Compiler::CreateFunctionRet(const HazeDefineType& type)
 
 void Compiler::ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Share<CompilerValue>& right)
 {
-	if ((IsArrayType(left->GetValueType().PrimaryType) && IsNumberType(right->GetValueType().PrimaryType)))
+	if (left->IsArray() && IsNumberType(right->GetValueType().PrimaryType))
+	{
+		return;
+	}
+
+	if (left->IsDynamicClassUnknow() || right->IsDynamicClassUnknow())
 	{
 		return;
 	}

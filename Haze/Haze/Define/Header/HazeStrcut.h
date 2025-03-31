@@ -187,6 +187,13 @@ struct HazeDefineType
 		CustomName = nullptr;
 	}
 
+	void DynamicClassUnknow()
+	{
+		PrimaryType = HazeValueType::DynamicClassUnknow;
+		SecondaryType = HazeValueType::None;
+		CustomName = nullptr;
+	}
+
 	template<typename Class>
 	void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(x_uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
 
@@ -249,6 +256,12 @@ struct HazeDefineType
 		{
 			(pThis->*stringCall)(type.CustomName);
 		}
+	}
+
+	static const HazeDefineType& VoidType()
+	{
+		static HazeDefineType s_Type(HazeValueType::Void);
+		return s_Type;
 	}
 
 	static const HazeDefineType& StringType()

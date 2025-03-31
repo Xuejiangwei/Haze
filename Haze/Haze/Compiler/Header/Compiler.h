@@ -203,6 +203,8 @@ public:
 	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue);
 
 	Share<CompilerValue> CreateGetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName);
+	Share<CompilerValue> CreateSetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
+	Share<CompilerValue> CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const HString& functionName, V_Array<Share<CompilerValue>>& params);
 
 public:
 	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);

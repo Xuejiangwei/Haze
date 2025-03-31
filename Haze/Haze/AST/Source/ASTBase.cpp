@@ -214,11 +214,23 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 		{
 			ret = m_Compiler->CreateFunctionCall(functionPointer, param);
 		}
-		else if (classObj && classObj->IsElement())
+		else if (classObj)
 		{
-			auto elementValue = DynamicCast<CompilerElementValue>(classObj);
-			ret = m_Compiler->CreateAdvanceTypeFunctionCall(elementValue->GetParentBaseType(), m_Name,
-				param, elementValue);
+			if (classObj->IsElement())
+			{
+				auto elementValue = DynamicCast<CompilerElementValue>(classObj);
+				ret = m_Compiler->CreateAdvanceTypeFunctionCall(elementValue->GetParentBaseType(), m_Name,
+					param, elementValue);
+			}
+			else if (classObj->IsDynamicClass())
+			{
+				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, m_Name,
+					param, classObj);
+			}
+			else
+			{
+				AST_ERR_W("生成函数调用错误, <%s>类型错误", m_Name.c_str());
+			}
 		}
 		else
 		{
@@ -228,7 +240,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 
 	if (!ret)
 	{
-		HAZE_LOG_ERR_W("生成函数调用<%s>错误, 检查函数名或 ( 符号是否与函数名在同一行\n", m_Name.c_str());
+		AST_ERR_W("生成函数调用<%s>错误, 检查函数名或 ( 符号是否与函数名在同一行", m_Name.c_str());
 	}
 
 	return ret;

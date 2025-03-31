@@ -73,6 +73,8 @@ public:
 
 	bool IsDynamicClass() const { return IsDynamicClassType(m_ValueType.PrimaryType); }
 
+	bool IsDynamicClassUnknow() const { return IsDynamicClassUnknowType(m_ValueType.PrimaryType); }
+
 	bool IsClass() const { return IsClassType(m_ValueType.PrimaryType); }
 
 	bool IsAdvance() const { return IsAdvanceType(m_ValueType.PrimaryType); }
