@@ -40,11 +40,12 @@ public:
 private:
 	Unique<ASTBase> HandleParseExpression();
 
-	Unique<ASTBase> ParseExpression(int prec = 0);
+	Unique<ASTBase> ParseExpression(int prec = 0, HazeToken prevOpToken = HazeToken::None, Unique<ASTBase> left = nullptr);
 
 	Unique<ASTBase> ParseUnaryExpression();
 
-	Unique<ASTBase> ParseBinaryOperateExpression(int prec, Unique<ASTBase> left);
+	Unique<ASTBase> ParseBinaryOperateExpression(int prec, HazeToken prevOpToken, Unique<ASTBase> prev, Unique<ASTBase> left);
+	Unique<ASTBase> ParseBinaryOperateExpression2(int prec, HazeToken prevOpToken, Unique<ASTBase> prev, Unique<ASTBase> left);
 
 	Unique<ASTBase> ParsePrimary();
 

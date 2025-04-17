@@ -21,8 +21,7 @@ public:
 
 	~HazeLibraryManager();
 
-	void ExecuteDLLFunction(const HString& moduleName, const HString& functionName, char* paramStartAddress, char* retStartAddress, void* stack, 
-		void(*exeHazeFunctionCall)(void*, void*, int, ...));
+	void ExecuteDLLFunction(const HString& moduleName, const HString& functionName, char* paramStartAddress, char* retStartAddress, void* stack);
 
 	void LoadDLLLibrary(const HString& libraryPath, const HString& filePath);
 

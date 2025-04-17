@@ -614,7 +614,9 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	break;
 	case HazeValueType::Array:
 	case HazeValueType::Class:
+	//case HazeValueType::String:
 	case HazeValueType::Function:
+	case HazeValueType::DynamicClass:
 	{
 		//uint64 s = *(uint64*)source, t = *(uint64*)target;
 		TWO_VARIABLE_DEFINE_INIT(x_uint64, source, target);

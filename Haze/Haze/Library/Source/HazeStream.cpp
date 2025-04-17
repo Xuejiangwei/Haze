@@ -572,12 +572,13 @@ void TestSetMember(HazeStack* stack, const HString& name, void* obj, x_uint8* cu
 
 void TestCallFunction(HazeStack* stack, const HString& name, void* obj, x_uint8* currESP)
 {
-	std::cout << "call function : " << name.c_str() << std::endl;
+	std::wcout << "call function : " << name.c_str() << std::endl;
 	int a, b;
 	memcpy(&a, currESP - sizeof(a), sizeof(a));
 	memcpy(&b, currESP - sizeof(a) - sizeof(b), sizeof(b));
 
 	((TestDynamic*)obj)->Add(a, b);
+	SET_RET_BY_TYPE(HazeValueType::Void, obj);
 }
 
 void HazeStream::CreateDynamicClass(HAZE_STD_CALL_PARAM)
@@ -589,9 +590,9 @@ void HazeStream::CreateDynamicClass(HAZE_STD_CALL_PARAM)
 	methods.SetMember = &TestSetMember;
 	methods.CallFunction = &TestCallFunction;
 
-	auto address = HazeMemory::Alloca(sizeof(ObjectDynamicClass));
-	auto testObj = new TestDynamic();
-	new(address) ObjectDynamicClass(&methods, testObj);
+	auto address = nullptr;// HazeMemory::Alloca(sizeof(ObjectDynamicClass));
+	/*auto testObj = new TestDynamic();
+	new(address) ObjectDynamicClass(&methods, testObj);*/
 
 	SET_RET_BY_TYPE(HazeValueType::DynamicClass, address);
 }

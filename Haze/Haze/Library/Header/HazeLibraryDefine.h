@@ -4,12 +4,11 @@
 
 #ifndef HAZE
 
-extern "C" __declspec(dllexport) int ExecuteFunction(const wchar_t* functionName, char* paramStartAddress, char* retStartAddress, void* stack, \
-	void(*exeHazeFunction)(void*, void*, int, ...));
+extern "C" __declspec(dllexport) int ExecuteFunction(const wchar_t* functionName, char* paramStartAddress, char* retStartAddress, void* stack);
 
 #else
 
-using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, void*, int, ...));
+using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*);
 
 #endif // HAZE
 
@@ -31,3 +30,9 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*, void(*)(void*, v
 	retRegister->Type.PrimaryType = TYPE; \
 	retRegister->Data.resize(retRegister->Type.GetTypeSize()); \
 	memcpy(retRegister->Data.begin()._Unwrapped(), &V, retRegister->Data.size())
+
+#define SET_RET_BY_TYPE_AND_ADDRESS(TYPE, V) \
+	HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER); \
+	retRegister->Type.PrimaryType = TYPE; \
+	retRegister->Data.resize(retRegister->Type.GetTypeSize()); \
+	memcpy(retRegister->Data.begin()._Unwrapped(), V, retRegister->Data.size())

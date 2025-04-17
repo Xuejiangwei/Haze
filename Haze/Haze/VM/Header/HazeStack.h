@@ -49,7 +49,7 @@ public:
 
 	const HazeStackFrame& GetCurrFrame() const { return m_StackFrame.back(); }
 
-	bool FrameIsValid() { return m_StackFrame.size(); }
+	bool FrameIsValid() { return m_StackFrame.size() > 0; }
 
 	void JmpTo(const InstructionData& m_Data);
 

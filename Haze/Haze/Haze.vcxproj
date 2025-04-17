@@ -148,7 +148,9 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectClass.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectString.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDefine.h"  "$(OutDir)..\include\"</Command>
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDynamicClass.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -163,6 +165,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>HazePch.h</PrecompiledHeaderFile>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -200,7 +203,9 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectClass.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectString.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDefine.h"  "$(OutDir)..\include\"</Command>
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDynamicClass.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

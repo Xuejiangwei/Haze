@@ -28,14 +28,14 @@ int ExecuteFunction(const wchar_t* functionName, char* paramStartAddress, char* 
 {
 	if (functionName == HString(H_TEXT("加法")))
 	{
-		GET_PARAM_START();
+		/*GET_PARAM_START();
 		int a, b;
 		GET_PARAM(a);
 		GET_PARAM(b);
 
 		a = a + b;
 
-		SET_RET_BY_TYPE(HazeValueType::Int32, a);
+		SET_RET_BY_TYPE(HazeValueType::Int32, a);*/
 	}
 
 	return 0;

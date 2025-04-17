@@ -654,13 +654,13 @@ Unique<ASTBase> Parse::HandleParseExpression()
 	return ParseExpression();
 }
 
-Unique<ASTBase> Parse::ParseExpression(int prec)
+Unique<ASTBase> Parse::ParseExpression(int prec, HazeToken prevOpToken, Unique<ASTBase> left)
 {
-	Unique<ASTBase> left = ParseUnaryExpression();
+	Unique<ASTBase> right = ParseUnaryExpression();
 
-	if (left)
+	if (right)
 	{
-		return ParseBinaryOperateExpression(prec, Move(left));
+		return ParseBinaryOperateExpression2(prec, prevOpToken, Move(left), Move(right));
 	}
 
 	return nullptr;
@@ -688,7 +688,7 @@ Unique<ASTBase> Parse::ParseUnaryExpression()
 	return nullptr;
 }
 
-Unique<ASTBase> Parse::ParseBinaryOperateExpression(int prec, Unique<ASTBase> left)
+Unique<ASTBase> Parse::ParseBinaryOperateExpression(int prec, HazeToken prevOpToken, Unique<ASTBase> prev, Unique<ASTBase> left)
 {
 	x_uint32 tempLineCount = m_LineCount;
 	while (true)
@@ -696,18 +696,27 @@ Unique<ASTBase> Parse::ParseBinaryOperateExpression(int prec, Unique<ASTBase> le
 		TempCurrCode temp(this);
 		GetNextToken();
 
-		auto it = s_HashMap_OperatorPriority.find(m_CurrToken);
-		if (it == s_HashMap_OperatorPriority.end())
+		auto curr = s_HashMap_OperatorPriority.find(m_CurrToken);
+		if (curr == s_HashMap_OperatorPriority.end())
 		{
 			temp.Reset();
-			return left;
+
+			if (prev)
+			{
+				return MakeUnique<ASTBinaryExpression>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+					prevOpToken, prev, left);
+			}
+			else
+			{
+				return left;
+			}
 		}
 
-		if (it->second < prec)
+		/*if (it->second < prec)
 		{
 			temp.Reset();
 			return left;
-		}
+		}*/
 
 		HazeToken opToken = m_CurrToken;
 		Unique<ASTBase> right = nullptr;
@@ -720,12 +729,37 @@ Unique<ASTBase> Parse::ParseBinaryOperateExpression(int prec, Unique<ASTBase> le
 		}
 		else
 		{
+			temp.Update();
 			GetNextToken();
-			right = ParseExpression(it->second);
+			if (prev && prec >= curr->second)
+			{
+				left = MakeUnique<ASTBinaryExpression>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+					prevOpToken, prev, left);
+			}
+
+			temp.Update();
+			HString cacheLexeme = m_CurrLexeme;
+			GetNextToken();
+			auto next = s_HashMap_OperatorPriority.find(m_CurrToken);
+			if (next != s_HashMap_OperatorPriority.end() && next->second < curr->second)
+			{
+				left = MakeUnique<ASTBinaryExpression>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+					prevOpToken, prev, left);
+			}
+			temp.Reset();
+			m_CurrLexeme = cacheLexeme;
+
+			right = ParseExpression(curr->second, opToken, Move(left));
 			if (!right)
 			{
 				return nullptr;
 			}
+
+			/*if (prev && prec < it->second)
+			{
+				left = MakeUnique<ASTBinaryExpression>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+					prevOpToken, prev, right);
+			}*/
 		}
 
 		HashMap<HazeToken, int>::iterator nextPrec;
@@ -741,9 +775,9 @@ Unique<ASTBase> Parse::ParseBinaryOperateExpression(int prec, Unique<ASTBase> le
 			}
 		}
 
-		if (it->second < nextPrec->second)
+		if (curr->second < nextPrec->second)
 		{
-			right = ParseBinaryOperateExpression(it->second + 1, Move(right));
+			//right = ParseBinaryOperateExpression(it->second + 1, Move(right));
 			if (!right)
 			{
 				return nullptr;
@@ -764,6 +798,95 @@ Unique<ASTBase> Parse::ParseBinaryOperateExpression(int prec, Unique<ASTBase> le
 				opToken, left, right);
 		}
 	}
+}
+
+Unique<ASTBase> Parse::ParseBinaryOperateExpression2(int prec, HazeToken prevOpToken, Unique<ASTBase> prev, Unique<ASTBase> left)
+{
+	x_uint32 tempLineCount = m_LineCount;
+	TempCurrCode temp(this);
+	GetNextToken();
+
+	HazeToken currToken = m_CurrToken;
+	auto curr = s_HashMap_OperatorPriority.find(m_CurrToken);
+	if (curr == s_HashMap_OperatorPriority.end() || (prec > curr->second))
+	{
+		temp.Reset();
+		if (prev)
+		{
+			return MakeUnique<ASTBinaryExpression>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+				prevOpToken, prev, left);
+		}
+		else
+		{
+			return left;
+		}
+	}
+
+	bool isRightAssociativity = curr->second == s_HashMap_OperatorPriority[HazeToken::Assign];
+	Unique<ASTBase> right = nullptr;
+	while (true)
+	{
+		//temp.Update();
+		HazeToken opToken = m_CurrToken;
+		GetNextToken();
+
+		if (isRightAssociativity)
+		{
+			right = ParseExpression(curr->second, opToken, nullptr);
+		}
+		else
+		{
+			if (prec < curr->second)
+			{
+				if (prev)
+				{
+					left = ParseExpression(curr->second, opToken, Move(left));
+					left = MakeUnique<ASTBinaryExpression>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+						prevOpToken, prev, left);
+				}
+				else
+				{
+					left = ParseExpression(curr->second, opToken, Move(left));
+				}
+			}
+			else if (prec == curr->second)
+			{
+				if (prev)
+				{
+					left = MakeUnique<ASTBinaryExpression>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+						prevOpToken, prev, left);
+				}
+
+				left = ParseExpression(curr->second, opToken, Move(left));
+			}
+			else if (prec > curr->second)
+			{
+				temp.Reset();
+				return left;
+			}
+		}
+
+		temp.Update();
+		GetNextToken();
+		curr = s_HashMap_OperatorPriority.find(m_CurrToken);
+		if (curr == s_HashMap_OperatorPriority.end())
+		{
+			temp.Reset();
+			break;
+		}
+	}
+
+	if (left && right)
+	{
+		return MakeUnique<ASTBinaryExpression>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
+			currToken, left, right);
+	}
+	else if (left)
+	{
+		return left;
+	}
+
+	return right;
 }
 
 Unique<ASTBase> Parse::ParsePrimary()
@@ -1602,6 +1725,7 @@ Unique<ASTBase> Parse::ParseLeftParentheses()
 	else
 	{
 		expression = ParseExpression();
+		GetNextToken();
 		if (m_CurrToken == HazeToken::RightParentheses || m_LeftParenthesesExpressionCount == 0)
 		{
 			if (m_LeftParenthesesExpressionCount > 0)

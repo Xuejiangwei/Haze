@@ -707,12 +707,9 @@ public:
 							x_uint64 address = (x_uint64)(stack);
 							memcpy(&stack->m_StackMain[stack->m_ESP], &address, sizeof(address));
 
-							address = (x_uint64)(&ExeHazePointerFunction);
-							memcpy(&stack->m_StackMain[stack->m_ESP + sizeof(address)], &address, sizeof(address));
-
 							g_HazeLibManager->ExecuteDLLFunction(oper[1].Variable.Name, oper[0].Variable.Name,
 								&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], retRegister->Data.begin()._Unwrapped(),
-								stack, &ExeHazePointerFunction);
+								stack);
 						}
 
 						stack->m_ESP -= (oper[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
@@ -840,7 +837,9 @@ public:
 		if (oper.size() == 2)
 		{
 			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
-			CompareValueByType(GetStrongerType(oper[0].Variable.Type.PrimaryType, oper[1].Variable.Type.PrimaryType),
+			auto strongerType = GetStrongerType(oper[0].Variable.Type.PrimaryType, oper[1].Variable.Type.PrimaryType);
+			CompareValueByType(strongerType != HazeValueType::None ? strongerType : 
+				(GetSizeByHazeType(oper[0].Variable.Type.PrimaryType) == GetSizeByHazeType(oper[1].Variable.Type.PrimaryType)) ? oper[0].Variable.Type.PrimaryType : HazeValueType::None,
 				cmpRegister, GetOperatorAddress(stack, oper[0]), GetOperatorAddress(stack, oper[1]));
 		}
 
@@ -1189,13 +1188,13 @@ private:
 		}
 	}
 
-	static void ExeHazePointerFunction(void* stackPointer, void* value, int paramNum, ...)
+	/*static void ExeHazePointerFunction(void* stackPointer, void* value, int paramNum, ...)
 	{
 		va_list args;
 		va_start(args, paramNum);
 		CallHazeFunction((HazeStack*)stackPointer, (FunctionData*)value, paramNum, args);
 		va_end(args);
-	}
+	}*/
 
 	//只能C++多参数函数调用
 	static void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, int paramNum, va_list& args)

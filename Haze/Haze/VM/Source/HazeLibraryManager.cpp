@@ -11,6 +11,7 @@
 
 #include <Windows.h>
 	#define HAZE_LOAD_DLL(X) (void*)LoadLibrary(X)
+	#define HAZE_LOAD_DLL_EX(X) (void*)LoadLibraryExW(X, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH)
 	#define HAZE_UNLOAD_DLL(X) FreeLibrary((HINSTANCE)X)
 	#define HAZE_GET_DLL_FUNCTION(X, m_Name) GetProcAddress((HINSTANCE)X, m_Name)
 #endif // _WIN32
@@ -34,7 +35,7 @@ HazeLibraryManager::~HazeLibraryManager()
 }
 
 void HazeLibraryManager::ExecuteDLLFunction(const HString& moduleName, const HString& functionName, 
-	char* paramStartAddress, char* retStartAddress, void* stack, void(*ExeHazeFunctionCall)(void*, void*, int, ...))
+	char* paramStartAddress, char* retStartAddress, void* stack)
 {
 	auto iter = m_Libraries.find(moduleName);
 	if (iter != m_Libraries.end())
@@ -42,7 +43,7 @@ void HazeLibraryManager::ExecuteDLLFunction(const HString& moduleName, const HSt
 		ExeFuncType func = (ExeFuncType)HAZE_GET_DLL_FUNCTION(iter->second.Address, "ExecuteFunction");
 		if (func)
 		{
-			if (func(functionName.c_str(), paramStartAddress, retStartAddress, stack, ExeHazeFunctionCall) == EXE_FUNC_ERR)
+			if (func(functionName.c_str(), paramStartAddress, retStartAddress, stack) == EXE_FUNC_ERR)
 			{
 				HAZE_LOG_ERR_W("执行三方库<%s>中函数<%s>返回错误代码!\n", moduleName.c_str(), functionName.c_str());
 			}
@@ -60,14 +61,15 @@ void HazeLibraryManager::LoadDLLLibrary(const HString& libraryPath, const HStrin
 	if (iter == m_Libraries.end())
 	{
 		auto m_Name = GetModuleNameByFilePath(filePath);
-		auto Address = HAZE_LOAD_DLL(libraryPath.c_str());
+		auto Address = HAZE_LOAD_DLL_EX(libraryPath.c_str());
 		if (Address != nullptr)
 		{
 			m_Libraries[m_Name] = { LibraryLoadState::Load,  Address, std::move(libraryPath), std::move(filePath) };
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("导入三方库<%s>失败!\n", libraryPath.c_str());
+			auto error = GetLastError();
+			HAZE_LOG_ERR_W("导入三方库<%s>失败, 错误码<%d>!\n", libraryPath.c_str(), error);
 		}
 	}
 }
