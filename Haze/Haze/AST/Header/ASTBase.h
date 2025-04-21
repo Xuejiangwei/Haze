@@ -137,6 +137,8 @@ public:
 	HazeSectionSignal GetSectionSingal() const { return m_SectionSignal; }
 
 protected:
+	Share<CompilerValue> TryAssign(Share<CompilerValue> var, const x_HChar* errorPrefix);
+
 	HazeSectionSignal m_SectionSignal;
 	Unique<ASTBase> m_Expression;
 };

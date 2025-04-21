@@ -14,6 +14,10 @@ public:
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 
+	const char* GetMember(const x_HChar* memberName);
+
+	void SetMember(const x_HChar* memberName, void* value);
+
 private:
 	static void GetOffset(HAZE_STD_CALL_PARAM);
 

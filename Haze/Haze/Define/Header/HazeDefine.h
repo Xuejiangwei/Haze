@@ -24,8 +24,8 @@ using HString = std::wstring;
 #define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
 
 
-#define HAZE_LIB_FOLDER					H_TEXT("¿â\\")
-#define HAZE_DLL_LIB_FOLDER				H_TEXT("¶¯Ì¬¿â\\")
+#define HAZE_THIRD_LIB_FOLDER			H_TEXT("¿â")
+#define HAZE_THIRD_DLL_LIB_FOLDER		H_TEXT("¶¯Ì¬¿â")
 #define HAZE_FILE_SUFFIX				H_TEXT(".hz")
 #define HAZE_FILE_INTER_SUFFIX			H_TEXT(".Hzic")
 #define HAZE_FILE_INTER					H_TEXT("Intermediate\\")

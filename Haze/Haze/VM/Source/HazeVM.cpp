@@ -64,7 +64,7 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 
 	for (auto& iter : Vector_ModulePath)
 	{
-		if (!ParseFile(iter))
+		if (ParseFile(iter).empty())
 		{
 			return false;
 		}
@@ -142,6 +142,11 @@ void HazeVM::CallFunction(const FunctionData* functionData, ...)
 	va_end(args);
 }
 
+void HazeVM::CallFunction(const FunctionData* functionData, va_list& args)
+{
+	CallHazeFunction(m_Stack.get(), functionData, args);
+}
+
 ObjectClass* HazeVM::CreateObjectClass(const HString& className, ...)
 {
 	auto hazeClass = FindClass(className);
@@ -190,7 +195,7 @@ bool HazeVM::ParseString(const x_HChar* moduleName, const x_HChar* moduleCode)
 	return true;
 }
 
-bool HazeVM::ParseFile(const HString& FilePath)
+HString HazeVM::ParseFile(const HString& FilePath)
 {
 	bool PopCurrModule = false;
 	std::filesystem::path path(FilePath); 
@@ -204,7 +209,7 @@ bool HazeVM::ParseFile(const HString& FilePath)
 
 		if (!P.ParseContent())
 		{
-			return false;
+			return HString();
 		}
 		m_Compiler->FinishModule();
 	}
@@ -216,7 +221,7 @@ bool HazeVM::ParseFile(const HString& FilePath)
 		m_Compiler->PopCurrModule();
 	}
 
-	return true;
+	return moduleName;
 }
 
 const HString* HazeVM::GetModuleNameByCurrFunction()
@@ -251,8 +256,14 @@ int HazeVM::GetFucntionIndexByName(const HString& m_Name)
 
 const FunctionData& HazeVM::GetFunctionByName(const HString& m_Name)
 {
-	int Index = GetFucntionIndexByName(m_Name);
-	return m_FunctionTable[Index];
+	int index = GetFucntionIndexByName(m_Name);
+	return m_FunctionTable[index];
+}
+
+const FunctionData* HazeVM::GetFunctionDataByName(const HString& m_Name)
+{
+	int index = GetFucntionIndexByName(m_Name);
+	return index >= 0 ? &m_FunctionTable[index] : nullptr;
 }
 
 const ObjectString* HazeVM::GetConstantStringByIndex(int index) const

@@ -23,6 +23,36 @@ AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 	return &info;
 }
 
+const char* ObjectClass::GetMember(const x_HChar* memberName)
+{
+	HString name = memberName;
+	auto& members = m_ClassInfo->Members;
+	for (size_t i = 0; i < members.size(); i++)
+	{
+		if (members[i].Variable.Name == name)
+		{
+			return (char*)m_Data + members[i].Offset;
+		}
+	}
+
+	return nullptr;
+}
+
+void ObjectClass::SetMember(const x_HChar* memberName, void* value)
+{
+	HString name = memberName;
+	auto& members = m_ClassInfo->Members;
+	for (size_t i = 0; i < members.size(); i++)
+	{
+		if (members[i].Variable.Name == name)
+		{
+			auto size = GetSizeByHazeType(members[i].Variable.Type.PrimaryType);
+			memcpy((char*)m_Data + members[i].Offset, value, size);
+			break;
+		}
+	}
+}
+
 void ObjectClass::GetOffset(HAZE_STD_CALL_PARAM)
 {
 	ObjectClass* classObj;

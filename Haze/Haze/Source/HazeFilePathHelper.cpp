@@ -1,5 +1,6 @@
 #include "HazePch.h"
 #include <filesystem>
+#include <chrono>
 #include "HazeFilePathHelper.h"
 #include "HazeLibraryManager.h"
 
@@ -7,61 +8,49 @@ extern std::wstring g_HazeExePath;
 extern std::wstring g_MainFilePath;
 extern Unique<HazeLibraryManager> g_HazeLibManager;
 
-HString GetModuleFilePathByLibPath(const HString& moduleName, const HString* refModulePath, const HString* dir)
+HString GetModuleFilePathByLibPath(const HString& modulePath, const HString* refModulePath)
 {
-	const HString* path = g_HazeLibManager->TryGetFilePath(moduleName);
+	auto modulePackage = HazeStringSplit(modulePath, HAZE_MODULE_PATH_CONBINE);
+	const HString* path = g_HazeLibManager->TryGetFilePath(modulePackage.back());
 	if (path)
 	{
 		return *path;
 	}
 
 	HString filePath;
+	HString modulePackagePath;
+	for (auto it : modulePackage)
+	{
+		modulePackagePath += (H_TEXT("\\") + it);
+	}
+	modulePackagePath += HAZE_FILE_SUFFIX;
+
 	if (refModulePath)
 	{
-		filePath = *refModulePath + H_TEXT("\\") + moduleName + HAZE_FILE_SUFFIX;
+		filePath = *refModulePath + modulePackagePath;
 		if (std::filesystem::exists(filePath))
 		{
 			return filePath.c_str();
 		}
 	}
-
-	if (dir)
+	
+	// 可执行程序下的三方库文件路径
+	filePath = g_HazeExePath + HAZE_THIRD_LIB_FOLDER + modulePackagePath;
+	if (std::filesystem::exists(filePath))
 	{
-		auto dirs = HazeStringSplit(*dir, HAZE_MODULE_PATH_CONBINE);
-		for (size_t i = 0; i < dirs.size(); i++)
-		{
-			if (i > 0)
-			{
-				dirs[0] += H_TEXT("\\") + dirs[i];
-			}
-		}
+		return filePath.c_str();
+	}
 
-		filePath = g_HazeExePath + HAZE_LIB_FOLDER + dirs[0] + HAZE_FILE_SUFFIX;
-		if (std::filesystem::exists(filePath))
-		{
-			return filePath.c_str();
-		}
-
-		filePath = g_HazeExePath + HAZE_DLL_LIB_FOLDER + dirs[0] + HAZE_FILE_SUFFIX;
-		if (std::filesystem::exists(filePath))
-		{
-			return filePath.c_str();
-		}
-
-		if (refModulePath)
-		{
-			filePath = *refModulePath + dirs[0] + HAZE_FILE_SUFFIX;
-			if (std::filesystem::exists(filePath))
-			{
-				return filePath.c_str();
-			}
-		}
+	filePath = g_HazeExePath + HAZE_THIRD_DLL_LIB_FOLDER + modulePackagePath;
+	if (std::filesystem::exists(filePath))
+	{
+		return filePath.c_str();
 	}
 
 	return HString();
 }
 
-HString GetModuleFilePathByParentPath(const HString& parentPath, const HString& moduleName, const HString* refModulePath, const HString* dir)
+HString GetModuleFilePathByParentPath(const HString& parentPath, const HString& moduleName, const HString* refModulePath)
 {
 	const HString* path = g_HazeLibManager->TryGetFilePath(moduleName);
 	if (path)
@@ -69,7 +58,7 @@ HString GetModuleFilePathByParentPath(const HString& parentPath, const HString& 
 		return *path;
 	}
 
-	std::filesystem::path filePath = parentPath + HAZE_LIB_FOLDER + moduleName + HAZE_FILE_SUFFIX;
+	std::filesystem::path filePath = parentPath + HAZE_THIRD_LIB_FOLDER + moduleName + HAZE_FILE_SUFFIX;
 	if (std::filesystem::exists(filePath))
 	{
 		return filePath.c_str();
@@ -90,7 +79,7 @@ HString GetModuleFilePathByParentPath(const HString& parentPath, const HString& 
 		}
 	}
 
-	if (dir)
+	/*if (dir)
 	{
 		auto dirs = HazeStringSplit(*dir, HAZE_MODULE_PATH_CONBINE);
 		for (size_t i = 0; i < dirs.size(); i++)
@@ -115,23 +104,23 @@ HString GetModuleFilePathByParentPath(const HString& parentPath, const HString& 
 				return filePath.c_str();
 			}
 		}
-	}
+	}*/
 
 	return HString();
 }
 
 
-HString GetModuleFilePath(const HString& moduleName, const HString* refModulePath, const HString* dir)
+HString GetModuleFilePath(const HString& modulePath, const HString* refModulePath)
 {
-	auto path = GetModuleFilePathByLibPath(moduleName, refModulePath, dir);
-	if (path.empty())
+	auto path = GetModuleFilePathByLibPath(modulePath, refModulePath);
+	/*if (path.empty())
 	{
-		path = GetModuleFilePathByParentPath(g_MainFilePath, moduleName, refModulePath, dir);
-	}
+		path = GetModuleFilePathByParentPath(g_MainFilePath, modulePackage.back().c_str(), refModulePath);
+	}*/
 
 	if (path.empty())
 	{
-		HAZE_LOG_ERR_W("未能找到<%s>模块的文件路径!\n", moduleName.c_str());
+		HAZE_LOG_ERR_W("未能找到<%s>模块的文件路径, 来自<%s>的引用!\n", modulePath.c_str(), refModulePath->c_str());
 	}
 
 	return path;
@@ -145,4 +134,11 @@ HString GetMainBinaryFilePath()
 HString GetIntermediateModuleFile(const HString& moduleName)
 {
 	return g_MainFilePath + HAZE_FILE_INTER + moduleName + HAZE_FILE_INTER_SUFFIX;
+}
+
+x_uint64 GetFileLastTime(const HString& filePath)
+{
+	auto time = std::filesystem::last_write_time(filePath);
+	auto sysTime = std::chrono::clock_cast<std::chrono::system_clock>(time);
+	return std::chrono::duration_cast<std::chrono::milliseconds>(sysTime.time_since_epoch()).count();
 }

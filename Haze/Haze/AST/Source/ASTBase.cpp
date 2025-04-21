@@ -184,7 +184,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 		param.push_back(m_FunctionParam[i]->CodeGen());
 		if (!param.back())
 		{
-			HAZE_LOG_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误!\n", m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
+			AST_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误", m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
 			return nullptr;
 		}
 	}
@@ -330,8 +330,7 @@ Share<CompilerValue> ASTVariableDefine::CodeGen()
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
-
-	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue(var)) : var;
+	return TryAssign(var, H_TEXT("变量"));
 }
 
 Share<CompilerValue> ASTVariableDefine::GenExpressionValue(Share<CompilerValue> value)
@@ -355,6 +354,36 @@ Share<CompilerValue> ASTVariableDefine::GenExpressionValue(Share<CompilerValue> 
 	}
 
 	return exprValue;
+}
+
+Share<CompilerValue> ASTVariableDefine::TryAssign(Share<CompilerValue> var, const x_HChar* errorPrefix)
+{
+	if (var)
+	{
+		if (m_Expression)
+		{
+			auto v = GenExpressionValue(var);
+			if (v)
+			{
+				return m_Compiler->CreateMov(var, v);
+			}
+			else
+			{
+				AST_ERR_W("%s<%s>定义赋值右边表达式错误", errorPrefix, m_DefineVariable.Name.c_str());
+			}
+		}
+		else
+		{
+			return var;
+		}
+
+	}
+	else
+	{
+		AST_ERR_W("%s<%s>定义错误", errorPrefix, m_DefineVariable.Name.c_str());
+	}
+
+	return nullptr;
 }
 
 ASTVariableDefine_MultiVariable::ASTVariableDefine_MultiVariable(Compiler* compiler, const SourceLocation& location)
@@ -385,8 +414,7 @@ Share<CompilerValue> ASTVariableDefine_Class::CodeGen()
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
-
-	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue(var)) : var;
+	return TryAssign(var, H_TEXT("类变量"));
 }
 
 ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
@@ -405,7 +433,7 @@ Share<CompilerValue> ASTVariableDefine_Array::CodeGen()
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr, m_ArrayDimension);
 
-	return m_Expression ? m_Compiler->CreateMov(var, GenExpressionValue(var)) : var;
+	return TryAssign(var, H_TEXT("数组变量"));
 }
 
 ASTVariableDefine_Function::ASTVariableDefine_Function(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
@@ -433,7 +461,7 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen()
 		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->m_DefineVariable.Name);
 		if (!function)
 		{
-			HAZE_LOG_ERR_W("未能找到变量<%s>,当前函数<%s>!\n", m_DefineVariable.Name.c_str(),
+			AST_ERR_W("未能找到变量<%s>,当前函数<%s>", m_DefineVariable.Name.c_str(),
 				m_SectionSignal == HazeSectionSignal::Local ? m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : H_TEXT("None"));
 			return nullptr;
 		}
@@ -571,7 +599,7 @@ Share<CompilerValue> ASTGetAddress::CodeGen()
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("未能找到函数<%s>去获得函数地址!\n", m_Expression->GetName());
+			AST_ERR_W("未能找到函数<%s>去获得函数地址", m_Expression->GetName());
 		}
 	}
 	else
@@ -587,17 +615,24 @@ ASTNeg::ASTNeg(Compiler* compiler, const SourceLocation& location, Unique<ASTBas
 
 Share<CompilerValue> ASTNeg::CodeGen()
 {
-	Share<CompilerValue> ret = nullptr;
-	if (m_IsNumberNeg)
+	auto v = m_Expression->CodeGen();
+	if (v)
 	{
-		ret = m_Compiler->CreateNeg(nullptr, m_Expression->CodeGen());
+		if (m_IsNumberNeg)
+		{
+			return m_Compiler->CreateNeg(nullptr, v);
+		}
+		else
+		{
+			return m_Compiler->CreateBitNeg(nullptr, v);
+		}
 	}
 	else
 	{
-		ret = m_Compiler->CreateBitNeg(nullptr, m_Expression->CodeGen());
+		AST_ERR_W("<%s>取负错误", m_Expression->GetName());
 	}
 	
-	return ret;
+	return nullptr;
 }
 
 ASTNullPtr::ASTNullPtr(Compiler* compiler, const SourceLocation& location) : ASTBase(compiler, location) {}
@@ -618,7 +653,16 @@ ASTNot::ASTNot(Compiler* compiler, const SourceLocation& location, Unique<ASTBas
 Share<CompilerValue> ASTNot::CodeGen()
 {
 	auto value = m_Expression->CodeGen();
-	return m_Compiler->CreateNot(nullptr, value);
+	if (value)
+	{
+		return m_Compiler->CreateNot(nullptr, value);
+	}
+	else
+	{
+		AST_ERR_W("<%s>取反错误", m_Expression->GetName());
+	}
+
+	return nullptr;
 }
 
 
@@ -628,7 +672,17 @@ ASTInc::ASTInc(Compiler* compiler, const SourceLocation& location, Unique<ASTBas
 Share<CompilerValue> ASTInc::CodeGen()
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
-	return m_Compiler->CreateInc(m_Expression->CodeGen(), m_IsPreInc);
+	auto value = m_Expression->CodeGen();
+	if (value)
+	{
+		return m_Compiler->CreateInc(value, m_IsPreInc);
+	}
+	else
+	{
+		AST_ERR_W("<%s>自加错误", m_Expression->GetName());
+	}
+
+	return nullptr;
 }
 
 ASTDec::ASTDec(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isPreDec)
@@ -637,7 +691,18 @@ ASTDec::ASTDec(Compiler* compiler, const SourceLocation& location, Unique<ASTBas
 Share<CompilerValue> ASTDec::CodeGen()
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
-	return m_Compiler->CreateDec(m_Expression->CodeGen(), m_IsPreDec);
+	auto value = m_Expression->CodeGen();
+	if (value)
+	{
+		return m_Compiler->CreateDec(value, m_IsPreDec);
+
+	}
+	else
+	{
+		AST_ERR_W("<%s>自减错误", m_Expression->GetName());
+	}
+
+	return nullptr;
 }
 
 
@@ -693,6 +758,7 @@ void ASTBinaryExpression::SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, Comp
 Share<CompilerValue> ASTBinaryExpression::CodeGen()
 {
 #define BINARYOPER(OPER) m_Compiler->Create##OPER(m_AssignToAst ? m_AssignToAst->CodeGen() : nullptr, left, right);
+#define ASSERT_GEN(V, AST) auto V = AST; if (!V) return nullptr
 
 	m_Compiler->InsertLineCount(m_Location.Line);
 
@@ -712,138 +778,144 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen()
 	{
 		case HazeToken::Add:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(Add);
 		}
 		case HazeToken::Sub:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(Sub);
 		}
 		case HazeToken::Mul:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(Mul);
 		}
 		case HazeToken::Div:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(Div);
 		}
 		case HazeToken::Inc:
-			return m_Compiler->CreateInc(m_LeftAST->CodeGen(), false);
+		{
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			return m_Compiler->CreateInc(left, false);
+		}
 		case HazeToken::Dec:
-			return m_Compiler->CreateDec(m_LeftAST->CodeGen(), false);
+		{
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			return m_Compiler->CreateDec(left, false);
+		}
 		case HazeToken::Mod:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return m_Compiler->CreateMod(nullptr, left, right);
 		}
 		case HazeToken::Not:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return m_Compiler->CreateNot(left, right);
 		}
 		case HazeToken::Shl:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(Shl);
 		}
 		case HazeToken::Shr:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(Shr);
 		}
 		case HazeToken::BitAnd:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(BitAnd);
 		}
 		case HazeToken::BitOr:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(BitOr);
 		}
 		case HazeToken::BitXor:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			return BINARYOPER(BitXor);
 		}
 		case HazeToken::Assign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateMov(left, right);
 		}
 		case HazeToken::AddAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateAdd(left, left, right);
 		}
 		case HazeToken::SubAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateSub(left, left, right);
 		}
 		case HazeToken::MulAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateMul(left, left, right);
 		}
 		case HazeToken::DivAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateDiv(left, left, right);
 		}
 		case HazeToken::ModAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateMod(left, left, right);
 		}
 		case HazeToken::BitAndAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateBitAnd(left, left, right);
 		}
 		case HazeToken::BitOrAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateBitOr(left, left, right);
 		}
 		case HazeToken::BitXorAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateBitXor(left, left, right);
 		}
 		case HazeToken::ShlAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateShl(left, left, right);
 		}
 		case HazeToken::ShrAssign:
 		{
-			auto right = m_RightAST->CodeGen();
-			auto left = m_LeftAST->CodeGen();
+			ASSERT_GEN(right, m_RightAST->CodeGen());
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
 			return m_Compiler->CreateShr(left, left, right);
 		}
 		case HazeToken::And:
@@ -935,8 +1007,8 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen()
 		case HazeToken::Less:
 		case HazeToken::LessEqual:
 		{
-			auto left = m_LeftAST->CodeGen();
-			auto right = m_RightAST->CodeGen();
+			ASSERT_GEN(left, m_LeftAST->CodeGen());
+			ASSERT_GEN(right, m_RightAST->CodeGen());
 			auto retValue = m_Compiler->CreateIntCmp(left, right);
 			if (m_LeftBlock || m_RightBlock)
 			{
@@ -1003,7 +1075,17 @@ ASTImportModule::ASTImportModule(Compiler* compiler, const SourceLocation& locat
 
 Share<CompilerValue> ASTImportModule::CodeGen()
 {
-	m_Compiler->AddImportModuleToCurrModule(m_Compiler->ParseModule(m_ModulePath));
+	auto m = m_Compiler->ParseModule(m_ModulePath);
+	if (m)
+	{
+		m_Compiler->AddImportModuleToCurrModule(m);
+	}
+	else
+	{
+		AST_ERR_W("引<%s>模块错误", m_ModulePath.c_str());
+		m_Compiler->MarkCompilerError();
+	}
+
 	return nullptr;
 }
 
@@ -1143,7 +1225,7 @@ Share<CompilerValue> ASTForExpression::CodeGen()
 
 	if (!m_InitExpression->CodeGen())
 	{
-		HAZE_LOG_ERR_W("循环语句初始化失败!\n");
+		AST_ERR_W("循环语句初始化失败");
 		return nullptr;
 	}
 
@@ -1182,7 +1264,17 @@ ASTCast::ASTCast(Compiler* compiler, const SourceLocation& location, HazeDefineT
 
 Share<CompilerValue> ASTCast::CodeGen()
 {
-	return m_Compiler->CreateCast(m_DefineVariable.Type, m_Expression->CodeGen());
+	auto value = m_Expression->CodeGen();
+	if (value)
+	{
+		return m_Compiler->CreateCast(m_DefineVariable.Type, value);
+	}
+	else
+	{
+		AST_ERR_W("强转<%s>错误", m_Expression->GetName());
+	}
+
+	return nullptr;
 }
 
 ASTSizeOf::ASTSizeOf(Compiler* compiler, const SourceLocation& location, const HazeDefineType& type, Unique<ASTBase>& expression)
@@ -1193,15 +1285,22 @@ ASTSizeOf::ASTSizeOf(Compiler* compiler, const SourceLocation& location, const H
 
 Share<CompilerValue> ASTSizeOf::CodeGen()
 {
-	Share<CompilerValue> ret = nullptr;
 	if (m_Expression)
 	{
-		ret = m_Compiler->GetConstantValueUint64(m_Expression->CodeGen()->GetSize());
+		auto value = m_Expression->CodeGen();
+		if (value)
+		{
+			return m_Compiler->GetConstantValueUint64(value->GetSize());
+		}
+		else
+		{
+			AST_ERR_W("获得<%s>大小错误", m_Expression->GetName());
+		}
 	}
 	else
 	{
-		ret = m_Compiler->GetConstantValueUint64(m_DefineVariable.Type.GetCompilerTypeSize());
+		return m_Compiler->GetConstantValueUint64(m_DefineVariable.Type.GetCompilerTypeSize());
 	}
 
-	return ret;
+	return nullptr;
 }

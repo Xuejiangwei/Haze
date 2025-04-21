@@ -106,7 +106,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
@@ -166,6 +166,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>HazePch.h</PrecompiledHeaderFile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

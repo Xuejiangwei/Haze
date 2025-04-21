@@ -6,14 +6,12 @@
 #include "ObjectString.h"
 
 ObjectDynamicClass::ObjectDynamicClass(CustomMethods* methods, void* dataPtr)
+	: m_Methods(methods), m_Data(dataPtr)
 {
 	if (methods)
 	{
 		if (methods->IsValid())
 		{
-			m_Methods = methods;
-			m_Data = dataPtr;
-
 			m_Methods->Constructor(m_Data);
 		}
 	}

@@ -19,14 +19,14 @@
 
 //static Share<HazeCompilerFunction> s_GlobalVariebleDefine = MakeShare<HazeCompilerFunction>();
 
-static HashMap<const x_HChar*, Share<CompilerValue>> g_GlobalRegisters = {
+static HashMap<HString, Share<CompilerValue>> g_GlobalRegisters = {
 	{ RET_REGISTER, CreateVariable(nullptr, HazeValueType::Void, HazeVariableScope::Global, HazeDataDesc::RegisterRet, 0) },
 	//{ NEW_REGISTER, nullptr },
 	{ CMP_REGISTER, CreateVariable(nullptr, HazeValueType::Void, HazeVariableScope::Global, HazeDataDesc::RegisterCmp, 0) },
 };
 
 // 只用两个临时变量寄存器, 每个函数栈都要存储下这两个临时寄存器, GC时也要扫描
-static HashMap<const x_HChar*, Share<CompilerValue>> g_GlobalTempRegisters = {
+static HashMap<HString, Share<CompilerValue>> g_GlobalTempRegisters = {
 	/*{ TEMP_REGISTER_A, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
 	{ TEMP_REGISTER_B, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
@@ -49,7 +49,7 @@ static HashMap<const x_HChar*, Share<CompilerValue>> g_GlobalTempRegisters = {
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },*/
 };
 
-Compiler::Compiler(HazeVM* vm) : m_VM(vm)
+Compiler::Compiler(HazeVM* vm) : m_VM(vm), m_MarkError(false)
 {
 	m_AdvanceClassInfo.clear();
 }
@@ -149,19 +149,13 @@ CompilerModule* Compiler::ParseBaseModule(const x_HChar* moduleName, const x_HCh
 
 CompilerModule* Compiler::ParseModule(const HString& modulePath)
 {
-	auto pos = modulePath.find_last_of(HAZE_MODULE_PATH_CONBINE);
-	HString moduleName;
-	if (pos == std::string::npos)
+	auto moduleName = m_VM->ParseFile(GetModuleFilePath(modulePath, &GetCurrModule()->GetPath()));
+	if (!moduleName.empty())
 	{
-		moduleName = modulePath;
-	}
-	else
-	{
-		moduleName = modulePath.substr(pos + 1);
+		return GetModule(moduleName);
 	}
 
-	m_VM->ParseFile(GetModuleFilePath(moduleName, &GetCurrModule()->GetPath(), pos == std::string::npos ? nullptr : &modulePath));
-	return GetModule(moduleName);
+	return nullptr;
 }
 
 void Compiler::FinishModule()
@@ -440,7 +434,7 @@ HashMap<const x_HChar*, Share<CompilerValue>> Compiler::GetUseTempRegister()
 	{
 		if (iter.second.use_count() >= 2)
 		{
-			registers.insert({ iter.first, iter.second });
+			registers.insert({ iter.first.c_str(), iter.second});
 		}
 	}
 
@@ -494,7 +488,7 @@ const x_HChar* Compiler::GetRegisterName(const Share<CompilerValue>& compilerReg
 	{
 		if (iter.second == compilerRegister)
 		{
-			return iter.first;
+			return iter.first.c_str();
 		}
 	}
 
@@ -502,7 +496,7 @@ const x_HChar* Compiler::GetRegisterName(const Share<CompilerValue>& compilerReg
 	{
 		if (iter.second == compilerRegister)
 		{
-			return iter.first;
+			return iter.first.c_str();
 		}
 	}
 
@@ -841,6 +835,16 @@ Share<CompilerBlock> Compiler::GetInsertBlock()
 void Compiler::ClearBlockPoint()
 {
 	m_InsertBaseBlock = nullptr;
+}
+
+bool Compiler::IsCompileError() const
+{
+	return m_MarkError;
+}
+
+void Compiler::MarkCompilerError()
+{
+	m_MarkError = true;
 }
 
 void Compiler::AddImportModuleToCurrModule(CompilerModule* compilerModule)

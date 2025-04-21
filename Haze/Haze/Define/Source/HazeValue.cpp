@@ -111,6 +111,8 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isL
 		{ HazeValueType::Float32, { HazeValueType::Float64 } },
 		{ HazeValueType::Bool, { HazeValueType::Int8, HazeValueType::UInt8, HazeValueType::Int16, HazeValueType::UInt16,
 			HazeValueType::Int32, HazeValueType::UInt32, HazeValueType::Int64, HazeValueType::UInt64 } },
+
+		{ HazeValueType::DynamicClass, { HazeValueType::UInt64 } },
 	};
 
 	if (type1 == type2)
@@ -638,11 +640,17 @@ size_t GetHazeCharPointerLength(const x_HChar* hChar)
 const x_HChar* GetHazeValueTypeString(HazeValueType type)
 {
 	extern const HashMap<HString, HazeToken>& GetHashMap_Token();
+	extern const HashMap<HString, HazeToken>& GetHashMap_MoreNumberToken();
 	static HashMap<HazeValueType, const x_HChar*> s_HashMap_Code2String;
 
 	if (s_HashMap_Code2String.size() <= 0)
 	{
 		for (auto& iter : GetHashMap_Token())
+		{
+			s_HashMap_Code2String[GetValueTypeByToken(iter.second)] = iter.first.c_str();
+		}
+
+		for (auto& iter : GetHashMap_MoreNumberToken())
 		{
 			s_HashMap_Code2String[GetValueTypeByToken(iter.second)] = iter.first.c_str();
 		}

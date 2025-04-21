@@ -193,6 +193,18 @@ static HashMap<HazeToken, int> s_HashMap_OperatorPriority =
 	//{ HazeToken::LeftParentheses, 10000 },
 };
 
+static const HashMap<HString, HazeToken> s_NumberMap = {
+		{ TOKEN_INT_8 , HazeToken::Int8 }, { TOKEN_UINT_8 , HazeToken::UInt8 }, { TOKEN_INT_16 , HazeToken::Int16 },
+		{ TOKEN_UINT_16 , HazeToken::UInt16 }, { TOKEN_INT_32 , HazeToken::Int32 }, { TOKEN_UINT_32 , HazeToken::UInt32 },
+		{ TOKEN_INT_64 , HazeToken::UInt64 }, { TOKEN_UINT_64 , HazeToken::UInt64 },
+		{ TOKEN_FLOAT_32 , HazeToken::Float32 }, { TOKEN_FLOAT_64 , HazeToken::Float64 },
+};
+
+const HashMap<HString, HazeToken>& GetHashMap_MoreNumberToken()
+{
+	return s_NumberMap;
+}
+
 struct TempCurrCode
 {
 	TempCurrCode(Parse* parse)
@@ -396,6 +408,11 @@ bool Parse::ParseContent()
 		break;
 		default:
 			PARSE_ERR_W("未能找到生成相应Token的AST处理");
+			return false;
+		}
+
+		if (m_Compiler->IsCompileError())
+		{
 			return false;
 		}
 	}
@@ -2657,13 +2674,6 @@ bool Parse::IsHazeSignalToken(const x_HChar* hChar, const x_HChar*& outChar, x_u
 
 bool Parse::IsNumberType(const HString& str, HazeToken& outToken)
 {
-	static HashMap<HString, HazeToken> s_NumberMap = {
-		{ TOKEN_INT_8 , HazeToken::Int8 }, { TOKEN_UINT_8 , HazeToken::UInt8 }, { TOKEN_INT_16 , HazeToken::Int16 },
-		{ TOKEN_UINT_16 , HazeToken::UInt16 }, { TOKEN_INT_32 , HazeToken::Int32 }, { TOKEN_UINT_32 , HazeToken::UInt32 },
-		{ TOKEN_INT_64 , HazeToken::UInt64 }, { TOKEN_UINT_64 , HazeToken::UInt64 },
-		{ TOKEN_FLOAT_32 , HazeToken::Float32 }, { TOKEN_FLOAT_64 , HazeToken::Float64 },
-	};
-
 	auto iter = s_NumberMap.find(str);
 	if (iter != s_NumberMap.end())
 	{

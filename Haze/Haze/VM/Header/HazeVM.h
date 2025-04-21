@@ -41,11 +41,13 @@ public:
 
 	void CallFunction(const FunctionData* functionData, ...);
 
+	void CallFunction(const FunctionData* functionData, va_list& args);
+
 	ObjectClass* CreateObjectClass(const HString& className, ...);
 
 	bool ParseString(const x_HChar* moduleName, const x_HChar* moduleCode);
 
-	bool ParseFile(const HString& FilePath);
+	HString ParseFile(const HString& FilePath);
 
 	Unique<Compiler>& GetCompiler() { return m_Compiler; }
 
@@ -57,6 +59,8 @@ public:
 	int GetFucntionIndexByName(const HString& m_Name);
 
 	const FunctionData& GetFunctionByName(const HString& m_Name);
+
+	const FunctionData* GetFunctionDataByName(const HString& m_Name);
 
 	const class ObjectString* GetConstantStringByIndex(int index) const;
 
