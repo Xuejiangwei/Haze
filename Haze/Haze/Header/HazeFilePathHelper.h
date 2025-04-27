@@ -7,3 +7,5 @@ HString GetMainBinaryFilePath();
 HString GetIntermediateModuleFile(const HString& moduleName);
 
 x_uint64 GetFileLastTime(const HString& filePath);
+
+bool FileExist(const HString& filePath);

@@ -46,6 +46,10 @@ private:
 
 	void Parse_I_Code();
 
+	void Parse_I_Code_ImportModule();
+
+	void Parse_I_Code_ImportTable();
+
 	void Parse_I_Code_GlobalTable();
 
 	void Parse_I_Code_StringTable();

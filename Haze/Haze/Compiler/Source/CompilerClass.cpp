@@ -1,5 +1,6 @@
 #include "HazePch.h"
 #include "CompilerClass.h"
+#include "Compiler.h"
 #include "CompilerModule.h"
 #include "CompilerFunction.h"
 #include "CompilerHelper.h"
@@ -274,6 +275,26 @@ int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HStr
 //	return nullptr;
 //}
 
+void CompilerClass::ParseIntermediateClass(HAZE_IFSTREAM& stream, CompilerModule* m, V_Array<CompilerClass*>& parents)
+{
+	for (int i = 0; i < parents.size(); i++)
+	{
+		auto& parentClass = parents[i];
+		ParseIntermediateClass(stream, m, parentClass->m_ParentClass);
+
+		HString str;
+		HazeDefineType valueType;
+		x_uint32 ui32;
+		x_uint64 ui64;
+		for (x_uint64 j = 0; j < parentClass->m_Data.size(); ++j)
+		{
+			stream >> str;
+			HazeDefineType::StringStreamFrom<Compiler>(stream, m->GetCompiler(), &Compiler::GetSymbolTableNameAddress);
+			stream >> ui32 >> ui64;
+		}
+	}
+}
+
 void CompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)
 {
 	hss << GetClassLabelHeader() << " " << m_Name << " " << m_DataSize << std::endl;
@@ -303,7 +324,7 @@ void CompilerClass::GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, x_uint32& 
 	x_uint32 startOffset = offset;
 	for (x_uint64 i = 0; i < m_Data.size(); ++i)
 	{
-		hss << m_Data[i].first << " ";
+		hss << m_Data[i].first << " " << CAST_DESC(m_Data[i].second->GetVariableDesc()) << " ";
 		m_Data[i].second->GetValueType().StringStreamTo(hss);
 
 		hss << " " << m_Offsets[i] + startOffset << " " << m_Data[i].second->GetSize() << std::endl;

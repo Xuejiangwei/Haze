@@ -34,6 +34,10 @@ public:
 
 	Compiler* GetCompiler() { return m_Compiler; }
 
+	bool NeedParse() const { return m_FS_I_Code != nullptr; }
+
+	bool ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString& moduleName);
+
 	const HString& GetName() const;
 
 	const HString& GetPath() const { return m_Path; }
@@ -171,7 +175,7 @@ private:
 
 	HazeLibraryType m_ModuleLibraryType;
 
-	HAZE_OFSTREAM m_FS_I_Code;
+	HAZE_OFSTREAM* m_FS_I_Code;
 
 	HString m_CurrClass;
 	HashMap<HString, Share<CompilerClass>> m_HashMap_Classes;

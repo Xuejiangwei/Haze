@@ -17,6 +17,12 @@ bool IsCanCastToken(HazeToken token);
 int Log2(int n);
 
 HString GetHazeClassFunctionName(const HString& className, const HString& functionName);
+HString NativeClassFunctionName(const HString& className, const HString& functionName);
+
+HString GetHazeModuleGlobalDataInitFunctionName(const HString& moduleName);
+
+const x_HChar* GetImportHeaderString();
+const x_HChar* GetImportHeaderModuleString();
 
 const x_HChar* GetGlobalDataHeaderString();
 const x_HChar* GetGlobalDataInitBlockStart();
@@ -28,6 +34,7 @@ const x_HChar* GetClassTableHeaderString();
 const x_HChar* GetClassLabelHeader();
 
 const x_HChar* GetFucntionTableHeaderString();
+const x_HChar* GetClassFunctionLabelHeader();
 const x_HChar* GetFunctionLabelHeader();
 const x_HChar* GetFunctionParamHeader();
 const x_HChar* GetFunctionVariableHeader();

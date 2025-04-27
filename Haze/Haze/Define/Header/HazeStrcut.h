@@ -202,6 +202,27 @@ struct HazeDefineType
 		return  type.CustomName && !type.CustomName->empty();
 	}*/
 
+	template<typename Class>
+	static HazeDefineType StringStreamFrom(HAZE_IFSTREAM& stream, Class* pThis, const HString*(Class::* stringCall)(const HString&))
+	{
+		HazeDefineType type;
+		stream >> *(x_uint32*)(&type.PrimaryType);
+
+		if (type.NeedSecondaryType())
+		{
+			stream >> *(x_uint32*)(&type.SecondaryType);
+		}
+
+		if (type.NeedCustomName())
+		{
+			HString str;
+			stream >> str;
+			type.CustomName = (pThis->*stringCall)(str);
+		}
+	
+		return type;
+	}
+
 	static bool StringStreamTo(HAZE_STRING_STREAM& hss, const HazeDefineType& type)
 	{
 		if (IsEnumType(type.PrimaryType))

@@ -5,8 +5,11 @@
 #include "HazeLog.h"
 
 static std::mutex g_LogMutex;
+static char s_CahceLog[512];
+static void (*s_WPrintFunction)(int type, const wchar_t* str);
+static void (*s_PrintFunction)(int type, const char* str);
 
-static void SetSystemColor(int type = 0)
+void HazeLog::SetSystemColor(int type)
 {
 	switch (type)
 	{
@@ -25,17 +28,32 @@ static void SetSystemColor(int type = 0)
 	}
 }
 
-void HazeLog::LogInfo(int type, const x_HChar* format, ...)
+void HazeLog::SetWPrintFunction(void(*wprintFunction)(int type, const wchar_t* str))
+{
+	s_WPrintFunction = wprintFunction;
+}
+
+void HazeLog::SetPrintFunction(void(*printFunction)(int type, const char* str))
+{
+	s_PrintFunction = printFunction;
+}
+
+void HazeLog::LogInfo(int type, const wchar_t* format, ...)
 {
 	std::lock_guard lock(g_LogMutex);
 
 	SetSystemColor(type);
 	va_list st;
 	va_start(st, format);
-	vwprintf(format, st);
-	//vfprintf(stdout, (char*)format, st);
+	//vwprintf(format, st);
+	vswprintf_s((x_HChar*)s_CahceLog, sizeof(s_CahceLog) / 2, format, st);
 	va_end(st);
 	SetSystemColor();
+
+	if (s_WPrintFunction)
+	{
+		s_WPrintFunction(type, (x_HChar*)s_CahceLog);
+	}
 }
 
 void HazeLog::LogInfo(int type, const char* format, ...)
@@ -45,9 +63,15 @@ void HazeLog::LogInfo(int type, const char* format, ...)
 	SetSystemColor(type);
 	va_list st;
 	va_start(st, format);
-	vfprintf(stdout, format, st);
+	//vprintf(format, st);
+	vsprintf_s(s_CahceLog, format, st);
 	va_end(st);
 	SetSystemColor();
+
+	if (s_PrintFunction)
+	{
+		s_PrintFunction(type, s_CahceLog);
+	}
 }
 
 //void HazeLog::LogInfo(int type, const HChar* format)

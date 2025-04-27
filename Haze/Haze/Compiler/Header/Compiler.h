@@ -58,7 +58,7 @@ public:
 
 	void FinishParse();
 
-	CompilerModule* ParseBaseModule(const x_HChar* moduleName, const x_HChar* moduleCode);
+	CompilerModule* ParseBaseModule(const HString& moduleName);
 
 	CompilerModule* ParseModule(const HString& modulePath);
 

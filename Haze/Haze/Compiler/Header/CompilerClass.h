@@ -38,6 +38,8 @@ public:
 
 	//const CompilerValue* GetMemberValue(uint64 index);
 
+	static void ParseIntermediateClass(HAZE_IFSTREAM& stream, CompilerModule* m, V_Array<CompilerClass*>& parents);
+
 	void GenClassData_I_Code(HAZE_STRING_STREAM& hss);
 
 	void GenClassFunction_I_Code(HAZE_STRING_STREAM& hss);

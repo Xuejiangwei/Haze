@@ -108,7 +108,12 @@ bool Compiler::InitializeCompiler(const HString& moduleName, const HString& path
 
 	m_ModuleNameStack.push_back(moduleName);
 	m_CompilerModules[moduleName] = MakeUnique<CompilerModule>(this, moduleName, path);
-	return true;
+
+	if (!m_CompilerModules[moduleName]->NeedParse())
+	{
+		PopCurrModule();
+	}
+	return m_CompilerModules[moduleName]->NeedParse();
 }
 
 void Compiler::FinishParse()
@@ -139,12 +144,22 @@ void Compiler::FinishParse()
 	}
 }
 
-CompilerModule* Compiler::ParseBaseModule(const x_HChar* moduleName, const x_HChar* moduleCode)
+CompilerModule* Compiler::ParseBaseModule(const HString& moduleName)
 {
-	m_VM->ParseString(moduleName, moduleCode);
-	m_CompilerBaseModules[moduleName] = GetModule(moduleName);
+	auto filePath = GetModuleFilePath(moduleName);
+	if (!filePath.empty())
+	{
+		m_VM->ParseFile(filePath);
+		m_CompilerBaseModules[moduleName] = GetModule(moduleName);
 
-	return m_CompilerBaseModules[moduleName];
+		return m_CompilerBaseModules[moduleName];
+	}
+	else
+	{
+		HAZE_LOG_ERR_W("解析基础模块<%s>失败，未能找到路径!\n", moduleName.c_str());
+	}
+
+	return nullptr;
 }
 
 CompilerModule* Compiler::ParseModule(const HString& modulePath)

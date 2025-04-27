@@ -176,9 +176,15 @@ void BackendParse::Parse_I_Symbol()
 
 void BackendParse::Parse_I_Code()
 {
+	x_uint64 timestamp;
+	GetNextLexmeAssign_CustomType<x_uint32>(timestamp);
+
 	//Standard lib
 	GetNextLexmeAssign_HazeString(m_CurrParseModule->m_Path);
 	GetNextLexmeAssign_CustomType<x_uint32>(m_CurrParseModule->m_LibraryType);
+
+	GetNextLexeme();
+	Parse_I_Code_ImportTable();
 
 	//Global data
 	GetNextLexeme();
@@ -195,6 +201,45 @@ void BackendParse::Parse_I_Code()
 	//Function table
 	GetNextLexeme();
 	Parse_I_Code_FunctionTable();
+}
+
+void BackendParse::Parse_I_Code_ImportModule()
+{
+	HString str;
+	if (m_CurrLexeme == GetImportHeaderString())
+	{
+		GetNextLexeme();
+		x_uint32 number = StringToStandardType<x_uint32>(m_CurrLexeme);
+
+		for (x_uint64 i = 0; i < number; i++)
+		{
+			GetNextLexeme();
+			GetNextLexeme();
+		}
+	}
+}
+
+void BackendParse::Parse_I_Code_ImportTable()
+{
+	HString str;
+	if (m_CurrLexeme == GetImportHeaderString())
+	{
+		x_uint64 count;
+		GetNextLexmeAssign_StandardType(count);
+		for (x_uint64 i = 0; i < count; i++)
+		{
+			GetNextLexeme();
+			if (m_CurrLexeme == GetImportHeaderModuleString())
+			{
+				GetNextLexmeAssign_HazeString(str);
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("后端解析失败,引用Label错误<%s>!\n", m_CurrLexeme.c_str());
+				return;
+			}
+		}
+	}
 }
 
 void BackendParse::Parse_I_Code_GlobalTable()
@@ -306,6 +351,10 @@ void BackendParse::Parse_I_Code_ClassTable()
 					auto& classMember = classData.Members[j];
 
 					GetNextLexmeAssign_HazeString(classMember.Variable.Name);
+
+					//HazeDesc
+					GetNextLexmeAssign_StandardType(number);
+					
 					classMember.Variable.Type.StringStream<BackendParse>(this,
 						&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 						&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
@@ -332,10 +381,19 @@ void BackendParse::Parse_I_Code_FunctionTable()
 		{
 			GetNextLexeme();
 
-			if (m_CurrLexeme == GetFunctionLabelHeader())
+			if (m_CurrLexeme == GetFunctionLabelHeader() || m_CurrLexeme == GetClassFunctionLabelHeader())
 			{
+				bool isNormalFunc = m_CurrLexeme == GetFunctionLabelHeader();
 				GetNextLexmeAssign_CustomType<int>(table.m_Functions[i].DescType);
-				GetNextLexmeAssign_HazeString(table.m_Functions[i].ClassName);
+				if (isNormalFunc)
+				{
+					table.m_Functions[i].ClassName = H_TEXT("None");
+				}
+				else
+				{
+					GetNextLexmeAssign_HazeString(table.m_Functions[i].ClassName);
+					GetNextLexmeAssign_CustomType<x_uint32>(number);
+				}
 				GetNextLexmeAssign_HazeString(table.m_Functions[i].Name);
 
 				table.m_Functions[i].Type.StringStream<BackendParse>(this, 

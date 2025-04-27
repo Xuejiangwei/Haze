@@ -44,6 +44,8 @@ public:
 
 	Share<CompilerBlock> GetEntryBlock() { return m_EntryBlock; }
 
+	static void ParseIntermediate(HAZE_IFSTREAM& stream, CompilerModule* m);
+
 	void GenI_Code(HAZE_STRING_STREAM& hss);
 
 	HString GenDafaultBlockName();

@@ -70,6 +70,27 @@ HString GetHazeClassFunctionName(const HString& className, const HString& functi
 	return className + HAZE_CLASS_FUNCTION_CONBINE + functionName;
 }
 
+HString NativeClassFunctionName(const HString& className, const HString& functionName)
+{
+	return functionName.substr((className + HAZE_CLASS_FUNCTION_CONBINE).length());
+}
+
+HString GetHazeModuleGlobalDataInitFunctionName(const HString& moduleName)
+{
+	return moduleName + HAZE_GLOBAL_DATA_INIT_FUNCTION;
+}
+
+const x_HChar* GetImportHeaderString()
+{
+	return HEADER_IMPORT_MODULE;
+}
+
+const x_HChar* GetImportHeaderModuleString()
+{
+	return HEADER_IMPORT_MODULE_MODULE;
+}
+
+
 const x_HChar* GetGlobalDataHeaderString()
 {
 	return HEADER_STRING_GLOBAL_DATA;
@@ -93,6 +114,11 @@ const x_HChar* GetClassLabelHeader()
 const x_HChar* GetFucntionTableHeaderString()
 {
 	return HEADER_STRING_FUNCTION_TABLE;
+}
+
+const x_HChar* GetClassFunctionLabelHeader()
+{
+	return CLASS_FUNCTION_LABEL_HEADER;
 }
 
 const x_HChar* GetFunctionLabelHeader()

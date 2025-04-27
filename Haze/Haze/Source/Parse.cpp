@@ -623,6 +623,12 @@ HazeToken Parse::GetNextToken(bool clearLexeme)
 	}
 	else if (m_CurrLexeme == HAZE_MULTI_COMMENT_START)
 	{
+		HazeIsSpace(*m_CurrCode, &bNewLine);
+		if (bNewLine)
+		{
+			IncLineCount();
+		}
+
 		s_CommentStr.resize(2);
 		while (s_CommentStr != HAZE_MULTI_COMMENT_END)
 		{
@@ -2879,10 +2885,10 @@ void Parse::IncLineCount(bool insert)
 {
 	m_LineCount++;
 
-#if HAZE_DEBUG_ENABLE
-	HChar code[20];
+#if 0
+	x_HChar code[40];
 	memcpy(code, m_CurrCode + 1, sizeof(code));
-	code[19] = '\0';
+	code[39] = '\0';
 
 	HAZE_LOG_ERR_W("Line %d %s\n", m_LineCount, code);
 #endif

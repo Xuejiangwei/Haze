@@ -208,17 +208,25 @@ void CompilerFunction::FunctionFinish()
 	}
 }
 
+void CompilerFunction::ParseIntermediate(HAZE_IFSTREAM& stream, CompilerModule* m)
+{
+	HString str;
+	stream >> str;
+
+
+	
+}
+
 void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 {
-	hss << GetFunctionLabelHeader() << " " << CAST_DESC(m_DescType) << " ";
-	
 	if (m_OwnerClass)
 	{
-		hss << m_OwnerClass->GetName();
+		hss << GetClassFunctionLabelHeader() << " " << CAST_DESC(m_DescType) << " ";
+		hss << m_OwnerClass->GetName() << " " << (x_uint32)m_ClassFunctionType;
 	}
 	else
 	{
-		hss << H_TEXT("None");
+		hss << GetFunctionLabelHeader() << " " << CAST_DESC(m_DescType);
 	}
 
 	hss << " " << GetRealName() << " ";

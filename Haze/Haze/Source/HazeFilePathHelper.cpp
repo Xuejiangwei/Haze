@@ -138,7 +138,17 @@ HString GetIntermediateModuleFile(const HString& moduleName)
 
 x_uint64 GetFileLastTime(const HString& filePath)
 {
-	auto time = std::filesystem::last_write_time(filePath);
-	auto sysTime = std::chrono::clock_cast<std::chrono::system_clock>(time);
-	return std::chrono::duration_cast<std::chrono::milliseconds>(sysTime.time_since_epoch()).count();
+	if (FileExist(filePath))
+	{
+		auto time = std::filesystem::last_write_time(filePath);
+		auto sysTime = std::chrono::clock_cast<std::chrono::system_clock>(time);
+		return std::chrono::duration_cast<std::chrono::milliseconds>(sysTime.time_since_epoch()).count();
+	}
+	
+	return 0;
+}
+
+bool FileExist(const HString& filePath)
+{
+	return std::filesystem::exists(filePath);
 }

@@ -11,6 +11,7 @@
 #include "HazeLibraryManager.h"
 #include "HazeDebuggerServer.h"
 #include "HazeDebugger.h"
+#include "HazeFilePathHelper.h"
 
 #include "HazeStack.h"
 #include "HazeMemory.h"
@@ -55,11 +56,11 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 	data.Members.push_back({ { HazeValueType::Int32, H_TEXT("A")}, 0, 4, 0 });
 	m_Compiler->PreRegisterClass(data);*/
 
-	// 提前解析基础模块
-	V_Array<HString> baseModules = HAZE_BASE_LIBS;
-	for (x_uint64 i = 0; i + 1 < baseModules.size(); i+=2)
+	// 提前解析基础模块，若临时文件夹没有中间文件，生成临时文件
+	V_Array<HString> baseModules = { HAZE_BASE_LIBRARY_STREAM_NAME, HAZE_BASE_LIBRARY_MEMORY_NAME, HAZE_BASE_LIBRARY_FILE_NAME };
+	for (x_uint64 i = 0; i < baseModules.size(); i++)
 	{
-		m_Compiler->ParseBaseModule(baseModules[i].c_str(), baseModules[i + 1].c_str());
+		m_Compiler->ParseBaseModule(baseModules[i]);
 	}
 
 	for (auto& iter : Vector_ModulePath)
@@ -149,8 +150,6 @@ void HazeVM::CallFunction(const FunctionData* functionData, va_list& args)
 
 ObjectClass* HazeVM::CreateObjectClass(const HString& className, ...)
 {
-	auto hazeClass = FindClass(className);
-
 	auto obj = HazeMemory::Alloca(sizeof(ObjectClass));
 	new(obj) ObjectClass(FindClass(className));
 
@@ -198,10 +197,11 @@ bool HazeVM::ParseString(const x_HChar* moduleName, const x_HChar* moduleCode)
 HString HazeVM::ParseFile(const HString& FilePath)
 {
 	bool PopCurrModule = false;
-	std::filesystem::path path(FilePath); 
+	std::filesystem::path path(FilePath);
 	auto dir = path.parent_path().wstring();
 	auto moduleName = path.filename().stem().wstring();
-	if (m_Compiler->InitializeCompiler(moduleName, dir))
+
+	if (m_Compiler->InitializeCompiler(moduleName, FilePath))
 	{
 		PopCurrModule = true;
 		Parse P(m_Compiler.get());

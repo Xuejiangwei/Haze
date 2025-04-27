@@ -71,24 +71,278 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 {
 #if HAZE_I_CODE_ENABLE
 
-	m_FS_I_Code.imbue(std::locale("chs"));
-	m_FS_I_Code.open(GetIntermediateModuleFile(moduleName));
-
-#endif
-
-	auto functionName = moduleName + HAZE_GLOBAL_DATA_INIT_FUNCTION;
+	auto functionName = GetHazeModuleGlobalDataInitFunctionName(moduleName);
 	HazeDefineType functionType(HazeValueType::Void);
 	V_Array<HazeDefineVariable> params;
 	m_GlobalDataFunction = CreateFunction(functionName, functionType, params);
 	m_GlobalDataFunction->m_DescType = InstructionFunctionType::HazeFunction;
+
+	auto intermediateFilePath = GetIntermediateModuleFile(moduleName);
+	bool newFS = true;
+	if (FileExist(intermediateFilePath))
+	{
+		HAZE_IFSTREAM fs(intermediateFilePath);
+		fs.imbue(std::locale("chs"));
+		x_uint64 lastTime = 1;
+		fs >> lastTime;
+
+		newFS = modulePath.empty() ? false : !(lastTime == GetFileLastTime(GetPath()));
+
+		if (!newFS)
+		{
+			newFS = !ParseIntermediateFile(fs, moduleName);
+		}
+	}
+
+	m_FS_I_Code = nullptr;
+	if (newFS)
+	{
+		m_FS_I_Code = new HAZE_OFSTREAM();
+		m_FS_I_Code->imbue(std::locale("chs"));
+		m_FS_I_Code->open(GetIntermediateModuleFile(moduleName));
+	}
+	
+#endif
 }
 
 CompilerModule::~CompilerModule()
 {
-	if (m_FS_I_Code.is_open())
+	if (m_FS_I_Code && m_FS_I_Code->is_open())
 	{
-		m_FS_I_Code.close();
+		m_FS_I_Code->close();
+		delete m_FS_I_Code;
 	}
+}
+
+bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString& moduleName)
+{
+	HString str;
+	x_uint64 ui64;
+
+	stream >> str;
+
+	if (str != GetPath())
+	{
+		return false;
+	}
+	
+	stream >> *(x_uint32*)(&m_ModuleLibraryType);
+	stream >> str;
+	if (str != GetImportHeaderString())
+	{
+		return false;
+	}
+	stream >> ui64;
+	for (int i = 0; i < ui64; i++)
+	{
+		stream >> str;
+		CompilerModule* m;
+		if (str == GetImportHeaderModuleString())
+		{
+			stream >> str;
+			m = m_Compiler->GetModule(str);
+			if (!m)
+			{
+				HAZE_LOG_ERR_W("<%s>解析临时文件失败，引入模块<%s>未能找到!\n", m_Path.c_str(), str.c_str());
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+
+		m_ImportModules.push_back(m);
+	}
+
+	stream >> str;
+	if (str != GetGlobalDataHeaderString())
+	{
+		return false;
+	}
+
+	stream >> ui64;
+	{
+		// 暂时先不处理
+		if (ui64 > 0)
+		{
+			HAZE_LOG_ERR_W("<%s>解析临时文件失败，没有读取全局数据初始化操作!\n", GetName().c_str());
+			return false;
+		}
+	}
+
+	stream >> str;
+	if (str != GetStringTableHeaderString())
+	{
+		return false;
+	}
+
+	stream >> ui64;
+	{
+		// 暂时先不处理
+		if (ui64 > 0)
+		{
+			x_uint32 ui32;
+			for (int i = 0; i < ui64; i++)
+			{
+				stream >> ui32 >> str;
+			}
+		}
+	}
+
+	stream >> str;
+	if (str != GetClassTableHeaderString())
+	{
+		return false;
+	}
+	stream >> ui64;
+	for (int i = 0; i < ui64; i++)
+	{
+		stream >> str;
+		if (str != GetClassLabelHeader())
+		{
+			return false;
+		}
+
+		HString className;
+		stream >> className;
+
+		x_uint32 dataSize;
+		stream >> dataSize;
+		stream >> ui64;
+
+		V_Array<HString> parentName(ui64);
+		for (int j = 0; j < ui64; j++)
+		{
+			stream >> parentName[j];
+		}
+
+		x_uint32 memberCount;
+		stream >> memberCount;
+
+		V_Array<CompilerClass*> parentClass;
+		for (int j = 0; j < parentName.size(); j++)
+		{
+			parentClass.push_back(GetClass(parentName[j]).get());
+		}
+
+		CompilerClass::ParseIntermediateClass(stream, this, parentClass);
+
+		V_Array<Pair<HString, Share<CompilerValue>>> classData(memberCount);
+		for (x_uint32 j = 0; j < memberCount; ++j)
+		{
+			HazeDataDesc desc;
+			stream >> classData[j].first >> *((x_uint32*)(&desc));
+			auto memberType = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+
+			x_uint32 ui32;
+			stream >> ui32 >> ui64;
+
+
+			//暂时设置成员变量为公有的
+			classData[i].second = CreateVariable(this, memberType, HazeVariableScope::None, desc, 0);
+		}
+
+		Share<CompilerClass> compilerClass = CreateClass(className, parentClass, classData);
+
+		 //= CompilerClass::ParseIntermediateClass(stream, this, parentName);
+		if (compilerClass)
+		{
+			m_HashMap_Classes[compilerClass->GetName()] = compilerClass;
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("<%s>解析临时文件失败，未能找到第<%d>个类!\n", GetName().c_str(), i);
+			return false;
+		}
+	}
+
+	stream >> str;
+	if (str != GetFucntionTableHeaderString())
+	{
+		return false;
+	}
+	stream >> ui64;// 包括类函数和普通函数
+
+	//全局数据初始化函数先不解析
+	//m_GlobalDataFunction->GenI_Code(hss);
+
+
+	V_Array<HazeDefineVariable> params;
+	stream >> str;
+	while (str == GetClassFunctionLabelHeader() || str == GetFunctionLabelHeader())
+	{
+		bool isNormalFunc = str == GetFunctionLabelHeader();
+		HString name;
+		int descType;
+		stream >> descType;
+
+		if (isNormalFunc)
+		{
+			stream >> name;
+			auto type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+
+			params.clear();
+
+			stream >> str;
+			while (str == GetFunctionParamHeader())
+			{
+				params.resize(params.size() + 1);
+				stream >> params.back().Name;
+				params.back().Type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+				stream >> str;
+			}
+
+			while (str != GetFunctionEndHeader())
+			{
+				stream >> str;
+			}
+
+			stream >> ui64;
+
+			if (name == m_GlobalDataFunction->GetName())
+			{
+				
+			}
+			else
+			{
+				CreateFunction(name, type, params);
+			}
+		}
+		else
+		{
+			stream >> str;
+			auto compilerClass = GetClass(str);
+
+			x_uint32 functionAttrType;
+			stream >> functionAttrType;
+
+			stream >> name;
+			auto type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+
+			params.clear();
+
+			stream >> str;
+			while (str == GetFunctionParamHeader())
+			{
+				params.resize(params.size() + 1);
+				stream >> params.back().Name;
+				params.back().Type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+			}
+
+			while (str != GetFunctionEndHeader())
+			{
+				stream >> str;
+			}
+
+			stream >> ui64;
+			CreateFunction(compilerClass, (ClassCompilerFunctionType)functionAttrType, NativeClassFunctionName(compilerClass->GetName(), name), type, params);
+		}
+
+		stream >> str;
+	}
+
+	return true;
 }
 
 const HString& CompilerModule::GetName() const
@@ -105,10 +359,10 @@ void CompilerModule::RestartTemplateModule(const HString& moduleName)
 {
 #if HAZE_I_CODE_ENABLE
 	
-	if (!m_IsGenTemplateCode)
+	if (m_FS_I_Code && !m_IsGenTemplateCode)
 	{
-		m_FS_I_Code.imbue(std::locale("chs"));
-		m_FS_I_Code.open(GetIntermediateModuleFile(moduleName));
+		m_FS_I_Code->imbue(std::locale("chs"));
+		m_FS_I_Code->open(GetIntermediateModuleFile(moduleName));
 		m_IsGenTemplateCode = true;
 	}
 
@@ -125,10 +379,10 @@ void CompilerModule::GenCodeFile()
 #if HAZE_I_CODE_ENABLE
 
 	//生成中间代码先不需要计算symbol table表中的偏移，等统一生成字节码时在进行替换，模板会重新打开文件流。
-	if (m_FS_I_Code.is_open())
+	if (m_FS_I_Code && m_FS_I_Code->is_open())
 	{
 		GenICode();
-		m_FS_I_Code.close();
+		m_FS_I_Code->close();
 	}
 
 #endif
@@ -966,6 +1220,7 @@ x_uint32 CompilerModule::GetClassSize(const HString& className)
 void CompilerModule::GenICode()
 {
 	HAZE_STRING_STREAM hss;
+	hss << GetFileLastTime(m_Path) << std::endl;
 
 	//版本 2个字节
 	//FS_Ass << "1 1" << std::endl;
@@ -984,6 +1239,22 @@ void CompilerModule::GenICode()
 	}
 
 	hss << (x_uint32)m_ModuleLibraryType << std::endl;
+	
+	hss << GetImportHeaderString() << std::endl;
+	hss << m_ImportModules.size() << std::endl;
+	for (int i = 0; i < m_ImportModules.size(); i++)
+	{
+		if (!m_ImportModules[i]->GetPath().empty())
+		{
+			hss << GetImportHeaderModuleString() << " " << m_ImportModules[i]->GetPath() << std::endl;
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("生成引用表失败, <%s>模块的引用路径为空!", m_ImportModules[i]->GetName().c_str());
+			return;
+		}
+	}
+
 	/*
 	*	全局数据 ：	个数
 	*				数据名 数据类型 数据
@@ -1067,7 +1338,7 @@ void CompilerModule::GenICode()
 		}
 	}
 
-	m_FS_I_Code << hss.str();
+	*m_FS_I_Code << hss.str();
 
 	if (m_IsGenTemplateCode)
 	{

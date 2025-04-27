@@ -39,6 +39,9 @@ using HString = std::wstring;
 #define HAZE_CONSTANT_STRING_NAME		H_TEXT("常字符串指针")
 #define HAZE_MULTI_PARAM_NAME			H_TEXT("多参数")
 
+#define HEADER_IMPORT_MODULE			H_TEXT("ImportModuleTable")
+#define HEADER_IMPORT_MODULE_MODULE		H_TEXT("ImportModule")
+
 #define HEADER_STRING_GLOBAL_DATA		H_TEXT("GlobalDataTable")
 
 #define HEADER_STRING_STRING_TABLE		H_TEXT("StringTable")
@@ -46,6 +49,7 @@ using HString = std::wstring;
 #define HEADER_STRING_FUNCTION_TABLE	H_TEXT("FunctionTable")
 
 #define CLASS_LABEL_HEADER				H_TEXT("Class")
+#define CLASS_FUNCTION_LABEL_HEADER		H_TEXT("CFunction")
 #define FUNCTION_LABEL_HEADER			H_TEXT("Function")
 #define FUNCTION_PARAM_HEADER			H_TEXT("Param")
 #define FUNCTION_START_HEADER			H_TEXT("FunctionStart")
