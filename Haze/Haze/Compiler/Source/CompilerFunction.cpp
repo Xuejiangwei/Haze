@@ -294,7 +294,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	m_EntryBlock->GenI_Code(hss);
 
-	hss << std::endl << GetFunctionEndHeader() << " " << m_EndLine << std::endl << std::endl;
+	hss << GetFunctionEndHeader() << " " << m_EndLine << std::endl << std::endl;
 
 	m_EntryBlock->ClearLocalVariable();
 }

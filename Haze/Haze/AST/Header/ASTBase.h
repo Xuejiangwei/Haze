@@ -317,14 +317,19 @@ public:
 
 	virtual Share<CompilerValue> CodeGen() override;
 
-	void SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, CompilerBlock* rightJmpBlock);
+	void SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, CompilerBlock* rightJmpBlock, ASTBinaryExpression* parentAst);
+
+	CompilerBlock* TryShortCircuit(ASTBinaryExpression* ast);
 
 	void SetAssignToAst(ASTBase* assignToAst) { m_AssignToAst = assignToAst; }
 
 private:
+	void SetChildBlock();
+
+private:
 	HazeSectionSignal m_SectionSignal;
 	HazeToken m_OperatorToken;
-
+	
 	Unique<ASTBase> m_LeftAST;
 	Unique<ASTBase> m_RightAST;
 
@@ -332,7 +337,8 @@ private:
 
 	CompilerBlock* m_LeftBlock;
 	CompilerBlock* m_RightBlock;
-	CompilerBlock* m_DefaultBlock;
+	ASTBinaryExpression* m_ParentAst;
+	Share<CompilerBlock> m_ShortCircuitBlock;
 };
 
 //三目表达式

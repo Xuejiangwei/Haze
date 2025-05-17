@@ -2,6 +2,7 @@
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
 #include "CompilerModule.h"
+#include "CompilerHelper.h"
 
 CompilerEnum::CompilerEnum(CompilerModule* compilerModule, const HString& name, HazeValueType parentType)
 	: m_Module(compilerModule), m_Name(name), m_ParentType(parentType)
@@ -50,4 +51,16 @@ Share<CompilerEnumValue> CompilerEnum::GetEnumValueByIndex(x_uint64 index)
 	}
 
 	return nullptr;
+}
+
+void CompilerEnum::GenEnum_I_Code(HAZE_STRING_STREAM& hss)
+{
+	hss << GetEnumStartHeader() << HAZE_ENDL;
+	for (auto& it : m_EnumValues)
+	{
+		hss << it.first << " ";
+		HazeCompilerStream(hss, it.second);
+		hss << HAZE_ENDL;
+	}
+	hss << GetEnumEndHeader() << HAZE_ENDL_D;
 }

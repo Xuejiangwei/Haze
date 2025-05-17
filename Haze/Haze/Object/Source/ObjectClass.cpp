@@ -17,8 +17,8 @@ AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
 	//info.Functions[H_TEXT("Éú³É")] = { &ObjectArray::NewObjectArray, HazeValueType::Void, { HazeValueType::MultiVariable } };
-	info.Functions[HAZE_ADVANCE_GET_FUNCTION] = { &ObjectClass::GetOffset, HazeValueType::Void, { HazeValueType::UInt64 } };
-	info.Functions[HAZE_ADVANCE_SET_FUNCTION] = { &ObjectClass::SetOffset, HazeValueType::Void, { HazeValueType::UInt64, HazeValueType::MultiVariable } };
+	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectClass::GetOffset, HazeValueType::Void, { HazeValueType::UInt64 } });
+	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectClass::SetOffset, HazeValueType::Void, { HazeValueType::UInt64, HazeValueType::MultiVariable } });
 
 	return &info;
 }

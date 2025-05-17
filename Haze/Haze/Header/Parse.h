@@ -80,6 +80,8 @@ private:
 
 	Unique<ASTBase> ParseNot();
 
+	Unique<ASTBase> ParseLeftBrace();
+
 	Unique<ASTBase> ParseLeftParentheses();
 
 	//Unique<ASTBase> ParsePointerValue();
@@ -125,7 +127,9 @@ private:
 private:
 	Unique<ASTFunction> ParseFunction(const HString* className = nullptr);
 
-	bool ExpectNextTokenIs(HazeToken token, const x_HChar* errorInfo = nullptr);
+	bool ExpectNextTokenIs(HazeToken token, const x_HChar* errorInfo = nullptr, bool parseError = true);
+
+	bool ExpectNextTokenIs_NoParseError(HazeToken token) { return ExpectNextTokenIs(token, nullptr, false); };
 
 	bool NextTokenNotIs(HazeToken token) { return GetNextToken() != token; }
 
@@ -162,6 +166,7 @@ private:
 	int m_LeftParenthesesExpressionCount;
 	x_uint32 m_LineCount;
 
+	bool m_IsParseError;
 	bool m_IsParseClassData_Or_FunctionParam;
 	bool m_IsParseArray;
 	bool m_IsParseTemplate;

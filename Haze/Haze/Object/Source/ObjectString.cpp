@@ -31,11 +31,9 @@ ObjectString::~ObjectString()
 AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	info.Functions[H_TEXT("接")] = { &ObjectString::Append, HazeValueType::Void, { HazeValueType::String } };
+	info.Add(H_TEXT("接"), { &ObjectString::Append, HazeValueType::Void, { HazeValueType::String } });
+	info.Add(H_TEXT("格式化"), { &ObjectString::Format, HazeValueType::String, { HazeValueType::String, HazeValueType::MultiVariable } });
 
-
-	info.Functions[H_TEXT("格式化")] = { &ObjectString::Format, HazeValueType::String,
-		{ HazeValueType::String, HazeValueType::MultiVariable } };
 	return &info;
 }
 

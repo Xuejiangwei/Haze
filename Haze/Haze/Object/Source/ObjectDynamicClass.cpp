@@ -29,9 +29,9 @@ ObjectDynamicClass::~ObjectDynamicClass()
 AdvanceClassInfo* ObjectDynamicClass::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	info.Functions[HAZE_CUSTOM_GET_MEMBER] = { &ObjectDynamicClass::GetMember, HazeValueType::DynamicClassUnknow, { HazeValueType::UInt64 } };
-	info.Functions[HAZE_CUSTOM_SET_MEMBER] = { &ObjectDynamicClass::SetMember, HazeValueType::Void, { HazeValueType::UInt64 } };
-	info.Functions[HAZE_CUSTOM_CALL_FUNCTION] = { &ObjectDynamicClass::CallFunction, HazeValueType::DynamicClassUnknow, { HazeValueType::UInt64, HazeValueType::MultiVariable } };
+	info.Add(HAZE_CUSTOM_GET_MEMBER, { &ObjectDynamicClass::GetMember, HazeValueType::DynamicClassUnknow, { HazeValueType::UInt64 } });
+	info.Add(HAZE_CUSTOM_SET_MEMBER, { &ObjectDynamicClass::SetMember, HazeValueType::Void, { HazeValueType::UInt64 } });
+	info.Add(HAZE_CUSTOM_CALL_FUNCTION, { &ObjectDynamicClass::CallFunction, HazeValueType::DynamicClassUnknow, { HazeValueType::UInt64, HazeValueType::MultiVariable } });
 
 	return &info;
 }

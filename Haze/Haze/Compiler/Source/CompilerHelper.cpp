@@ -570,7 +570,7 @@ HString GenIRCode(InstructionOpCode opCode, x_uint64 number)
 }
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, x_uint64 paramCount, x_uint64 paramSize, Share<CompilerFunction> function,
-	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, void* advanceFuncAddress, const HString* nameSpace)
+	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, x_int16 advanceFuncIndex, const HString* nameSpace)
 {
 	switch (opCode)
 	{
@@ -583,8 +583,8 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
 			auto& funcName = desc == HazeDataDesc::FunctionDynamicAddress ? function->GetName() : function->GetRealName();
 			hss << funcName << " " << CAST_TYPE(HazeValueType::None) << " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<
-				CAST_DESC(desc) << " " << paramCount << " " << paramSize << " " << function->GetModule()->GetName() << " "
-				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
+				CAST_DESC(desc) << " " << paramCount << " " << paramSize << HAZE_ENDL;/*<< " " << function->GetModule()->GetName() << " "
+				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;*/
 		}
 		else if (pointerFunction)
 		{
@@ -601,7 +601,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 
 			hss << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
 				<< CAST_SCOPE(pointerFunction->GetVariableScope()) << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
-				<< " " << paramSize << " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
+				<< " " << paramSize << HAZE_ENDL;//<< " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
 		}
 		else
 		{
@@ -616,9 +616,9 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				}
 			}
 
-			hss << varName << " " << CAST_TYPE(HazeValueType::Function) << " " << CAST_SCOPE(advancePointerTo->GetVariableScope()) << " "
-				<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " " << paramSize << " " << m->GetName() << " " 
-				<< CAST_DESC(HazeDataDesc::CallFunctionPointer) << " " << advanceFuncAddress << std::endl;
+			hss << varName << " " << CAST_TYPE(HazeValueType::ObjectFunction) << " " << CAST_SCOPE(advancePointerTo->GetVariableScope()) << " "
+				<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " " //<< paramSize << " " << m->GetName() << " " 
+				<< advanceFuncIndex << HAZE_ENDL;
 		}
 	}
 		break;

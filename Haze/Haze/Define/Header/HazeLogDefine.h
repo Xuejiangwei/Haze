@@ -20,7 +20,8 @@
 
 #define AST_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<语法分析错误>：" H_TEXT(" 【<%s>模块<%d>行】") H_TEXT(INFO) H_TEXT("!\n"), \
 							 m_Compiler->GetCurrModuleName().c_str(), m_Location.Line, \
-							 __VA_ARGS__)
+							 __VA_ARGS__); \
+							 m_Compiler->MarkCompilerError()
 
 #define GC_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<垃圾回收错误>：" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
 

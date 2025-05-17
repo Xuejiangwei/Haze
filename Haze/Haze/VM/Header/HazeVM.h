@@ -9,6 +9,8 @@ class HazeDebugger;
 class HazeStack;
 class GarbageCollection;
 class ObjectClass;
+class ObjectString;
+struct AdvanceFunctionInfo;
 
 enum class HazeRunType : x_uint8
 {
@@ -43,6 +45,8 @@ public:
 
 	void CallFunction(const FunctionData* functionData, va_list& args);
 
+	AdvanceFunctionInfo* GetAdvanceFunction(x_uint16 index); 
+
 	ObjectClass* CreateObjectClass(const HString& className, ...);
 
 	bool ParseString(const x_HChar* moduleName, const x_HChar* moduleCode);
@@ -75,6 +79,8 @@ public:
 	void RemoveGlobalValue(x_uint32 index);
 
 private:
+	void InitRegisterObjectFunction();
+
 	void InitGlobalStringCount(x_uint64 count);
 	void SetGlobalString(x_uint64 index, const HString& str);
 
@@ -117,13 +123,15 @@ private:
 	V_Array<HazeVariable> m_GlobalData;
 	V_Array<ObjectClass*> m_ExtreGlobalData;
 
-	V_Array<class ObjectString*> m_StringTable;
+	V_Array<ObjectString*> m_StringTable;
 
 	HashMap<HString, x_uint64> m_ClassSymbol;
 	V_Array<ClassData> m_ClassTable;
 
 	V_Array<FunctionData> m_FunctionTable;
 	HashMap<HString, x_uint32> m_HashFunctionTable;
+	V_Array<AdvanceFunctionInfo*> m_FunctionObjectTable;
+
 
 	V_Array<Instruction> m_Instructions;
 

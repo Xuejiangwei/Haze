@@ -42,7 +42,8 @@ enum class HazeValueType : x_uint32
 	//函数指针
 	Function,				//函数指针, 不参与GC
 	
-
+	//Object函数,
+	ObjectFunction,
 
 	__Advance_Begin,
 

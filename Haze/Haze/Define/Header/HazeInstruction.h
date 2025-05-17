@@ -63,6 +63,7 @@ enum class HazeDataDesc : x_uint32
 	Address,
 	FunctionAddress,
 	FunctionDynamicAddress,
+	FunctionObjectAddress,
 
 	Element,
 
@@ -78,7 +79,6 @@ enum class HazeDataDesc : x_uint32
 	NullPtr,
 
 	CallFunctionModule,
-	CallFunctionPointer,
 };
 
 enum class InstructionOpCode : x_uint32
@@ -148,6 +148,7 @@ enum class InstructionAddressType : x_uint8
 
 	FunctionAddress,
 	FunctionDynamicAddress,
+	FunctionObjectAddress,
 
 	Constant,
 	NullPtr,
@@ -156,8 +157,6 @@ enum class InstructionAddressType : x_uint8
 	PureString,
 
 	Register,
-
-	PointerAddress,
 };
 
 struct InstructionData
@@ -179,6 +178,12 @@ struct InstructionData
 		int ParamByteSize;
 	};
 
+	struct ObjectFunctionCall
+	{
+		int ParamNum;
+		int Index;
+	};
+
 	struct BlockJmp
 	{
 		int StartAddress;
@@ -190,8 +195,8 @@ struct InstructionData
 		int Index;
 		AddressData Address;
 		FunctionCall Call;
+		ObjectFunctionCall ObjectCall;
 		BlockJmp Jmp;
-		void* Pointer;
 		HazeValue RuntimeDynamicValue;
 
 		x_uint32 Line;

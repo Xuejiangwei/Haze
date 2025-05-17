@@ -20,6 +20,11 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 		return true;
 	}
 
+	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::ObjectFunction)
+	{
+		return true;
+	}
+
 	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::Function && 
 		(ins.Operator[0].Desc == HazeDataDesc::RegisterTemp || ins.Operator[0].Scope == HazeVariableScope::Ignore))
 	{
@@ -36,12 +41,6 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 
 static bool IsIgnoreFindAddress(InstructionData& operatorData)
 {
-	if (operatorData.Desc == HazeDataDesc::CallFunctionPointer)
-	{
-		operatorData.AddressType = InstructionAddressType::PointerAddress;
-		return true;
-	}
-
 	if (operatorData.Desc == HazeDataDesc::Constant)
 	{
 		operatorData.AddressType = InstructionAddressType::Constant;
@@ -179,6 +178,9 @@ void BackendParse::Parse_I_Code()
 	x_uint64 timestamp;
 	GetNextLexmeAssign_CustomType<x_uint32>(timestamp);
 
+	//暂时用来读取版本号
+	GetNextLexmeAssign_HazeString(m_CurrParseModule->m_Path);
+
 	//Standard lib
 	GetNextLexmeAssign_HazeString(m_CurrParseModule->m_Path);
 	GetNextLexmeAssign_CustomType<x_uint32>(m_CurrParseModule->m_LibraryType);
@@ -193,6 +195,10 @@ void BackendParse::Parse_I_Code()
 	//String table
 	GetNextLexeme();
 	Parse_I_Code_StringTable();
+
+	//Enum table
+	GetNextLexeme();
+	Parse_I_Code_EnumTable();
 
 	//Class table
 	GetNextLexeme();
@@ -310,6 +316,32 @@ void BackendParse::Parse_I_Code_StringTable()
 			GetNextLexmeAssign_HazeString(table.Strings[i].String);
 		}
 		ParseStringCount.first = false;
+	}
+}
+
+void BackendParse::Parse_I_Code_EnumTable()
+{
+	if (m_CurrLexeme == GetEnumTableLabelHeader())
+	{
+		x_uint32 number;
+		GetNextLexmeAssign_StandardType(number);
+
+		//暂不记录
+		HString str;
+		x_uint32 v;
+		for (x_uint32 i = 0; i < number; i++)
+		{
+			GetNextLexmeAssign_HazeString(str);
+			if (str == GetEnumStartHeader())
+			{
+				GetNextLexmeAssign_HazeString(str);
+				while (str != GetEnumEndHeader())
+				{
+					GetNextLexmeAssign_StandardType(v);
+					GetNextLexmeAssign_HazeString(str);
+				}
+			}
+		}
 	}
 }
 
@@ -562,7 +594,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 		InstructionData operatorTwo;
 
 		GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
-
 		GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Variable.Type.PrimaryType);
 
 		//if (IsFunctionType(operatorOne.Variable.Type.PrimaryType))
@@ -584,16 +615,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
 		}
 
-		GetNextLexmeAssign_HazeString(operatorTwo.Variable.Name);
-		GetNextLexmeAssign_CustomType<x_uint32>(operatorTwo.Desc);
-
-		if (operatorTwo.Desc == HazeDataDesc::CallFunctionPointer)
-		{
-			operatorOne.Desc = HazeDataDesc::CallFunctionPointer;
-			GetNextLexmeAssign_CustomType<void*>(operatorTwo.Extra.Pointer);
-		}
-
-		instruction.Operator = { operatorOne, operatorTwo };
+		instruction.Operator = { operatorOne };
 	}
 		break;
 	case InstructionOpCode::JMP:
@@ -865,6 +887,10 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 							{
 								operatorData.AddressType = InstructionAddressType::FunctionDynamicAddress;
 							}
+							/*else if (operatorData.Desc == HazeDataDesc::FunctionObjectAddress)
+							{
+								operatorData.AddressType = InstructionAddressType::FunctionObjectAddress;
+							}*/
 							else
 							{
 								HAZE_LOG_ERR_W("寻找忽略变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());

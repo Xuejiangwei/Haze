@@ -9,6 +9,7 @@
 #include "ObjectClass.h"
 #include "ObjectString.h"
 #include "HazeMemory.h"
+#include "Compiler.h"
 
 #include <Windows.h>
 
@@ -171,7 +172,7 @@ class InstructionProcessor
 			}
 
 			auto address = GetOperatorAddress(Stack, Data[0]);
-			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Desc != HazeDataDesc::CallFunctionPointer)
+			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Variable.Type.PrimaryType != HazeValueType::ObjectFunction)
 			{
 				memcpy(&Address, address, Data[0].Variable.Type.GetTypeSize());
 			}
@@ -207,7 +208,7 @@ class InstructionProcessor
 			}
 
 			auto address = GetOperatorAddress(Stack, Data[0]);
-			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Desc != HazeDataDesc::CallFunctionPointer)
+			if (address && !IsNoneType(Data[0].Variable.Type.PrimaryType) && Data[0].Variable.Type.PrimaryType != HazeValueType::ObjectFunction)
 			{
 				memcpy(&Address, address, Data[0].Variable.Type.GetTypeSize());
 			}
@@ -238,22 +239,22 @@ class InstructionProcessor
 			break;
 			case HazeValueType::Int64:
 			{
-				int64 v;
-				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(int64));
+				x_int64 v;
+				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(x_int64));
 				HAZE_LOG_ERR_W(" 值<%d>", v);
 			}
 			break;
 			case HazeValueType::UInt32:
 			{
-				uint32 v;
-				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(uint32));
+				x_uint32 v;
+				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(x_uint32));
 				HAZE_LOG_ERR_W(" 值<%d>", v);
 			}
 			break;
 			case HazeValueType::UInt64:
 			{
-				uint64 v;
-				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(uint64));
+				x_uint64 v;
+				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(x_uint64));
 				HAZE_LOG_ERR_W(" 值<%d>", v);
 			}
 			break;
@@ -271,7 +272,7 @@ class InstructionProcessor
 
 	private:
 		const V_Array<InstructionData>& Data;
-		uint64 Address;
+		x_uint64 Address;
 		HazeStack* Stack;
 		InstructionOpCode OpCode;
 	};
@@ -645,7 +646,7 @@ public:
 		INSTRUCTION_DATA_DEBUG;
 		
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
-		if (oper.size() >= 1)
+		if (oper.size() == 1)
 		{
 #if HAZE_CALL_LOG
 			HAZE_LOG_INFO(H_TEXT("调用函数<%s>\n"), oper[0].Variable.Name.c_str());
@@ -653,11 +654,11 @@ public:
 
 			memcpy(&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], &stack->m_PC, HAZE_ADDRESS_SIZE);
 
-			if (oper[1].Desc == HazeDataDesc::CallFunctionPointer)
+			if (oper[0].Variable.Type.PrimaryType == HazeValueType::ObjectFunction)
 			{
 				x_uint32 tempEBP = stack->m_EBP;
 				stack->m_EBP = stack->m_ESP;
-				((void(*)(HAZE_STD_CALL_PARAM))(oper[1].Extra.Pointer))(stack, oper[0].Extra.Call.ParamNum, oper[0].Extra.Call.ParamByteSize);
+				stack->m_VM->GetAdvanceFunction(oper[0].Extra.ObjectCall.Index)->ClassFunc(stack, oper[0].Extra.Call.ParamNum, oper[0].Extra.Call.ParamByteSize);
 				stack->m_ESP -= (oper[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
 				stack->m_EBP = tempEBP;
 			}
@@ -1130,9 +1131,6 @@ private:
 				tempAddress = (x_uint64)(&insData.Variable.Name);
 				ret = &tempAddress;
 			}
-				break;
-			case InstructionAddressType::PointerAddress:
-				ret = insData.Extra.Pointer;
 				break;
 			default:
 				break;

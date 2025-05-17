@@ -44,10 +44,7 @@ HazeVM::~HazeVM()
 bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 {
 	// 提前注册基本类型
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, *ObjectArray::GetAdvanceClassInfo());
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, *ObjectString::GetAdvanceClassInfo());
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Class, *ObjectClass::GetAdvanceClassInfo());
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::DynamicClass, *ObjectDynamicClass::GetAdvanceClassInfo());
+	InitRegisterObjectFunction();
 
 	// 提前注册类
 	/*ClassData data;
@@ -146,6 +143,11 @@ void HazeVM::CallFunction(const FunctionData* functionData, ...)
 void HazeVM::CallFunction(const FunctionData* functionData, va_list& args)
 {
 	CallHazeFunction(m_Stack.get(), functionData, args);
+}
+
+AdvanceFunctionInfo* HazeVM::GetAdvanceFunction(x_uint16 index)
+{
+	return m_FunctionObjectTable[index];
 }
 
 ObjectClass* HazeVM::CreateObjectClass(const HString& className, ...)
@@ -298,6 +300,33 @@ x_uint32 HazeVM::GetClassSize(const HString& m_ClassName)
 {
 	auto Class = FindClass(m_ClassName);
 	return Class ? Class->Size : 0;
+}
+
+void HazeVM::InitRegisterObjectFunction()
+{
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, { ObjectArray::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
+	for (auto& it : ObjectArray::GetAdvanceClassInfo()->Functions)
+	{
+		m_FunctionObjectTable.push_back(&it);
+	}
+
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, { ObjectString::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
+	for (auto& it : ObjectString::GetAdvanceClassInfo()->Functions)
+	{
+		m_FunctionObjectTable.push_back(&it);
+	}
+
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Class, { ObjectClass::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
+	for (auto& it : ObjectClass::GetAdvanceClassInfo()->Functions)
+	{
+		m_FunctionObjectTable.push_back(&it);
+	}
+
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::DynamicClass, { ObjectDynamicClass::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
+	for (auto& it : ObjectDynamicClass::GetAdvanceClassInfo()->Functions)
+	{
+		m_FunctionObjectTable.push_back(&it);
+	}
 }
 
 void HazeVM::InitGlobalStringCount(x_uint64 count)

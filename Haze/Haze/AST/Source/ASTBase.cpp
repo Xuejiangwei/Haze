@@ -739,6 +739,11 @@ Share<CompilerValue> ASTMultiExpression::CodeGen()
 	{
 		m_Expressions[i]->CodeGen();
 		func->TryClearTempRegister();
+
+		if (m_Compiler->IsCompileError())
+		{
+			break;
+		}
 	}
 
 	return nullptr;
@@ -746,13 +751,61 @@ Share<CompilerValue> ASTMultiExpression::CodeGen()
 
 ASTBinaryExpression::ASTBinaryExpression(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, 
 	HazeToken operatorToken, Unique<ASTBase>& leftAST, Unique<ASTBase>& rightAST)
-	:ASTBase(compiler, location), m_SectionSignal(section), m_OperatorToken(operatorToken), m_LeftAST(Move(leftAST)),
-	m_RightAST(Move(rightAST)), m_LeftBlock(nullptr), m_RightBlock(nullptr), m_DefaultBlock(nullptr), m_AssignToAst(nullptr) {}
+	: ASTBase(compiler, location), m_SectionSignal(section), m_OperatorToken(operatorToken), m_LeftAST(Move(leftAST)),
+	m_RightAST(Move(rightAST)), m_LeftBlock(nullptr), m_RightBlock(nullptr), m_ParentAst(nullptr), m_ShortCircuitBlock(nullptr), m_AssignToAst(nullptr) {}
 
-void ASTBinaryExpression::SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, CompilerBlock* rightJmpBlock)
+void ASTBinaryExpression::SetLeftAndRightBlock(CompilerBlock* leftJmpBlock, CompilerBlock* rightJmpBlock, ASTBinaryExpression* parentAst)
 {
 	m_LeftBlock = leftJmpBlock;
 	m_RightBlock = rightJmpBlock;
+	m_ParentAst = parentAst;
+}
+
+CompilerBlock* ASTBinaryExpression::TryShortCircuit(ASTBinaryExpression* ast)
+{
+	if (m_ParentAst)
+	{
+		if (m_ParentAst->m_OperatorToken == HazeToken::Or && m_ParentAst->m_RightAST && m_ParentAst->m_RightAST.get() != ast)
+		{
+			if (!m_ParentAst->m_ShortCircuitBlock)
+			{
+				auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
+				auto parentBlock = m_Compiler->GetInsertBlock();
+				m_ParentAst->m_ShortCircuitBlock = CompilerBlock::CreateBaseBlock(function->GenDafaultBlockName(), function, parentBlock);
+			}
+
+			return m_ParentAst->m_ShortCircuitBlock.get();
+		}
+		else if (m_ParentAst->m_ParentAst)
+		{
+			return m_ParentAst->TryShortCircuit(ast);
+		}
+	}
+
+	return nullptr;
+}
+
+void ASTBinaryExpression::SetChildBlock()
+{
+	auto rightExp = dynamic_cast<ASTBinaryExpression*>(m_RightAST.get());
+	if (rightExp && IsAndOrToken(rightExp->m_OperatorToken))
+	{
+		rightExp->SetLeftAndRightBlock(m_LeftBlock, m_RightBlock, this);
+	}
+
+	auto leftExp = dynamic_cast<ASTBinaryExpression*>(m_LeftAST.get());
+	if (leftExp && IsAndOrToken(leftExp->m_OperatorToken))
+	{
+		if (IsAndToken(leftExp->m_OperatorToken))
+		{
+			leftExp->SetLeftAndRightBlock(nullptr, m_RightBlock, this);
+
+		}
+		else if (IsOrToken(leftExp->m_OperatorToken))
+		{
+			leftExp->SetLeftAndRightBlock(m_LeftBlock, nullptr, this);
+		}
+	}
 }
 
 Share<CompilerValue> ASTBinaryExpression::CodeGen()
@@ -761,18 +814,6 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen()
 #define ASSERT_GEN(V, AST) auto V = AST; if (!V) return nullptr
 
 	m_Compiler->InsertLineCount(m_Location.Line);
-
-	auto rightExp = dynamic_cast<ASTBinaryExpression*>(m_RightAST.get());
-	if (rightExp && IsAndOrToken(rightExp->m_OperatorToken))
-	{
-		rightExp->SetLeftAndRightBlock(m_LeftBlock, m_RightBlock);
-	}
-
-	auto leftExp = dynamic_cast<ASTBinaryExpression*>(m_LeftAST.get());
-	if (leftExp && IsAndOrToken(leftExp->m_OperatorToken))
-	{
-		leftExp->SetLeftAndRightBlock(m_LeftBlock, m_RightBlock);
-	}
 
 	switch (m_OperatorToken)
 	{
@@ -920,85 +961,95 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen()
 		}
 		case HazeToken::And:
 		{
+			auto shortBlock = TryShortCircuit(this);
+			if (shortBlock)
+			{
+				m_RightBlock = shortBlock;
+			}
+			SetChildBlock();
+			auto rightExp = dynamic_cast<ASTBinaryExpression*>(m_RightAST.get());
+			auto leftExp = dynamic_cast<ASTBinaryExpression*>(m_LeftAST.get());
+
+			if (m_ShortCircuitBlock)
+			{
+				m_Compiler->SetInsertBlock(m_ShortCircuitBlock->GetShared());
+			}
+
 			auto leftValue = m_LeftAST->CodeGen();
-			if (!leftExp)
-			{
-				m_Compiler->CreateBoolCmp(m_LeftAST->CodeGen());
-			}
-			else
-			{
-				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(leftExp->m_OperatorToken), m_RightAST ? nullptr : m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-					m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-			}
-
-			if (rightExp)
-			{
-				m_RightAST->CodeGen();
-				if (!dynamic_cast<ASTBinaryExpression*>(rightExp->m_RightAST.get()))
-				{
-					m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(rightExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-						m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-				}
-			}
-			else
-			{
-				if (!leftExp)
-				{
-					m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal,
-						nullptr, m_RightBlock->GetShared());
-				}
-
-				auto rightValue = m_RightAST->CodeGen();
-				m_Compiler->CreateBoolCmp(rightValue);
-				m_Compiler->CreateCompareJmp(HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-					m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-			}
-
-			return leftValue;
-		}
-		case HazeToken::Or:
-		{
-			auto leftValue = m_LeftAST->CodeGen();
-			/*if (m_DefaultBlock)
-			{
-				m_Compiler->SetInsertBlock(m_DefaultBlock->GetShared());
-			}
-			else*/
+			if (leftValue)
 			{
 				if (!leftExp)
 				{
 					m_Compiler->CreateBoolCmp(leftValue);
 				}
-				else
-				{
-					m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(leftExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
-				}
-
-				if (rightExp)
-				{
-					m_RightAST->CodeGen();
-					if (!dynamic_cast<ASTBinaryExpression*>(rightExp->m_RightAST.get()))
-					{
-						m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(rightExp->m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-							m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-					}
-				}
-				else
-				{
-					if (!leftExp)
-					{
-						m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal,
-							m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
-					}
-
-					auto rightValue = m_RightAST->CodeGen();
-					m_Compiler->CreateBoolCmp(rightValue);
-					m_Compiler->CreateCompareJmp(HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
-						m_DefaultBlock ? m_DefaultBlock->GetShared() : m_RightBlock->GetShared());
-				}
+				m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal, nullptr, m_RightBlock->GetShared());
 			}
 
-			return leftValue;
+			if (m_ShortCircuitBlock)
+			{
+				m_Compiler->SetInsertBlock(m_ShortCircuitBlock->GetShared());
+			}
+
+			auto rightValue = m_RightAST->CodeGen();
+			if (rightValue)
+			{
+				if (!rightExp)
+				{
+					m_Compiler->CreateBoolCmp(rightValue);
+				}
+				m_Compiler->CreateCompareJmp(rightExp ? GetHazeCmpTypeByToken(rightExp->m_OperatorToken) : HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+					m_RightBlock->GetShared());
+
+			}
+
+			if (m_ShortCircuitBlock)
+			{
+				m_Compiler->SetInsertBlock(m_ShortCircuitBlock->GetParentBlock()->GetShared());
+			}
+			return nullptr;
+		}
+		case HazeToken::Or:
+		{
+			SetChildBlock();
+			auto rightExp = dynamic_cast<ASTBinaryExpression*>(m_RightAST.get());
+			auto leftExp = dynamic_cast<ASTBinaryExpression*>(m_LeftAST.get());
+			
+			if (m_ShortCircuitBlock)
+			{
+				m_Compiler->SetInsertBlock(m_ShortCircuitBlock->GetShared());
+			}
+
+			auto leftValue = m_LeftAST->CodeGen();
+			if (leftValue)
+			{
+				if (!leftExp)
+				{
+					m_Compiler->CreateBoolCmp(leftValue);
+				}
+				m_Compiler->CreateCompareJmp(leftExp ? GetHazeCmpTypeByToken(leftExp->m_OperatorToken) : HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr, nullptr);
+			}
+
+			if (m_ShortCircuitBlock)
+			{
+				m_Compiler->SetInsertBlock(m_ShortCircuitBlock->GetShared());
+			}
+			auto rightValue = m_RightAST->CodeGen();
+			if (rightValue)
+			{
+				if (!rightExp)
+				{
+					m_Compiler->CreateBoolCmp(rightValue);
+				}
+				m_Compiler->CreateCompareJmp(rightExp ? GetHazeCmpTypeByToken(rightExp->m_OperatorToken) : HazeCmpType::Equal, m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
+					m_RightBlock ? m_RightBlock->GetShared() : nullptr);
+			}
+
+			if (m_ShortCircuitBlock)
+			{
+				m_Compiler->SetInsertBlock(m_ShortCircuitBlock->GetParentBlock()->GetShared());
+			}
+
+			return nullptr;
 		}
 		case HazeToken::Equal:
 		case HazeToken::NotEqual:
@@ -1012,6 +1063,11 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen()
 			auto retValue = m_Compiler->CreateIntCmp(left, right);
 			if (m_LeftBlock || m_RightBlock)
 			{
+				if (m_ParentAst)
+				{
+					AST_ERR_W("<%s><%s>比较错误, 解析到父级操作", m_LeftAST->GetName(), m_RightAST->GetName());
+				}
+
 				m_Compiler->CreateCompareJmp(GetHazeCmpTypeByToken(m_OperatorToken), m_LeftBlock ? m_LeftBlock->GetShared() : nullptr,
 					m_RightBlock ? m_RightBlock->GetShared() : nullptr);
 			}
@@ -1075,7 +1131,7 @@ ASTImportModule::ASTImportModule(Compiler* compiler, const SourceLocation& locat
 
 Share<CompilerValue> ASTImportModule::CodeGen()
 {
-	auto m = m_Compiler->ParseModule(m_ModulePath);
+	auto m = m_Compiler->ParseModuleByImportPath(m_ModulePath);
 	if (m)
 	{
 		m_Compiler->AddImportModuleToCurrModule(m);
@@ -1129,7 +1185,7 @@ Share<CompilerValue> ASTIfExpression::CodeGen()
 
 	if (ConditionExp && GetHazeCmpTypeByToken(ConditionExp->m_OperatorToken) != HazeCmpType::None)
 	{
-		ConditionExp->SetLeftAndRightBlock(ifThenBlock.get(), m_ElseExpression ? elseBlock.get() : nextBlock.get());
+		ConditionExp->SetLeftAndRightBlock(ifThenBlock.get(), m_ElseExpression ? elseBlock.get() : nextBlock.get(), nullptr);
 		m_Condition->CodeGen();
 	}
 	else
@@ -1186,7 +1242,7 @@ Share<CompilerValue> ASTWhileExpression::CodeGen()
 	auto conditionExp = dynamic_cast<ASTBinaryExpression*>(m_Condition.get());
 	if (conditionExp)
 	{
-		conditionExp->SetLeftAndRightBlock(whileBlock.get(), nextBlock.get());
+		conditionExp->SetLeftAndRightBlock(whileBlock.get(), nextBlock.get(), nullptr);
 		m_Condition->CodeGen();
 	}
 	else
@@ -1234,7 +1290,7 @@ Share<CompilerValue> ASTForExpression::CodeGen()
 	auto conditionExp = dynamic_cast<ASTBinaryExpression*>(m_ConditionExpression.get());
 	if (conditionExp)
 	{
-		conditionExp->SetLeftAndRightBlock(loopBlock.get(), endLoopBlock.get());
+		conditionExp->SetLeftAndRightBlock(loopBlock.get(), endLoopBlock.get(), nullptr);
 		m_ConditionExpression->CodeGen();
 	}
 	else

@@ -6,6 +6,7 @@
 
 extern std::wstring g_HazeExePath;
 extern std::wstring g_MainFilePath;
+extern Unique<V_Array<std::wstring>> g_CustomPaths;
 extern Unique<HazeLibraryManager> g_HazeLibManager;
 
 HString GetModuleFilePathByLibPath(const HString& modulePath, const HString* refModulePath)
@@ -45,6 +46,30 @@ HString GetModuleFilePathByLibPath(const HString& modulePath, const HString* ref
 	if (std::filesystem::exists(filePath))
 	{
 		return filePath.c_str();
+	}
+
+	if (g_CustomPaths)
+	{
+		for (auto& customPath : *g_CustomPaths)
+		{
+			filePath = customPath + modulePackagePath;
+			if (std::filesystem::exists(filePath))
+			{
+				return filePath.c_str();
+			}
+
+			filePath = customPath + HAZE_THIRD_LIB_FOLDER + modulePackagePath;
+			if (std::filesystem::exists(filePath))
+			{
+				return filePath.c_str();
+			}
+
+			filePath = customPath + HAZE_THIRD_DLL_LIB_FOLDER + modulePackagePath;
+			if (std::filesystem::exists(filePath))
+			{
+				return filePath.c_str();
+			}
+		}
 	}
 
 	return HString();

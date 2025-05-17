@@ -51,18 +51,18 @@ static HashMap<HString, Share<CompilerValue>> g_GlobalTempRegisters = {
 
 Compiler::Compiler(HazeVM* vm) : m_VM(vm), m_MarkError(false)
 {
-	m_AdvanceClassInfo.clear();
+	m_AdvanceClassIndexInfo.clear();
 }
 
 Compiler::~Compiler()
 {
 }
 
-void Compiler::RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassInfo& info)
+void Compiler::RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassIndexInfo info)
 {
 	if (IsAdvanceType(type))
 	{
-		m_AdvanceClassInfo[type] = info;
+		m_AdvanceClassIndexInfo[type] = info;
 	}
 	else
 	{
@@ -162,9 +162,20 @@ CompilerModule* Compiler::ParseBaseModule(const HString& moduleName)
 	return nullptr;
 }
 
-CompilerModule* Compiler::ParseModule(const HString& modulePath)
+CompilerModule* Compiler::ParseModuleByImportPath(const HString& importPath)
 {
-	auto moduleName = m_VM->ParseFile(GetModuleFilePath(modulePath, &GetCurrModule()->GetPath()));
+	auto moduleName = m_VM->ParseFile(GetModuleFilePath(importPath, &GetCurrModule()->GetPath()));
+	if (!moduleName.empty())
+	{
+		return GetModule(moduleName);
+	}
+
+	return nullptr;
+}
+
+CompilerModule* Compiler::ParseModuleByPath(const HString& modulePath)
+{
+	auto moduleName = m_VM->ParseFile(modulePath);
 	if (!moduleName.empty())
 	{
 		return GetModule(moduleName);
@@ -188,6 +199,24 @@ CompilerModule* Compiler::GetModule(const HString& name)
 	}
 
 	return nullptr;
+}
+
+CompilerModule* Compiler::GetModuleAndTryParseIntermediateFile(const HString& filePath)
+{
+	HString moduleName = GetModuleNameByFilePath(filePath);
+	CompilerModule* m = GetModule(moduleName);
+	if (!m)
+	{
+		m = ParseModuleByPath(filePath);
+		if (m && !m->NeedParse())
+		{
+			return m;
+		}
+
+		m = nullptr;
+	}
+
+	return m;
 }
 
 const HString* Compiler::GetModuleName(const CompilerModule* compilerModule) const
@@ -1086,18 +1115,18 @@ Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerValue> pointerFu
 Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName,
 	V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo)
 {
-	auto iter = m_AdvanceClassInfo.find(advanceType);
-	if (iter != m_AdvanceClassInfo.end())
+	auto iter = m_AdvanceClassIndexInfo.find(advanceType);
+	if (iter != m_AdvanceClassIndexInfo.end())
 	{
-		auto func = iter->second.Functions.find(functionName);
-		if (func != iter->second.Functions.end())
+		auto func = iter->second.GetInfoAndIndex(functionName);
+		if (func.first)
 		{
 			if (thisPointerTo->IsElement())
 			{
 				thisPointerTo = DynamicCast<CompilerElementValue>(thisPointerTo)->CreateGetFunctionCall();
 			}
 
-			return GetCurrModule()->CreateAdvanceTypeFunctionCall(func->second, param, thisPointerTo);
+			return GetCurrModule()->CreateAdvanceTypeFunctionCall(func.first, func.second, param, thisPointerTo);
 		}
 		else if (thisPointerTo->IsElement())
 		{

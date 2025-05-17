@@ -42,6 +42,10 @@ const x_HChar* GetFunctionTempRegisterHeader();
 const x_HChar* GetFunctionStartHeader();
 const x_HChar* GetFunctionEndHeader();
 
+const x_HChar* GetEnumTableLabelHeader();
+const x_HChar* GetEnumStartHeader();
+const x_HChar* GetEnumEndHeader();
+
 const x_HChar* GetSymbolBeginHeader();
 const x_HChar* GetSymbolEndHeader();
 

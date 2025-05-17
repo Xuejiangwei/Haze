@@ -15,6 +15,7 @@ extern Unique<HazeLibraryManager> g_HazeLibManager;
 bool g_IsHazeEnd = false;
 std::wstring g_HazeExePath;
 std::wstring g_MainFilePath;
+Unique<V_Array<std::wstring>> g_CustomPaths;
 
 void HazeNewHandler()
 {
@@ -34,6 +35,11 @@ void HazeEnd()
 	if (g_Debugger)
 	{
 		g_Debugger->SendProgramEnd();
+	}
+
+	if (g_CustomPaths)
+	{
+		g_CustomPaths.release();
 	}
 
 	g_IsHazeEnd = true;
@@ -62,6 +68,7 @@ enum class ParamType
 	DebugType,
 	LoadLibraryDll,
 	Files,
+	IncludeFilePath,
 };
 
 int GetParam(ParamType type, char** paramArray, int length)
@@ -73,6 +80,7 @@ int GetParam(ParamType type, char** paramArray, int length)
 		{ ParamType::DebugType, "-d" },
 		{ ParamType::LoadLibraryDll, "-ld" },
 		{ ParamType::Files, "-f" },
+		{ ParamType::IncludeFilePath, "-ifp" },
 	};
 
 	auto Iter = HashMap_Param.find(type);
@@ -145,6 +153,30 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 		else
 		{
 			break;
+		}
+	}
+
+	// 添加自定义的引用文件路径
+	{
+		int index = GetParam(ParamType::IncludeFilePath, argValue, argCount);
+		if (index > 0)
+		{
+			if (!g_CustomPaths)
+			{
+				g_CustomPaths = MakeUnique<V_Array<std::wstring>>();
+			}
+
+			std::string str = argValue[index];
+			char* s = new char[str.size() + 1];
+			s[str.size()] = '\0';
+			strcpy_s(s, str.size() + 1, str.c_str());
+			char* p = nullptr;
+			char* token = strtok_s(s, "+p", &p);
+			while (token)
+			{
+				g_CustomPaths->push_back(String2WString(token));
+				token = strtok_s(NULL, "+p", &p);
+			}
 		}
 	}
 

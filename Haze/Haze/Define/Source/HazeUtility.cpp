@@ -151,6 +151,21 @@ const x_HChar* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
+const x_HChar* GetEnumTableLabelHeader()
+{
+	return HEADER_STRING_ENUM_TABLE;
+}
+
+const x_HChar* GetEnumStartHeader()
+{
+	return ENUM_START_HEADER;
+}
+
+const x_HChar* GetEnumEndHeader()
+{
+	return ENUM_END_HEADER;
+}
+
 const x_HChar* GetSymbolBeginHeader()
 {
 	return SYMBOL_BEGIN;

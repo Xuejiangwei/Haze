@@ -54,6 +54,8 @@ private:
 
 	void Parse_I_Code_StringTable();
 
+	void Parse_I_Code_EnumTable();
+
 	void Parse_I_Code_ClassTable();
 
 	void Parse_I_Code_FunctionTable();

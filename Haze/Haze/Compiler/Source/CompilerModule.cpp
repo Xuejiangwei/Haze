@@ -121,6 +121,11 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 
 	stream >> str;
 
+	if (str != HAZE_VERSION)
+	{
+		return false;
+	}
+
 	if (str != GetPath())
 	{
 		return false;
@@ -140,7 +145,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		if (str == GetImportHeaderModuleString())
 		{
 			stream >> str;
-			m = m_Compiler->GetModule(str);
+			m = m_Compiler->GetModuleAndTryParseIntermediateFile(str);
 			if (!m)
 			{
 				HAZE_LOG_ERR_W("<%s>解析临时文件失败，引入模块<%s>未能找到!\n", m_Path.c_str(), str.c_str());
@@ -163,11 +168,13 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 
 	stream >> ui64;
 	{
-		// 暂时先不处理
 		if (ui64 > 0)
 		{
-			HAZE_LOG_ERR_W("<%s>解析临时文件失败，没有读取全局数据初始化操作!\n", GetName().c_str());
-			return false;
+			for (int i = 0; i < ui64; i++)
+			{
+				stream >> str;
+				HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+			}
 		}
 	}
 
@@ -179,13 +186,42 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 
 	stream >> ui64;
 	{
-		// 暂时先不处理
 		if (ui64 > 0)
 		{
 			x_uint32 ui32;
 			for (int i = 0; i < ui64; i++)
 			{
-				stream >> ui32 >> str;
+				stream >> ui32;
+				str.resize(ui32 + 1);
+				stream >> str;
+				stream.getline(str.data(), ui32 + 1);
+			}
+		}
+	}
+
+	stream >> str;
+	if (str != GetEnumTableLabelHeader())
+	{
+		return false;
+	}
+
+	stream >> ui64;
+	{
+		if (ui64 > 0)
+		{
+			x_uint32 ui32;
+			for (int i = 0; i < ui64; i++)
+			{
+				stream >> str;
+				if (str == GetEnumStartHeader())
+				{
+					stream >> str;
+					while (str != GetEnumEndHeader())
+					{
+						stream >> ui32;
+						stream >> str;
+					}
+				}
 			}
 		}
 	}
@@ -195,8 +231,9 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	{
 		return false;
 	}
-	stream >> ui64;
-	for (int i = 0; i < ui64; i++)
+	x_uint32 classCount = 0;
+	stream >> classCount;
+	for (x_uint32 i = 0; i < classCount; i++)
 	{
 		stream >> str;
 		if (str != GetClassLabelHeader())
@@ -240,7 +277,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 
 
 			//暂时设置成员变量为公有的
-			classData[i].second = CreateVariable(this, memberType, HazeVariableScope::None, desc, 0);
+			classData[j].second = CreateVariable(this, memberType, HazeVariableScope::None, desc, 0);
 		}
 
 		Share<CompilerClass> compilerClass = CreateClass(className, parentClass, classData);
@@ -328,6 +365,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 				params.resize(params.size() + 1);
 				stream >> params.back().Name;
 				params.back().Type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+				stream >> str;
 			}
 
 			while (str != GetFunctionEndHeader())
@@ -394,6 +432,7 @@ Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<Co
 	auto compilerClass = GetClass(name);
 	if (!compilerClass)
 	{
+		m_Compiler->RegisterClassToSymbolTable(name);
 		m_HashMap_Classes[name] = MakeShare<CompilerClass>(this, name, parentClass, classData);
 		compilerClass = m_HashMap_Classes[name];
 
@@ -978,7 +1017,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> 
 	{
 		PushTempRegister pushTempRegister(hss, m_Compiler, this, &callFunction->GetFunctionType(), &ret);
 		FunctionCall(hss, callFunction, nullptr, nullptr, size, params, thisPointerTo);
-		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction, nullptr, nullptr, nullptr, nameSpace);
+		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction, nullptr, nullptr, -1, nameSpace);
 	}
 
 	return ret;
@@ -1012,7 +1051,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 	return ret;
 }
 
-Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo& functionInfo, 
+Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo* functionInfo, x_uint16 index,
 	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
 	HAZE_STRING_STREAM hss;
@@ -1032,8 +1071,8 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 
 	{
 		PushTempRegister pushTempRegister(hss, m_Compiler, this, nullptr, nullptr);
-		FunctionCall(hss, nullptr, nullptr, &functionInfo, size, params, thisPointerTo);
-		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, nullptr, thisPointerTo, functionInfo.ClassFunc);
+		FunctionCall(hss, nullptr, nullptr, functionInfo, size, params, thisPointerTo);
+		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, nullptr, thisPointerTo, index);
 	}
 	
 
@@ -1221,6 +1260,7 @@ void CompilerModule::GenICode()
 {
 	HAZE_STRING_STREAM hss;
 	hss << GetFileLastTime(m_Path) << std::endl;
+	hss << HAZE_VERSION << std::endl;
 
 	//版本 2个字节
 	//FS_Ass << "1 1" << std::endl;
@@ -1298,6 +1338,17 @@ void CompilerModule::GenICode()
 	for (auto& it : m_HashMap_StringMapping)
 	{
 		hss << it.second->length() << " " << *it.second << std::endl;
+	}
+
+	/*
+	*	枚举表
+	*/
+
+	hss << GetEnumTableLabelHeader() << std::endl;
+	hss << m_HashMap_Enums.size() << std::endl;;
+	for (auto& iter : m_HashMap_Enums)
+	{
+		iter.second->GenEnum_I_Code(hss);
 	}
 
 	/*

@@ -9,6 +9,10 @@ using HString = std::wstring;
 #define HAZE_BINARY_STRING std::string
 #define HAZE_BINARY_OFSTREAM std::ofstream
 #define HAZE_BINARY_IFSTREAM std::ifstream
+
+#define HAZE_ENDL std::endl
+#define HAZE_ENDL_D std::endl << std::endl
+
 #define HAZE_BINARY_CHAR char
 #define HAZE_WRITE_AND_SIZE(X) (const char*)(&X), sizeof(X)
 #define HAZE_READ(X) (char*)(&X), sizeof(X)
@@ -23,6 +27,8 @@ using HString = std::wstring;
 
 #define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
 
+
+#define HAZE_VERSION					H_TEXT("0.0.1")
 
 #define HAZE_THIRD_LIB_FOLDER			H_TEXT("¿â")
 #define HAZE_THIRD_DLL_LIB_FOLDER		H_TEXT("¶¯Ì¬¿â")
@@ -45,6 +51,7 @@ using HString = std::wstring;
 #define HEADER_STRING_GLOBAL_DATA		H_TEXT("GlobalDataTable")
 
 #define HEADER_STRING_STRING_TABLE		H_TEXT("StringTable")
+#define HEADER_STRING_ENUM_TABLE		H_TEXT("EnumTable")
 #define HEADER_STRING_CLASS_TABLE		H_TEXT("ClassTable")
 #define HEADER_STRING_FUNCTION_TABLE	H_TEXT("FunctionTable")
 
@@ -54,6 +61,9 @@ using HString = std::wstring;
 #define FUNCTION_PARAM_HEADER			H_TEXT("Param")
 #define FUNCTION_START_HEADER			H_TEXT("FunctionStart")
 #define FUNCTION_END_HEADER				H_TEXT("FunctionEnd")
+
+#define ENUM_START_HEADER				H_TEXT("EnumStart")
+#define ENUM_END_HEADER					H_TEXT("EnumEnd")
 
 #define SYMBOL_BEGIN					H_TEXT("SymbolBegin")
 #define SYMBOL_END						H_TEXT("SymbolEnd")

@@ -24,6 +24,8 @@ public:
 
 	const HazeValueType GetParentType() const { return m_ParentType; }
 
+	void GenEnum_I_Code(HAZE_STRING_STREAM& hss);
+
 private:
 	HString m_Name;
 

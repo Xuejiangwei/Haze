@@ -39,4 +39,4 @@ HString GenIRCode(InstructionOpCode opCode, x_uint64 number);
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, x_uint64 paramCount, x_uint64 paramSize,
 	Share<CompilerFunction> function, Share<CompilerValue> pointerFunction = nullptr, Share<CompilerValue> advancePointerTo = nullptr, 
-	void* advanceFuncAddress = nullptr, const HString* nameSpace = nullptr);
+	x_int16 advanceFuncIndex = -1, const HString* nameSpace = nullptr);

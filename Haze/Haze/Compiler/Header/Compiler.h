@@ -19,7 +19,45 @@ struct AdvanceFunctionInfo
 
 struct AdvanceClassInfo
 {
-	HashMap<HString, AdvanceFunctionInfo> Functions;
+	V_Array<AdvanceFunctionInfo> Functions;
+	HashMap<HString, x_int16> FunctionMapping;
+
+	void Add(const HString& name, const AdvanceFunctionInfo& info)
+	{
+		if (FunctionMapping.find(name) == FunctionMapping.end())
+		{
+			FunctionMapping[name] = (x_int16)Functions.size();
+			Functions.push_back(info);
+		}
+	}
+};
+
+struct AdvanceClassIndexInfo
+{
+	AdvanceClassInfo* Info = nullptr;
+	x_int16 StartIndex = 0;
+
+	const x_int16 GetIndex(const HString& name) const
+	{
+		auto it = Info->FunctionMapping.find(name);
+		if (it != Info->FunctionMapping.end())
+		{
+			return StartIndex + it->second;
+		}
+
+		return -1;
+	}
+
+	Pair<AdvanceFunctionInfo*, x_int16> GetInfoAndIndex(const HString& name)
+	{
+		auto it = Info->FunctionMapping.find(name);
+		if (it != Info->FunctionMapping.end())
+		{
+			return { &(Info->Functions[it->second]), (x_int16)(StartIndex + it->second) };
+		}
+
+		return { nullptr, (x_int16)-1 };
+	}
 };
 
 struct HashHString
@@ -48,7 +86,7 @@ public:
 
 	~Compiler();
 
-	void RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassInfo& info);
+	void RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassIndexInfo info);
 
 	void PreRegisterClass(const ClassData& data);
 	void PreRegisterVariable();
@@ -60,11 +98,15 @@ public:
 
 	CompilerModule* ParseBaseModule(const HString& moduleName);
 
-	CompilerModule* ParseModule(const HString& modulePath);
+	CompilerModule* ParseModuleByImportPath(const HString& importPath);
+
+	CompilerModule* ParseModuleByPath(const HString& modulePath);
 
 	void FinishModule();
 
 	CompilerModule* GetModule(const HString& name);
+	
+	CompilerModule* GetModuleAndTryParseIntermediateFile(const HString& filePath);
 
 	const HString* GetModuleName(const CompilerModule* compilerModule) const;
 
@@ -260,7 +302,7 @@ public:
 private:
 	HazeVM* m_VM;
 
-	HashMap<HazeValueType, AdvanceClassInfo> m_AdvanceClassInfo;
+	HashMap<HazeValueType, AdvanceClassIndexInfo> m_AdvanceClassIndexInfo;
 
 	V_Array<HString> m_ModuleNameStack;
 
