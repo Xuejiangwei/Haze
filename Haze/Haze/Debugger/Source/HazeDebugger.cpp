@@ -435,6 +435,13 @@ bool HazeDebugger::CurrModuleIsStepOver()
 	return false;
 }
 
+void HazeDebugger::SetJsonBreakFilePath(XJson& json, HString path)
+{
+	ReplacePathSlash(path);
+	auto m_Name = WString2String(path);
+	json["BreakPathFile"] = GB2312_2_UFT8(m_Name.c_str());
+}
+
 void HazeDebugger::SendBreakInfo()
 {
 	//auto iter = m_BreakPoints.find(m_CurrPauseModule.first);

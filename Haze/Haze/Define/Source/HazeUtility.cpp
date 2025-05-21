@@ -2,7 +2,7 @@
 #include "HazeUtility.h"
 
 #ifdef _WIN32
-#include <Windows.h>
+	#include <Windows.h>
 #endif
 
 #include <regex>
@@ -300,7 +300,8 @@ void ReplacePathSlash(HString& path)
 
 	for (HString::size_type pos(0); pos != HString::npos; pos += PathSlash.length())
 	{
-		if ((pos = path.find(WindowsPathSlash, pos)) != HString::npos)
+		pos = path.find(WindowsPathSlash, pos);
+		if (pos != HString::npos)
 		{
 			path.replace(pos, WindowsPathSlash.length(), PathSlash);
 		}
@@ -344,7 +345,7 @@ InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type)
 
 HString GetModuleNameByFilePath(const HString& filePath)
 {
-	auto Index = filePath.find_last_of(H_TEXT("\\"));
+	auto Index = 0;// filePath.find_last_of(H_TEXT("\\"));
 	if (Index != HString::npos)
 	{
 		return filePath.substr(Index + 1, filePath.length() - Index - 1 - 3);

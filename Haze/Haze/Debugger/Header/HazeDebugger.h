@@ -81,12 +81,7 @@ private:
 
 	void SetJsonType(XJson& json, HazeDebugInfoType type) { json["Type"] = (int)type; }
 
-	void SetJsonBreakFilePath(XJson& json, HString path)
-	{
-		ReplacePathSlash(path);
-		auto m_Name = WString2String(path);
-		json["BreakPathFile"] = GB2312_2_UFT8(m_Name.c_str());
-	}
+	void SetJsonBreakFilePath(XJson& json, HString path);
 
 	void SetJsonBreakLine(XJson& json, x_uint32 line) { json["BreakLine"] = line; }
 

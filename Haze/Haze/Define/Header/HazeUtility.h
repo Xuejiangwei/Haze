@@ -25,8 +25,8 @@ const x_HChar* GetImportHeaderString();
 const x_HChar* GetImportHeaderModuleString();
 
 const x_HChar* GetGlobalDataHeaderString();
-const x_HChar* GetGlobalDataInitBlockStart();
-const x_HChar* GetGlobalDataInitBlockEnd();
+//const x_HChar* GetGlobalDataInitBlockStart();
+//const x_HChar* GetGlobalDataInitBlockEnd();
 
 const x_HChar* GetStringTableHeaderString();
 

@@ -47,7 +47,7 @@ public:
 
 	AdvanceFunctionInfo* GetAdvanceFunction(x_uint16 index); 
 
-	ObjectClass* CreateObjectClass(const HString& className, ...);
+	ObjectClass* CreateObjectClass(const HString* className, ...);
 
 	bool ParseString(const x_HChar* moduleName, const x_HChar* moduleCode);
 

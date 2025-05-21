@@ -96,15 +96,15 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 	HashSet_RefModule.clear();
 
 	HazeMemory::GetMemory()->SetVM(this);
-	
+
 	LoadDLLModules();
-	
+
 	if (IsDebug())
 	{
 		HazeDebuggerServer::InitDebuggerServer(this);
 		//VMDebugger = MakeUnique<HazeDebugger>(this);
 		//VMDebugger->SetHook(&HazeVM::Hook, HazeDebugger::DebuggerHookType::Instruction | HazeDebugger::DebuggerHookType::Line);
-	
+
 		while (!g_Debugger)
 		{
 		}
@@ -127,7 +127,8 @@ void HazeVM::CallFunction(const x_HChar* functionName, ...)
 {
 	auto& function = GetFunctionByName(functionName);
 	va_list args;
-	va_start(args, function.Params.size());
+	//va_start(args, (int)function.Params.size());
+	va_start(args, functionName);
 	CallHazeFunction(m_Stack.get(), &function, args);
 	va_end(args);
 }
@@ -135,7 +136,8 @@ void HazeVM::CallFunction(const x_HChar* functionName, ...)
 void HazeVM::CallFunction(const FunctionData* functionData, ...)
 {
 	va_list args;
-	va_start(args, functionData->Params.size());
+	//va_start(args, functionData->Params.size());
+	va_start(args, functionData);
 	CallHazeFunction(m_Stack.get(), functionData, args);
 	va_end(args);
 }
@@ -150,15 +152,16 @@ AdvanceFunctionInfo* HazeVM::GetAdvanceFunction(x_uint16 index)
 	return m_FunctionObjectTable[index];
 }
 
-ObjectClass* HazeVM::CreateObjectClass(const HString& className, ...)
+ObjectClass* HazeVM::CreateObjectClass(const HString* className, ...)
 {
 	auto obj = HazeMemory::Alloca(sizeof(ObjectClass));
-	new(obj) ObjectClass(FindClass(className));
+	new(obj) ObjectClass(FindClass(*className));
 
-	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(className, className));
+	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(*className, *className));
 
 	va_list args;
-	va_start(args, constructorFunc.Params.size());
+	//va_start(args, constructorFunc.Params.size());
+	va_start(args, className);
 
 	auto data = ((ObjectClass*)(obj))->m_Data;
 	auto dst = &va_arg(args, decltype(data));
@@ -178,7 +181,7 @@ bool HazeVM::ParseString(const x_HChar* moduleName, const x_HChar* moduleCode)
 		PopCurrModule = true;
 		Parse P(m_Compiler.get());
 		P.InitializeString(moduleCode);
-		
+
 		if (!P.ParseContent())
 		{
 			return false;
@@ -279,7 +282,7 @@ char* HazeVM::GetGlobalValueByIndex(x_uint32 Index)
 	{
 		return (char*)(&m_GlobalData[Index].Value);
 	}
-	
+
 	return nullptr;
 }
 
@@ -358,7 +361,7 @@ const HString* HazeVM::GetSymbolClassName(const HString& name)
 
 		return &m_ClassSymbol.find(name)->first;
 	}
-	
+
 	return &iter->first;
 }
 

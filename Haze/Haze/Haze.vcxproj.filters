@@ -33,9 +33,6 @@
     <ClCompile Include="VM\Source\HazeStack.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="VM\Source\HazeVM.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Compiler\Source\Compiler.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -187,6 +184,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="Object\Source\ObjectDynamicClass.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="VM\Source\HazeVM.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

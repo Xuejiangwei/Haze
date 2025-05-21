@@ -28,7 +28,8 @@ HString GetModuleFilePathByLibPath(const HString& modulePath, const HString* ref
 
 	if (refModulePath)
 	{
-		filePath = *refModulePath + modulePackagePath;
+		std::filesystem::path refFile(*refModulePath);
+		filePath = refFile.parent_path().wstring() + modulePackagePath;
 		if (std::filesystem::exists(filePath))
 		{
 			return filePath.c_str();
