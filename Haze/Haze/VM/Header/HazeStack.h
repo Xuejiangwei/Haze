@@ -22,9 +22,9 @@ public:
 
 	HazeVM* GetVM() const { return m_VM; }
 
-	int GetCurrPC() const { return m_PC; }
+	HAZE_ADDRESS_TYPE GetCurrPC() const { return m_PC; }
 
-	void RunGlobalDataInit(x_uint32 startPC, x_uint32 endPC);
+	void RunGlobalDataInit(x_int64 startPC, x_int64 endPC);
 
 public:
 	struct RegisterData
@@ -50,6 +50,8 @@ public:
 	const HazeStackFrame& GetCurrFrame() const { return m_StackFrame.back(); }
 
 	bool FrameIsValid() { return m_StackFrame.size() > 0; }
+
+	void LogStack();
 
 	void JmpTo(const InstructionData& m_Data);
 
@@ -86,7 +88,7 @@ private:
 	V_Array<char> m_StackMain;
 	V_Array<HazeStackFrame> m_StackFrame;
 
-	int m_PC;
+	HAZE_ADDRESS_TYPE m_PC;
 	x_uint32 m_EBP;		//Õ»µ×
 	x_uint32 m_ESP;		//Õ»¶¥
 

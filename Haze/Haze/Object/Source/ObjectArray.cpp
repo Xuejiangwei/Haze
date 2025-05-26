@@ -71,6 +71,12 @@ void ObjectArray::GetLength(HAZE_STD_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(arr);
+	if (!arr)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0];
+		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
 
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_Length);
 }
@@ -82,6 +88,13 @@ void ObjectArray::GetLengthOfDimension(HAZE_STD_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(arr);
+	if (!arr)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
+		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
+
 	GET_PARAM(dimension);
 	SET_RET_BY_TYPE(HazeValueType::UInt64, stack->GetVM()->GetInstruction()[arr->m_PcAddress + dimension + 1].Operator[0].Extra.SignData);
 }
@@ -92,6 +105,12 @@ void ObjectArray::GetDimensionCount(HAZE_STD_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(arr);
+	if (!arr)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0];
+		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
 
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_DimensionCount);
 }
@@ -103,6 +122,12 @@ void ObjectArray::Add(HAZE_STD_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(arr);
+	if (!arr)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
+		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
 
 	auto size = GetSizeByHazeType(arr->m_ValueType);
 	GET_PARAM_ADDRESS(value, size);
@@ -128,6 +153,13 @@ void ObjectArray::Get(HAZE_STD_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(arr);
+	if (!arr)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
+		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
+
 	GET_PARAM(offset);
 
 	auto size = GetSizeByHazeType(arr->m_ValueType);
@@ -146,6 +178,13 @@ void ObjectArray::Set(HAZE_STD_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(arr);
+	if (!arr)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
+		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
+
 	GET_PARAM(offset);
 
 	auto size = GetSizeByHazeType(arr->m_ValueType);

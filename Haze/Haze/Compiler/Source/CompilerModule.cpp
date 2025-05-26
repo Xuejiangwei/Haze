@@ -19,6 +19,7 @@
 #include "CompilerClass.h"
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
+#include "CompilerElementValue.h"
 
 struct PushTempRegister
 {
@@ -915,13 +916,13 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 			advancFunctionInfo->Params.size();
 		for (x_int64 i = params.size() - 1; i >= 0; i--)
 		{
-			auto Variable = params[i];
+			auto variable = params[i];
 			auto type = callFunction ? &callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
 				pointerFunc ? &pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
 				advancFunctionInfo->Params.size() > params.size() - 1 - i ? &advancFunctionInfo->Params.at(params.size() - 1 - i)
 				: &advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 
-			if (*type != Variable->GetValueType() && !Variable->GetValueType().IsStrongerType(*type))
+			if (*type != variable->GetValueType() && !variable->GetValueType().IsStrongerType(*type))
 			{
 				if (i == (x_int64)params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize - (callFunction && callFunction->GetClass() ? 1 : 0) != params.size())
 				{
@@ -929,9 +930,9 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
 				}
 				else if (IsMultiVariableTye(type->PrimaryType) && i == 0) {}
-				else if (Variable->IsEnum())
+				else if (variable->IsEnum())
 				{
-					auto enumValue = DynamicCast<CompilerEnumValue>(Variable);
+					auto enumValue = DynamicCast<CompilerEnumValue>(variable);
 					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetParentType() == type->PrimaryType) {}
 					else
 					{
@@ -939,8 +940,18 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				else if (type->IsStrongerType(Variable->GetValueType())) {}
-				else if (IsRefrenceType(type->PrimaryType) && Variable->GetValueType().PrimaryType == type->SecondaryType) {}
+				else if (type->IsStrongerType(variable->GetValueType())) {}
+				else if (IsRefrenceType(type->PrimaryType) && variable->GetValueType().PrimaryType == type->SecondaryType) {}
+				else if (variable->IsClass() && IsClassType(type->PrimaryType))
+				{
+					auto hazeClass = variable->IsElement() ? DynamicCast<CompilerElementValue>(variable)->GetRealClass() : DynamicCast<CompilerClassValue>(variable)->GetOwnerClass();
+					if (hazeClass && hazeClass->IsParentClass(*type)) {}
+					else
+					{
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<%s>类", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i, type->CustomName->c_str());
+					}
+				}
 				else if (!IsMultiVariableTye(type->PrimaryType))
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
@@ -951,13 +962,13 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 			if (IsMultiVariableTye(type->PrimaryType))
 			{
-				if (Variable->IsRefrence())
+				if (variable->IsRefrence())
 				{
-					if (IsIntegerType(Variable->GetValueType().SecondaryType))
+					if (IsIntegerType(variable->GetValueType().SecondaryType))
 					{
 						funcTypes[i] = &s_UInt64;
 					}
-					else if (IsFloatingType(Variable->GetValueType().SecondaryType))
+					else if (IsFloatingType(variable->GetValueType().SecondaryType))
 					{
 						funcTypes[i] = &s_Float64;
 					}
@@ -970,7 +981,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				}
 				else
 				{
-					funcTypes[i] = &Variable->GetValueType();
+					funcTypes[i] = &variable->GetValueType();
 				}
 			}
 			else
@@ -1001,7 +1012,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	}
 
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
-		<< " " << (x_uint32)HazeDataDesc::Address << " " << CAST_TYPE(HazeValueType::Int32) << std::endl;
+		<< " " << (x_uint32)HazeDataDesc::Address << " " << CAST_TYPE(HAZE_CALL_PUSH_ADDRESS_TYPE) << std::endl;
 	insertBlock->PushIRCode(hss.str());
 	
 	hss.str(H_TEXT(""));

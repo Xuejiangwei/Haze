@@ -21,9 +21,9 @@ HazeStack::~HazeStack()
 {
 }
 
-void HazeStack::RunGlobalDataInit(x_uint32 startPC, x_uint32 endPC)
+void HazeStack::RunGlobalDataInit(x_int64 startPC, x_int64 endPC)
 {
-	int pc = m_PC;
+	auto pc = m_PC;
 
 	//bool isConstructor = endPC - startPC > 1;
 	for (m_PC = startPC; true; m_PC++)
@@ -39,7 +39,7 @@ void HazeStack::RunGlobalDataInit(x_uint32 startPC, x_uint32 endPC)
 			return;
 		}
 
-		if (m_PC == (int)endPC - 1)
+		if (m_PC == endPC - 1)
 		{
 			break;
 		}
@@ -49,10 +49,14 @@ void HazeStack::RunGlobalDataInit(x_uint32 startPC, x_uint32 endPC)
 	m_PC = pc;
 }
 
+void HazeStack::LogStack()
+{
+}
+
 void HazeStack::JmpTo(const InstructionData& data)
 {
 	auto& function = m_StackFrame.back().FunctionInfo;
-	int address = (decltype(m_PC))function->FunctionDescData.InstructionStartAddress + data.Extra.Jmp.StartAddress;
+	auto address = (decltype(m_PC))function->FunctionDescData.InstructionStartAddress + data.Extra.Jmp.StartAddress;
 	memcpy(&m_PC, &address, sizeof(m_PC));
 
 	m_PC--;

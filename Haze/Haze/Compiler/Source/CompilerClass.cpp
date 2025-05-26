@@ -399,11 +399,11 @@ V_Array<Share<CompilerValue>> CompilerClass::CreateVariableCopyClassMember(Compi
 	return members;
 }
 
-bool CompilerClass::IsInheritClass(CompilerClass* c) const
+bool CompilerClass::IsParentClass(CompilerClass* c) const
 {
 	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
-		if (m_ParentClass[i]->IsInheritClass(c))
+		if (m_ParentClass[i]->IsParentClass(c))
 		{
 			return true;
 		}
@@ -420,9 +420,30 @@ bool CompilerClass::IsInheritClass(CompilerClass* c) const
 	return false;
 }
 
+bool CompilerClass::IsParentClass(const HazeDefineType type) const
+{
+	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
+	{
+		if (m_ParentClass[i]->IsParentClass(type))
+		{
+			return true;
+		}
+	}
+
+	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
+	{
+		if (m_ParentClass[i]->m_Name == *type.CustomName)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
 bool CompilerClass::HasCommomInheritClass(CompilerClass* c1, CompilerClass* c2)
 {
-	if (c1 == c2 || c1->IsInheritClass(c2) || c2->IsInheritClass(c1))
+	if (c1 == c2 || c1->IsParentClass(c2) || c2->IsParentClass(c1))
 	{
 		return true;
 	}

@@ -23,7 +23,8 @@ using HString = std::wstring;
 #define HAZE_TEXT(S) L##S
 #define H_TEXT(S) HAZE_TEXT(S)
 
-#define HAZE_ADDRESS_SIZE (int)sizeof(int)
+#define HAZE_ADDRESS_TYPE x_int64
+#define HAZE_ADDRESS_SIZE (int)sizeof(HAZE_ADDRESS_TYPE)
 
 #define HAZE_CONBINE_CLASS_FUNCTION(CLASS, FUNCTION) CLASS##FUNCTION
 
@@ -114,6 +115,7 @@ using HString = std::wstring;
 #define	HAZE_JMP_NULL					H_TEXT("JmpNull")
 
 #define HAZE_CALL_PUSH_ADDRESS_NAME		HString(H_TEXT("RetPC"))
+#define HAZE_CALL_PUSH_ADDRESS_TYPE		(HAZE_ADDRESS_SIZE == 8 ? HazeValueType::Int64 : HAZE_ADDRESS_SIZE == 4 ? HazeValueType::Int32 : HazeValueType::None)
 
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")
 #define HAZE_ADVANCE_GET_FUNCTION		H_TEXT("获得")

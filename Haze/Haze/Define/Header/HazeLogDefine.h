@@ -26,3 +26,6 @@
 #define GC_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<垃圾回收错误>：" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
 
 #define GLOBAL_INIT_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<全局数据初始化错误>：" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
+
+#define OBJECT_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<类对象调用错误>：" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__); \
+								stack->LogStack()

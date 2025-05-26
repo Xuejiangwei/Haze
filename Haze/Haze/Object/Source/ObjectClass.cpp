@@ -60,6 +60,13 @@ void ObjectClass::GetOffset(HAZE_STD_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(classObj);
+	if (!classObj)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
+		OBJECT_ERR_W("类<%s>对象<%s>为空", var.Variable.Type.CustomName->c_str(), var.Variable.Name.c_str());
+		return;
+	}
+
 	GET_PARAM(index);
 	
 	auto& memberInfo = classObj->m_ClassInfo->Members[index];
@@ -80,6 +87,14 @@ void ObjectClass::SetOffset(HAZE_STD_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(classObj);
+	if (!classObj)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
+		OBJECT_ERR_W("类<%s>对象<%s>为空", var.Variable.Type.CustomName->c_str(), var.Variable.Name.c_str());
+		return;
+	}
+
+
 	GET_PARAM(index);
 	
 	auto& memberInfo = classObj->m_ClassInfo->Members[index];

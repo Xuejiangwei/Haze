@@ -1128,6 +1128,10 @@ Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advan
 
 			return GetCurrModule()->CreateAdvanceTypeFunctionCall(func.first, func.second, param, thisPointerTo);
 		}
+		else if (thisPointerTo->IsDynamicClass())
+		{
+			return CreateDynamicClassFunctionCall(thisPointerTo, functionName, param);
+		}
 		else if (thisPointerTo->IsElement())
 		{
 			auto classValue = DynamicCast<CompilerClassValue>(DynamicCast<CompilerElementValue>(thisPointerTo)->CreateGetFunctionCall());
@@ -1140,10 +1144,6 @@ Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advan
 				COMPILER_ERR_MODULE_W("类型<%s>中的变量不是类, 没有找到<%s>方法", GetHazeValueTypeString(advanceType), functionName.c_str(),
 					GetCurrModuleName().c_str());
 			}
-		}
-		else if (thisPointerTo->IsDynamicClass())
-		{
-			return CreateDynamicClassFunctionCall(thisPointerTo, functionName, param);
 		}
 		else
 		{

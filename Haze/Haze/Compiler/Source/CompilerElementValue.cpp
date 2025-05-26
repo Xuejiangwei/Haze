@@ -1,6 +1,8 @@
 #include "HazePch.h"
 #include "CompilerElementValue.h"
 #include "CompilerArrayValue.h"
+#include "CompilerClassValue.h"
+#include "CompilerClass.h"
 #include "CompilerModule.h"
 #include "Compiler.h"
 
@@ -51,5 +53,20 @@ Share<CompilerValue> CompilerElementValue::CreateGetFunctionCall()
 			m_Module->GetName().c_str());
 	}
 
+	return nullptr;
+}
+
+CompilerClass* CompilerElementValue::GetRealClass() const
+{
+	if (m_Element)
+	{
+		if (m_Element->IsElement())
+		{
+			return DynamicCast<CompilerElementValue>(m_Element)->GetRealClass();
+		}
+		
+		return DynamicCast<CompilerClassValue>(m_Element)->GetOwnerClass();
+	}
+	
 	return nullptr;
 }

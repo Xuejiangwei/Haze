@@ -56,7 +56,9 @@ public:
 
 	V_Array<Share<CompilerValue>> CreateVariableCopyClassMember(CompilerModule* compilerModule, HazeVariableScope scope);
 
-	bool IsInheritClass(CompilerClass* c) const;
+	bool IsParentClass(CompilerClass* c) const;
+
+	bool IsParentClass(const HazeDefineType type) const;
 
 	static bool HasCommomInheritClass(CompilerClass* c1, CompilerClass* c2);
 

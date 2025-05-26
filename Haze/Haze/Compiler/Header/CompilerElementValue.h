@@ -1,6 +1,8 @@
 #pragma once
 #include "CompilerValue.h"
 
+class CompilerClass;
+
 class CompilerElementValue : public CompilerValue
 {
 public:
@@ -20,6 +22,8 @@ public:
 	const HString* GetElementName() const { return m_ElementName.get(); }
 
 	Share<CompilerValue> CreateGetFunctionCall();
+
+	CompilerClass* GetRealClass() const;
 
 private:
 	Share<CompilerValue> m_Parent;

@@ -373,7 +373,7 @@ public:
 			int size = oper[0].Variable.Type.GetTypeSize();
 			if (oper[0].Desc == HazeDataDesc::Address)
 			{
-				memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, size);
+				memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, HAZE_ADDRESS_SIZE);
 			}
 			else if (oper[0].Desc == HazeDataDesc::ClassThis)
 			{

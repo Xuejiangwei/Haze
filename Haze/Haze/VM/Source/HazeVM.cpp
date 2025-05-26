@@ -57,7 +57,10 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 	V_Array<HString> baseModules = { HAZE_BASE_LIBRARY_STREAM_NAME, HAZE_BASE_LIBRARY_MEMORY_NAME, HAZE_BASE_LIBRARY_FILE_NAME };
 	for (x_uint64 i = 0; i < baseModules.size(); i++)
 	{
-		m_Compiler->ParseBaseModule(baseModules[i]);
+		if (!m_Compiler->ParseBaseModule(baseModules[i]))
+		{
+			return false;
+		}
 	}
 
 	for (auto& iter : Vector_ModulePath)
@@ -152,12 +155,12 @@ AdvanceFunctionInfo* HazeVM::GetAdvanceFunction(x_uint16 index)
 	return m_FunctionObjectTable[index];
 }
 
-ObjectClass* HazeVM::CreateObjectClass(const HString* className, ...)
+ObjectClass* HazeVM::CreateObjectClass(const x_HChar* className, ...)
 {
 	auto obj = HazeMemory::Alloca(sizeof(ObjectClass));
-	new(obj) ObjectClass(FindClass(*className));
+	new(obj) ObjectClass(FindClass(className));
 
-	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(*className, *className));
+	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(className, className));
 
 	va_list args;
 	//va_start(args, constructorFunc.Params.size());

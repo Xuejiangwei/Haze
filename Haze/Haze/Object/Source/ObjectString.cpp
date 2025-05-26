@@ -3,6 +3,7 @@
 #include "HazeMemory.h"
 #include "MemoryHelper.h"
 #include "HazeStack.h"
+#include "HazeVM.h"
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
 #include "HazeStream.h"
@@ -43,6 +44,13 @@ void ObjectString::Append(HAZE_STD_CALL_PARAM)
 	ObjectString* str;
 	GET_PARAM_START();
 	GET_PARAM(thisStr);
+	if (!thisStr)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
+		OBJECT_ERR_W("字符串对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
+
 	GET_PARAM(str);
 
 	if (thisStr->m_Length + str->m_Length <= thisStr->m_Capacity)
@@ -70,6 +78,12 @@ void ObjectString::Format(HAZE_STD_CALL_PARAM)
 	ObjectString* thisStr;
 	GET_PARAM_START();
 	GET_PARAM(thisStr);
+	if (!thisStr)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0];
+		OBJECT_ERR_W("字符串对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
 
 	if (str.length() <= thisStr->m_Capacity)
 	{

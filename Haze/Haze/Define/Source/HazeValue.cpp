@@ -112,7 +112,9 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isL
 		{ HazeValueType::Bool, { HazeValueType::Int8, HazeValueType::UInt8, HazeValueType::Int16, HazeValueType::UInt16,
 			HazeValueType::Int32, HazeValueType::UInt32, HazeValueType::Int64, HazeValueType::UInt64 } },
 
+		{ HazeValueType::Class, { HazeValueType::UInt64 } },
 		{ HazeValueType::DynamicClass, { HazeValueType::UInt64 } },
+		{ HazeValueType::String, { HazeValueType::PureString } },
 	};
 
 	if (type1 == type2)

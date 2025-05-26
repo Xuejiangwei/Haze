@@ -146,7 +146,7 @@ HString GetModuleFilePath(const HString& modulePath, const HString* refModulePat
 
 	if (path.empty())
 	{
-		HAZE_LOG_ERR_W("未能找到<%s>模块的文件路径, 来自<%s>的引用!\n", modulePath.c_str(), refModulePath->c_str());
+		HAZE_LOG_ERR_W("未能找到<%s>模块的文件路径, 来自<%s>的引用!\n", modulePath.c_str(), refModulePath ? refModulePath->c_str(): H_TEXT("None"));
 	}
 
 	return path;

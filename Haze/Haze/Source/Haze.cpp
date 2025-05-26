@@ -105,7 +105,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 
 	for (int i = 0; i < argCount; i++)
 	{
-		HAZE_LOG_INFO("%s\n", argValue[i]);
+		HAZE_LOG_INFO_W("ÊäÈë²ÎÊý<%d><%s>\n", i, String2WString(argValue[i]).c_str());
 	}
 
 	HazePreInit();
@@ -165,6 +165,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 			{
 				g_CustomPaths = MakeUnique<V_Array<std::wstring>>();
 			}
+			g_CustomPaths->clear();
 
 			std::string str = argValue[index];
 			char* s = new char[str.size() + 1];
