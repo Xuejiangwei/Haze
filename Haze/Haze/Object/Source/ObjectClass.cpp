@@ -5,12 +5,20 @@
 #include "HazeStack.h"
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
+#include "MemoryHelper.h"
 
-ObjectClass::ObjectClass(ClassData* classInfo)
-	: m_ClassInfo(classInfo)
+ObjectClass::ObjectClass(x_uint32 gcIndex, ClassData* classInfo)
+	: GCObject(gcIndex), m_ClassInfo(classInfo)
 {
-	m_Data = HazeMemory::Alloca(classInfo->Size);
+	auto pair = HazeMemory::AllocaGCData(classInfo->Size, GC_ObjectType::ClassData);
+	m_Data = pair.first;
+	m_DataGCIndex = pair.second;
 	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p> Constructor\n"), m_ClassInfo->Name.c_str(), this, m_Data);
+}
+
+ObjectClass::~ObjectClass()
+{
+	HazeMemory::GetMemory()->Remove(m_Data, m_ClassInfo->Size, m_DataGCIndex);
 }
 
 AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
@@ -53,7 +61,7 @@ void ObjectClass::SetMember(const x_HChar* memberName, void* value)
 	}
 }
 
-void ObjectClass::GetOffset(HAZE_STD_CALL_PARAM)
+void ObjectClass::GetOffset(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectClass* classObj;
 	x_uint64 index = 0;
@@ -79,7 +87,7 @@ void ObjectClass::GetOffset(HAZE_STD_CALL_PARAM)
 	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p><%p> Get: <%s>\n"), classObj->m_ClassInfo->Name.c_str(), classObj, classObj->m_Data, (char*)classObj->m_Data + memberInfo.Offset, value);
 }
 
-void ObjectClass::SetOffset(HAZE_STD_CALL_PARAM)
+void ObjectClass::SetOffset(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectClass* classObj;
 	x_uint64 index = 0;

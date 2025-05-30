@@ -126,6 +126,7 @@ using HString = std::wstring;
 #define HAZE_CUSTOM_CALL_FUNCTION		H_TEXT("µ÷ÓÃ")
 
 #define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum, int paramByteSize
+#define HAZE_OBJECT_CALL_PARAM		class HazeStack* stack, int multiParamNum, x_uint64& paramByteSize
 #define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum, paramByteSize
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 4

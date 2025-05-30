@@ -508,6 +508,12 @@ ASTNew::ASTNew(Compiler* compiler, const SourceLocation& location, const HazeDef
 
 Share<CompilerValue> ASTNew::CodeGen()
 {
+	if (!IsAdvanceType(m_DefineVariable.Type.PrimaryType) || IsDynamicClassType(m_DefineVariable.Type.PrimaryType))
+	{
+		AST_ERR_W("生成类型错误, 只能生成<类><数组><字符串>");
+		return nullptr;
+	}
+
 	auto func = m_Compiler->GetCurrModule()->GetCurrFunction();
 
 	V_Array<Share<CompilerValue>> countValue(m_CountArrayExpression.size());

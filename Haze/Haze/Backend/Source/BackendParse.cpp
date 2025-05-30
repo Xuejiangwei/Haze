@@ -600,17 +600,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 		{
 			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Scope);
 			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Desc);
-		}
-
-		if (operatorOne.Scope == HazeVariableScope::Ignore)
-		{
-			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
-			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
-		}
-		else
-		{
-			/*operatorOne.Extra.Address.BaseAddress = 0;
-			operatorOne.Extra.Address.Offset = 0;*/
+		
 			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
 			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
 		}

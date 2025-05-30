@@ -6,6 +6,8 @@
 //https://zhuanlan.zhihu.com/p/41023320
 //https://zhuanlan.zhihu.com/p/41398507
 
+#include "GCObjectList.h"
+
 #define MAX_HAZE_ALLOC_SIZE 2048
 #define GRANULE 16
 #define PAGE_UNIT 4096
@@ -14,17 +16,11 @@
 class HazeVM;
 class MemoryFreeList;
 class MemoryBlock;
+class GCObjectList;
 
-enum class GC_State : x_uint8
-{
-	White,			//Garbage
-	Gray,			//UnCertain, no scan completed
-	Black,			//Reserve
-};
-
-//申请内存时从block中的freelist中申请，若没有多余内存，再从page中申请一个block,若page中没有，则从操作系统申请page
-//最后一个Page表，里面的page大小不一定相同
-
+/*   申请内存时从block中的freelist中申请，若没有多余内存，再从page中申请一个block, 若page中没有，则从操作系统申请page
+     最后一个Page表，里面的page大小不一定相同
+*/
 class HazeMemory
 {
 public:
@@ -34,11 +30,13 @@ public:
 
 	static HazeMemory* GetMemory();
 
-	static void* Alloca(x_uint64 size);
+	static Pair<void*, x_uint32> AllocaGCData(x_uint64 size, GC_ObjectType type);
 
 	void SetVM(HazeVM* vm) { m_VM = vm; }
 
 	void AddToRoot(void*);
+
+	void Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex);
 
 	void Mark();
 
@@ -49,18 +47,19 @@ public:
 	enum class MarkStage : x_uint8
 	{
 		Ready,
-		Running_MarkRoot,
-		Running_MarkList
+		Mark,
+		MarkEnd,
+		Sweep,
 	};
 
 private:
+	static void* Alloca(x_uint64 size);
+
 	void ForceGC();
 
-	void MarkVariable(const HazeDefineType& type, x_uint64 startAddress, char* classAddress);
+	void MarkVariable(const HazeDefineType& type, const void* address);
 
-	void MarkClassMember(ClassData* classData, char* baseAddress);
-
-	inline bool MarkArrayBaseIndex();
+	void MarkClassMember(ClassData* classData, const char* baseAddress);
 
 private:
 	HazeVM* m_VM;
@@ -78,6 +77,8 @@ private:
 	x_uint64 m_CurrMarkClassIndex;
 	x_uint64 m_CurrMarkArrayIndex;
 
-	V_Array<void*> m_KeepMemorys;
-	V_Array<Pair<x_uint64, GC_State>> m_MarkAddressBases;
+	/*V_Array<void*> m_KeepMemorys;
+	V_Array<Pair<x_uint64, GC_State>> m_MarkAddressBases;*/
+
+	Unique<GCObjectList> m_ObjectList;
 };

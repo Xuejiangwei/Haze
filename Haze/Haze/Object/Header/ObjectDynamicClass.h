@@ -1,8 +1,8 @@
 #pragma once
-#include "ObjectDefine.h"
+#include "GCObject.h"
 #include "HazeInstruction.h"
 
-class ObjectDynamicClass
+class ObjectDynamicClass : public GCObject
 {
 	friend class HazeVM;
 	friend class HazeMemory;
@@ -24,17 +24,17 @@ public:
 	};
 
 public:
-	ObjectDynamicClass(CustomMethods* methods, void* dataPtr);
+	ObjectDynamicClass(x_uint32 gcIndex, CustomMethods* methods, void* dataPtr);
 
 	~ObjectDynamicClass();
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 private:
-	static void GetMember(HAZE_STD_CALL_PARAM);
+	static void GetMember(HAZE_OBJECT_CALL_PARAM);
 
-	static void SetMember(HAZE_STD_CALL_PARAM);
+	static void SetMember(HAZE_OBJECT_CALL_PARAM);
 
-	static void CallFunction(HAZE_STD_CALL_PARAM);
+	static void CallFunction(HAZE_OBJECT_CALL_PARAM);
 
 private:
 	void* m_Data;

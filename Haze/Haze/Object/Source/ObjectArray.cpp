@@ -6,8 +6,8 @@
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
 
-ObjectArray::ObjectArray(x_uint64 dimensionCount, x_uint64* lengths, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
-	: m_Data(nullptr), m_DimensionCount(dimensionCount), m_Length(0), m_PcAddress(pcAddress), m_ValueType(valueType),
+ObjectArray::ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* lengths, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
+	: GCObject(gcIndex), m_Data(nullptr), m_DimensionCount(dimensionCount), m_Length(0), m_PcAddress(pcAddress), m_ValueType(valueType),
 	  m_ClassInfo(classInfo)
 {
 	if (dimensionCount > 1)
@@ -16,12 +16,15 @@ ObjectArray::ObjectArray(x_uint64 dimensionCount, x_uint64* lengths, x_uint64 pc
 		m_Length = lengths[0];
 		m_Capacity = m_Length;
 
-		m_Data = HazeMemory::Alloca(m_Length * sizeof(ObjectArray));
+		auto pair = HazeMemory::AllocaGCData(m_Length * sizeof(ObjectArray), GC_ObjectType::ArrayData);
+		m_Data = pair.first;
+		m_DataGCIndex = pair.second;
+
 		for (x_uint64 i = 0; i < m_Length; i++)
 		{
-			auto arr = HazeMemory::Alloca(sizeof(ObjectArray));
-			new((char*)arr) ObjectArray(dimensionCount - 1, lengths + 1, pcAddress, valueType, classInfo);
-			((ObjectArray**)m_Data)[i] = (ObjectArray*)arr;
+			pair = HazeMemory::HazeMemory::AllocaGCData(sizeof(ObjectArray), GC_ObjectType::Array);
+			new((char*)pair.first) ObjectArray(pair.second, dimensionCount - 1, lengths + 1, pcAddress, valueType, classInfo);
+			((ObjectArray**)m_Data)[i] = (ObjectArray*)pair.first;
 		}
 	}
 	else if (lengths)
@@ -31,18 +34,31 @@ ObjectArray::ObjectArray(x_uint64 dimensionCount, x_uint64* lengths, x_uint64 pc
 
 		if (m_Capacity == 0)
 		{
-			m_Capacity = 1;
-			m_Data = HazeMemory::Alloca(m_Capacity * GetSizeByHazeType(valueType));
+			m_Capacity = 2;
+
+			auto pair = HazeMemory::AllocaGCData(m_Capacity * GetSizeByHazeType(valueType), GC_ObjectType::ArrayData);
+			m_Data = pair.first;
+			m_DataGCIndex = pair.second;
 		}
 		else
 		{
-			m_Data = HazeMemory::Alloca(m_Length * GetSizeByHazeType(valueType));
+			auto pair = HazeMemory::AllocaGCData(m_Length * GetSizeByHazeType(valueType), GC_ObjectType::ArrayData);
+			m_Data = pair.first;
+			m_DataGCIndex = pair.second;
 		}
 	}
 }
 
 ObjectArray::~ObjectArray()
 {
+	if (m_DimensionCount <= 1)
+	{
+		HazeMemory::GetMemory()->Remove(m_Data, m_Capacity * GetSizeByHazeType(m_ValueType), m_DataGCIndex);
+	}
+	else
+	{
+		HazeMemory::GetMemory()->Remove(m_Data, m_Capacity * sizeof(ObjectArray), m_DataGCIndex);
+	}
 }
 
 AdvanceClassInfo* ObjectArray::GetAdvanceClassInfo()
@@ -65,7 +81,7 @@ AdvanceClassInfo* ObjectArray::GetAdvanceClassInfo()
 //
 //}
 
-void ObjectArray::GetLength(HAZE_STD_CALL_PARAM)
+void ObjectArray::GetLength(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectArray* arr;
 
@@ -81,7 +97,7 @@ void ObjectArray::GetLength(HAZE_STD_CALL_PARAM)
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_Length);
 }
 
-void ObjectArray::GetLengthOfDimension(HAZE_STD_CALL_PARAM)
+void ObjectArray::GetLengthOfDimension(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectArray* arr;
 	x_uint64 dimension;
@@ -99,7 +115,7 @@ void ObjectArray::GetLengthOfDimension(HAZE_STD_CALL_PARAM)
 	SET_RET_BY_TYPE(HazeValueType::UInt64, stack->GetVM()->GetInstruction()[arr->m_PcAddress + dimension + 1].Operator[0].Extra.SignData);
 }
 
-void ObjectArray::GetDimensionCount(HAZE_STD_CALL_PARAM)
+void ObjectArray::GetDimensionCount(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectArray* arr;
 
@@ -115,7 +131,7 @@ void ObjectArray::GetDimensionCount(HAZE_STD_CALL_PARAM)
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_DimensionCount);
 }
 
-void ObjectArray::Add(HAZE_STD_CALL_PARAM)
+void ObjectArray::Add(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectArray* arr;
 	char* value = nullptr;
@@ -135,9 +151,12 @@ void ObjectArray::Add(HAZE_STD_CALL_PARAM)
 	if (arr->m_Length == arr->m_Capacity)
 	{
 		arr->m_Capacity *= 2;
-		auto data = HazeMemory::Alloca(arr->m_Capacity * size);
-		memcpy(data, arr->m_Data, arr->m_Length * size);
-		arr->m_Data = data;
+
+		auto pair = HazeMemory::AllocaGCData(arr->m_Capacity * size, GC_ObjectType::ArrayData);
+		memcpy(pair.first, arr->m_Data, arr->m_Length * size);
+
+		arr->m_Data = pair.first;
+		arr->m_DataGCIndex = pair.second;
 	}
 
 	memcpy((char*)arr->m_Data + arr->m_Length * size, value, size);
@@ -146,7 +165,7 @@ void ObjectArray::Add(HAZE_STD_CALL_PARAM)
 	SET_RET_BY_TYPE(arr->m_ValueType, value);
 }
 
-void ObjectArray::Get(HAZE_STD_CALL_PARAM)
+void ObjectArray::Get(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectArray* arr;
 	x_uint64 offset = 0;
@@ -170,7 +189,7 @@ void ObjectArray::Get(HAZE_STD_CALL_PARAM)
 	//HAZE_LOG_INFO("Array Get <%d>\n", offset);
 }
 
-void ObjectArray::Set(HAZE_STD_CALL_PARAM)
+void ObjectArray::Set(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectArray* arr;
 	x_uint64 offset = 0;

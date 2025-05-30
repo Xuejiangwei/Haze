@@ -78,6 +78,8 @@ public:
 
 	void RemoveGlobalValue(x_uint32 index);
 
+	void ClearGlobalData();
+
 private:
 	void InitRegisterObjectFunction();
 

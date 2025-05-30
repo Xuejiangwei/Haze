@@ -1,6 +1,7 @@
 #include "HazePch.h"
 #include "CompilerBlock.h"
 #include "CompilerHelper.h"
+#include "CompilerModule.h"
 #include "CompilerValue.h"
 #include "HazeCompilerPointerValue.h"
 #include "CompilerClassValue.h"
@@ -150,6 +151,13 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 			}
 			return nullptr;
 		}
+	}
+
+	auto m = m_ParentFunction->GetModule()->ExistGlobalValue(defineVar.Name);
+	if (m)
+	{
+		HAZE_LOG_ERR_W("局部变量<%s>与<%s>模块全局变量名重复!\n", defineVar.Name.c_str(), m->GetName().c_str());
+		return nullptr;
 	}
 
 	HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;

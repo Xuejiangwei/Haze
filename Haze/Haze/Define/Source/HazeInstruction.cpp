@@ -649,7 +649,7 @@ public:
 		if (oper.size() == 1)
 		{
 #if HAZE_CALL_LOG
-			HAZE_LOG_INFO(H_TEXT("调用函数<%s>\n"), oper[0].Variable.Name.c_str());
+			HAZE_LOG_INFO(H_TEXT("调用函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
 #endif
 
 			memcpy(&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], &stack->m_PC, HAZE_ADDRESS_SIZE);
@@ -658,8 +658,10 @@ public:
 			{
 				x_uint32 tempEBP = stack->m_EBP;
 				stack->m_EBP = stack->m_ESP;
-				stack->m_VM->GetAdvanceFunction(oper[0].Extra.ObjectCall.Index)->ClassFunc(stack, oper[0].Extra.Call.ParamNum, oper[0].Extra.Call.ParamByteSize);
-				stack->m_ESP -= (oper[0].Extra.Call.ParamByteSize + HAZE_ADDRESS_SIZE);
+
+				x_uint64 paramByteSize = 0;
+				stack->m_VM->GetAdvanceFunction((x_uint16)oper[0].Extra.ObjectCall.Index)->ClassFunc(stack, oper[0].Extra.Call.ParamNum, paramByteSize);
+				stack->m_ESP -= (paramByteSize + HAZE_ADDRESS_SIZE);
 				stack->m_EBP = tempEBP;
 			}
 			else if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
@@ -777,11 +779,10 @@ public:
 			{
 				size = type.GetTypeSize();
 			}
-			x_uint64 newSize = size;
 			auto countAddress = GetOperatorAddress(stack, oper[1]);
 			
 			auto count = *((x_uint64*)countAddress);
-			void* address = nullptr;
+			Pair<void*, x_uint32> address = { nullptr, 0 };
 			if (count > 0)
 			{
 				x_uint64* lengths = new x_uint64[count];
@@ -797,25 +798,26 @@ public:
 					lengths[i] = v1.Value.UInt64;
 				}
 
-				address = HazeMemory::Alloca(sizeof(ObjectArray));
-				new((char*)address) ObjectArray(count, lengths, stack->m_PC, type.SecondaryType,
+				address = HazeMemory::AllocaGCData(sizeof(ObjectArray), GC_ObjectType::Array);
+				new((char*)address.first) ObjectArray(address.second, count, lengths, stack->m_PC, type.SecondaryType,
 					type.CustomName ? stack->m_VM->FindClass(*type.CustomName) : nullptr);
 
 				delete[] lengths;
 			}
 			else if (IsStringType(type.PrimaryType))
 			{
-				address = HazeMemory::Alloca(sizeof(ObjectString));
-				new(address) ObjectString(nullptr);
+				address = HazeMemory::AllocaGCData(sizeof(ObjectString), GC_ObjectType::String);
+				new(address.first) ObjectString(address.second, nullptr);
 			}
 			else if (IsClassType(type.PrimaryType))
 			{
-				address = HazeMemory::Alloca(sizeof(ObjectClass));
-				new(address) ObjectClass(stack->GetVM()->FindClass(*type.CustomName));
+				address = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
+				new(address.first) ObjectClass(address.second, stack->GetVM()->FindClass(*type.CustomName));
 			}
 			else
 			{
-				address = HazeMemory::Alloca(newSize);
+				HAZE_LOG_ERR_W("NEW<%s>错误 只能生成<类><数组><字符串>!\n", oper[0].Variable.Name.c_str());
+				//address = HazeMemory::Alloca(newSize);
 			}
 
 			/*newRegister->Data.resize(sizeof(address));
@@ -1197,6 +1199,8 @@ private:
 	//只能C++多参数函数调用
 	static void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, int paramNum, va_list& args)
 	{
+		stack->m_EBP = stack->m_ESP;
+
 		int size = 0;
 		for (size_t i = 0; i < funcData->Params.size(); i++)
 		{
@@ -1212,7 +1216,6 @@ private:
 
 		memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, HAZE_ADDRESS_SIZE);
 		stack->m_ESP += HAZE_ADDRESS_SIZE;
-		stack->m_EBP = stack->m_ESP;
 
 		stack->OnCall(funcData, size);
 		stack->m_PC++;

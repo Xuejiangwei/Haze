@@ -162,9 +162,6 @@
     <ClCompile Include="Source\HazePch.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Object\Source\GCObject.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Object\Source\ObjectArray.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -187,6 +184,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="VM\Source\HazeVM.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="Memory\Source\GCObjectList.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
@@ -374,9 +374,6 @@
     <ClInclude Include="Header\JwHeader.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Object\Header\ObjectDefine.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Object\Header\ObjectArray.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -399,6 +396,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Object\Header\ObjectDynamicClass.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Object\Header\GCObject.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Memory\Header\GCObjectList.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

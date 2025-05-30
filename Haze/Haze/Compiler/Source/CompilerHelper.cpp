@@ -617,7 +617,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			}
 
 			hss << varName << " " << CAST_TYPE(HazeValueType::ObjectFunction) << " " << CAST_SCOPE(advancePointerTo->GetVariableScope()) << " "
-				<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " " //<< paramSize << " " << m->GetName() << " " 
+				<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " "// << paramSize << " " << m->GetName() << " " 
 				<< advanceFuncIndex << HAZE_ENDL;
 		}
 	}

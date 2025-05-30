@@ -92,7 +92,6 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 		ExeFile.ReadExecuteFile(this);
 
 #endif
-
 	}
 
 	m_Compiler.release();
@@ -157,8 +156,8 @@ AdvanceFunctionInfo* HazeVM::GetAdvanceFunction(x_uint16 index)
 
 ObjectClass* HazeVM::CreateObjectClass(const x_HChar* className, ...)
 {
-	auto obj = HazeMemory::Alloca(sizeof(ObjectClass));
-	new(obj) ObjectClass(FindClass(className));
+	auto pair = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
+	new(pair.first) ObjectClass(pair.second, FindClass(className));
 
 	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(className, className));
 
@@ -166,14 +165,14 @@ ObjectClass* HazeVM::CreateObjectClass(const x_HChar* className, ...)
 	//va_start(args, constructorFunc.Params.size());
 	va_start(args, className);
 
-	auto data = ((ObjectClass*)(obj))->m_Data;
+	auto data = ((ObjectClass*)(pair.first))->m_Data;
 	auto dst = &va_arg(args, decltype(data));
-	memcpy(dst, &obj, sizeof(data));
+	memcpy(dst, &pair.first, sizeof(data));
 
 	CallHazeFunction(m_Stack.get(), &constructorFunc, (va_list&)dst);
 	va_end(args);
 
-	return (ObjectClass*)obj;
+	return (ObjectClass*)pair.first;
 }
 
 bool HazeVM::ParseString(const x_HChar* moduleName, const x_HChar* moduleCode)
@@ -345,9 +344,9 @@ void HazeVM::SetGlobalString(x_uint64 index, const HString& str)
 	if (index < m_StringTable.size())
 	{
 		auto newStr = HazeStream::FormatConstantString(str);
-		auto address = HazeMemory::Alloca(sizeof(ObjectString));
-		new((char*)address) ObjectString(newStr.c_str(), true);
-		m_StringTable[index] = (ObjectString*)address;
+		auto address = HazeMemory::AllocaGCData(sizeof(ObjectString), GC_ObjectType::String);
+		new((char*)address.first) ObjectString(address.second, newStr.c_str(), true);
+		m_StringTable[index] = (ObjectString*)address.first;
 	}
 	else
 	{
@@ -409,7 +408,7 @@ x_uint32 HazeVM::GetNextLine(x_uint32 CurrLine)
 {
 	x_uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
 	x_uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (x_uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
+	for (x_uint64 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
 	{
 		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line > CurrLine)
 		{
@@ -424,7 +423,7 @@ x_uint32 HazeVM::GetNextInstructionLine(x_uint32 currLine)
 {
 	x_uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
 	x_uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (x_uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
+	for (x_uint64 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
 	{
 		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line >= currLine)
 		{
@@ -439,7 +438,7 @@ Pair<HString, x_uint32> HazeVM::GetStepIn(x_uint32 CurrLine)
 {
 	x_uint64 startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
 	x_uint32 instructionNum = m_Stack->GetCurrFrame().FunctionInfo->InstructionNum;
-	for (x_uint32 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
+	for (x_uint64 i = m_Stack->GetCurrPC(); i < startAddress + instructionNum; i++)
 	{
 		if (m_Instructions[i].InsCode == InstructionOpCode::LINE && m_Instructions[i].Operator[0].Extra.Line > CurrLine)
 		{
@@ -507,10 +506,22 @@ void HazeVM::RemoveGlobalValue(x_uint32 index)
 	}
 }
 
+void HazeVM::ClearGlobalData()
+{
+	m_GlobalData.clear();
+	m_GlobalData.shrink_to_fit();
+
+	m_ExtreGlobalData.clear();
+	m_ExtreGlobalData.shrink_to_fit();
+
+	m_StringTable.clear();
+	m_StringTable.shrink_to_fit();
+}
+
 x_uint32 HazeVM::GetCurrCallFunctionLine()
 {
-	auto startAddress = m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
-	for (int i = m_Stack->GetCurrPC(); i >= startAddress; i--)
+	auto startAddress = (x_int64)m_Stack->GetCurrFrame().FunctionInfo->FunctionDescData.InstructionStartAddress;
+	for (x_int64 i = m_Stack->GetCurrPC(); i >= startAddress; i--)
 	{
 		if (m_Instructions[i].InsCode == InstructionOpCode::LINE)
 		{

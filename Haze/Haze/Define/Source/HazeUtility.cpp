@@ -345,7 +345,7 @@ InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type)
 
 HString GetModuleNameByFilePath(const HString& filePath)
 {
-	auto Index = 0;// filePath.find_last_of(H_TEXT("\\"));
+	auto Index = filePath.find_last_of(H_TEXT("\\"));
 	if (Index != HString::npos)
 	{
 		return filePath.substr(Index + 1, filePath.length() - Index - 1 - 3);
@@ -367,7 +367,6 @@ HAZE_BINARY_STRING ToString(void* value)
 
 	return ss.str();
 }
-
 
 void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2)
 {

@@ -13,14 +13,6 @@ MemoryBlock::~MemoryBlock()
 	free(m_BlockInfo.Mark);
 }
 
-void MemoryBlock::SetAllWhite()
-{
-	for (x_uint32 i = 0; i < m_BlockInfo.MarkCount; i++)
-	{
-		m_BlockInfo.Mark[0] = (int)GC_State::White;
-	}
-}
-
 void MemoryBlock::MarkBlack(void* address)
 {
 	x_uint64 Index = ((x_uint64)address - (x_uint64)m_Memory) / m_BlockInfo.UnitSize;
@@ -32,6 +24,11 @@ void MemoryBlock::MarkWrite(void* address)
 {
 	x_uint64 Index = ((x_uint64)address - (x_uint64)m_Memory) / m_BlockInfo.UnitSize;
 	m_BlockInfo.Mark[Index] = (int)GC_State::White;
+}
+
+void MemoryBlock::MarkAllWrite()
+{
+	memset(m_BlockInfo.Mark, (int)GC_State::White, m_BlockInfo.MarkCount);
 }
 
 bool MemoryBlock::IsInBlock(void* address)

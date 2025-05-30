@@ -1,15 +1,14 @@
 #include "HazePch.h"
 #include "ObjectString.h"
 #include "HazeMemory.h"
-#include "MemoryHelper.h"
 #include "HazeStack.h"
 #include "HazeVM.h"
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
 #include "HazeStream.h"
 
-ObjectString::ObjectString(const x_HChar* str, bool fixedCapacity)
-	: m_Data(nullptr), m_Length(0), m_Capacity(0)
+ObjectString::ObjectString(x_uint32 gcIndex, const x_HChar* str, bool fixedCapacity)
+	: GCObject(gcIndex), m_Data(nullptr), m_Length(0), m_Capacity(0)
 {
 	if (str)
 	{
@@ -17,16 +16,20 @@ ObjectString::ObjectString(const x_HChar* str, bool fixedCapacity)
 		m_Capacity = (m_Length + 1) * sizeof(x_HChar);
 		if (!fixedCapacity)
 		{
-			m_Capacity = RoundUp(m_Length);
+			m_Capacity = m_Length;
 		}
 
-		m_Data = HazeMemory::Alloca(m_Capacity);
+		auto pair = HazeMemory::AllocaGCData(m_Capacity, GC_ObjectType::StringData);
+		m_Data = pair.first;
+		m_DataGCIndex = pair.second;
+
 		memcpy(m_Data, str, m_Capacity);
 	}
 }
 
 ObjectString::~ObjectString()
 {
+	HazeMemory::GetMemory()->Remove(m_Data, m_Capacity, m_DataGCIndex);
 }
 
 AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
@@ -38,7 +41,7 @@ AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
 	return &info;
 }
 
-void ObjectString::Append(HAZE_STD_CALL_PARAM)
+void ObjectString::Append(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectString* thisStr;
 	ObjectString* str;
@@ -62,16 +65,17 @@ void ObjectString::Append(HAZE_STD_CALL_PARAM)
 		auto oldLength = thisStr->m_Length;
 		thisStr->m_Length += str->m_Length;
 		thisStr->m_Capacity = (thisStr->m_Length + 1) * sizeof(x_HChar);
-		auto dataAddress = HazeMemory::Alloca(thisStr->m_Capacity);
 
-		memcpy(dataAddress, thisStr->m_Data, oldLength* sizeof(x_HChar));
-		memcpy((x_HChar*)dataAddress + oldLength, str->m_Data, str->m_Length * sizeof(x_HChar));
+		auto pair = HazeMemory::AllocaGCData(thisStr->m_Capacity, GC_ObjectType::StringData);
+		memcpy(pair.first, thisStr->m_Data, oldLength* sizeof(x_HChar));
+		memcpy((x_HChar*)pair.first + oldLength, str->m_Data, str->m_Length * sizeof(x_HChar));
 		
-		thisStr->m_Data = dataAddress;
+		thisStr->m_Data = pair.first;
+		thisStr->m_DataGCIndex = pair.second;
 	}
 }
 
-void ObjectString::Format(HAZE_STD_CALL_PARAM)
+void ObjectString::Format(HAZE_OBJECT_CALL_PARAM)
 {
 	auto str = HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM_VAR);
 
@@ -93,8 +97,11 @@ void ObjectString::Format(HAZE_STD_CALL_PARAM)
 	{
 		thisStr->m_Length = str.length();
 		thisStr->m_Capacity = (thisStr->m_Length + 1) * sizeof(x_HChar);
-		thisStr->m_Data = HazeMemory::Alloca(thisStr->m_Capacity);
 
-		memcpy(thisStr->m_Data, str.c_str(), thisStr->m_Capacity);
+		auto pair = HazeMemory::AllocaGCData(thisStr->m_Capacity, GC_ObjectType::StringData);
+		memcpy(pair.first, str.c_str(), thisStr->m_Capacity);
+
+		thisStr->m_Data = pair.first;
+		thisStr->m_DataGCIndex = pair.second;
 	}
 }

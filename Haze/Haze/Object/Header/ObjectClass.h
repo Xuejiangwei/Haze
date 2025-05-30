@@ -1,16 +1,16 @@
 #pragma once
-#include "ObjectDefine.h"
+#include "GCObject.h"
 #include "HazeInstruction.h"
 
-class ObjectClass
+class ObjectClass : public GCObject
 {
 	friend class HazeVM;
 	friend class HazeMemory;
 	friend class InstructionProcessor;
 public:
-	ObjectClass(ClassData* classInfo);
+	ObjectClass(x_uint32 gcIndex, ClassData* classInfo);
 
-	~ObjectClass() {}
+	~ObjectClass();
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 
@@ -19,11 +19,13 @@ public:
 	void SetMember(const x_HChar* memberName, void* value);
 
 private:
-	static void GetOffset(HAZE_STD_CALL_PARAM);
+	static void GetOffset(HAZE_OBJECT_CALL_PARAM);
 
-	static void SetOffset(HAZE_STD_CALL_PARAM);
+	static void SetOffset(HAZE_OBJECT_CALL_PARAM);
 
 private:
+	x_uint32 m_DataGCIndex;
+
 	void* m_Data;
 	ClassData* m_ClassInfo;
 };

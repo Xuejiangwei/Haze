@@ -36,12 +36,13 @@ public:
 	{
 		const FunctionData* FunctionInfo;
 		x_uint32 FunctionParamSize;
-		x_uint32 EBP;
-		x_uint32 ESP;
+		x_uint32 EBP;					// 之前调用函数栈的临时变量开始的地址
+		x_uint32 ESP;					// 之前调用函数栈的临时变量结束的地址
+		x_uint32 CurrParamESP;			// 当前函数的参数加PC地址的结束地址
 		RegisterData Register;
 
-		HazeStackFrame(const FunctionData* Info, x_uint32 ParamSize, x_uint32 EBP, x_uint32 ESP, RegisterData& Register) 
-			: FunctionParamSize(ParamSize), EBP(EBP), ESP(ESP), Register(Register)
+		HazeStackFrame(const FunctionData* Info, x_uint32 ParamSize, x_uint32 EBP, x_uint32 ESP, x_uint32 currParamESP, RegisterData& Register)
+			: FunctionParamSize(ParamSize), EBP(EBP), ESP(ESP), CurrParamESP(currParamESP), Register(Register)
 		{
 			FunctionInfo = Info;
 		}

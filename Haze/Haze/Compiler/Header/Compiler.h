@@ -12,7 +12,7 @@ class CompilerBlock;
 
 struct AdvanceFunctionInfo
 {
-	void(*ClassFunc)(HAZE_STD_CALL_PARAM);
+	void(*ClassFunc)(HAZE_OBJECT_CALL_PARAM);
 	HazeDefineType Type;
 	V_Array<HazeDefineType> Params;
 };

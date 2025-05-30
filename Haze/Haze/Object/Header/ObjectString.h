@@ -1,11 +1,11 @@
 #pragma once
-#include "ObjectDefine.h"
+#include "GCObject.h"
 #include "HazeInstruction.h"
 
-class ObjectString
+class ObjectString : public GCObject
 {
 public:
-	ObjectString(const x_HChar* str, bool fixedCapacity = false);
+	ObjectString(x_uint32 gcIndex, const x_HChar* str, bool fixedCapacity = false);
 
 	~ObjectString();
 
@@ -16,11 +16,13 @@ public:
 	x_uint64 GetLength() const { return m_Length; }
 
 private:
-	static void Append(HAZE_STD_CALL_PARAM);
+	static void Append(HAZE_OBJECT_CALL_PARAM);
 
-	static void Format(HAZE_STD_CALL_PARAM);
+	static void Format(HAZE_OBJECT_CALL_PARAM);
 
 private:
+	x_uint32 m_DataGCIndex;
+	
 	void* m_Data;
 	x_uint64 m_Length;
 	x_uint64 m_Capacity;

@@ -3,6 +3,7 @@
 
 #include "Haze.h"
 #include "HazeVM.h"
+#include "HazeMemory.h"
 #include "HazeLog.h"
 #include "HazeUtility.h"
 
@@ -32,6 +33,8 @@ void HazePreInit()
 
 void HazeEnd()
 {
+	HazeMemory::GetMemory()->TryGC(true);
+
 	if (g_Debugger)
 	{
 		g_Debugger->SendProgramEnd();
@@ -215,7 +218,9 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	if (vm && vm->GetFucntionIndexByName(mainFunction) >= 0)
 	{
 		std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
-		vm->CallFunction(mainFunction.c_str(), 1, 2);
+		vm->CallFunction(mainFunction.c_str());
+
+		vm->ClearGlobalData();
 		HazeEnd();
 	}
 

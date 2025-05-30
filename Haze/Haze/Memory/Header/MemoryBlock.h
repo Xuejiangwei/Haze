@@ -33,11 +33,11 @@ public:
 
 	~MemoryBlock();
 
-	void SetAllWhite();
-
 	void MarkBlack(void* address);
 
 	void MarkWrite(void* address);
+
+	void MarkAllWrite();
 
 	bool IsUsed() const { return m_BlockInfo.State == MemoryBlockState::Used; }
 

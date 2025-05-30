@@ -1,5 +1,5 @@
 #pragma once
-#include "ObjectDefine.h"
+#include "GCObject.h"
 
 class HazeStack;
 
@@ -7,11 +7,11 @@ class HazeStack;
 * 定义时不能输入数字 例如 整数[1] 或 整数[甲] 这种形式是不允许的
 */
 
-class ObjectArray
+class ObjectArray : public GCObject
 {
 	friend class HazeMemory;
 public:
-	ObjectArray(x_uint64 dimensionCount, x_uint64* length, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo = nullptr);
+	ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* length, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo = nullptr);
 
 	~ObjectArray();
 
@@ -20,19 +20,21 @@ public:
 	//static void NewObjectArray(HAZE_STD_CALL_PARAM);
 
 private:
-	static void GetLength(HAZE_STD_CALL_PARAM);
+	static void GetLength(HAZE_OBJECT_CALL_PARAM);
 
-	static void GetLengthOfDimension(HAZE_STD_CALL_PARAM);
+	static void GetLengthOfDimension(HAZE_OBJECT_CALL_PARAM);
 
-	static void GetDimensionCount(HAZE_STD_CALL_PARAM);
+	static void GetDimensionCount(HAZE_OBJECT_CALL_PARAM);
 
-	static void Add(HAZE_STD_CALL_PARAM);
+	static void Add(HAZE_OBJECT_CALL_PARAM);
 
-	static void Get(HAZE_STD_CALL_PARAM);
+	static void Get(HAZE_OBJECT_CALL_PARAM);
 
-	static void Set(HAZE_STD_CALL_PARAM);
+	static void Set(HAZE_OBJECT_CALL_PARAM);
 
 private:
+	x_uint32 m_DataGCIndex;
+
 	void* m_Data;
 	x_uint64 m_DimensionCount;
 	x_uint64 m_Length;

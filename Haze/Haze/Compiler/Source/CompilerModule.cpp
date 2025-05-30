@@ -609,6 +609,29 @@ bool CompilerModule::IsImportModule(CompilerModule* m) const
 	return false;
 }
 
+const CompilerModule* CompilerModule::ExistGlobalValue(const HString& name) const
+{
+	auto variables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
+	for (auto& it : variables)
+	{
+		if (it.first == name)
+		{
+			return this;
+		}
+	}
+
+	for (auto& it : m_ImportModules)
+	{
+		auto m = it->ExistGlobalValue(name);
+		if (m)
+		{
+			return m;
+		}
+	}
+
+	return nullptr;
+}
+
 Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const HString& name)
 {
 	auto ret = m->GetEnum_Internal(name);

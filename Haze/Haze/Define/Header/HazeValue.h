@@ -142,6 +142,7 @@ bool IsStringType(HazeValueType type);
 bool IsPureStringType(HazeValueType type);
 bool IsRefrenceType(HazeValueType type);
 bool IsMultiVariableTye(HazeValueType type);
+bool IsObjectFunctionType(HazeValueType type);
 
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);

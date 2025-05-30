@@ -132,6 +132,8 @@ void HazeStack::Run(bool isHazeCall)
 void HazeStack::PCStepInc()
 {
 	++m_PC;
+
+	HazeMemory::GetMemory()->TryGC();
 }
 
 void HazeStack::InitStackRegister()
@@ -158,7 +160,7 @@ void HazeStack::InitStackRegister()
 void HazeStack::OnCall(const FunctionData* info, int paramSize)
 {
 	RegisterData registerDara({ GetVirtualRegister(CMP_REGISTER)->Data });
-	m_StackFrame.push_back(HazeStackFrame(info, paramSize, m_EBP, m_ESP - (HAZE_ADDRESS_SIZE + paramSize), registerDara));
+	m_StackFrame.push_back(HazeStackFrame(info, paramSize, m_EBP, m_ESP - paramSize - HAZE_ADDRESS_SIZE, m_ESP, registerDara));
 
 	m_EBP = m_ESP;
 	if (info->TempRegisters.size() > 0)

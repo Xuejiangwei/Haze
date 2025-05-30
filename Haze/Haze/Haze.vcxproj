@@ -43,13 +43,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <UseDynamicDebugging>true</UseDynamicDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -148,7 +149,7 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectClass.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectString.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\GCObject.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectDynamicClass.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
@@ -204,7 +205,7 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectClass.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectString.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Object\Header\ObjectDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\GCObject.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectDynamicClass.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
@@ -247,9 +248,9 @@
     <ClCompile Include="Define\Source\HazeInstruction.cpp" />
     <ClCompile Include="Library\Source\HazeFileLib.cpp" />
     <ClCompile Include="Library\Source\HazeMemoryLib.cpp" />
+    <ClCompile Include="Memory\Source\GCObjectList.cpp" />
     <ClCompile Include="Object\Source\ObjectArray.cpp" />
     <ClCompile Include="Object\Source\ObjectClass.cpp" />
-    <ClCompile Include="Object\Source\GCObject.cpp" />
     <ClCompile Include="Memory\Source\HazeMemory.cpp" />
     <ClCompile Include="Memory\Source\MemoryBlock.cpp" />
     <ClCompile Include="Memory\Source\MemoryHelper.cpp" />
@@ -325,10 +326,11 @@
     <ClInclude Include="Library\Header\HazeFileLib.h" />
     <ClInclude Include="Library\Header\HazeLibraryDefine.h" />
     <ClInclude Include="Library\Header\HazeMemoryLib.h" />
+    <ClInclude Include="Memory\Header\GCObjectList.h" />
+    <ClInclude Include="Object\Header\GCObject.h" />
     <ClInclude Include="Object\Header\ObjectArray.h" />
     <ClInclude Include="Object\Header\ObjectClass.h" />
     <ClInclude Include="Object\Header\ObjectDynamicClass.h" />
-    <ClInclude Include="Object\Header\ObjectDefine.h" />
     <ClInclude Include="Object\Header\ObjectString.h" />
     <ClInclude Include="XJson\XJson.h" />
     <ClInclude Include="VM\Header\HazeLibraryManager.h" />

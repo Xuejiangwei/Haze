@@ -100,6 +100,8 @@ public:
 
 	bool IsImportModule(CompilerModule* m) const;
 
+	const CompilerModule* ExistGlobalValue(const HString& name) const;
+
 	Share<CompilerValue> GetOrCreateGlobalStringVariable(const HString& str);
 
 	x_uint32 GetGlobalStringIndex(Share<CompilerValue> value);

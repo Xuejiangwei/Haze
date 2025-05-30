@@ -5,9 +5,10 @@
 #include "HazeVM.h"
 #include "HazeLibraryDefine.h"
 #include "ObjectString.h"
+#include "HazeMemory.h"
 
-ObjectDynamicClass::ObjectDynamicClass(CustomMethods* methods, void* dataPtr)
-	: m_Methods(methods), m_Data(dataPtr)
+ObjectDynamicClass::ObjectDynamicClass(x_uint32 gcIndex, CustomMethods* methods, void* dataPtr)
+	: GCObject(gcIndex), m_Methods(methods), m_Data(dataPtr)
 {
 	if (methods)
 	{
@@ -37,7 +38,7 @@ AdvanceClassInfo* ObjectDynamicClass::GetAdvanceClassInfo()
 	return &info;
 }
 
-void ObjectDynamicClass::GetMember(HAZE_STD_CALL_PARAM)
+void ObjectDynamicClass::GetMember(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
 	HString* name;
@@ -70,7 +71,7 @@ void ObjectDynamicClass::GetMember(HAZE_STD_CALL_PARAM)
 	obj->m_Methods->GetMember(stack, *name, obj->m_Data);
 }
 
-void ObjectDynamicClass::SetMember(HAZE_STD_CALL_PARAM)
+void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
 	HString* name;
@@ -104,7 +105,7 @@ void ObjectDynamicClass::SetMember(HAZE_STD_CALL_PARAM)
 	SET_RET_BY_TYPE(HazeValueType::Void, obj);
 }
 
-void ObjectDynamicClass::CallFunction(HAZE_STD_CALL_PARAM)
+void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
 	HString* name;

@@ -38,35 +38,36 @@ x_uint32 GetSizeByHazeType(HazeValueType type)
 {
 	switch (type)
 	{
-	case HazeValueType::Bool:
-	case HazeValueType::Int8:
-	case HazeValueType::UInt8:
-		return 1;
-	case HazeValueType::Int16:
-	case HazeValueType::UInt16:
-		return 2;
-	case HazeValueType::Int32:
-	case HazeValueType::UInt32:
-	case HazeValueType::Float32:
-		return 4;
-	case HazeValueType::Int64:
-	case HazeValueType::UInt64:
-	case HazeValueType::Float64:
-	case HazeValueType::Refrence:
-	case HazeValueType::Array:
-	case HazeValueType::String:
-	case HazeValueType::Class:
-	case HazeValueType::DynamicClass:
-	case HazeValueType::DynamicClassUnknow:
-	case HazeValueType::PureString:
-	case HazeValueType::Function:
-		return 8;
-	case HazeValueType::Void:
-	case HazeValueType::MultiVariable:
-		return 0;
-	default:
-		HAZE_LOG_ERR_W("获得类型<%s>的大小错误!\n", GetHazeValueTypeString(type));
-		break;
+		case HazeValueType::Bool:
+		case HazeValueType::Int8:
+		case HazeValueType::UInt8:
+			return 1;
+		case HazeValueType::Int16:
+		case HazeValueType::UInt16:
+			return 2;
+		case HazeValueType::Int32:
+		case HazeValueType::UInt32:
+		case HazeValueType::Float32:
+			return 4;
+		case HazeValueType::Int64:
+		case HazeValueType::UInt64:
+		case HazeValueType::Float64:
+		case HazeValueType::Refrence:
+		case HazeValueType::Array:
+		case HazeValueType::String:
+		case HazeValueType::Class:
+		case HazeValueType::DynamicClass:
+		case HazeValueType::DynamicClassUnknow:
+		case HazeValueType::PureString:
+		case HazeValueType::Function:
+			return 8;
+		case HazeValueType::Void:
+		case HazeValueType::MultiVariable:
+			return 0;
+		default:
+			HAZE_LOG_ERR_W("获得类型<%s>的大小错误!\n", GetHazeValueTypeString(type));
+			throw;
+			break;
 	}
 	return 0;
 }
@@ -236,6 +237,11 @@ bool IsRefrenceType(HazeValueType type)
 bool IsMultiVariableTye(HazeValueType type)
 {
 	return type == HazeValueType::MultiVariable;
+}
+
+bool IsObjectFunctionType(HazeValueType type)
+{
+	return type == HazeValueType::ObjectFunction;
 }
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value)
