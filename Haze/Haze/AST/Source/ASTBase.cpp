@@ -450,26 +450,15 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen()
 {
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 
-	V_Array<HazeDefineType> paramTypes;
+	V_Array<HazeDefineType> paramTypes(m_TemplateTypes.Types.size() + 1);
+	paramTypes[0] = m_DefineVariable.Type;
 	m_Compiler->GetRealTemplateTypes(m_TemplateTypes, paramTypes);
-	auto retValue = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+
+	m_DefineVariable.Type = HazeValueType::Function;
+	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr, {}, &paramTypes);
-
-	auto exprValue = m_Expression->CodeGen();
-	if (!exprValue)
-	{
-		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->m_DefineVariable.Name);
-		if (!function)
-		{
-			AST_ERR_W("未能找到变量<%s>,当前函数<%s>", m_DefineVariable.Name.c_str(),
-				m_SectionSignal == HazeSectionSignal::Local ? m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str() : H_TEXT("None"));
-			return nullptr;
-		}
-
-		m_Compiler->CreatePointerToFunction(function, retValue);
-	}
 	
-	return retValue;
+	return TryAssign(var, H_TEXT("函数指针变量"));
 }
 
 ASTReturn::ASTReturn(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
@@ -601,7 +590,7 @@ Share<CompilerValue> ASTGetAddress::CodeGen()
 		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->GetName());
 		if (function)
 		{
-			retValue = m_Compiler->CreatePointerToFunction(function, nullptr);
+			retValue = m_Compiler->CreatePointerToFunction(function, m_Compiler->GetTempRegister(HazeValueType::Function));
 		}
 		else
 		{

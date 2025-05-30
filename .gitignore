@@ -353,4 +353,7 @@ Intermediate/
 
 HazeVideo/
 测试/
+
+*.exe
 Haze/HazeLaunch.exe
+/Haze

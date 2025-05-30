@@ -1318,6 +1318,7 @@ Share<CompilerValue> Compiler::CreatePointerToValue(Share<CompilerValue> value)
 Share<CompilerValue> Compiler::CreatePointerToFunction(Share<CompilerFunction> function, Share<CompilerValue> pointer)
 {
 	auto tempPointer = GetTempRegister(HazeDefineType(HazeValueType::Function, &function->GetName()));
+	tempPointer->SetScope(HazeVariableScope::Ignore);
 	tempPointer->SetDataDesc(HazeDataDesc::FunctionAddress);
 
 	return CreateLea(pointer, tempPointer);

@@ -153,7 +153,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			{
 				return false;
 			}
-			else
+			else if(!m)
 			{
 				HAZE_LOG_ERR_W("<%s>解析临时文件失败，引入模块<%s>未能找到!\n", m_Path.c_str(), str.c_str());
 				return false;

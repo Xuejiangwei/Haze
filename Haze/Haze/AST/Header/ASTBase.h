@@ -231,7 +231,6 @@ public:
 	virtual ~ASTGetAddress() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
-
 private:
 	Unique<ASTBase> m_Expression;
 };

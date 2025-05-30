@@ -661,7 +661,7 @@ HazeToken Parse::GetNextToken(bool clearLexeme)
 	{
 		m_CurrToken = HazeToken::Number;
 	}
-	else if (m_Compiler->IsClass(m_CurrLexeme) || m_CurrParseClass == m_CurrLexeme || m_Compiler->IsTemplateClass(m_CurrLexeme))
+	else if (m_Compiler->IsClass(m_CurrLexeme) || (!m_CurrParseClass.empty() && m_CurrParseClass == m_CurrLexeme) || m_Compiler->IsTemplateClass(m_CurrLexeme))
 	{
 		m_CurrToken = HazeToken::CustomClass;
 	}
@@ -704,10 +704,10 @@ Unique<ASTBase> Parse::ParseUnaryExpression()
 	//{
 	//	return ParsePrimary();
 	//}
-	else if (m_CurrToken == HazeToken::BitAnd)	//取地址
-	{
-		return ParseGetAddress();
-	}
+	//else if (m_CurrToken == HazeToken::BitAnd)	//取地址
+	//{
+	//	return ParseGetAddress();
+	//}
 	else if (m_CurrToken == HazeToken::Sub)		//取负数
 	{
 		return ParseNeg();
@@ -938,6 +938,7 @@ Unique<ASTBase> Parse::ParsePrimary()
 	HazeToken token = m_CurrToken;
 	switch (token)
 	{
+	case HazeToken::Void:
 	case HazeToken::Bool:
 	case HazeToken::Int8:
 	case HazeToken::UInt8:
@@ -1188,7 +1189,7 @@ Unique<ASTBase> Parse::ParseVariableDefine()
 	{
 		return ParseVariableDefine_Class(templateTypes);
 	}
-	else if (isTemplateVar && IsFunctionType(m_DefineVariable.Type.PrimaryType))
+	else if (isTemplateVar)
 	{
 		return ParseVariableDefine_Function(templateTypes);
 	}
@@ -1809,16 +1810,13 @@ Unique<ASTBase> Parse::ParseNullPtr()
 Unique<ASTBase> Parse::ParseGetAddress()
 {
 	x_uint32 tempLineCount = m_LineCount;
-
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("取址需要 ( 符号")))
 	{
 		GetNextToken();
 		auto expression = ParseExpression();
-
 		if (ExpectNextTokenIs(HazeToken::RightParentheses, H_TEXT("取址需要 ) 符号")))
 		{
 			return MakeUnique<ASTGetAddress>(m_Compiler, SourceLocation(tempLineCount), expression);
-
 		}
 	}
 
@@ -1837,8 +1835,7 @@ Unique<ASTBase> Parse::ParseNot()
 
 Unique<ASTBase> Parse::ParseLeftBrace()
 {
-
-	int a = 1 + 2 + 3 + 4 * 5 * (6 + 7 / 2 - 5) + 4;
+	//int a = 1 + 2 + 3 + 4 * 5 * (6 + 7 / 2 - 5) + 4;
 	Unique<ASTBase> expression = nullptr;
 	if (NextTokenNotIs(HazeToken::RightBrace))
 	{
@@ -1931,14 +1928,12 @@ Unique<ASTFunction> Parse::ParseFunction(const HString* className)
 	m_StackSectionSignal.push(HazeSectionSignal::Local);
 	x_uint32 tempLineCount = m_LineCount;
 
-
 	bool isVirtual = TokenIs(HazeToken::VirtualFunction);
 	bool isPureVirtual = TokenIs(HazeToken::PureVirtualFunction);
 	if (isVirtual || isPureVirtual)
 	{
 		GetNextToken();
 	}
-
 
 	//获得函数返回类型及是自定义类型时获得类型名字
 	HazeDefineType funcType;
