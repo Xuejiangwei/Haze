@@ -13,7 +13,7 @@ CompilerEnum::~CompilerEnum()
 {
 }
 
-void CompilerEnum::AddEnumValue(const HString& name, Share<CompilerValue>& value)
+void CompilerEnum::AddEnumValue(const HString& name, Share<CompilerValue> value)
 {
 	if (!GetEnumValue(name))
 	{
@@ -56,6 +56,8 @@ Share<CompilerEnumValue> CompilerEnum::GetEnumValueByIndex(x_uint64 index)
 void CompilerEnum::GenEnum_I_Code(HAZE_STRING_STREAM& hss)
 {
 	hss << GetEnumStartHeader() << HAZE_ENDL;
+	hss << m_Name << " " << CAST_TYPE(m_ParentType) << HAZE_ENDL;
+
 	for (auto& it : m_EnumValues)
 	{
 		hss << it.first << " ";

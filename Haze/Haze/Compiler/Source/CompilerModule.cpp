@@ -101,6 +101,7 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 		m_FS_I_Code = new HAZE_OFSTREAM();
 		m_FS_I_Code->imbue(std::locale("chs"));
 		m_FS_I_Code->open(GetIntermediateModuleFile(moduleName));
+		m_Compiler->MarkNewCode();
 	}
 	
 #endif
@@ -127,6 +128,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		return false;
 	}
 
+	stream >> str;
 	if (str != GetPath())
 	{
 		return false;
@@ -147,7 +149,11 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		{
 			stream >> str;
 			m = m_Compiler->GetModuleAndTryParseIntermediateFile(str);
-			if (!m)
+			if (m->NeedParse())
+			{
+				return false;
+			}
+			else
 			{
 				HAZE_LOG_ERR_W("<%s>解析临时文件失败，引入模块<%s>未能找到!\n", m_Path.c_str(), str.c_str());
 				return false;
@@ -211,17 +217,28 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		if (ui64 > 0)
 		{
 			x_uint32 ui32;
+			HString enumValueStr;
 			for (int i = 0; i < ui64; i++)
 			{
 				stream >> str;
 				if (str == GetEnumStartHeader())
 				{
 					stream >> str;
+					stream >> ui32;
+					auto enumValue = CreateEnum(str, (HazeValueType)ui32);
+
+					stream >> str;
 					while (str != GetEnumEndHeader())
 					{
-						stream >> ui32;
+						stream >> enumValueStr;
+						HazeValue hazeValue;
+						StringToHazeValueNumber(enumValueStr, enumValue->GetParentType(), hazeValue);
+						enumValue->AddEnumValue(str, m_Compiler->GenConstantValue(enumValue->GetParentType(), hazeValue));
+
 						stream >> str;
 					}
+
+					FinishCreateEnum();
 				}
 			}
 		}
@@ -262,6 +279,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		for (int j = 0; j < parentName.size(); j++)
 		{
 			parentClass.push_back(GetClass(parentName[j]).get());
+			memberCount -= parentClass.back()->GetMemberCount();
 		}
 
 		CompilerClass::ParseIntermediateClass(stream, this, parentClass);
@@ -276,9 +294,10 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			x_uint32 ui32;
 			stream >> ui32 >> ui64;
 
+			classData[j].second = m_Compiler->CreateClassVariable(this, memberType, nullptr, 0, nullptr);
+			classData[j].second->SetDataDesc(desc);
 
-			//暂时设置成员变量为公有的
-			classData[j].second = CreateVariable(this, memberType, HazeVariableScope::None, desc, 0);
+			HAZE_TO_DO("需要考虑数组和函数, 以及函数数组和函数中有数组参数的情况");
 		}
 
 		Share<CompilerClass> compilerClass = CreateClass(className, parentClass, classData);

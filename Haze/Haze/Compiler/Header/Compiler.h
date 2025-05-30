@@ -182,6 +182,9 @@ public:
 	bool IsCompileError() const;
 	void MarkCompilerError();
 
+	bool IsNewCode() const;
+	void MarkNewCode();
+
 public:
 	Share<CompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
 		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
@@ -193,7 +196,7 @@ public:
 	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, int Line, Share<CompilerValue> RefValue = nullptr,
 		x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
-	Share<CompilerValue> CreateClassVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, Share<CompilerValue> RefValue = nullptr,
+	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeDefineType& Var, Share<CompilerValue> RefValue = nullptr,
 		x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
 
 	Share<CompilerValue> CreateLea(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
@@ -331,4 +334,5 @@ private:
 	Share<CompilerBlock> m_InsertBaseBlock;
 
 	bool m_MarkError;
+	bool m_MarkNewCode;
 };

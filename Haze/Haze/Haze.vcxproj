@@ -45,7 +45,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <UseDynamicDebugging>true</UseDynamicDebugging>
+    <UseDynamicDebugging>false</UseDynamicDebugging>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -151,6 +151,7 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\GCObject.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectDynamicClass.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Memory\Header\GCObjectList.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -207,6 +208,7 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\GCObject.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectDynamicClass.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Memory\Header\GCObjectList.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

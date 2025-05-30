@@ -49,7 +49,7 @@ static HashMap<HString, Share<CompilerValue>> g_GlobalTempRegisters = {
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },*/
 };
 
-Compiler::Compiler(HazeVM* vm) : m_VM(vm), m_MarkError(false)
+Compiler::Compiler(HazeVM* vm) : m_VM(vm), m_MarkError(false), m_MarkNewCode(false)
 {
 	m_AdvanceClassIndexInfo.clear();
 }
@@ -118,6 +118,11 @@ bool Compiler::InitializeCompiler(const HString& moduleName, const HString& path
 
 void Compiler::FinishParse()
 {
+	if (!IsNewCode())
+	{
+		return;
+	}
+
 	HAZE_OFSTREAM ofstream;
 	ofstream.imbue(std::locale("chs"));
 	ofstream.open(GetIntermediateModuleFile(HAZE_INTER_SYMBOL_TABLE));
@@ -208,12 +213,10 @@ CompilerModule* Compiler::GetModuleAndTryParseIntermediateFile(const HString& fi
 	if (!m)
 	{
 		m = ParseModuleByPath(filePath);
-		if (m && !m->NeedParse())
+		if (m)
 		{
 			return m;
 		}
-
-		m = nullptr;
 	}
 
 	return m;
@@ -891,6 +894,19 @@ void Compiler::MarkCompilerError()
 	m_MarkError = true;
 }
 
+bool Compiler::IsNewCode() const
+{
+	return m_MarkNewCode;
+}
+
+void Compiler::MarkNewCode()
+{
+	if (!m_MarkNewCode)
+	{
+		m_MarkNewCode = true;
+	}
+}
+
 void Compiler::AddImportModuleToCurrModule(CompilerModule* compilerModule)
 {
 	for (auto& iter : GetCurrModule()->m_ImportModules)
@@ -989,7 +1005,7 @@ Share<CompilerValue> Compiler::CreateVariableBySection(HazeSectionSignal section
 	case HazeSectionSignal::Static:
 		break;
 	case HazeSectionSignal::Class:
-		return CreateClassVariable(mod, var, refValue, arrayDimension, params);
+		return CreateClassVariable(mod.get(), var.Type, refValue, arrayDimension, params);
 	case HazeSectionSignal::Enum:
 		break;
 	default:
@@ -1011,10 +1027,10 @@ Share<CompilerValue> Compiler::CreateGlobalVariable(Unique<CompilerModule>& comp
 	return compilerModule->CreateGlobalVariable(var, line, refValue, arrayDimension, params);
 }
 
-Share<CompilerValue> Compiler::CreateClassVariable(Unique<CompilerModule>& compilerModule, const HazeDefineVariable& var,
+Share<CompilerValue> Compiler::CreateClassVariable(CompilerModule* compilerModule, const HazeDefineType& type,
 	Share<CompilerValue> refValue, x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
 {
-	return CreateVariable(compilerModule.get(), var.Type, HazeVariableScope::None, HazeDataDesc::Class, 0, refValue, arrayDimension, params);
+	return CreateVariable(compilerModule, type, HazeVariableScope::None, HazeDataDesc::Class, 0, refValue, arrayDimension, params);
 }
 
 Share<CompilerValue> Compiler::CreateRet(Share<CompilerValue> value)

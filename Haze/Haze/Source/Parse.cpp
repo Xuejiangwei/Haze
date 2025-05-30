@@ -1409,6 +1409,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Class(TemplateDefineTypes& templateTy
 
 Unique<ASTBase> Parse::ParseVariableDefine_Function(TemplateDefineTypes& templateTypes)
 {
+	HAZE_TO_DO("需要考虑函数的返回方式, 以及函数数组定义的方式");
 	x_uint32 tempLineCount = m_LineCount;
 
 	if (TokenIs(HazeToken::Identifier, H_TEXT("函数变量需要一个正确的名称")))

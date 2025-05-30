@@ -16,7 +16,7 @@ public:
 
 	const HString& GetName() const { return m_Name; }
 
-	void AddEnumValue(const HString& name, Share<CompilerValue> & value);
+	void AddEnumValue(const HString& name, Share<CompilerValue> value);
 
 	Share<CompilerEnumValue> GetEnumValue(const HString& name);
 

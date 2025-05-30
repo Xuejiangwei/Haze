@@ -327,6 +327,15 @@ void CompilerClass::GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, x_uint32& 
 		hss << m_Data[i].first << " " << CAST_DESC(m_Data[i].second->GetVariableDesc()) << " ";
 		m_Data[i].second->GetValueType().StringStreamTo(hss);
 
+		if (m_Data[i].second->IsArray())
+		{
+
+		}
+		else if (m_Data[i].second->IsFunction())
+		{
+
+		}
+
 		hss << " " << m_Offsets[i] + startOffset << " " << m_Data[i].second->GetSize() << std::endl;
 		offset += m_Data[i].second->GetSize();
 		//index++;

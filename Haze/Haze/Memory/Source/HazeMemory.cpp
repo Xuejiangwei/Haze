@@ -13,8 +13,8 @@
 #include <chrono>
 
 #define PAGE_BASE_SIZE	4 * 4
-#define GC_TIME			10
-#define ENABLE_GC_LOG	1
+#define GC_TIME			50
+#define ENABLE_GC_LOG	0
 
 #if ENABLE_GC_LOG
 #define ENABLE_MEMORY_LOG	1

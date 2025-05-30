@@ -77,8 +77,11 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 	{
 #if HAZE_BACKEND_PARSE_ENABLE
 
-		BackendParse BP(this);
-		BP.Parse();
+		if (m_Compiler->IsNewCode())
+		{
+			BackendParse BP(this);
+			BP.Parse();
+		}
 
 #endif
 	}

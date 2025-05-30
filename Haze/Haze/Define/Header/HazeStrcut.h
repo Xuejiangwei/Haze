@@ -255,6 +255,8 @@ struct HazeDefineType
 			}
 		}
 
+		//MoreTypeStream
+
 		return true;
 	}
 
