@@ -31,6 +31,11 @@ AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 	return &info;
 }
 
+bool ObjectClass::IsEqual(ObjectClass* obj1, ObjectClass* obj2)
+{
+	return false;
+}
+
 const char* ObjectClass::GetMember(const x_HChar* memberName)
 {
 	HString name = memberName;

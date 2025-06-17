@@ -15,7 +15,7 @@ static Pair<bool, int> ParseStringCount = { false, 0 };
 
 static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 {
-	if (ins.InsCode == InstructionOpCode::LINE)
+	if (ins.InsCode == InstructionOpCode::LINE || ins.InsCode == InstructionOpCode::NEW_SIGN)
 	{
 		return true;
 	}
@@ -533,116 +533,128 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 	HString str;
 	switch (instruction.InsCode)
 	{
-	case InstructionOpCode::NONE:
-		break;
-	case InstructionOpCode::MOV:
-	case InstructionOpCode::MOVPV:
-	case InstructionOpCode::MOVTOPV:
-	case InstructionOpCode::LEA:
-	case InstructionOpCode::NEG:
-	case InstructionOpCode::NOT:
-	case InstructionOpCode::CMP:
-	case InstructionOpCode::BIT_NEG:
-	case InstructionOpCode::NEW:
-	case InstructionOpCode::CVT:
-	case InstructionOpCode::MOV_DCU:
-	{
-		InstructionData operatorOne;
-		InstructionData operatorTwo;
-
-		ParseInstructionData(operatorOne);
-		ParseInstructionData(operatorTwo);
-
-		instruction.Operator = { operatorOne, operatorTwo };
-	}
-		break;
-	case InstructionOpCode::ADD:
-	case InstructionOpCode::SUB:
-	case InstructionOpCode::MUL:
-	case InstructionOpCode::DIV:
-	case InstructionOpCode::MOD:
-	case InstructionOpCode::BIT_AND:
-	case InstructionOpCode::BIT_OR:
-	case InstructionOpCode::BIT_XOR:
-	case InstructionOpCode::SHL:
-	case InstructionOpCode::SHR:
-	{
-		InstructionData operatorOne;
-		InstructionData operatorTwo;
-		InstructionData operatorThree;
-
-		ParseInstructionData(operatorOne);
-		ParseInstructionData(operatorTwo);
-		ParseInstructionData(operatorThree);
-
-		instruction.Operator = { operatorOne, operatorTwo, operatorThree };
-	}
-		break;
-	case InstructionOpCode::PUSH:
-	case InstructionOpCode::POP:
-	case InstructionOpCode::RET:
-	{
-		InstructionData operatorOne;
-		ParseInstructionData(operatorOne);
-
-		instruction.Operator = { operatorOne };
-	}
-		break;
-	case InstructionOpCode::CALL:
-	{
-		InstructionData operatorOne;
-		InstructionData operatorTwo;
-
-		GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
-		GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Variable.Type.PrimaryType);
-
-		//if (IsFunctionType(operatorOne.Variable.Type.PrimaryType))
+		case InstructionOpCode::NONE:
+			break;
+		case InstructionOpCode::MOV:
+		case InstructionOpCode::MOVPV:
+		case InstructionOpCode::MOVTOPV:
+		case InstructionOpCode::LEA:
+		case InstructionOpCode::NEG:
+		case InstructionOpCode::NOT:
+		case InstructionOpCode::CMP:
+		case InstructionOpCode::BIT_NEG:
+		case InstructionOpCode::NEW:
+		case InstructionOpCode::CVT:
+		case InstructionOpCode::MOV_DCU:
 		{
-			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Scope);
-			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Desc);
-		
-			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
-			GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
+			InstructionData operatorOne;
+			InstructionData operatorTwo;
+
+			ParseInstructionData(operatorOne);
+			ParseInstructionData(operatorTwo);
+
+			instruction.Operator = { operatorOne, operatorTwo };
 		}
+			break;
+		case InstructionOpCode::ADD:
+		case InstructionOpCode::SUB:
+		case InstructionOpCode::MUL:
+		case InstructionOpCode::DIV:
+		case InstructionOpCode::MOD:
+		case InstructionOpCode::BIT_AND:
+		case InstructionOpCode::BIT_OR:
+		case InstructionOpCode::BIT_XOR:
+		case InstructionOpCode::SHL:
+		case InstructionOpCode::SHR:
+		{
+			InstructionData operatorOne;
+			InstructionData operatorTwo;
+			InstructionData operatorThree;
 
-		instruction.Operator = { operatorOne };
-	}
-		break;
-	case InstructionOpCode::JMP:
-	{
-		InstructionData operatorOne;
-		GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
+			ParseInstructionData(operatorOne);
+			ParseInstructionData(operatorTwo);
+			ParseInstructionData(operatorThree);
 
-		instruction.Operator = { operatorOne };
-	}
-	break;
-	case InstructionOpCode::JNE:
-	case InstructionOpCode::JNG:
-	case InstructionOpCode::JNL:
-	case InstructionOpCode::JE:
-	case InstructionOpCode::JG:
-	case InstructionOpCode::JL:
-	{
-		InstructionData operatorOne;
-		InstructionData operatorTwo;
+			instruction.Operator = { operatorOne, operatorTwo, operatorThree };
+		}
+			break;
+		case InstructionOpCode::PUSH:
+		case InstructionOpCode::POP:
+		case InstructionOpCode::RET:
+		{
+			InstructionData operatorOne;
+			ParseInstructionData(operatorOne);
 
-		GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
+			instruction.Operator = { operatorOne };
+		}
+			break;
+		case InstructionOpCode::CALL:
+		{
+			InstructionData operatorOne;
+			InstructionData operatorTwo;
 
-		GetNextLexmeAssign_HazeString(operatorTwo.Variable.Name);
+			GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
+			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Variable.Type.PrimaryType);
 
-		instruction.Operator = { operatorOne, operatorTwo };
-	}
-		break;
-	case InstructionOpCode::LINE:
-	{
-		InstructionData operatorOne;
-		GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Extra.Line);
+			//if (IsFunctionType(operatorOne.Variable.Type.PrimaryType))
+			{
+				GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Scope);
+				GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Desc);
+		
+				GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
+				GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
+			}
 
-		instruction.Operator = { operatorOne };
-	}
-	break;
-	default:
-		break;
+			instruction.Operator = { operatorOne };
+		}
+			break;
+		case InstructionOpCode::JMP:
+		{
+			InstructionData operatorOne;
+			GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
+
+			instruction.Operator = { operatorOne };
+		}
+			break;
+		case InstructionOpCode::JNE:
+		case InstructionOpCode::JNG:
+		case InstructionOpCode::JNL:
+		case InstructionOpCode::JE:
+		case InstructionOpCode::JG:
+		case InstructionOpCode::JL:
+		{
+			InstructionData operatorOne;
+			InstructionData operatorTwo;
+
+			GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
+
+			GetNextLexmeAssign_HazeString(operatorTwo.Variable.Name);
+
+			instruction.Operator = { operatorOne, operatorTwo };
+		}
+			break;
+		case InstructionOpCode::LINE:
+		{
+			InstructionData operatorOne;
+			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Extra.Line);
+
+			instruction.Operator = { operatorOne };
+		}
+			break;
+		case InstructionOpCode::NEW_SIGN:
+		{
+			InstructionData operatorOne;
+			operatorOne.Variable.Type.StringStream<BackendParse>(this,
+				&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
+				&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+
+			BackendParse::GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Extra.SignData.ArrayDimension);
+			
+			instruction.Operator = { operatorOne };
+		}
+			break;
+		default:
+			break;
 	}
 }
 

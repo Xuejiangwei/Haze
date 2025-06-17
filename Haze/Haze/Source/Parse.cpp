@@ -136,6 +136,10 @@ static HashMap<HString, HazeToken> s_HashMap_Token =
 	{ TOKEN_TWO_COLON, HazeToken::TwoColon },
 
 	{ TOKEN_GET_ADDRESS, HazeToken::GetAddress },
+
+	{ TOKEN_OBJECT_BASE, HazeToken::ObjectBase },
+
+	{ TOKEN_HASH, HazeToken::Hash },
 };
 
 const HashMap<HString, HazeToken>& GetHashMap_Token()
@@ -938,69 +942,71 @@ Unique<ASTBase> Parse::ParsePrimary()
 	HazeToken token = m_CurrToken;
 	switch (token)
 	{
-	case HazeToken::Void:
-	case HazeToken::Bool:
-	case HazeToken::Int8:
-	case HazeToken::UInt8:
-	case HazeToken::Int16:
-	case HazeToken::UInt16:
-	case HazeToken::Int32:
-	case HazeToken::UInt32:
-	case HazeToken::Int64:
-	case HazeToken::UInt64:
-	case HazeToken::Float32:
-	case HazeToken::Float64:
-	case HazeToken::CustomClass:
-	case HazeToken::DynamicClass:
-	case HazeToken::String:
-	case HazeToken::Function:
-	case HazeToken::MultiVariable:
-	case HazeToken::Reference:
-		return ParseVariableDefine();
-	case HazeToken::Identifier:
-	case HazeToken::CustomEnum:
-		return ParseIdentifer();
-	case HazeToken::Number:
-		return ParseNumberExpression();
-	case HazeToken::StringMatch:
-		return ParseStringText();
-	case HazeToken::True:
-	case HazeToken::False:
-		return ParseBoolExpression();
-	case HazeToken::If:
-		return ParseIfExpression();
-	case HazeToken::While:
-		return ParseWhileExpression();
-	case HazeToken::For:
-		return ParseForExpression();
-	case HazeToken::Break:
-		return ParseBreakExpression();
-	case HazeToken::Continue:
-		return ParseContinueExpression();
-	case HazeToken::Return:
-		return ParseReturn();
-	case HazeToken::Inc:
-		return ParseInc();
-	case HazeToken::Dec:
-		return ParseDec();
-	case HazeToken::New:
-		return ParseNew();
-	case HazeToken::LeftParentheses:
-		return ParseLeftParentheses();
-	case HazeToken::Not:
-		return ParseNot();
-	case HazeToken::BitNeg:
-		return ParseNeg();
-	case HazeToken::NullPtr:
-		return ParseNullPtr();
-	case HazeToken::SizeOf:
-		return ParseSizeOf();
-	case HazeToken::GetAddress:
-		return ParseGetAddress();
-	case HazeToken::LeftBrace:
-		return ParseLeftBrace();
-	default:
-		break;
+		case HazeToken::Void:
+		case HazeToken::Bool:
+		case HazeToken::Int8:
+		case HazeToken::UInt8:
+		case HazeToken::Int16:
+		case HazeToken::UInt16:
+		case HazeToken::Int32:
+		case HazeToken::UInt32:
+		case HazeToken::Int64:
+		case HazeToken::UInt64:
+		case HazeToken::Float32:
+		case HazeToken::Float64:
+		case HazeToken::CustomClass:
+		case HazeToken::DynamicClass:
+		case HazeToken::String:
+		case HazeToken::Function:
+		case HazeToken::MultiVariable:
+		case HazeToken::Reference:
+		case HazeToken::ObjectBase:
+		case HazeToken::Hash:
+			return ParseVariableDefine();
+		case HazeToken::Identifier:
+		case HazeToken::CustomEnum:
+			return ParseIdentifer();
+		case HazeToken::Number:
+			return ParseNumberExpression();
+		case HazeToken::StringMatch:
+			return ParseStringText();
+		case HazeToken::True:
+		case HazeToken::False:
+			return ParseBoolExpression();
+		case HazeToken::If:
+			return ParseIfExpression();
+		case HazeToken::While:
+			return ParseWhileExpression();
+		case HazeToken::For:
+			return ParseForExpression();
+		case HazeToken::Break:
+			return ParseBreakExpression();
+		case HazeToken::Continue:
+			return ParseContinueExpression();
+		case HazeToken::Return:
+			return ParseReturn();
+		case HazeToken::Inc:
+			return ParseInc();
+		case HazeToken::Dec:
+			return ParseDec();
+		case HazeToken::New:
+			return ParseNew();
+		case HazeToken::LeftParentheses:
+			return ParseLeftParentheses();
+		case HazeToken::Not:
+			return ParseNot();
+		case HazeToken::BitNeg:
+			return ParseNeg();
+		case HazeToken::NullPtr:
+			return ParseNullPtr();
+		case HazeToken::SizeOf:
+			return ParseSizeOf();
+		case HazeToken::GetAddress:
+			return ParseGetAddress();
+		case HazeToken::LeftBrace:
+			return ParseLeftBrace();
+		default:
+			break;
 	}
 
 	return nullptr;
@@ -1173,7 +1179,7 @@ Unique<ASTBase> Parse::ParseVariableDefine()
 	TemplateDefineTypes templateTypes;
 	if (isTemplateVar)
 	{
-		ParseTemplateTypes(templateTypes);
+		ParseTemplateTypes(m_DefineVariable.Type, templateTypes);
 		GetNextToken();
 	}
 
@@ -1191,7 +1197,18 @@ Unique<ASTBase> Parse::ParseVariableDefine()
 	}
 	else if (isTemplateVar)
 	{
-		return ParseVariableDefine_Function(templateTypes);
+		if (IsObjectBaseType(m_DefineVariable.Type.PrimaryType))
+		{
+			return ParseVariableDefine_ObjectBase(templateTypes);
+		}
+		else if (IsHashType(m_DefineVariable.Type.PrimaryType))
+		{
+			return ParseVariableDefine_Hash(templateTypes);
+		}
+		else
+		{
+			return ParseVariableDefine_Function(templateTypes);
+		}
 	}
 	else if (IsMultiVariableTye(m_DefineVariable.Type.PrimaryType))
 	{
@@ -1410,26 +1427,91 @@ Unique<ASTBase> Parse::ParseVariableDefine_Class(TemplateDefineTypes& templateTy
 
 Unique<ASTBase> Parse::ParseVariableDefine_Function(TemplateDefineTypes& templateTypes)
 {
-	HAZE_TO_DO("需要考虑函数的返回方式, 以及函数数组定义的方式");
 	x_uint32 tempLineCount = m_LineCount;
 
 	if (TokenIs(HazeToken::Identifier, H_TEXT("函数变量需要一个正确的名称")))
+	{
+		m_DefineVariable.Name = m_CurrLexeme;
+		HazeDefineVariable defineVar = m_DefineVariable;
+
+		if (ExpectNextTokenIs_NoParseError(HazeToken::Assign))
+		{
+			if (ExpectNextTokenIs_NoParseError(HazeToken::LeftBrace))
+			{
+				Unique<ASTBase> expression = ParseExpression();
+
+				if (ExpectNextTokenIs(HazeToken::RightBrace, H_TEXT("闭包函数结束需要 } ")))
+				{
+					return MakeUnique<ASTVariableDefine_Closure>(m_Compiler, SourceLocation(tempLineCount),
+						m_StackSectionSignal.top(), defineVar, Move(expression), templateTypes);
+				}
+			}
+			else
+			{
+				Unique<ASTBase> expression = ParseExpression();
+				return MakeUnique<ASTVariableDefine_Function>(m_Compiler, SourceLocation(tempLineCount),
+					m_StackSectionSignal.top(), defineVar, Move(expression), templateTypes);
+			}
+		}
+		else
+		{
+			PARSE_ERR_W("函数变量<%s>定义错误, 需要赋予初始化值或空指针", m_DefineVariable.Name.c_str());
+		}
+	}
+
+	return nullptr;
+}
+
+Unique<ASTBase> Parse::ParseVariableDefine_ObjectBase(TemplateDefineTypes& templateTypes)
+{
+	x_uint32 tempLineCount = m_LineCount;
+
+	if (TokenIs(HazeToken::Identifier, H_TEXT("基本类型对象需要一个正确的名称")))
+	{
+		m_DefineVariable.Name = m_CurrLexeme;
+
+		Unique<ASTBase> expression = ParseExpression();
+		/*return MakeUnique<ASTVariableDefine_ObjectBase>(m_Compiler, SourceLocation(tempLineCount),
+			m_StackSectionSignal.top(), m_DefineVariable, Move(expression), templateTypes);*/
+	}
+
+	return nullptr;
+}
+
+Unique<ASTBase> Parse::ParseVariableDefine_Hash(TemplateDefineTypes& templateTypes)
+{
+	x_uint32 tempLineCount = m_LineCount;
+
+	if (TokenIs(HazeToken::Identifier, H_TEXT("哈希对象需要一个正确的名称")))
 	{
 		m_DefineVariable.Name = m_CurrLexeme;
 
 		if (ExpectNextTokenIs_NoParseError(HazeToken::Assign))
 		{
 			GetNextToken();
-
 			Unique<ASTBase> expression = ParseExpression();
-
-			return MakeUnique<ASTVariableDefine_Function>(m_Compiler, SourceLocation(tempLineCount),
-				m_StackSectionSignal.top(), m_DefineVariable, Move(expression), templateTypes);
+			return MakeUnique<ASTVariableDefine_Hash>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), m_DefineVariable, expression, templateTypes);
 		}
 		else
 		{
 			PARSE_ERR_W("函数变量<%s>定义错误, 需要赋予初始化值或空指针", m_DefineVariable.Name.c_str());
 		}
+	}
+
+	return nullptr;
+}
+
+Unique<ASTBase> Parse::ParseVariableDefine_Closure(TemplateDefineTypes& templateTypes)
+{
+	x_uint32 tempLineCount = m_LineCount;
+
+	if (TokenIs(HazeToken::Identifier, H_TEXT("闭包对象需要一个正确的名称")))
+	{
+		m_DefineVariable.Name = m_CurrLexeme;
+
+		Unique<ASTBase> expression = ParseExpression();
+		/*return MakeUnique<ASTVariableDefine_Hash>(m_Compiler, SourceLocation(tempLineCount),
+			m_StackSectionSignal.top(), m_DefineVariable, Move(expression), templateTypes);*/
 	}
 
 	return nullptr;
@@ -1636,7 +1718,17 @@ Unique<ASTBase> Parse::ParseNew()
 	GetValueType(defineVar.Type);
 
 	V_Array<Unique<ASTBase>> arraySize;
-	if (ExpectNextTokenIs_NoParseError(HazeToken::Array))
+
+	GetNextToken();
+	bool isTemplateVar = TokenIs(HazeToken::Less);
+	TemplateDefineTypes templateTypes;
+	if (isTemplateVar)
+	{
+		ParseTemplateTypes(defineVar.Type, templateTypes);
+		GetNextToken();
+	}
+
+	if (TokenIs(HazeToken::Array))
 	{
 		defineVar.Type.UpToArray();
 		m_IsParseArray = true;
@@ -1666,7 +1758,7 @@ Unique<ASTBase> Parse::ParseNew()
 
 		}
 		m_IsParseArray = false;
-		return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar,
+		return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, templateTypes,
 			Move(arraySize));
 	}
 	else
@@ -1687,9 +1779,9 @@ Unique<ASTBase> Parse::ParseNew()
 				GetNextToken();
 			}
 
-			if (TokenIs(HazeToken::RightParentheses, H_TEXT("生成表达式 期望 ( ")))
+			if (TokenIs(HazeToken::RightParentheses, H_TEXT("生成表达式 期望 ) ")))
 			{
-				return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar,
+				return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, templateTypes,
 					Move(arraySize), Move(params));
 			}
 		}
@@ -2799,6 +2891,8 @@ void Parse::GetValueType(HazeDefineType& inType)
 	case HazeToken::Float64:
 	case HazeToken::Function:
 	case HazeToken::DynamicClass:
+	case HazeToken::ObjectBase:
+	case HazeToken::Hash:
 		return;
 	default:
 		PARSE_ERR_W("获得变量类型错误");
@@ -2825,38 +2919,63 @@ void Parse::GetTemplateRealValueType(const HString& str, HazeDefineType& inType)
 	return;
 }
 
-void Parse::ParseTemplateTypes(TemplateDefineTypes& templateTypes)
+void Parse::ParseTemplateTypes(HazeDefineType baseType, TemplateDefineTypes& templateTypes)
 {
-	while (true)
+	if (IsUseTemplateType(baseType.PrimaryType))
 	{
-		GetNextToken();
-		HazeDefineType type;
-		type.PrimaryType = GetValueTypeByToken(m_CurrToken);
-		GetValueType(type);
-
-		if (TokenIs(HazeToken::Less) && IsClassType(type.PrimaryType))
+		while (true)
 		{
-			TemplateDefineTypes types;
-			ParseTemplateTypes(types);
+			GetNextToken();
+			HazeDefineType type;
+			type.PrimaryType = GetValueTypeByToken(m_CurrToken);
+			GetValueType(type);
 
-			TemplateDefineType t(true, MakeShare<TemplateDefineTypes>(Move(types)), nullptr);
-			templateTypes.Types.push_back(t);
-		}
-		else
-		{
-			TemplateDefineType t(false, nullptr, MakeShare<HazeDefineType>(type));
-			templateTypes.Types.push_back(t);
-		}
+			if (TokenIs(HazeToken::Less) && IsUseTemplateType(type.PrimaryType))
+			{
+				TemplateDefineTypes types;
+				ParseTemplateTypes(type, types);
 
-		if (ExpectNextTokenIs_NoParseError(HazeToken::Greater))
-		{
-			break;
+				TemplateDefineType t(true, MakeShare<TemplateDefineTypes>(Move(types)), nullptr);
+				templateTypes.Types.push_back(t);
+			}
+			else
+			{
+				TemplateDefineType t(false, nullptr, MakeShare<HazeNewDefineType>(type));
+				templateTypes.Types.push_back(t);
+			}
+
+			TempCurrCode temp(this);
+			x_uint64 arrayDimension = 0;
+			while (ExpectNextTokenIs_NoParseError(HazeToken::Array))
+			{
+				if (CanArray(type.PrimaryType) && ExpectNextTokenIs_NoParseError(HazeToken::ArrayDefineEnd))
+				{
+					arrayDimension++;
+					temp.Update();
+				}
+				else
+				{
+					PARSE_ERR_W("解析数组类型错误");
+					return;
+				}
+			}
+
+			temp.Reset();
+			if (arrayDimension > 0)
+			{
+				templateTypes.Types.back().Type->BaseType.UpToArray();
+				templateTypes.Types.back().Type->ArrayDimension = arrayDimension;
+			}
+
+			if (ExpectNextTokenIs_NoParseError(HazeToken::Greater))
+			{
+				break;
+			}
 		}
 	}
-
-	if (TokenIs(HazeToken::Greater))
+	else
 	{
-		return;
+		PARSE_ERR_W("解析模板类型错误");
 	}
 }
 

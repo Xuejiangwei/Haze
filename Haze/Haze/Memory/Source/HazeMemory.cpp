@@ -10,6 +10,7 @@
 #include "ObjectClass.h"
 #include "ObjectString.h"
 #include "ObjectDynamicClass.h"
+#include "ObjectHash.h"
 #include <chrono>
 
 #define PAGE_BASE_SIZE	4 * 4
@@ -256,7 +257,8 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 			if ((ObjectClass*)address)
 			{
 				m_ObjectList->MarkObjectBlack(((ObjectClass*)address)->m_GCIndex);
-				MarkClassMember(m_VM->FindClass(*type.CustomName), (char*)((ObjectClass*)address)->m_Data);
+				m_ObjectList->MarkObjectBlack(((ObjectClass*)address)->m_DataGCIndex);
+				MarkClassMember(((ObjectClass*)address)->m_ClassInfo, (char*)((ObjectClass*)address)->m_Data);
 			}
 		}
 			break;
@@ -273,6 +275,7 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 			if ((ObjectArray*)address)
 			{
 				m_ObjectList->MarkObjectBlack(((ObjectArray*)address)->m_GCIndex);
+				m_ObjectList->MarkObjectBlack(((ObjectArray*)address)->m_DataGCIndex);
 
 				auto objectArray = ((ObjectArray*)address);
 				x_uint64 length = objectArray->m_Length;
@@ -314,9 +317,9 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 					}
 				}
 
-				x_uint64 size = ((ObjectArray*)address)->m_Length  * GetSizeByHazeType(type.SecondaryType);
 
 		#ifdef _DEBUG
+				x_uint64 size = ((ObjectArray*)address)->m_Length  * GetSizeByHazeType(type.SecondaryType);
 				if (size == 0)
 				{
 					GC_ERR_W("基本类型数组长度为0");
@@ -331,9 +334,40 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 			if ((ObjectString*)address)
 			{
 				m_ObjectList->MarkObjectBlack(((ObjectString*)address)->m_GCIndex);
+				m_ObjectList->MarkObjectBlack(((ObjectString*)address)->m_DataGCIndex);
 			}
 		}
-		break;
+			break;
+		case HazeValueType::Hash:
+		{
+			if ((ObjectHash*)address)
+			{
+				m_ObjectList->MarkObjectBlack(((ObjectHash*)address)->m_GCIndex);
+				m_ObjectList->MarkObjectBlack(((ObjectHash*)address)->m_DataGCIndex);
+
+				auto keyBaseType = ((ObjectHash*)address)->GetKeyBaseType();
+				auto valueBaseType = ((ObjectHash*)address)->GetValueBaseType();
+				bool keyIsAdvance = IsAdvanceType(keyBaseType.PrimaryType);
+				bool valueIsAdvance = IsAdvanceType(valueBaseType.PrimaryType);
+				for (x_uint64 i = 0; i < ((ObjectHash*)address)->m_Capacity; i++)
+				{
+					auto& data = ((ObjectHash*)address)->m_Data[i];
+					if (!data.IsNone())
+					{
+						if (keyIsAdvance)
+						{
+							MarkVariable(keyBaseType, data.Key.Value.Pointer);
+						}
+
+						if (valueIsAdvance)
+						{
+							MarkVariable(valueBaseType, data.Value.Value.Pointer);
+						}
+					}
+				}
+			}
+		}
+			break;
 	default:
 		break;
 	}
@@ -477,6 +511,10 @@ void HazeMemory::Sweep()
 				case GC_ObjectType::DynamicClass:
 					memorySize = sizeof(ObjectDynamicClass);
 					((ObjectDynamicClass*)m_ObjectList->m_ObjectList[i])->~ObjectDynamicClass();
+					break;
+				case GC_ObjectType::Hash:
+					memorySize = sizeof(ObjectHash);
+					((ObjectHash*)m_ObjectList->m_ObjectList[i])->~ObjectHash();
 					break;
 				default:
 					break;

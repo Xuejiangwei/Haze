@@ -4,6 +4,7 @@
 
 class ObjectString : public GCObject
 {
+	friend class HazeMemory;
 public:
 	ObjectString(x_uint32 gcIndex, const x_HChar* str, bool fixedCapacity = false);
 
@@ -11,9 +12,12 @@ public:
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 
+	static bool IsEqual(ObjectString* obj1, ObjectString* obj2);
+
 	const x_HChar* GetData() const { return (x_HChar*)m_Data; }
 
 	x_uint64 GetLength() const { return m_Length; }
+
 
 private:
 	static void Append(HAZE_OBJECT_CALL_PARAM);

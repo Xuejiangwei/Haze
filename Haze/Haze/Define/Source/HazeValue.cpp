@@ -2,6 +2,9 @@
 #include "HazeValue.h"
 #include "HazeHeader.h"
 #include "HazeLog.h"
+#include "ObjectString.h"
+#include "ObjectClass.h"
+#include "ObjectBase.h"
 
 static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 {
@@ -30,6 +33,10 @@ static HashMap<HazeToken, HazeValueType> s_HashMap_Types =
 	{ HazeToken::Function, HazeValueType::Function },
 
 	{ HazeToken::Reference, HazeValueType::Refrence },
+
+	{ HazeToken::ObjectBase, HazeValueType::ObjectBase },
+	
+	{ HazeToken::Hash, HazeValueType::Hash },
 
 	{ HazeToken::MultiVariable, HazeValueType::MultiVariable },
 };
@@ -60,6 +67,9 @@ x_uint32 GetSizeByHazeType(HazeValueType type)
 		case HazeValueType::DynamicClassUnknow:
 		case HazeValueType::PureString:
 		case HazeValueType::Function:
+		case HazeValueType::ObjectBase:
+		case HazeValueType::Hash:
+		case HazeValueType::Closure:
 			return 8;
 		case HazeValueType::Void:
 		case HazeValueType::MultiVariable:
@@ -242,6 +252,21 @@ bool IsMultiVariableTye(HazeValueType type)
 bool IsObjectFunctionType(HazeValueType type)
 {
 	return type == HazeValueType::ObjectFunction;
+}
+
+bool IsObjectBaseType(HazeValueType type)
+{
+	return type == HazeValueType::ObjectBase;
+}
+
+bool IsHashType(HazeValueType type)
+{
+	return type == HazeValueType::Hash;
+}
+
+bool IsClosureType(HazeValueType type)
+{
+	return type == HazeValueType::Closure;
 }
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value)
@@ -640,6 +665,55 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	}
 }
 
+bool IsEqualByType(HazeValueType type, HazeValue v1, HazeValue v2)
+{
+#define IS_OBJECT_EQUAL(OBJECT) OBJECT::IsEqual((OBJECT*)v1.Value.Pointer, (OBJECT*)v2.Value.Pointer)
+	switch (type)
+	{
+		case HazeValueType::Bool:
+			return v1.Value.Bool == v2.Value.Bool;
+		case HazeValueType::Int8:
+			return v1.Value.Int8 == v2.Value.Int8;
+		case HazeValueType::Int16:
+			return v1.Value.Int16 == v2.Value.Int16;
+		case HazeValueType::Int32:
+			return v1.Value.Int32 == v2.Value.Int32;
+		case HazeValueType::Int64:
+			return v1.Value.Int64 == v2.Value.Int64;
+		case HazeValueType::UInt8:
+			return v1.Value.UInt8 == v2.Value.UInt8;
+		case HazeValueType::UInt16:
+			return v1.Value.UInt16 == v2.Value.UInt16;
+		case HazeValueType::UInt32:
+			return v1.Value.UInt32 == v2.Value.UInt32;
+		case HazeValueType::UInt64:
+			return v1.Value.UInt64 == v2.Value.UInt64;
+		case HazeValueType::Float32:
+			return v1.Value.Float32 == v2.Value.Float32;
+		case HazeValueType::Float64:
+			return v1.Value.Float64 == v2.Value.Float64;
+		case HazeValueType::Function:
+		case HazeValueType::Array:
+		case HazeValueType::Hash:
+		case HazeValueType::Closure:
+			return v1.Value.Pointer == v2.Value.Pointer;
+		case HazeValueType::String:
+			return IS_OBJECT_EQUAL(ObjectString);
+		case HazeValueType::Class:
+			return IS_OBJECT_EQUAL(ObjectClass);
+		case HazeValueType::ObjectBase:
+			return IS_OBJECT_EQUAL(ObjectBase);
+		case HazeValueType::Enum:
+			return v1.Value.Pointer == v2.Value.Pointer;
+		default:
+			HAZE_LOG_ERR_W("类型<%s>不能比较相等!\n", GetHazeValueTypeString(type));
+			throw;
+			break;
+	}
+
+	return false;
+}
+
 size_t GetHazeCharPointerLength(const x_HChar* hChar)
 {
 	return wcslen(hChar);
@@ -671,6 +745,59 @@ const x_HChar* GetHazeValueTypeString(HazeValueType type)
 	}
 
 	return H_TEXT("None");
+}
+
+void SetHazeValueByData(HazeValue& value, HazeValueType type, void* data)
+{
+	switch (type)
+	{
+		case HazeValueType::Bool:
+			memcpy(&value.Value.Bool, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::Int8:
+			memcpy(&value.Value.Int8, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::Int16:
+			memcpy(&value.Value.Int16, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::Int32:
+			memcpy(&value.Value.Int32, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::Int64:
+			memcpy(&value.Value.Int64, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::UInt8:
+			memcpy(&value.Value.UInt8, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::UInt16:
+			memcpy(&value.Value.UInt16, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::UInt32:
+			memcpy(&value.Value.UInt32, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::UInt64:
+			memcpy(&value.Value.UInt64, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::Float32:
+			memcpy(&value.Value.Float32, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::Float64:
+			memcpy(&value.Value.Float64, data, GetSizeByHazeType(type));
+			break;
+		case HazeValueType::Function:
+		case HazeValueType::Array:
+		case HazeValueType::String:
+		case HazeValueType::Class:
+		case HazeValueType::ObjectBase:
+		case HazeValueType::Hash:
+		case HazeValueType::Closure:
+			memcpy(&value.Value.Pointer, data, GetSizeByHazeType(type));
+			break;
+		default:
+			HAZE_LOG_ERR_W("给类型<%s>赋值错误!\n", GetHazeValueTypeString(type));
+			throw;
+			break;
+	}
 }
 
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value)
@@ -815,4 +942,24 @@ bool CanCVT(HazeValueType type1, HazeValueType type2)
 	}
 
 	return false;
+}
+
+bool CanArray(HazeValueType type)
+{
+	return IsHazeBaseType(type) || (IsAdvanceType(type) && !IsUseTemplateType(type));
+}
+
+bool CanHash(HazeValueType type)
+{
+	return IsHazeBaseType(type) || IsStringType(type) || IsClassType(type) || IsEnumType(type);
+}
+
+bool CanHashValue(HazeValueType type)
+{
+	return IsHazeBaseType(type) || (IsAdvanceType(type) && !IsUseTemplateType(type));
+}
+
+bool IsUseTemplateType(HazeValueType type)
+{
+	return IsHashType(type) || IsObjectBaseType(type);
 }

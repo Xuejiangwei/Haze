@@ -8,6 +8,8 @@
 #include "ObjectArray.h"
 #include "ObjectClass.h"
 #include "ObjectString.h"
+#include "ObjectBase.h"
+#include "ObjectHash.h"
 #include "HazeMemory.h"
 #include "Compiler.h"
 
@@ -67,6 +69,8 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 	{H_TEXT("CVT"), InstructionOpCode::CVT },
 
 	{H_TEXT("MOV_DCU"), InstructionOpCode::MOV_DCU },
+
+	{H_TEXT("NEW_SIGN"), InstructionOpCode::NEW_SIGN },
 
 	{H_TEXT("LINE"), InstructionOpCode::LINE },
 };
@@ -648,24 +652,28 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
-#if HAZE_CALL_LOG
-			HAZE_LOG_INFO(H_TEXT("调用函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
-#endif
-
 			memcpy(&stack->m_StackMain[stack->m_ESP - HAZE_ADDRESS_SIZE], &stack->m_PC, HAZE_ADDRESS_SIZE);
 
 			if (oper[0].Variable.Type.PrimaryType == HazeValueType::ObjectFunction)
 			{
 				x_uint32 tempEBP = stack->m_EBP;
 				stack->m_EBP = stack->m_ESP;
-
 				x_uint64 paramByteSize = 0;
+				
+#if HAZE_CALL_LOG
+				HString functionName = stack->m_VM->GetAdvanceFunctionName((x_uint16)oper[0].Extra.ObjectCall.Index);;
+				HAZE_LOG_INFO(H_TEXT("调用对象<%s>函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), functionName.c_str(), stack->m_EBP, stack->m_ESP);
+#endif
+
 				stack->m_VM->GetAdvanceFunction((x_uint16)oper[0].Extra.ObjectCall.Index)->ClassFunc(stack, oper[0].Extra.Call.ParamNum, paramByteSize);
 				stack->m_ESP -= (paramByteSize + HAZE_ADDRESS_SIZE);
 				stack->m_EBP = tempEBP;
 			}
 			else if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
 			{
+#if HAZE_CALL_LOG
+				HAZE_LOG_INFO(H_TEXT("调用函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
+#endif
 				void* value = GetOperatorAddress(stack, oper[0]);
 				x_uint64 functionAddress;
 				memcpy(&functionAddress, (char*)value, sizeof(functionAddress));
@@ -683,6 +691,10 @@ public:
 				{
 					functionIndex = stack->m_VM->GetFucntionIndexByName(oper[0].Variable.Name);
 				}
+
+#if HAZE_CALL_LOG
+				HAZE_LOG_INFO(H_TEXT("调用函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
+#endif
 				 
 				if (functionIndex >= 0)
 				{
@@ -750,6 +762,12 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
+	static void New_Sign(HazeStack* stack)
+	{
+		stack->OnNewSign();
+		stack->m_VM->InstructionExecPost();
+	}
+
 	static void New(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
@@ -759,7 +777,6 @@ public:
 		auto& type = oper[0].Variable.Type;
 		if (oper.size() == 2)
 		{
-			//newRegister->Type = oper[0].Variable.Type;
 
 			bool isArray = IsArrayType(type.PrimaryType);
 		
@@ -813,6 +830,11 @@ public:
 			{
 				address = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
 				new(address.first) ObjectClass(address.second, stack->GetVM()->FindClass(*type.CustomName));
+			}
+			else if (IsHashType(type.PrimaryType))
+			{
+				address = HazeMemory::AllocaGCData(sizeof(ObjectHash), GC_ObjectType::Hash);
+				new(address.first) ObjectHash(address.second, stack->m_NewSignType);
 			}
 			else
 			{
@@ -1024,7 +1046,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void MOV_DCU(HazeStack* stack)
+	static void Mov_DynamicClassUnknown(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
@@ -1379,7 +1401,9 @@ HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 
 	{InstructionOpCode::CVT, &InstructionProcessor::CVT},
 
-	{InstructionOpCode::MOV_DCU, &InstructionProcessor::MOV_DCU},
+	{InstructionOpCode::MOV_DCU, &InstructionProcessor::Mov_DynamicClassUnknown},
+
+	{InstructionOpCode::NEW_SIGN, &InstructionProcessor::New_Sign},
 
 	{InstructionOpCode::LINE, &InstructionProcessor::Line},
 };

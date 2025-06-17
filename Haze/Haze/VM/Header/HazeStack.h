@@ -83,6 +83,9 @@ private:
 
 	bool PopGCTempRegister(void* address);
 
+	void OnNewSign();
+	void OnNewSignInternal(TemplateDefineTypes* type);
+	
 private:
 	HazeVM* m_VM;
 
@@ -98,4 +101,6 @@ private:
 	V_Array<int> m_CallHazeStack;
 
 	V_Array<Pair<void*, const HazeDefineType*>> m_GCTempRegisters;
+
+	TemplateDefineTypes m_NewSignType;
 };

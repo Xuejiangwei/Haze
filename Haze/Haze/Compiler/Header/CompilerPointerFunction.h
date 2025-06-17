@@ -17,6 +17,10 @@ public:
 
 	const HazeDefineType& GetParamTypeLeftToRightByIndex(x_uint64 index) const;
 
+	const x_uint64 GetParamSize() const;
+
 private:
 	V_Array<HazeDefineType> m_ParamTypes;
+	HazeDefineType m_FuncType;
+	CompilerClass* m_OwnerClass;
 };

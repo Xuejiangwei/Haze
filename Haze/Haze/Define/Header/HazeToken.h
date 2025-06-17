@@ -147,4 +147,8 @@ enum class HazeToken : unsigned int
 	TwoColon,
 
 	Reference,
+
+	ObjectBase,
+
+	Hash,
 };

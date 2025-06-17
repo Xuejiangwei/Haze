@@ -294,6 +294,12 @@ struct HazeDefineType
 	}
 };
 
+struct HazeNewDefineType
+{
+	HazeDefineType BaseType;
+	x_uint64 ArrayDimension;
+};
+
 struct HazeDefineTypeHashFunction
 {
 	x_uint64 operator()(const HazeDefineType& type) const
@@ -312,7 +318,7 @@ struct HazeDefineTypeHashFunction
 struct HazeDefineVariable
 {
 	HazeDefineType Type;		//变量类型
-	HString Name;			//变量名
+	HString Name;				//变量名
 
 	HazeDefineVariable() {}
 	HazeDefineVariable(const HazeDefineType& type, const HString& name)
@@ -348,9 +354,13 @@ struct TemplateDefineType
 {
 	bool IsDefines;
 	Share<TemplateDefineTypes> Defines;
-	Share<HazeDefineType> Type;
+	Share<HazeNewDefineType> Type;
 
-	TemplateDefineType(bool isDefines, Share<TemplateDefineTypes> defineTypes, Share<HazeDefineType> type) : IsDefines(isDefines)
+	TemplateDefineType() : IsDefines(false)
+	{
+	}
+
+	TemplateDefineType(bool isDefines, Share<TemplateDefineTypes> defineTypes, Share<HazeNewDefineType> type) : IsDefines(isDefines)
 	{
 		if (IsDefines)
 		{
@@ -380,7 +390,7 @@ struct TemplateDefineType
 		return *this;
 	}
 
-	~TemplateDefineType()
+	/*~TemplateDefineType()
 	{
-	}
+	}*/
 };

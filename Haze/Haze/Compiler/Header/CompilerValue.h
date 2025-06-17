@@ -81,6 +81,12 @@ public:
 
 	bool IsPureString() const { return IsPureStringType(m_ValueType.PrimaryType); }
 
+	bool IsObjectBase() const { return IsObjectBaseType(m_ValueType.PrimaryType); }
+
+	bool IsHash() const { return IsHashType(m_ValueType.PrimaryType); }
+	
+	bool IsClosure() const { return IsClosureType(m_ValueType.PrimaryType); }
+
 	virtual bool IsEnum() const { return false; }
 
 public:

@@ -16,7 +16,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 
 Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDefineType& type,
 	HazeVariableScope scope, HazeDataDesc desc, int count, Share<CompilerValue> refValue = nullptr,
-	x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* params = nullptr);
+	x_uint64 arrayDimension = 0, TemplateDefineTypes* params = nullptr);
 
 Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var);
 
@@ -37,6 +37,9 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 
 HString GenIRCode(InstructionOpCode opCode, x_uint64 number);
 
+
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, x_uint64 paramCount, x_uint64 paramSize,
 	Share<CompilerFunction> function, Share<CompilerValue> pointerFunction = nullptr, Share<CompilerValue> advancePointerTo = nullptr, 
 	x_int16 advanceFuncIndex = -1, const HString* nameSpace = nullptr);
+
+void GenIRCode_NewSign(HAZE_STRING_STREAM& hss, TemplateDefineTypes* defineTypes);

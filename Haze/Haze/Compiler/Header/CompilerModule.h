@@ -107,7 +107,7 @@ public:
 	x_uint32 GetGlobalStringIndex(Share<CompilerValue> value);
 
 	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr,
-		x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* params = nullptr);
+		x_uint64 arrayDimension = 0, TemplateDefineTypes* params = nullptr);
 
 	static Share<CompilerValue> GetGlobalVariable(CompilerModule* m, const HString& name);
 
@@ -134,14 +134,14 @@ private:
 	Share<CompilerValue> CreateInc(Share<CompilerValue> value, bool isPreInc);
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
+	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes);
 
-	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr,
+	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr,
 		const HString* nameSpace = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
 	
-	Share<CompilerValue> CreateAdvanceTypeFunctionCall(struct AdvanceFunctionInfo* functionInfo, x_uint16 index, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
+	Share<CompilerValue> CreateAdvanceTypeFunctionCall(struct AdvanceFunctionInfo* functionInfo, x_uint16 index, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
 
 	void GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2, InstructionOpCode opCode, bool check = true);
 
@@ -155,7 +155,7 @@ private:
 
 private:
 	void FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction, 
-		AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, V_Array<Share<CompilerValue>>& params, 
+		AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, const V_Array<Share<CompilerValue>>& params, 
 		Share<CompilerValue> thisPointerTo);
 
 	void GenCodeFile();

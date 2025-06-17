@@ -22,6 +22,7 @@
 #include "ObjectString.h"
 #include "ObjectClass.h"
 #include "ObjectDynamicClass.h"
+#include "ObjectHash.h"
 
 #include <cstdarg>
 #include <filesystem>
@@ -155,6 +156,32 @@ void HazeVM::CallFunction(const FunctionData* functionData, va_list& args)
 AdvanceFunctionInfo* HazeVM::GetAdvanceFunction(x_uint16 index)
 {
 	return m_FunctionObjectTable[index];
+}
+
+HString HazeVM::GetAdvanceFunctionName(x_uint16 index)
+{
+#define GET_ADVANCE_MAPPING(CLASS) for (x_uint64 i = 0; i < CLASS::GetAdvanceClassInfo()->Functions.size(); i++) \
+		{ \
+			if (func == &CLASS::GetAdvanceClassInfo()->Functions[i]) \
+			{ \
+				for (auto it1 : CLASS::GetAdvanceClassInfo()->FunctionMapping) \
+				{ \
+					if (it1.second == i) \
+					{ \
+						return it1.first; \
+					} \
+				} \
+			} \
+		}
+
+	auto func = m_FunctionObjectTable[index];
+	GET_ADVANCE_MAPPING(ObjectArray);
+	GET_ADVANCE_MAPPING(ObjectString);
+	GET_ADVANCE_MAPPING(ObjectClass);
+	GET_ADVANCE_MAPPING(ObjectDynamicClass);
+	GET_ADVANCE_MAPPING(ObjectHash);
+	
+	return H_TEXT("None");
 }
 
 ObjectClass* HazeVM::CreateObjectClass(const x_HChar* className, ...)
@@ -332,6 +359,12 @@ void HazeVM::InitRegisterObjectFunction()
 
 	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::DynamicClass, { ObjectDynamicClass::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
 	for (auto& it : ObjectDynamicClass::GetAdvanceClassInfo()->Functions)
+	{
+		m_FunctionObjectTable.push_back(&it);
+	}
+
+	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Hash, { ObjectHash::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
+	for (auto& it : ObjectHash::GetAdvanceClassInfo()->Functions)
 	{
 		m_FunctionObjectTable.push_back(&it);
 	}

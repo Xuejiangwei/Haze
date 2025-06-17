@@ -126,6 +126,8 @@ enum class InstructionOpCode : x_uint32
 
 	MOV_DCU,	//DynamicClassUnknown赋值用
 
+	NEW_SIGN,	//New类型, 若stack中为置零状态, 则为主类型, 之后会根据不同的主类型, 进行不同需要类型数据的解析
+
 	LINE,		//调试用
 };
 
@@ -190,6 +192,15 @@ struct InstructionData
 		int InstructionNum;
 	};
 
+	struct NewSign
+	{
+		union
+		{
+			x_uint32 TemplateCount;
+			x_uint32 ArrayDimension;
+		};
+	};
+
 	union Extra
 	{
 		int Index;
@@ -200,7 +211,7 @@ struct InstructionData
 		HazeValue RuntimeDynamicValue;
 
 		x_uint32 Line;
-		x_uint64 SignData;
+		NewSign SignData;
 		Extra()
 		{
 		}

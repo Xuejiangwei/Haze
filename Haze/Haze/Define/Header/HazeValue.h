@@ -11,10 +11,8 @@ enum class HazeValueType : x_uint32
 	None,
 
 	Void,
-	
 
-
-	//基本类型 Bool -> Double
+	//基本类型 Bool -> Float64
 	__BaseType_Begin,
 
 	Bool,
@@ -25,8 +23,8 @@ enum class HazeValueType : x_uint32
 	Int64,
 
 	UInt8,
-	UInt32,
 	UInt16,
+	UInt32,
 	UInt64,
 	
 	Float32,
@@ -34,31 +32,36 @@ enum class HazeValueType : x_uint32
 
 	__BaseType_End,
 
-	PureString,				//纯字符串，用作操作数的Variable名字当作dynamicClass的成员名
+	PureString,				//纯字符串, 用作操作数的Variable名字当作dynamicClass的成员名
 
 	//引用
-	Refrence,				//只作用于基本类型，因为类和数组本来就是指针
+	Refrence,				//只作用于基本类型, 因为类和数组本来就是指针
 
 	//函数指针
 	Function,				//函数指针, 不参与GC
 	
 	//Object函数,
-	ObjectFunction,
+	ObjectFunction,			//Advance类型的函数
 
 	__Advance_Begin,
 
 	//数组类型
-	Array,					//数组对象 参与GC, 定长
+	Array,					//数组对象 参与GC, 不能使用Array的类型, 考虑用类封装
 
 	//字符串
 	String,					//字符串对象, 不定长, 参与GC
 
 	Class,					//类指针对象, 参与GC
 
-	DynamicClass,			//动态类
+	DynamicClass,			//动态类, 不参与GC
+
+	ObjectBase,				//基本类型的对象, 参与GC
+
+	Hash,					//哈希对象, 参与GC
+
+	Closure,				//闭包, 匿名函数, 参与GC
 
 	__Advance_End,
-
 
 
 	Enum,					//不起作用, 只用来解析时做相同类型判断
@@ -143,20 +146,32 @@ bool IsPureStringType(HazeValueType type);
 bool IsRefrenceType(HazeValueType type);
 bool IsMultiVariableTye(HazeValueType type);
 bool IsObjectFunctionType(HazeValueType type);
-
+bool IsObjectBaseType(HazeValueType type);
+bool IsHashType(HazeValueType type);
+bool IsClosureType(HazeValueType type);
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);
 
 void CalculateValueByType(HazeValueType type, InstructionOpCode typeCod, const void* source, const void* oper1, const void* oper2);
 
 void CompareValueByType(HazeValueType type, struct HazeRegister* hazeRegister, const void* source, const void* target);
+bool IsEqualByType(HazeValueType type, HazeValue v1, HazeValue v2);
 
 size_t GetHazeCharPointerLength(const x_HChar* hChar);
 
 const x_HChar* GetHazeValueTypeString(HazeValueType type);
+
+void SetHazeValueByData(HazeValue& value, HazeValueType type, void* data);
 
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value);
 
 HazeValue GetNegValue(HazeValueType type, const HazeValue& value);
 
 bool CanCVT(HazeValueType type1, HazeValueType type2);
+
+bool CanArray(HazeValueType type);
+
+bool CanHash(HazeValueType type);
+bool CanHashValue(HazeValueType type);
+
+bool IsUseTemplateType(HazeValueType type);

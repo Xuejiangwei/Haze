@@ -151,6 +151,9 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\GCObject.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectDynamicClass.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectBase.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectClosure.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectHash.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\GCObjectList.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
@@ -208,6 +211,9 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectArray.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\GCObject.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectDynamicClass.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectBase.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectClosure.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Object\Header\ObjectHash.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\GCObjectList.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
@@ -223,6 +229,7 @@
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
     <ClCompile Include="Backend\Source\Optimizer.cpp" />
+    <ClCompile Include="Compiler\Source\CompilerClosureValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerElementValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerEnum.cpp" />
     <ClCompile Include="Compiler\Source\CompilerEnumValue.cpp" />
@@ -232,8 +239,10 @@
     <ClCompile Include="Compiler\Source\CompilerClassValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerFunction.cpp" />
     <ClCompile Include="Compiler\Source\CompilerClass.cpp" />
+    <ClCompile Include="Compiler\Source\CompilerHashValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerHelper.cpp" />
     <ClCompile Include="Compiler\Source\CompilerModule.cpp" />
+    <ClCompile Include="Compiler\Source\CompilerObjectBaseValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerPointerFunction.cpp" />
     <ClCompile Include="Compiler\Source\CompilerStringValue.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerPointerValue.cpp" />
@@ -252,12 +261,15 @@
     <ClCompile Include="Library\Source\HazeMemoryLib.cpp" />
     <ClCompile Include="Memory\Source\GCObjectList.cpp" />
     <ClCompile Include="Object\Source\ObjectArray.cpp" />
+    <ClCompile Include="Object\Source\ObjectBase.cpp" />
     <ClCompile Include="Object\Source\ObjectClass.cpp" />
     <ClCompile Include="Memory\Source\HazeMemory.cpp" />
     <ClCompile Include="Memory\Source\MemoryBlock.cpp" />
     <ClCompile Include="Memory\Source\MemoryHelper.cpp" />
     <ClCompile Include="MetaData\Source\HazeVariable.cpp" />
+    <ClCompile Include="Object\Source\ObjectClosure.cpp" />
     <ClCompile Include="Object\Source\ObjectDynamicClass.cpp" />
+    <ClCompile Include="Object\Source\ObjectHash.cpp" />
     <ClCompile Include="Object\Source\ObjectString.cpp" />
     <ClCompile Include="Source\Haze.cpp" />
     <ClCompile Include="HazeLog\Source\HazeLog.cpp" />
@@ -290,13 +302,16 @@
     <ClInclude Include="Compiler\Header\Compiler.h" />
     <ClInclude Include="Compiler\Header\CompilerArrayValue.h" />
     <ClInclude Include="Compiler\Header\CompilerClassValue.h" />
+    <ClInclude Include="Compiler\Header\CompilerClosureValue.h" />
     <ClInclude Include="Compiler\Header\CompilerElementValue.h" />
     <ClInclude Include="Compiler\Header\CompilerEnum.h" />
     <ClInclude Include="Compiler\Header\CompilerEnumValue.h" />
     <ClInclude Include="Compiler\Header\CompilerFunction.h" />
     <ClInclude Include="Compiler\Header\CompilerClass.h" />
+    <ClInclude Include="Compiler\Header\CompilerHashValue.h" />
     <ClInclude Include="Compiler\Header\CompilerHelper.h" />
     <ClInclude Include="Compiler\Header\CompilerModule.h" />
+    <ClInclude Include="Compiler\Header\CompilerObjectBaseValue.h" />
     <ClInclude Include="Compiler\Header\CompilerPointerFunction.h" />
     <ClInclude Include="Compiler\Header\CompilerStringValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerPointerValue.h" />
@@ -331,8 +346,11 @@
     <ClInclude Include="Memory\Header\GCObjectList.h" />
     <ClInclude Include="Object\Header\GCObject.h" />
     <ClInclude Include="Object\Header\ObjectArray.h" />
+    <ClInclude Include="Object\Header\ObjectBase.h" />
     <ClInclude Include="Object\Header\ObjectClass.h" />
+    <ClInclude Include="Object\Header\ObjectClosure.h" />
     <ClInclude Include="Object\Header\ObjectDynamicClass.h" />
+    <ClInclude Include="Object\Header\ObjectHash.h" />
     <ClInclude Include="Object\Header\ObjectString.h" />
     <ClInclude Include="XJson\XJson.h" />
     <ClInclude Include="VM\Header\HazeLibraryManager.h" />

@@ -129,7 +129,7 @@ void CompilerBlock::PushIRCode(const HString& code)
 }
 
 Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, HazeVariableScope scope,
-	Share<CompilerValue> refValue, x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
+	Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	for (auto& Iter : m_Allocas)
 	{

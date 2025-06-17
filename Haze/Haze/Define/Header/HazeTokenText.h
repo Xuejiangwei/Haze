@@ -127,6 +127,10 @@
 
 #define TOKEN_GET_ADDRESS				H_TEXT("È¡Ö·")
 
+#define TOKEN_OBJECT_BASE				H_TEXT("¶ÔÏó")
+
+#define TOKEN_HASH						H_TEXT("¹þÏ£")
+
 #define TOKEN_INT_8						TOKEN_INT H_TEXT("8")
 #define TOKEN_UINT_8					TOKEN_UNSIGNED_INT H_TEXT("8")
 #define TOKEN_INT_16					TOKEN_INT H_TEXT("16")

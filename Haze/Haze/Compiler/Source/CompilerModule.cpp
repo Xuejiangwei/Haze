@@ -821,9 +821,14 @@ Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool 
 	return retValue;
 }
 
-Share<CompilerValue> CompilerModule::CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue)
+Share<CompilerValue> CompilerModule::CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes)
 {
 	HAZE_STRING_STREAM hss;
+
+	if (defineTypes)
+	{
+		GenIRCode_NewSign(hss, defineTypes);
+	}
 
 	if (countValue)
 	{
@@ -929,13 +934,13 @@ void CompilerModule::GenIRCode_JmpTo(Share<CompilerBlock> block)
 }
 
 Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue,
-	x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
+	x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	return m_GlobalDataFunction->CreateGlobalVariable(var, line, refValue, arrayDimension, params);
 }
 
 void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction,
-	AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, V_Array<Share<CompilerValue>>& params,
+	AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, const V_Array<Share<CompilerValue>>& params,
 	Share<CompilerValue> thisPointerTo)
 {
 	static HazeDefineType s_UInt64 = HazeDefineType(HazeValueType::UInt64);
@@ -954,8 +959,9 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	}
 	else
 	{
-		auto paramSize = callFunction ? callFunction->m_Params.size() : pointerFunc ? pointerFunc->m_ParamTypes.size() :
+		auto paramSize = callFunction ? callFunction->GetParamSize() : pointerFunc ? pointerFunc->GetParamSize() :
 			advancFunctionInfo->Params.size();
+
 		for (x_int64 i = params.size() - 1; i >= 0; i--)
 		{
 			auto variable = params[i];
@@ -966,12 +972,19 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 			if (*type != variable->GetValueType() && !variable->GetValueType().IsStrongerType(*type))
 			{
-				if (i == (x_int64)params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize - (callFunction && callFunction->GetClass() ? 1 : 0) != params.size())
+				if (i == (x_int64)params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize != params.size())
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
 				}
-				else if (IsMultiVariableTye(type->PrimaryType) && i == 0) {}
+				else if (IsMultiVariableTye(type->PrimaryType))
+				{
+					if (params.size() - i < paramSize)
+					{
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误,  第<%d>个参数枚举类型不匹配", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
+					}
+				}
 				else if (variable->IsEnum())
 				{
 					auto enumValue = DynamicCast<CompilerEnumValue>(variable);
@@ -1031,6 +1044,14 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				funcTypes[i] = type;
 			}
 		}
+
+		auto& lastParam = callFunction ? callFunction->GetParamTypeByIndex(0) :
+			pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
+		if ((IsMultiVariableTye(lastParam.PrimaryType) && params.size() + 1 < paramSize) || (!IsMultiVariableTye(lastParam.PrimaryType) && params.size() != paramSize))
+		{
+			COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 函数个数不匹配", GetName().c_str(),
+				callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"));
+		}
 	}
 
 	for (x_uint64 i = 0; i < params.size(); i++)
@@ -1061,7 +1082,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 }
 
 Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> callFunction, 
-	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo, const HString* nameSpace)
+	const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo, const HString* nameSpace)
 {
 	HAZE_STRING_STREAM hss;
 	x_uint32 size = 0;
@@ -1104,8 +1125,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 	return ret;
 }
 
-Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo* functionInfo, x_uint16 index,
-	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
+Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo* functionInfo, x_uint16 index, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
 	HAZE_STRING_STREAM hss;
 	x_uint32 size = 0;

@@ -75,6 +75,8 @@ public:
 	virtual Share<CompilerValue> CodeGen() override;
 	virtual const x_HChar* GetName() { return m_DefineVariable.Name.c_str(); }
 
+	const HString& GetNameSpace() const { return m_NameSpace; }
+
 private:
 	Share<CompilerValue> GetNameValue();
 
@@ -195,6 +197,49 @@ private:
 	TemplateDefineTypes m_TemplateTypes;
 };
 
+//变量定义 基本类型对象
+class ASTVariableDefine_ObjectBase : public ASTVariableDefine
+{
+public:
+	ASTVariableDefine_ObjectBase(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, HazeValueType type);
+	virtual ~ASTVariableDefine_ObjectBase() override {}
+
+	virtual Share<CompilerValue> CodeGen() override;
+
+private:
+	HazeValueType m_Type;
+};
+
+//变量定义 哈希对象
+class ASTVariableDefine_Hash : public ASTVariableDefine
+{
+public:
+	ASTVariableDefine_Hash(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, TemplateDefineTypes& templateTypes);
+	virtual ~ASTVariableDefine_Hash() override {}
+
+	virtual Share<CompilerValue> CodeGen() override;
+
+private:
+	TemplateDefineTypes m_TemplateTypes;
+	Unique<ASTBase> m_Expression;
+};
+
+//变量定义 闭包对象
+class ASTVariableDefine_Closure : public ASTVariableDefine
+{
+public:
+	ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes);
+	virtual ~ASTVariableDefine_Closure() override {}
+
+	virtual Share<CompilerValue> CodeGen() override;
+
+private:
+	TemplateDefineTypes m_TemplateTypes;
+};
+
 //返回
 class ASTReturn : public ASTBase
 {
@@ -212,7 +257,7 @@ private:
 class ASTNew : public ASTBase
 {
 public:
-	ASTNew(Compiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, V_Array<Unique<ASTBase>> countarrayExpression = {},
+	ASTNew(Compiler* compiler, const SourceLocation& location, const HazeDefineVariable& defineVar, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>> countArrayExpression = {},
 		V_Array<Unique<ASTBase>> constructorParam = {});
 	virtual ~ASTNew() override {}
 
@@ -221,6 +266,7 @@ public:
 private:
 	V_Array<Unique<ASTBase>> m_CountArrayExpression;
 	V_Array<Unique<ASTBase>> m_ConstructorParam;
+	TemplateDefineTypes m_TemplateTypes;
 };
 
 //获得地址

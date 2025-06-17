@@ -1,13 +1,15 @@
 #include "HazePch.h"
 #include "CompilerElementValue.h"
 #include "CompilerArrayValue.h"
+#include "CompilerHashValue.h"
 #include "CompilerClassValue.h"
 #include "CompilerClass.h"
 #include "CompilerModule.h"
 #include "Compiler.h"
 
 CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, Share<CompilerValue> element)
-	: CompilerValue(compilerModule, element->GetValueType(), HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(element), m_ElementName(nullptr)
+	: CompilerValue(compilerModule, element->GetValueType(), HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(element), m_ElementName(nullptr),
+	m_ValueTypeArrayDimension(0)
 {
 	if (parent->IsArray())
 	{
@@ -15,11 +17,18 @@ CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share
 		if (arrayValue->GetArrayDimension() > 1)
 		{
 			m_ValueType = parent->GetValueType();
+			m_ValueTypeArrayDimension = arrayValue->GetArrayDimension() - 1;
 		}
 		else
 		{
 			m_ValueType.ToArrayElement(parent->GetValueType());
 		}
+	}
+	else if (parent->IsHash())
+	{
+		auto& type = DynamicCast<CompilerHashValue>(parent)->GetValueType().Type;
+		m_ValueType = type->BaseType;
+		m_ValueTypeArrayDimension = type->ArrayDimension;
 	}
 }
 
@@ -35,7 +44,7 @@ CompilerElementValue::~CompilerElementValue()
 
 Share<CompilerValue> CompilerElementValue::CreateGetFunctionCall()
 {
-	if (IsArrayType(GetParentBaseType()))
+	/*if (IsArrayType(GetParentBaseType()))
 	{
 		return m_Module->GetCompiler()->CreateGetArrayElement(m_Parent, m_Element);
 	}
@@ -51,9 +60,9 @@ Share<CompilerValue> CompilerElementValue::CreateGetFunctionCall()
 	{
 		COMPILER_ERR_MODULE_W("复杂类型<%s>不支持<%s>方法", GetHazeValueTypeString(GetParentBaseType()), HAZE_ADVANCE_GET_FUNCTION,
 			m_Module->GetName().c_str());
-	}
+	}*/
 
-	return nullptr;
+	return m_Module->GetCompiler()->CreateGetAdvanceElement(DynamicCast<CompilerElementValue>(GetShared()));
 }
 
 CompilerClass* CompilerElementValue::GetRealClass() const

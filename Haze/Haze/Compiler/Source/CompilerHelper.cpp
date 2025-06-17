@@ -14,6 +14,9 @@
 #include "CompilerElementValue.h"
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
+#include "CompilerObjectBaseValue.h"
+#include "CompilerHashValue.h"
+#include "CompilerClosureValue.h"
 #include "HazeLogDefine.h"
 
 static HashMap<CompilerValue*, x_uint64>  g_CacheOffset;
@@ -94,51 +97,57 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 }
 
 Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeDefineType& type, HazeVariableScope scope, 
-	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
+	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	switch (type.PrimaryType)
 	{
-	case HazeValueType::Void:
-	case HazeValueType::Bool:
-	case HazeValueType::Int8:
-	case HazeValueType::UInt8:
-	case HazeValueType::Int16:
-	case HazeValueType::UInt16:
-	case HazeValueType::Int32:
-	case HazeValueType::UInt32:
-	case HazeValueType::Int64:
-	case HazeValueType::UInt64:
-	case HazeValueType::Float32:
-	case HazeValueType::Float64:
-	case HazeValueType::MultiVariable:
-	case HazeValueType::DynamicClass:
-		return MakeShare<CompilerValue>(compilerModule, type, scope, desc, count, assignValue);
-	case HazeValueType::Array:
-		return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count, arrayDimension);
-	case HazeValueType::Refrence:
-		return MakeShare<CompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
-	case HazeValueType::Function:
-		return MakeShare<CompilerPointerFunction>(compilerModule, type, scope, desc, count, params ? params : nullptr);
-	case HazeValueType::String:
-		return MakeShare<CompilerStringValue>(compilerModule, type, scope, desc, count);
-	case HazeValueType::Class:
-	{
-		return MakeShare<CompilerClassValue>(compilerModule, type, scope, desc, count);
-	}
-	case HazeValueType::Enum:
-	{
-		auto enumValue = compilerModule->GetEnum(compilerModule, *type.CustomName).get();
-		return MakeShare<CompilerEnumValue>(enumValue, compilerModule, type, scope, desc, count, assignValue);
-	}
-	default:
-		break;
+		case HazeValueType::Void:
+		case HazeValueType::Bool:
+		case HazeValueType::Int8:
+		case HazeValueType::UInt8:
+		case HazeValueType::Int16:
+		case HazeValueType::UInt16:
+		case HazeValueType::Int32:
+		case HazeValueType::UInt32:
+		case HazeValueType::Int64:
+		case HazeValueType::UInt64:
+		case HazeValueType::Float32:
+		case HazeValueType::Float64:
+		case HazeValueType::MultiVariable:
+		case HazeValueType::DynamicClass:
+			return MakeShare<CompilerValue>(compilerModule, type, scope, desc, count, assignValue);
+		case HazeValueType::Array:
+			return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count, arrayDimension);
+		case HazeValueType::Refrence:
+			return MakeShare<CompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
+		case HazeValueType::Function:
+			return MakeShare<CompilerPointerFunction>(compilerModule, type, scope, desc, count, /*params ? params :*/ nullptr);
+		case HazeValueType::String:
+			return MakeShare<CompilerStringValue>(compilerModule, type, scope, desc, count);
+		case HazeValueType::Class:
+		{
+			return MakeShare<CompilerClassValue>(compilerModule, type, scope, desc, count);
+		}
+		case HazeValueType::Enum:
+		{
+			auto enumValue = compilerModule->GetEnum(compilerModule, *type.CustomName).get();
+			return MakeShare<CompilerEnumValue>(enumValue, compilerModule, type, scope, desc, count, assignValue);
+		}
+		case HazeValueType::ObjectBase:
+			return MakeShare<CompilerObjectBaseValue>(compilerModule, type, scope, desc, count);
+		case HazeValueType::Hash:
+			return MakeShare<CompilerHashValue>(compilerModule, type, scope, desc, count, params);
+		case HazeValueType::Closure:
+			return MakeShare<CompilerClosureValue>(compilerModule, type, scope, desc, count, params);
+		default:
+			break;
 	}
 
 	return nullptr;
 }
 
 Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDefineType& type, HazeVariableScope scope,
-	HazeDataDesc desc, int count, Share<CompilerValue> refValue, x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
+	HazeDataDesc desc, int count, Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	return CreateVariableImpl(compilerModule, type, scope, desc, count, refValue, arrayDimension, params);
 }
@@ -147,7 +156,7 @@ Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeV
 {
 	return CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0, var,
 		var->IsArray() ? DynamicCast<CompilerArrayValue>(var)->GetArrayDimension() : 0,
-		var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : nullptr);
+		/*var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : */nullptr);
 }
 
 bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
@@ -204,7 +213,7 @@ void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& te
 		}
 		else
 		{
-			inName += HAZE_TEMPLATE_CONBINE + type.Type->GetFullTypeName();
+			//inName += HAZE_TEMPLATE_CONBINE + type.Type->GetFullTypeName();
 		}
 	}
 }
@@ -308,20 +317,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			if (Element && Value)
 			{
 				InsertPreIRCode();
-
-				//之后封装CreateSetArrayElement 和 CreateSetClassMember 到一个函数
-				if (IsArrayType(Element->GetParentBaseType()))
-				{
-					Module->GetCompiler()->CreateSetArrayElement(Element->GetParent(), Element->GetElement(), Value);
-				}
-				else if (IsClassType(Element->GetParentBaseType()))
-				{
-					Module->GetCompiler()->CreateSetClassMember(Element->GetParent(), Element->GetElement(), Value);
-				}
-				else if (IsDynamicClassType(Element->GetParentBaseType()))
-				{
-					Module->GetCompiler()->CreateSetDynamicClassMember(Element->GetParent(), *Element->GetElementName(), Value);
-				}
+				Module->GetCompiler()->CreateSetAdvanceElement(Element, Value);
 			}
 			else if (AssignTo && Value)
 			{
@@ -346,7 +342,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		{
 			if (assignElementValue->GetElement())
 			{
-				assignTo = m->GetCompiler()->GetTempRegister(assignElementValue->GetElement());
+				assignTo = m->GetCompiler()->GetTempRegister(assignElementValue->GetValueType(), assignElementValue->TryGetArrayDimension());
 				elementAssign->SetElement(assignElementValue, assignTo);
 			}
 			else if (assignElementValue->GetElementName())
@@ -622,5 +618,28 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		}
 	}
 		break;
+	}
+}
+
+void GenIRCode_NewSignInternal(HAZE_STRING_STREAM& hss, TemplateDefineType& types, x_uint32 templateIndex)
+{
+	if (types.IsDefines)
+	{
+		GenIRCode_NewSign(hss, types.Defines.get());
+	}
+	else
+	{
+		hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " ";
+		types.Type->BaseType.StringStreamTo(hss);
+		hss << " " << types.Type->ArrayDimension << HAZE_ENDL;
+	}
+}
+
+void GenIRCode_NewSign(HAZE_STRING_STREAM& hss, TemplateDefineTypes* defineTypes)
+{
+	hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " " << CAST_TYPE(HazeValueType::None)  << " " << defineTypes->Types.size() << HAZE_ENDL;
+	for (x_uint32 i = 0; i < defineTypes->Types.size(); i++)
+	{
+		GenIRCode_NewSignInternal(hss, defineTypes->Types[i], i);
 	}
 }

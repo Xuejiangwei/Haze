@@ -45,7 +45,9 @@ public:
 
 	void CallFunction(const FunctionData* functionData, va_list& args);
 
-	AdvanceFunctionInfo* GetAdvanceFunction(x_uint16 index); 
+	AdvanceFunctionInfo* GetAdvanceFunction(x_uint16 index);
+
+	HString GetAdvanceFunctionName(x_uint16 index);
 
 	ObjectClass* CreateObjectClass(const x_HChar* className, ...);
 

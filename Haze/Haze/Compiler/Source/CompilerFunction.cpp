@@ -37,14 +37,13 @@ void CompilerFunction::SetStartEndLine(x_uint32 startLine, x_uint32 endLine)
 #endif // HAZE_DEBUG_ENABLE
 }
 
-Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
+Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, arrayDimension, params);
 }
 
-Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue,
-	x_uint64 arrayDimension, V_Array<HazeDefineType>* params)
+Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Local, refValue, arrayDimension, params);
@@ -151,7 +150,7 @@ void CompilerFunction::TryClearTempRegister()
 			
 			if (var.Value->IsAdvance())
 			{
-				m_Module->GetCompiler()->CreateMov(var.Value, m_Module->GetCompiler()->GetConstantValueUint64(0));
+				m_Module->GetCompiler()->CreateMov(var.Value, m_Module->GetCompiler()->GetConstantValueUint64(0), false);
 			}
 		}
 	}
@@ -443,6 +442,11 @@ const HazeDefineType& CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 
 			return m_Params[0].second->GetValueType();
 		}
 	}
+}
+
+const x_uint64 CompilerFunction::GetParamSize() const
+{
+	return m_OwnerClass ? m_Params.size() - 1 : m_Params.size();
 }
 
 Share<CompilerClassValue> CompilerFunction::GetThisLocalVariable()

@@ -14,6 +14,8 @@ public:
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 
+	static bool IsEqual(ObjectClass* obj1, ObjectClass* obj2);
+
 	const char* GetMember(const x_HChar* memberName);
 
 	void SetMember(const x_HChar* memberName, void* value);

@@ -3,6 +3,7 @@
 
 class HazeVM;
 class CompilerValue;
+class CompilerElementValue;
 class HazeCompilerInitListValue;
 class CompilerFunction;
 class CompilerEnum;
@@ -188,20 +189,20 @@ public:
 public:
 	Share<CompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
 		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
-		V_Array<HazeDefineType>* params = nullptr);
+		TemplateDefineTypes* params = nullptr);
 
 	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
-		Share<CompilerValue> RefValue = nullptr, x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
+		Share<CompilerValue> RefValue = nullptr, x_uint64 arrayDimension = 0, TemplateDefineTypes* Params = nullptr);
 
 	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, int Line, Share<CompilerValue> RefValue = nullptr,
-		x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
+		x_uint64 arrayDimension = 0, TemplateDefineTypes* Params = nullptr);
 
 	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeDefineType& Var, Share<CompilerValue> RefValue = nullptr,
-		x_uint64 arrayDimension = 0, V_Array<HazeDefineType>* Params = nullptr);
+		x_uint64 arrayDimension = 0, TemplateDefineTypes* Params = nullptr);
 
 	Share<CompilerValue> CreateLea(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 
-	Share<CompilerValue> CreateMov(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
+	Share<CompilerValue> CreateMov(Share<CompilerValue> allocaValue, Share<CompilerValue> value, bool checkType = true);
 
 	Share<CompilerValue> CreateMovToPV(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 
@@ -228,19 +229,21 @@ public:
 
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
+	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes);
 	
 	Share<CompilerValue> CreateCast(const HazeDefineType& type, Share<CompilerValue> value);
 
 	Share<CompilerValue> CreateCVT(Share<CompilerValue> left, Share<CompilerValue> right);
 
-	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> function, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr,
+	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> function, const V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr,
 		const HString* nameSpace = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr);
 
-	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName, 
-		V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo);
+	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName, const V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo);
+
+	Share<CompilerValue> CreateGetAdvanceElement(Share<CompilerElementValue> element);
+	Share<CompilerValue> CreateSetAdvanceElement(Share<CompilerElementValue> element, Share<CompilerValue> assignValue);
 
 	Share<CompilerValue> CreateGetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index);
 	Share<CompilerValue> CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue);
@@ -252,7 +255,7 @@ public:
 
 	Share<CompilerValue> CreateGetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName);
 	Share<CompilerValue> CreateSetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
-	Share<CompilerValue> CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const HString& functionName, V_Array<Share<CompilerValue>>& params);
+	Share<CompilerValue> CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const HString& functionName, const V_Array<Share<CompilerValue>>& params);
 
 public:
 	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);

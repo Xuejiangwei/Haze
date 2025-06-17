@@ -5,11 +5,13 @@
 
 CompilerPointerFunction::CompilerPointerFunction(CompilerModule* compilerModule, const HazeDefineType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count, V_Array<HazeDefineType>* paramTypes)
-	: HazeCompilerPointerValue(compilerModule, defineType, scope, desc, count)
+	: HazeCompilerPointerValue(compilerModule, defineType, scope, desc, count), m_OwnerClass(nullptr)
 {
 	if (paramTypes)
 	{
 		m_ParamTypes = Move(*paramTypes);
+		m_FuncType = m_ParamTypes[0];
+		m_ParamTypes.erase(m_ParamTypes.begin());
 	}
 }
 
@@ -19,23 +21,6 @@ CompilerPointerFunction::~CompilerPointerFunction()
 
 const HazeDefineType& CompilerPointerFunction::GetParamTypeByIndex(x_uint64 index) const
 {
-	if (index < m_ParamTypes.size())
-	{
-		return m_ParamTypes[index];
-	}
-	else
-	{
-		if (index > 0)
-		{
-			COMPILER_ERR_W("从右往左，获得指针函数的第<%d>个参数错误", m_ParamTypes.size() - 1 - index);
-		}
-
-		return m_ParamTypes[0];
-	}
-}
-
-const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index) const
-{
 	if (index + 1 < m_ParamTypes.size())
 	{
 		return m_ParamTypes[m_ParamTypes.size() - 1 - index];
@@ -44,7 +29,7 @@ const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_
 	{
 		if (index > 0)
 		{
-			COMPILER_ERR_W("从左往右，获得指针函数的第<%d>个参数错误", index);
+			COMPILER_ERR_W("从右往左，获得指针函数的第<%d>个参数错误", index);
 			return m_ParamTypes[0];
 		}
 		else
@@ -52,4 +37,26 @@ const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_
 			return m_ParamTypes[0];
 		}
 	}
+}
+
+const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index) const
+{
+	if (index < m_ParamTypes.size())
+	{
+		return m_ParamTypes[index];
+	}
+	else
+	{
+		if (index > 0)
+		{
+			COMPILER_ERR_W("从左往右，获得指针函数的第<%d>个参数错误", m_ParamTypes.size() - 1 - index);
+		}
+
+		return m_ParamTypes[0];
+	}
+}
+
+const x_uint64 CompilerPointerFunction::GetParamSize() const
+{
+	return m_OwnerClass ? m_ParamTypes.size() - 1 : m_ParamTypes.size();
 }

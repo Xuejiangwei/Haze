@@ -57,6 +57,9 @@ private:
 	Unique<ASTBase> ParseVariableDefine_String(TemplateDefineTypes& templateTypes, struct TempCurrCode* tempCode);
 	Unique<ASTBase> ParseVariableDefine_Class(TemplateDefineTypes& templateTypes);
 	Unique<ASTBase> ParseVariableDefine_Function(TemplateDefineTypes& templateTypes);
+	Unique<ASTBase> ParseVariableDefine_ObjectBase(TemplateDefineTypes& templateTypes);
+	Unique<ASTBase> ParseVariableDefine_Hash(TemplateDefineTypes& templateTypes);
+	Unique<ASTBase> ParseVariableDefine_Closure(TemplateDefineTypes& templateTypes);
 
 	Unique<ASTBase> ParseStringText();
 
@@ -143,7 +146,7 @@ private:
 
 	void GetTemplateRealValueType(const HString& str, HazeDefineType& inType);
 
-	void ParseTemplateTypes(TemplateDefineTypes& templateTypes);
+	void ParseTemplateTypes(HazeDefineType baseType, TemplateDefineTypes& templateTypes);
 
 	//void ParseVariableType();
 

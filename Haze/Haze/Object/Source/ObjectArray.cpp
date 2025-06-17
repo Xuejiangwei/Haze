@@ -5,6 +5,8 @@
 #include "HazeStack.h"
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
+#include "ObjectHash.h"
+#include "ObjectBase.h"
 
 ObjectArray::ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* lengths, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
 	: GCObject(gcIndex), m_Data(nullptr), m_DimensionCount(dimensionCount), m_Length(0), m_PcAddress(pcAddress), m_ValueType(valueType),
@@ -95,6 +97,11 @@ void ObjectArray::GetLength(HAZE_OBJECT_CALL_PARAM)
 	}
 
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_Length);
+}
+
+bool ObjectBase::IsEqual(ObjectBase* obj1, ObjectBase* obj2)
+{
+	return false;
 }
 
 void ObjectArray::GetLengthOfDimension(HAZE_OBJECT_CALL_PARAM)

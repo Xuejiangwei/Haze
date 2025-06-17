@@ -25,9 +25,12 @@ public:
 
 	CompilerClass* GetRealClass() const;
 
+	x_uint64 TryGetArrayDimension() const { return m_ValueTypeArrayDimension; }
+
 private:
 	Share<CompilerValue> m_Parent;
 	Share<CompilerValue> m_Element;		//数组的偏移或类的成员
 	Unique<HString> m_ElementName;		//DynamicClass成员名
+	x_uint64  m_ValueTypeArrayDimension;
 };
 

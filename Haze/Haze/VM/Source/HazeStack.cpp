@@ -19,6 +19,7 @@ HazeStack::HazeStack(HazeVM* vm)
 
 HazeStack::~HazeStack()
 {
+
 }
 
 void HazeStack::RunGlobalDataInit(x_int64 startPC, x_int64 endPC)
@@ -255,4 +256,60 @@ bool HazeStack::PopGCTempRegister(void* address)
 		return true;
 	}
 	return false;
+}
+
+void HazeStack::OnNewSignInternal(TemplateDefineTypes* type)
+{
+	for (x_uint64 i = 0; i < type->Types.size(); i++)
+	{
+		auto oper = m_VM->m_Instructions[m_PC++].Operator[0];
+		if (IsNoneType(oper.Variable.Type.PrimaryType))
+		{
+			m_NewSignType.Types[i].Defines = MakeShare<TemplateDefineTypes>();
+			m_NewSignType.Types[i].Defines->Types.resize(oper.Extra.SignData.TemplateCount);
+			OnNewSignInternal(m_NewSignType.Types[i].Defines.get());
+		}
+		else
+		{
+			m_NewSignType.Types[i].Type = MakeShare<HazeNewDefineType>();
+			m_NewSignType.Types[i].Type->BaseType = oper.Variable.Type;
+			m_NewSignType.Types[i].Type->ArrayDimension = oper.Extra.SignData.ArrayDimension;
+		}
+	}
+}
+
+void HazeStack::OnNewSign()
+{
+	auto oper = m_VM->m_Instructions[m_PC++].Operator[0];
+	m_NewSignType.Types.resize(oper.Extra.SignData.TemplateCount);
+	OnNewSignInternal(&m_NewSignType);
+	m_PC--;
+
+	/*auto oper = m_VM->m_Instructions[m_PC].Operator[0];
+	m_NewSignType.Type = oper.Variable.Type;
+	m_NewSignType.Extra.ArrayDimensionAndInitLength.resize(oper.Extra.SignData);
+		
+	if (m_NewSignType.Extra.ArrayDimensionAndInitLength.size() > 0)
+	{
+		for (x_uint64 i = 0; i < m_NewSignType.Extra.ArrayDimensionAndInitLength.size(); i++)
+		{
+			oper = m_VM->m_Instructions[m_PC + i + 1].Operator[0];
+			m_NewSignType.Extra.ArrayDimensionAndInitLength[i] = oper.Extra.SignData;
+		}
+	}
+	else if (IsHashType(m_NewSignType.Type.PrimaryType))
+	{
+		m_NewSignType.Extra.HashKeyAndValueType.KeyType = m_VM->m_Instructions[m_PC + 1].Operator[0].Variable.Type;
+		m_NewSignType.Extra.HashKeyAndValueType.ValueType = new NewSignData();
+
+		if (m_NewSignType.Extra.ArrayDimensionAndInitLength.size() > 0)
+		{
+			for (x_uint64 i = 0; i < m_NewSignType.Extra.ArrayDimensionAndInitLength.size(); i++)
+			{
+				oper = m_VM->m_Instructions[m_PC + i + 1].Operator[0];
+				m_NewSignType.Extra.ArrayDimensionAndInitLength[i] = oper.Extra.SignData;
+			}
+		}
+	}*/
+
 }

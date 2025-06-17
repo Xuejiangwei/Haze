@@ -74,6 +74,8 @@ public:
 
 	const HazeDefineType& GetParamTypeLeftToRightByIndex(x_uint64 index);
 
+	const x_uint64 GetParamSize() const;
+
 	Share<CompilerClassValue> GetThisLocalVariable();
 
 	bool IsVirtualFunction() const { return m_ClassFunctionType == ClassCompilerFunctionType::PureVirtual ||
@@ -85,10 +87,10 @@ private:
 	void AddFunctionParam(const HazeDefineVariable& variable);
 
 	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
-		V_Array<HazeDefineType>* params = nullptr);
+		TemplateDefineTypes* params = nullptr);
 
 	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
-		V_Array<HazeDefineType>* params = nullptr);
+		TemplateDefineTypes* params = nullptr);
 
 	//Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
 

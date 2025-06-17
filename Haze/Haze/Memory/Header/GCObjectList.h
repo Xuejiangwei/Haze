@@ -14,10 +14,13 @@ enum class GC_ObjectType : x_uint8
 	String,
 	Class,
 	DynamicClass,
+	ObjectBase,
+	Hash,
 
 	ArrayData,
 	StringData,
 	ClassData,
+	HashData,
 };
 
 class GCObjectList
