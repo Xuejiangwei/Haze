@@ -61,27 +61,27 @@ int CompilerClassValue::GetMemberIndex(CompilerValue* value)
 	return -1;
 }
 
-bool CompilerClassValue::GetMemberName(const CompilerValue* memberValue, HString& outName)
-{
-	//return m_OwnerClass->GetMemberName(this, memberValue, outName, getOffset, offsets);
-
-	/*uint32 count = 0;
-	for (size_t i = 0; i < classValue->m_Data.size(); i++)
-	{
-		for (size_t j = 0; j < classValue->m_Data[i].second.size(); j++)
-		{
-			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, classValue->m_Data[i].second[j] }, value, outName, getOffset, offsets))
-			{
-				if (getOffset)
-				{
-					offsets->push_back({ m_Offsets[count], classValue->m_Data[i].second[j].get() });
-				}
-				return true;
-			}
-
-			count++;
-		}
-	}*/
-
-	return false;
-}
+//bool CompilerClassValue::GetMemberName(const CompilerValue* memberValue, HString& outName)
+//{
+//	//return m_OwnerClass->GetMemberName(this, memberValue, outName, getOffset, offsets);
+//
+//	/*uint32 count = 0;
+//	for (size_t i = 0; i < classValue->m_Data.size(); i++)
+//	{
+//		for (size_t j = 0; j < classValue->m_Data[i].second.size(); j++)
+//		{
+//			if (TrtGetVariableName(nullptr, { m_Data[i].second[j].first, classValue->m_Data[i].second[j] }, value, outName, getOffset, offsets))
+//			{
+//				if (getOffset)
+//				{
+//					offsets->push_back({ m_Offsets[count], classValue->m_Data[i].second[j].get() });
+//				}
+//				return true;
+//			}
+//
+//			count++;
+//		}
+//	}*/
+//
+//	return false;
+//}

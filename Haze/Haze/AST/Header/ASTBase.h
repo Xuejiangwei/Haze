@@ -193,7 +193,7 @@ public:
 
 	virtual Share<CompilerValue> CodeGen() override;
 
-private:
+protected:
 	TemplateDefineTypes m_TemplateTypes;
 };
 
@@ -202,13 +202,10 @@ class ASTVariableDefine_ObjectBase : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_ObjectBase(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, HazeValueType type);
+		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression);
 	virtual ~ASTVariableDefine_ObjectBase() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
-
-private:
-	HazeValueType m_Type;
 };
 
 //变量定义 哈希对象
@@ -227,17 +224,19 @@ private:
 };
 
 //变量定义 闭包对象
-class ASTVariableDefine_Closure : public ASTVariableDefine
+class ASTVariableDefine_Closure : public ASTVariableDefine_Function
 {
 public:
-	ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes);
+	ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
+		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>>& params);
 	virtual ~ASTVariableDefine_Closure() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
 
 private:
-	TemplateDefineTypes m_TemplateTypes;
+	V_Array<Unique<ASTBase>> m_Params;
+	SourceLocation m_StartLocation;
+	SourceLocation m_EndLocation;
 };
 
 //返回

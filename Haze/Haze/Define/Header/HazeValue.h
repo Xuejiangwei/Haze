@@ -59,7 +59,7 @@ enum class HazeValueType : x_uint32
 
 	Hash,					//哈希对象, 参与GC
 
-	Closure,				//闭包, 匿名函数, 参与GC
+	Closure,		//闭包, 匿名函数, 参与GC
 
 	__Advance_End,
 

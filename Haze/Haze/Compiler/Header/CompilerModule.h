@@ -9,6 +9,7 @@ class Compiler;
 class CompilerValue;
 class CompilerBlock;
 class CompilerFunction;
+class CompilerClosureFunction;
 enum class ClassCompilerFunctionType : x_uint8;
 class CompilerClass;
 class CompilerEnum;
@@ -73,10 +74,16 @@ public:
 
 	Share<CompilerFunction> GetCurrFunction();
 
+	Share<CompilerFunction> GetCurrClosure();
+
+	Share<CompilerFunction> GetCurrClosureOrFunction();
+
 	Share<CompilerFunction> CreateFunction(const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
 
 	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType, 
 		const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
+
+	Share<CompilerClosureFunction> CreateClosureFunction(HazeDefineType& type, V_Array<HazeDefineVariable>& params);
 
 	void BeginCreateFunctionParamVariable() { m_IsBeginCreateFunctionVariable = true; }
 
@@ -89,6 +96,7 @@ public:
 	bool IsBeginCreateFunctionVariable() const { return m_IsBeginCreateFunctionVariable; }
 
 	void FinishFunction();
+	void FinishClosure();
 
 	Share<CompilerFunction> GetFunction(const HString& name);
 
@@ -109,10 +117,16 @@ public:
 	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr,
 		x_uint64 arrayDimension = 0, TemplateDefineTypes* params = nullptr);
 
+	Share<CompilerValue> GetClosureVariable(const HString& name, bool addRef);
+	
+	void ClosureAddLocalRef(Share<CompilerValue> value, const HString& name);
+
 	static Share<CompilerValue> GetGlobalVariable(CompilerModule* m, const HString& name);
 
 	static bool GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset = false,
 		V_Array<Pair<x_uint64, CompilerValue*>>* offsets = nullptr);
+
+	static bool GetClosureVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName);
 
 	static Share<CompilerEnum> GetEnum(CompilerModule* m, const HString& name);
 
@@ -134,7 +148,7 @@ private:
 	Share<CompilerValue> CreateInc(Share<CompilerValue> value, bool isPreInc);
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes);
+	Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr,
 		const HString* nameSpace = nullptr);
@@ -184,6 +198,9 @@ private:
 
 	HString m_CurrFunction;
 	HashMap<HString, Share<CompilerFunction>> m_HashMap_Functions;
+
+	V_Array<Share<CompilerClosureFunction>> m_Closures;
+	V_Array<Share<CompilerClosureFunction>> m_ClosureStack;
 
 	HString m_CurrEnum;
 	HashMap<HString, Share<CompilerEnum>> m_HashMap_Enums;

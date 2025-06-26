@@ -207,6 +207,9 @@
     <ClCompile Include="Compiler\Source\CompilerClosureValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Compiler\Source\CompilerClosureFunction.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -438,6 +441,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\CompilerClosureValue.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Compiler\Header\CompilerClosureFunction.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

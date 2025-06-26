@@ -10,6 +10,7 @@
 #include "CompilerArrayValue.h"
 #include "CompilerValue.h"
 #include "CompilerFunction.h"
+#include "CompilerClosureFunction.h"
 #include "CompilerElementValue.h"
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
@@ -130,15 +131,15 @@ void Compiler::FinishParse()
 
 	HAZE_STRING_STREAM hss;
 
-	hss << GetSymbolBeginHeader() << std::endl;
+	hss << GetSymbolBeginHeader() << HAZE_ENDL;
 	for (auto& m : m_CompilerModules)
 	{
 		for (auto& className : m.second->m_HashMap_Classes)
 		{
-			hss << className.first << std::endl;
+			hss << className.first << HAZE_ENDL;
 		}
 	}
-	hss << GetSymbolEndHeader() << std::endl;
+	hss << GetSymbolEndHeader() << HAZE_ENDL;
 
 	ofstream << hss.str();
 	ofstream.close();
@@ -351,24 +352,24 @@ bool Compiler::GetBaseModuleGlobalVariableName(const Share<CompilerValue>& value
 	return false;
 }
 
-void Compiler::GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes)
-{
-	for (auto& type : types.Types)
-	{
-		if (type.IsDefines)
-		{
-			HazeDefineType t;
-			t.PrimaryType = HazeValueType::Function;
-
-			HString className;
-			GetTemplateClassName(className, type.Defines->Types);
-		}
-		else
-		{
-			//defineTypes.push_back(*type.Type);
-		}
-	}
-}
+//void Compiler::GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes)
+//{
+//	for (auto& type : types.Types)
+//	{
+//		if (type.IsDefines)
+//		{
+//			HazeDefineType t;
+//			t.PrimaryType = HazeValueType::Function;
+//
+//			HString className;
+//			GetTemplateClassName(className, type.Defines->Types);
+//		}
+//		else
+//		{
+//			//defineTypes.push_back(*type.Type);
+//		}
+//	}
+//}
 
 void Compiler::InsertLineCount(x_int64 lineCount)
 {
@@ -813,6 +814,11 @@ Share<CompilerValue> Compiler::GetLocalVariable(const HString& name, HString* na
 	return GetCurrModule()->GetCurrFunction()->GetLocalVariable(name, nameSpace);
 }
 
+Share<CompilerValue> Compiler::GetClosureVariable(const HString& name, bool addRef)
+{
+	return GetCurrModule()->GetClosureVariable(name, addRef);
+}
+
 Share<CompilerValue> Compiler::GetEnumVariable(const HString& enumName, const HString& name)
 {
 	auto compilerEnum = GetCurrModule()->GetEnum(GetCurrModule().get(), enumName);
@@ -884,6 +890,18 @@ Share<CompilerBlock> Compiler::GetInsertBlock()
 		return m_InsertBaseBlock;
 	}
 	return nullptr;
+}
+
+Share<CompilerBlock> Compiler::GetFunctionInsertBlock()
+{
+	auto& currModule = GetCurrModule();
+	auto block = m_InsertBaseBlock;
+	if (currModule && currModule->m_ClosureStack.size() > 0)
+	{
+		return currModule->m_ClosureStack[0]->GetUpLevelBlock();
+	}
+
+	return block;
 }
 
 void Compiler::ClearBlockPoint()
@@ -1017,6 +1035,8 @@ Share<CompilerValue> Compiler::CreateVariableBySection(HazeSectionSignal section
 		break;
 	case HazeSectionSignal::Class:
 		return CreateClassVariable(mod.get(), var.Type, refValue, arrayDimension, params);
+	case HazeSectionSignal::Closure:
+		return CreateLocalVariable(GetCurrModule()->GetCurrClosure(), var, line, refValue, arrayDimension, params);
 	case HazeSectionSignal::Enum:
 		break;
 	default:
@@ -1419,9 +1439,9 @@ Share<CompilerValue> Compiler::CreatePointerToFunction(Share<CompilerFunction> f
 	return CreateLea(pointer, tempPointer);
 }
 
-Share<CompilerValue> Compiler::CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes)
+Share<CompilerValue> Compiler::CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure)
 {
-	return GetCurrModule()->CreateNew(function, data, countValue, defineTypes);
+	return GetCurrModule()->CreateNew(data, countValue, defineTypes, closure);
 }
 
 Share<CompilerValue> Compiler::CreateCast(const HazeDefineType& type, Share<CompilerValue> value)

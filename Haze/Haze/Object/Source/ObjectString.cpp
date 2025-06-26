@@ -43,7 +43,7 @@ AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
 
 bool ObjectString::IsEqual(ObjectString* obj1, ObjectString* obj2)
 {
-	return false;
+	return obj1 && obj2 && HString((x_HChar*)obj1->m_Data) == HString((x_HChar*)obj2->m_Data);
 }
 
 void ObjectString::Append(HAZE_OBJECT_CALL_PARAM)

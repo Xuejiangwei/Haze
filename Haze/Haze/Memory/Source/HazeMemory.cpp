@@ -11,6 +11,8 @@
 #include "ObjectString.h"
 #include "ObjectDynamicClass.h"
 #include "ObjectHash.h"
+#include "ObjectBase.h"
+#include "ObjectClosure.h"
 #include <chrono>
 
 #define PAGE_BASE_SIZE	4 * 4
@@ -368,8 +370,30 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 			}
 		}
 			break;
-	default:
-		break;
+		case HazeValueType::ObjectBase:
+		{
+			if ((ObjectBase*)address)
+			{
+				m_ObjectList->MarkObjectBlack(((ObjectBase*)address)->m_GCIndex);
+			}
+		}
+			break;
+		case HazeValueType::Closure:
+		{
+			if ((ObjectClosure*)address)
+			{
+				m_ObjectList->MarkObjectBlack(((ObjectClosure*)address)->m_GCIndex);
+				m_ObjectList->MarkObjectBlack(((ObjectClosure*)address)->m_DataGCIndex);
+
+				for (x_uint64 i = 0; i < ((ObjectClosure*)address)->m_FunctionData->RefVariables.size(); i++)
+				{
+					MarkVariable((((ObjectClosure*)address)->m_Data + i)->BaseType, (((ObjectClosure*)address)->m_Data + i)->Object);
+				}
+			}
+		}
+			break;
+		default:
+			break;
 	}
 }
 
@@ -515,6 +539,14 @@ void HazeMemory::Sweep()
 				case GC_ObjectType::Hash:
 					memorySize = sizeof(ObjectHash);
 					((ObjectHash*)m_ObjectList->m_ObjectList[i])->~ObjectHash();
+					break;
+				case GC_ObjectType::ObjectBase:
+					memorySize = sizeof(ObjectBase);
+					((ObjectBase*)m_ObjectList->m_ObjectList[i])->~ObjectBase();
+					break;
+				case GC_ObjectType::Closure:
+					memorySize = sizeof(ObjectClosure);
+					((ObjectClosure*)m_ObjectList->m_ObjectList[i])->~ObjectClosure();
 					break;
 				default:
 					break;

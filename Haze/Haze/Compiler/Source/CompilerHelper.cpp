@@ -121,7 +121,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		case HazeValueType::Refrence:
 			return MakeShare<CompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
 		case HazeValueType::Function:
-			return MakeShare<CompilerPointerFunction>(compilerModule, type, scope, desc, count, /*params ? params :*/ nullptr);
+			return MakeShare<CompilerPointerFunction>(compilerModule, type, scope, desc, count, params);
 		case HazeValueType::String:
 			return MakeShare<CompilerStringValue>(compilerModule, type, scope, desc, count);
 		case HazeValueType::Class:
@@ -236,11 +236,15 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 	else if (value->IsLocalVariable())
 	{
-		find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, s_StrName);
-		if (!find && value->IsPureString())
+		find = compilerModule->GetClosureVariableName(compilerModule, value, s_StrName);
+		if (!find)
 		{
-			find = true;
-			s_StrName = *DynamicCast<CompilerStringValue>(value)->GetPureString();
+			find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, s_StrName);
+			if (!find && value->IsPureString())
+			{
+				find = true;
+				s_StrName = *DynamicCast<CompilerStringValue>(value)->GetPureString();
+			}
 		}
 	}
 	else if (value->IsFunctionAddress())
@@ -506,7 +510,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		break;
 	}
 
-	hss << std::endl;
+	hss << HAZE_ENDL;
 }
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerBlock> block1,
@@ -515,7 +519,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	switch (opCode)
 	{
 		case InstructionOpCode::JMP:
-			hss << GetInstructionString(opCode) << " " << block1->GetName() << std::endl;
+			hss << GetInstructionString(opCode) << " " << block1->GetName() << HAZE_ENDL;
 			break;
 		case InstructionOpCode::JNE:
 		case InstructionOpCode::JNG:
@@ -544,7 +548,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				hss << HAZE_JMP_NULL << " ";
 			}
 
-			hss << std::endl;
+			hss << HAZE_ENDL;
 
 		}
 			break;
@@ -580,7 +584,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			auto& funcName = desc == HazeDataDesc::FunctionDynamicAddress ? function->GetName() : function->GetRealName();
 			hss << funcName << " " << CAST_TYPE(HazeValueType::None) << " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<
 				CAST_DESC(desc) << " " << paramCount << " " << paramSize << HAZE_ENDL;/*<< " " << function->GetModule()->GetName() << " "
-				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;*/
+				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;*/
 		}
 		else if (pointerFunction)
 		{
@@ -597,7 +601,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 
 			hss << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
 				<< CAST_SCOPE(pointerFunction->GetVariableScope()) << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
-				<< " " << paramSize << HAZE_ENDL;//<< " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << std::endl;
+				<< " " << paramSize << HAZE_ENDL;//<< " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;
 		}
 		else
 		{
@@ -621,7 +625,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	}
 }
 
-void GenIRCode_NewSignInternal(HAZE_STRING_STREAM& hss, TemplateDefineType& types, x_uint32 templateIndex)
+void GenIRCode_NewSignInternal(HAZE_STRING_STREAM& hss, TemplateDefineType& types)
 {
 	if (types.IsDefines)
 	{
@@ -640,6 +644,6 @@ void GenIRCode_NewSign(HAZE_STRING_STREAM& hss, TemplateDefineTypes* defineTypes
 	hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " " << CAST_TYPE(HazeValueType::None)  << " " << defineTypes->Types.size() << HAZE_ENDL;
 	for (x_uint32 i = 0; i < defineTypes->Types.size(); i++)
 	{
-		GenIRCode_NewSignInternal(hss, defineTypes->Types[i], i);
+		GenIRCode_NewSignInternal(hss, defineTypes->Types[i]);
 	}
 }

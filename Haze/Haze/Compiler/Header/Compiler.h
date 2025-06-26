@@ -142,6 +142,8 @@ public:
 
 	Share<CompilerValue> GetLocalVariable(const HString& name, HString* nameSpace = nullptr);
 
+	Share<CompilerValue> GetClosureVariable(const HString& name, bool addRef = true);
+
 	Share<CompilerValue> GetEnumVariable(const HString& enumName, const HString& name);
 
 	Share<CompilerValue> GetConstantValueInt(int v);
@@ -177,6 +179,8 @@ public:
 	void SetInsertBlock(Share<CompilerBlock> block);
 
 	Share<CompilerBlock> GetInsertBlock();
+
+	Share<CompilerBlock> GetFunctionInsertBlock();
 
 	void ClearBlockPoint();
 
@@ -229,7 +233,7 @@ public:
 
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes);
+	Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure = nullptr);
 	
 	Share<CompilerValue> CreateCast(const HazeDefineType& type, Share<CompilerValue> value);
 
@@ -299,7 +303,7 @@ public:
 	bool GetBaseModuleGlobalVariableName(const Share<CompilerValue>& value, HString& outName, bool getOffset = false,
 		V_Array<Pair<x_uint64, CompilerValue*>>* = nullptr);
 
-	void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
+	//void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
 
 	void InsertLineCount(x_int64 lineCount);
 

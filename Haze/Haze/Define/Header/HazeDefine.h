@@ -11,7 +11,7 @@ using HString = std::wstring;
 #define HAZE_BINARY_IFSTREAM std::ifstream
 
 #define HAZE_ENDL std::endl
-#define HAZE_ENDL_D std::endl << std::endl
+#define HAZE_ENDL_D HAZE_ENDL << HAZE_ENDL
 
 #define HAZE_BINARY_CHAR char
 #define HAZE_WRITE_AND_SIZE(X) (const char*)(&X), sizeof(X)
@@ -62,6 +62,9 @@ using HString = std::wstring;
 #define FUNCTION_PARAM_HEADER			H_TEXT("Param")
 #define FUNCTION_START_HEADER			H_TEXT("FunctionStart")
 #define FUNCTION_END_HEADER				H_TEXT("FunctionEnd")
+
+#define CLOSURE_NAME_PREFIX				H_TEXT("Closure_")
+#define CLOSURE_REF_VARIABLE			H_TEXT("ClosureRef")
 
 #define ENUM_START_HEADER				H_TEXT("EnumStart")
 #define ENUM_END_HEADER					H_TEXT("EnumEnd")
@@ -120,13 +123,16 @@ using HString = std::wstring;
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")
 #define HAZE_ADVANCE_GET_FUNCTION		H_TEXT("获得")
 #define HAZE_ADVANCE_SET_FUNCTION		H_TEXT("设置")
+#define HAZE_OBJECT_BASE_CONSTRUCTOR	H_TEXT("@基本对象构造")
 
 #define HAZE_CUSTOM_GET_MEMBER			H_TEXT("获得")
 #define HAZE_CUSTOM_SET_MEMBER			H_TEXT("设置")
 #define HAZE_CUSTOM_CALL_FUNCTION		H_TEXT("调用")
 
+#define HAZE_CLOSURE_NAME				H_TEXT("@@ClosureCaller")
+
 #define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum, int paramByteSize
-#define HAZE_OBJECT_CALL_PARAM		class HazeStack* stack, int multiParamNum, x_uint64& paramByteSize
+#define HAZE_OBJECT_CALL_PARAM		class HazeStack* stack, int multiParamNum, x_int64& paramByteSize
 #define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum, paramByteSize
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 4

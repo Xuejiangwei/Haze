@@ -10,6 +10,7 @@
 #include "ObjectString.h"
 #include "ObjectBase.h"
 #include "ObjectHash.h"
+#include "ObjectClosure.h"
 #include "HazeMemory.h"
 #include "Compiler.h"
 
@@ -292,7 +293,7 @@ public:
 		{
 			return instData.Variable.Type.GetTypeSize();
 		}
-		return  stack->GetTempRegister(instData.Variable.Name.c_str()).GetTypeSize();
+		return stack->GetTempRegister(instData.Variable.Name.c_str()).GetTypeSize();
 	}
 
 public:
@@ -658,16 +659,20 @@ public:
 			{
 				x_uint32 tempEBP = stack->m_EBP;
 				stack->m_EBP = stack->m_ESP;
-				x_uint64 paramByteSize = 0;
+				x_int64 paramByteSize = 0;
 				
 #if HAZE_CALL_LOG
 				HString functionName = stack->m_VM->GetAdvanceFunctionName((x_uint16)oper[0].Extra.ObjectCall.Index);;
 				HAZE_LOG_INFO(H_TEXT("调用对象<%s>函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), functionName.c_str(), stack->m_EBP, stack->m_ESP);
 #endif
-
+				
 				stack->m_VM->GetAdvanceFunction((x_uint16)oper[0].Extra.ObjectCall.Index)->ClassFunc(stack, oper[0].Extra.Call.ParamNum, paramByteSize);
-				stack->m_ESP -= (paramByteSize + HAZE_ADDRESS_SIZE);
-				stack->m_EBP = tempEBP;
+
+				if (paramByteSize >= 0)
+				{
+					stack->m_ESP -= (paramByteSize + HAZE_ADDRESS_SIZE);
+					stack->m_EBP = tempEBP;
+				}
 			}
 			else if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
 			{
@@ -836,9 +841,20 @@ public:
 				address = HazeMemory::AllocaGCData(sizeof(ObjectHash), GC_ObjectType::Hash);
 				new(address.first) ObjectHash(address.second, stack->m_NewSignType);
 			}
+			else if (IsObjectBaseType(type.PrimaryType))
+			{
+				address = HazeMemory::AllocaGCData(sizeof(ObjectBase), GC_ObjectType::ObjectBase);
+				new(address.first) ObjectBase(address.second, stack->m_NewSignType.Types[0].Type->BaseType.PrimaryType);
+			}
+			else if (IsClosureType(type.PrimaryType))
+			{
+				auto& frame = stack->GetCurrFrame();
+				address = HazeMemory::AllocaGCData(sizeof(ObjectClosure), GC_ObjectType::Closure);
+				new(address.first) ObjectClosure(address.second, ((FunctionData**)GetOperatorAddress(stack, oper[0]))[0], frame.FunctionInfo, &stack->m_StackMain[frame.CurrParamESP]);
+			}
 			else
 			{
-				HAZE_LOG_ERR_W("NEW<%s>错误 只能生成<类><数组><字符串>!\n", oper[0].Variable.Name.c_str());
+				HAZE_LOG_ERR_W("NEW<%s>错误 只能生成<类><数组><字符串><基本类型><闭包>!\n", oper[0].Variable.Name.c_str());
 				//address = HazeMemory::Alloca(newSize);
 			}
 

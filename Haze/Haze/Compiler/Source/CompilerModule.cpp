@@ -12,6 +12,7 @@
 #include "CompilerValue.h"
 #include "HazeCompilerPointerValue.h"
 #include "CompilerPointerFunction.h"
+#include "CompilerClosureFunction.h"
 #include "CompilerClassValue.h"
 #include "CompilerArrayValue.h"
 #include "CompilerFunction.h"
@@ -31,7 +32,7 @@ struct PushTempRegister
 		{
 			Hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
 			GenVariableHzic(Module, Hss, regi.second);
-			Hss << std::endl;
+			Hss << HAZE_ENDL;
 			Size += regi.second->GetSize();
 		}
 	}
@@ -42,7 +43,7 @@ struct PushTempRegister
 		{
 			Hss << GetInstructionString(InstructionOpCode::POP) << " ";
 			GenVariableHzic(Module, Hss, regi.second);
-			Hss << std::endl;
+			Hss << HAZE_ENDL;
 		}
 		
 		Compiler->GetInsertBlock()->PushIRCode(Hss.str());
@@ -320,6 +321,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		return false;
 	}
 	stream >> ui64;// 包括类函数和普通函数
+	stream >> ui64;// 闭包个数
 
 	//全局数据初始化函数先不解析
 	//m_GlobalDataFunction->GenI_Code(hss);
@@ -521,6 +523,16 @@ Share<CompilerFunction> CompilerModule::GetCurrFunction()
 	return iter->second;
 }
 
+Share<CompilerFunction> CompilerModule::GetCurrClosure()
+{
+	return m_ClosureStack.back();
+}
+
+Share<CompilerFunction> CompilerModule::GetCurrClosureOrFunction()
+{
+	return m_ClosureStack.size() > 0 ? GetCurrClosure() : GetCurrFunction();
+}
+
 Share<CompilerFunction> CompilerModule::GetFunction(const HString& name)
 {
 	auto it = m_HashMap_Functions.find(name);
@@ -699,6 +711,19 @@ Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> comp
 	return function;
 }
 
+Share<CompilerClosureFunction> CompilerModule::CreateClosureFunction(HazeDefineType& type, V_Array<HazeDefineVariable>& params)
+{
+	HString name = CLOSURE_NAME_PREFIX + GetName() + ToHazeString(m_ClosureStack.size());
+	auto closure = MakeShare<CompilerClosureFunction>(this, name, type, params);
+	closure->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, closure, nullptr));
+
+	m_Closures.push_back(closure);
+	m_ClosureStack.push_back(closure);
+
+	closure->SetUpLevelEntry(m_Compiler->GetInsertBlock());
+	return closure;
+}
+
 void CompilerModule::BeginGlobalDataDefine()
 {
 	m_CurrFunction = m_GlobalDataFunction->GetName();
@@ -715,6 +740,13 @@ void CompilerModule::FinishFunction()
 	GetCurrFunction()->FunctionFinish();
 	m_CurrFunction.clear();
 	m_Compiler->ClearBlockPoint();
+}
+
+void CompilerModule::FinishClosure()
+{
+	m_ClosureStack.back()->FunctionFinish();
+	m_Compiler->SetInsertBlock(m_ClosureStack.back()->GetUpLevelBlock());
+	m_ClosureStack.pop_back();
 }
 
 void CompilerModule::CreateAdd(Share<CompilerValue> assignTo, Share<CompilerValue> left, Share<CompilerValue> right)
@@ -821,7 +853,7 @@ Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool 
 	return retValue;
 }
 
-Share<CompilerValue> CompilerModule::CreateNew(Share<CompilerFunction> function, const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes)
+Share<CompilerValue> CompilerModule::CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure)
 {
 	HAZE_STRING_STREAM hss;
 
@@ -839,8 +871,13 @@ Share<CompilerValue> CompilerModule::CreateNew(Share<CompilerFunction> function,
 	}
 
 	auto tempRegister = m_Compiler->GetTempRegister(data, countValue ? countValue->size() : 0);
-	GenIRCode(hss, this, InstructionOpCode::NEW, tempRegister, m_Compiler->GetConstantValueUint64(countValue ? countValue->size() : 0),
-		nullptr, &data);
+	
+	if (closure)
+	{
+		m_Compiler->CreatePointerToFunction(closure, tempRegister);
+	}
+
+	GenIRCode(hss, this, InstructionOpCode::NEW, tempRegister, m_Compiler->GetConstantValueUint64(countValue ? countValue->size() : 0), nullptr, &data);
 
 	if (countValue)
 	{
@@ -909,7 +946,7 @@ void CompilerModule::GenIRCode_Ret(Share<CompilerValue> value)
 	HAZE_STRING_STREAM hss;
 
 	GenIRCode(hss, this, InstructionOpCode::RET, nullptr, value);
-	hss << std::endl;
+	hss << HAZE_ENDL;
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
@@ -937,6 +974,47 @@ Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariab
 	x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	return m_GlobalDataFunction->CreateGlobalVariable(var, line, refValue, arrayDimension, params);
+}
+
+Share<CompilerValue> CompilerModule::GetClosureVariable(const HString& name, bool addRef)
+{
+	auto block = m_Compiler->GetInsertBlock();
+	for (int i = (int)m_ClosureStack.size() - 1; i >= 0; i--)
+	{
+		if (i < (int)m_ClosureStack.size() - 1)
+		{
+			block = m_ClosureStack[i + 1]->GetUpLevelBlock();
+		}
+
+		auto var = m_ClosureStack[i]->GetLocalVariable(name, block);
+		if (var)
+		{
+			if (i < m_ClosureStack.size() - 1 && addRef)
+			{
+				int refIndex = m_ClosureStack[i]->FindLocalVariableIndex(var);
+				for (int j = i + 1; j < m_ClosureStack.size() - 1; j++)
+				{
+					if (refIndex >= 0)
+					{
+						refIndex = m_ClosureStack[j]->AddRefValue(refIndex, var, name);
+					}
+				}
+			}
+
+			return var;
+		}
+	}
+
+	return nullptr;
+}
+
+void CompilerModule::ClosureAddLocalRef(Share<CompilerValue> value, const HString& name)
+{
+	auto index = GetCurrFunction()->FindLocalVariableIndex(value);
+	for (x_uint64 i = 0; i < m_ClosureStack.size(); i++)
+	{
+		m_ClosureStack[i]->AddRefValue(index, value, name);
+	}
 }
 
 void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction,
@@ -1045,12 +1123,15 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 			}
 		}
 
-		auto& lastParam = callFunction ? callFunction->GetParamTypeByIndex(0) :
-			pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
-		if ((IsMultiVariableTye(lastParam.PrimaryType) && params.size() + 1 < paramSize) || (!IsMultiVariableTye(lastParam.PrimaryType) && params.size() != paramSize))
+		if (paramSize > 0)
 		{
-			COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 函数个数不匹配", GetName().c_str(),
-				callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"));
+			auto& lastParam = callFunction ? callFunction->GetParamTypeByIndex(0) :
+				pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
+			if ((IsMultiVariableTye(lastParam.PrimaryType) && params.size() + 1 < paramSize) || (!IsMultiVariableTye(lastParam.PrimaryType) && params.size() != paramSize))
+			{
+				COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 函数个数不匹配", GetName().c_str(),
+					callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"));
+			}
 		}
 	}
 
@@ -1075,7 +1156,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	}
 
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
-		<< " " << (x_uint32)HazeDataDesc::Address << " " << CAST_TYPE(HAZE_CALL_PUSH_ADDRESS_TYPE) << std::endl;
+		<< " " << (x_uint32)HazeDataDesc::Address << " " << CAST_TYPE(HAZE_CALL_PUSH_ADDRESS_TYPE) << HAZE_ENDL;
 	insertBlock->PushIRCode(hss.str());
 	
 	hss.str(H_TEXT(""));
@@ -1117,7 +1198,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 
 	Share<CompilerValue> ret = nullptr;
 	{
-		PushTempRegister pushTempRegister(hss, m_Compiler, this, &DynamicCast<CompilerPointerFunction>(pointerFunction)->GetValueType(), &ret);
+		PushTempRegister pushTempRegister(hss, m_Compiler, this, &DynamicCast<CompilerPointerFunction>(pointerFunction)->GetFunctionType(), &ret);
 		FunctionCall(hss, nullptr, pointerFunction, nullptr, size, params, thisPointerTo);
 		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, pointerFunction);
 	}
@@ -1149,7 +1230,14 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 	}
 	
 
-	return Compiler::GetRegister(RET_REGISTER);
+	auto ret = Compiler::GetRegister(RET_REGISTER);
+
+	if (thisPointerTo->IsObjectBase())
+	{
+		const_cast<HazeDefineType&>(ret->GetValueType()).PrimaryType = thisPointerTo->GetValueType().SecondaryType;
+	}
+
+	return ret;
 }
 
 Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const HString& str)
@@ -1220,6 +1308,19 @@ bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<Compil
 	}
 
 	return value->TryGetVariableName(outName);
+}
+
+bool CompilerModule::GetClosureVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName)
+{
+	for (int i = (int)m->m_ClosureStack.size() - 1; i >= 0; i--)
+	{
+		if (m->m_ClosureStack[i]->FindLocalVariableName(value, outName))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& name)
@@ -1332,34 +1433,34 @@ x_uint32 CompilerModule::GetClassSize(const HString& className)
 void CompilerModule::GenICode()
 {
 	HAZE_STRING_STREAM hss;
-	hss << GetFileLastTime(m_Path) << std::endl;
-	hss << HAZE_VERSION << std::endl;
+	hss << GetFileLastTime(m_Path) << HAZE_ENDL;
+	hss << HAZE_VERSION << HAZE_ENDL;
 
 	//版本 2个字节
-	//FS_Ass << "1 1" << std::endl;
+	//FS_Ass << "1 1" << HAZE_ENDL;
 
 	//堆栈 4个字节
-	//FS_Ass << 1024 << std::endl;
+	//FS_Ass << 1024 << HAZE_ENDL;
 
 	//库类型
 	if (m_Path.empty())
 	{
-		hss << GetName() << std::endl;
+		hss << GetName() << HAZE_ENDL;
 	}
 	else
 	{
-		hss << m_Path << std::endl;
+		hss << m_Path << HAZE_ENDL;
 	}
 
-	hss << (x_uint32)m_ModuleLibraryType << std::endl;
+	hss << (x_uint32)m_ModuleLibraryType << HAZE_ENDL;
 	
-	hss << GetImportHeaderString() << std::endl;
-	hss << m_ImportModules.size() << std::endl;
+	hss << GetImportHeaderString() << HAZE_ENDL;
+	hss << m_ImportModules.size() << HAZE_ENDL;
 	for (int i = 0; i < m_ImportModules.size(); i++)
 	{
 		if (!m_ImportModules[i]->GetPath().empty())
 		{
-			hss << GetImportHeaderModuleString() << " " << m_ImportModules[i]->GetPath() << std::endl;
+			hss << GetImportHeaderModuleString() << " " << m_ImportModules[i]->GetPath() << HAZE_ENDL;
 		}
 		else
 		{
@@ -1372,10 +1473,10 @@ void CompilerModule::GenICode()
 	*	全局数据 ：	个数
 	*				数据名 数据类型 数据
 	*/
-	hss << GetGlobalDataHeaderString() << std::endl;
+	hss << GetGlobalDataHeaderString() << HAZE_ENDL;
 
 	auto globaleVariables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
-	hss << globaleVariables.size() << std::endl;
+	hss << globaleVariables.size() << HAZE_ENDL;
 
 	for (int i = 0; i < globaleVariables.size(); i++)
 	{
@@ -1383,16 +1484,16 @@ void CompilerModule::GenICode()
 	
 		hss << globaleVariables[i].first << " ";
 		var->GetValueType().StringStreamTo(hss);
-		hss << std::endl;
+		hss << HAZE_ENDL;
 	}
 
 	//全局变量初始化
-	/*hss << GetGlobalDataInitBlockStart() << std::endl;
+	/*hss << GetGlobalDataInitBlockStart() << HAZE_ENDL;
 	for (size_t i = 0; i < m_ModuleIRCodes.size(); i++)
 	{
 		hss << m_ModuleIRCodes[i].c_str();
 	}
-	hss << GetGlobalDataInitBlockEnd() << std::endl;*/
+	hss << GetGlobalDataInitBlockEnd() << HAZE_ENDL;*/
 	
 
 	/*
@@ -1405,20 +1506,20 @@ void CompilerModule::GenICode()
 			m_HashMap_StringMapping.size(), m_HashMap_StringTable.size());
 		return;
 	}
-	hss << GetStringTableHeaderString() << std::endl;
-	hss << m_HashMap_StringMapping.size() << std::endl;
+	hss << GetStringTableHeaderString() << HAZE_ENDL;
+	hss << m_HashMap_StringMapping.size() << HAZE_ENDL;
 
 	for (auto& it : m_HashMap_StringMapping)
 	{
-		hss << it.second->length() << " " << *it.second << std::endl;
+		hss << it.second->length() << " " << *it.second << HAZE_ENDL;
 	}
 
 	/*
 	*	枚举表
 	*/
 
-	hss << GetEnumTableLabelHeader() << std::endl;
-	hss << m_HashMap_Enums.size() << std::endl;;
+	hss << GetEnumTableLabelHeader() << HAZE_ENDL;
+	hss << m_HashMap_Enums.size() << HAZE_ENDL;;
 	for (auto& iter : m_HashMap_Enums)
 	{
 		iter.second->GenEnum_I_Code(hss);
@@ -1431,8 +1532,8 @@ void CompilerModule::GenICode()
 	*/
 	x_uint64 functionSize = 0;
 
-	hss << GetClassTableHeaderString() << std::endl;
-	hss << m_HashMap_Classes.size() << std::endl;
+	hss << GetClassTableHeaderString() << HAZE_ENDL;
+	hss << m_HashMap_Classes.size() << HAZE_ENDL;
 	for (auto& iter : m_HashMap_Classes)
 	{
 		iter.second->GenClassData_I_Code(hss);
@@ -1444,8 +1545,8 @@ void CompilerModule::GenICode()
 	*				名称 指令流
 	*
 	*/
-	hss << GetFucntionTableHeaderString() << std::endl;
-	hss << m_HashMap_Functions.size() + functionSize << std::endl;
+	hss << GetFucntionTableHeaderString() << HAZE_ENDL;
+	hss << m_HashMap_Functions.size() + functionSize << " " << m_Closures.size() << HAZE_ENDL;
 
 	m_GlobalDataFunction->GenI_Code(hss);
 
@@ -1460,6 +1561,11 @@ void CompilerModule::GenICode()
 		{
 			iter.second->GenI_Code(hss);
 		}
+	}
+
+	for (auto& iter : m_Closures)
+	{
+		iter->GenI_Code(hss);
 	}
 
 	*m_FS_I_Code << hss.str();

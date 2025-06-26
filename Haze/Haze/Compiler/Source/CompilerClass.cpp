@@ -297,15 +297,15 @@ void CompilerClass::ParseIntermediateClass(HAZE_IFSTREAM& stream, CompilerModule
 
 void CompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)
 {
-	hss << GetClassLabelHeader() << " " << m_Name << " " << m_DataSize << std::endl;
+	hss << GetClassLabelHeader() << " " << m_Name << " " << m_DataSize << HAZE_ENDL;
 
-	hss << m_ParentClass.size() << std::endl;
+	hss << m_ParentClass.size() << HAZE_ENDL;
 	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
-		hss << m_ParentClass[i]->GetName() << std::endl;
+		hss << m_ParentClass[i]->GetName() << HAZE_ENDL;
 	}
 	
-	hss << m_MemberCount << std::endl;
+	hss << m_MemberCount << HAZE_ENDL;
 
 	x_uint32 offset = 0;
 	GenClassData_I_CodeToHss(hss, offset);
@@ -336,7 +336,7 @@ void CompilerClass::GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, x_uint32& 
 
 		}
 
-		hss << " " << m_Offsets[i] + startOffset << " " << m_Data[i].second->GetSize() << std::endl;
+		hss << " " << m_Offsets[i] + startOffset << " " << m_Data[i].second->GetSize() << HAZE_ENDL;
 		offset += m_Data[i].second->GetSize();
 		//index++;
 	}

@@ -95,7 +95,6 @@ public:
 	};
 
 public:
-
 	struct FunctionBlock
 	{
 		HString BlockName;
@@ -113,6 +112,7 @@ public:
 		V_Array<HazeTempRegisterData> TempRegisters;
 		V_Array<FunctionBlock> Blocks;
 		V_Array<FunctionInstruction> Instructions;
+		V_Array<Pair<int, int>> RefVariable;			//±Õ°üÊ¹ÓÃ
 		InstructionFunctionType DescType;
 		
 		x_uint32 StartLine;

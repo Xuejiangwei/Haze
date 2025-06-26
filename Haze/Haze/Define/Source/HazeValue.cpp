@@ -961,5 +961,5 @@ bool CanHashValue(HazeValueType type)
 
 bool IsUseTemplateType(HazeValueType type)
 {
-	return IsHashType(type) || IsObjectBaseType(type);
+	return IsHashType(type) || IsObjectBaseType(type) || IsFunctionType(type);
 }

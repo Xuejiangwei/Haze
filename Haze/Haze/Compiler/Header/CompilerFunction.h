@@ -26,7 +26,7 @@ public:
 		V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass = nullptr,
 		ClassCompilerFunctionType classFunctionType = ClassCompilerFunctionType::None);
 
-	~CompilerFunction();
+	virtual ~CompilerFunction();
 
 	void SetStartEndLine(x_uint32 startLine, x_uint32 endLine);
 
@@ -66,6 +66,8 @@ public:
 
 	bool FindLocalVariableName(const Share<CompilerValue> value, HString& outName);
 
+	int FindLocalVariableIndex(const Share<CompilerValue> value);
+
 	bool HasExceptThisParam() const;
 
 	void AddLocalVariable(Share<CompilerValue> value, int line);
@@ -81,7 +83,7 @@ public:
 	bool IsVirtualFunction() const { return m_ClassFunctionType == ClassCompilerFunctionType::PureVirtual ||
 			m_ClassFunctionType == ClassCompilerFunctionType::Virtual; }
 
-private:
+protected:
 	void FunctionFinish();
 
 	void AddFunctionParam(const HazeDefineVariable& variable);
@@ -96,7 +98,7 @@ private:
 
 	void InitEntryBlock(Share<CompilerBlock> block) { m_EntryBlock = block; }
 
-private:
+protected:
 	struct TempRegisterCountData
 	{
 		Share<CompilerValue> Value = nullptr;
@@ -109,7 +111,7 @@ private:
 
 	void TryClearTempRegister();
 
-private:
+protected:
 	CompilerModule* m_Module;
 	CompilerClass* m_OwnerClass;
 
@@ -118,7 +120,7 @@ private:
 
 	V_Array<Pair<HString, Share<CompilerValue>>> m_Params;	//从右到左加入参数
 
-	V_Array<Pair<Share<CompilerValue>, int>> m_LocalVariables;
+	V_Array<Pair<Share<CompilerValue>, int>> m_LocalVariables; // { 变量, 定义所在的行数 }
 	V_Array<TempRegisterCountData> m_TempRegisters;		//{ 临时寄存器, 相对偏移个数 } 相对偏移是 个数 * 8
 
 	Share<CompilerBlock> m_EntryBlock;

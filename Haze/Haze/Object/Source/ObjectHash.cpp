@@ -19,13 +19,13 @@ x_uint64 __ObjectHash_Hash__(T* v)
 template<>
 x_uint64 __ObjectHash_Hash__(x_float32* v)
 {
-	return *v;
+	return *((x_uint32*)v);
 }
 
 template<>
 x_uint64 __ObjectHash_Hash__(x_float64* v)
 {
-	return *v;
+	return *((x_uint64*)v);
 }
 
 template<>

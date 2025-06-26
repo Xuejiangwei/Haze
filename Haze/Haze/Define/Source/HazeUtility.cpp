@@ -151,6 +151,11 @@ const x_HChar* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
+const x_HChar* GetClosureRefrenceVariableHeader()
+{
+	return CLOSURE_REF_VARIABLE;
+}
+
 const x_HChar* GetEnumTableLabelHeader()
 {
 	return HEADER_STRING_ENUM_TABLE;

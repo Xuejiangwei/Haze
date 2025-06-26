@@ -379,6 +379,14 @@ x_uint64 HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& ta
 				WriteType(m_FileStream, iter.Type);
 			}
 
+			number = (x_uint32)function.RefVariable.size();
+			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+			for (auto& iter : function.RefVariable)
+			{
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.first));
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.second));
+			}
+
 			//写入指令数与起始地址
 			number = (x_uint32)function.Instructions.size();
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
@@ -439,7 +447,7 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 		WSS << " ----" << it.Variable.Name << " Type :" << (uint32)it.Variable.Type.PrimaryType << " Scope: " << (uint32)it.Scope << " Base: " << it.Extra.Index
 			<< " Offset: " << it.Extra.Address.Offset;
 	}
-	WSS << std::endl;
+	WSS << HAZE_ENDL;
 
 	std::wcout << WSS.str();
 #endif
@@ -651,6 +659,15 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* vm)
 			ReadType(vm, m_InFileStream, vm->m_FunctionTable[i].TempRegisters[j].Type);
 		}
 
+
+		m_InFileStream->read(HAZE_READ(number));
+		vm->m_FunctionTable[i].RefVariables.resize(number);
+		for (auto& refVar : vm->m_FunctionTable[i].RefVariables)
+		{
+			m_InFileStream->read(HAZE_READ(refVar.first));
+			m_InFileStream->read(HAZE_READ(refVar.second));
+		}
+
 		m_InFileStream->read(HAZE_READ(vm->m_FunctionTable[i].InstructionNum));
 		m_InFileStream->read(HAZE_READ(vm->m_FunctionTable[i].FunctionDescData.InstructionStartAddress));
 
@@ -739,7 +756,7 @@ void HazeExecuteFile::ReadInstruction(HazeVM* vm, Instruction& instruction)
 		WSS << " ----" << it.Variable.Name << " Type: " << (unsigned int)it.Variable.Type.PrimaryType << " Scope: " << (unsigned int)it.Scope << " Base: " << it.Extra.Index
 			<< " Offset: " << it.Extra.Address.Offset;
 	}
-	WSS << std::endl;
+	WSS << HAZE_ENDL;
 
 	std::wcout << WSS.str();
 #endif

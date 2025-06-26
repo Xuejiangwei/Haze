@@ -16,6 +16,7 @@ enum class HazeSectionSignal : x_uint8
 	Static,
 	Class,
 	Enum,
+	Closure,
 };
 
 struct HazeDefineType
@@ -54,6 +55,8 @@ struct HazeDefineType
 
 	void CheckValid() const
 	{
+#ifdef _DEBUG
+
 		if (IsHazeBaseTypeAndVoid(PrimaryType)) {}
 		else if (IsEnumType(PrimaryType) && IsIntegerType(SecondaryType)) {}
 		else if (IsRefrenceType(PrimaryType) && IsHazeBaseType(SecondaryType)) {}
@@ -65,11 +68,15 @@ struct HazeDefineType
 		else if (IsFunctionType(PrimaryType) && IsNoneType(SecondaryType)) {}
 		else if (IsDynamicClassUnknowType(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
 		else if (IsPureStringType(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
+		else if (IsClosureType(PrimaryType) && IsNoneType(SecondaryType) && !CustomName) {}
+		else if (IsObjectBaseType(PrimaryType) && !CustomName) {}
 		else
 		{
 			HAZE_LOG_ERR_W("基本类型指针的类型错误<%s><%s><%s>\n", GetHazeValueTypeString(PrimaryType), GetHazeValueTypeString(SecondaryType),
 				CustomName ? CustomName->empty() ? H_TEXT("") : CustomName->c_str() : H_TEXT(""));
 		}
+
+#endif // _DEBUG
 	}
 
 	bool operator==(const HazeDefineType& type) const 
@@ -83,7 +90,7 @@ struct HazeDefineType
 
 	void Reset() { PrimaryType = HazeValueType::None; SecondaryType = HazeValueType::None, CustomName = nullptr; }
 
-	bool NeedSecondaryType() const { return IsArrayType(PrimaryType) || IsEnumType(PrimaryType) || IsRefrenceType(PrimaryType); }
+	bool NeedSecondaryType() const { return IsArrayType(PrimaryType) || IsEnumType(PrimaryType) || IsRefrenceType(PrimaryType) || IsObjectBaseType(PrimaryType); }
 
 	bool NeedCustomName() const { return IsClassType(PrimaryType) || (IsArrayType(PrimaryType) && IsClassType(SecondaryType)); }
 

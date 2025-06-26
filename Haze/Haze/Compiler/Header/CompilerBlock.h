@@ -22,6 +22,8 @@ public:
 
 	const V_Array<Pair<HString, Share<CompilerValue>>>& GetAllocaList() const { return m_Allocas; }
 
+	void AddClosureRefValue(Share<CompilerValue> refValue, const HString& name);
+
 	CompilerBlock* GetParentBlock() const { return m_ParentBlock; }
 
 	const HString& GetName() const { return m_Name; }

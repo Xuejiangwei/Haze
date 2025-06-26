@@ -46,7 +46,7 @@ void HazeEnd()
 	}
 
 	g_IsHazeEnd = true;
-	std::cout << std::endl << std::endl << "Haze End!" << std::endl;
+	std::cout << HAZE_ENDL << HAZE_ENDL << "Haze End!" << HAZE_ENDL;
 	system("pause");
 }
 
@@ -217,7 +217,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 
 	if (vm && vm->GetFucntionIndexByName(mainFunction) >= 0)
 	{
-		std::cout << std::endl << std::endl << "Haze Start" << std::endl << std::endl;
+		std::cout << HAZE_ENDL << HAZE_ENDL << "Haze Start" << HAZE_ENDL << HAZE_ENDL;
 		vm->CallFunction(mainFunction.c_str());
 
 		vm->ClearGlobalData();

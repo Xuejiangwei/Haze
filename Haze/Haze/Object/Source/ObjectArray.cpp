@@ -7,6 +7,9 @@
 #include "HazeLibraryDefine.h"
 #include "ObjectHash.h"
 #include "ObjectBase.h"
+#include "ObjectClosure.h"
+
+#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "数组")
 
 ObjectArray::ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* lengths, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
 	: GCObject(gcIndex), m_Data(nullptr), m_DimensionCount(dimensionCount), m_Length(0), m_PcAddress(pcAddress), m_ValueType(valueType),
@@ -88,20 +91,8 @@ void ObjectArray::GetLength(HAZE_OBJECT_CALL_PARAM)
 	ObjectArray* arr;
 
 	GET_PARAM_START();
-	GET_PARAM(arr);
-	if (!arr)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0];
-		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(arr);
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_Length);
-}
-
-bool ObjectBase::IsEqual(ObjectBase* obj1, ObjectBase* obj2)
-{
-	return false;
 }
 
 void ObjectArray::GetLengthOfDimension(HAZE_OBJECT_CALL_PARAM)
@@ -110,14 +101,7 @@ void ObjectArray::GetLengthOfDimension(HAZE_OBJECT_CALL_PARAM)
 	x_uint64 dimension;
 
 	GET_PARAM_START();
-	GET_PARAM(arr);
-	if (!arr)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(arr);
 	GET_PARAM(dimension);
 	SET_RET_BY_TYPE(HazeValueType::UInt64, stack->GetVM()->GetInstruction()[arr->m_PcAddress + dimension + 1].Operator[0].Extra.SignData);
 }
@@ -127,14 +111,7 @@ void ObjectArray::GetDimensionCount(HAZE_OBJECT_CALL_PARAM)
 	ObjectArray* arr;
 
 	GET_PARAM_START();
-	GET_PARAM(arr);
-	if (!arr)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0];
-		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(arr);
 	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_DimensionCount);
 }
 
@@ -144,14 +121,8 @@ void ObjectArray::Add(HAZE_OBJECT_CALL_PARAM)
 	char* value = nullptr;
 
 	GET_PARAM_START();
-	GET_PARAM(arr);
-	if (!arr)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(arr);
+	
 	auto size = GetSizeByHazeType(arr->m_ValueType);
 	GET_PARAM_ADDRESS(value, size);
 
@@ -178,14 +149,7 @@ void ObjectArray::Get(HAZE_OBJECT_CALL_PARAM)
 	x_uint64 offset = 0;
 
 	GET_PARAM_START();
-	GET_PARAM(arr);
-	if (!arr)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(arr);
 	GET_PARAM(offset);
 
 	auto size = GetSizeByHazeType(arr->m_ValueType);
@@ -193,7 +157,6 @@ void ObjectArray::Get(HAZE_OBJECT_CALL_PARAM)
 	char value[8];
 	memcpy(value, (char*)arr->m_Data + offset * size, size);
 	SET_RET_BY_TYPE(arr->m_ValueType, value);
-	//HAZE_LOG_INFO("Array Get <%d>\n", offset);
 }
 
 void ObjectArray::Set(HAZE_OBJECT_CALL_PARAM)
@@ -203,19 +166,11 @@ void ObjectArray::Set(HAZE_OBJECT_CALL_PARAM)
 	char* value = nullptr;
 
 	GET_PARAM_START();
-	GET_PARAM(arr);
-	if (!arr)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("数组对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(arr);
 	GET_PARAM(offset);
 
 	auto size = GetSizeByHazeType(arr->m_ValueType);
 	GET_PARAM_ADDRESS(value, size);
 
 	memcpy((char*)arr->m_Data + offset * size, value, size);
-	//HAZE_LOG_INFO("Array Set <%d>\n", offset);
 }

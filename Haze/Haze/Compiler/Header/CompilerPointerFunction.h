@@ -7,11 +7,13 @@ class CompilerPointerFunction : public HazeCompilerPointerValue
 	friend class CompilerModule;
 public:
 	explicit CompilerPointerFunction(CompilerModule* compilerModule, const HazeDefineType& defineType,
-		HazeVariableScope scope, HazeDataDesc desc, int count, V_Array<HazeDefineType>* paramTypes);
+		HazeVariableScope scope, HazeDataDesc desc, int count, TemplateDefineTypes* params);
 
 	virtual ~CompilerPointerFunction() override;
 
-	const V_Array<HazeDefineType>& GetParamTypes() const { return m_ParamTypes; }
+	//const V_Array<HazeDefineType>& GetParamTypes() const { return m_ParamTypes; }
+
+	const HazeDefineType& GetFunctionType() const { return m_FuncType.Type->BaseType; }
 
 	const HazeDefineType& GetParamTypeByIndex(x_uint64 index) const;
 
@@ -20,7 +22,7 @@ public:
 	const x_uint64 GetParamSize() const;
 
 private:
-	V_Array<HazeDefineType> m_ParamTypes;
-	HazeDefineType m_FuncType;
+	V_Array<TemplateDefineType> m_ParamTypes;
+	TemplateDefineType m_FuncType;
 	CompilerClass* m_OwnerClass;
 };

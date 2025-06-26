@@ -404,32 +404,37 @@ void BackendParse::Parse_I_Code_FunctionTable()
 	if (m_CurrLexeme == GetFucntionTableHeaderString())
 	{
 		x_uint32 number;
+		x_uint64 count = 0;
 		GetNextLexmeAssign_StandardType(number);
+		count += number;
+		
+		GetNextLexmeAssign_StandardType(number);
+		count += number;
 
-		ModuleUnit::FunctionTable& table = m_CurrParseModule->m_FunctionTable;
-		table.m_Functions.resize(number);
+		m_CurrParseModule->m_FunctionTable.m_Functions.resize(count);
 
-		for (x_uint64 i = 0; i < table.m_Functions.size(); i++)
+		for (x_uint64 i = 0; i < count; i++)
 		{
+			ModuleUnit::FunctionTableData& functionData = m_CurrParseModule->m_FunctionTable.m_Functions[i];
+
 			GetNextLexeme();
 
 			if (m_CurrLexeme == GetFunctionLabelHeader() || m_CurrLexeme == GetClassFunctionLabelHeader())
 			{
 				bool isNormalFunc = m_CurrLexeme == GetFunctionLabelHeader();
-				GetNextLexmeAssign_CustomType<int>(table.m_Functions[i].DescType);
+				GetNextLexmeAssign_CustomType<int>(functionData.DescType);
 				if (isNormalFunc)
 				{
-					table.m_Functions[i].ClassName = H_TEXT("None");
+					functionData.ClassName = H_TEXT("None");
 				}
 				else
 				{
-					GetNextLexmeAssign_HazeString(table.m_Functions[i].ClassName);
+					GetNextLexmeAssign_HazeString(functionData.ClassName);
 					GetNextLexmeAssign_CustomType<x_uint32>(number);
 				}
-				GetNextLexmeAssign_HazeString(table.m_Functions[i].Name);
+				GetNextLexmeAssign_HazeString(functionData.Name);
 
-				table.m_Functions[i].Type.StringStream<BackendParse>(this, 
-					&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
+				functionData.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 					&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
 				GetNextLexeme();
@@ -437,12 +442,10 @@ void BackendParse::Parse_I_Code_FunctionTable()
 				{
 					HazeDefineVariable param;
 					GetNextLexmeAssign_HazeString(param.Name);
-					param.Type.StringStream<BackendParse>(this, 
-						&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
+					param.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 						&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
-					table.m_Functions[i].Params.push_back(Move(param));
-
+					functionData.Params.push_back(Move(param));
 					GetNextLexeme();
 				}
 
@@ -458,7 +461,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					GetNextLexmeAssign_CustomType<x_uint32>(var.Size);
 					GetNextLexmeAssign_CustomType<x_uint32>(var.Line);
 
-					table.m_Functions[i].Variables.push_back(Move(var));
+					functionData.Variables.push_back(Move(var));
 					GetNextLexeme();
 				}
 				
@@ -471,20 +474,31 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					data.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 						&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
-					table.m_Functions[i].TempRegisters.push_back(Move(data));
+					functionData.TempRegisters.push_back(Move(data));
+					GetNextLexeme();
+				}
+
+				while (m_CurrLexeme == GetClosureRefrenceVariableHeader())
+				{
+					int refIndex = -1;
+					int varIndex = -1;
+					GetNextLexmeAssign_CustomType<int>(refIndex);
+					GetNextLexmeAssign_CustomType<int>(varIndex);
+					functionData.RefVariable.push_back({ refIndex, varIndex });
+					
 					GetNextLexeme();
 				}
 
 				if (m_CurrLexeme == GetFunctionStartHeader())
 				{
-					GetNextLexmeAssign_CustomType<int>(table.m_Functions[i].StartLine);
+					GetNextLexmeAssign_CustomType<int>(functionData.StartLine);
 
 					GetNextLexeme();
 					while (m_CurrLexeme == BLOCK_START)
 					{
 						GetNextLexeme();
-						table.m_Functions[i].Blocks.push_back({ m_CurrLexeme, 0, (int)table.m_Functions[i].Instructions.size() });
-						auto& CurrBlock = table.m_Functions[i].Blocks.back();
+						functionData.Blocks.push_back({ m_CurrLexeme, 0, (int)functionData.Instructions.size() });
+						auto& CurrBlock = functionData.Blocks.back();
 
 						GetNextLexeme();
 						while (m_CurrLexeme != BLOCK_START && m_CurrLexeme != GetFunctionEndHeader())
@@ -494,7 +508,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 							ParseInstruction(Instruction);
 
-							table.m_Functions[i].Instructions.push_back(Instruction);
+							functionData.Instructions.push_back(Instruction);
 
 							CurrBlock.InstructionNum++;
 
@@ -503,7 +517,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 						if (m_CurrLexeme == GetFunctionEndHeader())
 						{
-							GetNextLexmeAssign_CustomType<int>(table.m_Functions[i].EndLine);
+							GetNextLexmeAssign_CustomType<int>(functionData.EndLine);
 							break;
 						}
 					}
@@ -800,7 +814,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	for (x_uint64 k = 0; k < newFunctionTable.m_Functions.size(); ++k)
 	{
 #if BACKEND_INSTRUCTION_LOG
-		std::wcout << NewFunctionTable.Vector_Function[k].Name << std::endl;
+		std::wcout << NewFunctionTable.Vector_Function[k].Name << HAZE_ENDL;
 #endif
 		auto& m_CurrFunction = newFunctionTable.m_Functions[k];
 
@@ -913,7 +927,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 			{
 				WSS << it.Variable.Name << " Base " << it.Extra.Address.BaseAddress << " Offset " << it.Extra.Address.Offset << " ";
 			}
-			WSS << std::endl;
+			WSS << HAZE_ENDL;
 			std::wcout << WSS.str();
 #endif // ENABLE_BACKEND_INSTRUCTION_LOG
 		}

@@ -83,7 +83,7 @@ void CompilerBlock::AddChildBlock(Share<CompilerBlock> block)
 
 void CompilerBlock::GenI_Code(HAZE_STRING_STREAM& hss)
 {
-	hss << std::endl;
+	hss << HAZE_ENDL;
 
 	for (size_t i = 0; i < m_IRCodes.size(); i++)
 	{
@@ -131,9 +131,9 @@ void CompilerBlock::PushIRCode(const HString& code)
 Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, HazeVariableScope scope,
 	Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
-	for (auto& Iter : m_Allocas)
+	for (auto& iter : m_Allocas)
 	{
-		if (Iter.first == defineVar.Name)
+		if (iter.first == defineVar.Name)
 		{
 			if (scope == HazeVariableScope::Global)
 			{
@@ -161,11 +161,24 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 	}
 
 	HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
-	Share<CompilerValue> Alloce = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, scope, desc, count,
+	Share<CompilerValue> allocaValue = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, scope, desc, count,
 		refValue, arrayDimension, params);
-	m_Allocas.push_back({ defineVar.Name, Alloce });
+	m_Allocas.push_back({ defineVar.Name, allocaValue });
 
-	m_ParentFunction->AddLocalVariable(Alloce, line);
+	m_ParentFunction->AddLocalVariable(allocaValue, line);
 
-	return Alloce;
+	return allocaValue;
+}
+
+void CompilerBlock::AddClosureRefValue(Share<CompilerValue> refValue, const HString& name)
+{
+	for (auto& it : m_Allocas)
+	{
+		if (it.first == name)
+		{
+			return;
+		}
+	}
+
+	m_Allocas.push_back({ name, refValue });
 }

@@ -229,6 +229,7 @@
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
     <ClCompile Include="Backend\Source\Optimizer.cpp" />
+    <ClCompile Include="Compiler\Source\CompilerClosureFunction.cpp" />
     <ClCompile Include="Compiler\Source\CompilerClosureValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerElementValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerEnum.cpp" />
@@ -302,6 +303,7 @@
     <ClInclude Include="Compiler\Header\Compiler.h" />
     <ClInclude Include="Compiler\Header\CompilerArrayValue.h" />
     <ClInclude Include="Compiler\Header\CompilerClassValue.h" />
+    <ClInclude Include="Compiler\Header\CompilerClosureFunction.h" />
     <ClInclude Include="Compiler\Header\CompilerClosureValue.h" />
     <ClInclude Include="Compiler\Header\CompilerElementValue.h" />
     <ClInclude Include="Compiler\Header\CompilerEnum.h" />

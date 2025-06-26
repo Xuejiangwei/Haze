@@ -291,6 +291,7 @@ struct FunctionData
 	V_Array<HazeDefineVariable> Params;
 	V_Array<HazeVariableData> Variables;
 	V_Array<HazeTempRegisterData> TempRegisters;
+	V_Array<Pair<int, int>> RefVariables;
 	x_uint32 InstructionNum;
 
 	FunctionDescData FunctionDescData;

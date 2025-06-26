@@ -23,6 +23,8 @@
 #include "ObjectClass.h"
 #include "ObjectDynamicClass.h"
 #include "ObjectHash.h"
+#include "ObjectBase.h"
+#include "ObjectClosure.h"
 
 #include <cstdarg>
 #include <filesystem>
@@ -180,6 +182,8 @@ HString HazeVM::GetAdvanceFunctionName(x_uint16 index)
 	GET_ADVANCE_MAPPING(ObjectClass);
 	GET_ADVANCE_MAPPING(ObjectDynamicClass);
 	GET_ADVANCE_MAPPING(ObjectHash);
+	GET_ADVANCE_MAPPING(ObjectBase);
+	GET_ADVANCE_MAPPING(ObjectClosure);
 	
 	return H_TEXT("None");
 }
@@ -339,35 +343,19 @@ x_uint32 HazeVM::GetClassSize(const HString& m_ClassName)
 
 void HazeVM::InitRegisterObjectFunction()
 {
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Array, { ObjectArray::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
-	for (auto& it : ObjectArray::GetAdvanceClassInfo()->Functions)
-	{
-		m_FunctionObjectTable.push_back(&it);
+#define REGISTER_OBJ_FUNCTION(TYPE, OBJ) m_Compiler->RegisterAdvanceClassInfo(HazeValueType::TYPE, { OBJ::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() }); \
+	for (auto& it : OBJ::GetAdvanceClassInfo()->Functions) \
+	{ \
+		m_FunctionObjectTable.push_back(&it); \
 	}
 
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::String, { ObjectString::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
-	for (auto& it : ObjectString::GetAdvanceClassInfo()->Functions)
-	{
-		m_FunctionObjectTable.push_back(&it);
-	}
-
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Class, { ObjectClass::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
-	for (auto& it : ObjectClass::GetAdvanceClassInfo()->Functions)
-	{
-		m_FunctionObjectTable.push_back(&it);
-	}
-
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::DynamicClass, { ObjectDynamicClass::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
-	for (auto& it : ObjectDynamicClass::GetAdvanceClassInfo()->Functions)
-	{
-		m_FunctionObjectTable.push_back(&it);
-	}
-
-	m_Compiler->RegisterAdvanceClassInfo(HazeValueType::Hash, { ObjectHash::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() });
-	for (auto& it : ObjectHash::GetAdvanceClassInfo()->Functions)
-	{
-		m_FunctionObjectTable.push_back(&it);
-	}
+	REGISTER_OBJ_FUNCTION(Array, ObjectArray);
+	REGISTER_OBJ_FUNCTION(String, ObjectString);
+	REGISTER_OBJ_FUNCTION(Class, ObjectClass);
+	REGISTER_OBJ_FUNCTION(DynamicClass, ObjectDynamicClass);
+	REGISTER_OBJ_FUNCTION(Hash, ObjectHash);
+	REGISTER_OBJ_FUNCTION(ObjectBase, ObjectBase);
+	REGISTER_OBJ_FUNCTION(Closure, ObjectClosure);
 }
 
 void HazeVM::InitGlobalStringCount(x_uint64 count)

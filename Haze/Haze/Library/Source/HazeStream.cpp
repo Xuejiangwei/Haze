@@ -67,7 +67,7 @@ HString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
 				if (*(++start) == HChar('n'))
 				{
 					start++;
-					hss << std::endl;
+					hss << HAZE_ENDL;
 				}
 			}
 			else*/
@@ -186,7 +186,7 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 				if (*(++start) == x_HChar('n'))
 				{
 					start++;
-					hss << std::endl;
+					hss << HAZE_ENDL;
 				}
 			}
 			else
@@ -292,7 +292,7 @@ HString HazeStream::FormatConstantString(const HString& str)
 				if (*(++start) == x_HChar('n'))
 				{
 					start++;
-					hss << std::endl;
+					hss << HAZE_ENDL;
 				}
 				else
 				{
@@ -337,7 +337,7 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 				if (*(++start) == x_HChar('n'))
 				{
 					start++;
-					hss << std::endl;
+					hss << HAZE_ENDL;
 				}
 			}
 			else
@@ -462,7 +462,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				if (*(++Start) == HChar('n'))
 				{
 					Start++;
-					HSS << std::endl;
+					HSS << HAZE_ENDL;
 				}
 			}
 			else
@@ -549,12 +549,12 @@ void HazeStream::HazeStringFormatCall()
 V_Array<TestDynamic> g_TestDynamics;
 void TestConstructor(void* ptr)
 {
-	std::cout << "constructor : " << ptr << std::endl;
+	std::cout << "constructor : " << ptr << HAZE_ENDL;
 }
 
 void TestDeconstructor(void* ptr)
 {
-	std::cout << "deconstructor : " << ptr << std::endl;
+	std::cout << "deconstructor : " << ptr << HAZE_ENDL;
 }
 
 void TestGetMember(HazeStack* stack, const HString& name, void* obj)
@@ -572,7 +572,7 @@ void TestSetMember(HazeStack* stack, const HString& name, void* obj, x_uint8* cu
 
 void TestCallFunction(HazeStack* stack, const HString& name, void* obj, x_uint8* currESP)
 {
-	std::wcout << "call function : " << name.c_str() << std::endl;
+	std::wcout << "call function : " << name.c_str() << HAZE_ENDL;
 	int a, b;
 	memcpy(&a, currESP - sizeof(a), sizeof(a));
 	memcpy(&b, currESP - sizeof(a) - sizeof(b), sizeof(b));

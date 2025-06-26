@@ -608,6 +608,11 @@ HazeToken Parse::GetNextToken(bool clearLexeme)
 			{
 				m_CurrLexeme += *(m_CurrCode++);
 			}
+			else if (IsNumber(m_CurrLexeme) && HString(signal) == TOKEN_CLASS_ATTR)
+			{
+				m_CurrLexeme += *(m_CurrCode++);
+				continue;
+			}
 			break;
 		}
 
@@ -1436,21 +1441,60 @@ Unique<ASTBase> Parse::ParseVariableDefine_Function(TemplateDefineTypes& templat
 
 		if (ExpectNextTokenIs_NoParseError(HazeToken::Assign))
 		{
-			if (ExpectNextTokenIs_NoParseError(HazeToken::LeftBrace))
-			{
-				Unique<ASTBase> expression = ParseExpression();
-
-				if (ExpectNextTokenIs(HazeToken::RightBrace, H_TEXT("闭包函数结束需要 } ")))
-				{
-					return MakeUnique<ASTVariableDefine_Closure>(m_Compiler, SourceLocation(tempLineCount),
-						m_StackSectionSignal.top(), defineVar, Move(expression), templateTypes);
-				}
-			}
-			else
+			if (NextTokenNotIs(HazeToken::Function))
 			{
 				Unique<ASTBase> expression = ParseExpression();
 				return MakeUnique<ASTVariableDefine_Function>(m_Compiler, SourceLocation(tempLineCount),
 					m_StackSectionSignal.top(), defineVar, Move(expression), templateTypes);
+			}
+			else
+			{
+				if (m_StackSectionSignal.top() == HazeSectionSignal::Local || m_StackSectionSignal.top() == HazeSectionSignal::Closure)
+				{
+					m_StackSectionSignal.push(HazeSectionSignal::Closure);
+					if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("函数参数定义需要 (")))
+					{
+						V_Array<Unique<ASTBase>> params;
+
+						HazeDefineVariable thisParam;
+						thisParam.Name = HAZE_CLOSURE_NAME;
+						thisParam.Type.PrimaryType = HazeValueType::Closure;
+						params.push_back(MakeUnique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), HazeSectionSignal::Closure, thisParam, nullptr));
+
+
+						GetNextToken();
+
+						m_IsParseClassData_Or_FunctionParam = true;
+						while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
+						{
+							params.push_back(ParseExpression());
+							if (!ExpectNextTokenIs_NoParseError(HazeToken::Comma))
+							{
+								break;
+							}
+
+							GetNextToken();
+						}
+						m_IsParseClassData_Or_FunctionParam = false;
+
+						
+						if (ExpectNextTokenIs(HazeToken::LeftBrace, H_TEXT("函数体需要 {")))
+						{
+							x_uint32 startLineCount = m_LineCount;
+							Unique<ASTBase> body = ParseMultiExpression();
+
+							if (ExpectNextTokenIs(HazeToken::RightBrace, H_TEXT("函数体需要 }")))
+							{
+								m_StackSectionSignal.pop();
+								return MakeUnique<ASTVariableDefine_Closure>(m_Compiler, SourceLocation(tempLineCount), SourceLocation(startLineCount), SourceLocation(m_LineCount), m_StackSectionSignal.top(), defineVar, body, templateTypes, params);
+							}
+						}
+					}
+				}
+				else
+				{
+					PARSE_ERR_W("匿名函数变量<%s>定义错误, 只能定义在函数或者匿名函数中", m_DefineVariable.Name.c_str());
+				}
 			}
 		}
 		else
@@ -1464,15 +1508,30 @@ Unique<ASTBase> Parse::ParseVariableDefine_Function(TemplateDefineTypes& templat
 
 Unique<ASTBase> Parse::ParseVariableDefine_ObjectBase(TemplateDefineTypes& templateTypes)
 {
-	x_uint32 tempLineCount = m_LineCount;
-
-	if (TokenIs(HazeToken::Identifier, H_TEXT("基本类型对象需要一个正确的名称")))
+	if (templateTypes.Types.size() != 1 || !IsHazeBaseType(templateTypes.Types[0].Type->BaseType.PrimaryType))
 	{
-		m_DefineVariable.Name = m_CurrLexeme;
+		PARSE_ERR_W("基本对象变量<%s>定义错误, 只能有一个类型且只能是基本类型", m_DefineVariable.Name.c_str());
+	}
+	else
+	{
+		x_uint32 tempLineCount = m_LineCount;
+		if (TokenIs(HazeToken::Identifier, H_TEXT("基本类型对象需要一个正确的名称")))
+		{
+			m_DefineVariable.Name = m_CurrLexeme;
+			m_DefineVariable.Type.SecondaryType = templateTypes.Types[0].Type->BaseType.PrimaryType;
 
-		Unique<ASTBase> expression = ParseExpression();
-		/*return MakeUnique<ASTVariableDefine_ObjectBase>(m_Compiler, SourceLocation(tempLineCount),
-			m_StackSectionSignal.top(), m_DefineVariable, Move(expression), templateTypes);*/
+			if (ExpectNextTokenIs_NoParseError(HazeToken::Assign))
+			{
+				GetNextToken();
+				Unique<ASTBase> expression = ParseExpression();
+				return MakeUnique<ASTVariableDefine_ObjectBase>(m_Compiler, SourceLocation(tempLineCount),
+					m_StackSectionSignal.top(), m_DefineVariable, expression);
+			}
+			else
+			{
+				PARSE_ERR_W("基本类型变量<%s>定义错误, 需要赋予初始化值或空指针", m_DefineVariable.Name.c_str());
+			}
+		}
 	}
 
 	return nullptr;
@@ -1496,22 +1555,6 @@ Unique<ASTBase> Parse::ParseVariableDefine_Hash(TemplateDefineTypes& templateTyp
 		{
 			PARSE_ERR_W("函数变量<%s>定义错误, 需要赋予初始化值或空指针", m_DefineVariable.Name.c_str());
 		}
-	}
-
-	return nullptr;
-}
-
-Unique<ASTBase> Parse::ParseVariableDefine_Closure(TemplateDefineTypes& templateTypes)
-{
-	x_uint32 tempLineCount = m_LineCount;
-
-	if (TokenIs(HazeToken::Identifier, H_TEXT("闭包对象需要一个正确的名称")))
-	{
-		m_DefineVariable.Name = m_CurrLexeme;
-
-		Unique<ASTBase> expression = ParseExpression();
-		/*return MakeUnique<ASTVariableDefine_Hash>(m_Compiler, SourceLocation(tempLineCount),
-			m_StackSectionSignal.top(), m_DefineVariable, Move(expression), templateTypes);*/
 	}
 
 	return nullptr;
@@ -2921,7 +2964,7 @@ void Parse::GetTemplateRealValueType(const HString& str, HazeDefineType& inType)
 
 void Parse::ParseTemplateTypes(HazeDefineType baseType, TemplateDefineTypes& templateTypes)
 {
-	if (IsUseTemplateType(baseType.PrimaryType))
+	//if (IsUseTemplateType(baseType.PrimaryType))
 	{
 		while (true)
 		{
@@ -2973,10 +3016,10 @@ void Parse::ParseTemplateTypes(HazeDefineType baseType, TemplateDefineTypes& tem
 			}
 		}
 	}
-	else
+	/*else
 	{
 		PARSE_ERR_W("解析模板类型错误");
-	}
+	}*/
 }
 
 //void Parse::ParseVariableType()

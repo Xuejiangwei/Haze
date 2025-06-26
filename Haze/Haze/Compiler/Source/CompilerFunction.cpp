@@ -10,6 +10,7 @@
 #include "CompilerFunction.h"
 #include "CompilerBlock.h"
 #include "HazeLogDefine.h"
+#include "CompilerClosureFunction.h"
 
 CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const HString& name, 
 	HazeDefineType& type, V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass, ClassCompilerFunctionType classFunctionType)
@@ -160,7 +161,7 @@ Share<CompilerValue> CompilerFunction::GetLocalVariable(const HString& variableN
 {
 	Share<CompilerValue> ret = nullptr;
 
-	auto currBlock = m_Module->GetCompiler()->GetInsertBlock().get();
+	auto currBlock = m_Module->GetCompiler()->GetFunctionInsertBlock().get();
 	while (currBlock)
 	{
 		for (auto& value : currBlock->GetAllocaList())
@@ -202,18 +203,18 @@ void CompilerFunction::FunctionFinish()
 	{
 		HAZE_STRING_STREAM hss;
 		GenIRCode(hss, GetModule(), InstructionOpCode::RET, nullptr, nullptr, nullptr, nullptr);
-		hss << std::endl;
+		hss << HAZE_ENDL;
 		m_Module->GetCompiler()->GetInsertBlock()->PushIRCode(hss.str());
 	}
 }
 
 void CompilerFunction::ParseIntermediate(HAZE_IFSTREAM& stream, CompilerModule* m)
 {
-	HString str;
-	stream >> str;
-
-
-	
+	if (m)
+	{
+		HString str;
+		stream >> str;
+	}
 }
 
 void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
@@ -236,7 +237,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		return;
 	}
 
-	hss << std::endl;
+	hss << HAZE_ENDL;
 
 	//Push所有参数，从右到左, push 参数与返回地址的事由function call去做
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
@@ -249,7 +250,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 			return;
 		}
 
-		hss << std::endl;
+		hss << HAZE_ENDL;
 	}
 
 	HString LocalVariableName;
@@ -267,7 +268,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 
-		hss << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << std::endl;
+		hss << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
 	}
 
 	size = 0;
@@ -277,7 +278,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
-		hss << " " << m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize() << " " << m_LocalVariables[i].second << std::endl;
+		hss << " " << m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
 		size += m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize();
 	}
 
@@ -286,14 +287,19 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		hss << HAZE_LOCAL_TEMP_REGISTER_HEADER << " " << HAZE_LOCAL_TEMP_REGISTER << i << " "
 			<< size + m_TempRegisters[i].Offset * 8 << " ";
 		m_TempRegisters[i].Value->GetValueType().StringStreamTo(hss);
-		hss << std::endl;
+		hss << HAZE_ENDL;
 	}
 
-	hss << GetFunctionStartHeader() << " " << m_StartLine << std::endl;
+	if (dynamic_cast<CompilerClosureFunction*>(this))
+	{
+		dynamic_cast<CompilerClosureFunction*>(this)->GenI_Code_RefVariable(hss);
+	}
+
+	hss << GetFunctionStartHeader() << " " << m_StartLine << HAZE_ENDL;
 
 	m_EntryBlock->GenI_Code(hss);
 
-	hss << GetFunctionEndHeader() << " " << m_EndLine << std::endl << std::endl;
+	hss << GetFunctionEndHeader() << " " << m_EndLine << HAZE_ENDL << HAZE_ENDL;
 
 	m_EntryBlock->ClearLocalVariable();
 }
@@ -371,6 +377,27 @@ bool CompilerFunction::FindLocalVariableName(const Share<CompilerValue> value, H
 	}
 
 	return false;
+}
+
+int CompilerFunction::FindLocalVariableIndex(const Share<CompilerValue> value)
+{
+	for (x_uint64 i = 0; i < m_Params.size(); i++)
+	{
+		if (m_Params[i].second == value)
+		{
+			return (int)i;
+		}
+	}
+
+	for (x_uint64 i = 0; i < m_LocalVariables.size(); i++)
+	{
+		if (m_LocalVariables[i].first == value)
+		{
+			return (int)(i + m_Params.size());
+		}
+	}
+
+	return -1;
 }
 
 bool CompilerFunction::HasExceptThisParam() const

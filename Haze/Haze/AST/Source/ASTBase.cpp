@@ -8,6 +8,7 @@
 #include "CompilerClass.h"
 #include "CompilerBlock.h"
 #include "CompilerFunction.h"
+#include "CompilerClosureFunction.h"
 #include "CompilerValue.h"
 #include "CompilerElementValue.h"
 #include "HazeCompilerPointerValue.h"
@@ -148,6 +149,22 @@ Share<CompilerValue> ASTIdentifier::GetNameValue()
 				retValue = m_Compiler->GenConstantValue(m_Compiler->GetCurrModule()->GetCurrEnum()->GetParentType(), retValue->GetValue());
 			}
 		}
+		else if (m_SectionSignal == HazeSectionSignal::Closure)
+		{
+			retValue = m_Compiler->GetClosureVariable(m_DefineVariable.Name);
+			if (!retValue)
+			{
+				retValue = m_Compiler->GetLocalVariable(m_DefineVariable.Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
+				if (!retValue)
+				{
+					retValue = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
+				}
+				else
+				{
+					m_Compiler->GetCurrModule()->ClosureAddLocalRef(retValue, m_DefineVariable.Name);
+				}
+			}
+		}
 
 		if (!m_NameSpace.empty() && !retValue)
 		{
@@ -166,6 +183,7 @@ ASTFunctionCall::ASTFunctionCall(Compiler* compiler, const SourceLocation& locat
 Share<CompilerValue> ASTFunctionCall::CodeGen()
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
+	auto& currModule = m_Compiler->GetCurrModule();
 
 	Share<CompilerFunction> function = nullptr;
 	Share<CompilerValue> classObj = nullptr;
@@ -191,7 +209,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 		param.push_back(m_FunctionParam[i]->CodeGen());
 		if (!param.back())
 		{
-			AST_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误", m_Compiler->GetCurrModule()->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
+			AST_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误", currModule->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
 			return nullptr;
 		}
 	}
@@ -203,7 +221,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 		{
 			if (!classObj)
 			{
-				classObj = m_Compiler->GetCurrModule()->GetCurrFunction()->GetThisLocalVariable();
+				classObj = currModule->GetCurrFunction()->GetThisLocalVariable();
 				if (!m_NameSpace.empty())
 				{
 					function = DynamicCast<CompilerClassValue>(classObj)->GetOwnerClass()->FindFunction(m_Name, &m_NameSpace);
@@ -215,24 +233,38 @@ Share<CompilerValue> ASTFunctionCall::CodeGen()
 	}
 	else
 	{
-		auto functionPointer = m_Compiler->GetCurrModule()->GetCurrFunction()->GetLocalVariable(m_Name, 
-			m_NameSpace.empty() ? nullptr : &m_NameSpace);
-		if (functionPointer && functionPointer->IsFunction())
+		Share<CompilerValue> functionValue = nullptr;
+		functionValue = currModule->GetClosureVariable(m_Name, true);
+		if (!functionValue)
 		{
-			ret = m_Compiler->CreateFunctionCall(functionPointer, param);
+			functionValue = currModule->GetCurrFunction()->GetLocalVariable(m_Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
+		}
+
+		if (functionValue)
+		{
+			if (functionValue->IsFunction())
+			{
+				ret = m_Compiler->CreateFunctionCall(functionValue, param);
+			}
+			else if (functionValue->IsClosure())
+			{
+				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Closure, HAZE_CUSTOM_CALL_FUNCTION, param, functionValue);
+			}
 		}
 		else if (classObj)
 		{
 			if (classObj->IsElement())
 			{
 				auto elementValue = DynamicCast<CompilerElementValue>(classObj);
-				ret = m_Compiler->CreateAdvanceTypeFunctionCall(elementValue->GetParentBaseType(), m_Name,
-					param, elementValue);
+				ret = m_Compiler->CreateAdvanceTypeFunctionCall(elementValue->GetParentBaseType(), m_Name, param, elementValue);
 			}
 			else if (classObj->IsDynamicClass())
 			{
-				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, m_Name,
-					param, classObj);
+				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, m_Name, param, classObj);
+			}
+			else if (classObj->IsObjectBase())
+			{
+				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, m_Name, param, classObj);
 			}
 			else
 			{
@@ -335,7 +367,7 @@ ASTVariableDefine::ASTVariableDefine(Compiler* compiler, const SourceLocation& l
 Share<CompilerValue> ASTVariableDefine::CodeGen()
 {
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
 	return TryAssign(var, H_TEXT("变量"));
 }
@@ -366,6 +398,7 @@ Share<CompilerValue> ASTVariableDefine::GenExpressionValue(Share<CompilerValue> 
 
 Share<CompilerValue> ASTVariableDefine::TryAssign(Share<CompilerValue> var, const x_HChar* errorPrefix)
 {
+	HAZE_TO_DO(需要考虑多个嵌套闭包变量重名或与闭包函数中的变量或全局变量重名 还要考虑类函数中类对象的引用);
 	if (var)
 	{
 		if (m_Expression)
@@ -404,7 +437,7 @@ ASTVariableDefine_MultiVariable::ASTVariableDefine_MultiVariable(Compiler* compi
 Share<CompilerValue> ASTVariableDefine_MultiVariable::CodeGen()
 {
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-	return m_Compiler->CreateVariableBySection(HazeSectionSignal::Local, currModule, currModule->GetCurrFunction(), m_DefineVariable, m_Location.Line);
+	return m_Compiler->CreateVariableBySection(HazeSectionSignal::Local, currModule, currModule->GetCurrClosureOrFunction(), m_DefineVariable, m_Location.Line);
 }
 
 ASTVariableDefine_Class::ASTVariableDefine_Class(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
@@ -420,7 +453,7 @@ ASTVariableDefine_Class::ASTVariableDefine_Class(Compiler* compiler, const Sourc
 Share<CompilerValue> ASTVariableDefine_Class::CodeGen()
 {
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
 	return TryAssign(var, H_TEXT("类变量"));
 }
@@ -438,7 +471,7 @@ ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const Sourc
 Share<CompilerValue> ASTVariableDefine_Array::CodeGen()
 {
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr, m_ArrayDimension);
 
 	return TryAssign(var, H_TEXT("数组变量"));
@@ -469,21 +502,25 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen()
 	}*/
 
 	m_DefineVariable.Type = HazeValueType::Function;
-	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr, {}/*, &m_TemplateTypes*/);
 	
 	return TryAssign(var, H_TEXT("函数指针变量"));
 }
 
 ASTVariableDefine_ObjectBase::ASTVariableDefine_ObjectBase(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, HazeValueType type)
-	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_Type(type)
+	const HazeDefineVariable& defineVar, Unique<ASTBase>& expression)
+	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression))
 {
 }
 
 Share<CompilerValue> ASTVariableDefine_ObjectBase::CodeGen()
 {
-	return nullptr;
+	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
+	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
+		m_DefineVariable, m_Location.Line, nullptr, {}, nullptr);
+
+	return TryAssign(var, H_TEXT("基本对象变量"));
 }
 
 ASTVariableDefine_Hash::ASTVariableDefine_Hash(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
@@ -501,22 +538,73 @@ Share<CompilerValue> ASTVariableDefine_Hash::CodeGen()
 		paramTypes[i] = *m_TemplateTypes.Types[i].Type;
 	}*/
 
-	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrFunction(),
+	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr, {}, &m_TemplateTypes);
 
 	return TryAssign(var, H_TEXT("函数指针变量"));
 }
 
-ASTVariableDefine_Closure::ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes)
-	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_TemplateTypes(Move(templateTypes))
+ASTVariableDefine_Closure::ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section, const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>>& params)
+	: ASTVariableDefine_Function(compiler, location, section, defineVar, Move(expression), templateTypes), m_Params(Move(params)), m_StartLocation(startLocation), m_EndLocation(endLocation)
 {
 }
 
 Share<CompilerValue> ASTVariableDefine_Closure::CodeGen()
 {
+	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 
-	return nullptr;
+	Share<CompilerClosureFunction> closureFunction = nullptr;
+	Share<CompilerClass> currClass = nullptr;
+
+	V_Array<HazeDefineVariable> paramDefines(m_Params.size());
+	for (size_t i = 0; i < m_Params.size(); i++)
+	{
+		paramDefines[i] = m_Params[i]->GetDefine();
+	}
+
+	closureFunction = currModule->CreateClosureFunction(m_DefineVariable.Type, paramDefines);
+	closureFunction->SetStartEndLine(m_StartLocation.Line, m_EndLocation.Line);
+	m_Compiler->SetInsertBlock(closureFunction->GetEntryBlock());
+
+	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
+	{
+		currModule->BeginCreateFunctionParamVariable();
+		m_Params[i]->CodeGen();
+		currModule->EndCreateFunctionParamVariable();
+	}
+
+	if (m_Expression)
+	{
+		m_Expression->CodeGen();
+	}
+
+	if (closureFunction == currModule->GetCurrClosure())
+	{
+		currModule->FinishClosure();
+	}
+	else
+	{
+		//auto& m_Location = m_EndLocation;
+		AST_ERR_W("生成匿名函数<%s>结束错误, 不是当前模块解析的函数<%s>", m_DefineVariable.Name.c_str(), currModule->GetCurrClosure()->GetName().c_str());
+	}
+
+	auto closureValue = m_Compiler->CreateNew(HazeValueType::Closure, nullptr, nullptr, closureFunction);
+	V_Array<HazeDefineType> paramTypes(m_TemplateTypes.Types.size() + 1);
+
+	//返回类型设置到第0个
+	m_TemplateTypes.Types.push_back({ false, nullptr, MakeShare<HazeNewDefineType>(m_DefineVariable.Type, 0) });
+	//m_Compiler->GetRealTemplateTypes(m_TemplateTypes, paramTypes);
+
+	/*for (x_uint64 i = 0; i < m_TemplateTypes.Types.size(); i++)
+	{
+		paramTypes[i + 1] = *m_TemplateTypes.Types[i].Type;
+	}*/
+
+	m_DefineVariable.Type = HazeValueType::Closure;
+	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
+		m_DefineVariable, m_Location.Line, nullptr, {}, &m_TemplateTypes);
+
+	return m_Compiler->CreateMov(var, closureValue);
 }
 
 ASTReturn::ASTReturn(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
@@ -525,7 +613,8 @@ ASTReturn::ASTReturn(Compiler* compiler, const SourceLocation& location, Unique<
 Share<CompilerValue> ASTReturn::CodeGen()
 {
 	m_Compiler->InsertLineCount(m_Location.Line);
-	auto& funcType = m_Compiler->GetCurrModule()->GetCurrFunction()->GetFunctionType();
+	
+	auto& funcType = m_Compiler->GetCurrModule()->GetCurrClosureOrFunction()->GetFunctionType();
 	auto retReg = Compiler::GetRegister(RET_REGISTER);
 	const_cast<HazeDefineType&>(retReg->GetValueType()) = funcType;
 
@@ -567,7 +656,7 @@ Share<CompilerValue> ASTNew::CodeGen()
 		return nullptr;
 	}
 
-	auto func = m_Compiler->GetCurrModule()->GetCurrFunction();
+	//auto func = m_Compiler->GetCurrModule()->GetCurrFunction();
 
 	V_Array<Share<CompilerValue>> countValue(m_CountArrayExpression.size());
 
@@ -576,7 +665,7 @@ Share<CompilerValue> ASTNew::CodeGen()
 		countValue[i] = m_CountArrayExpression[i]->CodeGen();
 	}
 
-	Share<CompilerValue> value = m_Compiler->CreateNew(func, m_DefineVariable.Type, &countValue, &m_TemplateTypes);
+	Share<CompilerValue> value = m_Compiler->CreateNew(m_DefineVariable.Type, &countValue, &m_TemplateTypes);
 	
 
 	//new申请内存后，若是类的话，需要调用构造函数
@@ -631,6 +720,18 @@ Share<CompilerValue> ASTNew::CodeGen()
 				}
 				m_Compiler->CreateFunctionCall(function, param, value);
 			}
+		}
+	}
+	else if (value->IsObjectBase())
+	{
+		if (m_ConstructorParam.size() == 1 && m_TemplateTypes.Types.size() == 1)
+		{
+			const_cast<HazeDefineType&>(value->GetValueType()).SecondaryType = m_TemplateTypes.Types[0].Type->BaseType.PrimaryType;
+			m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, HAZE_OBJECT_BASE_CONSTRUCTOR, { m_ConstructorParam[0]->CodeGen() }, value);
+		}
+		else
+		{
+			AST_ERR_W("基本类型对象参数数量只能为1个");
 		}
 	}
 
