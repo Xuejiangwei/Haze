@@ -1,5 +1,9 @@
 #include "HazePch.h"
 #include "HazeUtility.h"
+#include "HazeLogDefine.h"
+#include "HazeStrcut.h"
+#include "HazeValue.h"
+#include <chrono>
 
 #ifdef _WIN32
 	#include <Windows.h>
@@ -224,11 +228,11 @@ HString String2WString(const HAZE_BINARY_STRING& str)
 	HString& result = s_HazeString;
 #ifdef _WIN32
 
-	//��ȡ��������С
+	//��ȡ��������С
 	int len = MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.size(), NULL, 0);
 	result.resize(len);
 
-	//���ֽڱ���ת���ɿ��ֽڱ���
+	//���ֽڱ���ת���ɿ��ֽڱ���
 	MultiByteToWideChar(CP_ACP, 0, str.c_str(), (int)str.size(), result.data(), len);
 
 #endif // WIN32
@@ -242,11 +246,11 @@ HAZE_BINARY_STRING WString2String(const HString& wstr)
 
 #ifdef WIN32
 
-	//��ȡ��������С
+	//��ȡ��������С
 	int len = WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), (int)wstr.size(), NULL, 0, NULL, NULL);
 	result.resize(len);
 
-	//���ֽڱ���ת���ɶ��ֽڱ���
+	//���ֽڱ���ת���ɶ��ֽڱ���
 	WideCharToMultiByte(CP_ACP, 0, wstr.c_str(), (int)wstr.size(), result.data(), len, NULL, NULL);
 
 #endif // WIN32
@@ -407,7 +411,7 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 		V = (V_TYPE)v2.Value.Float64; \
 		break; \
 	default: \
-		HAZE_LOG_ERR_W("��֧��<%s>����תΪ<%s>����", GetHazeValueTypeString(type2), GetHazeValueTypeString(type1)); \
+		HAZE_LOG_ERR_W("��֧��<%s>����תΪ<%s>����", GetHazeValueTypeString(type2), GetHazeValueTypeString(type1)); \
 		break; \
 	} 
 
@@ -486,4 +490,239 @@ V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter)
 	}
 
 	return result;
+}
+
+// 类型注册表实现
+x_uint32 HazeTypeRegistry::RegisterType(const HazeDefineType& type, const HString& name, const HString& module)
+{
+	TemplateDefineTypes emptyTemplates;
+	return RegisterComplexType(type, name, module, emptyTemplates, 0);
+}
+
+x_uint32 HazeTypeRegistry::RegisterComplexType(const HazeDefineType& type, const HString& name, const HString& module,
+	const TemplateDefineTypes& templateTypes, x_uint64 arrayDimension)
+{
+	// 生成唯一类型名称
+	HString uniqueName = GenerateUniqueTypeName(type, name, module, templateTypes, arrayDimension);
+	
+	// 检查是否已经注册
+	auto it = m_TypeNameToId.find(uniqueName);
+	if (it != m_TypeNameToId.end())
+	{
+		return it->second;
+	}
+	
+	// 创建新的类型信息
+	auto typeInfo = MakeShare<HazeTypeInfo>(type, name, module);
+	typeInfo->TypeId = m_NextTypeId++;
+	typeInfo->Size = GetSizeByHazeType(type.PrimaryType);
+	typeInfo->IsGeneric = templateTypes.Types.size() > 0;
+	typeInfo->IsArray = IsArrayType(type.PrimaryType);
+	typeInfo->ArrayDimension = arrayDimension;
+	typeInfo->CreateTime = std::chrono::duration_cast<std::chrono::milliseconds>(
+		std::chrono::system_clock::now().time_since_epoch()).count();
+	
+	// 处理泛型参数
+	if (typeInfo->IsGeneric)
+	{
+		for (const auto& templateType : templateTypes.Types)
+		{
+			if (!templateType.IsDefines && templateType.Type)
+			{
+				// 递归注册泛型参数类型
+				x_uint32 paramTypeId = RegisterType(templateType.Type->BaseType, 
+					templateType.Type->BaseType.GetFullTypeName(), module);
+				auto paramTypeInfo = GetTypeInfo(paramTypeId);
+				if (paramTypeInfo)
+				{
+					typeInfo->GenericParams.push_back(paramTypeInfo);
+				}
+			}
+		}
+	}
+	
+	// 注册类型
+	m_TypeInfos[typeInfo->TypeId] = typeInfo;
+	m_TypeNameToId[uniqueName] = typeInfo->TypeId;
+	
+	HAZE_LOG_INFO(H_TEXT("注册类型: %s (ID: %d, Module: %s)\n"), 
+		uniqueName.c_str(), typeInfo->TypeId, module.c_str());
+	
+	return typeInfo->TypeId;
+}
+
+Share<HazeTypeInfo> HazeTypeRegistry::GetTypeInfo(x_uint32 typeId)
+{
+	auto it = m_TypeInfos.find(typeId);
+	if (it != m_TypeInfos.end())
+	{
+		return it->second;
+	}
+	return nullptr;
+}
+
+Share<HazeTypeInfo> HazeTypeRegistry::GetTypeInfo(const HString& typeName, const HString& module)
+{
+	HString searchName = module.empty() ? typeName : module + H_TEXT("::") + typeName;
+	auto it = m_TypeNameToId.find(searchName);
+	if (it != m_TypeNameToId.end())
+	{
+		return GetTypeInfo(it->second);
+	}
+	return nullptr;
+}
+
+bool HazeTypeRegistry::IsTypeRegistered(const HazeDefineType& type, const HString& name, const HString& module)
+{
+	TemplateDefineTypes emptyTemplates;
+	HString uniqueName = GenerateUniqueTypeName(type, name, module, emptyTemplates, 0);
+	return m_TypeNameToId.find(uniqueName) != m_TypeNameToId.end();
+}
+
+HString HazeTypeRegistry::GetTypeDescription(x_uint32 typeId)
+{
+	auto typeInfo = GetTypeInfo(typeId);
+	if (!typeInfo)
+	{
+		return H_TEXT("Unknown Type");
+	}
+	
+	HAZE_STRING_STREAM hss;
+	hss << H_TEXT("Type: ") << typeInfo->TypeName;
+	hss << H_TEXT(" (ID: ") << typeInfo->TypeId << H_TEXT(")");
+	hss << H_TEXT(" Module: ") << typeInfo->ModuleName;
+	hss << H_TEXT(" Size: ") << typeInfo->Size;
+	
+	if (typeInfo->IsArray)
+	{
+		hss << H_TEXT(" Array[") << typeInfo->ArrayDimension << H_TEXT("]");
+	}
+	
+	if (typeInfo->IsGeneric)
+	{
+		hss << H_TEXT(" Generic<");
+		for (size_t i = 0; i < typeInfo->GenericParams.size(); ++i)
+		{
+			if (i > 0) hss << H_TEXT(", ");
+			hss << typeInfo->GenericParams[i]->TypeName;
+		}
+		hss << H_TEXT(">");
+	}
+	
+	return hss.str();
+}
+
+bool HazeTypeRegistry::IsTypeCompatible(x_uint32 typeId1, x_uint32 typeId2)
+{
+	auto type1 = GetTypeInfo(typeId1);
+	auto type2 = GetTypeInfo(typeId2);
+	
+	if (!type1 || !type2)
+	{
+		return false;
+	}
+	
+	// 相同类型
+	if (typeId1 == typeId2)
+	{
+		return true;
+	}
+	
+	// 基础类型兼容性检查
+	if (type1->BaseType.PrimaryType == type2->BaseType.PrimaryType)
+	{
+		return true;
+	}
+	
+	// 数值类型的兼容性
+	if (IsNumberType(type1->BaseType.PrimaryType) && IsNumberType(type2->BaseType.PrimaryType))
+	{
+		return GetStrongerType(type1->BaseType.PrimaryType, type2->BaseType.PrimaryType, false) != HazeValueType::None;
+	}
+	
+	return false;
+}
+
+void HazeTypeRegistry::SerializeTypeInfo(HAZE_STRING_STREAM& hss, x_uint32 typeId)
+{
+	auto typeInfo = GetTypeInfo(typeId);
+	if (!typeInfo)
+	{
+		return;
+	}
+	
+	hss << H_TEXT("TypeInfo ") << typeInfo->TypeId << H_TEXT(" {") << HAZE_ENDL;
+	hss << H_TEXT("  Name: ") << typeInfo->TypeName << HAZE_ENDL;
+	hss << H_TEXT("  Module: ") << typeInfo->ModuleName << HAZE_ENDL;
+	hss << H_TEXT("  Size: ") << typeInfo->Size << HAZE_ENDL;
+	hss << H_TEXT("  IsGeneric: ") << (typeInfo->IsGeneric ? H_TEXT("true") : H_TEXT("false")) << HAZE_ENDL;
+	hss << H_TEXT("  IsArray: ") << (typeInfo->IsArray ? H_TEXT("true") : H_TEXT("false")) << HAZE_ENDL;
+	hss << H_TEXT("  ArrayDimension: ") << typeInfo->ArrayDimension << HAZE_ENDL;
+	hss << H_TEXT("  CreateTime: ") << typeInfo->CreateTime << HAZE_ENDL;
+	
+	if (typeInfo->IsGeneric && !typeInfo->GenericParams.empty())
+	{
+		hss << H_TEXT("  GenericParams: [");
+		for (size_t i = 0; i < typeInfo->GenericParams.size(); ++i)
+		{
+			if (i > 0) hss << H_TEXT(", ");
+			hss << typeInfo->GenericParams[i]->TypeId;
+		}
+		hss << H_TEXT("]") << HAZE_ENDL;
+	}
+	
+	hss << H_TEXT("}") << HAZE_ENDL;
+}
+
+x_uint32 HazeTypeRegistry::DeserializeTypeInfo(HAZE_IFSTREAM& stream)
+{
+	// 简单实现，实际应该解析完整的序列化格式
+	x_uint32 typeId = 0;
+	stream >> typeId;
+	return typeId;
+}
+
+HString HazeTypeRegistry::GenerateUniqueTypeName(const HazeDefineType& type, const HString& name, const HString& module,
+	const TemplateDefineTypes& templateTypes, x_uint64 arrayDimension)
+{
+	HAZE_STRING_STREAM hss;
+	
+	// 模块名
+	if (!module.empty())
+	{
+		hss << module << H_TEXT("::");
+	}
+	
+	// 基础类型名
+	hss << name;
+	
+	// 泛型参数
+	if (templateTypes.Types.size() > 0)
+	{
+		hss << H_TEXT("<");
+		for (size_t i = 0; i < templateTypes.Types.size(); ++i)
+		{
+			if (i > 0) hss << H_TEXT(",");
+			if (!templateTypes.Types[i].IsDefines && templateTypes.Types[i].Type)
+			{
+				hss << templateTypes.Types[i].Type->BaseType.GetFullTypeName();
+			}
+			else
+			{
+				hss << H_TEXT("?");
+			}
+		}
+		hss << H_TEXT(">");
+	}
+	
+	// 数组维度
+	if (arrayDimension > 0)
+	{
+		for (x_uint64 i = 0; i < arrayDimension; ++i)
+		{
+			hss << H_TEXT("[]");
+		}
+	}
+	
+	return hss.str();
 }

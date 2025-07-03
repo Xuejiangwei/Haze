@@ -239,6 +239,23 @@ private:
 	SourceLocation m_EndLocation;
 };
 
+//class ASTClosure : public ASTBase
+//{
+//public:
+//	ASTClosure(Compiler* compiler, const SourceLocation& location, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
+//		Unique<ASTBase>& expression, V_Array<Unique<ASTBase>>& params);
+//
+//	virtual ~ASTClosure() override;
+//
+//	virtual Share<CompilerValue> CodeGen() override;
+//
+//private:
+//	Unique<ASTBase> m_Expression;
+//	V_Array<Unique<ASTBase>> m_Params;
+//	SourceLocation m_StartLocation;
+//	SourceLocation m_EndLocation;
+//};
+
 //·µ»Ø
 class ASTReturn : public ASTBase
 {
@@ -261,6 +278,8 @@ public:
 	virtual ~ASTNew() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
+
+	Share<CompilerValue> CodeGen(ASTBase* ast);
 
 private:
 	V_Array<Unique<ASTBase>> m_CountArrayExpression;

@@ -59,7 +59,7 @@ enum class HazeValueType : x_uint32
 
 	Hash,					//哈希对象, 参与GC
 
-	Closure,		//闭包, 匿名函数, 参与GC
+	Closure,				//闭包, 匿名函数, 参与GC
 
 	__Advance_End,
 
@@ -151,6 +151,7 @@ bool IsHashType(HazeValueType type);
 bool IsClosureType(HazeValueType type);
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);
+HString HazeValueNumberToString(HazeValueType type, HazeValue value);
 
 void CalculateValueByType(HazeValueType type, InstructionOpCode typeCod, const void* source, const void* oper1, const void* oper2);
 
@@ -172,6 +173,7 @@ bool CanCVT(HazeValueType type1, HazeValueType type2);
 bool CanArray(HazeValueType type);
 
 bool CanHash(HazeValueType type);
-bool CanHashValue(HazeValueType type);
+
+bool CanUseInTemplate(HazeValueType type);
 
 bool IsUseTemplateType(HazeValueType type);

@@ -962,7 +962,6 @@ Unique<ASTBase> Parse::ParsePrimary()
 		case HazeToken::CustomClass:
 		case HazeToken::DynamicClass:
 		case HazeToken::String:
-		case HazeToken::Function:
 		case HazeToken::MultiVariable:
 		case HazeToken::Reference:
 		case HazeToken::ObjectBase:
@@ -1010,6 +1009,8 @@ Unique<ASTBase> Parse::ParsePrimary()
 			return ParseGetAddress();
 		case HazeToken::LeftBrace:
 			return ParseLeftBrace();
+		case HazeToken::Function:
+			return ParseClosure();
 		default:
 			break;
 	}
@@ -1449,52 +1450,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Function(TemplateDefineTypes& templat
 			}
 			else
 			{
-				if (m_StackSectionSignal.top() == HazeSectionSignal::Local || m_StackSectionSignal.top() == HazeSectionSignal::Closure)
-				{
-					m_StackSectionSignal.push(HazeSectionSignal::Closure);
-					if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("函数参数定义需要 (")))
-					{
-						V_Array<Unique<ASTBase>> params;
-
-						HazeDefineVariable thisParam;
-						thisParam.Name = HAZE_CLOSURE_NAME;
-						thisParam.Type.PrimaryType = HazeValueType::Closure;
-						params.push_back(MakeUnique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), HazeSectionSignal::Closure, thisParam, nullptr));
-
-
-						GetNextToken();
-
-						m_IsParseClassData_Or_FunctionParam = true;
-						while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
-						{
-							params.push_back(ParseExpression());
-							if (!ExpectNextTokenIs_NoParseError(HazeToken::Comma))
-							{
-								break;
-							}
-
-							GetNextToken();
-						}
-						m_IsParseClassData_Or_FunctionParam = false;
-
-						
-						if (ExpectNextTokenIs(HazeToken::LeftBrace, H_TEXT("函数体需要 {")))
-						{
-							x_uint32 startLineCount = m_LineCount;
-							Unique<ASTBase> body = ParseMultiExpression();
-
-							if (ExpectNextTokenIs(HazeToken::RightBrace, H_TEXT("函数体需要 }")))
-							{
-								m_StackSectionSignal.pop();
-								return MakeUnique<ASTVariableDefine_Closure>(m_Compiler, SourceLocation(tempLineCount), SourceLocation(startLineCount), SourceLocation(m_LineCount), m_StackSectionSignal.top(), defineVar, body, templateTypes, params);
-							}
-						}
-					}
-				}
-				else
-				{
-					PARSE_ERR_W("匿名函数变量<%s>定义错误, 只能定义在函数或者匿名函数中", m_DefineVariable.Name.c_str());
-				}
+				Unique<ASTBase> expression = ParseExpression();
 			}
 		}
 		else
@@ -1555,6 +1511,60 @@ Unique<ASTBase> Parse::ParseVariableDefine_Hash(TemplateDefineTypes& templateTyp
 		{
 			PARSE_ERR_W("函数变量<%s>定义错误, 需要赋予初始化值或空指针", m_DefineVariable.Name.c_str());
 		}
+	}
+
+	return nullptr;
+}
+
+Unique<ASTBase> Parse::ParseClosure()
+{
+	auto tempLineCount = m_LineCount;
+	if (m_StackSectionSignal.top() == HazeSectionSignal::Local || m_StackSectionSignal.top() == HazeSectionSignal::Closure)
+	{
+		m_StackSectionSignal.push(HazeSectionSignal::Closure);
+		if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("函数参数定义需要 (")))
+		{
+			V_Array<Unique<ASTBase>> params;
+
+			HazeDefineVariable thisParam;
+			thisParam.Name = HAZE_CLOSURE_NAME;
+			thisParam.Type.PrimaryType = HazeValueType::Closure;
+			params.push_back(MakeUnique<ASTVariableDefine>(m_Compiler, SourceLocation(tempLineCount), HazeSectionSignal::Closure, thisParam, nullptr));
+
+
+			GetNextToken();
+
+			m_IsParseClassData_Or_FunctionParam = true;
+			while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
+			{
+				params.push_back(ParseExpression());
+				if (!ExpectNextTokenIs_NoParseError(HazeToken::Comma))
+				{
+					break;
+				}
+
+				GetNextToken();
+			}
+			m_IsParseClassData_Or_FunctionParam = false;
+
+
+			if (ExpectNextTokenIs(HazeToken::LeftBrace, H_TEXT("函数体需要 {")))
+			{
+				x_uint32 startLineCount = m_LineCount;
+				Unique<ASTBase> body = ParseMultiExpression();
+
+				if (ExpectNextTokenIs(HazeToken::RightBrace, H_TEXT("函数体需要 }")))
+				{
+					m_StackSectionSignal.pop();
+					TemplateDefineTypes templateTypes;
+					return MakeUnique<ASTVariableDefine_Closure>(m_Compiler, SourceLocation(tempLineCount), SourceLocation(startLineCount), SourceLocation(m_LineCount), m_StackSectionSignal.top(), m_DefineVariable, body, templateTypes, params);
+				}
+			}
+		}
+	}
+	else
+	{
+		PARSE_ERR_W("匿名函数变量<%s>定义错误, 只能定义在函数或者匿名函数中", m_DefineVariable.Name.c_str());
 	}
 
 	return nullptr;

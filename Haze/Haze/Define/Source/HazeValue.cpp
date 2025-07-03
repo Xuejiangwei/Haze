@@ -309,6 +309,37 @@ void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& 
 	}
 }
 
+HString HazeValueNumberToString(HazeValueType type, HazeValue value)
+{
+	switch (type)
+	{
+		case HazeValueType::Int8:
+			return ToHazeString(value.Value.Int8);
+		case HazeValueType::Int16:
+			return ToHazeString(value.Value.Int16);
+		case HazeValueType::UInt8:
+			return ToHazeString(value.Value.UInt8);
+		case HazeValueType::UInt16:
+			return ToHazeString(value.Value.UInt16);
+		case HazeValueType::Int32:
+			return ToHazeString(value.Value.Int32);
+		case HazeValueType::UInt32:
+			return ToHazeString(value.Value.UInt32);
+		case HazeValueType::Int64:
+			return ToHazeString(value.Value.Int64);
+		case HazeValueType::UInt64:
+			return ToHazeString(value.Value.UInt64);
+		case HazeValueType::Float32:
+			return ToHazeString(value.Value.Float32);
+		case HazeValueType::Float64:
+			return ToHazeString(value.Value.Float64);
+		default:
+			break;
+	}
+
+	return HString(H_TEXT("None"));
+}
+
 #define TWO_VARIABLE_DEFINE_INIT(TYPE, OPER1, OPER2) TYPE T1, T2; memcpy(&T1, OPER1, sizeof(TYPE)); memcpy(&T2, OPER2, sizeof(TYPE))
 #define CALC_ASSIGN_VALUE(TYPE, T_CODE, TARGET, OPER1, OPER2) TYPE T, T1, T2; \
 	memcpy(&T, TARGET, sizeof(TYPE)); memcpy(&T1, OPER1, sizeof(TYPE)); memcpy(&T2, OPER2, sizeof(TYPE)); \
@@ -954,7 +985,7 @@ bool CanHash(HazeValueType type)
 	return IsHazeBaseType(type) || IsStringType(type) || IsClassType(type) || IsEnumType(type);
 }
 
-bool CanHashValue(HazeValueType type)
+bool CanUseInTemplate(HazeValueType type)
 {
 	return IsHazeBaseType(type) || (IsAdvanceType(type) && !IsUseTemplateType(type));
 }

@@ -401,3 +401,104 @@ struct TemplateDefineType
 	{
 	}*/
 };
+
+struct HazFrameFunctionData
+{
+	V_Array<HazeDefineVariable*> LocalParams;
+};
+
+// 类型记录系统 - 类似Java的Class对象
+struct HazeTypeInfo
+{
+	HazeDefineType BaseType;				// 基础类型信息
+	HString TypeName;						// 类型名称
+	HString ModuleName;						// 所属模块
+	x_uint32 TypeId;						// 类型唯一ID
+	x_uint32 Size;							// 类型大小
+	bool IsGeneric;							// 是否为泛型
+	bool IsArray;							// 是否为数组
+	x_uint64 ArrayDimension;				// 数组维度
+	
+	// 泛型参数信息
+	V_Array<Share<HazeTypeInfo>> GenericParams;
+	
+	// 类成员信息（如果是类类型）
+	V_Array<HazeVariableData> Members;
+	
+	// 继承信息
+	V_Array<Share<HazeTypeInfo>> ParentTypes;
+	
+	// 创建时间戳
+	x_uint64 CreateTime;
+	
+	HazeTypeInfo() : TypeId(0), Size(0), IsGeneric(false), IsArray(false), ArrayDimension(0), CreateTime(0) {}
+	
+	HazeTypeInfo(const HazeDefineType& type, const HString& name, const HString& module)
+		: BaseType(type), TypeName(name), ModuleName(module), TypeId(0), Size(0), 
+		  IsGeneric(false), IsArray(false), ArrayDimension(0), CreateTime(0) {}
+};
+
+// 类型注册表 - 管理所有类型信息
+class HazeTypeRegistry
+{
+public:
+	static HazeTypeRegistry& GetInstance()
+	{
+		static HazeTypeRegistry instance;
+		return instance;
+	}
+	
+	// 注册类型
+	x_uint32 RegisterType(const HazeDefineType& type, const HString& name, const HString& module);
+	
+	// 注册复杂类型（泛型、数组等）
+	x_uint32 RegisterComplexType(const HazeDefineType& type, const HString& name, const HString& module,
+		const TemplateDefineTypes& templateTypes, x_uint64 arrayDimension = 0);
+	
+	// 获取类型信息
+	Share<HazeTypeInfo> GetTypeInfo(x_uint32 typeId);
+	Share<HazeTypeInfo> GetTypeInfo(const HString& typeName, const HString& module = H_TEXT(""));
+	
+	// 查询类型
+	bool IsTypeRegistered(const HazeDefineType& type, const HString& name, const HString& module);
+	
+	// 获取类型的完整描述
+	HString GetTypeDescription(x_uint32 typeId);
+	
+	// 类型兼容性检查
+	bool IsTypeCompatible(x_uint32 typeId1, x_uint32 typeId2);
+	
+	// 序列化类型信息
+	void SerializeTypeInfo(HAZE_STRING_STREAM& hss, x_uint32 typeId);
+	
+	// 反序列化类型信息
+	x_uint32 DeserializeTypeInfo(HAZE_IFSTREAM& stream);
+	
+	// 获取所有已注册类型
+	const HashMap<x_uint32, Share<HazeTypeInfo>>& GetAllTypes() const { return m_TypeInfos; }
+	
+private:
+	HashMap<x_uint32, Share<HazeTypeInfo>> m_TypeInfos;
+	HashMap<HString, x_uint32> m_TypeNameToId;
+	x_uint32 m_NextTypeId;
+	
+	HazeTypeRegistry() : m_NextTypeId(1) {}
+	
+	// 生成类型的唯一名称
+	HString GenerateUniqueTypeName(const HazeDefineType& type, const HString& name, const HString& module,
+		const TemplateDefineTypes& templateTypes, x_uint64 arrayDimension);
+};
+
+// 变量的增强定义 - 包含类型记录信息
+struct HazeEnhancedDefineVariable : public HazeDefineVariable
+{
+	x_uint32 TypeId;						// 类型ID
+	Share<HazeTypeInfo> TypeInfo;			// 类型信息
+	HString SourceLocation;					// 源码位置
+	x_uint32 LineNumber;					// 行号
+	
+	HazeEnhancedDefineVariable() : TypeId(0), LineNumber(0) {}
+	
+	HazeEnhancedDefineVariable(const HazeDefineVariable& var, x_uint32 typeId, const HString& location, x_uint32 line)
+		: HazeDefineVariable(var), TypeId(typeId), SourceLocation(location), LineNumber(line) {}
+};

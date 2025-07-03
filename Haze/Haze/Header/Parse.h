@@ -60,6 +60,8 @@ private:
 	Unique<ASTBase> ParseVariableDefine_ObjectBase(TemplateDefineTypes& templateTypes);
 	Unique<ASTBase> ParseVariableDefine_Hash(TemplateDefineTypes& templateTypes);
 
+	Unique<ASTBase> ParseClosure();
+
 	Unique<ASTBase> ParseStringText();
 
 	Unique<ASTBase> ParseBoolExpression();
