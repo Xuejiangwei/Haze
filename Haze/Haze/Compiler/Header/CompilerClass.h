@@ -22,6 +22,8 @@ public:
 
 	x_uint64 GetFunctionNum() { return m_Functions.size(); }
 
+	x_uint32 GetTypeId() const { return m_TypeId; }
+
 	const HString& GetName() { return m_Name; }
 
 	int GetMemberIndex(const HString& memberName, const HString* nameSpace);
@@ -58,7 +60,7 @@ public:
 
 	bool IsParentClass(CompilerClass* c) const;
 
-	bool IsParentClass(const HazeDefineType type) const;
+	bool IsParentClass(const HazeVariableType type) const;
 
 	static bool HasCommomInheritClass(CompilerClass* c1, CompilerClass* c2);
 
@@ -81,4 +83,6 @@ private:
 	HashMap<HString, unsigned int> m_HashMap_Functions;
 
 	V_Array<x_uint32> m_Offsets;
+
+	x_uint32 m_TypeId;
 };

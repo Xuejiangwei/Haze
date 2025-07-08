@@ -27,8 +27,8 @@ public:
 
 	//static void NewObjectArray(HAZE_STD_CALL_PARAM);
 
-	HazeDefineType GetKeyBaseType();
-	HazeDefineType GetValueBaseType();
+	HazeVariableType GetKeyBaseType();
+	HazeVariableType GetValueBaseType();
 
 private:
 	static void GetLength(HAZE_OBJECT_CALL_PARAM);

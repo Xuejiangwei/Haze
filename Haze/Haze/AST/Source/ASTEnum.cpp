@@ -18,7 +18,7 @@ ASTEnum::~ASTEnum()
 
 void ASTEnum::CodeGen()
 {
-	auto enumValue = m_Compiler->GetCurrModule()->CreateEnum(m_EnumName, m_BaseType);
+	auto enumValue = m_Compiler->GetCurrModule()->CreateEnum(m_EnumName, 0);
 
 	for (size_t i = 0; i < m_Enums.size(); i++)
 	{

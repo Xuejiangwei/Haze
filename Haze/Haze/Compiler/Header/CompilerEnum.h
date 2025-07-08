@@ -10,7 +10,7 @@ class CompilerModule;
 class CompilerEnum
 {
 public:
-	CompilerEnum(CompilerModule* compilerModule, const HString& name, HazeValueType parentType);
+	CompilerEnum(CompilerModule* compilerModule, const HString& name, x_uint32 typeId);
 
 	~CompilerEnum();
 
@@ -22,14 +22,14 @@ public:
 
 	Share<CompilerEnumValue> GetEnumValueByIndex(x_uint64 index);
 
-	const HazeValueType GetParentType() const { return m_ParentType; }
+	const x_uint32 GetTypeId() const { return m_Type.TypeId; }
 
 	void GenEnum_I_Code(HAZE_STRING_STREAM& hss);
 
 private:
 	HString m_Name;
 
-	HazeValueType m_ParentType;
+	HazeVariableType m_Type;
 	CompilerModule* m_Module;
 
 	V_Array<Pair<HString, Share<CompilerEnumValue>>> m_EnumValues;

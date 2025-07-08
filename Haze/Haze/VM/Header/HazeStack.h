@@ -59,9 +59,9 @@ public:
 
 	HazeRegister* GetVirtualRegister(const x_HChar* name) { return &m_VirtualRegister.find(name)->second; }
 
-	const HazeDefineType& GetTempRegister(const x_HChar* name) const;
+	const HazeVariableType& GetTempRegister(const x_HChar* name) const;
 
-	void ResetTempRegisterTypeByDynamicClassUnknow(const HString& name, const HazeDefineType& type);
+	void ResetTempRegisterTypeByDynamicClassUnknow(const HString& name, const HazeVariableType& type);
 
 private:
 	void Run(bool isHazeCall = false);
@@ -80,7 +80,7 @@ private:
 
 	void SubCallHazeTimes();
 
-	void PushGCTempRegister(void* address, const HazeDefineType* type);
+	void PushGCTempRegister(void* address, const HazeVariableType* type);
 
 	bool PopGCTempRegister(void* address);
 
@@ -101,7 +101,7 @@ private:
 
 	V_Array<int> m_CallHazeStack;
 
-	V_Array<Pair<void*, const HazeDefineType*>> m_GCTempRegisters;
+	V_Array<Pair<void*, const HazeVariableType*>> m_GCTempRegisters;
 
 	TemplateDefineTypes m_NewSignType;
 };

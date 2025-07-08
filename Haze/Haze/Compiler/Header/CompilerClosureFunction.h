@@ -6,7 +6,7 @@ class CompilerBlock;
 class CompilerClosureFunction : public CompilerFunction
 {
 public:
-	CompilerClosureFunction(CompilerModule* compilerModule, const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
+	CompilerClosureFunction(CompilerModule* compilerModule, const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
 	virtual ~CompilerClosureFunction() override;
 

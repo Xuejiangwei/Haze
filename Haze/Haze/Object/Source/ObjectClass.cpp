@@ -24,9 +24,9 @@ ObjectClass::~ObjectClass()
 AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	//info.Functions[H_TEXT("生成")] = { &ObjectArray::NewObjectArray, HazeValueType::Void, { HazeValueType::MultiVariable } };
-	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectClass::GetOffset, HazeValueType::Void, { HazeValueType::UInt64 } });
-	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectClass::SetOffset, HazeValueType::Void, { HazeValueType::UInt64, HazeValueType::MultiVariable } });
+	//info.Functions[H_TEXT("生成")] = { &ObjectArray::NewObjectArray, OBJ_TYPE_DEF(::Void, { OBJ_TYPE_DEF(::MultiVariable } };
+	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectClass::GetOffset, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64) } });
+	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectClass::SetOffset, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64), OBJ_TYPE_DEF(MultiVariable) } });
 
 	return &info;
 }
@@ -59,7 +59,7 @@ void ObjectClass::SetMember(const x_HChar* memberName, void* value)
 	{
 		if (members[i].Variable.Name == name)
 		{
-			auto size = GetSizeByHazeType(members[i].Variable.Type.PrimaryType);
+			auto size = GetSizeByHazeType(members[i].Variable.Type.BaseType);
 			memcpy((char*)m_Data + members[i].Offset, value, size);
 			break;
 		}
@@ -76,7 +76,7 @@ void ObjectClass::GetOffset(HAZE_OBJECT_CALL_PARAM)
 	if (!classObj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("类<%s>对象<%s>为空", var.Variable.Type.CustomName->c_str(), var.Variable.Name.c_str());
+		OBJECT_ERR_W("对象<%s>为空", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -85,8 +85,8 @@ void ObjectClass::GetOffset(HAZE_OBJECT_CALL_PARAM)
 	auto& memberInfo = classObj->m_ClassInfo->Members[index];
 
 	char value[8];
-	memcpy(value, (char*)classObj->m_Data + memberInfo.Offset, GetSizeByHazeType(memberInfo.Variable.Type.PrimaryType));
-	SET_RET_BY_TYPE(memberInfo.Variable.Type.PrimaryType, value);
+	memcpy(value, (char*)classObj->m_Data + memberInfo.Offset, GetSizeByHazeType(memberInfo.Variable.Type.BaseType));
+	SET_RET_BY_TYPE(memberInfo.Variable.Type.BaseType, value);
 
 	//HAZE_LOG_INFO(H_TEXT("Class Get <%d> <%s> <%s>\n"), index, memberInfo.Variable.Name.c_str(), classObj->m_ClassInfo->Name.c_str());
 	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p><%p> Get: <%s>\n"), classObj->m_ClassInfo->Name.c_str(), classObj, classObj->m_Data, (char*)classObj->m_Data + memberInfo.Offset, value);
@@ -103,7 +103,7 @@ void ObjectClass::SetOffset(HAZE_OBJECT_CALL_PARAM)
 	if (!classObj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("类<%s>对象<%s>为空", var.Variable.Type.CustomName->c_str(), var.Variable.Name.c_str());
+		OBJECT_ERR_W("对象<%s>为空", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -111,7 +111,7 @@ void ObjectClass::SetOffset(HAZE_OBJECT_CALL_PARAM)
 	GET_PARAM(index);
 	
 	auto& memberInfo = classObj->m_ClassInfo->Members[index];
-	auto size = GetSizeByHazeType(memberInfo.Variable.Type.PrimaryType);
+	auto size = GetSizeByHazeType(memberInfo.Variable.Type.BaseType);
 	GET_PARAM_ADDRESS(value, size);
 
 	memcpy((char*)classObj->m_Data + memberInfo.Offset, value, size);

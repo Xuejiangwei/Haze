@@ -14,9 +14,9 @@
 //{
 //}
 
-CompilerValue::CompilerValue(CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+CompilerValue::CompilerValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
 	HazeDataDesc desc, int count, Share<CompilerValue> AssignValue)
-	: m_Module(compilerModule), m_ValueType(defineType), m_Scope(scope), m_Desc(desc), m_Count(count)
+	: m_Module(compilerModule), m_Type(defineType), m_Scope(scope), m_Desc(desc), m_Count(count)
 {
 	if (AssignValue)
 	{
@@ -30,27 +30,6 @@ CompilerValue::CompilerValue(CompilerModule* compilerModule, const HazeDefineTyp
 
 CompilerValue::~CompilerValue()
 {
-}
-
-void CompilerValue::StoreValueType(Share<CompilerValue> srcValue)
-{
-	if (IsRegister())
-	{
-		bool bPointer = false;// IsPointer();
-		m_ValueType = srcValue->GetValueType();
-
-		if (srcValue->IsArray() && bPointer)
-		{
-			//m_ValueType.PrimaryType = m_ValueType.CustomName.empty() ? HazeValueType::PointerBase : HazeValueType::PointerClass;
-		}
-	}
-
-	//memcpy(&this->Value.Value, &SrcValue->Value.Value, sizeof(this->Value.Value));
-}
-
-x_uint32 CompilerValue::GetSize()
-{
-	return GetSizeByHazeType(m_ValueType.PrimaryType);
 }
 
 bool CompilerValue::TryGetVariableName(HString& outName)

@@ -5,7 +5,7 @@
 #include "HazeCompilerPointerValue.h"
 #include "HazeLog.h"
 
-HazeCompilerPointerValue::HazeCompilerPointerValue(CompilerModule* compilerModule, const HazeDefineType& defineType,
+HazeCompilerPointerValue::HazeCompilerPointerValue(CompilerModule* compilerModule, const HazeVariableType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count)
 	: CompilerValue(compilerModule, defineType, scope, desc, count)
 {

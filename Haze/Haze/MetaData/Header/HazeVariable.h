@@ -11,14 +11,14 @@ public:
 
 	~HazeVariable();
 
-	const HazeDefineType& GetType() const { return m_Type; }
+	const HazeVariableType& GetType() const { return m_Type; }
 
 	const HazeValue& GetValue() const { return Value; }
 
 private:
 	HString m_Name;
 
-	HazeDefineType m_Type;
+	HazeVariableType m_Type;
 
 	union
 	{

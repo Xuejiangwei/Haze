@@ -63,7 +63,7 @@ void HazeStack::JmpTo(const InstructionData& data)
 	m_PC--;
 }
 
-const HazeDefineType& HazeStack::GetTempRegister(const x_HChar* name) const
+const HazeVariableType& HazeStack::GetTempRegister(const x_HChar* name) const
 {
 	auto& backFrame = m_StackFrame.back();
 	for (auto& reg : backFrame.FunctionInfo->TempRegisters)
@@ -75,17 +75,17 @@ const HazeDefineType& HazeStack::GetTempRegister(const x_HChar* name) const
 		}
 	}
 
-	return HazeDefineType::VoidType();
+	return HazeVariableType::VoidType();
 }
 
-void HazeStack::ResetTempRegisterTypeByDynamicClassUnknow(const HString& name, const HazeDefineType& type)
+void HazeStack::ResetTempRegisterTypeByDynamicClassUnknow(const HString& name, const HazeVariableType& type)
 {
 	auto& backFrame = m_StackFrame.back();
 	for (auto& reg : backFrame.FunctionInfo->TempRegisters)
 	{
 		if (reg.Name == name)
 		{
-			const_cast<HazeDefineType&>(reg.Type) = type;
+			const_cast<HazeVariableType&>(reg.Type) = type;
 			break;
 		}
 	}
@@ -243,7 +243,7 @@ void HazeStack::SubCallHazeTimes()
 	}
 }
 
-void HazeStack::PushGCTempRegister(void* address, const HazeDefineType* type)
+void HazeStack::PushGCTempRegister(void* address, const HazeVariableType* type)
 {
 	m_GCTempRegisters.push_back({ address, type });
 }
@@ -263,7 +263,7 @@ void HazeStack::OnNewSignInternal(TemplateDefineTypes* type)
 	for (x_uint64 i = 0; i < type->Types.size(); i++)
 	{
 		auto oper = m_VM->m_Instructions[m_PC++].Operator[0];
-		if (IsNoneType(oper.Variable.Type.PrimaryType))
+		if (IsNoneType(oper.Variable.Type.BaseType))
 		{
 			m_NewSignType.Types[i].Defines = MakeShare<TemplateDefineTypes>();
 			m_NewSignType.Types[i].Defines->Types.resize(oper.Extra.SignData.TemplateCount);
@@ -297,7 +297,7 @@ void HazeStack::OnNewSign()
 			m_NewSignType.Extra.ArrayDimensionAndInitLength[i] = oper.Extra.SignData;
 		}
 	}
-	else if (IsHashType(m_NewSignType.Type.PrimaryType))
+	else if (IsHashType(m_NewSignType.Type.BaseType))
 	{
 		m_NewSignType.Extra.HashKeyAndValueType.KeyType = m_VM->m_Instructions[m_PC + 1].Operator[0].Variable.Type;
 		m_NewSignType.Extra.HashKeyAndValueType.ValueType = new NewSignData();

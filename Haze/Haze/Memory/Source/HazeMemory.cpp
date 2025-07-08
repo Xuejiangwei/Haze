@@ -250,9 +250,9 @@ void HazeMemory::Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex)
 }
 
 //需要考虑到循环引用的引起的死循环情况, 要么在Object中添加标记位（例如ObjectClass中添加uint8类型成员去做标记位），要么hashSet存储已标记的object
-void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
+void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 {
-	switch (type.PrimaryType)
+	switch (type.BaseType)
 	{
 		case HazeValueType::Class:
 		{
@@ -281,36 +281,36 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 
 				auto objectArray = ((ObjectArray*)address);
 				x_uint64 length = objectArray->m_Length;
-				if (IsArrayType(objectArray->m_ValueType))
+				if (IsArrayType(objectArray->m_ValueType.BaseType))
 				{
 					for (x_uint64 i = 0; i < length; i++)
 					{
 						auto v = *((ObjectArray**)objectArray->m_Data + i);
 						MarkVariable(v->m_ValueType, v);
 
-						if (!IsArrayType(v->m_ValueType))
+						if (!IsArrayType(v->m_ValueType.BaseType))
 						{
 							m_ObjectList->MarkObjectBlack(v->m_GCIndex);
 						}
 					}
 				}
-				else if (IsClassType(objectArray->m_ValueType))
+				else if (IsClassType(objectArray->m_ValueType.BaseType))
 				{
 					for (x_uint64 i = 0; i < length; i++)
 					{
 						auto v = (ObjectClass*)objectArray->m_Data + i;
-						MarkVariable({ HazeValueType::Class, &v->m_ClassInfo->Name }, v);
+						MarkVariable({ HazeVariableType(HazeValueType::Class, v->m_ClassInfo->TypeId) }, v);
 					}
 				}
-				else if (IsDynamicClassType(objectArray->m_ValueType))
+				else if (IsDynamicClassType(objectArray->m_ValueType.BaseType))
 				{
 					for (x_uint64 i = 0; i < length; i++)
 					{
 						auto v = (ObjectDynamicClass*)objectArray->m_Data + i;
-						MarkVariable(HazeValueType::DynamicClass, v);
+						MarkVariable(HazeVariableType(HazeValueType::DynamicClass), v);
 					}
 				}
-				else if (IsStringType(objectArray->m_ValueType))
+				else if (IsStringType(objectArray->m_ValueType.BaseType))
 				{
 					for (x_uint64 i = 0; i < length; i++)
 					{
@@ -321,7 +321,7 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 
 
 		#ifdef _DEBUG
-				x_uint64 size = ((ObjectArray*)address)->m_Length  * GetSizeByHazeType(type.SecondaryType);
+				x_uint64 size = ((ObjectArray*)address)->m_Length  * GetSizeByHazeType(type.BaseType);
 				if (size == 0)
 				{
 					GC_ERR_W("基本类型数组长度为0");
@@ -349,8 +349,8 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 
 				auto keyBaseType = ((ObjectHash*)address)->GetKeyBaseType();
 				auto valueBaseType = ((ObjectHash*)address)->GetValueBaseType();
-				bool keyIsAdvance = IsAdvanceType(keyBaseType.PrimaryType);
-				bool valueIsAdvance = IsAdvanceType(valueBaseType.PrimaryType);
+				bool keyIsAdvance = IsAdvanceType(keyBaseType.BaseType);
+				bool valueIsAdvance = IsAdvanceType(valueBaseType.BaseType);
 				for (x_uint64 i = 0; i < ((ObjectHash*)address)->m_Capacity; i++)
 				{
 					auto& data = ((ObjectHash*)address)->m_Data[i];
@@ -387,7 +387,7 @@ void HazeMemory::MarkVariable(const HazeDefineType& type, const void* address)
 
 				for (x_uint64 i = 0; i < ((ObjectClosure*)address)->m_FunctionData->RefVariables.size(); i++)
 				{
-					MarkVariable((((ObjectClosure*)address)->m_Data + i)->BaseType, (((ObjectClosure*)address)->m_Data + i)->Object);
+					MarkVariable((((ObjectClosure*)address)->m_Data + i)->Type, (((ObjectClosure*)address)->m_Data + i)->Object);
 				}
 			}
 		}

@@ -17,7 +17,7 @@ ObjectArray::ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* le
 {
 	if (dimensionCount > 1)
 	{
-		m_ValueType = HazeValueType::Array;
+		m_ValueType.BaseType = HazeValueType::Array;
 		m_Length = lengths[0];
 		m_Capacity = m_Length;
 
@@ -58,7 +58,7 @@ ObjectArray::~ObjectArray()
 {
 	if (m_DimensionCount <= 1)
 	{
-		HazeMemory::GetMemory()->Remove(m_Data, m_Capacity * GetSizeByHazeType(m_ValueType), m_DataGCIndex);
+		HazeMemory::GetMemory()->Remove(m_Data, m_Capacity * GetSizeByHazeType(m_ValueType.BaseType), m_DataGCIndex);
 	}
 	else
 	{
@@ -70,13 +70,13 @@ AdvanceClassInfo* ObjectArray::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
 	//info.Functions[H_TEXT("生成")] = { &ObjectArray::NewObjectArray, HazeValueType::Void, { HazeValueType::MultiVariable } };
-	info.Add(H_TEXT("长度"), { &ObjectArray::GetLength, HazeValueType::UInt64, {} });
-	info.Add(H_TEXT("维之长度"), { &ObjectArray::GetLengthOfDimension, HazeValueType::UInt64, { HazeValueType::UInt64 } });
-	info.Add(H_TEXT("维数"), { &ObjectArray::GetDimensionCount, HazeValueType::UInt64, {} });
-	info.Add(H_TEXT("添加"), { &ObjectArray::Add, HazeValueType::Void, { HazeValueType::MultiVariable } });
+	info.Add(H_TEXT("长度"), { &ObjectArray::GetLength, OBJ_TYPE_DEF(UInt64), {} });
+	info.Add(H_TEXT("维之长度"), { &ObjectArray::GetLengthOfDimension, OBJ_TYPE_DEF(UInt64), { OBJ_TYPE_DEF(UInt64) } });
+	info.Add(H_TEXT("维数"), { &ObjectArray::GetDimensionCount, OBJ_TYPE_DEF(UInt64), {} });
+	info.Add(H_TEXT("添加"), { &ObjectArray::Add, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 
-	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectArray::Get, HazeValueType::Void, { HazeValueType::UInt64 } });
-	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectArray::Set, HazeValueType::Void, { HazeValueType::UInt64, HazeValueType::MultiVariable } });
+	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectArray::Get, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64) } });
+	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectArray::Set, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64), OBJ_TYPE_DEF(MultiVariable) } });
 
 	return &info;
 }
@@ -123,7 +123,7 @@ void ObjectArray::Add(HAZE_OBJECT_CALL_PARAM)
 	GET_PARAM_START();
 	GET_OBJ(arr);
 	
-	auto size = GetSizeByHazeType(arr->m_ValueType);
+	auto size = GetSizeByHazeType(arr->m_ValueType.BaseType);
 	GET_PARAM_ADDRESS(value, size);
 
 	if (arr->m_Length == arr->m_Capacity)
@@ -140,7 +140,7 @@ void ObjectArray::Add(HAZE_OBJECT_CALL_PARAM)
 	memcpy((char*)arr->m_Data + arr->m_Length * size, value, size);
 	arr->m_Length += 1;
 
-	SET_RET_BY_TYPE(arr->m_ValueType, value);
+	SET_RET_BY_TYPE(arr->m_ValueType.BaseType, value);
 }
 
 void ObjectArray::Get(HAZE_OBJECT_CALL_PARAM)
@@ -152,11 +152,11 @@ void ObjectArray::Get(HAZE_OBJECT_CALL_PARAM)
 	GET_OBJ(arr);
 	GET_PARAM(offset);
 
-	auto size = GetSizeByHazeType(arr->m_ValueType);
+	auto size = GetSizeByHazeType(arr->m_ValueType.BaseType);
 
 	char value[8];
 	memcpy(value, (char*)arr->m_Data + offset * size, size);
-	SET_RET_BY_TYPE(arr->m_ValueType, value);
+	SET_RET_BY_TYPE(arr->m_ValueType.BaseType, value);
 }
 
 void ObjectArray::Set(HAZE_OBJECT_CALL_PARAM)
@@ -169,7 +169,7 @@ void ObjectArray::Set(HAZE_OBJECT_CALL_PARAM)
 	GET_OBJ(arr);
 	GET_PARAM(offset);
 
-	auto size = GetSizeByHazeType(arr->m_ValueType);
+	auto size = GetSizeByHazeType(arr->m_ValueType.BaseType);
 	GET_PARAM_ADDRESS(value, size);
 
 	memcpy((char*)arr->m_Data + offset * size, value, size);

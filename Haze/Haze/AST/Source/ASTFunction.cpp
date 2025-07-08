@@ -11,7 +11,7 @@
 #include "CompilerModule.h"
 
 ASTFunction::ASTFunction(Compiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation,
-	HazeSectionSignal section, HString& name, HazeDefineType& type, V_Array<Unique<ASTBase>>& params,
+	HazeSectionSignal section, HString& name, HazeVariableType& type, V_Array<Unique<ASTBase>>& params,
 	Unique<ASTBase> body, bool isVirtual, bool isPureVirtual)
 	: m_Compiler(compiler), m_StartLocation(startLocation), m_EndLocation(endLocation), m_Section(section), 
 	m_FunctionName(Move(name)),m_FunctionType(Move(type)),m_FunctionParams(Move(params)), m_Body(Move(body)), 
@@ -42,7 +42,8 @@ HazeValue* ASTFunction::CodeGen()
 	}
 	else if (m_Section == HazeSectionSignal::Class)
 	{
-		currClass = currModule->GetClass(*m_FunctionParams[0]->GetDefine().Type.CustomName);
+		auto typeInfoMap = m_Compiler->GetTypeInfoMap();
+		currClass = currModule->GetClass(*typeInfoMap->GetClassName(m_FunctionParams[0]->GetDefine().Type.TypeId));
 		compilerFunction = currModule->CreateFunction(currClass, m_IsVirtual ? ClassCompilerFunctionType::Virtual : m_IsPureVirtual ?
 			ClassCompilerFunctionType::PureVirtual : ClassCompilerFunctionType::Normal,
 			m_FunctionName, m_FunctionType, paramDefines);
@@ -93,7 +94,8 @@ void ASTFunction::RegisterFunction()
 	}
 	else if (m_Section == HazeSectionSignal::Class)
 	{
-		currClass = currModule->GetClass(*m_FunctionParams[0]->GetDefine().Type.CustomName);
+		auto info = m_Compiler->GetTypeInfoMap()->GetTypeInfoById(m_FunctionParams[0]->GetDefine().Type.TypeId);
+		currClass = currModule->GetClass(*info->_Class.GetString());
 		currModule->CreateFunction(currClass, m_IsVirtual ? ClassCompilerFunctionType::Virtual : m_IsPureVirtual ?
 			ClassCompilerFunctionType::PureVirtual : ClassCompilerFunctionType::Normal, m_FunctionName, m_FunctionType, paramDefines);
 	}
@@ -122,7 +124,7 @@ void ASTFunctionSection::CodeGen()
 }
 
 ASTFunctionDefine::ASTFunctionDefine(Compiler* compiler, /*const SourceLocation& Location,*/ const HString& name, 
-	HazeDefineType& type, V_Array<Unique<ASTBase>>& params)
+	HazeVariableType& type, V_Array<Unique<ASTBase>>& params)
 	: m_Compiler(compiler), m_FunctionName(name), m_FunctionType(type), m_FunctionParams(Move(params))
 {
 }

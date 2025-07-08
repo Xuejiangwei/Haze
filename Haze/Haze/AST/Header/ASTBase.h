@@ -158,13 +158,12 @@ class ASTVariableDefine_Class : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Class(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>> params = {});
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, V_Array<Unique<ASTBase>> params = {});
 	virtual ~ASTVariableDefine_Class() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
 
 protected:
-	TemplateDefineTypes m_TemplateTypes;
 	V_Array<Unique<ASTBase>> m_Params;
 };
 
@@ -173,7 +172,7 @@ class ASTVariableDefine_Array : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes, x_uint64 dimension);
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint64 dimension);
 	virtual ~ASTVariableDefine_Array() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
@@ -188,13 +187,13 @@ class ASTVariableDefine_Function : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Function(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, TemplateDefineTypes& templateTypes);
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId);
 	virtual ~ASTVariableDefine_Function() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
 
 protected:
-	TemplateDefineTypes m_TemplateTypes;
+	x_uint32 m_TemplateTypeId;
 };
 
 //变量定义 基本类型对象
@@ -213,13 +212,13 @@ class ASTVariableDefine_Hash : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Hash(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, TemplateDefineTypes& templateTypes);
+		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, x_uint32 templateTypeId);
 	virtual ~ASTVariableDefine_Hash() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
 
 private:
-	TemplateDefineTypes m_TemplateTypes;
+	x_uint32 m_TemplateTypeId;
 	Unique<ASTBase> m_Expression;
 };
 
@@ -228,7 +227,7 @@ class ASTVariableDefine_Closure : public ASTVariableDefine_Function
 {
 public:
 	ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, TemplateDefineTypes& templateTypes, V_Array<Unique<ASTBase>>& params);
+		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, x_uint32 templateTypeId, V_Array<Unique<ASTBase>>& params);
 	virtual ~ASTVariableDefine_Closure() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
@@ -322,7 +321,7 @@ public:
 
 	virtual Share<CompilerValue> CodeGen() override;
 
-	void SetDefineType(const HazeDefineType& type);
+	void SetDefineType(const HazeVariableType& type);
 };
 
 //非 表达式
@@ -545,7 +544,7 @@ private:
 class ASTCast : public ASTBase
 {
 public:
-	ASTCast(Compiler* compiler, const SourceLocation& location, HazeDefineType& type, Unique<ASTBase>& expression);
+	ASTCast(Compiler* compiler, const SourceLocation& location, HazeVariableType& type, Unique<ASTBase>& expression);
 	virtual ~ASTCast() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;
@@ -558,7 +557,7 @@ private:
 class ASTSizeOf : public ASTBase
 {
 public:
-	ASTSizeOf(Compiler* compiler, const SourceLocation& location, const HazeDefineType& type, Unique<ASTBase>& expression);
+	ASTSizeOf(Compiler* compiler, const SourceLocation& location, const HazeVariableType& type, Unique<ASTBase>& expression);
 	virtual ~ASTSizeOf() override {}
 
 	virtual Share<CompilerValue> CodeGen() override;

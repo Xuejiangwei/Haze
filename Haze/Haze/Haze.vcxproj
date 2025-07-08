@@ -133,6 +133,7 @@
       xcopy /y /d "$(ProjectDir)Define\Header\HazeToken.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Define\Header\HazeUtility.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Define\Header\HazeValue.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeValueTypeTemplate"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)HazeLog\Header\HazeLog.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeLibraryDefine.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeStandardLibraryBase.h"  "$(OutDir)..\include\"
@@ -193,6 +194,7 @@
       xcopy /y /d "$(ProjectDir)Define\Header\HazeToken.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Define\Header\HazeUtility.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Define\Header\HazeValue.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeValueTypeTemplate"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)HazeLog\Header\HazeLog.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeLibraryDefine.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeStandardLibraryBase.h"  "$(OutDir)..\include\"
@@ -255,6 +257,7 @@
     <ClCompile Include="Debugger\Source\HazeDebuggerServer.cpp" />
     <ClCompile Include="Define\Source\HazeCompare.cpp" />
     <ClCompile Include="Define\Source\HazeExecuteFile.cpp" />
+    <ClCompile Include="Define\Source\HazeTypeInfo.cpp" />
     <ClCompile Include="Define\Source\HazeUtility.cpp" />
     <ClCompile Include="Define\Source\HazeValue.cpp" />
     <ClCompile Include="Define\Source\HazeInstruction.cpp" />
@@ -333,8 +336,10 @@
     <ClInclude Include="Define\Header\HazeLogDefine.h" />
     <ClInclude Include="Define\Header\HazeToken.h" />
     <ClInclude Include="Define\Header\HazeTokenText.h" />
+    <ClInclude Include="Define\Header\HazeTypeInfo.h" />
     <ClInclude Include="Define\Header\HazeUtility.h" />
     <ClInclude Include="Define\Header\HazeValue.h" />
+    <ClInclude Include="Define\Header\HazeValueTypeTemplate" />
     <ClInclude Include="Header\Haze.h" />
     <ClInclude Include="Define\Header\HazeDefine.h" />
     <ClInclude Include="HazeLog\Header\HazeLog.h" />

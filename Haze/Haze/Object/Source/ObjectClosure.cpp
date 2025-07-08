@@ -19,7 +19,7 @@ ObjectClosure::ObjectClosure(x_uint32 gcIndex, const FunctionData* functionData,
 	for (x_uint64 i = 0; i < m_FunctionData->RefVariables.size(); i++)
 	{
 		auto& refVariable = refFunction->Variables[m_FunctionData->RefVariables[i].first];
-		((ClosureRefVariable*)m_Data + i)->BaseType = refVariable.Variable.Type.PrimaryType;
+		((ClosureRefVariable*)m_Data + i)->Type = refVariable.Variable.Type;
 		memcpy(&((ClosureRefVariable*)m_Data + i)->Object, refStackESP + refVariable.Offset, sizeof(ClosureRefVariable::Object));
 	}
 }
@@ -35,7 +35,7 @@ ObjectClosure::~ObjectClosure()
 AdvanceClassInfo* ObjectClosure::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	info.Add(HAZE_CUSTOM_CALL_FUNCTION, {&ObjectClosure::CallFunction, HazeValueType::Void, { HazeValueType::MultiVariable }});
+	info.Add(HAZE_CUSTOM_CALL_FUNCTION, {&ObjectClosure::CallFunction, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) }});
 
 	return &info;
 }
@@ -52,7 +52,7 @@ void ObjectClosure::CallFunction(HAZE_OBJECT_CALL_PARAM)
 	{
 		auto& type = obj->m_FunctionData->Variables[i].Variable.Type;
 		GET_PARAM_ADDRESS(params[i].Value.Pointer, type.GetTypeSize());
-		SetHazeValueByData(params[i], type.PrimaryType, value);
+		SetHazeValueByData(params[i], type.BaseType, value);
 	}*/
 
 	auto func = obj->m_FunctionData;

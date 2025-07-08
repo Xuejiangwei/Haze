@@ -10,12 +10,13 @@ class CompilerEnum;
 class CompilerClass;
 class CompilerModule;
 class CompilerBlock;
+class HazeTypeInfoMap;
 
 struct AdvanceFunctionInfo
 {
 	void(*ClassFunc)(HAZE_OBJECT_CALL_PARAM);
-	HazeDefineType Type;
-	V_Array<HazeDefineType> Params;
+	HazeVariableType Type;
+	V_Array<HazeVariableType> Params;
 };
 
 struct AdvanceClassInfo
@@ -112,7 +113,7 @@ public:
 	const HString* GetModuleName(const CompilerModule* compilerModule) const;
 
 	const HString* GetModuleTableClassName(const HString& name);
-	const HString* GetModuleTableEnumName(const HString& name);
+	x_uint32 GetModuleTableEnumTypeId(const HString& name);
 
 	Unique<CompilerModule>& GetCurrModule();
 
@@ -152,7 +153,7 @@ public:
 
 	Share<CompilerValue> GenConstantValueBool(bool isTrue);
 
-	Share<CompilerValue> GetNullPtr(const HazeDefineType& type);
+	Share<CompilerValue> GetNullPtr(const HazeVariableType& type);
 
 	bool IsConstantValueBoolTrue(Share<CompilerValue> v);
 
@@ -161,7 +162,7 @@ public:
 public:
 	Share<CompilerValue> GetTempRegister(Share<CompilerValue> v);
 	Share<CompilerValue> GetTempRegister(const CompilerValue* v);
-	Share<CompilerValue> GetTempRegister(const HazeDefineType& type, x_uint64 arrayDimension = 0);
+	Share<CompilerValue> GetTempRegister(const HazeVariableType& type);
 	
 	//static Share<CompilerValue> GetNewRegister(CompilerModule* compilerModule, const HazeDefineType& data);
 
@@ -172,6 +173,7 @@ public:
 	static void ResetTempRegister(const HashMap<const x_HChar*, Share<CompilerValue>>& useTempRegisters);
 
 	static Share<CompilerValue> GetRegister(const x_HChar* name);
+	static Share<CompilerValue> GetRetRegister(HazeValueType baseType, x_uint32 typeId);
 
 	static const x_HChar* GetRegisterName(const Share<CompilerValue>& compilerRegister);
 
@@ -192,16 +194,14 @@ public:
 
 public:
 	Share<CompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
-		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
-		TemplateDefineTypes* params = nullptr);
+		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0, x_uint32 typeId = 0);
 
 	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
-		Share<CompilerValue> RefValue = nullptr, x_uint64 arrayDimension = 0, TemplateDefineTypes* Params = nullptr);
+		Share<CompilerValue> RefValue = nullptr);
 
-	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, int Line, Share<CompilerValue> RefValue = nullptr,
-		x_uint64 arrayDimension = 0, TemplateDefineTypes* Params = nullptr);
+	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, int Line, Share<CompilerValue> RefValue = nullptr);
 
-	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeDefineType& Var, Share<CompilerValue> RefValue = nullptr,
+	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeVariableType& Var, Share<CompilerValue> RefValue = nullptr,
 		x_uint64 arrayDimension = 0, TemplateDefineTypes* Params = nullptr);
 
 	Share<CompilerValue> CreateLea(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
@@ -233,9 +233,9 @@ public:
 
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure = nullptr);
+	Share<CompilerValue> CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure = nullptr);
 	
-	Share<CompilerValue> CreateCast(const HazeDefineType& type, Share<CompilerValue> value);
+	Share<CompilerValue> CreateCast(const HazeVariableType& type, Share<CompilerValue> value);
 
 	Share<CompilerValue> CreateCVT(Share<CompilerValue> left, Share<CompilerValue> right);
 
@@ -283,7 +283,7 @@ public:
 
 	Share<CompilerValue> CreateBoolCmp(Share<CompilerValue> value);
 
-	Share<CompilerValue> CreateFunctionRet(const HazeDefineType& type);
+	Share<CompilerValue> CreateFunctionRet(const HazeVariableType& type);
 
 	void ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Share<CompilerValue>& right);
 
@@ -294,7 +294,10 @@ public:
 
 	const HString* GetSymbolTableNameAddress(const HString& className);
 
+	x_uint32 GetSymbolTableNameTypeId(const HString& className) const;
+
 	Share<CompilerEnum> GetBaseModuleEnum(const HString& name);
+	Share<CompilerEnum> GetBaseModuleEnum(x_uint32 typeId);
 
 	Share<CompilerValue> GetBaseModuleGlobalVariable(const HString& name);
 
@@ -304,6 +307,8 @@ public:
 		V_Array<Pair<x_uint64, CompilerValue*>>* = nullptr);
 
 	//void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
+
+	HazeTypeInfoMap* GetTypeInfoMap() { return m_TypeInfoMap.get(); }
 
 	void InsertLineCount(x_int64 lineCount);
 
@@ -319,7 +324,7 @@ private:
 	HashMap<HString, Unique<CompilerModule>> m_CompilerModules;
 	HashMap<HString, CompilerModule*> m_CompilerBaseModules;
 
-	//³£Á¿
+	//ï¿½ï¿½ï¿½ï¿½
 	HashMap<bool, Share<CompilerValue>> m_BoolConstantValues;
 
 	HashMap<x_int8, Share<CompilerValue>> m_Int8_ConstantValues;
@@ -335,10 +340,12 @@ private:
 	HashMap<x_float64, Share<CompilerValue>> m_Float64_ConstantValues;
 
 	List<HString> m_CacheSymbols;
-	HashMap<HashHString, Share<CompilerClass>> m_SymbolTable;
+	HashMap<HashHString, Pair<Share<CompilerClass>, x_uint32>> m_SymbolTable;
 
 	//BaseBlock
 	Share<CompilerBlock> m_InsertBaseBlock;
+
+	Unique<HazeTypeInfoMap> m_TypeInfoMap;
 
 	bool m_MarkError;
 	bool m_MarkNewCode;

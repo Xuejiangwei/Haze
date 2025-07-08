@@ -22,7 +22,7 @@ class CompilerFunction
 	friend class ASTMultiExpression;
 
 public:
-	CompilerFunction(CompilerModule* compilerModule, const HString& name, HazeDefineType& type,
+	CompilerFunction(CompilerModule* compilerModule, const HString& name, HazeVariableType& type,
 		V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass = nullptr,
 		ClassCompilerFunctionType classFunctionType = ClassCompilerFunctionType::None);
 
@@ -36,7 +36,7 @@ public:
 
 	HString GetRealName() const;
 
-	const HazeDefineType& GetFunctionType() const { return m_Type; }
+	const HazeVariableType& GetFunctionType() const { return m_Type; }
 
 	CompilerModule* GetModule() const { return m_Module; }
 
@@ -72,9 +72,9 @@ public:
 
 	void AddLocalVariable(Share<CompilerValue> value, int line);
 
-	const HazeDefineType& GetParamTypeByIndex(x_uint64 index);
+	const HazeVariableType& GetParamTypeByIndex(x_uint64 index);
 
-	const HazeDefineType& GetParamTypeLeftToRightByIndex(x_uint64 index);
+	const HazeVariableType& GetParamTypeLeftToRightByIndex(x_uint64 index);
 
 	const x_uint64 GetParamSize() const;
 
@@ -82,6 +82,8 @@ public:
 
 	bool IsVirtualFunction() const { return m_ClassFunctionType == ClassCompilerFunctionType::PureVirtual ||
 			m_ClassFunctionType == ClassCompilerFunctionType::Virtual; }
+
+	x_uint32 GetFunctionPointerTypeId();
 
 protected:
 	void FunctionFinish();
@@ -91,8 +93,7 @@ protected:
 	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
 		TemplateDefineTypes* params = nullptr);
 
-	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
-		TemplateDefineTypes* params = nullptr);
+	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr);
 
 	//Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
 
@@ -106,8 +107,8 @@ protected:
 		bool HasClear = false;
 	};
 
-	//同一类型，但是不再引用的临时寄存器可以重复使用, 统一大小都为8个字节
-	Share<CompilerValue> CreateTempRegister(const HazeDefineType& type, x_uint64 arrayDimension = 0);
+	// 同一类型，但是不再引用的临时寄存器可以重复使用, 统一大小都为8个字节
+	Share<CompilerValue> CreateTempRegister(const HazeVariableType& type);
 
 	void TryClearTempRegister();
 
@@ -116,7 +117,7 @@ protected:
 	CompilerClass* m_OwnerClass;
 
 	HString m_Name;
-	HazeDefineType m_Type;
+	HazeVariableType m_Type;
 
 	V_Array<Pair<HString, Share<CompilerValue>>> m_Params;	//从右到左加入参数
 

@@ -21,10 +21,10 @@ AdvanceClassInfo* ObjectBase::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
 
-	info.Add(HAZE_OBJECT_BASE_CONSTRUCTOR, { &ObjectBase::Constructor, HazeValueType::Void, { HazeValueType::MultiVariable } });
-	info.Add(H_TEXT("等于"), { &ObjectBase::Equal, HazeValueType::Bool, { HazeValueType::ObjectBase } });
-	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectBase::Get, HazeValueType::Void, { } });
-	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectBase::Set, HazeValueType::Void, { HazeValueType::MultiVariable } });
+	info.Add(HAZE_OBJECT_BASE_CONSTRUCTOR, { &ObjectBase::Constructor, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(H_TEXT("等于"), { &ObjectBase::Equal, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(ObjectBase) } });
+	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectBase::Get, OBJ_TYPE_DEF(Void), { } });
+	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectBase::Set, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 
 	return &info;
 }

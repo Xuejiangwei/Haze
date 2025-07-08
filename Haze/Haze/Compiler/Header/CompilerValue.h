@@ -5,12 +5,13 @@ class CompilerModule;
 class CompilerValue : public SharedFromThis<CompilerValue>
 {
 	friend class CompilerClass;
+	friend class CompilerValueTypeChanger;
 public:
 	//HazeCompilerValue();
 
 	//HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	CompilerValue(CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+	CompilerValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
 		HazeDataDesc desc, int count, Share<CompilerValue> assignValue = nullptr);
 
 	virtual ~CompilerValue();
@@ -19,9 +20,9 @@ public:
 
 	Share<CompilerValue> GetShared() { return shared_from_this(); }
 
-	virtual void StoreValueType(Share<CompilerValue> srcValue);
-
-	const HazeDefineType& GetValueType() const { return m_ValueType; }
+	HazeValueType GetBaseType() const { return m_Type.BaseType; }
+	x_uint32 GetTypeId() const { return m_Type.TypeId; }
+	HazeVariableType GetVariableType() const { return m_Type; }
 
 	const HazeValue& GetValue() const { return m_Value; }
 
@@ -65,41 +66,52 @@ public:
 	bool IsNullPtr() const { return m_Desc == HazeDataDesc::NullPtr; }
 
 public:
-	bool IsRefrence() const { return IsRefrenceType(m_ValueType.PrimaryType); }
+	bool IsRefrence() const { return IsRefrenceType(m_Type.BaseType); }
 
-	bool IsFunction() const { return IsFunctionType(m_ValueType.PrimaryType); }
+	bool IsFunction() const { return IsFunctionType(m_Type.BaseType); }
 
-	bool IsArray() const { return IsArrayType(m_ValueType.PrimaryType); }
+	bool IsArray() const { return IsArrayType(m_Type.BaseType); }
 
-	bool IsDynamicClass() const { return IsDynamicClassType(m_ValueType.PrimaryType); }
+	bool IsDynamicClass() const { return IsDynamicClassType(m_Type.BaseType); }
 
-	bool IsDynamicClassUnknow() const { return IsDynamicClassUnknowType(m_ValueType.PrimaryType); }
+	bool IsDynamicClassUnknow() const { return IsDynamicClassUnknowType(m_Type.BaseType); }
 
-	bool IsClass() const { return IsClassType(m_ValueType.PrimaryType); }
+	bool IsClass() const { return IsClassType(m_Type.BaseType); }
 
-	bool IsAdvance() const { return IsAdvanceType(m_ValueType.PrimaryType); }
+	bool IsAdvance() const { return IsAdvanceType(m_Type.BaseType); }
 
-	bool IsPureString() const { return IsPureStringType(m_ValueType.PrimaryType); }
+	bool IsPureString() const { return IsPureStringType(m_Type.BaseType); }
 
-	bool IsObjectBase() const { return IsObjectBaseType(m_ValueType.PrimaryType); }
+	bool IsObjectBase() const { return IsObjectBaseType(m_Type.BaseType); }
 
-	bool IsHash() const { return IsHashType(m_ValueType.PrimaryType); }
+	bool IsHash() const { return IsHashType(m_Type.BaseType); }
 	
-	bool IsClosure() const { return IsClosureType(m_ValueType.PrimaryType); }
+	bool IsClosure() const { return IsClosureType(m_Type.BaseType); }
 
 	virtual bool IsEnum() const { return false; }
 
 public:
-	virtual x_uint32 GetSize();
+	virtual x_uint32 GetSize() { return GetSizeByHazeType(m_Type.BaseType);}
 
 	bool TryGetVariableName(HString& outName);
 
 protected:
-	HazeDefineType m_ValueType;
+	HazeVariableType m_Type;
 	HazeValue m_Value;
 	CompilerModule* m_Module;
 	HazeVariableScope m_Scope;
 	HazeDataDesc m_Desc;
 
 	int m_Count;			//ÃüÃû¼ÆÊý
+};
+
+
+class CompilerValueTypeChanger
+{
+public:
+	static Share<CompilerValue> Reset(Share<CompilerValue> value, HazeVariableType type)
+	{
+		value->m_Type = type;
+		return value;
+	}
 };

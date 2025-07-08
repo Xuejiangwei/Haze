@@ -5,19 +5,16 @@
 class CompilerHashValue : public CompilerValue
 {
 public:
-	explicit CompilerHashValue(CompilerModule* compilerModule, const HazeDefineType& defineType,
-		HazeVariableScope scope, HazeDataDesc desc, int count, TemplateDefineTypes* params);
+	explicit CompilerHashValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count);
 
 	virtual ~CompilerHashValue() override;
 
-	const TemplateDefineType& GetKeyType() const { return m_KeyType; }
-
-	const TemplateDefineType& GetValueType() const { return m_ValueType; }
+	HazeVariableType GetKeyType() const { return m_KeyType; }
+	HazeVariableType GetValueType() const { return m_ValueType; }
 
 	bool IsKeyType(Share<CompilerValue> key);
 	bool IsValueType(Share<CompilerValue> value);
-	bool KeyCanCVT(Share<CompilerValue> key);
 private:
-	TemplateDefineType m_KeyType;
-	TemplateDefineType m_ValueType;
+	HazeVariableType m_KeyType;
+	HazeVariableType m_ValueType;
 };

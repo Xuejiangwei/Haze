@@ -4,9 +4,11 @@
 #include "CompilerModule.h"
 #include "CompilerHelper.h"
 
-CompilerEnum::CompilerEnum(CompilerModule* compilerModule, const HString& name, HazeValueType parentType)
-	: m_Module(compilerModule), m_Name(name), m_ParentType(parentType)
+CompilerEnum::CompilerEnum(CompilerModule* compilerModule, const HString& name, x_uint32 typeId)
+	: m_Module(compilerModule), m_Name(name)
 {
+	m_Type.BaseType = HazeValueType::Enum;
+	m_Type.TypeId = typeId;
 }
 
 CompilerEnum::~CompilerEnum()
@@ -56,7 +58,7 @@ Share<CompilerEnumValue> CompilerEnum::GetEnumValueByIndex(x_uint64 index)
 void CompilerEnum::GenEnum_I_Code(HAZE_STRING_STREAM& hss)
 {
 	hss << GetEnumStartHeader() << HAZE_ENDL;
-	hss << m_Name << " " << CAST_TYPE(m_ParentType) << HAZE_ENDL;
+	hss << m_Name << HAZE_ENDL;
 
 	for (auto& it : m_EnumValues)
 	{

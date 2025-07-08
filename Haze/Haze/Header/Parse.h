@@ -29,7 +29,7 @@ public:
 	bool ParseContent();
 
 	void ParseTemplateContent(const HString& moduleName, const HString& templateName, const V_Array<HString>& templateTypes,
-		const V_Array<HazeDefineType>& templateRealTypes);
+		const V_Array<HazeVariableType>& templateRealTypes);
 
 	HazeToken GetNextToken(bool clearLexeme = true);
 
@@ -53,12 +53,12 @@ private:
 
 	Unique<ASTBase> ParseVariableDefine();
 	Unique<ASTBase> ParseVariableDefine_MultiVariable();
-	Unique<ASTBase> ParseVariableDefine_Array(TemplateDefineTypes& templateTypes);
-	Unique<ASTBase> ParseVariableDefine_String(TemplateDefineTypes& templateTypes, struct TempCurrCode* tempCode);
-	Unique<ASTBase> ParseVariableDefine_Class(TemplateDefineTypes& templateTypes);
-	Unique<ASTBase> ParseVariableDefine_Function(TemplateDefineTypes& templateTypes);
-	Unique<ASTBase> ParseVariableDefine_ObjectBase(TemplateDefineTypes& templateTypes);
-	Unique<ASTBase> ParseVariableDefine_Hash(TemplateDefineTypes& templateTypes);
+	Unique<ASTBase> ParseVariableDefine_Array(x_uint32 typeId);
+	Unique<ASTBase> ParseVariableDefine_String(struct TempCurrCode* tempCode);
+	Unique<ASTBase> ParseVariableDefine_Class();
+	Unique<ASTBase> ParseVariableDefine_Function(x_uint32 templateTypeId);
+	Unique<ASTBase> ParseVariableDefine_ObjectBase(x_int32 templateTypeId);
+	Unique<ASTBase> ParseVariableDefine_Hash(x_uint32 templateTypeId);
 
 	Unique<ASTBase> ParseClosure();
 
@@ -143,11 +143,11 @@ private:
 
 	bool IsNumberType(const HString& str, HazeToken& outToken);
 
-	void GetValueType(HazeDefineType& inType);
+	void GetValueType(HazeVariableType& inType);
 
-	void GetTemplateRealValueType(const HString& str, HazeDefineType& inType);
+	void GetTemplateRealValueType(const HString& str, HazeVariableType& inType);
 
-	void ParseTemplateTypes(HazeDefineType baseType, TemplateDefineTypes& templateTypes);
+	x_uint32 ParseTemplateTypes(HazeVariableType baseType, TemplateDefineTypes& templateTypes);
 
 	//void ParseVariableType();
 
@@ -175,5 +175,5 @@ private:
 	bool m_IsParseArray;
 	bool m_IsParseTemplate;
 	const V_Array<HString>* m_TemplateTypes;
-	const V_Array<HazeDefineType>* m_TemplateRealTypes;
+	const V_Array<HazeVariableType>* m_TemplateRealTypes;
 };

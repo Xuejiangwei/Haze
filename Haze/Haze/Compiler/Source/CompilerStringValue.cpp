@@ -4,7 +4,7 @@
 #include "CompilerStringValue.h"
 #include "HazeLog.h"
 
-CompilerStringValue::CompilerStringValue(CompilerModule* compilerModule, const HazeDefineType& defineType,
+CompilerStringValue::CompilerStringValue(CompilerModule* compilerModule, const HazeVariableType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count)
 	: CompilerValue(compilerModule, defineType, scope, desc, count), m_PureString(nullptr)
 {

@@ -474,7 +474,7 @@ Pair<HString, x_uint32> HazeVM::GetStepIn(x_uint32 CurrLine)
 			const auto& oper = m_Instructions[i].Operator;
 			if (oper.size() >= 1)
 			{
-				if (oper[0].Variable.Type.PrimaryType == HazeValueType::Function)
+				if (oper[0].Variable.Type.BaseType == HazeValueType::Function)
 				{
 					void* value = GetOperatorAddress(m_Stack.get(), oper[0]);
 					x_uint64 functionAddress;

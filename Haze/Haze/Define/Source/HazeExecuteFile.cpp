@@ -75,42 +75,16 @@ private:
 	HazeFileFormat Format;
 };
 
-inline void WriteType(Unique<HAZE_BINARY_OFSTREAM>& fileStream, const HazeDefineType& type)
+inline void WriteType(Unique<HAZE_BINARY_OFSTREAM>& fileStream, const HazeVariableType& type)
 {
-	fileStream->write(HAZE_WRITE_AND_SIZE(type.PrimaryType));
-
-	if (type.NeedSecondaryType())
-	{
-		fileStream->write(HAZE_WRITE_AND_SIZE(type.SecondaryType));
-	}
-
-	if (type.NeedCustomName())
-	{
-		s_BinaryString.clear();
-		s_BinaryString = WString2String(*type.CustomName);
-		auto n = (x_uint32)s_BinaryString.size();
-		fileStream->write(HAZE_WRITE_AND_SIZE(n));
-		fileStream->write(s_BinaryString.c_str(), n);
-	}
+	fileStream->write(HAZE_WRITE_AND_SIZE(type.BaseType));
+	fileStream->write(HAZE_WRITE_AND_SIZE(type.TypeId));
 }
 
-inline void HazeExecuteFile::ReadType(HazeVM* vm, Unique<HAZE_BINARY_IFSTREAM>& fileStream, HazeDefineType& type)
+inline void HazeExecuteFile::ReadType(HazeVM* vm, Unique<HAZE_BINARY_IFSTREAM>& fileStream, HazeVariableType& type)
 {
-	fileStream->read(HAZE_READ(type.PrimaryType));
-
-	if (type.NeedSecondaryType())
-	{
-		fileStream->read(HAZE_READ(type.SecondaryType));
-	}
-
-	if (type.NeedCustomName())
-	{
-		x_uint32 n = 0;
-		fileStream->read(HAZE_READ(n));
-		s_BinaryString.resize(n);
-		fileStream->read(s_BinaryString.data(), n);
-		type.CustomName = vm->GetSymbolClassName(String2WString(s_BinaryString));
-	}
+	fileStream->read(HAZE_READ(type.BaseType));
+	fileStream->read(HAZE_READ(type.TypeId));
 }
 
 HazeExecuteFile::HazeExecuteFile(ExeFileType type)
@@ -444,7 +418,7 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 	WSS << "Write :" << GetInstructionString(Instruction.InsCode);
 	for (auto& it : Instruction.Operator)
 	{
-		WSS << " ----" << it.Variable.Name << " Type :" << (uint32)it.Variable.Type.PrimaryType << " Scope: " << (uint32)it.Scope << " Base: " << it.Extra.Index
+		WSS << " ----" << it.Variable.Name << " Type :" << (uint32)it.Variable.Type.BaseType << " Scope: " << (uint32)it.Scope << " Base: " << it.Extra.Index
 			<< " Offset: " << it.Extra.Address.Offset;
 	}
 	WSS << HAZE_ENDL;
@@ -753,7 +727,7 @@ void HazeExecuteFile::ReadInstruction(HazeVM* vm, Instruction& instruction)
 	WSS << "Read: " << GetInstructionString(Instruction.InsCode);
 	for (auto& it : Instruction.Operator)
 	{
-		WSS << " ----" << it.Variable.Name << " Type: " << (unsigned int)it.Variable.Type.PrimaryType << " Scope: " << (unsigned int)it.Scope << " Base: " << it.Extra.Index
+		WSS << " ----" << it.Variable.Name << " Type: " << (unsigned int)it.Variable.Type.BaseType << " Scope: " << (unsigned int)it.Scope << " Base: " << it.Extra.Index
 			<< " Offset: " << it.Extra.Address.Offset;
 	}
 	WSS << HAZE_ENDL;

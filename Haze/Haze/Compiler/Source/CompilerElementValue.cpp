@@ -8,32 +8,21 @@
 #include "Compiler.h"
 
 CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, Share<CompilerValue> element)
-	: CompilerValue(compilerModule, element->GetValueType(), HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(element), m_ElementName(nullptr),
-	m_ValueTypeArrayDimension(0)
+	: CompilerValue(compilerModule, element->GetVariableType(), HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(element), m_ElementName(nullptr)
 {
 	if (parent->IsArray())
 	{
-		auto arrayValue = DynamicCast<CompilerArrayValue>(parent);
-		if (arrayValue->GetArrayDimension() > 1)
-		{
-			m_ValueType = parent->GetValueType();
-			m_ValueTypeArrayDimension = arrayValue->GetArrayDimension() - 1;
-		}
-		else
-		{
-			m_ValueType.ToArrayElement(parent->GetValueType());
-		}
+		m_Type = DynamicCast<CompilerArrayValue>(parent)->GetElementType();
 	}
 	else if (parent->IsHash())
 	{
-		auto& type = DynamicCast<CompilerHashValue>(parent)->GetValueType().Type;
-		m_ValueType = type->BaseType;
-		m_ValueTypeArrayDimension = type->ArrayDimension;
+		m_Type = DynamicCast<CompilerHashValue>(parent)->GetValueType();
 	}
 }
 
 CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const HString& elementName)
-	: CompilerValue(compilerModule, HazeValueType::DynamicClassUnknow, HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(nullptr), m_ElementName(MakeUnique<HString>(elementName))
+	: CompilerValue(compilerModule, HAZE_VAR_BASE_TYPE(HazeValueType::DynamicClassUnknow), HazeVariableScope::Local, HazeDataDesc::Element, 0),
+	m_Parent(parent), m_Element(nullptr), m_ElementName(MakeUnique<HString>(elementName))
 {
 
 }

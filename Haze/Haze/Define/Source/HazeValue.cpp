@@ -55,6 +55,7 @@ x_uint32 GetSizeByHazeType(HazeValueType type)
 		case HazeValueType::Int32:
 		case HazeValueType::UInt32:
 		case HazeValueType::Float32:
+		case HazeValueType::Enum:
 			return 4;
 		case HazeValueType::Int64:
 		case HazeValueType::UInt64:
@@ -75,7 +76,7 @@ x_uint32 GetSizeByHazeType(HazeValueType type)
 		case HazeValueType::MultiVariable:
 			return 0;
 		default:
-			HAZE_LOG_ERR_W("»ñµÃÀàĞÍ<%s>µÄ´óĞ¡´íÎó!\n", GetHazeValueTypeString(type));
+			HAZE_LOG_ERR_W("è·å¾—ç±»å‹<%s>çš„å¤§å°é”™è¯¯!\n", GetHazeValueTypeString(type));
 			throw;
 			break;
 	}
@@ -148,7 +149,7 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isL
 
 	if (isLog)
 	{
-		HAZE_LOG_ERR_W("»ñµÃ¸üÇ¿ÀàĞÍ´íÎó£¬<%s> <%s>!\n", GetHazeValueTypeString(type1), GetHazeValueTypeString(type2));
+		HAZE_LOG_ERR_W("è·å¾—æ›´å¼ºç±»å‹é”™è¯¯ï¼Œ<%s> <%s>!\n", GetHazeValueTypeString(type1), GetHazeValueTypeString(type2));
 	}
 
 	return HazeValueType::None;
@@ -415,7 +416,7 @@ void CalculateValue(InstructionOpCode typeCode, float& target, float& oper1, flo
 		target = oper1 / oper2;
 		break;
 	default:
-		INS_ERR_CODE_W("32Î»¸¡µãÊı¼ÆËã´íÎó", typeCode);
+		INS_ERR_CODE_W("32ä½æµ®ç‚¹æ•°è®¡ç®—é”™è¯¯", typeCode);
 		break;
 	}
 }
@@ -438,7 +439,7 @@ void CalculateValue(InstructionOpCode typeCode, double& target, double& oper1, d
 		target = oper1 / oper2;
 		break;
 	default:
-		INS_ERR_CODE_W("64Î»¸¡µãÊı¼ÆËã´íÎó", typeCode);
+		INS_ERR_CODE_W("64ä½æµ®ç‚¹æ•°è®¡ç®—é”™è¯¯", typeCode);
 		break;
 	}
 }
@@ -452,7 +453,7 @@ void CalculateValue(InstructionOpCode typeCode, bool& target, bool& oper1, bool&
 		target = !oper1;
 		break;
 	default:
-		INS_ERR_CODE_W("²¼¶û¼ÆËã´íÎó", typeCode);
+		INS_ERR_CODE_W("å¸ƒå°”è®¡ç®—é”™è¯¯", typeCode);
 		break;
 	}
 }
@@ -691,7 +692,7 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 	}
 	break;
 	default:
-		HAZE_LOG_ERR_W("ÀàĞÍ±È½Ï´íÎó!\n");
+		HAZE_LOG_ERR_W("ç±»å‹æ¯”è¾ƒé”™è¯¯!\n");
 		break;
 	}
 }
@@ -723,6 +724,7 @@ bool IsEqualByType(HazeValueType type, HazeValue v1, HazeValue v2)
 			return v1.Value.Float32 == v2.Value.Float32;
 		case HazeValueType::Float64:
 			return v1.Value.Float64 == v2.Value.Float64;
+		case HazeValueType::Address:
 		case HazeValueType::Function:
 		case HazeValueType::Array:
 		case HazeValueType::Hash:
@@ -737,7 +739,7 @@ bool IsEqualByType(HazeValueType type, HazeValue v1, HazeValue v2)
 		case HazeValueType::Enum:
 			return v1.Value.Pointer == v2.Value.Pointer;
 		default:
-			HAZE_LOG_ERR_W("ÀàĞÍ<%s>²»ÄÜ±È½ÏÏàµÈ!\n", GetHazeValueTypeString(type));
+			HAZE_LOG_ERR_W("ç±»å‹<%s>ä¸èƒ½æ¯”è¾ƒç›¸ç­‰!\n", GetHazeValueTypeString(type));
 			throw;
 			break;
 	}
@@ -825,7 +827,7 @@ void SetHazeValueByData(HazeValue& value, HazeValueType type, void* data)
 			memcpy(&value.Value.Pointer, data, GetSizeByHazeType(type));
 			break;
 		default:
-			HAZE_LOG_ERR_W("¸øÀàĞÍ<%s>¸³Öµ´íÎó!\n", GetHazeValueTypeString(type));
+			HAZE_LOG_ERR_W("ç»™ç±»å‹<%s>èµ‹å€¼é”™è¯¯!\n", GetHazeValueTypeString(type));
 			throw;
 			break;
 	}

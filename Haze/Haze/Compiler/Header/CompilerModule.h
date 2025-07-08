@@ -56,10 +56,10 @@ public:
 	Share<CompilerClass> CreateClass(const HString& name, V_Array<CompilerClass*>& parentClass,
 		V_Array<Pair<HString, Share<CompilerValue>>>& classData);
 
-	Share<CompilerEnum> CreateEnum(const HString& name, HazeValueType baseType);
+	Share<CompilerEnum> CreateEnum(const HString& name, x_uint32 typeId);
 
 	Share<CompilerEnum> GetCurrEnum();
-	
+
 	const HString& GetCurrEnumName() const { return m_CurrEnum; }
 
 	void FinishCreateEnum();
@@ -78,12 +78,12 @@ public:
 
 	Share<CompilerFunction> GetCurrClosureOrFunction();
 
-	Share<CompilerFunction> CreateFunction(const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
+	Share<CompilerFunction> CreateFunction(const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
-	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType, 
-		const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params);
+	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType,
+		const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
-	Share<CompilerClosureFunction> CreateClosureFunction(HazeDefineType& type, V_Array<HazeDefineVariable>& params);
+	Share<CompilerClosureFunction> CreateClosureFunction(HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
 	void BeginCreateFunctionParamVariable() { m_IsBeginCreateFunctionVariable = true; }
 
@@ -104,7 +104,7 @@ public:
 
 	bool IsTemplateClass(const HString& name);
 
-	bool ResetTemplateClassRealName(HString& inName, const V_Array<HazeDefineType>& templateTypes);
+	bool ResetTemplateClassRealName(HString& inName, const V_Array<HazeVariableType>& templateTypes);
 
 	bool IsImportModule(CompilerModule* m) const;
 
@@ -114,11 +114,10 @@ public:
 
 	x_uint32 GetGlobalStringIndex(Share<CompilerValue> value);
 
-	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr,
-		x_uint64 arrayDimension = 0, TemplateDefineTypes* params = nullptr);
+	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr);
 
 	Share<CompilerValue> GetClosureVariable(const HString& name, bool addRef);
-	
+
 	void ClosureAddLocalRef(Share<CompilerValue> value, const HString& name);
 
 	static Share<CompilerValue> GetGlobalVariable(CompilerModule* m, const HString& name);
@@ -129,6 +128,8 @@ public:
 	static bool GetClosureVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName);
 
 	static Share<CompilerEnum> GetEnum(CompilerModule* m, const HString& name);
+
+	static Share<CompilerEnum> GetEnum(CompilerModule* m, x_uint32 typeId);
 
 private:
 	void CreateAdd(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2);
@@ -148,13 +149,13 @@ private:
 	Share<CompilerValue> CreateInc(Share<CompilerValue> value, bool isPreInc);
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure = nullptr);
+	Share<CompilerValue> CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr,
 		const HString* nameSpace = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
-	
+
 	Share<CompilerValue> CreateAdvanceTypeFunctionCall(struct AdvanceFunctionInfo* functionInfo, x_uint16 index, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
 
 	void GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2, InstructionOpCode opCode, bool check = true);
@@ -168,8 +169,8 @@ private:
 	void GenIRCode_JmpTo(Share<CompilerBlock> block);
 
 private:
-	void FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction, 
-		AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, const V_Array<Share<CompilerValue>>& params, 
+	void FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction,
+		AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, const V_Array<Share<CompilerValue>>& params,
 		Share<CompilerValue> thisPointerTo);
 
 	void GenCodeFile();
@@ -179,10 +180,11 @@ private:
 private:
 	Share<CompilerValue> GetGlobalVariable_Internal(const HString& name);
 
-	bool GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset, 
+	bool GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset,
 		V_Array<Pair<x_uint64, CompilerValue*>>* offsets);
 
 	Share<CompilerEnum> GetEnum_Internal(const HString& name);
+	Share<CompilerEnum> GetEnumByTypeId_Internal(x_uint32 typeId);
 
 private:
 	Compiler* m_Compiler;
@@ -205,11 +207,7 @@ private:
 	HString m_CurrEnum;
 	HashMap<HString, Share<CompilerEnum>> m_HashMap_Enums;
 
-	//之后考虑全局变量放在一个block里面，复用其中的函数与成员变量
 	Share<CompilerFunction> m_GlobalDataFunction;
-	//V_Array<Pair<HString, Share<CompilerValue>>> m_Variables; //全局变量
-	//V_Array<Pair<int, int>> m_VariablesAddress;
-	//V_Array<HString> m_ModuleIRCodes;
 
 	HashMap<HString, Share<CompilerValue>> m_HashMap_StringTable;
 	HashMap<int, const HString*> m_HashMap_StringMapping;

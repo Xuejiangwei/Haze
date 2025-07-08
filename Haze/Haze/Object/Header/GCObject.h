@@ -15,3 +15,5 @@ public:
 		OBJECT_ERR_W(TYPE_STR "¶ÔÏó<%s>Îª¿Õ", var.Variable.Name.c_str()); \
 		return; \
 	}
+
+#define OBJ_TYPE_DEF(TYPE) HazeVariableType(HazeValueType::TYPE)

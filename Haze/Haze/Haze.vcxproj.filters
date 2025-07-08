@@ -210,6 +210,9 @@
     <ClCompile Include="Compiler\Source\CompilerClosureFunction.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="Define\Source\HazeTypeInfo.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -444,6 +447,12 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\CompilerClosureFunction.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeValueTypeTemplate">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Define\Header\HazeTypeInfo.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

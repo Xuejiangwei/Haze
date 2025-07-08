@@ -5,7 +5,7 @@
 #include "CompilerBlock.h"
 #include "CompilerHelper.h"
 
-CompilerClosureFunction::CompilerClosureFunction(CompilerModule* compilerModule, const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params)
+CompilerClosureFunction::CompilerClosureFunction(CompilerModule* compilerModule, const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 	: CompilerFunction(compilerModule, name, type, params)
 {
 }

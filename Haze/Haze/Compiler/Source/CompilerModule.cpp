@@ -24,7 +24,7 @@
 
 struct PushTempRegister
 {
-	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule, const HazeDefineType* defineType, Share<CompilerValue>* retValue)
+	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule, const HazeVariableType* defineType, Share<CompilerValue>* retValue)
 		: Size(0), Hss(hss), Compiler(compiler), Module(compilerModule), DefineType(defineType), RetValue(retValue)
 	{
 		UseTempRegisters = Compiler->GetUseTempRegister();
@@ -62,7 +62,7 @@ private:
 	Compiler* Compiler;
 	CompilerModule* Module;
 	HashMap<const x_HChar*, Share<CompilerValue>> UseTempRegisters;
-	const HazeDefineType* DefineType;
+	const HazeVariableType* DefineType;
 	Share<CompilerValue>* RetValue;
 };
 
@@ -74,7 +74,7 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 #if HAZE_I_CODE_ENABLE
 
 	auto functionName = GetHazeModuleGlobalDataInitFunctionName(moduleName);
-	HazeDefineType functionType(HazeValueType::Void);
+	HazeVariableType functionType(HazeValueType::Void);
 	V_Array<HazeDefineVariable> params;
 	m_GlobalDataFunction = CreateFunction(functionName, functionType, params);
 	m_GlobalDataFunction->m_DescType = InstructionFunctionType::HazeFunction;
@@ -181,10 +181,10 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			for (int i = 0; i < ui64; i++)
 			{
 				stream >> str;
-				HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+				HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
 			}
 		}
-	}
+	} 
 
 	stream >> str;
 	if (str != GetStringTableHeaderString())
@@ -217,7 +217,6 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	{
 		if (ui64 > 0)
 		{
-			x_uint32 ui32;
 			HString enumValueStr;
 			for (int i = 0; i < ui64; i++)
 			{
@@ -225,16 +224,15 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 				if (str == GetEnumStartHeader())
 				{
 					stream >> str;
-					stream >> ui32;
-					auto enumValue = CreateEnum(str, (HazeValueType)ui32);
+					auto enumValue = CreateEnum(str, 0);
 
 					stream >> str;
 					while (str != GetEnumEndHeader())
 					{
 						stream >> enumValueStr;
 						HazeValue hazeValue;
-						StringToHazeValueNumber(enumValueStr, enumValue->GetParentType(), hazeValue);
-						enumValue->AddEnumValue(str, m_Compiler->GenConstantValue(enumValue->GetParentType(), hazeValue));
+						StringToHazeValueNumber(enumValueStr, ENUM_INT_TYPE, hazeValue);
+						enumValue->AddEnumValue(str, m_Compiler->GenConstantValue(ENUM_INT_TYPE, hazeValue));
 
 						stream >> str;
 					}
@@ -290,7 +288,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		{
 			HazeDataDesc desc;
 			stream >> classData[j].first >> *((x_uint32*)(&desc));
-			auto memberType = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+			auto memberType = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
 
 			x_uint32 ui32;
 			stream >> ui32 >> ui64;
@@ -339,7 +337,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		if (isNormalFunc)
 		{
 			stream >> name;
-			auto type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+			auto type = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
 
 			params.clear();
 
@@ -348,7 +346,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			{
 				params.resize(params.size() + 1);
 				stream >> params.back().Name;
-				params.back().Type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+				params.back().Type = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
 				stream >> str;
 			}
 
@@ -377,7 +375,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			stream >> functionAttrType;
 
 			stream >> name;
-			auto type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+			auto type = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
 
 			params.clear();
 
@@ -386,7 +384,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			{
 				params.resize(params.size() + 1);
 				stream >> params.back().Name;
-				params.back().Type = HazeDefineType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+				params.back().Type = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
 				stream >> str;
 			}
 
@@ -465,12 +463,12 @@ Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<Co
 	return compilerClass;
 }
 
-Share<CompilerEnum> CompilerModule::CreateEnum(const HString& name, HazeValueType baseType)
+Share<CompilerEnum> CompilerModule::CreateEnum(const HString& name, x_uint32 typeId)
 {
 	Share<CompilerEnum> compilerEnum = GetEnum(this, name);
 	if (!compilerEnum)
 	{
-		compilerEnum = MakeShare<CompilerEnum>(this, name, baseType);
+		compilerEnum = MakeShare<CompilerEnum>(this, name, typeId);
 		m_HashMap_Enums[name] = compilerEnum;
 	
 		m_CurrEnum = name;
@@ -586,7 +584,7 @@ bool CompilerModule::IsTemplateClass(const HString& name)
 	return false;
 }
 
-bool CompilerModule::ResetTemplateClassRealName(HString& inName, const V_Array<HazeDefineType>& templateTypes)
+bool CompilerModule::ResetTemplateClassRealName(HString& inName, const V_Array<HazeVariableType>& templateTypes)
 {
 	for (auto& templateText : m_HashMap_TemplateText)
 	{
@@ -674,7 +672,7 @@ Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const HString& na
 	return m->m_Compiler->GetBaseModuleEnum(name);
 }
 
-Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params)
+Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
 	Share<CompilerFunction> function = nullptr;
 	auto it = m_HashMap_Functions.find(name);
@@ -695,7 +693,7 @@ Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, Haze
 }
 
 Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType,
-	const HString& name, HazeDefineType& type, V_Array<HazeDefineVariable>& params)
+	const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
 	Share<CompilerFunction> function = compilerClass->FindFunction(name, &compilerClass->GetName());
 	if (!function)
@@ -711,7 +709,7 @@ Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> comp
 	return function;
 }
 
-Share<CompilerClosureFunction> CompilerModule::CreateClosureFunction(HazeDefineType& type, V_Array<HazeDefineVariable>& params)
+Share<CompilerClosureFunction> CompilerModule::CreateClosureFunction(HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
 	HString name = CLOSURE_NAME_PREFIX + GetName() + ToHazeString(m_ClosureStack.size());
 	auto closure = MakeShare<CompilerClosureFunction>(this, name, type, params);
@@ -817,18 +815,18 @@ void CompilerModule::CreateNot(Share<CompilerValue> assignTo, Share<CompilerValu
 Share<CompilerValue> CompilerModule::CreateInc(Share<CompilerValue> value, bool isPreInc)
 {
 	Share<CompilerValue> retValue = value;
-	if (IsHazeBaseType(value->GetValueType().PrimaryType))
+	if (IsHazeBaseType(value->GetVariableType().BaseType))
 	{
 		if (!isPreInc)
 		{
-			retValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetValueType()), value);
+			retValue = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetVariableType()), value);
 		}
 		//Compiler->CreateMov(Value, CreateAdd(Value, Compiler->GetConstantValueInt(1)));
 		m_Compiler->CreateAdd(value, value, m_Compiler->GetConstantValueInt(1));
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("<%s>类型不能使用Inc操作\n", GetHazeValueTypeString(value->GetValueType().PrimaryType));
+		HAZE_LOG_ERR_W("<%s>类型不能使用Inc操作\n", GetHazeValueTypeString(value->GetVariableType().BaseType));
 	}
 	return retValue;
 }
@@ -836,11 +834,11 @@ Share<CompilerValue> CompilerModule::CreateInc(Share<CompilerValue> value, bool 
 Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool isPreDec)
 {
 	Share<CompilerValue> retValue = value;
-	if (IsHazeBaseType(value->GetValueType().PrimaryType))
+	if (IsHazeBaseType(value->GetVariableType().BaseType))
 	{
 		if (!isPreDec)
 		{
-			retValue = m_Compiler->GetTempRegister(value->GetValueType());
+			retValue = m_Compiler->GetTempRegister(value->GetVariableType());
 			m_Compiler->CreateMov(retValue, value);
 		}
 		//Compiler->CreateMov(Value, CreateSub(Value, Compiler->GetConstantValueInt(1)));
@@ -848,12 +846,12 @@ Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool 
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("<%s>类型不能使用Dec操作\n", GetHazeValueTypeString(value->GetValueType().PrimaryType));
+		HAZE_LOG_ERR_W("<%s>类型不能使用Dec操作\n", GetHazeValueTypeString(value->GetVariableType().BaseType));
 	}
 	return retValue;
 }
 
-Share<CompilerValue> CompilerModule::CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure)
+Share<CompilerValue> CompilerModule::CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure)
 {
 	HAZE_STRING_STREAM hss;
 
@@ -870,7 +868,7 @@ Share<CompilerValue> CompilerModule::CreateNew(const HazeDefineType& data, V_Arr
 		}
 	}
 
-	auto tempRegister = m_Compiler->GetTempRegister(data, countValue ? countValue->size() : 0);
+	auto tempRegister = m_Compiler->GetTempRegister(data);
 	
 	if (closure)
 	{
@@ -900,14 +898,14 @@ void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Sha
 	//优化相关
 	//if (oper1->IsConstant() && oper2->IsConstant())
 	//{
-	//	if (IsNumberType(oper1->GetValueType().PrimaryType))
+	//	if (IsNumberType(oper1->GetVariableType().PrimaryType))
 	//	{
 	//		auto& leftValue = const_cast<HazeValue&>(oper1->GetValue());
 	//		HazeValue tempValue = leftValue;
 	//		auto& rightValue = const_cast<HazeValue&>(oper2->GetValue());
-	//		CalculateValueByType(oper1->GetValueType().PrimaryType, opCode, &rightValue, &leftValue);
+	//		CalculateValueByType(oper1->GetVariableType().PrimaryType, opCode, &rightValue, &leftValue);
 
-	//		auto retValue = m_Compiler->GenConstantValue(oper1->GetValueType().PrimaryType, leftValue);
+	//		auto retValue = m_Compiler->GenConstantValue(oper1->GetVariableType().PrimaryType, leftValue);
 	//		leftValue = tempValue;
 	//	}
 	//	else
@@ -970,10 +968,9 @@ void CompilerModule::GenIRCode_JmpTo(Share<CompilerBlock> block)
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 
-Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue,
-	x_uint64 arrayDimension, TemplateDefineTypes* params)
+Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue)
 {
-	return m_GlobalDataFunction->CreateGlobalVariable(var, line, refValue, arrayDimension, params);
+	return m_GlobalDataFunction->CreateGlobalVariable(var, line, refValue);
 }
 
 Share<CompilerValue> CompilerModule::GetClosureVariable(const HString& name, bool addRef)
@@ -1021,15 +1018,15 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, const V_Array<Share<CompilerValue>>& params,
 	Share<CompilerValue> thisPointerTo)
 {
-	static HazeDefineType s_UInt64 = HazeDefineType(HazeValueType::UInt64);
-	static HazeDefineType s_Float64 = HazeDefineType(HazeValueType::Float64);
+	static HazeVariableType s_UInt64 = HazeVariableType(HazeValueType::UInt64);
+	static HazeVariableType s_Float64 = HazeVariableType(HazeValueType::Float64);
 
 	Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
 	HString strName;
 
 	auto pointerFunc = DynamicCast<CompilerPointerFunction>(pointerFunction);
 
-	V_Array<const HazeDefineType*> funcTypes(params.size());
+	V_Array<HazeVariableType> funcTypes(params.size());
 	if (!callFunction && !pointerFunc && !advancFunctionInfo)
 	{
 		COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", GetName().c_str(),
@@ -1048,14 +1045,14 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				advancFunctionInfo->Params.size() > params.size() - 1 - i ? &advancFunctionInfo->Params.at(params.size() - 1 - i)
 				: &advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 
-			if (*type != variable->GetValueType() && !variable->GetValueType().IsStrongerType(*type))
+			if (*type != variable->GetVariableType() && !variable->GetVariableType().IsStrongerType(*type))
 			{
-				if (i == (x_int64)params.size() - 1 && !IsMultiVariableTye(type->PrimaryType) && paramSize != params.size())
+				if (i == (x_int64)params.size() - 1 && !IsMultiVariableTye(type->BaseType) && paramSize != params.size())
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
 				}
-				else if (IsMultiVariableTye(type->PrimaryType))
+				else if (IsMultiVariableTye(type->BaseType))
 				{
 					if (params.size() - i < paramSize)
 					{
@@ -1066,26 +1063,26 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				else if (variable->IsEnum())
 				{
 					auto enumValue = DynamicCast<CompilerEnumValue>(variable);
-					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetParentType() == type->PrimaryType) {}
+					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetTypeId() == type->TypeId) {}
 					else
 					{
 						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数枚举类型不匹配", GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				else if (type->IsStrongerType(variable->GetValueType())) {}
-				else if (IsRefrenceType(type->PrimaryType) && variable->GetValueType().PrimaryType == type->SecondaryType) {}
-				else if (variable->IsClass() && IsClassType(type->PrimaryType))
+				else if (type->IsStrongerType(variable->GetVariableType())) {}
+				else if (IsRefrenceType(type->BaseType) && variable->GetVariableType().TypeId == type->TypeId) {}
+				else if (variable->IsClass() && IsClassType(type->BaseType))
 				{
 					auto hazeClass = variable->IsElement() ? DynamicCast<CompilerElementValue>(variable)->GetRealClass() : DynamicCast<CompilerClassValue>(variable)->GetOwnerClass();
 					if (hazeClass && hazeClass->IsParentClass(*type)) {}
 					else
 					{
-						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<%s>类", GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i, type->CustomName->c_str());
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<>类", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				else if (!IsMultiVariableTye(type->PrimaryType))
+				else if (!IsMultiVariableTye(type->BaseType))
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
@@ -1093,17 +1090,17 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				}
 			}
 
-			if (IsMultiVariableTye(type->PrimaryType))
+			if (IsMultiVariableTye(type->BaseType))
 			{
 				if (variable->IsRefrence())
 				{
-					if (IsIntegerType(variable->GetValueType().SecondaryType))
+					if (IsIntegerType(HAZE_ID_2_TYPE(variable->GetVariableType().TypeId)))
 					{
-						funcTypes[i] = &s_UInt64;
+						funcTypes[i] = s_UInt64;
 					}
-					else if (IsFloatingType(variable->GetValueType().SecondaryType))
+					else if (IsFloatingType(HAZE_ID_2_TYPE(variable->GetVariableType().TypeId)))
 					{
-						funcTypes[i] = &s_Float64;
+						funcTypes[i] = s_Float64;
 					}
 					else
 					{
@@ -1114,12 +1111,12 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				}
 				else
 				{
-					funcTypes[i] = &variable->GetValueType();
+					funcTypes[i] = variable->GetVariableType();
 				}
 			}
 			else
 			{
-				funcTypes[i] = type;
+				funcTypes[i] = *type;
 			}
 		}
 
@@ -1127,7 +1124,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		{
 			auto& lastParam = callFunction ? callFunction->GetParamTypeByIndex(0) :
 				pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
-			if ((IsMultiVariableTye(lastParam.PrimaryType) && params.size() + 1 < paramSize) || (!IsMultiVariableTye(lastParam.PrimaryType) && params.size() != paramSize))
+			if ((IsMultiVariableTye(lastParam.BaseType) && params.size() + 1 < paramSize) || (!IsMultiVariableTye(lastParam.BaseType) && params.size() != paramSize))
 			{
 				COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 函数个数不匹配", GetName().c_str(),
 					callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"));
@@ -1137,10 +1134,10 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 	for (x_uint64 i = 0; i < params.size(); i++)
 	{
-		GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, params[i], nullptr, funcTypes[i]);
+		GenIRCode(hss, this, InstructionOpCode::PUSH, nullptr, params[i], nullptr, &funcTypes[i]);
 		insertBlock->PushIRCode(hss.str());
 
-		size += funcTypes[i] ? funcTypes[i]->GetCompilerTypeSize() : GetSizeByCompilerValue(params[i]);
+		size += funcTypes[i].GetTypeSize(); //funcTypes[i] ? funcTypes[i]->GetCompilerTypeSize() : GetSizeByCompilerValue(params[i]);
 		hss.str(H_TEXT(""));
 		strName.clear();
 	}
@@ -1152,7 +1149,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 		hss.str(H_TEXT(""));
 
-		size += GetSizeByCompilerValue(thisPointerTo);
+		size += thisPointerTo->GetVariableType().GetTypeSize();
 	}
 
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
@@ -1234,7 +1231,7 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 
 	if (thisPointerTo->IsObjectBase())
 	{
-		const_cast<HazeDefineType&>(ret->GetValueType()).PrimaryType = thisPointerTo->GetValueType().SecondaryType;
+		CompilerValueTypeChanger::Reset(ret, HAZE_VAR_BASE_TYPE((HazeValueType)thisPointerTo->GetVariableType().TypeId));
 	}
 
 	return ret;
@@ -1253,8 +1250,8 @@ Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const HStri
 
 	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = &it->first;
 
-	HazeDefineType defineVarType;
-	defineVarType.PrimaryType = HazeValueType::String;
+	HazeVariableType defineVarType;
+	defineVarType.BaseType = HazeValueType::String;
 
 	it->second = CreateVariable(this, defineVarType, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
 
@@ -1483,7 +1480,7 @@ void CompilerModule::GenICode()
 		auto& var = globaleVariables[i].second;
 	
 		hss << globaleVariables[i].first << " ";
-		var->GetValueType().StringStreamTo(hss);
+		var->GetVariableType().StringStreamTo(hss);
 		hss << HAZE_ENDL;
 	}
 

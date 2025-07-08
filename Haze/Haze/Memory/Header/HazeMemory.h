@@ -57,7 +57,7 @@ private:
 
 	void ForceGC();
 
-	void MarkVariable(const HazeDefineType& type, const void* address);
+	void MarkVariable(const HazeVariableType& type, const void* address);
 
 	void MarkClassMember(ClassData* classData, const char* baseAddress);
 

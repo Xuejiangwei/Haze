@@ -3,7 +3,7 @@
 #include "CompilerModule.h"
 #include "HazeLogDefine.h"
 
-CompilerPointerFunction::CompilerPointerFunction(CompilerModule* compilerModule, const HazeDefineType& defineType,
+CompilerPointerFunction::CompilerPointerFunction(CompilerModule* compilerModule, const HazeVariableType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count, TemplateDefineTypes* paramTypes)
 	: HazeCompilerPointerValue(compilerModule, defineType, scope, desc, count), m_OwnerClass(nullptr)
 {
@@ -19,7 +19,7 @@ CompilerPointerFunction::~CompilerPointerFunction()
 {
 }
 
-const HazeDefineType& CompilerPointerFunction::GetParamTypeByIndex(x_uint64 index) const
+const HazeVariableType& CompilerPointerFunction::GetParamTypeByIndex(x_uint64 index) const
 {
 	if (index + 1 < m_ParamTypes.size())
 	{
@@ -39,7 +39,7 @@ const HazeDefineType& CompilerPointerFunction::GetParamTypeByIndex(x_uint64 inde
 	}
 }
 
-const HazeDefineType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index) const
+const HazeVariableType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index) const
 {
 	if (index < m_ParamTypes.size())
 	{

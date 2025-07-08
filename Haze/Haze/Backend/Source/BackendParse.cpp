@@ -20,18 +20,18 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 		return true;
 	}
 
-	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::ObjectFunction)
+	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.BaseType == HazeValueType::ObjectFunction)
 	{
 		return true;
 	}
 
-	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.PrimaryType == HazeValueType::Function && 
+	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.BaseType == HazeValueType::Function && 
 		(ins.Operator[0].Desc == HazeDataDesc::RegisterTemp || ins.Operator[0].Scope == HazeVariableScope::Ignore))
 	{
 		return true;
 	}
 
-	if (ins.InsCode == InstructionOpCode::RET && IsVoidType(ins.Operator[0].Variable.Type.PrimaryType))
+	if (ins.InsCode == InstructionOpCode::RET && IsVoidType(ins.Operator[0].Variable.Type.BaseType))
 	{
 		return true;
 	}
@@ -337,7 +337,6 @@ void BackendParse::Parse_I_Code_EnumTable()
 				GetNextLexmeAssign_HazeString(str);
 				while (str != GetEnumEndHeader())
 				{
-					GetNextLexmeAssign_StandardType(v);
 					GetNextLexmeAssign_HazeString(str);
 				}
 			}
@@ -608,9 +607,9 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 			InstructionData operatorTwo;
 
 			GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
-			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Variable.Type.PrimaryType);
+			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Variable.Type.BaseType);
 
-			//if (IsFunctionType(operatorOne.Variable.Type.PrimaryType))
+			//if (IsFunctionType(operatorOne.Variable.Type.BaseType))
 			{
 				GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Scope);
 				GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Desc);
@@ -762,7 +761,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 				operatorData.Extra.Address.BaseAddress = function.TempRegisters[tempRegIter->second].Offset;
 				operatorData.AddressType = InstructionAddressType::Local;
 			}
-			else if (IsPureStringType(operatorData.Variable.Type.PrimaryType))
+			else if (IsPureStringType(operatorData.Variable.Type.BaseType))
 			{
 				operatorData.AddressType = InstructionAddressType::PureString;
 			}
@@ -844,7 +843,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 				}
 			}
 			/*else if (CurrFunction.Vector_Instruction[i].InsCode == InstructionOpCode::CALL
-				&& CurrFunction.Vector_Instruction[i].Operator[0].Variable.Type.PrimaryType == HazeValueType::PointerFunction)
+				&& CurrFunction.Vector_Instruction[i].Operator[0].Variable.Type.BaseType == HazeValueType::PointerFunction)
 			{
 				auto Iter_Index = HashMap_Variable.find(CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name);
 				if (Iter_Index != HashMap_Variable.end())

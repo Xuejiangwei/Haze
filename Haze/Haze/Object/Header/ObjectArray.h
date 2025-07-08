@@ -40,6 +40,6 @@ private:
 	x_uint64 m_Length;
 	x_uint64 m_Capacity;
 	x_uint64 m_PcAddress;
-	HazeValueType m_ValueType;
+	HazeVariableType m_ValueType;
 	ClassData* m_ClassInfo;
 };

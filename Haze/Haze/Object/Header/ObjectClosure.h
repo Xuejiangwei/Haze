@@ -5,7 +5,7 @@ class HazeStack;
 
 struct ClosureRefVariable
 {
-	HazeValueType BaseType;
+	HazeVariableType Type;
 	void* Object;
 };
 

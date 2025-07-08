@@ -24,7 +24,7 @@ public:
 	struct GlobalData
 	{
 		HString Name;
-		HazeDefineType Type;
+		HazeVariableType Type;
 
 		/*uint32 StartAddress;
 		uint32 EndAddress;*/
@@ -106,7 +106,7 @@ public:
 	{
 		HString ClassName;
 		HString Name;
-		HazeDefineType Type;
+		HazeVariableType Type;
 		V_Array<HazeDefineVariable> Params;
 		V_Array<HazeVariableData> Variables;
 		V_Array<HazeTempRegisterData> TempRegisters;
@@ -120,7 +120,7 @@ public:
 
 		FunctionTableData()
 		{
-			Type = HazeDefineType();
+			Type = HazeVariableType();
 			Params.clear();
 			Blocks.clear();
 			Instructions.clear();

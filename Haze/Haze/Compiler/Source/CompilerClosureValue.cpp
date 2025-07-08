@@ -1,7 +1,7 @@
 #include "HazePch.h"
 #include "CompilerClosureValue.h"
 
-CompilerClosureValue::CompilerClosureValue(CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count, TemplateDefineTypes* params)
+CompilerClosureValue::CompilerClosureValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count, TemplateDefineTypes* params)
 	: CompilerPointerFunction(compilerModule, defineType, scope, desc, count, params)
 {
 	/*m_FuncType = params->Types[0];

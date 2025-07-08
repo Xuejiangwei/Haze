@@ -1,6 +1,7 @@
 #include "HazePch.h"
 #include "Compiler.h"
 #include "CompilerHelper.h"
+#include "Compiler.h"
 #include "CompilerModule.h"
 #include "CompilerClassValue.h"
 #include "CompilerArrayValue.h"
@@ -13,7 +14,7 @@
 #include "CompilerClosureFunction.h"
 
 CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const HString& name, 
-	HazeDefineType& type, V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass, ClassCompilerFunctionType classFunctionType)
+	HazeVariableType& type, V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass, ClassCompilerFunctionType classFunctionType)
 	: m_Module(compilerModule), m_Name(name), m_Type(type), m_OwnerClass(compilerClass), m_CurrBlockCount(0), 
 		m_CurrVariableCount(0), m_StartLine(0), m_EndLine(0), m_ClassFunctionType(classFunctionType)
 {
@@ -44,10 +45,10 @@ Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVari
 	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, arrayDimension, params);
 }
 
-Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
+Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
-	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Local, refValue, arrayDimension, params);
+	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Local, refValue);
 }
 
 //Share<CompilerValue> CompilerFunction::CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue)
@@ -82,42 +83,29 @@ Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVaria
 //	return tempRegister;
 //}
 
-Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& type, x_uint64 arrayDimension)
+Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeVariableType& type)
 {
 	int offset = 0;
 	for (auto& var : m_TempRegisters)
 	{
-		if (var.Value->GetValueType() == type && var.Value.use_count() == 1)
+		if (var.Value->GetVariableType() == type)
 		{
-			if (var.Value->IsArray())
-			{
-				if (DynamicCast<CompilerArrayValue>(var.Value)->GetArrayDimension() == arrayDimension)
-				{
-					return var.Value;
-				}
-			}
-			else
-			{
-				return var.Value;
-			}
-
+			return var.Value;
 		}
 
 		++offset;
 	}
 
 	Share<CompilerValue> v = nullptr;
-	if (IsArrayType(type.PrimaryType))
+	if (IsArrayType(type.BaseType))
 	{
-		assert(arrayDimension > 0);
-		v = MakeShare<CompilerArrayValue>(m_Module, type, HazeVariableScope::Local,
-			HazeDataDesc::RegisterTemp, 0, arrayDimension);
+		v = MakeShare<CompilerArrayValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
 	}
-	else if (IsClassType(type.PrimaryType))
+	else if (IsClassType(type.BaseType))
 	{
 		v = MakeShare<CompilerClassValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
 	}
-	else if (IsStringType(type.PrimaryType))
+	else if (IsStringType(type.BaseType))
 	{
 		v = MakeShare<CompilerStringValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
 	}
@@ -130,7 +118,7 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeDefineType& 
 	m_TempRegisters.push_back({ v , offset });
 
 
-	/*if (IsStringType(type.PrimaryType) && str)
+	/*if (IsStringType(type.BaseType) && str)
 	{
 		auto prueStr = MakeShare<CompilerStringValue>(m_Module, HazeValueType::StringPure, HazeVariableScope::Local, HazeDataDesc::None, 0);
 		prueStr->SetPureString(str);
@@ -197,9 +185,19 @@ HString CompilerFunction::GetRealName() const
 	return m_OwnerClass ? GetHazeClassFunctionName(m_OwnerClass->GetName(), m_Name) : m_Name;
 }
 
+x_uint32 CompilerFunction::GetFunctionPointerTypeId()
+{
+	V_Array<x_uint32> params(m_Params.size());
+	for (x_uint64 i = 0; i < params.size(); i++)
+	{
+		params[i] = m_Params[i].second->GetTypeId();
+	}
+	return m_Module->GetCompiler()->GetTypeInfoMap()->RegisterType(m_Type.TypeId, Move(params));
+}
+
 void CompilerFunction::FunctionFinish()
 {
-	if (m_Type.PrimaryType == HazeValueType::Void)
+	if (m_Type.BaseType == HazeValueType::Void)
 	{
 		HAZE_STRING_STREAM hss;
 		GenIRCode(hss, GetModule(), InstructionOpCode::RET, nullptr, nullptr, nullptr, nullptr);
@@ -244,7 +242,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	{
 		hss << GetFunctionParamHeader() << " " << m_Params[i].first << " ";
 
-		if (!m_Params[i].second->GetValueType().StringStreamTo(hss))
+		if (!m_Params[i].second->GetVariableType().StringStreamTo(hss))
 		{
 			HAZE_LOG_ERR_W("函数<%s>的参数<%s>类型解析失败,生成中间代码错误!\n", m_Name.c_str(), m_Params[i].first.c_str());
 			return;
@@ -263,7 +261,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 			HAZE_LOG_ERR_W("函数<%s>生成中间代码错误，未能找到参数临时变量!\n", m_Name.c_str());
 			return;
 		}
-		size -= m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize();
+		size -= m_LocalVariables[i].first->GetVariableType().GetTypeSize();
 		
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
@@ -278,15 +276,15 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
-		hss << " " << m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
-		size += m_LocalVariables[i].first->GetValueType().GetCompilerTypeSize();
+		hss << " " << m_LocalVariables[i].first->GetVariableType().GetTypeSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
+		size += m_LocalVariables[i].first->GetVariableType().GetTypeSize();
 	}
 
 	for (x_uint64 i = 0; i < m_TempRegisters.size(); i++)
 	{
 		hss << HAZE_LOCAL_TEMP_REGISTER_HEADER << " " << HAZE_LOCAL_TEMP_REGISTER << i << " "
 			<< size + m_TempRegisters[i].Offset * 8 << " ";
-		m_TempRegisters[i].Value->GetValueType().StringStreamTo(hss);
+		m_TempRegisters[i].Value->GetVariableType().StringStreamTo(hss);
 		hss << HAZE_ENDL;
 	}
 
@@ -429,11 +427,11 @@ void CompilerFunction::AddLocalVariable(Share<CompilerValue> value, int line)
 	m_LocalVariables.push_back({ value, line });
 }
 
-const HazeDefineType& CompilerFunction::GetParamTypeByIndex(x_uint64 index)
+const HazeVariableType& CompilerFunction::GetParamTypeByIndex(x_uint64 index)
 {
 	if (index < m_Params.size())
 	{
-		return m_Params[index].second->GetValueType();
+		return m_Params[index].second->GetVariableType();
 	}
 	else
 	{
@@ -442,11 +440,11 @@ const HazeDefineType& CompilerFunction::GetParamTypeByIndex(x_uint64 index)
 			COMPILER_ERR_W("函数<%s>从右往左，获得函数的第<%d>个参数错误", m_Name.c_str(), m_Params.size() - 1 - index);
 		}
 		
-		return m_Params[0].second->GetValueType();
+		return m_Params[0].second->GetVariableType();
 	}
 }
 
-const HazeDefineType& CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index)
+const HazeVariableType& CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index)
 {
 	if (m_OwnerClass)
 	{
@@ -455,18 +453,18 @@ const HazeDefineType& CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 
 
 	if (index < m_Params.size())
 	{
-		return m_Params[m_Params.size() - 1 - index].second->GetValueType();
+		return m_Params[m_Params.size() - 1 - index].second->GetVariableType();
 	}
 	else
 	{
-		if (index > 0 && IsMultiVariableTye(m_Params[0].second->GetValueType().PrimaryType))
+		if (index > 0 && IsMultiVariableTye(m_Params[0].second->GetBaseType()))
 		{
-			return m_Params[0].second->GetValueType();
+			return m_Params[0].second->GetVariableType();
 		}
 		else
 		{
 			COMPILER_ERR_W("函数<%s>从左往右，获得函数的第<%d>个参数错误", m_Name.c_str(), index);
-			return m_Params[0].second->GetValueType();
+			return m_Params[0].second->GetVariableType();
 		}
 	}
 }

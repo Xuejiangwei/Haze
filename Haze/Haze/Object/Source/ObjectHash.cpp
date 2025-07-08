@@ -82,22 +82,22 @@ ObjectHash::~ObjectHash()
 AdvanceClassInfo* ObjectHash::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	info.Add(H_TEXT("长度"), { &ObjectHash::GetLength, HazeValueType::UInt64, {} });
-	info.Add(H_TEXT("添加"), { &ObjectHash::Add, HazeValueType::Void, { HazeValueType::MultiVariable } });
-	info.Add(H_TEXT("移除"), { &ObjectHash::Remove, HazeValueType::Void, { HazeValueType::MultiVariable } });
+	info.Add(H_TEXT("长度"), { &ObjectHash::GetLength, OBJ_TYPE_DEF(UInt64), {} });
+	info.Add(H_TEXT("添加"), { &ObjectHash::Add, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(H_TEXT("移除"), { &ObjectHash::Remove, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 
-	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectHash::Get, HazeValueType::Void, { HazeValueType::MultiVariable } });
-	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectHash::Set, HazeValueType::Void, { HazeValueType::MultiVariable } });
+	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectHash::Get, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectHash::Set, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 
 	return &info;
 }
 
-HazeDefineType ObjectHash::GetKeyBaseType()
+HazeVariableType ObjectHash::GetKeyBaseType()
 {
 	return m_KeyType->Type->BaseType;
 }
 
-HazeDefineType ObjectHash::GetValueBaseType()
+HazeVariableType ObjectHash::GetValueBaseType()
 {
 	return m_ValueType->Type->BaseType;
 }
@@ -169,12 +169,12 @@ void ObjectHash::Get(HAZE_OBJECT_CALL_PARAM)
 	auto node = &obj->m_Data[hashValue];
 
 	HazeValue tempKey;
-	SetHazeValueByData(tempKey, obj->GetKeyBaseType().PrimaryType, key);
+	SetHazeValueByData(tempKey, obj->GetKeyBaseType().BaseType, key);
 
 	HazeValue value;
 	while (true)
 	{
-		if (IsEqualByType(obj->GetKeyBaseType().PrimaryType, node->Key, tempKey))
+		if (IsEqualByType(obj->GetKeyBaseType().BaseType, node->Key, tempKey))
 		{
 			value = node->Value;
 			break;
@@ -188,7 +188,7 @@ void ObjectHash::Get(HAZE_OBJECT_CALL_PARAM)
 		}
 	}
 
-	SET_RET_BY_TYPE(obj->GetValueBaseType().PrimaryType, value);
+	SET_RET_BY_TYPE(obj->GetValueBaseType().BaseType, value);
 	//HAZE_LOG_INFO("Array Get <%d>\n", offset);
 }
 
@@ -200,7 +200,7 @@ void ObjectHash::Set(HAZE_OBJECT_CALL_PARAM)
 x_uint64 ObjectHash::GetHash(ObjectHash* obj, void* value, HazeStack* stack)
 {
 	x_uint64 hashValue = 0;
-	switch (obj->GetValueBaseType().PrimaryType)
+	switch (obj->GetValueBaseType().BaseType)
 	{
 		case HazeValueType::Bool:
 			hashValue = __ObjectHash_Hash__((bool*)value);
@@ -251,7 +251,7 @@ x_uint64 ObjectHash::GetHash(ObjectHash* obj, void* value, HazeStack* stack)
 			hashValue = __ObjectHash_Hash__(value);
 			break;
 		default:
-			OBJECT_ERR_W("类型<%s>不能哈希", GetHazeValueTypeString(obj->GetValueBaseType().PrimaryType));
+			OBJECT_ERR_W("类型<%s>不能哈希", GetHazeValueTypeString(obj->GetValueBaseType().BaseType));
 			break;
 	}
 	return hashValue % ((obj->m_Capacity - 1) | 1);
@@ -329,8 +329,8 @@ void ObjectHash::Add(HAZE_OBJECT_CALL_PARAM)
 
 	HazeValue tempKey;
 	HazeValue tempValue;
-	SetHazeValueByData(tempKey, obj->GetKeyBaseType().PrimaryType, key);
-	SetHazeValueByData(tempValue, obj->GetValueBaseType().PrimaryType, value);
+	SetHazeValueByData(tempKey, obj->GetKeyBaseType().BaseType, key);
+	SetHazeValueByData(tempValue, obj->GetValueBaseType().BaseType, value);
 	obj->Add(tempKey, tempValue, stack);
 }
 
@@ -340,13 +340,7 @@ void ObjectHash::Remove(HAZE_OBJECT_CALL_PARAM)
 	char* value = nullptr;
 
 	GET_PARAM_START();
-	GET_PARAM(obj);
-	if (!obj)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("哈希对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
+	GET_OBJ(obj);
 
 	x_uint64 newCapacity = 1;
 	x_uint64 doubleLength = (obj->m_Length - 1) * 2;

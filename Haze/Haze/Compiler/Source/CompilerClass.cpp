@@ -283,13 +283,13 @@ void CompilerClass::ParseIntermediateClass(HAZE_IFSTREAM& stream, CompilerModule
 		ParseIntermediateClass(stream, m, parentClass->m_ParentClass);
 
 		HString str;
-		HazeDefineType valueType;
+		HazeVariableType valueType;
 		x_uint32 ui32;
 		x_uint64 ui64;
 		for (x_uint64 j = 0; j < parentClass->m_Data.size(); ++j)
 		{
 			stream >> str;
-			HazeDefineType::StringStreamFrom<Compiler>(stream, m->GetCompiler(), &Compiler::GetSymbolTableNameAddress);
+			HazeVariableType::StringStreamFrom<Compiler>(stream, m->GetCompiler(), &Compiler::GetSymbolTableNameAddress);
 			stream >> ui32 >> ui64;
 		}
 	}
@@ -325,7 +325,7 @@ void CompilerClass::GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, x_uint32& 
 	for (x_uint64 i = 0; i < m_Data.size(); ++i)
 	{
 		hss << m_Data[i].first << " " << CAST_DESC(m_Data[i].second->GetVariableDesc()) << " ";
-		m_Data[i].second->GetValueType().StringStreamTo(hss);
+		m_Data[i].second->GetVariableType().StringStreamTo(hss);
 
 		if (m_Data[i].second->IsArray())
 		{
@@ -429,7 +429,7 @@ bool CompilerClass::IsParentClass(CompilerClass* c) const
 	return false;
 }
 
-bool CompilerClass::IsParentClass(const HazeDefineType type) const
+bool CompilerClass::IsParentClass(const HazeVariableType type) const
 {
 	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
@@ -441,7 +441,7 @@ bool CompilerClass::IsParentClass(const HazeDefineType type) const
 
 	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
-		if (m_ParentClass[i]->m_Name == *type.CustomName)
+		if (m_ParentClass[i]->GetTypeId() == type.TypeId)
 		{
 			return true;
 		}

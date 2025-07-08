@@ -5,7 +5,7 @@
 class CompilerRefValue : public CompilerValue
 {
 public:
-	CompilerRefValue(CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+	CompilerRefValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
 		HazeDataDesc desc, int count, Share<CompilerValue>& refValue);
 
 	~CompilerRefValue();

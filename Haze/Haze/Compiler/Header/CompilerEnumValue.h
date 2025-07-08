@@ -9,20 +9,20 @@ class CompilerEnumValue : public CompilerValue
 public:
 	friend class CompilerClass;
 
+	// 定义创建
 	explicit CompilerEnumValue(CompilerEnum* owner, Share<CompilerValue> value);
 
-	explicit CompilerEnumValue(CompilerEnum* owner, CompilerModule* compilerModule, const HazeDefineType& defineType, HazeVariableScope scope,
+	// 变量创建
+	explicit CompilerEnumValue(CompilerEnum* owner, CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
 		HazeDataDesc desc, int count, Share<CompilerValue> assignValue = nullptr);
 
 	virtual ~CompilerEnumValue() override;
 
 	virtual bool IsEnum() const override { return true; }
 
-	virtual x_uint32 GetSize() override;
-
 	CompilerEnum* GetEnum() { return m_OwnerEnum; }
 
-	HazeValueType GetBaseType() const;
+	x_uint32 GetTypeId() const;
 
 private:
 	CompilerEnum* m_OwnerEnum;

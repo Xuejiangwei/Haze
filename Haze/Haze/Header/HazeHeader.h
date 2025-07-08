@@ -6,3 +6,4 @@
 #include "HazeInstruction.h"
 #include "HazeCompare.h"
 #include "HazeLibraryType.h"
+#include "HazeTypeInfo.h"

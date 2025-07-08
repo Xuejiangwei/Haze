@@ -280,6 +280,7 @@ struct ClassData
 {
 	HString Name;
 	x_uint32 Size;
+	x_uint32 TypeId;
 	V_Array<HazeVariableData> Members;
 	HashMap<HString, x_uint32> Functions;
 	V_Array<x_uint32> InheritClasses;
@@ -287,7 +288,7 @@ struct ClassData
 
 struct FunctionData
 {
-	HazeDefineType Type;
+	HazeVariableType Type;
 	V_Array<HazeDefineVariable> Params;
 	V_Array<HazeVariableData> Variables;
 	V_Array<HazeTempRegisterData> TempRegisters;
@@ -300,7 +301,7 @@ struct FunctionData
 struct HazeRegister
 {
 	V_Array<char> Data;
-	HazeDefineType Type;
+	HazeVariableType Type;
 };
 
 //struct HazeJmpData

@@ -42,10 +42,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, CompilerValue* value, bool bStr
 	{
 		const auto& v = value->GetValue();
 
-		HazeValueType type = value->IsEnum() ? value->GetValueType().SecondaryType : 
-			value->GetValueType().PrimaryType;
-
-		switch (type)
+		switch (value->GetBaseType())
 		{
 		case HazeValueType::Bool:
 			hss << v.Value.Bool;
@@ -65,6 +62,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, CompilerValue* value, bool bStr
 		case HazeValueType::Int32:
 			hss << v.Value.Int32;
 			break;
+		case HazeValueType::Enum:
 		case HazeValueType::UInt32:
 			hss << v.Value.UInt32;
 			break;
@@ -87,7 +85,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, CompilerValue* value, bool bStr
 	else
 	{
 		hss << " ";
-		value->GetValueType().StringStreamTo(hss);
+		value->GetVariableType().StringStreamTo(hss);
 	}
 }
 
@@ -96,10 +94,10 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 	HazeCompilerStream(hss, value.get(), bStreamValue);
 }
 
-Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeDefineType& type, HazeVariableScope scope, 
+Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeVariableType& type, HazeVariableScope scope, 
 	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
-	switch (type.PrimaryType)
+	switch (type.BaseType)
 	{
 		case HazeValueType::Void:
 		case HazeValueType::Bool:
@@ -117,7 +115,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		case HazeValueType::DynamicClass:
 			return MakeShare<CompilerValue>(compilerModule, type, scope, desc, count, assignValue);
 		case HazeValueType::Array:
-			return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count, arrayDimension);
+			return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count);
 		case HazeValueType::Refrence:
 			return MakeShare<CompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
 		case HazeValueType::Function:
@@ -130,13 +128,14 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		}
 		case HazeValueType::Enum:
 		{
-			auto enumValue = compilerModule->GetEnum(compilerModule, *type.CustomName).get();
+			
+			auto enumValue = compilerModule->GetEnum(compilerModule, type.TypeId).get();
 			return MakeShare<CompilerEnumValue>(enumValue, compilerModule, type, scope, desc, count, assignValue);
 		}
 		case HazeValueType::ObjectBase:
 			return MakeShare<CompilerObjectBaseValue>(compilerModule, type, scope, desc, count);
 		case HazeValueType::Hash:
-			return MakeShare<CompilerHashValue>(compilerModule, type, scope, desc, count, params);
+			return MakeShare<CompilerHashValue>(compilerModule, type, scope, desc, count);
 		case HazeValueType::Closure:
 			return MakeShare<CompilerClosureValue>(compilerModule, type, scope, desc, count, params);
 		default:
@@ -146,7 +145,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 	return nullptr;
 }
 
-Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDefineType& type, HazeVariableScope scope,
+Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeVariableType& type, HazeVariableScope scope,
 	HazeDataDesc desc, int count, Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	return CreateVariableImpl(compilerModule, type, scope, desc, count, refValue, arrayDimension, params);
@@ -154,7 +153,7 @@ Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeDe
 
 Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var)
 {
-	return CreateVariableImpl(compilerModule, var->GetValueType(), scope, var->GetVariableDesc(), 0, var,
+	return CreateVariableImpl(compilerModule, var->GetVariableType(), scope, var->GetVariableDesc(), 0, var,
 		var->IsArray() ? DynamicCast<CompilerArrayValue>(var)->GetArrayDimension() : 0,
 		/*var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : */nullptr);
 }
@@ -187,18 +186,6 @@ bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<Co
 	}*/
 
 	return false;
-}
-
-x_uint32 GetSizeByCompilerValue(Share<CompilerValue> v)
-{
-	if (v->IsEnum())
-	{
-		return v->GetSize();
-	}
-	else
-	{
-		return GetSizeByHazeType(v->GetValueType().PrimaryType);
-	}
 }
 
 void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes)
@@ -249,11 +236,11 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 	else if (value->IsFunctionAddress())
 	{
-		s_StrName = *value->GetValueType().CustomName;
+		/*s_StrName = *value->GetValueType().CustomName;
 		if (!s_StrName.empty())
 		{
 			find = true;
-		}
+		}*/
 	}
 	else if (value->IsTempVariable())
 	{
@@ -278,7 +265,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 
 	hss << s_StrName << " " << CAST_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " ";
-	value->GetValueType().StringStreamTo(hss);
+	value->GetVariableType().StringStreamTo(hss);
 
 	if (value->IsString())
 	{
@@ -288,7 +275,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 }
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo,
-	Share<CompilerValue> oper1, Share<CompilerValue> oper2, const HazeDefineType* expectType, bool check)
+	Share<CompilerValue> oper1, Share<CompilerValue> oper2, const HazeVariableType* expectType, bool check)
 {
 	struct ScopeAssign
 	{
@@ -346,12 +333,14 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		{
 			if (assignElementValue->GetElement())
 			{
-				assignTo = m->GetCompiler()->GetTempRegister(assignElementValue->GetValueType(), assignElementValue->TryGetArrayDimension());
+				assignTo = m->GetCompiler()->GetTempRegister(assignElementValue->GetVariableType());
 				elementAssign->SetElement(assignElementValue, assignTo);
 			}
 			else if (assignElementValue->GetElementName())
 			{
-				assignTo = m->GetCompiler()->GetTempRegister(HazeValueType::DynamicClassUnknow);
+				HazeVariableType varType;
+				varType.SetBaseTypeAndId(HazeValueType::DynamicClassUnknow);
+				assignTo = m->GetCompiler()->GetTempRegister(varType);
 				elementAssign->SetElement(assignElementValue, assignTo);
 			}
 			else
@@ -361,7 +350,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		}
 		else if (assignTo && assignTo->IsRefrence())
 		{
-			auto tempValue = m->GetCompiler()->GetTempRegister(assignTo->GetValueType().SecondaryType);
+			auto tempValue = m->GetCompiler()->GetTempRegister(assignTo->GetVariableType());
 			elementAssign->SetAssignTo(assignTo, tempValue);
 			assignTo = tempValue;
 		}
@@ -373,7 +362,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		}
 		else if (oper1 && oper1->IsRefrence())
 		{
-			oper1 = m->GetCompiler()->CreateMovPV(m->GetCompiler()->GetTempRegister(oper1->GetValueType().SecondaryType), oper1);
+			oper1 = m->GetCompiler()->CreateMovPV(m->GetCompiler()->GetTempRegister(oper1->GetVariableType()), oper1);
 		}
 	
 		Share<CompilerElementValue> operElementValue2 = DynamicCast<CompilerElementValue>(oper2);
@@ -383,53 +372,54 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		}
 		else if (oper2 && oper2->IsRefrence())
 		{
-			oper2 = m->GetCompiler()->CreateMovPV(m->GetCompiler()->GetTempRegister(oper2->GetValueType().SecondaryType), oper2);
+			oper2 = m->GetCompiler()->CreateMovPV(m->GetCompiler()->GetTempRegister(oper2->GetVariableType()), oper2);
 		}
 
 		if (expectType)
 		{
 			auto type = *expectType;
 
-			if (IsMultiVariableTye(expectType->PrimaryType))
+			if (IsMultiVariableTye(expectType->BaseType))
 			{
-				if (IsNumberType(type.PrimaryType))
+				if (IsNumberType(type.BaseType))
 				{
-					if (IsUnsignedIntegerType(type.PrimaryType))
+					if (IsUnsignedIntegerType(type.BaseType))
 					{
-						type.PrimaryType = HazeValueType::UInt64;
+						type.BaseType = HazeValueType::UInt64;
 					}
-					else if (IsIntegerType(type.PrimaryType))
+					else if (IsIntegerType(type.BaseType))
 					{
-						type.PrimaryType = HazeValueType::Int64;
+						type.BaseType = HazeValueType::Int64;
 					}
 					else
 					{
-						type.PrimaryType = HazeValueType::Float64;
+						type.BaseType = HazeValueType::Float64;
 					}
 					oper1 = m->GetCompiler()->CreateCVT(m->GetCompiler()->GetTempRegister(type), oper1);
 				}
 			}
-			else if (IsNumberType(type.PrimaryType) && IsNumberType(oper1->GetValueType().PrimaryType))
+			else if (IsNumberType(type.BaseType) && IsNumberType(oper1->GetBaseType()))
 			{
-				auto strongerType = GetStrongerType(type.PrimaryType, oper1->GetValueType().PrimaryType);
-				if (IsIntegerType(type.PrimaryType) && IsIntegerType(oper1->GetValueType().PrimaryType))
+				HazeVariableType strongerType;
+				strongerType.SetBaseTypeAndId(GetStrongerType(type.BaseType, oper1->GetBaseType()));
+				if (IsIntegerType(type.BaseType) && IsIntegerType(oper1->GetBaseType()))
 				{
-					if (type != oper1->GetValueType())
+					if (type != oper1->GetVariableType())
 					{
 						oper1 = m->GetCompiler()->CreateCVT(m->GetCompiler()->GetTempRegister(strongerType), oper1);
 					}
 				}
-				else if (IsFloatingType(type.PrimaryType) && IsFloatingType(oper1->GetValueType().PrimaryType))
+				else if (IsFloatingType(type.BaseType) && IsFloatingType(oper1->GetBaseType()))
 				{
-					if (type != oper1->GetValueType())
+					if (type != oper1->GetVariableType())
 					{
 						oper1 = m->GetCompiler()->CreateCVT(m->GetCompiler()->GetTempRegister(strongerType), oper1);
 					}
 				}
 			}
-			else if (IsRefrenceType(type.PrimaryType) && !oper1->IsRefrence())
+			else if (IsRefrenceType(type.BaseType) && !oper1->IsRefrence())
 			{
-				type.PrimaryType = HazeValueType::UInt64;
+				type.BaseType = HazeValueType::UInt64;
 				oper1 = m->GetCompiler()->CreateLea(m->GetCompiler()->GetTempRegister(type), oper1);
 			}
 		}

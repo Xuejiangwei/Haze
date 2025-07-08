@@ -5,7 +5,7 @@
 class CompilerStringValue : public CompilerValue
 {
 public:
-	explicit CompilerStringValue(CompilerModule* compilerModule, const HazeDefineType& defineType,
+	explicit CompilerStringValue(CompilerModule* compilerModule, const HazeVariableType& defineType,
 		HazeVariableScope scope, HazeDataDesc desc, int count);
 
 	virtual ~CompilerStringValue() override;
