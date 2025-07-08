@@ -16,13 +16,6 @@ class CompilerEnum;
 class HazeCompilerTemplateFunction;
 class HazeCompilerTemplateClass;
 
-struct TemplateCacheTextData
-{
-	x_uint32 StartLine;
-	HString Text;
-	V_Array<HString> Types;
-};
-
 class CompilerModule
 {
 	friend class Compiler;
@@ -99,12 +92,6 @@ public:
 	void FinishClosure();
 
 	Share<CompilerFunction> GetFunction(const HString& name);
-
-	void StartCacheTemplate(HString& templateName, x_uint32 startLine, HString& templateText, V_Array<HString>& templateTypes);
-
-	bool IsTemplateClass(const HString& name);
-
-	bool ResetTemplateClassRealName(HString& inName, const V_Array<HazeVariableType>& templateTypes);
 
 	bool IsImportModule(CompilerModule* m) const;
 
@@ -211,8 +198,6 @@ private:
 
 	HashMap<HString, Share<CompilerValue>> m_HashMap_StringTable;
 	HashMap<int, const HString*> m_HashMap_StringMapping;
-
-	HashMap<HString, TemplateCacheTextData> m_HashMap_TemplateText;
 
 	V_Array<CompilerModule*> m_ImportModules;
 

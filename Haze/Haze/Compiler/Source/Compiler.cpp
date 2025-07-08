@@ -623,35 +623,6 @@ bool Compiler::IsEnum(const HString& name)
 	return false;
 }
 
-bool Compiler::IsTemplateClass(const HString& name)
-{
-	auto& currModule = GetCurrModule();
-	if (currModule->IsTemplateClass(name))
-	{
-		return true;
-	}
-	else
-	{
-		for (auto& iter : currModule->m_ImportModules)
-		{
-			if (iter->IsTemplateClass(name))
-			{
-				return true;
-			}
-		}
-
-		for (auto& iter : m_CompilerBaseModules)
-		{
-			if (iter.second->IsTemplateClass(name))
-			{
-				return true;
-			}
-		}
-	}
-
-	return false;
-}
-
 void Compiler::MarkParseTemplate(bool begin, const HString* moduleName)
 {
 	static HString cacheFunctionName;

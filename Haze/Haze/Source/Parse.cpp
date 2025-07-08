@@ -129,7 +129,6 @@ static HashMap<HString, HazeToken> s_HashMap_Token =
 	{ TOKEN_NULL_PTR, HazeToken::NullPtr },
 
 	{ TOKEN_TYPENAME, HazeToken::TypeName },
-	{ TOKEN_TEMPLATE, HazeToken::Template },
 
 	{ TOKEN_SIZE_OF, HazeToken::SizeOf },
 
@@ -245,7 +244,7 @@ private:
 Parse::Parse(Compiler* compiler)
 	: m_Compiler(compiler), m_CurrCode(nullptr), m_CurrToken(HazeToken::None),
 	m_LeftParenthesesExpressionCount(0), m_LineCount(1),
-	m_IsParseTemplate(false), m_TemplateTypes(nullptr), m_TemplateRealTypes(nullptr), m_IsParseArray(false),
+	m_IsParseTemplate(false), m_TemplateTypes(nullptr), m_IsParseArray(false),
 	m_IsParseClassData_Or_FunctionParam(false)
 {
 }
@@ -383,11 +382,6 @@ bool Parse::ParseContent()
 			}
 		}
 		break;
-		case HazeToken::Template:
-		{
-			ParseTemplate();
-		}
-		break;
 		case HazeToken::StaticLibrary:
 		case HazeToken::DLLLibrary:
 		{
@@ -428,87 +422,6 @@ bool Parse::ParseContent()
 
 	m_StackSectionSignal.pop();
 	return true;
-}
-
-void Parse::ParseTemplateContent(const HString& moduleName, const HString& templateName, const V_Array<HString>& templateTypes,
-	const V_Array<HazeVariableType>& templateRealTypes)
-{
-	m_Compiler->MarkParseTemplate(true, &moduleName);
-	m_IsParseTemplate = true;
-	m_TemplateTypes = &templateTypes;
-	m_TemplateRealTypes = &templateRealTypes;
-
-	m_CurrParseClass = templateName;
-	V_Array<HString> parentClasses;
-	if (ExpectNextTokenIs_NoParseError(HazeToken::Colon))
-	{
-		//暂时不支持继承模板类
-		if (ExpectNextTokenIs_NoParseError(HazeToken::CustomClass))
-		{
-			while (TokenIs(HazeToken::CustomClass))
-			{
-				parentClasses.push_back(m_CurrLexeme);
-				GetNextToken();
-				if (TokenIs(HazeToken::Comma))
-				{
-					GetNextToken();
-				}
-				else if (TokenIs(HazeToken::LeftBrace))
-				{
-					break;
-				}
-				else
-				{
-					HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", templateName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
-				}
-			}
-		}
-		else
-		{
-			HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", templateName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
-		}
-	}
-
-	if (TokenIs(HazeToken::LeftBrace))
-	{
-		m_StackSectionSignal.push(HazeSectionSignal::Class);
-
-		V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> classDatas;
-		Unique<ASTClassFunctionSection> classFunctions;
-
-		GetNextToken();
-		while (m_CurrToken == HazeToken::Data || m_CurrToken == HazeToken::Function)
-		{
-			if (m_CurrToken == HazeToken::Data)
-			{
-				if (classDatas.size() == 0)
-				{
-					classDatas = ParseClassData();
-				}
-				else
-				{
-					HAZE_LOG_ERR_W("解析错误: 类中相同的区域<%s>只能存在一种! <%s>文件<%d>行!", templateName.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
-				}
-			}
-			else if (m_CurrToken == HazeToken::Function)
-			{
-				classFunctions = ParseClassFunction(templateName);
-			}
-		}
-
-		m_StackSectionSignal.pop();
-
-		GetNextToken();
-
-		HString className = templateName;
-		MakeUnique<ASTClass>(m_Compiler, /*SourceLocation(m_LineCount),*/ className,
-			parentClasses, classDatas, classFunctions)->CodeGen();
-	}
-
-	m_IsParseTemplate = false;
-	m_TemplateTypes = nullptr;
-	m_TemplateRealTypes = nullptr;
-	m_Compiler->MarkParseTemplate(false);
 }
 
 HazeToken Parse::GetNextToken(bool clearLexeme)
@@ -670,7 +583,7 @@ HazeToken Parse::GetNextToken(bool clearLexeme)
 	{
 		m_CurrToken = HazeToken::Number;
 	}
-	else if (m_Compiler->IsClass(m_CurrLexeme) || (!m_CurrParseClass.empty() && m_CurrParseClass == m_CurrLexeme) || m_Compiler->IsTemplateClass(m_CurrLexeme))
+	else if (m_Compiler->IsClass(m_CurrLexeme) || (!m_CurrParseClass.empty() && m_CurrParseClass == m_CurrLexeme))
 	{
 		m_CurrToken = HazeToken::CustomClass;
 	}
@@ -2628,99 +2541,6 @@ Unique<ASTEnum> Parse::ParseEnum()
 	return nullptr;
 }
 
-void Parse::ParseTemplate()
-{
-	if (ExpectNextTokenIs_NoParseError(HazeToken::Less))
-	{
-		V_Array<HString> templateTypes;
-		do
-		{
-			if (ExpectNextTokenIs_NoParseError(HazeToken::TypeName))
-			{
-				if (ExpectNextTokenIs(HazeToken::Identifier, H_TEXT("模板类型名定义错误")))
-				{
-					templateTypes.push_back(m_CurrLexeme);
-					GetNextToken();
-				}
-			}
-		} while (TokenIs(HazeToken::Comma));
-
-		if (templateTypes.empty())
-		{
-			PARSE_ERR_W("模板不存在类型参数，使用普通类");
-			return;
-		}
-
-		if (TokenIs(HazeToken::Greater))
-		{
-			if (ExpectNextTokenIs_NoParseError(HazeToken::Class))
-			{
-				if (ExpectNextTokenIs(HazeToken::Identifier, H_TEXT("模板类名定义错误")))
-				{
-					HString templateClassName = m_CurrLexeme;
-					const x_HChar* start = m_CurrCode;
-					x_uint32 line = m_LineCount;
-
-					if (ExpectNextTokenIs_NoParseError(HazeToken::Colon))
-					{
-						//暂时不支持继承模板类
-						if (ExpectNextTokenIs_NoParseError(HazeToken::CustomClass))
-						{
-							while (TokenIs(HazeToken::CustomClass))
-							{
-								GetNextToken();
-								if (TokenIs(HazeToken::Comma))
-								{
-									GetNextToken();
-								}
-								else if (TokenIs(HazeToken::LeftBrace))
-								{
-									break;
-								}
-								else
-								{
-									HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", templateClassName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
-								}
-
-								line = m_LineCount;
-							}
-						}
-						else
-						{
-							HAZE_LOG_ERR_W("解析错误: 类<%s>继承<%s>错误! <%s>文件<%d>行!\n", templateClassName.c_str(), m_CurrLexeme.c_str(), m_Compiler->GetCurrModuleName().c_str(), m_LineCount);
-						}
-					}
-					
-					if (TokenIs(HazeToken::LeftBrace))
-					{
-						V_Array<x_uint32> stack(1);
-						while (stack.size() > 0)
-						{
-							if (ExpectNextTokenIs_NoParseError(HazeToken::LeftBrace))
-							{
-								stack.push_back(1);
-							}
-							else if (TokenIs(HazeToken::RightBrace))
-							{
-								stack.pop_back();
-							}
-						}
-
-						HString templateText(start, m_CurrCode);
-						m_Compiler->GetCurrModule()->StartCacheTemplate(templateClassName, line, templateText, templateTypes);
-					}
-				}
-			}
-			else
-			{
-				//模板函数
-			}
-
-			GetNextToken();
-		}
-	}
-}
-
 Unique<ASTTemplateBase> Parse::ParseTemplateClass(V_Array<HString>& templateTypes)
 {
 	m_CurrParseClass = m_CurrLexeme;
@@ -2882,12 +2702,6 @@ void Parse::GetValueType(HazeVariableType& inType)
 {
 	switch (m_CurrToken)
 	{
-	case HazeToken::Identifier:
-		if (m_IsParseTemplate)
-		{
-			GetTemplateRealValueType(m_CurrLexeme, inType);
-		}
-		break;
 	case HazeToken::MultiVariable:
 		m_DefineVariable.Name = HAZE_MULTI_PARAM_NAME;
 		break;
@@ -2950,25 +2764,6 @@ void Parse::GetValueType(HazeVariableType& inType)
 		PARSE_ERR_W("获得变量类型错误");
 		break;
 	}
-}
-
-void Parse::GetTemplateRealValueType(const HString& str, HazeVariableType& inType)
-{
-	if (m_IsParseTemplate)
-	{
-		for (size_t i = 0; i < m_TemplateTypes->size(); i++)
-		{
-			if (m_TemplateTypes->at(i) == str)
-			{
-				inType = m_TemplateRealTypes->at(i);
-				return;
-			}
-		}
-
-		HAZE_LOG_ERR_W("模板未能找到<%s>的真正类型!\n", str.c_str());
-	}
-
-	return;
 }
 
 x_uint32 Parse::ParseTemplateTypes(HazeVariableType baseType, TemplateDefineTypes& templateTypes)

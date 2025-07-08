@@ -119,7 +119,6 @@
 #define TOKEN_NULL_PTR					H_TEXT("空指针")
 
 #define TOKEN_TYPENAME					H_TEXT("类型")
-#define TOKEN_TEMPLATE					H_TEXT("模板")
 
 #define TOKEN_SIZE_OF					H_TEXT("大小")
 

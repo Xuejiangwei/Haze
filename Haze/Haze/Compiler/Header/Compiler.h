@@ -131,8 +131,6 @@ public:
 
 	bool IsEnum(const HString& name);
 
-	bool IsTemplateClass(const HString& name);
-
 	void MarkParseTemplate(bool begin, const HString* moduleName = nullptr);
 
 	Share<CompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var, HazeValueType* varType = nullptr);

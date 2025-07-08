@@ -28,9 +28,6 @@ public:
 
 	bool ParseContent();
 
-	void ParseTemplateContent(const HString& moduleName, const HString& templateName, const V_Array<HString>& templateTypes,
-		const V_Array<HazeVariableType>& templateRealTypes);
-
 	HazeToken GetNextToken(bool clearLexeme = true);
 
 	const HString& GetCurrLexeme() const { return m_CurrLexeme; }
@@ -122,8 +119,6 @@ private:
 
 	Unique<ASTEnum> ParseEnum();
 
-	void ParseTemplate();
-
 	Unique<ASTTemplateBase> ParseTemplateClass(V_Array<HString>& templateTypes);
 
 	Unique<ASTTemplateBase> ParseTemplateFunction(V_Array<HString>& templateTypes);
@@ -144,8 +139,6 @@ private:
 	bool IsNumberType(const HString& str, HazeToken& outToken);
 
 	void GetValueType(HazeVariableType& inType);
-
-	void GetTemplateRealValueType(const HString& str, HazeVariableType& inType);
 
 	x_uint32 ParseTemplateTypes(HazeVariableType baseType, TemplateDefineTypes& templateTypes);
 
@@ -175,5 +168,4 @@ private:
 	bool m_IsParseArray;
 	bool m_IsParseTemplate;
 	const V_Array<HString>* m_TemplateTypes;
-	const V_Array<HazeVariableType>* m_TemplateRealTypes;
 };

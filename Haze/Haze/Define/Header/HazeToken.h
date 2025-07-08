@@ -33,7 +33,6 @@ enum class HazeToken : unsigned int
 	Enum,
 
 	TypeName,
-	Template,
 
 	Class,
 	ClassPublic,
