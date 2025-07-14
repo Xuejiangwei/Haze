@@ -54,13 +54,13 @@ HazeValue* ASTFunction::CodeGen()
 	for (int i = (int)m_FunctionParams.size() - 1; i >= 0; i--)
 	{
 		currModule->BeginCreateFunctionParamVariable();
-		m_FunctionParams[i]->CodeGen();
+		m_FunctionParams[i]->CodeGen(nullptr);
 		currModule->EndCreateFunctionParamVariable();
 	}
 
 	if (m_Body)
 	{
-		m_Body->CodeGen();
+		m_Body->CodeGen(nullptr);
 	}
 
 	if (compilerFunction == currModule->GetCurrFunction())
@@ -94,7 +94,7 @@ void ASTFunction::RegisterFunction()
 	}
 	else if (m_Section == HazeSectionSignal::Class)
 	{
-		auto info = m_Compiler->GetTypeInfoMap()->GetTypeInfoById(m_FunctionParams[0]->GetDefine().Type.TypeId);
+		auto info = m_Compiler->GetTypeInfoMap()->GetTypeById(m_FunctionParams[0]->GetDefine().Type.TypeId);
 		currClass = currModule->GetClass(*info->_Class.GetString());
 		currModule->CreateFunction(currClass, m_IsVirtual ? ClassCompilerFunctionType::Virtual : m_IsPureVirtual ?
 			ClassCompilerFunctionType::PureVirtual : ClassCompilerFunctionType::Normal, m_FunctionName, m_FunctionType, paramDefines);
@@ -149,7 +149,7 @@ void ASTFunctionDefine::CodeGen()
 
 	for (auto& iter : m_FunctionParams)
 	{
-		iter->CodeGen();
+		iter->CodeGen(nullptr);
 	}
 }
 

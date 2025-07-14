@@ -20,6 +20,8 @@ public:
 
 	Share<CompilerValue> GetLocalVariable(const HString& name, Share<CompilerBlock> startBlock);
 
+	bool ExistRefVariable(const HString& name) const;
+
 private:
 	V_Array<Pair<int, int>> m_RefValues; // { 上个函数引用的变量索引, 这个函数变量所在的索引 }
 	Share<CompilerBlock> m_UpLevelBlock;

@@ -44,6 +44,9 @@ public:
 
 	void SetDataDesc(HazeDataDesc desc) { m_Desc = desc; }
 
+	const HString* GetPointerFunctionName() const;
+	void SetPointerFunctionName(const HString* name);
+
 public:
 	bool IsRegister() const { return IsRegisterDesc(m_Desc); }
 

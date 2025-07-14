@@ -10,7 +10,6 @@
 #endif
 
 #define HAZE_VAR_BASE_TYPE(TYPE) HazeVariableType(TYPE, HAZE_TYPE_ID(TYPE))
-#define HAZE_COMPLEX_BASE_CAST(INFO) ((HazeComplexTypeInfoBase*)(&INFO))
 
 enum class HazeSectionSignal : x_uint8
 {
@@ -28,7 +27,7 @@ struct HazeVariableType
 	HazeValueType BaseType;
 	x_uint32 TypeId;
 
-	HazeVariableType() { SetBaseTypeAndId(HazeValueType::None); }
+	HazeVariableType() { BaseType = HazeValueType::None; TypeId = 0; }
 
 	explicit HazeVariableType(HazeValueType type) { SetBaseTypeAndId(type); }
 
@@ -50,7 +49,7 @@ struct HazeVariableType
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("设置类型错误");
+			HAZE_LOG_ERR_W("设置类型错误\n");
 		}
 	}
 
@@ -151,7 +150,7 @@ struct HazeDefineVariable
 	HazeVariableType Type;		//变量类型
 	HString Name;				//变量名
 
-	HazeDefineVariable() : Type(HazeValueType::None) {}
+	HazeDefineVariable() : Type(HazeValueType::None, HAZE_TYPE_ID(HazeValueType::None)) {}
 	HazeDefineVariable(const HazeVariableType& type, const HString& name)
 		: Type(type), Name(name) {}
 };

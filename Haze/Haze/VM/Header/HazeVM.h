@@ -72,15 +72,18 @@ public:
 
 	char* GetGlobalValueByIndex(x_uint32 Index);
 
-	ClassData* FindClass(const HString& className);
+	ClassData* FindClass(x_uint32 typeId);
+	ClassData* FindClass(const HString& name);
 
-	x_uint32 GetClassSize(const HString& className);
+	x_uint32 GetClassSize(x_uint32 typeId);
 
 	x_uint32 AddGlobalValue(ObjectClass* value);
 
 	void RemoveGlobalValue(x_uint32 index);
 
 	void ClearGlobalData();
+
+	HazeTypeInfoMap* GetTypeInfoMap() { return m_TypeInfoMap.get(); }
 
 private:
 	void InitRegisterObjectFunction();
@@ -136,8 +139,9 @@ private:
 	HashMap<HString, x_uint32> m_HashFunctionTable;
 	V_Array<AdvanceFunctionInfo*> m_FunctionObjectTable;
 
-
 	V_Array<Instruction> m_Instructions;
+
+	Unique<HazeTypeInfoMap> m_TypeInfoMap;
 
 	HazeRunType GenType;
 };

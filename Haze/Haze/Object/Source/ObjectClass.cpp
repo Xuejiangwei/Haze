@@ -7,10 +7,11 @@
 #include "HazeLibraryDefine.h"
 #include "MemoryHelper.h"
 
-ObjectClass::ObjectClass(x_uint32 gcIndex, ClassData* classInfo)
-	: GCObject(gcIndex), m_ClassInfo(classInfo)
+ObjectClass::ObjectClass(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
+	: GCObject(gcIndex)
 {
-	auto pair = HazeMemory::AllocaGCData(classInfo->Size, GC_ObjectType::ClassData);
+	m_ClassInfo = vm->FindClass(typeId);
+	auto pair = HazeMemory::AllocaGCData(m_ClassInfo->Size, GC_ObjectType::ClassData);
 	m_Data = pair.first;
 	m_DataGCIndex = pair.second;
 	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p> Constructor\n"), m_ClassInfo->Name.c_str(), this, m_Data);

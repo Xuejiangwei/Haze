@@ -9,15 +9,19 @@
 #include "ObjectBase.h"
 #include "ObjectClosure.h"
 
+#define DEFAULT_CAPACITY 2
 #define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "สýื้")
 
-ObjectArray::ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* lengths, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo)
-	: GCObject(gcIndex), m_Data(nullptr), m_DimensionCount(dimensionCount), m_Length(0), m_PcAddress(pcAddress), m_ValueType(valueType),
-	  m_ClassInfo(classInfo)
+ObjectArray::ObjectArray(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId, x_uint64* lengths)
+	: GCObject(gcIndex)
 {
-	if (dimensionCount > 1)
+	auto info = vm->GetTypeInfoMap()->GetTypeById(typeId);
+	
+	m_ValueType.BaseType = vm->GetTypeInfoMap()->GetTypeById(info->_Array.TypeId1)->GetBaseType();
+	m_ValueType.TypeId = info->_Array.TypeId1;
+	
+	if (info->_Array.Dimension > 1)
 	{
-		m_ValueType.BaseType = HazeValueType::Array;
 		m_Length = lengths[0];
 		m_Capacity = m_Length;
 
@@ -28,7 +32,7 @@ ObjectArray::ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* le
 		for (x_uint64 i = 0; i < m_Length; i++)
 		{
 			pair = HazeMemory::HazeMemory::AllocaGCData(sizeof(ObjectArray), GC_ObjectType::Array);
-			new((char*)pair.first) ObjectArray(pair.second, dimensionCount - 1, lengths + 1, pcAddress, valueType, classInfo);
+			new((char*)pair.first) ObjectArray(pair.second, vm, m_ValueType.TypeId, lengths + 1);
 			((ObjectArray**)m_Data)[i] = (ObjectArray*)pair.first;
 		}
 	}
@@ -39,15 +43,15 @@ ObjectArray::ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* le
 
 		if (m_Capacity == 0)
 		{
-			m_Capacity = 2;
+			m_Capacity = DEFAULT_CAPACITY;
 
-			auto pair = HazeMemory::AllocaGCData(m_Capacity * GetSizeByHazeType(valueType), GC_ObjectType::ArrayData);
+			auto pair = HazeMemory::AllocaGCData(m_Capacity * GetSizeByHazeType(m_ValueType.BaseType), GC_ObjectType::ArrayData);
 			m_Data = pair.first;
 			m_DataGCIndex = pair.second;
 		}
 		else
 		{
-			auto pair = HazeMemory::AllocaGCData(m_Length * GetSizeByHazeType(valueType), GC_ObjectType::ArrayData);
+			auto pair = HazeMemory::AllocaGCData(m_Length * GetSizeByHazeType(m_ValueType.BaseType), GC_ObjectType::ArrayData);
 			m_Data = pair.first;
 			m_DataGCIndex = pair.second;
 		}

@@ -15,7 +15,7 @@ static Pair<bool, int> ParseStringCount = { false, 0 };
 
 static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 {
-	if (ins.InsCode == InstructionOpCode::LINE || ins.InsCode == InstructionOpCode::NEW_SIGN)
+	if (ins.InsCode == InstructionOpCode::LINE /*|| ins.InsCode == InstructionOpCode::NEW_SIGN*/)
 	{
 		return true;
 	}
@@ -25,7 +25,7 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 		return true;
 	}
 
-	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.BaseType == HazeValueType::Function && 
+	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.BaseType == HazeValueType::Function &&
 		(ins.Operator[0].Desc == HazeDataDesc::RegisterTemp || ins.Operator[0].Scope == HazeVariableScope::Ignore))
 	{
 		return true;
@@ -93,11 +93,21 @@ void BackendParse::Parse()
 	HString codeText;
 
 	{
+		HAZE_TO_DO(之后考虑删除中间符号文件去使用引用类型表里的字符串);
 		HAZE_IFSTREAM fs(GetIntermediateModuleFile(HAZE_INTER_SYMBOL_TABLE));
 		fs.imbue(std::locale("chs"));
 		codeText = HString(std::istreambuf_iterator<x_HChar>(fs), {});
 		m_CurrCode = codeText.c_str();
 		Parse_I_Symbol();
+		fs.close();
+	}
+
+	{
+		HAZE_IFSTREAM fs(GetIntermediateModuleFile(HAZE_TYPE_INFO_TABLE));
+		fs.imbue(std::locale("chs"));
+		codeText = HString(std::istreambuf_iterator<x_HChar>(fs), {});
+		m_CurrCode = codeText.c_str();
+		Parse_I_TypeInfo();
 		fs.close();
 	}
 
@@ -168,6 +178,84 @@ void BackendParse::Parse_I_Symbol()
 		while (m_CurrLexeme != GetSymbolEndHeader())
 		{
 			m_InterSymbol.insert(m_CurrLexeme);
+			GetNextLexeme();
+		}
+	}
+}
+
+void BackendParse::Parse_I_TypeInfo()
+{
+	GetNextLexeme();
+	x_uint32 number;
+	if (m_CurrLexeme == GetTypeInfoFunctionBeginHeader())
+	{
+		GetNextLexeme();
+		while (m_CurrLexeme != GetTypeInfoFunctionEndHeader())
+		{
+			number = StringToStandardType<x_uint32>(m_CurrLexeme);
+
+			x_int32 count;
+			GetNextLexmeAssign_StandardType(count);
+			V_Array<x_uint32> param(count);
+			for (x_uint32 i = 0; i < count; i++)
+			{
+				GetNextLexmeAssign_StandardType(param[i]);
+			}
+
+			m_TypeInfoFunction.push_back({ number, Move(param) });
+			GetNextLexeme();
+		}
+	}
+
+	GetNextLexeme();
+	if (m_CurrLexeme == GetTypeInfoBeginHeader())
+	{
+		HString name;
+
+		GetNextLexeme();
+		HString s = GetTypeInfoEndHeader();
+		while (m_CurrLexeme != GetTypeInfoEndHeader())
+		{
+			name = m_CurrLexeme;
+			GetNextLexmeAssign_StandardType(number);
+
+			GetNextLexmeAssign_StandardType(number);
+			x_uint32 typeId = number;
+
+			HazeComplexTypeInfo info;
+			GetNextLexmeAssign_CustomType<x_uint32>(info._BaseType.BaseType);
+
+			switch (info._BaseType.BaseType)
+			{
+				case HazeValueType::ObjectBase:
+					GetNextLexmeAssign_StandardType(info._ObjectBase.TypeId1);
+					break;
+				case HazeValueType::Class:
+				case HazeValueType::Enum:
+					break;
+				case HazeValueType::Array:
+				{
+					GetNextLexmeAssign_StandardType(info._Array.TypeId1);
+					GetNextLexmeAssign_StandardType(info._Array.Dimension);
+				}
+				break;
+				case HazeValueType::Hash:
+				{
+					GetNextLexmeAssign_StandardType(info._Hash.TypeId1);
+					GetNextLexmeAssign_StandardType(info._Hash.TypeId2);
+				}
+				break;
+				case HazeValueType::Function:
+				{
+					GetNextLexmeAssign_StandardType(info._Function.TypeId1);
+					GetNextLexmeAssign_StandardType(info._Function.FunctionInfoIndex);
+				}
+				break;
+				default:
+					break;
+			}
+
+			m_TypeInfo.push_back({ name, { typeId, info }  });
 			GetNextLexeme();
 		}
 	}
@@ -328,7 +416,6 @@ void BackendParse::Parse_I_Code_EnumTable()
 
 		//暂不记录
 		HString str;
-		x_uint32 v;
 		for (x_uint32 i = 0; i < number; i++)
 		{
 			GetNextLexmeAssign_HazeString(str);
@@ -385,7 +472,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 
 					//HazeDesc
 					GetNextLexmeAssign_StandardType(number);
-					
+
 					classMember.Variable.Type.StringStream<BackendParse>(this,
 						&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
 						&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
@@ -406,7 +493,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 		x_uint64 count = 0;
 		GetNextLexmeAssign_StandardType(number);
 		count += number;
-		
+
 		GetNextLexmeAssign_StandardType(number);
 		count += number;
 
@@ -463,7 +550,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					functionData.Variables.push_back(Move(var));
 					GetNextLexeme();
 				}
-				
+
 				while (m_CurrLexeme == GetFunctionTempRegisterHeader())
 				{
 					HazeTempRegisterData data;
@@ -484,7 +571,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					GetNextLexmeAssign_CustomType<int>(refIndex);
 					GetNextLexmeAssign_CustomType<int>(varIndex);
 					functionData.RefVariable.push_back({ refIndex, varIndex });
-					
+
 					GetNextLexeme();
 				}
 
@@ -568,7 +655,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne, operatorTwo };
 		}
-			break;
+		break;
 		case InstructionOpCode::ADD:
 		case InstructionOpCode::SUB:
 		case InstructionOpCode::MUL:
@@ -590,7 +677,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne, operatorTwo, operatorThree };
 		}
-			break;
+		break;
 		case InstructionOpCode::PUSH:
 		case InstructionOpCode::POP:
 		case InstructionOpCode::RET:
@@ -600,7 +687,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne };
 		}
-			break;
+		break;
 		case InstructionOpCode::CALL:
 		{
 			InstructionData operatorOne;
@@ -613,14 +700,14 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 			{
 				GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Scope);
 				GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Desc);
-		
+
 				GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
 				GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamByteSize);
 			}
 
 			instruction.Operator = { operatorOne };
 		}
-			break;
+		break;
 		case InstructionOpCode::JMP:
 		{
 			InstructionData operatorOne;
@@ -628,7 +715,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne };
 		}
-			break;
+		break;
 		case InstructionOpCode::JNE:
 		case InstructionOpCode::JNG:
 		case InstructionOpCode::JNL:
@@ -645,7 +732,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne, operatorTwo };
 		}
-			break;
+		break;
 		case InstructionOpCode::LINE:
 		{
 			InstructionData operatorOne;
@@ -653,8 +740,8 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne };
 		}
-			break;
-		case InstructionOpCode::NEW_SIGN:
+		break;
+		/*case InstructionOpCode::NEW_SIGN:
 		{
 			InstructionData operatorOne;
 			operatorOne.Variable.Type.StringStream<BackendParse>(this,
@@ -662,10 +749,10 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 				&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
 			BackendParse::GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Extra.SignData.ArrayDimension);
-			
+
 			instruction.Operator = { operatorOne };
 		}
-			break;
+			break;*/
 		default:
 			break;
 	}
@@ -685,7 +772,7 @@ void BackendParse::GenOpCodeFile()
 	for (auto& iter : m_Modules)
 	{
 		newGlobalDataTable.InitFunctionIndex.push_back(newFunctionTable.m_Functions.size());
-		newFunctionTable.m_Functions.insert(newFunctionTable.m_Functions.end(), 
+		newFunctionTable.m_Functions.insert(newFunctionTable.m_Functions.end(),
 			iter.second->m_FunctionTable.m_Functions.begin(), iter.second->m_FunctionTable.m_Functions.end());
 
 		ReplaceStringIndex(newStringTable, newFunctionTable, functionCount);
@@ -693,10 +780,10 @@ void BackendParse::GenOpCodeFile()
 		newGlobalDataTable.Data.insert(newGlobalDataTable.Data.end(),
 			iter.second->m_GlobalDataTable.Data.begin(), iter.second->m_GlobalDataTable.Data.end());
 
-		newStringTable.Strings.insert(newStringTable.Strings.end(), 
+		newStringTable.Strings.insert(newStringTable.Strings.end(),
 			iter.second->m_StringTable.Strings.begin(), iter.second->m_StringTable.Strings.end());
 
-		newClassTable.Classes.insert(newClassTable.Classes.end(), 
+		newClassTable.Classes.insert(newClassTable.Classes.end(),
 			iter.second->m_ClassTable.Classes.begin(), iter.second->m_ClassTable.Classes.end());
 		for (x_uint64 i = newClassTable.Classes.size() - iter.second->m_ClassTable.Classes.size(); i < newClassTable.Classes.size(); i++)
 		{
@@ -705,7 +792,8 @@ void BackendParse::GenOpCodeFile()
 	}
 
 	FindAddress(newGlobalDataTable, newFunctionTable);
-	exeFile.WriteExecuteFile(newGlobalDataTable, newStringTable, newClassTable, newFunctionTable);
+	exeFile.WriteExecuteFileSymbol(m_TypeInfoFunction, m_TypeInfo);
+	exeFile.WriteExecuteFileData(newGlobalDataTable, newStringTable, newClassTable, newFunctionTable);
 }
 
 void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& newStringTable,
@@ -743,7 +831,7 @@ void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::Functio
 	}
 }
 
-inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData,ModuleUnit::FunctionTableData& function,
+inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
 	HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
 	{
@@ -767,8 +855,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("在函数<%s>中查找<%s>的偏移值失败!\n", function.Name.c_str(),
-					operatorData.Variable.Name.c_str());
+				HAZE_LOG_ERR_W("在函数<%s>中查找<%s>的偏移值失败!\n", function.Name.c_str(), operatorData.Variable.Name.c_str());
 				return;
 			}
 		}
@@ -797,7 +884,7 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 		HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", operatorData.Variable.Name.c_str());
 		return;
 	}
-	
+
 }
 
 void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,

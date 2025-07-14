@@ -1,6 +1,7 @@
 #pragma once
 
 class Compiler;
+class HazeTypeInfoMap;
 
 class ASTBase;
 class ASTVariableDefine;
@@ -57,7 +58,7 @@ private:
 	Unique<ASTBase> ParseVariableDefine_ObjectBase(x_int32 templateTypeId);
 	Unique<ASTBase> ParseVariableDefine_Hash(x_uint32 templateTypeId);
 
-	Unique<ASTBase> ParseClosure();
+	Unique<ASTBase> ParseClosure(x_uint32 templateTypeId);
 
 	Unique<ASTBase> ParseStringText();
 
@@ -148,6 +149,8 @@ private:
 
 private:
 	Compiler* m_Compiler;
+	HazeTypeInfoMap* m_TypeInfoMap;
+
 	HazeLibraryType m_LibraryType;
 	HazeToken m_CurrToken;
 	const x_HChar* m_CurrCode;

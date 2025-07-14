@@ -54,6 +54,7 @@ static HashMap<HString, Share<CompilerValue>> g_GlobalTempRegisters = {
 Compiler::Compiler(HazeVM* vm) : m_VM(vm), m_MarkError(false), m_MarkNewCode(false)
 {
 	m_AdvanceClassIndexInfo.clear();
+	m_TypeInfoMap = MakeUnique<HazeTypeInfoMap>();
 }
 
 Compiler::~Compiler()
@@ -101,7 +102,6 @@ void Compiler::PreRegisterFunction()
 
 bool Compiler::InitializeCompiler(const HString& moduleName, const HString& path)
 {
-	//����ģ��
 	auto It = m_CompilerModules.find(moduleName);
 	if (It != m_CompilerModules.end())
 	{
@@ -144,6 +144,11 @@ void Compiler::FinishParse()
 	ofstream << hss.str();
 	ofstream.close();
 
+	ofstream.open(GetIntermediateModuleFile(HAZE_TYPE_INFO_TABLE));
+	hss.str(H_TEXT(""));
+	m_TypeInfoMap->GenICode(hss);
+	ofstream << hss.str();
+	ofstream.close();
 
 	for (auto& m : m_CompilerModules)
 	{
@@ -268,7 +273,9 @@ void Compiler::RegisterClassToSymbolTable(const HString& className)
 	}
 
 	m_CacheSymbols.push_back({ className });
-	m_SymbolTable[{ &m_CacheSymbols.back() }] = { nullptr, 0 };
+
+	CLASS_TYPE_INFO(info, className);
+	m_SymbolTable[{ &m_CacheSymbols.back() }] = { nullptr, m_TypeInfoMap->RegisterType(GetCurrModuleName(), &info)};
 }
 
 void Compiler::OnCreateClass(Share<CompilerClass> compClass)
@@ -281,7 +288,7 @@ void Compiler::OnCreateClass(Share<CompilerClass> compClass)
 	}
 	else
 	{
-		COMPILER_ERR_MODULE_W("�ظ�������<%s>", compClass->GetName().c_str(), GetCurrModuleName().c_str());
+		COMPILER_ERR_MODULE_W("重复创建类<%s>", compClass->GetName().c_str(), GetCurrModuleName().c_str());
 		return;
 	}
 }
@@ -323,14 +330,14 @@ Share<CompilerEnum> Compiler::GetBaseModuleEnum(const HString& name)
 
 Share<CompilerEnum> Compiler::GetBaseModuleEnum(x_uint32 typeId)
 {
-	for (auto& it : m_CompilerBaseModules)
+	/*for (auto& it : m_CompilerBaseModules)
 	{
 		auto ret = it.second->GetEnumByTypeId_Internal(typeId);
 		if (ret)
 		{
 			return ret;
 		}
-	}
+	}*/
 
 	return nullptr;
 }
@@ -476,15 +483,13 @@ Share<CompilerValue> Compiler::GetTempRegister(const HazeVariableType& type)
 	auto& currModule = GetCurrModule();
 	if (currModule)
 	{
-		auto currFunc = currModule->GetCurrFunction();
+		auto currFunc = currModule->GetCurrClosureOrFunction();
 		if (currFunc)
 		{
-			//�ֲ���ʱ�Ĵ���
 			return currFunc->CreateTempRegister(type);
 		}
 		else
 		{
-			//ȫ����ʱ�Ĵ���
 			return currModule->GetGlobalDataFunction()->CreateTempRegister(type);
 		}
 	}
@@ -497,7 +502,7 @@ Share<CompilerValue> Compiler::GetTempRegister(const HazeVariableType& type)
 		}
 	}*/
 
-	HAZE_LOG_ERR_W("���ܻ����ʱ�Ĵ���!\n");
+	HAZE_LOG_ERR_W("未找到模块, 不能生成临时寄存器!\n");
 	return nullptr;
 }
 
@@ -1425,13 +1430,14 @@ Share<CompilerValue> Compiler::CreatePointerToFunction(Share<CompilerFunction> f
 	auto tempPointer = GetTempRegister(HAZE_VAR_BASE_TYPE(HazeValueType::Function));
 	tempPointer->SetScope(HazeVariableScope::Ignore);
 	tempPointer->SetDataDesc(HazeDataDesc::FunctionAddress);
+	tempPointer->SetPointerFunctionName(&function->GetName());
 
 	return CreateLea(pointer, tempPointer);
 }
 
-Share<CompilerValue> Compiler::CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure)
+Share<CompilerValue> Compiler::CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, Share<CompilerFunction> closure)
 {
-	return GetCurrModule()->CreateNew(data, countValue, defineTypes, closure);
+	return GetCurrModule()->CreateNew(data, countValue, closure);
 }
 
 Share<CompilerValue> Compiler::CreateCast(const HazeVariableType& type, Share<CompilerValue> value)

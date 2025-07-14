@@ -7,6 +7,7 @@ class HazeVM;
 //字节码文件头部数据格式定义(模仿linux程序结构 堆区、栈区、全局数据区、只读数据区等)
 enum HazeFileFormat : x_uint8
 {
+	Symbol,
 	GlobalDataTable,
 	StringTable,
 	ClassTable,
@@ -31,7 +32,9 @@ public:
 public:
 	void WriteModule(const HashMap<HString, Share<ModuleUnit>>& moduleUnit);
 
-	void WriteExecuteFile(const ModuleUnit::GlobalDataTable& globalDataTable, const ModuleUnit::StringTable& stringTable,
+	void WriteExecuteFileSymbol(V_Array<Pair<x_uint32, V_Array<x_uint32>>>& funtionSymbol, V_Array<Pair<HString, Pair<x_uint32, HazeComplexTypeInfo>>>& symbol);
+
+	void WriteExecuteFileData(const ModuleUnit::GlobalDataTable& globalDataTable, const ModuleUnit::StringTable& stringTable,
 		const ModuleUnit::ClassTable& classTable, const ModuleUnit::FunctionTable& functionTable);
 
 	void ReadExecuteFile(HazeVM* vm);
@@ -55,6 +58,8 @@ private:
 
 private:
 	inline void ReadType(HazeVM* vm, Unique<HAZE_BINARY_IFSTREAM>& fileStream, HazeVariableType& type);
+
+	void ReadTypeInfo(HazeVM* vm);
 
 	void ReadGlobalDataTable(HazeVM* vm);
 

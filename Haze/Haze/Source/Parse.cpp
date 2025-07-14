@@ -9,6 +9,7 @@
 #include "ASTLibrary.h"
 #include "ASTTemplateClass.h"
 
+#include "HazeTypeInfo.h"
 #include "Compiler.h"
 #include "CompilerHelper.h"
 #include "CompilerModule.h"
@@ -247,6 +248,7 @@ Parse::Parse(Compiler* compiler)
 	m_IsParseTemplate(false), m_TemplateTypes(nullptr), m_IsParseArray(false),
 	m_IsParseClassData_Or_FunctionParam(false)
 {
+	m_TypeInfoMap = m_Compiler->GetTypeInfoMap();
 }
 
 Parse::~Parse()
@@ -303,11 +305,7 @@ bool Parse::ParseContent()
 			auto ast = ParseExpression();
 			if (!m_IsParseError && ast)
 			{
-				ast->CodeGen();
-			}
-			else
-			{
-				return false;
+				ast->CodeGen(nullptr);
 			}
 		}
 		break;
@@ -317,14 +315,8 @@ bool Parse::ParseContent()
 			if (!m_IsParseError && ast)
 			{
 				ast->CodeGen();
-				m_CurrParseClass.clear();
 			}
-			else
-			{
-				m_CurrParseClass.clear();
-				return false;
-			}
-
+			m_CurrParseClass.clear();
 		}
 		break;
 		case HazeToken::Data:
@@ -332,11 +324,7 @@ bool Parse::ParseContent()
 			auto ast = ParseDataSection();
 			if (!m_IsParseError && ast)
 			{
-				ast->CodeGen();
-			}
-			else
-			{
-				return false;
+				ast->CodeGen(nullptr);
 			}
 		}
 		break;
@@ -356,16 +344,8 @@ bool Parse::ParseContent()
 				auto varAst =  ParseVariableDefine();
 				if (!m_IsParseError && varAst)
 				{
-					varAst->CodeGen();
+					varAst->CodeGen(nullptr);
 				}
-				else
-				{
-					return false;
-				}
-			}
-			else
-			{
-				return false;
 			}
 		}
 		break;
@@ -375,10 +355,6 @@ bool Parse::ParseContent()
 			if (!m_IsParseError && ast)
 			{
 				ast->CodeGen();
-			}
-			else
-			{
-				return false;
 			}
 		}
 		break;
@@ -390,10 +366,6 @@ bool Parse::ParseContent()
 			{
 				ast->CodeGen();
 			}
-			else
-			{
-				return false;
-			}
 		}
 		break;
 		case HazeToken::ImportModule:
@@ -401,16 +373,18 @@ bool Parse::ParseContent()
 			auto ast = ParseImportModule();
 			if (!m_IsParseError && ast)
 			{
-				ast->CodeGen();
-			}
-			else
-			{
-				return false;
+				ast->CodeGen(nullptr);
 			}
 		}
 		break;
 		default:
 			PARSE_ERR_W("未能找到生成相应Token的AST处理");
+			return false;
+		}
+
+		if (m_IsParseError)
+		{
+			PARSE_ERR_W("解析错误");
 			return false;
 		}
 
@@ -922,8 +896,6 @@ Unique<ASTBase> Parse::ParsePrimary()
 			return ParseGetAddress();
 		case HazeToken::LeftBrace:
 			return ParseLeftBrace();
-		case HazeToken::Function:
-			return ParseClosure();
 		default:
 			break;
 	}
@@ -1095,7 +1067,7 @@ Unique<ASTBase> Parse::ParseVariableDefine()
 	GetNextToken();
 
 	bool isTemplateVar = TokenIs(HazeToken::Less);
-	x_uint32 templateTypeId = 0;
+	x_uint32 templateTypeId = m_DefineVariable.Type.TypeId;
 	if (isTemplateVar)
 	{
 		TemplateDefineTypes templateTypes;
@@ -1130,7 +1102,7 @@ Unique<ASTBase> Parse::ParseVariableDefine()
 			return ParseVariableDefine_Function(templateTypeId);
 		}
 	}
-	else if (IsMultiVariableTye(m_DefineVariable.Type.BaseType))
+	else if (IsMultiVariableType(m_DefineVariable.Type.BaseType))
 	{
 		if (TokenIs(HazeToken::RightParentheses, H_TEXT("多参数应是最后一个参数")))
 		{
@@ -1215,6 +1187,9 @@ Unique<ASTBase> Parse::ParseVariableDefine_Array(x_uint32 typeId)
 			return nullptr;
 		}
 	}
+
+	ARRAY_TYPE_INFO(info, m_DefineVariable.Type.TypeId, arrayDimension);
+	m_DefineVariable.Type.TypeId = m_TypeInfoMap->RegisterType(m_Compiler->GetCurrModuleName(), &info);
 
 	if (TokenIs(HazeToken::Identifier, H_TEXT("数组对象变量名定义错误")))
 	{
@@ -1350,18 +1325,16 @@ Unique<ASTBase> Parse::ParseVariableDefine_Function(x_uint32 templateTypeId)
 	{
 		m_DefineVariable.Name = m_CurrLexeme;
 		HazeDefineVariable defineVar = m_DefineVariable;
-
 		if (ExpectNextTokenIs_NoParseError(HazeToken::Assign))
 		{
 			if (NextTokenNotIs(HazeToken::Function))
 			{
 				Unique<ASTBase> expression = ParseExpression();
-				return MakeUnique<ASTVariableDefine_Function>(m_Compiler, SourceLocation(tempLineCount),
-					m_StackSectionSignal.top(), defineVar, Move(expression), templateTypeId);
+				return MakeUnique<ASTVariableDefine_Function>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), defineVar, Move(expression), templateTypeId);
 			}
 			else
 			{
-				Unique<ASTBase> expression = ParseExpression();
+				return ParseClosure(templateTypeId);
 			}
 		}
 		else
@@ -1375,7 +1348,8 @@ Unique<ASTBase> Parse::ParseVariableDefine_Function(x_uint32 templateTypeId)
 
 Unique<ASTBase> Parse::ParseVariableDefine_ObjectBase(x_int32 templateTypeId)
 {
-	if (!IsHazeBaseType(HAZE_ID_2_TYPE(templateTypeId)))
+	auto info = m_TypeInfoMap->GetTypeById(templateTypeId);
+	if (!IsHazeBaseType(HAZE_ID_2_TYPE(info->_ObjectBase.TypeId1)))
 	{
 		PARSE_ERR_W("基本对象变量<%s>定义错误, 只能有一个类型且只能是基本类型", m_DefineVariable.Name.c_str());
 	}
@@ -1412,6 +1386,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Hash(x_uint32 templateTypeId)
 	if (TokenIs(HazeToken::Identifier, H_TEXT("哈希对象需要一个正确的名称")))
 	{
 		m_DefineVariable.Name = m_CurrLexeme;
+		m_DefineVariable.Type.TypeId = templateTypeId;
 
 		if (ExpectNextTokenIs_NoParseError(HazeToken::Assign))
 		{
@@ -1428,8 +1403,9 @@ Unique<ASTBase> Parse::ParseVariableDefine_Hash(x_uint32 templateTypeId)
 	return nullptr;
 }
 
-Unique<ASTBase> Parse::ParseClosure()
+Unique<ASTBase> Parse::ParseClosure(x_uint32 templateTypeId)
 {
+	HazeDefineVariable varDef = m_DefineVariable;
 	auto tempLineCount = m_LineCount;
 	if (m_StackSectionSignal.top() == HazeSectionSignal::Local || m_StackSectionSignal.top() == HazeSectionSignal::Closure)
 	{
@@ -1469,7 +1445,8 @@ Unique<ASTBase> Parse::ParseClosure()
 				{
 					m_StackSectionSignal.pop();
 					//TemplateDefineTypes templateTypes;
-					return MakeUnique<ASTVariableDefine_Closure>(m_Compiler, SourceLocation(tempLineCount), SourceLocation(startLineCount), SourceLocation(m_LineCount), m_StackSectionSignal.top(), m_DefineVariable, body, 0, params);
+					return MakeUnique<ASTVariableDefine_Closure>(m_Compiler, SourceLocation(tempLineCount), SourceLocation(startLineCount), SourceLocation(m_LineCount),
+						m_StackSectionSignal.top(), varDef, body, templateTypeId, params);
 				}
 			}
 		}
@@ -1723,7 +1700,7 @@ Unique<ASTBase> Parse::ParseNew()
 
 		}
 		m_IsParseArray = false;
-		return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, templateTypes,
+		return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar,
 			Move(arraySize));
 	}
 	else
@@ -1746,7 +1723,7 @@ Unique<ASTBase> Parse::ParseNew()
 
 			if (TokenIs(HazeToken::RightParentheses, H_TEXT("生成表达式 期望 ) ")))
 			{
-				return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar, templateTypes,
+				return MakeUnique<ASTNew>(m_Compiler, SourceLocation(tempLineCount), defineVar,
 					Move(arraySize), Move(params));
 			}
 		}
@@ -2680,6 +2657,11 @@ bool Parse::IsHazeSignalToken(const x_HChar* hChar, const x_HChar*& outChar, x_u
 	auto iter = s_HashSet_TokenText.find(s_WS);
 	if (iter != s_HashSet_TokenText.end())
 	{
+		if (m_IsParseTemplate && (*iter == TOKEN_LEFT_MOVE || *iter == TOKEN_RIGHT_MOVE))
+		{
+			return false;
+		}
+
 		outChar = iter->c_str();
 	}
 
@@ -2707,7 +2689,7 @@ void Parse::GetValueType(HazeVariableType& inType)
 		break;
 	case HazeToken::CustomClass:
 	{
-		inType.TypeId = m_Compiler->GetSymbolTableNameTypeId(m_CurrLexeme);
+		inType.TypeId = m_TypeInfoMap->GetTypeId(m_CurrLexeme);
 		if (inType.TypeId == 0)
 		{
 			PARSE_ERR_W("获得类的类型错误");
@@ -2756,6 +2738,8 @@ void Parse::GetValueType(HazeVariableType& inType)
 	case HazeToken::Float32:
 	case HazeToken::Float64:
 	case HazeToken::Function:
+		inType.TypeId = HAZE_TYPE_ID(GetValueTypeByToken(m_CurrToken));
+		break;
 	case HazeToken::DynamicClass:
 	case HazeToken::ObjectBase:
 	case HazeToken::Hash:
@@ -2768,7 +2752,18 @@ void Parse::GetValueType(HazeVariableType& inType)
 
 x_uint32 Parse::ParseTemplateTypes(HazeVariableType baseType, TemplateDefineTypes& templateTypes)
 {
-	x_uint32 typeId = 0;
+	struct Scope
+	{
+		Scope(bool* scopeValue) : ScopeValue(scopeValue) { *ScopeValue = true; }
+		~Scope() { *ScopeValue = false; }
+	private:
+		bool* ScopeValue;
+	};
+
+	Scope scope(&m_IsParseTemplate);
+	V_Array<x_uint32> typeIds;
+	x_uint32 arrayDimension = 0;
+
 	//if (IsUseTemplateType(baseType.BaseType))
 	{
 		while (true)
@@ -2777,23 +2772,26 @@ x_uint32 Parse::ParseTemplateTypes(HazeVariableType baseType, TemplateDefineType
 			HazeVariableType type;
 			type.BaseType = GetValueTypeByToken(m_CurrToken);
 			GetValueType(type);
+			TempCurrCode temp(this);
 
-			if (TokenIs(HazeToken::Less) && IsUseTemplateType(type.BaseType))
+			if (ExpectNextTokenIs_NoParseError(HazeToken::Less) && IsUseTemplateType(type.BaseType))
 			{
-				TemplateDefineTypes types;
-				ParseTemplateTypes(type, templateTypes);
+				//TemplateDefineTypes types;
+				typeIds.push_back(ParseTemplateTypes(type, templateTypes));
+				m_IsParseTemplate = true;
 
-				TemplateDefineType t(true, MakeShare<TemplateDefineTypes>(Move(types)), nullptr);
-				templateTypes.Types.push_back(t);
+				/*TemplateDefineType t(true, MakeShare<TemplateDefineTypes>(Move(types)), nullptr);
+				templateTypes.Types.push_back(t);*/
 			}
 			else
 			{
-				TemplateDefineType t(false, nullptr, MakeShare<HazeNewDefineType>(type));
-				templateTypes.Types.push_back(t);
+				temp.Reset();
+				typeIds.push_back(type.TypeId);
+				/*TemplateDefineType t(false, nullptr, MakeShare<HazeNewDefineType>(type));
+				templateTypes.Types.push_back(t);*/
 			}
 
-			TempCurrCode temp(this);
-			x_uint32 arrayDimension = 0;
+			temp.Update();
 			while (ExpectNextTokenIs_NoParseError(HazeToken::Array))
 			{
 				if (CanArray(type.BaseType) && ExpectNextTokenIs_NoParseError(HazeToken::ArrayDefineEnd))
@@ -2811,13 +2809,11 @@ x_uint32 Parse::ParseTemplateTypes(HazeVariableType baseType, TemplateDefineType
 			temp.Reset();
 			if (arrayDimension > 0)
 			{
-				HazeComplexTypeInfo::Array typeInfo;
-				typeInfo.BaseType = HazeValueType::Array;
-				typeInfo.TypeId1 = 0;// RegisterType();
-				typeInfo.Dimension = arrayDimension;
+				/*templateTypes.Types.back().Type->BaseType.TypeId = m_Compiler->GetTypeInfoMap()->RegisterType(CAST_COMPLEX_INFO(typeInfo));
+				templateTypes.Types.back().Type->BaseType.BaseType = HazeValueType::Array;*/
 
-				templateTypes.Types.back().Type->BaseType.TypeId = m_Compiler->GetTypeInfoMap()->RegisterType(CAST_COMPLEX_INFO(typeInfo));
-				templateTypes.Types.back().Type->BaseType.BaseType = HazeValueType::Array;
+				ARRAY_TYPE_INFO(info, typeIds.back(), arrayDimension);
+				typeIds.back() = m_TypeInfoMap->RegisterType(m_Compiler->GetCurrModuleName(), & info);
 			}
 
 			if (ExpectNextTokenIs_NoParseError(HazeToken::Greater))
@@ -2831,7 +2827,26 @@ x_uint32 Parse::ParseTemplateTypes(HazeVariableType baseType, TemplateDefineType
 		PARSE_ERR_W("解析模板类型错误");
 	}*/
 
-	return typeId;
+	HazeComplexTypeInfo info;
+#define TYPE_INFO_VAR(INFO)
+	switch (baseType.BaseType)
+	{
+		case HazeValueType::Hash:
+			HASH_TYPE_INFO(info, typeIds[0], typeIds[1]);
+			break;
+		//case HazeValueType::Array:
+		//	ARRAY_TYPE_INFO(info, typeIds[0], arrayDimension);
+		//	break;
+		case HazeValueType::ObjectBase:
+			OBJ_BASE_TYPE_INFO(info, typeIds[0]);
+			break;
+		default:
+			//其他类型都是函数
+			return m_TypeInfoMap->RegisterType(m_Compiler->GetCurrModuleName(), baseType.TypeId, Move(typeIds));
+	}
+#undef TYPE_INFO_VAR
+
+	return m_TypeInfoMap->RegisterType(m_Compiler->GetCurrModuleName(), &info);
 }
 
 //void Parse::ParseVariableType()

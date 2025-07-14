@@ -44,6 +44,8 @@ private:
 
 	void Parse_I_Symbol();
 
+	void Parse_I_TypeInfo();
+
 	void Parse_I_Code();
 
 	void Parse_I_Code_ImportModule();
@@ -92,4 +94,7 @@ private:
 	HashMap<HString, Share<ModuleUnit>> m_Modules;
 
 	HashSet<HString> m_InterSymbol;
+
+	V_Array<Pair<x_uint32, V_Array<x_uint32>>> m_TypeInfoFunction;
+	V_Array<Pair<HString, Pair<x_uint32, HazeComplexTypeInfo>>> m_TypeInfo;
 };

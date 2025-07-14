@@ -38,6 +38,7 @@ HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
 	m_Stack = MakeUnique<HazeStack>(this);
 	m_Compiler = MakeUnique<Compiler>(this);
+	m_TypeInfoMap = MakeUnique<HazeTypeInfoMap>();
 }
 
 HazeVM::~HazeVM()
@@ -191,7 +192,7 @@ HString HazeVM::GetAdvanceFunctionName(x_uint16 index)
 ObjectClass* HazeVM::CreateObjectClass(const x_HChar* className, ...)
 {
 	auto pair = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
-	new(pair.first) ObjectClass(pair.second, FindClass(className));
+	new(pair.first) ObjectClass(pair.second, this, m_TypeInfoMap->GetTypeIdByClassName(className));
 
 	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(className, className));
 
@@ -322,11 +323,12 @@ char* HazeVM::GetGlobalValueByIndex(x_uint32 Index)
 	return nullptr;
 }
 
-ClassData* HazeVM::FindClass(const HString& m_ClassName)
+ClassData* HazeVM::FindClass(x_uint32 typeId)
 {
+	auto info = m_TypeInfoMap->GetClassName(typeId);
 	for (auto& Iter : m_ClassTable)
 	{
-		if (Iter.Name == m_ClassName)
+		if (Iter.Name == *info)
 		{
 			return &Iter;
 		}
@@ -335,9 +337,22 @@ ClassData* HazeVM::FindClass(const HString& m_ClassName)
 	return nullptr;
 }
 
-x_uint32 HazeVM::GetClassSize(const HString& m_ClassName)
+ClassData* HazeVM::FindClass(const HString& name)
 {
-	auto Class = FindClass(m_ClassName);
+	for (auto& Iter : m_ClassTable)
+	{
+		if (Iter.Name == name)
+		{
+			return &Iter;
+		}
+	}
+
+	return nullptr;
+}
+
+x_uint32 HazeVM::GetClassSize(x_uint32 typeId)
+{
+	auto Class = FindClass(typeId);
 	return Class ? Class->Size : 0;
 }
 

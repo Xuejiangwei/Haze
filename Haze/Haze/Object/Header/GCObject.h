@@ -16,4 +16,4 @@ public:
 		return; \
 	}
 
-#define OBJ_TYPE_DEF(TYPE) HazeVariableType(HazeValueType::TYPE)
+#define OBJ_TYPE_DEF(TYPE) HazeVariableType(HazeValueType::TYPE, HAZE_TYPE_ID(HazeValueType::TYPE))

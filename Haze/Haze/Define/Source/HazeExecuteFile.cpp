@@ -12,6 +12,7 @@ thread_local static HAZE_BINARY_STRING s_BinaryString;
 
 static HashMap<HazeFileFormat, const x_HChar*> s_HashMap_FileFormatString =
 {
+	{HazeFileFormat::Symbol, H_TEXT("符号表")},
 	{HazeFileFormat::GlobalDataTable, H_TEXT("全局数据表")},
 	{HazeFileFormat::StringTable, H_TEXT("字符串表")},
 	{HazeFileFormat::ClassTable, H_TEXT("类表")},
@@ -199,7 +200,73 @@ void HazeExecuteFile::WriteModule(const HashMap<HString, Share<ModuleUnit>>& mod
 	}
 }
 
-void HazeExecuteFile::WriteExecuteFile(const ModuleUnit::GlobalDataTable& globalDataTable, const ModuleUnit::StringTable& stringTable,
+void HazeExecuteFile::WriteExecuteFileSymbol(V_Array<Pair<x_uint32, V_Array<x_uint32>>>& funtionSymbol, V_Array<Pair<HString, Pair<x_uint32, HazeComplexTypeInfo>>>& symbol)
+{
+	FileFormatCheck check(ExeFileType::Out, HazeFileFormat::Symbol, m_States);
+
+	x_uint32 number = (x_uint32)funtionSymbol.size();
+	m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+
+	for (auto& iter : funtionSymbol)
+	{
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.first));
+
+		number = (x_uint32)iter.second.size();
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+		for (x_uint32 i = 0; i < iter.second.size(); i++)
+		{
+			m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.second[i]));
+		}
+	}
+
+	number = (x_uint32)symbol.size();
+	m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+
+	for (auto& iter : symbol)
+	{
+		s_BinaryString = WString2String(iter.first);
+		number = (x_uint32)s_BinaryString.size();
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
+		m_FileStream->write(s_BinaryString.data(), number);
+
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.second.first));
+
+		auto& info = iter.second.second;
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(info._BaseType.BaseType));
+
+		switch (info._BaseType.BaseType)
+		{
+			case HazeValueType::ObjectBase:
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(info._ObjectBase.TypeId1));
+				break;
+			case HazeValueType::Class:
+			case HazeValueType::Enum:
+				break;
+			case HazeValueType::Array:
+			{
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(info._Array.TypeId1));
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(info._Array.Dimension));
+			}
+				break;
+			case HazeValueType::Hash:
+			{
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(info._Hash.TypeId1));
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(info._Hash.TypeId2));
+			}
+				break;
+			case HazeValueType::Function:
+			{
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(info._Function.TypeId1));
+				m_FileStream->write(HAZE_WRITE_AND_SIZE(info._Function.FunctionInfoIndex));
+			}
+				break;
+			default:
+				break;
+		}
+	}
+}
+
+void HazeExecuteFile::WriteExecuteFileData(const ModuleUnit::GlobalDataTable& globalDataTable, const ModuleUnit::StringTable& stringTable,
 	const ModuleUnit::ClassTable& classTable, const ModuleUnit::FunctionTable& functionTable)
 {
 	WriteGlobalDataTable(globalDataTable);
@@ -430,6 +497,7 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 void HazeExecuteFile::ReadExecuteFile(HazeVM* vm)
 {
 	ReadModule(vm);
+	ReadTypeInfo(vm);
 	ReadGlobalDataTable(vm);
 	ReadStringTable(vm);
 	ReadClassTable(vm);
@@ -468,6 +536,76 @@ void HazeExecuteFile::ReadModule(HazeVM* vm)
 
 		m_InFileStream->read(HAZE_READ(vm->m_ModuleData[i].FunctionIndex.first));
 		m_InFileStream->read(HAZE_READ(vm->m_ModuleData[i].FunctionIndex.second));
+	}
+}
+
+void HazeExecuteFile::ReadTypeInfo(HazeVM* vm)
+{
+	FileFormatCheck check(ExeFileType::In, HazeFileFormat::Symbol, m_States);
+
+	x_uint32 number;
+	x_uint32 count;
+	m_InFileStream->read(HAZE_READ(count));
+
+	for (x_uint64 i = 0; i < count; i++)
+	{
+		x_uint32 typeId;
+		m_InFileStream->read(HAZE_READ(typeId));
+		m_InFileStream->read(HAZE_READ(number));
+
+		V_Array<x_uint32> typeAndParams(number);
+		for (x_uint64 j = 0; j < typeAndParams.size(); j++)
+		{
+			m_InFileStream->read(HAZE_READ(typeAndParams[j]));
+		}
+
+		vm->m_TypeInfoMap->AddFunctionTypeInfo(typeId, typeAndParams);
+	}
+
+	m_InFileStream->read(HAZE_READ(count));
+	for (x_uint64 i = 0; i < count; i++)
+	{
+		m_InFileStream->read(HAZE_READ(number));
+		s_BinaryString.resize(number);
+		m_InFileStream->read(s_BinaryString.data(), number);
+		auto name = String2WString(s_BinaryString);
+
+		x_uint32 typeId;
+		m_InFileStream->read(HAZE_READ(typeId));
+
+		HazeComplexTypeInfo info;
+		m_InFileStream->read(HAZE_READ(info._BaseType.BaseType));
+		switch (info._BaseType.BaseType)
+		{
+			case HazeValueType::ObjectBase:
+				m_InFileStream->read(HAZE_READ(info._ObjectBase.TypeId1));
+				break;
+			case HazeValueType::Class:
+			case HazeValueType::Enum:
+				break;
+			case HazeValueType::Array:
+			{
+				m_InFileStream->read(HAZE_READ(info._Array.TypeId1));
+				m_InFileStream->read(HAZE_READ(info._Array.Dimension));
+			}
+				break;
+			case HazeValueType::Hash:
+			{
+				m_InFileStream->read(HAZE_READ(info._Hash.TypeId1));
+				m_InFileStream->read(HAZE_READ(info._Hash.TypeId2));
+			}
+				break;
+			case HazeValueType::Function:
+			{
+				m_InFileStream->read(HAZE_READ(info._Function.TypeId1));
+				m_InFileStream->read(HAZE_READ(info._Function.FunctionInfoIndex));
+			}
+				break;
+			default:
+				break;
+		}
+
+		vm->m_TypeInfoMap->AddTypeInfo(Move(name), typeId, &info);
 	}
 }
 

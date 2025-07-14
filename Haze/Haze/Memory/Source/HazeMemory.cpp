@@ -17,11 +17,28 @@
 
 #define PAGE_BASE_SIZE	4 * 4
 #define GC_TIME			50
-#define ENABLE_GC_LOG	0
+#define ENABLE_GC_LOG	1
 
 #if ENABLE_GC_LOG
 #define ENABLE_MEMORY_LOG	1
 	static x_uint64 s_TotalAllocMemory = 0;
+
+	static HashMap<GC_ObjectType, const x_HChar*> s_GCTypeStr =
+	{
+		{ GC_ObjectType::Array, H_TEXT("数组") },
+		{ GC_ObjectType::String, H_TEXT("字符串") },
+		{ GC_ObjectType::Class, H_TEXT("类") },
+		{ GC_ObjectType::DynamicClass, H_TEXT("动态类") },
+		{ GC_ObjectType::ObjectBase, H_TEXT("基本对象") },
+		{ GC_ObjectType::Hash, H_TEXT("哈希") },
+		{ GC_ObjectType::Closure, H_TEXT("闭包") },
+
+		{ GC_ObjectType::ArrayData, H_TEXT("数组数据") },
+		{ GC_ObjectType::StringData, H_TEXT("字符串数据") },
+		{ GC_ObjectType::ClassData, H_TEXT("类数据") },
+		{ GC_ObjectType::HashData, H_TEXT("哈希数据") },
+		{ GC_ObjectType::ClosureData, H_TEXT("闭包数据") },
+	};
 
 	struct GCTimer
 	{
@@ -57,19 +74,19 @@
 				endTime - StartTimestamp, StartMemory, StartMemory - s_TotalAllocMemory);
 		}
 
-		static void OnAlloc(x_uint64 size, void* address)
+		static void OnAlloc(GC_ObjectType type, x_uint64 size, void* address)
 		{
 			s_TotalAllocMemory += size;
 #if ENABLE_MEMORY_LOG
-			HAZE_LOG_INFO_W("申请内存<%d>, 当前申请内存<%d> 地址<%p>\n", size, s_TotalAllocMemory, address);
+			HAZE_LOG_INFO_W("申请内存<%d>, 当前申请内存<%d> 地址<%p>, 类型<%s>\n", size, s_TotalAllocMemory, address, s_GCTypeStr[type]);
 #endif // ENABLE_MEMORY_LOG
 		}
 
-		static void OnFree(x_uint64 size, void* address)
+		static void OnFree(GC_ObjectType type, x_uint64 size, void* address)
 		{
 			s_TotalAllocMemory -= size;
 #if ENABLE_MEMORY_LOG
-			HAZE_LOG_INFO_W("回收内存<%d>, 当前申请内存<%d> 地址<%p>\n", size, s_TotalAllocMemory, address);
+			HAZE_LOG_INFO_W("回收内存<%d>, 当前申请内存<%d> 地址<%p>, 类型<%s>\n", size, s_TotalAllocMemory, address, s_GCTypeStr[type]);
 #endif // ENABLE_MEMORY_LOG
 		}
 
@@ -113,12 +130,13 @@ HazeMemory* HazeMemory::GetMemory()
 Pair<void*, x_uint32> HazeMemory::AllocaGCData(x_uint64 size, GC_ObjectType type)
 {
 	auto memoryIns = GetMemory();
-	auto address = memoryIns->Alloca(size);
+	auto address = memoryIns->Alloca(size, type);
 	auto index = memoryIns->m_ObjectList->Add(address, type);
+
 	return  { address, index };
 }
 
-void* HazeMemory::Alloca(x_uint64 size)
+void* HazeMemory::Alloca(x_uint64 size, GC_ObjectType type)
 {
 	void* ret = nullptr;
 	if (size == 0)
@@ -203,7 +221,7 @@ void* HazeMemory::Alloca(x_uint64 size)
 	memset(ret, 0, size);
 
 #if ENABLE_GC_LOG
-	s_GCTimer.OnAlloc(size, ret);
+	s_GCTimer.OnAlloc(type, size, ret);
 #endif // ENABLE_GC_LOG
 
 	return ret;
@@ -244,7 +262,7 @@ void HazeMemory::Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex)
 		}
 
 #if ENABLE_GC_LOG
-		s_GCTimer.OnFree(memorySize, data);
+		s_GCTimer.OnFree(m_ObjectList->m_StateList[gcIndex].Type, memorySize, data);
 #endif // ENABLE_GC_LOG
 	}
 }

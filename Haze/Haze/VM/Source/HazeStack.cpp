@@ -260,7 +260,7 @@ bool HazeStack::PopGCTempRegister(void* address)
 
 void HazeStack::OnNewSignInternal(TemplateDefineTypes* type)
 {
-	for (x_uint64 i = 0; i < type->Types.size(); i++)
+	/*for (x_uint64 i = 0; i < type->Types.size(); i++)
 	{
 		auto oper = m_VM->m_Instructions[m_PC++].Operator[0];
 		if (IsNoneType(oper.Variable.Type.BaseType))
@@ -275,15 +275,15 @@ void HazeStack::OnNewSignInternal(TemplateDefineTypes* type)
 			m_NewSignType.Types[i].Type->BaseType = oper.Variable.Type;
 			m_NewSignType.Types[i].Type->ArrayDimension = oper.Extra.SignData.ArrayDimension;
 		}
-	}
+	}*/
 }
 
 void HazeStack::OnNewSign()
 {
-	auto oper = m_VM->m_Instructions[m_PC++].Operator[0];
+	/*auto oper = m_VM->m_Instructions[m_PC++].Operator[0];
 	m_NewSignType.Types.resize(oper.Extra.SignData.TemplateCount);
 	OnNewSignInternal(&m_NewSignType);
-	m_PC--;
+	m_PC--;*/
 
 	/*auto oper = m_VM->m_Instructions[m_PC].Operator[0];
 	m_NewSignType.Type = oper.Variable.Type;

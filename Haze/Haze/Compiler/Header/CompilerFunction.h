@@ -30,6 +30,8 @@ public:
 
 	void SetStartEndLine(x_uint32 startLine, x_uint32 endLine);
 
+	Share<CompilerValue> GetParamVariableRightToLeft(x_uint32 index);
+
 	Share<CompilerValue> GetLocalVariable(const HString& VariableName, HString* nameSpace);
 
 	const HString& GetName() const { return m_Name; }
@@ -72,9 +74,9 @@ public:
 
 	void AddLocalVariable(Share<CompilerValue> value, int line);
 
-	const HazeVariableType& GetParamTypeByIndex(x_uint64 index);
+	HazeVariableType GetParamTypeByIndex(x_uint64 index);
 
-	const HazeVariableType& GetParamTypeLeftToRightByIndex(x_uint64 index);
+	HazeVariableType GetParamTypeLeftToRightByIndex(x_uint64 index);
 
 	const x_uint64 GetParamSize() const;
 

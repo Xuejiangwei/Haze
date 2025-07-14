@@ -108,7 +108,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 
 	for (int i = 0; i < argCount; i++)
 	{
-		HAZE_LOG_INFO_W("ÊäÈë²ÎÊý<%d><%s>\n", i, String2WString(argValue[i]).c_str());
+		HAZE_LOG_INFO_W("Param<%d><%s>\n", i, String2WString(argValue[i]).c_str());
 	}
 
 	HazePreInit();

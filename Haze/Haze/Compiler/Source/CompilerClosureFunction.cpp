@@ -3,6 +3,7 @@
 #include "CompilerElementValue.h"
 #include "CompilerClassValue.h"
 #include "CompilerBlock.h"
+#include "CompilerModule.h"
 #include "CompilerHelper.h"
 
 CompilerClosureFunction::CompilerClosureFunction(CompilerModule* compilerModule, const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
@@ -73,4 +74,16 @@ Share<CompilerValue> CompilerClosureFunction::GetLocalVariable(const HString& na
 	}
 
 	return ret;
+}
+
+bool CompilerClosureFunction::ExistRefVariable(const HString& name) const
+{
+	auto func = m_Module->GetUpOneLevelClosureOrFunction();
+
+	if (DynamicCast<CompilerClosureFunction>(func))
+	{
+		return m_Module->GetClosureVariable(name, false) != nullptr;
+	}
+	
+	return func->GetLocalVariable(name, nullptr) != nullptr;
 }

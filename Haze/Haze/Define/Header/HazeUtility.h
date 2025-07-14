@@ -51,6 +51,11 @@ const x_HChar* GetEnumEndHeader();
 const x_HChar* GetSymbolBeginHeader();
 const x_HChar* GetSymbolEndHeader();
 
+const x_HChar* GetTypeInfoFunctionBeginHeader();
+const x_HChar* GetTypeInfoFunctionEndHeader();
+const x_HChar* GetTypeInfoBeginHeader();
+const x_HChar* GetTypeInfoEndHeader();
+
 bool HazeIsSpace(x_HChar hChar, bool* isNewLine = nullptr);
 
 bool IsNumber(const HString& str);

@@ -26,7 +26,7 @@ void ASTEnum::CodeGen()
 		if (m_Enums[i].second)
 		{
 			//这里需要计算出常量
-			v = m_Enums[i].second->CodeGen();
+			v = m_Enums[i].second->CodeGen(nullptr);
 			if (!v)
 			{
 				AST_ERR_W("枚举<%s>生成错误", m_Enums[i].first.c_str());

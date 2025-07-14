@@ -6,7 +6,6 @@
 #define CAST_TYPE(V) (x_uint32)V
 #define HAZE_TYPE_ID(TYPE) (x_uint32)TYPE
 #define HAZE_ID_2_TYPE(ID) ((HazeValueType)(ID))
-#define CAST_COMPLEX_INFO(INFO) (HazeComplexTypeInfoBase*)(&INFO)
 #define ENUM_INT_TYPE HazeValueType::Int32
 
 enum class HazeValueType : x_uint32
@@ -87,7 +86,7 @@ bool IsDynamicClassUnknowType(HazeValueType type);
 bool IsStringType(HazeValueType type);
 bool IsPureStringType(HazeValueType type);
 bool IsRefrenceType(HazeValueType type);
-bool IsMultiVariableTye(HazeValueType type);
+bool IsMultiVariableType(HazeValueType type);
 bool IsObjectFunctionType(HazeValueType type);
 bool IsObjectBaseType(HazeValueType type);
 bool IsHashType(HazeValueType type);
@@ -111,7 +110,7 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value);
 
 HazeValue GetNegValue(HazeValueType type, const HazeValue& value);
 
-bool CanPointer(HazeValueType type) { return IsHazeBaseType(type); }
+bool CanPointer(HazeValueType type);
 
 bool CanCVT(HazeValueType type1, HazeValueType type2);
 

@@ -2,6 +2,7 @@
 #include "GCObject.h"
 
 class HazeStack;
+class HazeVM;
 
 /*
 * 定义时不能输入数字 例如 整数[1] 或 整数[甲] 这种形式是不允许的
@@ -11,7 +12,7 @@ class ObjectArray : public GCObject
 {
 	friend class HazeMemory;
 public:
-	ObjectArray(x_uint32 gcIndex, x_uint64 dimensionCount, x_uint64* length, x_uint64 pcAddress, HazeValueType valueType, ClassData* classInfo = nullptr);
+	ObjectArray(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId, x_uint64* lengths);
 
 	~ObjectArray();
 

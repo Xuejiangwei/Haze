@@ -184,6 +184,26 @@ const x_HChar* GetSymbolEndHeader()
 	return SYMBOL_END;
 }
 
+const x_HChar* GetTypeInfoFunctionBeginHeader()
+{
+	return TYPE_INFO_FUNC_PARAM_BEGIN;
+}
+
+const x_HChar* GetTypeInfoFunctionEndHeader()
+{
+	return TYPE_INFO_FUNC_PARAM_END;
+}
+
+const x_HChar* GetTypeInfoBeginHeader()
+{
+	return TYPE_INFO_BEGIN;
+}
+
+const x_HChar* GetTypeInfoEndHeader()
+{
+	return TYPE_INFO_END;
+}
+
 bool HazeIsSpace(x_HChar hChar, bool* isNewLine)
 {
 	if (isNewLine)

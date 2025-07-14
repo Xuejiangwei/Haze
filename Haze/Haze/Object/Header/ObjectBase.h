@@ -2,12 +2,13 @@
 #include "GCObject.h"
 
 class HazeStack;
+class HazeVM;
 
 class ObjectBase : public GCObject
 {
 	friend class HazeMemory;
 public:
-	ObjectBase(x_uint32 gcIndex, HazeValueType type);
+	ObjectBase(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId);
 
 	~ObjectBase();
 

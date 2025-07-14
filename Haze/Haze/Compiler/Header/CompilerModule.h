@@ -71,6 +71,8 @@ public:
 
 	Share<CompilerFunction> GetCurrClosureOrFunction();
 
+	Share<CompilerFunction> GetUpOneLevelClosureOrFunction();
+
 	Share<CompilerFunction> CreateFunction(const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
 	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType,
@@ -136,7 +138,7 @@ private:
 	Share<CompilerValue> CreateInc(Share<CompilerValue> value, bool isPreInc);
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
-	Share<CompilerValue> CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure = nullptr);
+	Share<CompilerValue> CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, Share<CompilerFunction> closure = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr,
 		const HString* nameSpace = nullptr);
@@ -164,6 +166,8 @@ private:
 
 	void GenICode();
 
+	//void GenICode_TypeInfo();
+
 private:
 	Share<CompilerValue> GetGlobalVariable_Internal(const HString& name);
 
@@ -171,7 +175,6 @@ private:
 		V_Array<Pair<x_uint64, CompilerValue*>>* offsets);
 
 	Share<CompilerEnum> GetEnum_Internal(const HString& name);
-	Share<CompilerEnum> GetEnumByTypeId_Internal(x_uint32 typeId);
 
 private:
 	Compiler* m_Compiler;

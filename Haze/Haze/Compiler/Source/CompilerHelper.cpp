@@ -236,11 +236,11 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 	else if (value->IsFunctionAddress())
 	{
-		/*s_StrName = *value->GetValueType().CustomName;
+		s_StrName = *value->GetPointerFunctionName();
 		if (!s_StrName.empty())
 		{
 			find = true;
-		}*/
+		}
 	}
 	else if (value->IsTempVariable())
 	{
@@ -379,7 +379,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		{
 			auto type = *expectType;
 
-			if (IsMultiVariableTye(expectType->BaseType))
+			if (IsMultiVariableType(expectType->BaseType))
 			{
 				if (IsNumberType(type.BaseType))
 				{
@@ -491,8 +491,11 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		}
 		else
 		{
+			HazeVariableType voidType(HazeValueType::Void);
 			hss << GetInstructionString(InstructionOpCode::RET) << " " << H_TEXT("Void") << " " << 
-				CAST_SCOPE(HazeVariableScope::None) << " " << CAST_DESC(HazeDataDesc::None) << " " << CAST_TYPE(HazeValueType::Void);
+				CAST_SCOPE(HazeVariableScope::None) << " " << CAST_DESC(HazeDataDesc::None) << " ";
+
+			voidType.StringStreamTo(hss);
 		}
 	}
 		break;
@@ -615,25 +618,25 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	}
 }
 
-void GenIRCode_NewSignInternal(HAZE_STRING_STREAM& hss, TemplateDefineType& types)
-{
-	if (types.IsDefines)
-	{
-		GenIRCode_NewSign(hss, types.Defines.get());
-	}
-	else
-	{
-		hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " ";
-		types.Type->BaseType.StringStreamTo(hss);
-		hss << " " << types.Type->ArrayDimension << HAZE_ENDL;
-	}
-}
-
-void GenIRCode_NewSign(HAZE_STRING_STREAM& hss, TemplateDefineTypes* defineTypes)
-{
-	hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " " << CAST_TYPE(HazeValueType::None)  << " " << defineTypes->Types.size() << HAZE_ENDL;
-	for (x_uint32 i = 0; i < defineTypes->Types.size(); i++)
-	{
-		GenIRCode_NewSignInternal(hss, defineTypes->Types[i]);
-	}
-}
+//void GenIRCode_NewSignInternal(HAZE_STRING_STREAM& hss, TemplateDefineType& types)
+//{
+//	if (types.IsDefines)
+//	{
+//		GenIRCode_NewSign(hss, types.Defines.get());
+//	}
+//	else
+//	{
+//		hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " ";
+//		types.Type->BaseType.StringStreamTo(hss);
+//		hss << " " << types.Type->ArrayDimension << HAZE_ENDL;
+//	}
+//}
+//
+//void GenIRCode_NewSign(HAZE_STRING_STREAM& hss, TemplateDefineTypes* defineTypes)
+//{
+//	hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " " << CAST_TYPE(HazeValueType::None)  << " " << defineTypes->Types.size() << HAZE_ENDL;
+//	for (x_uint32 i = 0; i < defineTypes->Types.size(); i++)
+//	{
+//		GenIRCode_NewSignInternal(hss, defineTypes->Types[i]);
+//	}
+//}

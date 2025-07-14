@@ -61,7 +61,7 @@ void ASTClass::CodeGen()
 	{
 		for (x_uint64 j = 0; j < m_ClassDatas[i].second.size(); j++)
 		{
-			auto v = m_ClassDatas[i].second[j]->CodeGen();
+			auto v = m_ClassDatas[i].second[j]->CodeGen(nullptr);
 			if (v->IsRefrence())
 			{
 				auto m_Location = m_ClassDatas[i].second[j]->m_Location;

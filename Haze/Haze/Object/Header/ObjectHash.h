@@ -2,6 +2,7 @@
 #include "GCObject.h"
 
 class HazeStack;
+class HazeVM;
 
 struct ObjectHashNode
 {
@@ -19,7 +20,7 @@ class ObjectHash : public GCObject
 {
 	friend class HazeMemory;
 public:
-	ObjectHash(x_uint32 gcIndex, const TemplateDefineTypes& defineTypes);
+	ObjectHash(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId);
 
 	~ObjectHash();
 
@@ -58,8 +59,8 @@ private:
 	ObjectHashNode* m_LastFreeNode;
 	x_uint64 m_Length;
 	x_uint64 m_Capacity;
-	TemplateDefineType* m_KeyType;
-	TemplateDefineType* m_ValueType;
+	HazeVariableType m_KeyType;
+	HazeVariableType m_ValueType;
 	/*HazeValueType m_KeyType;
 	HazeValueType m_ValueType;
 	ClassData* m_KeyClassInfo;

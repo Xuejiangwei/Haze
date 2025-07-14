@@ -126,7 +126,7 @@ enum class InstructionOpCode : x_uint32
 
 	MOV_DCU,	//DynamicClassUnknown赋值用
 
-	NEW_SIGN,	//New类型, 若stack中为置零状态, 则为主类型, 之后会根据不同的主类型, 进行不同需要类型数据的解析
+	//NEW_SIGN,	//New类型, 若stack中为置零状态, 则为主类型, 之后会根据不同的主类型, 进行不同需要类型数据的解析
 
 	LINE,		//调试用
 };

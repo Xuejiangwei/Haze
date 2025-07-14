@@ -53,7 +53,7 @@ public:
 	};
 
 private:
-	static void* Alloca(x_uint64 size);
+	static void* Alloca(x_uint64 size, GC_ObjectType type);
 
 	void ForceGC();
 

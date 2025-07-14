@@ -59,13 +59,14 @@ x_uint64 __ObjectHash_Hash__(ObjectBase* v)
 //}
 
 
-ObjectHash::ObjectHash(x_uint32 gcIndex, const TemplateDefineTypes& defineTypes)
+ObjectHash::ObjectHash(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
 	: GCObject(gcIndex)
 {
-	if (defineTypes.Types.size() == 2)
+	auto info = vm->GetTypeInfoMap()->GetTypeInfoById(typeId);
+	if (IsHashType(info->Info.GetBaseType()))
 	{
-		m_KeyType = new TemplateDefineType(defineTypes.Types[0]);
-		m_ValueType = new TemplateDefineType(defineTypes.Types[1]);
+		m_KeyType = HazeVariableType(vm->GetTypeInfoMap()->GetTypeById(info->Info._Hash.TypeId1)->GetBaseType(), info->Info._Hash.TypeId1);
+		m_ValueType = HazeVariableType(vm->GetTypeInfoMap()->GetTypeById(info->Info._Hash.TypeId2)->GetBaseType(), info->Info._Hash.TypeId2);
 	}
 
 	Rehash();
@@ -73,9 +74,6 @@ ObjectHash::ObjectHash(x_uint32 gcIndex, const TemplateDefineTypes& defineTypes)
 
 ObjectHash::~ObjectHash()
 {
-	delete m_KeyType;
-	delete m_ValueType;
-
 	HazeMemory::GetMemory()->Remove(m_Data, m_Capacity * sizeof(ObjectHashNode), m_DataGCIndex);
 }
 
@@ -94,12 +92,12 @@ AdvanceClassInfo* ObjectHash::GetAdvanceClassInfo()
 
 HazeVariableType ObjectHash::GetKeyBaseType()
 {
-	return m_KeyType->Type->BaseType;
+	return m_KeyType;
 }
 
 HazeVariableType ObjectHash::GetValueBaseType()
 {
-	return m_ValueType->Type->BaseType;
+	return m_ValueType;
 }
 
 ObjectHashNode* ObjectHash::GetFreeNode()

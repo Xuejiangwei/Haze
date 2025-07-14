@@ -8,7 +8,7 @@ class ObjectClass : public GCObject
 	friend class HazeMemory;
 	friend class InstructionProcessor;
 public:
-	ObjectClass(x_uint32 gcIndex, ClassData* classInfo);
+	ObjectClass(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId);
 
 	~ObjectClass();
 

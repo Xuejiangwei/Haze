@@ -8,9 +8,11 @@
 #define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "基本类型")
 
 
-ObjectBase::ObjectBase(x_uint32 gcIndex, HazeValueType type)
-	: GCObject(gcIndex), m_Type(type)
+ObjectBase::ObjectBase(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
+	: GCObject(gcIndex)
 {
+	auto info = vm->GetTypeInfoMap()->GetTypeById(typeId);
+	m_Type = HAZE_ID_2_TYPE(info->_ObjectBase.TypeId1);
 }
 
 ObjectBase::~ObjectBase()

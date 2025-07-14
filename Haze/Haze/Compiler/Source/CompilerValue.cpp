@@ -32,6 +32,16 @@ CompilerValue::~CompilerValue()
 {
 }
 
+const HString* CompilerValue::GetPointerFunctionName() const
+{
+	return (const HString*)m_Value.Value.Pointer;
+}
+
+void CompilerValue::SetPointerFunctionName(const HString* name)
+{
+	m_Value.Value.Pointer = name;
+}
+
 bool CompilerValue::TryGetVariableName(HString& outName)
 {
 	bool ret = false;

@@ -22,19 +22,18 @@ CompilerArrayValue::~CompilerArrayValue()
 HazeVariableType CompilerArrayValue::GetElementType() const
 {
 	auto typeInfoMap = m_Module->GetCompiler()->GetTypeInfoMap();
-	auto info = typeInfoMap->GetTypeInfoById(m_Type.TypeId);
+	auto info = typeInfoMap->GetTypeById(m_Type.TypeId);
 	HazeVariableType elementType;
 	if (info->_Array.Dimension > 1)
 	{
 		HazeComplexTypeInfo elementInfo = *info;
 		elementInfo._Array.Dimension -= 1;
-
 		elementType.BaseType = elementInfo._Array.BaseType;
-		elementType.TypeId = typeInfoMap->RegisterType(HAZE_COMPLEX_BASE_CAST(elementInfo));
+		elementType.TypeId = typeInfoMap->RegisterType(m_Module->GetName(), & elementInfo);
 	}
 	else
 	{
-		auto elementInfo = typeInfoMap->GetTypeInfoById(info->_Array.TypeId1);
+		auto elementInfo = typeInfoMap->GetTypeById(info->_Array.TypeId1);
 		elementType.BaseType = elementInfo->_BaseType.BaseType;
 		elementType.TypeId = info->_Array.TypeId1;
 	}

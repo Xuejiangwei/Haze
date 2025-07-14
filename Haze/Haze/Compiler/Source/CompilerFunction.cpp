@@ -39,6 +39,11 @@ void CompilerFunction::SetStartEndLine(x_uint32 startLine, x_uint32 endLine)
 #endif // HAZE_DEBUG_ENABLE
 }
 
+Share<CompilerValue> CompilerFunction::GetParamVariableRightToLeft(x_uint32 index)
+{
+	return m_Params[index].second;
+}
+
 Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
@@ -191,8 +196,8 @@ x_uint32 CompilerFunction::GetFunctionPointerTypeId()
 	for (x_uint64 i = 0; i < params.size(); i++)
 	{
 		params[i] = m_Params[i].second->GetTypeId();
-	}
-	return m_Module->GetCompiler()->GetTypeInfoMap()->RegisterType(m_Type.TypeId, Move(params));
+	} 
+	return m_Module->GetCompiler()->GetTypeInfoMap()->RegisterType(m_Module->GetName(), m_Type.TypeId, Move(params));
 }
 
 void CompilerFunction::FunctionFinish()
@@ -427,7 +432,7 @@ void CompilerFunction::AddLocalVariable(Share<CompilerValue> value, int line)
 	m_LocalVariables.push_back({ value, line });
 }
 
-const HazeVariableType& CompilerFunction::GetParamTypeByIndex(x_uint64 index)
+HazeVariableType CompilerFunction::GetParamTypeByIndex(x_uint64 index)
 {
 	if (index < m_Params.size())
 	{
@@ -444,7 +449,7 @@ const HazeVariableType& CompilerFunction::GetParamTypeByIndex(x_uint64 index)
 	}
 }
 
-const HazeVariableType& CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index)
+HazeVariableType CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index)
 {
 	if (m_OwnerClass)
 	{
@@ -457,7 +462,7 @@ const HazeVariableType& CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint6
 	}
 	else
 	{
-		if (index > 0 && IsMultiVariableTye(m_Params[0].second->GetBaseType()))
+		if (index > 0 && IsMultiVariableType(m_Params[0].second->GetBaseType()))
 		{
 			return m_Params[0].second->GetVariableType();
 		}

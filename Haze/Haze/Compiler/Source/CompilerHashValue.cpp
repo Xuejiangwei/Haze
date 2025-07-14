@@ -10,8 +10,8 @@ CompilerHashValue::CompilerHashValue(CompilerModule* compilerModule, const HazeV
 	auto typeInfoMap = m_Module->GetCompiler()->GetTypeInfoMap();
 	auto typeInfo = (HazeComplexTypeInfo::Hash*)typeInfoMap->GetTypeInfoById(defineType.TypeId);
 
-	auto keyTypeInfo = typeInfoMap->GetTypeInfoById(typeInfo->TypeId1);
-	auto valueTypeInfo = typeInfoMap->GetTypeInfoById(typeInfo->TypeId2);
+	auto keyTypeInfo = typeInfoMap->GetTypeById(typeInfo->TypeId1);
+	auto valueTypeInfo = typeInfoMap->GetTypeById(typeInfo->TypeId2);
 	m_KeyType.BaseType = keyTypeInfo->GetBaseType();
 	m_KeyType.TypeId = typeInfo->TypeId1;
 	m_ValueType.BaseType = valueTypeInfo->GetBaseType();

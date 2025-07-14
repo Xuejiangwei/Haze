@@ -103,5 +103,5 @@ private:
 
 	V_Array<Pair<void*, const HazeVariableType*>> m_GCTempRegisters;
 
-	TemplateDefineTypes m_NewSignType;
+	//TemplateDefineTypes m_NewSignType;
 };

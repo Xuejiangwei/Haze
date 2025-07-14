@@ -7,6 +7,7 @@
 #include "CompilerClassValue.h"
 #include "CompilerArrayValue.h"
 #include "CompilerFunction.h"
+#include "CompilerClosureFunction.h"
 #include "HazeTokenText.h"
 
 CompilerBlock::CompilerBlock(const HString& name, CompilerFunction* parentFunction, CompilerBlock* parentBlock)
@@ -157,6 +158,12 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 	if (m)
 	{
 		HAZE_LOG_ERR_W("局部变量<%s>与<%s>模块全局变量名重复!\n", defineVar.Name.c_str(), m->GetName().c_str());
+		return nullptr;
+	}
+
+	if (dynamic_cast<CompilerClosureFunction*>(m_ParentFunction) && dynamic_cast<CompilerClosureFunction*>(m_ParentFunction)->ExistRefVariable(defineVar.Name))
+	{
+		HAZE_LOG_ERR_W("局部变量<%s>存在相同名字的闭包引用!\n", defineVar.Name.c_str());
 		return nullptr;
 	}
 

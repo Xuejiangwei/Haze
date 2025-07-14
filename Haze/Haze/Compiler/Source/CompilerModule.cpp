@@ -22,6 +22,8 @@
 #include "CompilerEnumValue.h"
 #include "CompilerElementValue.h"
 
+#define COMPILER_MODULE_PARSE_INTER 0
+
 struct PushTempRegister
 {
 	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule, const HazeVariableType* defineType, Share<CompilerValue>* retValue)
@@ -81,6 +83,8 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 
 	auto intermediateFilePath = GetIntermediateModuleFile(moduleName);
 	bool newFS = true;
+
+#if COMPILER_MODULE_PARSE_INTER
 	if (FileExist(intermediateFilePath))
 	{
 		HAZE_IFSTREAM fs(intermediateFilePath);
@@ -95,6 +99,7 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 			newFS = !ParseIntermediateFile(fs, moduleName);
 		}
 	}
+#endif
 
 	m_FS_I_Code = nullptr;
 	if (newFS)
@@ -531,6 +536,11 @@ Share<CompilerFunction> CompilerModule::GetCurrClosureOrFunction()
 	return m_ClosureStack.size() > 0 ? GetCurrClosure() : GetCurrFunction();
 }
 
+Share<CompilerFunction> CompilerModule::GetUpOneLevelClosureOrFunction()
+{
+	return m_ClosureStack.size() > 1 ? m_ClosureStack[m_ClosureStack.size() - 2] : GetCurrFunction();
+}
+
 Share<CompilerFunction> CompilerModule::GetFunction(const HString& name)
 {
 	auto it = m_HashMap_Functions.find(name);
@@ -599,6 +609,11 @@ Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const HString& na
 	}
 
 	return m->m_Compiler->GetBaseModuleEnum(name);
+}
+
+Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, x_uint32 typeId)
+{
+	return m->GetEnum(m, *m->m_Compiler->GetTypeInfoMap()->GetEnumName(typeId));
 }
 
 Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
@@ -780,14 +795,14 @@ Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool 
 	return retValue;
 }
 
-Share<CompilerValue> CompilerModule::CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, TemplateDefineTypes* defineTypes, Share<CompilerFunction> closure)
+Share<CompilerValue> CompilerModule::CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, Share<CompilerFunction> closure)
 {
 	HAZE_STRING_STREAM hss;
 
-	if (defineTypes)
-	{
-		GenIRCode_NewSign(hss, defineTypes);
-	}
+	//if (defineTypes)
+	//{
+	//	GenIRCode_NewSign(hss, defineTypes);
+	//}
 
 	if (countValue)
 	{
@@ -958,30 +973,28 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	V_Array<HazeVariableType> funcTypes(params.size());
 	if (!callFunction && !pointerFunc && !advancFunctionInfo)
 	{
-		COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", GetName().c_str(),
-			callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"));
+		COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", GetName().c_str(), callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"));
 	}
 	else
 	{
-		auto paramSize = callFunction ? callFunction->GetParamSize() : pointerFunc ? pointerFunc->GetParamSize() :
-			advancFunctionInfo->Params.size();
+		auto paramSize = callFunction ? callFunction->GetParamSize() : pointerFunc ? pointerFunc->GetParamSize() : advancFunctionInfo->Params.size();
 
 		for (x_int64 i = params.size() - 1; i >= 0; i--)
 		{
 			auto variable = params[i];
-			auto type = callFunction ? &callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
-				pointerFunc ? &pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
-				advancFunctionInfo->Params.size() > params.size() - 1 - i ? &advancFunctionInfo->Params.at(params.size() - 1 - i)
-				: &advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
+			auto type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
+				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
+				advancFunctionInfo->Params.size() > params.size() - 1 - i ? advancFunctionInfo->Params.at(params.size() - 1 - i)
+				: advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 
-			if (*type != variable->GetVariableType() && !variable->GetVariableType().IsStrongerType(*type))
+			if (type != variable->GetVariableType() && !variable->GetVariableType().IsStrongerType(type))
 			{
-				if (i == (x_int64)params.size() - 1 && !IsMultiVariableTye(type->BaseType) && paramSize != params.size())
+				if (i == (x_int64)params.size() - 1 && !IsMultiVariableType(type.BaseType) && paramSize != params.size())
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
 				}
-				else if (IsMultiVariableTye(type->BaseType))
+				else if (IsMultiVariableType(type.BaseType))
 				{
 					if (params.size() - i < paramSize)
 					{
@@ -992,26 +1005,26 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				else if (variable->IsEnum())
 				{
 					auto enumValue = DynamicCast<CompilerEnumValue>(variable);
-					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetTypeId() == type->TypeId) {}
+					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetTypeId() == type.TypeId) {}
 					else
 					{
 						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数枚举类型不匹配", GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				else if (type->IsStrongerType(variable->GetVariableType())) {}
-				else if (IsRefrenceType(type->BaseType) && variable->GetVariableType().TypeId == type->TypeId) {}
-				else if (variable->IsClass() && IsClassType(type->BaseType))
+				else if (type.IsStrongerType(variable->GetVariableType())) {}
+				else if (IsRefrenceType(type.BaseType) && variable->GetVariableType().TypeId == type.TypeId) {}
+				else if (variable->IsClass() && IsClassType(type.BaseType))
 				{
 					auto hazeClass = variable->IsElement() ? DynamicCast<CompilerElementValue>(variable)->GetRealClass() : DynamicCast<CompilerClassValue>(variable)->GetOwnerClass();
-					if (hazeClass && hazeClass->IsParentClass(*type)) {}
+					if (hazeClass && hazeClass->IsParentClass(type)) {}
 					else
 					{
 						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<>类", GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
-				else if (!IsMultiVariableTye(type->BaseType))
+				else if (!IsMultiVariableType(type.BaseType))
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
@@ -1019,7 +1032,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				}
 			}
 
-			if (IsMultiVariableTye(type->BaseType))
+			if (IsMultiVariableType(type.BaseType))
 			{
 				if (variable->IsRefrence())
 				{
@@ -1045,7 +1058,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 			}
 			else
 			{
-				funcTypes[i] = *type;
+				funcTypes[i] = type;
 			}
 		}
 
@@ -1053,7 +1066,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		{
 			auto& lastParam = callFunction ? callFunction->GetParamTypeByIndex(0) :
 				pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
-			if ((IsMultiVariableTye(lastParam.BaseType) && params.size() + 1 < paramSize) || (!IsMultiVariableTye(lastParam.BaseType) && params.size() != paramSize))
+			if ((IsMultiVariableType(lastParam.BaseType) && params.size() + 1 < paramSize) || (!IsMultiVariableType(lastParam.BaseType) && params.size() != paramSize))
 			{
 				COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 函数个数不匹配", GetName().c_str(),
 					callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"));
@@ -1081,10 +1094,14 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		size += thisPointerTo->GetVariableType().GetTypeSize();
 	}
 
+	HazeVariableType retPcType(HAZE_CALL_PUSH_ADDRESS_TYPE);
 	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
-		<< " " << (x_uint32)HazeDataDesc::Address << " " << CAST_TYPE(HAZE_CALL_PUSH_ADDRESS_TYPE) << HAZE_ENDL;
-	insertBlock->PushIRCode(hss.str());
+		<< " " << (x_uint32)HazeDataDesc::Address << " ";
+	retPcType.StringStreamTo(hss);
+	hss << HAZE_ENDL;
 	
+	insertBlock->PushIRCode(hss.str());
+
 	hss.str(H_TEXT(""));
 }
 
@@ -1160,7 +1177,7 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 
 	if (thisPointerTo->IsObjectBase())
 	{
-		CompilerValueTypeChanger::Reset(ret, HAZE_VAR_BASE_TYPE((HazeValueType)thisPointerTo->GetVariableType().TypeId));
+		CompilerValueTypeChanger::Reset(ret, HAZE_VAR_BASE_TYPE((HazeValueType)m_Compiler->GetTypeInfoMap()->GetTypeById(thisPointerTo->GetVariableType().TypeId)->_ObjectBase.TypeId1));
 	}
 
 	return ret;

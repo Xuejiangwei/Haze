@@ -244,7 +244,7 @@ bool IsRefrenceType(HazeValueType type)
 	return type == HazeValueType::Refrence;
 }
 
-bool IsMultiVariableTye(HazeValueType type)
+bool IsMultiVariableType(HazeValueType type)
 {
 	return type == HazeValueType::MultiVariable;
 }
@@ -883,6 +883,11 @@ HazeValue GetNegValue(HazeValueType type, const HazeValue& value)
 	}
 
 	return ret;
+}
+
+bool CanPointer(HazeValueType type)
+{
+	return IsHazeBaseType(type);
 }
 
 bool CanCVT(HazeValueType type1, HazeValueType type2)

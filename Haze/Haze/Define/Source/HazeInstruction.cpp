@@ -71,7 +71,7 @@ static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 
 	{H_TEXT("MOV_DCU"), InstructionOpCode::MOV_DCU },
 
-	{H_TEXT("NEW_SIGN"), InstructionOpCode::NEW_SIGN },
+	//{H_TEXT("NEW_SIGN"), InstructionOpCode::NEW_SIGN },
 
 	{H_TEXT("LINE"), InstructionOpCode::LINE },
 };
@@ -821,8 +821,7 @@ public:
 				}
 
 				address = HazeMemory::AllocaGCData(sizeof(ObjectArray), GC_ObjectType::Array);
-				/*new((char*)address.first) ObjectArray(address.second, count, lengths, stack->m_PC, type.SecondaryType,
-					type.CustomName ? stack->m_VM->FindClass(*type.CustomName) : nullptr);*/
+				new((char*)address.first) ObjectArray(address.second, stack->m_VM, type.TypeId, lengths);
 
 				delete[] lengths;
 			}
@@ -834,17 +833,17 @@ public:
 			else if (IsClassType(type.BaseType))
 			{
 				address = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
-				//new(address.first) ObjectClass(address.second, stack->GetVM()->FindClass(*type.CustomName));
+				new(address.first) ObjectClass(address.second, stack->m_VM, type.TypeId);
 			}
 			else if (IsHashType(type.BaseType))
 			{
 				address = HazeMemory::AllocaGCData(sizeof(ObjectHash), GC_ObjectType::Hash);
-				new(address.first) ObjectHash(address.second, stack->m_NewSignType);
+				new(address.first) ObjectHash(address.second, stack->m_VM, type.TypeId);
 			}
 			else if (IsObjectBaseType(type.BaseType))
 			{
 				address = HazeMemory::AllocaGCData(sizeof(ObjectBase), GC_ObjectType::ObjectBase);
-				new(address.first) ObjectBase(address.second, stack->m_NewSignType.Types[0].Type->BaseType.BaseType);
+				new(address.first) ObjectBase(address.second, stack->m_VM, type.TypeId);
 			}
 			else if (IsClosureType(type.BaseType))
 			{
@@ -1419,7 +1418,7 @@ HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 
 	{InstructionOpCode::MOV_DCU, &InstructionProcessor::Mov_DynamicClassUnknown},
 
-	{InstructionOpCode::NEW_SIGN, &InstructionProcessor::New_Sign},
+	//{InstructionOpCode::NEW_SIGN, &InstructionProcessor::New_Sign},
 
 	{InstructionOpCode::LINE, &InstructionProcessor::Line},
 };
