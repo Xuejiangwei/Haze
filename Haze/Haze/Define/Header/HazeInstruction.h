@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 //操作数数据顺序 ValueType Name Scope
 

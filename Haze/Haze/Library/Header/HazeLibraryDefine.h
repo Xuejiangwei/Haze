@@ -14,10 +14,10 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*);
 
 #define HAZE_CALL_NULL_PARAM nullptr, nullptr, nullptr, nullptr
 #define HAZE_CALL_FUNC_PARAM char* paramStartAddress, char* retStartAddress, void* stack, void(*exeHazeFunction)(void*, void*, int, ...)
-#define ARG_T(ARGS) ARGS																	//½â¾öVC±àÒë´íÎó
-#define ARG_N(A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15,A16,N,...)  N				//½ØÈ¡²¢·µ»ØµÚ16¸ö²ÎÊý£¬ÕâÀïÏÞÖÆÁË¿É±ä²ÎÊý¼ÆËãµÄ·¶Î§£Û1£¬16£Ý
-#define ARG_N_HELPER(...)  ARG_T(ARG_N(__VA_ARGS__))										//¸¨Öúºê
-#define COUNT_ARG(...)  ARG_N_HELPER(__VA_ARGS__,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)	//·µ»Ø¿É±ä²ÎÊý¸öÊý
+#define ARG_T(ARGS) ARGS																	//è§£å†³VCç¼–è¯‘é”™è¯¯
+#define ARG_N(A1,A2,A3,A4,A5,A6,A7,A8,A9,A10,A11,A12,A13,A14,A15,A16,N,...)  N				//æˆªå–å¹¶è¿”å›žç¬¬16ä¸ªå‚æ•°ï¼Œè¿™é‡Œé™åˆ¶äº†å¯å˜å‚æ•°è®¡ç®—çš„èŒƒå›´ï¼»1ï¼Œ16ï¼½
+#define ARG_N_HELPER(...)  ARG_T(ARG_N(__VA_ARGS__))										//è¾…åŠ©å®
+#define COUNT_ARG(...)  ARG_N_HELPER(__VA_ARGS__,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)	//è¿”å›žå¯å˜å‚æ•°ä¸ªæ•°
 
 #define GET_PARAM_START() paramByteSize = 0; x_int64 zzzOffset = 0; auto zzzAddress = stack->GetAddressByESP(HAZE_ADDRESS_SIZE)
 #define GET_CURRENT_ADDRESS (zzzAddress - zzzOffset)

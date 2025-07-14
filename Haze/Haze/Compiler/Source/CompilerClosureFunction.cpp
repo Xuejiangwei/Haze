@@ -34,7 +34,7 @@ int CompilerClosureFunction::AddRefValue(int variableIndex, Share<CompilerValue>
 
 void CompilerClosureFunction::GenI_Code_RefVariable(HAZE_STRING_STREAM& hss)
 {
-	// ÒıÓÃµÄÍâ²¿±äÁ¿
+	// å¼•ç”¨çš„å¤–éƒ¨å˜é‡
 	for (x_uint64 i = 0; i < m_RefValues.size(); i++)
 	{
 		hss << CLOSURE_REF_VARIABLE << " " << m_RefValues[i].first << " " << m_RefValues[i].second << HAZE_ENDL;

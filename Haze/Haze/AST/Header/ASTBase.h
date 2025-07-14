@@ -31,7 +31,7 @@ protected:
 	SourceLocation m_Location;
 };
 
-//²¼¶û
+//å¸ƒå°”
 class ASTBool : public ASTBase
 {
 public:
@@ -41,7 +41,7 @@ public:
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
 };
 
-//Êı×Ö
+//æ•°å­—
 class ASTNumber : public ASTBase
 {
 public:
@@ -51,7 +51,7 @@ public:
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
 };
 
-//×Ö·û´®
+//å­—ç¬¦ä¸²
 class ASTStringText : public ASTBase
 {
 public:
@@ -64,7 +64,7 @@ private:
 	HString m_Text;
 };
 
-//±äÁ¿
+//å˜é‡
 class ASTIdentifier : public ASTBase
 {
 public:
@@ -87,7 +87,7 @@ private:
 	Unique<ASTBase> m_ArrayIndexExpression;
 };
 
-//º¯Êıµ÷ÓÃ
+//å‡½æ•°è°ƒç”¨
 class ASTFunctionCall : public ASTBase
 {
 public:
@@ -123,7 +123,7 @@ private:
 //	V_Array<Unique<ASTBase>> m_Params;
 //};
 
-//±äÁ¿¶¨Òå »ù±¾ÀàĞÍ Àà¶ÔÏó
+//å˜é‡å®šä¹‰ åŸºæœ¬ç±»å‹ ç±»å¯¹è±¡
 class ASTVariableDefine : public ASTBase
 {
 public:
@@ -167,7 +167,7 @@ protected:
 	V_Array<Unique<ASTBase>> m_Params;
 };
 
-//±äÁ¿¶¨Òå Êı×é
+//å˜é‡å®šä¹‰ æ•°ç»„
 class ASTVariableDefine_Array : public ASTVariableDefine
 {
 public:
@@ -182,7 +182,7 @@ protected:
 	x_uint64 m_ArrayDimension;
 };
 
-//±äÁ¿¶¨Òå º¯Êı
+//å˜é‡å®šä¹‰ å‡½æ•°
 class ASTVariableDefine_Function : public ASTVariableDefine
 {
 public:
@@ -196,7 +196,7 @@ protected:
 	x_uint32 m_TemplateTypeId;
 };
 
-//±äÁ¿¶¨Òå »ù±¾ÀàĞÍ¶ÔÏó
+//å˜é‡å®šä¹‰ åŸºæœ¬ç±»å‹å¯¹è±¡
 class ASTVariableDefine_ObjectBase : public ASTVariableDefine
 {
 public:
@@ -207,7 +207,7 @@ public:
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
 };
 
-//±äÁ¿¶¨Òå ¹şÏ£¶ÔÏó
+//å˜é‡å®šä¹‰ å“ˆå¸Œå¯¹è±¡
 class ASTVariableDefine_Hash : public ASTVariableDefine
 {
 public:
@@ -222,7 +222,7 @@ private:
 	Unique<ASTBase> m_Expression;
 };
 
-//±äÁ¿¶¨Òå ±Õ°ü¶ÔÏó
+//å˜é‡å®šä¹‰ é—­åŒ…å¯¹è±¡
 class ASTVariableDefine_Closure : public ASTVariableDefine_Function
 {
 public:
@@ -255,7 +255,7 @@ private:
 //	SourceLocation m_EndLocation;
 //};
 
-//·µ»Ø
+//è¿”å›
 class ASTReturn : public ASTBase
 {
 public:
@@ -268,7 +268,7 @@ private:
 	Unique<ASTBase> m_Expression;
 };
 
-//Éú³É
+//ç”Ÿæˆ
 class ASTNew : public ASTBase
 {
 public:
@@ -284,7 +284,7 @@ private:
 	//TemplateDefineTypes m_TemplateTypes;
 };
 
-//»ñµÃµØÖ·
+//è·å¾—åœ°å€
 class ASTGetAddress : public ASTBase
 {
 public:
@@ -322,7 +322,7 @@ public:
 	void SetDefineType(const HazeVariableType& type);
 };
 
-//·Ç ±í´ïÊ½
+//é è¡¨è¾¾å¼
 class ASTNot : public ASTBase
 {
 public:
@@ -363,7 +363,7 @@ private:
 	bool m_IsPreDec;
 };
 
-//¶şÔª±í´ïÊ½
+//äºŒå…ƒè¡¨è¾¾å¼
 class ASTBinaryExpression : public ASTBase
 {
 	friend class ASTIfExpression;
@@ -401,7 +401,7 @@ private:
 	Share<CompilerBlock> m_ShortCircuitBlock;
 };
 
-//ÈıÄ¿±í´ïÊ½
+//ä¸‰ç›®è¡¨è¾¾å¼
 class ASTThreeExpression : public ASTBase
 {
 	friend class ASTIfExpression;
@@ -435,7 +435,7 @@ private:
 	V_Array<Unique<ASTBase>> m_Expressions;
 };
 
-//¶àĞĞ±í´ïÊ½
+//å¤šè¡Œè¡¨è¾¾å¼
 class ASTMultiExpression : public ASTBase
 {
 public:
@@ -449,7 +449,7 @@ private:
 	V_Array<Unique<ASTBase>> m_Expressions;
 };
 
-//ÒıÓÃ¿â
+//å¼•ç”¨åº“
 class ASTImportModule : public ASTBase
 {
 public:
@@ -482,7 +482,7 @@ public:
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
 };
 
-//Èô
+//è‹¥
 class ASTIfExpression : public ASTBase
 {
 public:
@@ -502,7 +502,7 @@ private:
 	Unique<ASTBase> m_ElseExpression;
 };
 
-//µ±
+//å½“
 class ASTWhileExpression : public ASTBase
 {
 public:
@@ -519,7 +519,7 @@ private:
 	Unique<ASTBase> m_MultiExpression;
 };
 
-//Ñ­»·
+//å¾ªç¯
 class ASTForExpression : public ASTBase
 {
 public:
@@ -538,7 +538,7 @@ private:
 	Unique<ASTBase> m_MultiExpression;
 };
 
-//Ç¿×ª
+//å¼ºè½¬
 class ASTCast : public ASTBase
 {
 public:
@@ -551,7 +551,7 @@ private:
 	Unique<ASTBase> m_Expression;
 };
 
-//»ñµÃ×Ö½Ú´óĞ¡
+//è·å¾—å­—èŠ‚å¤§å°
 class ASTSizeOf : public ASTBase
 {
 public:

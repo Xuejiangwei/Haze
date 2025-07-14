@@ -31,21 +31,21 @@ using HString = std::wstring;
 
 #define HAZE_VERSION					H_TEXT("0.0.1")
 
-#define HAZE_THIRD_LIB_FOLDER			H_TEXT("ø‚")
-#define HAZE_THIRD_DLL_LIB_FOLDER		H_TEXT("∂ØÃ¨ø‚")
+#define HAZE_THIRD_LIB_FOLDER			H_TEXT("Â∫ì")
+#define HAZE_THIRD_DLL_LIB_FOLDER		H_TEXT("Âä®ÊÄÅÂ∫ì")
 #define HAZE_FILE_SUFFIX				H_TEXT(".hz")
 #define HAZE_FILE_INTER_SUFFIX			H_TEXT(".Hzic")
 #define HAZE_FILE_INTER					H_TEXT("Intermediate\\")
 #define HAZE_FILE_PATH_BIN				H_TEXT("Bin\\")
 #define HAZE_FILE_MAIN_BIN				H_TEXT("Main.Hzb")
-#define HAZE_MODULE_PATH_CONBINE		H_TEXT("°§")
-#define HAZE_INTER_SYMBOL_TABLE			H_TEXT("@@÷–º‰∑˚∫≈")
-#define HAZE_TYPE_INFO_TABLE			H_TEXT("@@¿‡–Õ–≈œ¢")
+#define HAZE_MODULE_PATH_CONBINE		H_TEXT("¬∑")
+#define HAZE_INTER_SYMBOL_TABLE			H_TEXT("@@‰∏≠Èó¥Á¨¶Âè∑")
+#define HAZE_TYPE_INFO_TABLE			H_TEXT("@@Á±ªÂûã‰ø°ÊÅØ")
 
 #define HAZE_LOAD_DLL_SUFFIX			H_TEXT(".dll")
 
-#define HAZE_CONSTANT_STRING_NAME		H_TEXT("≥£◊÷∑˚¥Æ÷∏’Î")
-#define HAZE_MULTI_PARAM_NAME			H_TEXT("∂‡≤Œ ˝")
+#define HAZE_CONSTANT_STRING_NAME		H_TEXT("Â∏∏Â≠óÁ¨¶‰∏≤ÊåáÈíà")
+#define HAZE_MULTI_PARAM_NAME			H_TEXT("Â§öÂèÇÊï∞")
 
 #define HEADER_IMPORT_MODULE			H_TEXT("ImportModuleTable")
 #define HEADER_IMPORT_MODULE_MODULE		H_TEXT("ImportModule")
@@ -126,14 +126,14 @@ using HString = std::wstring;
 #define HAZE_CALL_PUSH_ADDRESS_NAME		HString(H_TEXT("RetPC"))
 #define HAZE_CALL_PUSH_ADDRESS_TYPE		(HAZE_ADDRESS_SIZE == 8 ? HazeValueType::Int64 : HAZE_ADDRESS_SIZE == 4 ? HazeValueType::Int32 : HazeValueType::None)
 
-#define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("∂‡∂‘œÛππ‘Ï")
-#define HAZE_ADVANCE_GET_FUNCTION		H_TEXT("ªÒµ√")
-#define HAZE_ADVANCE_SET_FUNCTION		H_TEXT("…Ë÷√")
-#define HAZE_OBJECT_BASE_CONSTRUCTOR	H_TEXT("@ª˘±æ∂‘œÛππ‘Ï")
+#define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("Â§öÂØπË±°ÊûÑÈÄ†")
+#define HAZE_ADVANCE_GET_FUNCTION		H_TEXT("Ëé∑Âæó")
+#define HAZE_ADVANCE_SET_FUNCTION		H_TEXT("ËÆæÁΩÆ")
+#define HAZE_OBJECT_BASE_CONSTRUCTOR	H_TEXT("@Âü∫Êú¨ÂØπË±°ÊûÑÈÄ†")
 
-#define HAZE_CUSTOM_GET_MEMBER			H_TEXT("ªÒµ√")
-#define HAZE_CUSTOM_SET_MEMBER			H_TEXT("…Ë÷√")
-#define HAZE_CUSTOM_CALL_FUNCTION		H_TEXT("µ˜”√")
+#define HAZE_CUSTOM_GET_MEMBER			H_TEXT("Ëé∑Âæó")
+#define HAZE_CUSTOM_SET_MEMBER			H_TEXT("ËÆæÁΩÆ")
+#define HAZE_CUSTOM_CALL_FUNCTION		H_TEXT("Ë∞ÉÁî®")
 
 #define HAZE_CLOSURE_NAME				H_TEXT("@@ClosureCaller")
 

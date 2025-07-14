@@ -1,31 +1,31 @@
 #pragma once
 #include "HazeLog.h"
 
-#define PARSE_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<Ω‚Œˆ¥ÌŒÛ>£∫" H_TEXT(" °æ<%s>ƒ£øÈ <%d>–– °ø") H_TEXT(INFO) H_TEXT("!\n"), \
+#define PARSE_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<Ëß£ÊûêÈîôËØØ>Ôºö" H_TEXT(" „Äê<%s>Ê®°Âùó <%d>Ë°å „Äë") H_TEXT(INFO) H_TEXT("!\n"), \
 							 m_Compiler->GetCurrModuleName().c_str(), m_LineCount, __VA_ARGS__)
 
-#define COMPILER_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<±‡“Î¥ÌŒÛ>£∫" H_TEXT(" °æ<%s>ƒ£øÈ°ø") H_TEXT(INFO) H_TEXT("!\n"), \
+#define COMPILER_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<ÁºñËØëÈîôËØØ>Ôºö" H_TEXT(" „Äê<%s>Ê®°Âùó„Äë") H_TEXT(INFO) H_TEXT("!\n"), \
 							 m_Module->GetName().c_str(), __VA_ARGS__)
 
-#define COMPILER_ERR_MODULE_W(INFO, ...) HAZE_LOG_ERR_W("<±‡“Î¥ÌŒÛ>£∫" H_TEXT(" °æ<%s>ƒ£øÈ°ø") H_TEXT(INFO) H_TEXT("!\n"), \
+#define COMPILER_ERR_MODULE_W(INFO, ...) HAZE_LOG_ERR_W("<ÁºñËØëÈîôËØØ>Ôºö" H_TEXT(" „Äê<%s>Ê®°Âùó„Äë") H_TEXT(INFO) H_TEXT("!\n"), \
 							 __VA_ARGS__)
 
-#define BACKEND_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<∫Û∂À¥ÌŒÛ>£∫" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
+#define BACKEND_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<ÂêéÁ´ØÈîôËØØ>Ôºö" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
 
-#define INS_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<‘À––¥ÌŒÛ>£∫" H_TEXT(" °æ%s ÷∏¡Ó°ø") H_TEXT(INFO) H_TEXT("!\n"), \
+#define INS_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<ËøêË°åÈîôËØØ>Ôºö" H_TEXT(" „Äê%s Êåá‰ª§„Äë") H_TEXT(INFO) H_TEXT("!\n"), \
 							 GetInstructionString(stack->m_VM->m_Instructions[stack->m_PC].InsCode), __VA_ARGS__)
 
-#define INS_ERR_CODE_W(INFO, INS_CODE, ...) HAZE_LOG_ERR_W("<‘À––¥ÌŒÛ>£∫" H_TEXT(" °æ%s ÷∏¡Ó°ø") H_TEXT(INFO) H_TEXT("!\n"), \
+#define INS_ERR_CODE_W(INFO, INS_CODE, ...) HAZE_LOG_ERR_W("<ËøêË°åÈîôËØØ>Ôºö" H_TEXT(" „Äê%s Êåá‰ª§„Äë") H_TEXT(INFO) H_TEXT("!\n"), \
 							 GetInstructionString(INS_CODE), __VA_ARGS__)
 
-#define AST_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<”Ô∑®∑÷Œˆ¥ÌŒÛ>£∫" H_TEXT(" °æ<%s>ƒ£øÈ<%d>––°ø") H_TEXT(INFO) H_TEXT("!\n"), \
+#define AST_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<ËØ≠Ê≥ïÂàÜÊûêÈîôËØØ>Ôºö" H_TEXT(" „Äê<%s>Ê®°Âùó<%d>Ë°å„Äë") H_TEXT(INFO) H_TEXT("!\n"), \
 							 m_Compiler->GetCurrModuleName().c_str(), m_Location.Line, \
 							 __VA_ARGS__); \
 							 m_Compiler->MarkCompilerError()
 
-#define GC_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<¿¨ª¯ªÿ ’¥ÌŒÛ>£∫" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
+#define GC_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<ÂûÉÂúæÂõûÊî∂ÈîôËØØ>Ôºö" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
 
-#define GLOBAL_INIT_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<»´æ÷ ˝æ›≥ı ºªØ¥ÌŒÛ>£∫" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
+#define GLOBAL_INIT_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<ÂÖ®Â±ÄÊï∞ÊçÆÂàùÂßãÂåñÈîôËØØ>Ôºö" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
 
-#define OBJECT_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<¿‡∂‘œÛµ˜”√¥ÌŒÛ>£∫" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__); \
+#define OBJECT_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<Á±ªÂØπË±°Ë∞ÉÁî®ÈîôËØØ>Ôºö" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__); \
 								stack->LogStack()

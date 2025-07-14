@@ -4,7 +4,7 @@
 
 class HazeVM;
 
-//×Ö½ÚÂëÎÄ¼þÍ·²¿Êý¾Ý¸ñÊ½¶¨Òå(Ä£·Âlinux³ÌÐò½á¹¹ ¶ÑÇø¡¢Õ»Çø¡¢È«¾ÖÊý¾ÝÇø¡¢Ö»¶ÁÊý¾ÝÇøµÈ)
+//å­—èŠ‚ç æ–‡ä»¶å¤´éƒ¨æ•°æ®æ ¼å¼å®šä¹‰(æ¨¡ä»¿linuxç¨‹åºç»“æž„ å †åŒºã€æ ˆåŒºã€å…¨å±€æ•°æ®åŒºã€åªè¯»æ•°æ®åŒºç­‰)
 enum HazeFileFormat : x_uint8
 {
 	Symbol,

@@ -36,7 +36,7 @@ void HazeStack::RunGlobalDataInit(x_int64 startPC, x_int64 endPC)
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("<³õÊ¼»¯È«¾Ö±äÁ¿´íÎó>£º"  H_TEXT("!\n"));
+			HAZE_LOG_ERR_W("<åˆå§‹åŒ–å…¨å±€å˜é‡é”™è¯¯>ï¼š"  H_TEXT("!\n"));
 			return;
 		}
 
@@ -173,7 +173,7 @@ void HazeStack::OnCall(const FunctionData* info, int paramSize)
 		m_ESP += info->Variables.back().Offset + info->Variables.back().Variable.Type.GetTypeSize();
 	}
 
-	//ÔÚµ÷ÓÃº¯ÊýÊ±£¬½«µ÷ÓÃµÄº¯ÊýÕ»È«²¿ÇåÁã£¬¾Í²»ÓÃµ£ÐÄGCÊ±ÔàÊý¾Ý×ª»»³ÉÓÐÐ§µÄÖ¸Õë
+	//åœ¨è°ƒç”¨å‡½æ•°æ—¶ï¼Œå°†è°ƒç”¨çš„å‡½æ•°æ ˆå…¨éƒ¨æ¸…é›¶ï¼Œå°±ä¸ç”¨æ‹…å¿ƒGCæ—¶è„æ•°æ®è½¬æ¢æˆæœ‰æ•ˆçš„æŒ‡é’ˆ
 	memset(&m_StackMain[m_EBP], 0, m_ESP - m_EBP);
 
 	m_PC = (decltype(m_PC))info->FunctionDescData.InstructionStartAddress;

@@ -117,7 +117,7 @@ x_uint32 HazeTypeInfoMap::RegisterType(const HString& moduleName, x_uint32 funct
 	return RegisterFunctionParamListType(moduleName, functionTypeId, paramTypeId);
 }
 
-const HString* HazeTypeInfoMap::GetClassName(x_uint32 typeId)
+const HString* HazeTypeInfoMap::GetClassNameById(x_uint32 typeId)
 {
 	auto info = GetTypeInfoById(typeId);
 	return &info->Name;

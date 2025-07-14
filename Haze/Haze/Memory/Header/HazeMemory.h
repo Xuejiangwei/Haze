@@ -18,8 +18,8 @@ class MemoryFreeList;
 class MemoryBlock;
 class GCObjectList;
 
-/*   ÉêÇëÄÚ´æÊ±´ÓblockÖĞµÄfreelistÖĞÉêÇë£¬ÈôÃ»ÓĞ¶àÓàÄÚ´æ£¬ÔÙ´ÓpageÖĞÉêÇëÒ»¸öblock, ÈôpageÖĞÃ»ÓĞ£¬Ôò´Ó²Ù×÷ÏµÍ³ÉêÇëpage
-     ×îºóÒ»¸öPage±í£¬ÀïÃæµÄpage´óĞ¡²»Ò»¶¨ÏàÍ¬
+/*   ç”³è¯·å†…å­˜æ—¶ä»blockä¸­çš„freelistä¸­ç”³è¯·ï¼Œè‹¥æ²¡æœ‰å¤šä½™å†…å­˜ï¼Œå†ä»pageä¸­ç”³è¯·ä¸€ä¸ªblock, è‹¥pageä¸­æ²¡æœ‰ï¼Œåˆ™ä»æ“ä½œç³»ç»Ÿç”³è¯·page
+     æœ€åä¸€ä¸ªPageè¡¨ï¼Œé‡Œé¢çš„pageå¤§å°ä¸ä¸€å®šç›¸åŒ
 */
 class HazeMemory
 {
@@ -66,7 +66,7 @@ private:
 	bool m_IsForceGC;
 	MarkStage m_MarkStage;
 	x_uint64 m_MarkStartTimestamp;
-	x_uint64 m_MaxMarkTime;			//ºÁÃë
+	x_uint64 m_MaxMarkTime;			//æ¯«ç§’
 
 	Unique<MemoryFreeList> m_FreeList[MAX_HAZE_ALLOC_SIZE / GRANULE];
 	MemoryBlock* m_MemoryBlocks[PAGE_NUM];

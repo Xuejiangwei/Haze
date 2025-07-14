@@ -20,7 +20,7 @@ Unique<V_Array<std::wstring>> g_CustomPaths;
 
 void HazeNewHandler()
 {
-	HAZE_LOG_ERR_W("Ã»ÓÐ×ã¹»ÄÚ´æ¿É·ÖÅäÁË!!!!\n");
+	HAZE_LOG_ERR_W("æ²¡æœ‰è¶³å¤Ÿå†…å­˜å¯åˆ†é…äº†!!!!\n");
 }
 
 void HazePreInit()
@@ -101,7 +101,7 @@ int GetParam(ParamType type, char** paramArray, int length)
 	return 0;
 }
 
-//½âÎöÎÄ±¾  --->  Éú³É×Ö½ÚÂë   --->  ÓÃÐéÄâ»ú½âÎö×Ö½ÚÂë£¬²¢Ö´ÐÐ
+//è§£æžæ–‡æœ¬  --->  ç”Ÿæˆå­—èŠ‚ç    --->  ç”¨è™šæ‹Ÿæœºè§£æžå­—èŠ‚ç ï¼Œå¹¶æ‰§è¡Œ
 HazeVM* HazeMain(int argCount, char* argValue[])
 {
 	atexit(HazeExit);
@@ -159,7 +159,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 		}
 	}
 
-	// Ìí¼Ó×Ô¶¨ÒåµÄÒýÓÃÎÄ¼þÂ·¾¶
+	// æ·»åŠ è‡ªå®šä¹‰çš„å¼•ç”¨æ–‡ä»¶è·¯å¾„
 	{
 		int index = GetParam(ParamType::IncludeFilePath, argValue, argCount);
 		if (index > 0)

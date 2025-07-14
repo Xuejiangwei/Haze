@@ -25,11 +25,11 @@ void ASTEnum::CodeGen()
 		Share<CompilerValue> v = nullptr;
 		if (m_Enums[i].second)
 		{
-			//ÕâÀïĞèÒª¼ÆËã³ö³£Á¿
+			//è¿™é‡Œéœ€è¦è®¡ç®—å‡ºå¸¸é‡
 			v = m_Enums[i].second->CodeGen(nullptr);
 			if (!v)
 			{
-				AST_ERR_W("Ã¶¾Ù<%s>Éú³É´íÎó", m_Enums[i].first.c_str());
+				AST_ERR_W("æšä¸¾<%s>ç”Ÿæˆé”™è¯¯", m_Enums[i].first.c_str());
 				return;
 			}
 		}
@@ -45,7 +45,7 @@ void ASTEnum::CodeGen()
 				}
 				else
 				{
-					AST_ERR_W("Ã¶¾Ù<%s>Éú³É´íÎó, Î´ÕÒµ½Ã¶¾Ù<%s>", m_Enums[i].first.c_str(), m_Enums[i - 1].first.c_str());
+					AST_ERR_W("æšä¸¾<%s>ç”Ÿæˆé”™è¯¯, æœªæ‰¾åˆ°æšä¸¾<%s>", m_Enums[i].first.c_str(), m_Enums[i - 1].first.c_str());
 					return;
 				}
 			}
@@ -59,7 +59,7 @@ void ASTEnum::CodeGen()
 
 		if (!v->IsConstant())
 		{
-			AST_ERR_W("Ã¶¾Ù<%s>Éú³É´íÎó, ²»ÊÇ³£Á¿", m_Enums[i].first.c_str());
+			AST_ERR_W("æšä¸¾<%s>ç”Ÿæˆé”™è¯¯, ä¸æ˜¯å¸¸é‡", m_Enums[i].first.c_str());
 			return;
 		}
 
@@ -98,7 +98,7 @@ void ASTEnum::AddEnumOneValueByType(HazeValue& value, const HazeValue& prValue)
 		value.Value.UInt64 = prValue.Value.UInt64 + 1;
 		break;
 	default:
-		AST_ERR_W("Ã¶¾Ù×Ô¶¯Æ¥Åä³£Á¿Öµ³ö´í");
+		AST_ERR_W("æšä¸¾è‡ªåŠ¨åŒ¹é…å¸¸é‡å€¼å‡ºé”™");
 		break;
 	}
 }

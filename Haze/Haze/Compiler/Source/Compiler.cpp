@@ -660,7 +660,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 
 	ConvertBaseTypeValue(type, s_Value, varType ? *varType : type, var);
 
-	s_DefineVariableType.BaseType = type;
+	s_DefineVariableType.SetBaseTypeAndId(type);
 
 	Share<CompilerValue> ret = nullptr;
 	switch (type)
@@ -799,7 +799,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 	}
 		break;
 	default:
-		HAZE_LOG_ERR_W("δ֧������<%s>��������!\n", GetHazeValueTypeString(type));
+		HAZE_LOG_ERR_W("不能生成<%s>类型的常量!\n", GetHazeValueTypeString(type));
 		break;
 	}
 	return ret;

@@ -6,7 +6,7 @@ class ASTBase;
 class ASTClassFunctionSection;
 class ASTFunctionDefine;
 
-// ²»ÔÊĞíÁâĞÎ¼Ì³Ğ
+// ä¸å…è®¸è±å½¢ç»§æ‰¿
 class ASTClass
 {
 public:

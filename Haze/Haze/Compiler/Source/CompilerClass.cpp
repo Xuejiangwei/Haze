@@ -32,7 +32,7 @@ CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name
 	x_uint32 alignSize = GetAlignSize();
 	alignSize = alignSize > HAZE_ALIGN_BYTE ? alignSize : HAZE_ALIGN_BYTE;
 	m_DataSize = lastMember ? HAZE_ALIGN(m_Offsets.back() + lastMember->GetSize(), alignSize) + m_DataSize : m_DataSize;
-	HAZE_LOG_INFO(H_TEXT("Àà<%s> DataSize %d\n"), name.c_str(), m_DataSize);
+	HAZE_LOG_INFO(H_TEXT("ç±»<%s> DataSize %d\n"), name.c_str(), m_DataSize);
 }
 
 CompilerClass::~CompilerClass()
@@ -183,7 +183,7 @@ int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HStr
 			}
 		}
 
-		COMPILER_ERR_MODULE_W("Î´ÄÜÔÚÀà<%s>ÖĞÕÒµ½<%s>³ÉÔ±", s.c_str(), memberName.c_str());
+		COMPILER_ERR_MODULE_W("æœªèƒ½åœ¨ç±»<%s>ä¸­æ‰¾åˆ°<%s>æˆå‘˜", s.c_str(), memberName.c_str());
 	}
 
 	return index;

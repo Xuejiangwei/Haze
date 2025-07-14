@@ -112,7 +112,7 @@ public:
 		V_Array<HazeTempRegisterData> TempRegisters;
 		V_Array<FunctionBlock> Blocks;
 		V_Array<FunctionInstruction> Instructions;
-		V_Array<Pair<int, int>> RefVariable;			//±Õ°üÊ¹ÓÃ
+		V_Array<Pair<int, int>> RefVariable;			//é—­åŒ…ä½¿ç”¨
 		InstructionFunctionType DescType;
 		
 		x_uint32 StartLine;

@@ -1,40 +1,40 @@
 #pragma once
 
-#define HAZE_BASE_LIBRARY_STREAM_NAME H_TEXT("±ê×¼Á÷")
-#define HAZE_BASE_LIBRARY_STREAM_CODE H_TEXT("¾²Ì¬¿â ±ê×¼Á÷\n\
+#define HAZE_BASE_LIBRARY_STREAM_NAME H_TEXT("æ ‡å‡†æµ")
+#define HAZE_BASE_LIBRARY_STREAM_CODE H_TEXT("é™æ€åº“ æ ‡å‡†æµ\n\
 {\n\
-	º¯Êý\n\
+	å‡½æ•°\n\
 	{\n\
-		¿Õ ´òÓ¡(×Ö·û ¼×, ...)\n\
-		¿Õ ÊäÈë(×Ö·û ¼×, ...)\n\
-		¶¯Ì¬Àà Éú³É¶¯Ì¬Àà()\n\
+		ç©º æ‰“å°(å­—ç¬¦ ç”², ...)\n\
+		ç©º è¾“å…¥(å­—ç¬¦ ç”², ...)\n\
+		åŠ¨æ€ç±» ç”ŸæˆåŠ¨æ€ç±»()\n\
 	}\n\
 }")
 
-#define HAZE_BASE_LIBRARY_MEMORY_NAME H_TEXT("±ê×¼ÄÚ´æ")
-#define HAZE_BASE_LIBRARY_MEMORY_CODE H_TEXT("¾²Ì¬¿â ±ê×¼ÄÚ´æ\n\
+#define HAZE_BASE_LIBRARY_MEMORY_NAME H_TEXT("æ ‡å‡†å†…å­˜")
+#define HAZE_BASE_LIBRARY_MEMORY_CODE H_TEXT("é™æ€åº“ æ ‡å‡†å†…å­˜\n\
 {\n\
-	º¯Êý\n\
+	å‡½æ•°\n\
 	{\n\
-		¿Õ ÄÚ´æ¸´ÖÆ(ÕýÕûÊý64 Ä¿±êµØÖ·, ÕýÕûÊý64 Ô´µØÖ·, ÕýÕûÊý64 ×Ö½ÚÊý)\n\
-		¿Õ ¶à¶ÔÏó¹¹Ôì(ÕýÕûÊý64 Ê×µØÖ·, ÕýÕûÊý64 ¹¹Ôìº¯ÊýµØÖ·, ÕýÕûÊý64 ¶ÔÏó´óÐ¡, ÕýÕûÊý64 ¶ÔÏó¸öÊý)\n\
+		ç©º å†…å­˜å¤åˆ¶(æ­£æ•´æ•°64 ç›®æ ‡åœ°å€, æ­£æ•´æ•°64 æºåœ°å€, æ­£æ•´æ•°64 å­—èŠ‚æ•°)\n\
+		ç©º å¤šå¯¹è±¡æž„é€ (æ­£æ•´æ•°64 é¦–åœ°å€, æ­£æ•´æ•°64 æž„é€ å‡½æ•°åœ°å€, æ­£æ•´æ•°64 å¯¹è±¡å¤§å°, æ­£æ•´æ•°64 å¯¹è±¡ä¸ªæ•°)\n\
 	}\n\
 }")
 
-#define HAZE_BASE_LIBRARY_FILE_NAME H_TEXT("±ê×¼ÎÄ¼þ")
-#define HAZE_BASE_LIBRARY_FILE_CODE H_TEXT("¾²Ì¬¿â ±ê×¼ÎÄ¼þ\n\
+#define HAZE_BASE_LIBRARY_FILE_NAME H_TEXT("æ ‡å‡†æ–‡ä»¶")
+#define HAZE_BASE_LIBRARY_FILE_CODE H_TEXT("é™æ€åº“ æ ‡å‡†æ–‡ä»¶\n\
 {\n\
-	º¯Êý\n\
+	å‡½æ•°\n\
 	{\n\
-		ÕýÕûÊý64 ´ò¿ªÎÄ¼þ(ÕýÕûÊý64 ÎÄ¼þÂ·¾¶, ÕûÊý ²Ù×÷·½Ê½)\n\
-		¿Õ ¹Ø±ÕÎÄ¼þ(ÕýÕûÊý64 ÎÄ¼þÖ¸Õë)\n\
-		ÕûÊý ¶ÁÈ¡×Ö·û(ÕýÕûÊý64 ÎÄ¼þÖ¸Õë)\n\
-		ÕýÕûÊý64 ¶ÁÈ¡×Ö·û´®(ÕýÕûÊý64 ÎÄ¼þÖ¸Õë, ÕûÊý ×î´ó¸öÊý, ÕýÕûÊý64 µ¥¸ö×Ö·û´®)\n\
-		ÕýÕûÊý64 ¶ÁÈ¡Ò»ÐÐ(ÕýÕûÊý64 ÎÄ¼þÖ¸Õë, ÕýÕûÊý64 µ¥¸ö×Ö·û´®)\n\
-		ÕýÕûÊý64 ¶ÁÈ¡(ÕýÕûÊý64 ÎÄ¼þÖ¸Õë, ÕýÕûÊý64 ×Ö½ÚÊý, ÕýÕûÊý64 ¸öÊý, ÕýÕûÊý64 µ¥¸ö×Ö·û´®)\n\
-		ÕûÊý Ð´Èë×Ö·û(ÕýÕûÊý64 ÎÄ¼þÖ¸Õë, ÕýÕûÊý µ¥¸ö×Ö·û)\n\
-		ÕûÊý Ð´Èë×Ö·û´®(ÕýÕûÊý64 ÎÄ¼þÖ¸Õë, ÕýÕûÊý64 µ¥¸ö×Ö·û´®)\n\
-		Õý³¤ÕûÊý Ð´Èë(ÕýÕûÊý64 ÎÄ¼þÖ¸Õë, ÕýÕûÊý64 ×Ö½ÚÊý, ÕýÕûÊý64 ¸öÊý, ÕýÕûÊý64 µ¥¸ö×Ö·û´®)\n\
+		æ­£æ•´æ•°64 æ‰“å¼€æ–‡ä»¶(æ­£æ•´æ•°64 æ–‡ä»¶è·¯å¾„, æ•´æ•° æ“ä½œæ–¹å¼)\n\
+		ç©º å…³é—­æ–‡ä»¶(æ­£æ•´æ•°64 æ–‡ä»¶æŒ‡é’ˆ)\n\
+		æ•´æ•° è¯»å–å­—ç¬¦(æ­£æ•´æ•°64 æ–‡ä»¶æŒ‡é’ˆ)\n\
+		æ­£æ•´æ•°64 è¯»å–å­—ç¬¦ä¸²(æ­£æ•´æ•°64 æ–‡ä»¶æŒ‡é’ˆ, æ•´æ•° æœ€å¤§ä¸ªæ•°, æ­£æ•´æ•°64 å•ä¸ªå­—ç¬¦ä¸²)\n\
+		æ­£æ•´æ•°64 è¯»å–ä¸€è¡Œ(æ­£æ•´æ•°64 æ–‡ä»¶æŒ‡é’ˆ, æ­£æ•´æ•°64 å•ä¸ªå­—ç¬¦ä¸²)\n\
+		æ­£æ•´æ•°64 è¯»å–(æ­£æ•´æ•°64 æ–‡ä»¶æŒ‡é’ˆ, æ­£æ•´æ•°64 å­—èŠ‚æ•°, æ­£æ•´æ•°64 ä¸ªæ•°, æ­£æ•´æ•°64 å•ä¸ªå­—ç¬¦ä¸²)\n\
+		æ•´æ•° å†™å…¥å­—ç¬¦(æ­£æ•´æ•°64 æ–‡ä»¶æŒ‡é’ˆ, æ­£æ•´æ•° å•ä¸ªå­—ç¬¦)\n\
+		æ•´æ•° å†™å…¥å­—ç¬¦ä¸²(æ­£æ•´æ•°64 æ–‡ä»¶æŒ‡é’ˆ, æ­£æ•´æ•°64 å•ä¸ªå­—ç¬¦ä¸²)\n\
+		æ­£é•¿æ•´æ•° å†™å…¥(æ­£æ•´æ•°64 æ–‡ä»¶æŒ‡é’ˆ, æ­£æ•´æ•°64 å­—èŠ‚æ•°, æ­£æ•´æ•°64 ä¸ªæ•°, æ­£æ•´æ•°64 å•ä¸ªå­—ç¬¦ä¸²)\n\
 	}\n\
 }")
 

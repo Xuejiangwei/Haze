@@ -5,7 +5,7 @@ class HazeStack;
 class HazeVM;
 
 /*
-* ¶¨ÒåÊ±²»ÄÜÊäÈëÊý×Ö ÀýÈç ÕûÊý[1] »ò ÕûÊý[¼×] ÕâÖÖÐÎÊ½ÊÇ²»ÔÊÐíµÄ
+* å®šä¹‰æ—¶ä¸èƒ½è¾“å…¥æ•°å­— ä¾‹å¦‚ æ•´æ•°[1] æˆ– æ•´æ•°[ç”²] è¿™ç§å½¢å¼æ˜¯ä¸å…è®¸çš„
 */
 
 class ObjectArray : public GCObject

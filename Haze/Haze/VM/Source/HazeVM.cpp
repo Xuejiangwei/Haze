@@ -47,17 +47,17 @@ HazeVM::~HazeVM()
 
 bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 {
-	// ÌáÇ°×¢²á»ù±¾ÀàĞÍ
+	// æå‰æ³¨å†ŒåŸºæœ¬ç±»å‹
 	InitRegisterObjectFunction();
 
-	// ÌáÇ°×¢²áÀà
+	// æå‰æ³¨å†Œç±»
 	/*ClassData data;
 	data.Name = H_TEXT("UObject");
 	data.Size = 8;
 	data.Members.push_back({ { HazeValueType::Int32, H_TEXT("A")}, 0, 4, 0 });
 	m_Compiler->PreRegisterClass(data);*/
 
-	// ÌáÇ°½âÎö»ù´¡Ä£¿é£¬ÈôÁÙÊ±ÎÄ¼ş¼ĞÃ»ÓĞÖĞ¼äÎÄ¼ş£¬Éú³ÉÁÙÊ±ÎÄ¼ş
+	// æå‰è§£æåŸºç¡€æ¨¡å—ï¼Œè‹¥ä¸´æ—¶æ–‡ä»¶å¤¹æ²¡æœ‰ä¸­é—´æ–‡ä»¶ï¼Œç”Ÿæˆä¸´æ—¶æ–‡ä»¶
 	V_Array<HString> baseModules = { HAZE_BASE_LIBRARY_STREAM_NAME, HAZE_BASE_LIBRARY_MEMORY_NAME, HAZE_BASE_LIBRARY_FILE_NAME };
 	for (x_uint64 i = 0; i < baseModules.size(); i++)
 	{
@@ -325,7 +325,7 @@ char* HazeVM::GetGlobalValueByIndex(x_uint32 Index)
 
 ClassData* HazeVM::FindClass(x_uint32 typeId)
 {
-	auto info = m_TypeInfoMap->GetClassName(typeId);
+	auto info = m_TypeInfoMap->GetClassNameById(typeId);
 	for (auto& Iter : m_ClassTable)
 	{
 		if (Iter.Name == *info)
@@ -389,7 +389,7 @@ void HazeVM::SetGlobalString(x_uint64 index, const HString& str)
 	}
 	else
 	{
-		GLOBAL_INIT_ERR_W("ÉèÖÃµÚ<%d>¸ö×Ö·û<%s>³¬¹ı×Ö·û±í³¤¶È<%d>", index, str.c_str(), m_StringTable.size());
+		GLOBAL_INIT_ERR_W("è®¾ç½®ç¬¬<%d>ä¸ªå­—ç¬¦<%s>è¶…è¿‡å­—ç¬¦è¡¨é•¿åº¦<%d>", index, str.c_str(), m_StringTable.size());
 	}
 }
 
@@ -573,5 +573,5 @@ x_uint32 HazeVM::GetCurrCallFunctionLine()
 
 //void HazeVM::Hook(HazeVM* m_VM)
 //{
-//	HAZE_LOG_INFO(H_TEXT("ÒÑÃüÖĞ¶Ïµã\n"));
+//	HAZE_LOG_INFO(H_TEXT("å·²å‘½ä¸­æ–­ç‚¹\n"));
 //}

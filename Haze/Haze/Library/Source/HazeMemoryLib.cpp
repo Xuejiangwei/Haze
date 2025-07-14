@@ -9,7 +9,7 @@
 
 static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
-	{ H_TEXT("�ڴ渴��"), &HazeMemoryLib::MemoryCopy },
+	{ H_TEXT("内存复制"), &HazeMemoryLib::MemoryCopy },
 	{ HAZE_OBJECT_ARRAY_CONSTRUCTOR, &HazeMemoryLib::ObjectArrayConstructor },
 };
 

@@ -43,7 +43,7 @@ HazeValue* ASTFunction::CodeGen()
 	else if (m_Section == HazeSectionSignal::Class)
 	{
 		auto typeInfoMap = m_Compiler->GetTypeInfoMap();
-		currClass = currModule->GetClass(*typeInfoMap->GetClassName(m_FunctionParams[0]->GetDefine().Type.TypeId));
+		currClass = currModule->GetClass(*typeInfoMap->GetClassNameById(m_FunctionParams[0]->GetDefine().Type.TypeId));
 		compilerFunction = currModule->CreateFunction(currClass, m_IsVirtual ? ClassCompilerFunctionType::Virtual : m_IsPureVirtual ?
 			ClassCompilerFunctionType::PureVirtual : ClassCompilerFunctionType::Normal,
 			m_FunctionName, m_FunctionType, paramDefines);
@@ -70,7 +70,7 @@ HazeValue* ASTFunction::CodeGen()
 	else
 	{
 		auto& m_Location = m_EndLocation;
-		AST_ERR_W("Éú³Éº¯Êı<%s>½áÊø´íÎó, ²»ÊÇµ±Ç°Ä£¿é½âÎöµÄº¯Êı<%s>", m_FunctionName.c_str(), currModule->GetCurrFunction()->GetName().c_str());
+		AST_ERR_W("ç”Ÿæˆå‡½æ•°<%s>ç»“æŸé”™è¯¯, ä¸æ˜¯å½“å‰æ¨¡å—è§£æçš„å‡½æ•°<%s>", m_FunctionName.c_str(), currModule->GetCurrFunction()->GetName().c_str());
 	}
 
 	return nullptr;
@@ -174,7 +174,7 @@ void ASTClassFunctionSection::CodeGen()
 			{
 				if (iter.second[i]->GetName() == className && i != 0)
 				{
-					COMPILER_ERR_MODULE_W("Àà<%s>ĞèÒªÔÚ<ÏÔ>·¶Î§ÄÚµÚÒ»¸ö¶¨Òå¹¹Ôìº¯Êı", m_Compiler->GetCurrModuleName().c_str(), className.c_str());
+					COMPILER_ERR_MODULE_W("ç±»<%s>éœ€è¦åœ¨<æ˜¾>èŒƒå›´å†…ç¬¬ä¸€ä¸ªå®šä¹‰æ„é€ å‡½æ•°", m_Compiler->GetCurrModuleName().c_str(), className.c_str());
 					return;
 				}
 			}

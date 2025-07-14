@@ -9,10 +9,10 @@ class CompilerEnumValue : public CompilerValue
 public:
 	friend class CompilerClass;
 
-	// 定义创建
+	// 瀹氫箟鍒涘缓
 	explicit CompilerEnumValue(CompilerEnum* owner, Share<CompilerValue> value);
 
-	// 变量创建
+	// 鍙橀噺鍒涘缓
 	explicit CompilerEnumValue(CompilerEnum* owner, CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
 		HazeDataDesc desc, int count, Share<CompilerValue> assignValue = nullptr);
 

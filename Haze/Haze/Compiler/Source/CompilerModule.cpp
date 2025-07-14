@@ -161,7 +161,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			}
 			else if(!m)
 			{
-				HAZE_LOG_ERR_W("<%s>½âÎöÁÙÊ±ÎÄ¼şÊ§°Ü£¬ÒıÈëÄ£¿é<%s>Î´ÄÜÕÒµ½!\n", m_Path.c_str(), str.c_str());
+				HAZE_LOG_ERR_W("<%s>è§£æä¸´æ—¶æ–‡ä»¶å¤±è´¥ï¼Œå¼•å…¥æ¨¡å—<%s>æœªèƒ½æ‰¾åˆ°!\n", m_Path.c_str(), str.c_str());
 				return false;
 			}
 		}
@@ -301,7 +301,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			classData[j].second = m_Compiler->CreateClassVariable(this, memberType, nullptr, 0, nullptr);
 			classData[j].second->SetDataDesc(desc);
 
-			HAZE_TO_DO("ĞèÒª¿¼ÂÇÊı×éºÍº¯Êı, ÒÔ¼°º¯ÊıÊı×éºÍº¯ÊıÖĞÓĞÊı×é²ÎÊıµÄÇé¿ö");
+			HAZE_TO_DO("éœ€è¦è€ƒè™‘æ•°ç»„å’Œå‡½æ•°, ä»¥åŠå‡½æ•°æ•°ç»„å’Œå‡½æ•°ä¸­æœ‰æ•°ç»„å‚æ•°çš„æƒ…å†µ");
 		}
 
 		Share<CompilerClass> compilerClass = CreateClass(className, parentClass, classData);
@@ -313,7 +313,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("<%s>½âÎöÁÙÊ±ÎÄ¼şÊ§°Ü£¬Î´ÄÜÕÒµ½µÚ<%d>¸öÀà!\n", GetName().c_str(), i);
+			HAZE_LOG_ERR_W("<%s>è§£æä¸´æ—¶æ–‡ä»¶å¤±è´¥ï¼Œæœªèƒ½æ‰¾åˆ°ç¬¬<%d>ä¸ªç±»!\n", GetName().c_str(), i);
 			return false;
 		}
 	}
@@ -323,10 +323,10 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	{
 		return false;
 	}
-	stream >> ui64;// °üÀ¨Ààº¯ÊıºÍÆÕÍ¨º¯Êı
-	stream >> ui64;// ±Õ°ü¸öÊı
+	stream >> ui64;// åŒ…æ‹¬ç±»å‡½æ•°å’Œæ™®é€šå‡½æ•°
+	stream >> ui64;// é—­åŒ…ä¸ªæ•°
 
-	//È«¾ÖÊı¾İ³õÊ¼»¯º¯ÊıÏÈ²»½âÎö
+	//å…¨å±€æ•°æ®åˆå§‹åŒ–å‡½æ•°å…ˆä¸è§£æ
 	//m_GlobalDataFunction->GenI_Code(hss);
 
 
@@ -441,7 +441,7 @@ void CompilerModule::GenCodeFile()
 {
 #if HAZE_I_CODE_ENABLE
 
-	//Éú³ÉÖĞ¼ä´úÂëÏÈ²»ĞèÒª¼ÆËãsymbol table±íÖĞµÄÆ«ÒÆ£¬µÈÍ³Ò»Éú³É×Ö½ÚÂëÊ±ÔÚ½øĞĞÌæ»»£¬Ä£°å»áÖØĞÂ´ò¿ªÎÄ¼şÁ÷¡£
+	//ç”Ÿæˆä¸­é—´ä»£ç å…ˆä¸éœ€è¦è®¡ç®—symbol tableè¡¨ä¸­çš„åç§»ï¼Œç­‰ç»Ÿä¸€ç”Ÿæˆå­—èŠ‚ç æ—¶åœ¨è¿›è¡Œæ›¿æ¢ï¼Œæ¨¡æ¿ä¼šé‡æ–°æ‰“å¼€æ–‡ä»¶æµã€‚
 	if (m_FS_I_Code && m_FS_I_Code->is_open())
 	{
 		GenICode();
@@ -770,7 +770,7 @@ Share<CompilerValue> CompilerModule::CreateInc(Share<CompilerValue> value, bool 
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("<%s>ÀàĞÍ²»ÄÜÊ¹ÓÃInc²Ù×÷\n", GetHazeValueTypeString(value->GetVariableType().BaseType));
+		HAZE_LOG_ERR_W("<%s>ç±»å‹ä¸èƒ½ä½¿ç”¨Incæ“ä½œ\n", GetHazeValueTypeString(value->GetVariableType().BaseType));
 	}
 	return retValue;
 }
@@ -790,7 +790,7 @@ Share<CompilerValue> CompilerModule::CreateDec(Share<CompilerValue> value, bool 
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("<%s>ÀàĞÍ²»ÄÜÊ¹ÓÃDec²Ù×÷\n", GetHazeValueTypeString(value->GetVariableType().BaseType));
+		HAZE_LOG_ERR_W("<%s>ç±»å‹ä¸èƒ½ä½¿ç”¨Decæ“ä½œ\n", GetHazeValueTypeString(value->GetVariableType().BaseType));
 	}
 	return retValue;
 }
@@ -839,7 +839,7 @@ void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Sha
 {
 	//Share<HazeCompilerValue> retValue = left;
 
-	//ÓÅ»¯Ïà¹Ø
+	//ä¼˜åŒ–ç›¸å…³
 	//if (oper1->IsConstant() && oper2->IsConstant())
 	//{
 	//	if (IsNumberType(oper1->GetVariableType().PrimaryType))
@@ -854,7 +854,7 @@ void CompilerModule::GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Sha
 	//	}
 	//	else
 	//	{
-	//		COMPILER_ERR_MODULE_W("Éú³É<%s>²Ù×÷´íÎó", GetInstructionString(opCode), GetName().c_str());
+	//		COMPILER_ERR_MODULE_W("ç”Ÿæˆ<%s>æ“ä½œé”™è¯¯", GetInstructionString(opCode), GetName().c_str());
 	//	}
 	//	return;// retValue;
 	//}
@@ -872,7 +872,7 @@ void CompilerModule::GenIRCode_UnaryOperator(Share<CompilerValue> assignTo, Shar
 
 	if (m_CurrFunction.empty())
 	{
-		HAZE_TO_DO(È«¾ÖÓï¾äÔİÊ±²»´¦Àí);
+		HAZE_TO_DO(å…¨å±€è¯­å¥æš‚æ—¶ä¸å¤„ç†);
 	}
 	else
 	{
@@ -898,7 +898,7 @@ void CompilerModule::GenIRCode_Cmp(HazeCmpType cmpType, Share<CompilerBlock> ifJ
 
 	if (cmpType == HazeCmpType::None)
 	{
-		HAZE_LOG_ERR_W("±È½ÏÊ§°Ü,±È½ÏÀàĞÍÎª¿Õ,µ±Ç°º¯Êı<%s>!\n", GetCurrFunction()->GetName().c_str());
+		HAZE_LOG_ERR_W("æ¯”è¾ƒå¤±è´¥,æ¯”è¾ƒç±»å‹ä¸ºç©º,å½“å‰å‡½æ•°<%s>!\n", GetCurrFunction()->GetName().c_str());
 	}
 
 	GenIRCode(hss, this, GetInstructionOpCodeByCmpType(cmpType), ifJmpBlock, elseJmpBlock);
@@ -973,7 +973,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	V_Array<HazeVariableType> funcTypes(params.size());
 	if (!callFunction && !pointerFunc && !advancFunctionInfo)
 	{
-		COMPILER_ERR_MODULE_W("Éú³Éº¯Êıµ÷ÓÃ´íÎó, <%s>Îª¿Õ", GetName().c_str(), callFunction ? callFunction->GetName().c_str() : H_TEXT("º¯ÊıÖ¸Õë"));
+		COMPILER_ERR_MODULE_W("ç”Ÿæˆå‡½æ•°è°ƒç”¨é”™è¯¯, <%s>ä¸ºç©º", GetName().c_str(), callFunction ? callFunction->GetName().c_str() : H_TEXT("å‡½æ•°æŒ‡é’ˆ"));
 	}
 	else
 	{
@@ -991,15 +991,15 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 			{
 				if (i == (x_int64)params.size() - 1 && !IsMultiVariableType(type.BaseType) && paramSize != params.size())
 				{
-					COMPILER_ERR_MODULE_W("Éú³Éº¯Êıµ÷ÓÃ<%s>´íÎó, Ó¦ÌîÈë<%d>¸ö²ÎÊı£¬Êµ¼ÊÌîÈëÁË<%d>¸ö", GetName().c_str(),
-						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("º¯ÊıÖ¸Õë") : H_TEXT("¸´ÔÓÀàĞÍ"), paramSize, params.size());
+					COMPILER_ERR_MODULE_W("ç”Ÿæˆå‡½æ•°è°ƒç”¨<%s>é”™è¯¯, åº”å¡«å…¥<%d>ä¸ªå‚æ•°ï¼Œå®é™…å¡«å…¥äº†<%d>ä¸ª", GetName().c_str(),
+						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("å‡½æ•°æŒ‡é’ˆ") : H_TEXT("å¤æ‚ç±»å‹"), paramSize, params.size());
 				}
 				else if (IsMultiVariableType(type.BaseType))
 				{
 					if (params.size() - i < paramSize)
 					{
-						COMPILER_ERR_MODULE_W("Éú³Éº¯Êıµ÷ÓÃ<%s>´íÎó,  µÚ<%d>¸ö²ÎÊıÃ¶¾ÙÀàĞÍ²»Æ¥Åä", GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : H_TEXT("º¯ÊıÖ¸Õë"), params.size() - 1 - i);
+						COMPILER_ERR_MODULE_W("ç”Ÿæˆå‡½æ•°è°ƒç”¨<%s>é”™è¯¯,  ç¬¬<%d>ä¸ªå‚æ•°æšä¸¾ç±»å‹ä¸åŒ¹é…", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("å‡½æ•°æŒ‡é’ˆ"), params.size() - 1 - i);
 					}
 				}
 				else if (variable->IsEnum())
@@ -1008,8 +1008,8 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetTypeId() == type.TypeId) {}
 					else
 					{
-						COMPILER_ERR_MODULE_W("Éú³Éº¯Êıµ÷ÓÃ<%s>´íÎó, µÚ<%d>¸ö²ÎÊıÃ¶¾ÙÀàĞÍ²»Æ¥Åä", GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : H_TEXT("º¯ÊıÖ¸Õë"), params.size() - 1 - i);
+						COMPILER_ERR_MODULE_W("ç”Ÿæˆå‡½æ•°è°ƒç”¨<%s>é”™è¯¯, ç¬¬<%d>ä¸ªå‚æ•°æšä¸¾ç±»å‹ä¸åŒ¹é…", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("å‡½æ•°æŒ‡é’ˆ"), params.size() - 1 - i);
 					}
 				}
 				else if (type.IsStrongerType(variable->GetVariableType())) {}
@@ -1020,14 +1020,14 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					if (hazeClass && hazeClass->IsParentClass(type)) {}
 					else
 					{
-						COMPILER_ERR_MODULE_W("Éú³Éº¯Êıµ÷ÓÃ<%s>´íÎó, µÚ<%d>¸ö²ÎÊıÀà²»Æ¥Åä, ²ÎÊıÓ¦Îª<>Àà", GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : H_TEXT("º¯ÊıÖ¸Õë"), params.size() - 1 - i);
+						COMPILER_ERR_MODULE_W("ç”Ÿæˆå‡½æ•°è°ƒç”¨<%s>é”™è¯¯, ç¬¬<%d>ä¸ªå‚æ•°ç±»ä¸åŒ¹é…, å‚æ•°åº”ä¸º<>ç±»", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("å‡½æ•°æŒ‡é’ˆ"), params.size() - 1 - i);
 					}
 				}
 				else if (!IsMultiVariableType(type.BaseType))
 				{
-					COMPILER_ERR_MODULE_W("Éú³Éº¯Êıµ÷ÓÃ<%s>´íÎó, µÚ<%d>¸ö²ÎÊıÀàĞÍ²»Æ¥Åä", GetName().c_str(),
-						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("º¯ÊıÖ¸Õë") : H_TEXT("¸´ÔÓÀàĞÍ"),
+					COMPILER_ERR_MODULE_W("ç”Ÿæˆå‡½æ•°è°ƒç”¨<%s>é”™è¯¯, ç¬¬<%d>ä¸ªå‚æ•°ç±»å‹ä¸åŒ¹é…", GetName().c_str(),
+						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("å‡½æ•°æŒ‡é’ˆ") : H_TEXT("å¤æ‚ç±»å‹"),
 						params.size() - 1 - i);
 				}
 			}
@@ -1046,8 +1046,8 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					}
 					else
 					{
-						COMPILER_ERR_MODULE_W("Éú³Éº¯Êıµ÷ÓÃ<%s>´íÎó, µÚ<%d>¸ö²ÎÊıÒıÓÃÀàĞÍ²»Æ¥Åä", GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("º¯ÊıÖ¸Õë") : H_TEXT("¸´ÔÓÀàĞÍ"),
+						COMPILER_ERR_MODULE_W("ç”Ÿæˆå‡½æ•°è°ƒç”¨<%s>é”™è¯¯, ç¬¬<%d>ä¸ªå‚æ•°å¼•ç”¨ç±»å‹ä¸åŒ¹é…", GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("å‡½æ•°æŒ‡é’ˆ") : H_TEXT("å¤æ‚ç±»å‹"),
 							params.size() - 1 - i);
 					}
 				}
@@ -1068,8 +1068,8 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 			if ((IsMultiVariableType(lastParam.BaseType) && params.size() + 1 < paramSize) || (!IsMultiVariableType(lastParam.BaseType) && params.size() != paramSize))
 			{
-				COMPILER_ERR_MODULE_W("Éú³Éº¯Êıµ÷ÓÃ<%s>´íÎó, º¯Êı¸öÊı²»Æ¥Åä", GetName().c_str(),
-					callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("º¯ÊıÖ¸Õë") : H_TEXT("¸´ÔÓÀàĞÍ"));
+				COMPILER_ERR_MODULE_W("ç”Ÿæˆå‡½æ•°è°ƒç”¨<%s>é”™è¯¯, å‡½æ•°ä¸ªæ•°ä¸åŒ¹é…", GetName().c_str(),
+					callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("å‡½æ•°æŒ‡é’ˆ") : H_TEXT("å¤æ‚ç±»å‹"));
 			}
 		}
 	}
@@ -1134,7 +1134,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 		GetCurrFunction()->FindLocalVariableName(pointerFunction, varName);
 		if (varName.empty())
 		{
-			HAZE_LOG_ERR_W("º¯ÊıÖ¸Õëµ÷ÓÃÊ§°Ü!\n");
+			HAZE_LOG_ERR_W("å‡½æ•°æŒ‡é’ˆè°ƒç”¨å¤±è´¥!\n");
 			return nullptr;
 		}
 	}
@@ -1161,7 +1161,7 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 		GetCurrFunction()->FindLocalVariableName(thisPointerTo, varName);
 		if (varName.empty())
 		{
-			HAZE_LOG_ERR_W("º¯ÊıÖ¸Õëµ÷ÓÃÊ§°Ü!\n");
+			HAZE_LOG_ERR_W("å‡½æ•°æŒ‡é’ˆè°ƒç”¨å¤±è´¥!\n");
 			return nullptr;
 		}
 	}
@@ -1379,13 +1379,13 @@ void CompilerModule::GenICode()
 	hss << GetFileLastTime(m_Path) << HAZE_ENDL;
 	hss << HAZE_VERSION << HAZE_ENDL;
 
-	//°æ±¾ 2¸ö×Ö½Ú
+	//ç‰ˆæœ¬ 2ä¸ªå­—èŠ‚
 	//FS_Ass << "1 1" << HAZE_ENDL;
 
-	//¶ÑÕ» 4¸ö×Ö½Ú
+	//å †æ ˆ 4ä¸ªå­—èŠ‚
 	//FS_Ass << 1024 << HAZE_ENDL;
 
-	//¿âÀàĞÍ
+	//åº“ç±»å‹
 	if (m_Path.empty())
 	{
 		hss << GetName() << HAZE_ENDL;
@@ -1407,14 +1407,14 @@ void CompilerModule::GenICode()
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("Éú³ÉÒıÓÃ±íÊ§°Ü, <%s>Ä£¿éµÄÒıÓÃÂ·¾¶Îª¿Õ!", m_ImportModules[i]->GetName().c_str());
+			HAZE_LOG_ERR_W("ç”Ÿæˆå¼•ç”¨è¡¨å¤±è´¥, <%s>æ¨¡å—çš„å¼•ç”¨è·¯å¾„ä¸ºç©º!", m_ImportModules[i]->GetName().c_str());
 			return;
 		}
 	}
 
 	/*
-	*	È«¾ÖÊı¾İ £º	¸öÊı
-	*				Êı¾İÃû Êı¾İÀàĞÍ Êı¾İ
+	*	å…¨å±€æ•°æ® ï¼š	ä¸ªæ•°
+	*				æ•°æ®å æ•°æ®ç±»å‹ æ•°æ®
 	*/
 	hss << GetGlobalDataHeaderString() << HAZE_ENDL;
 
@@ -1430,7 +1430,7 @@ void CompilerModule::GenICode()
 		hss << HAZE_ENDL;
 	}
 
-	//È«¾Ö±äÁ¿³õÊ¼»¯
+	//å…¨å±€å˜é‡åˆå§‹åŒ–
 	/*hss << GetGlobalDataInitBlockStart() << HAZE_ENDL;
 	for (size_t i = 0; i < m_ModuleIRCodes.size(); i++)
 	{
@@ -1440,12 +1440,12 @@ void CompilerModule::GenICode()
 	
 
 	/*
-	*	×Ö·û´®±í £º	¸öÊı
-	*				×Ö·û´®³¤¶È ×Ö·û´®
+	*	å­—ç¬¦ä¸²è¡¨ ï¼š	ä¸ªæ•°
+	*				å­—ç¬¦ä¸²é•¿åº¦ å­—ç¬¦ä¸²
 	*/
 	if (m_HashMap_StringMapping.size() != m_HashMap_StringTable.size())
 	{
-		HAZE_LOG_ERR_W("Éú³É×Ö·û´®±íÊ§°Ü!",
+		HAZE_LOG_ERR_W("ç”Ÿæˆå­—ç¬¦ä¸²è¡¨å¤±è´¥!",
 			m_HashMap_StringMapping.size(), m_HashMap_StringTable.size());
 		return;
 	}
@@ -1458,7 +1458,7 @@ void CompilerModule::GenICode()
 	}
 
 	/*
-	*	Ã¶¾Ù±í
+	*	æšä¸¾è¡¨
 	*/
 
 	hss << GetEnumTableLabelHeader() << HAZE_ENDL;
@@ -1469,8 +1469,8 @@ void CompilerModule::GenICode()
 	}
 
 	/*
-	*	Àà±í £º	¸öÊı
-	*				Ãû³Æ Ö¸ÁîÁ÷
+	*	ç±»è¡¨ ï¼š	ä¸ªæ•°
+	*				åç§° æŒ‡ä»¤æµ
 	*
 	*/
 	x_uint64 functionSize = 0;
@@ -1484,8 +1484,8 @@ void CompilerModule::GenICode()
 	}
 
 	/*
-	*	º¯Êı±í £º	¸öÊı
-	*				Ãû³Æ Ö¸ÁîÁ÷
+	*	å‡½æ•°è¡¨ ï¼š	ä¸ªæ•°
+	*				åç§° æŒ‡ä»¤æµ
 	*
 	*/
 	hss << GetFucntionTableHeaderString() << HAZE_ENDL;

@@ -91,7 +91,7 @@ enum class HazeToken : unsigned int
 	LeftParentheses,
 	RightParentheses,
 
-	Comma,					//¶ººÅ
+	Comma,
 
 	LeftBrace,
 	RightBrace,

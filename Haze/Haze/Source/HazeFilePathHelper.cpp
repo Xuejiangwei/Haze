@@ -36,7 +36,7 @@ HString GetModuleFilePathByLibPath(const HString& modulePath, const HString* ref
 		}
 	}
 	
-	// ¿ÉÖ´ĞĞ³ÌĞòÏÂµÄÈı·½¿âÎÄ¼şÂ·¾¶
+	// å¯æ‰§è¡Œç¨‹åºä¸‹çš„ä¸‰æ–¹åº“æ–‡ä»¶è·¯å¾„
 	filePath = g_HazeExePath + HAZE_THIRD_LIB_FOLDER + modulePackagePath;
 	if (std::filesystem::exists(filePath))
 	{
@@ -146,7 +146,7 @@ HString GetModuleFilePath(const HString& modulePath, const HString* refModulePat
 
 	if (path.empty())
 	{
-		HAZE_LOG_ERR_W("Î´ÄÜÕÒµ½<%s>Ä£¿éµÄÎÄ¼şÂ·¾¶, À´×Ô<%s>µÄÒıÓÃ!\n", modulePath.c_str(), refModulePath ? refModulePath->c_str(): H_TEXT("None"));
+		HAZE_LOG_ERR_W("æœªèƒ½æ‰¾åˆ°<%s>æ¨¡å—çš„æ–‡ä»¶è·¯å¾„, æ¥è‡ª<%s>çš„å¼•ç”¨!\n", modulePath.c_str(), refModulePath ? refModulePath->c_str(): H_TEXT("None"));
 	}
 
 	return path;

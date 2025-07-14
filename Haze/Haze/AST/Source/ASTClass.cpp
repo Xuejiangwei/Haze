@@ -34,12 +34,12 @@ void ASTClass::CodeGen()
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("½âÎö´´½¨Àà´íÎó,Î´ÄÜÕÒµ½Àà<%s>µÄ¸¸Àà<%s>!\n", m_ClassName.c_str(), m_ParentClasses[i].c_str());
+			HAZE_LOG_ERR_W("è§£æåˆ›å»ºç±»é”™è¯¯,æœªèƒ½æ‰¾åˆ°ç±»<%s>çš„çˆ¶ç±»<%s>!\n", m_ClassName.c_str(), m_ParentClasses[i].c_str());
 			return;
 		}
 	}
 
-	// ÅĞ¶ÏÁâĞÎ¼Ì³Ğ
+	// åˆ¤æ–­è±å½¢ç»§æ‰¿
 	if (parentClasses.size() > 1)
 	{
 		for (x_uint64 i = 0; i < parentClasses.size() - 1; i++)
@@ -48,7 +48,7 @@ void ASTClass::CodeGen()
 			{
 				if (CompilerClass::HasCommomInheritClass(parentClasses[i], parentClasses[j]))
 				{
-					HAZE_LOG_ERR_W("´´½¨Àà<%s>´íÎó, ¸¸Àà<%s><%s>´æÔÚ¹²Í¬µÄ¸¸Àà!\n", m_ClassName.c_str(), 
+					HAZE_LOG_ERR_W("åˆ›å»ºç±»<%s>é”™è¯¯, çˆ¶ç±»<%s><%s>å­˜åœ¨å…±åŒçš„çˆ¶ç±»!\n", m_ClassName.c_str(), 
 						m_ParentClasses[i].c_str(), m_ParentClasses[j].c_str());
 					return;
 				}
@@ -65,7 +65,7 @@ void ASTClass::CodeGen()
 			if (v->IsRefrence())
 			{
 				auto m_Location = m_ClassDatas[i].second[j]->m_Location;
-				AST_ERR_W("Àà<%s>³ÉÔ±²»ÔÊĞíÊÇÒıÓÃÀàĞÍ", m_ClassName.c_str());
+				AST_ERR_W("ç±»<%s>æˆå‘˜ä¸å…è®¸æ˜¯å¼•ç”¨ç±»å‹", m_ClassName.c_str());
 				return;
 			}
 			else

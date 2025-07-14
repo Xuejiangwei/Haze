@@ -5,8 +5,13 @@
 #include <chrono>
 
 #ifdef _WIN32
-	#include <Windows.h>
+	#include <windows.h>
 #endif
+
+#include <fstream>
+#include <locale>
+#include <codecvt>
+#include "HazeCompilerVersion.h"  // 添加版本检测头文件
 
 #include <regex>
 
@@ -277,6 +282,143 @@ HAZE_BINARY_STRING WString2String(const HString& wstr)
 	return result;
 }
 
+bool IsUtf8Bom(const char* utf8)
+{
+	return (x_uint8)utf8[0] == 0xEF && (x_uint8)utf8[1] == 0xBB && (x_uint8)utf8[2] == 0xBF;
+}
+
+HString ReadUtf8File(const HString& filePath)
+{
+	std::wstring content;
+	bool success = false;
+
+	// 方法1：尝试使用std::codecvt_utf8（C++11标准方法）
+#if HAZE_HAS_CODECVT
+	try {
+		std::ifstream fs(filePath, std::ios::binary);
+		if (fs.is_open()) {
+			std::string utf8_content((std::istreambuf_iterator<char>(fs)), std::istreambuf_iterator<char>());
+			fs.close();
+
+			if (!utf8_content.empty()) {
+				// 处理UTF-8 BOM
+				const char* utf8_data = utf8_content.c_str();
+				size_t utf8_size = utf8_content.size();
+
+				if (utf8_size >= 3 &&
+					(unsigned char)utf8_data[0] == 0xEF &&
+					(unsigned char)utf8_data[1] == 0xBB &&
+					(unsigned char)utf8_data[2] == 0xBF) {
+					utf8_data += 3;
+					utf8_size -= 3;
+				}
+
+				// 使用codecvt转换
+				std::wstring_convert<std::codecvt_utf8<wchar_t>> converter;
+				content = converter.from_bytes(utf8_data, utf8_data + utf8_size);
+				success = true;
+
+				// 调试信息
+				HAZE_LOG_INFO_W("使用std::codecvt_utf8读取UTF-8文件 [%s %s]: %s\n",
+					HAZE_COMPILER_STRING, HAZE_CPP_VERSION_STRING, filePath.c_str());
+			}
+		}
+	}
+	catch (const std::exception&) {
+		success = false;
+	}
+#endif
+
+	// 方法2：在Windows上尝试使用UTF-8 locale（Windows 10 1903+）
+#if HAZE_HAS_WIN32_UTF8_LOCALE
+	if (!success) {
+		try {
+			std::locale utf8_locale(".utf8");
+			std::wifstream fs(filePath);
+			fs.imbue(utf8_locale);
+
+			if (fs.is_open())
+			{
+				content = std::wstring((std::istreambuf_iterator<wchar_t>(fs)), std::istreambuf_iterator<wchar_t>());
+				fs.close();
+
+				if (!content.empty())
+				{
+					// 处理可能的BOM
+					if (content.size() >= 1 && content[0] == 0xFEFF) {
+						content.erase(0, 1);
+					}
+					success = true;
+
+					// 调试信息
+					HAZE_LOG_INFO_W("使用Windows UTF-8 locale读取文件 [%s]: %s\n",
+						H_TEXT(HAZE_COMPILER_STRING), filePath.c_str());
+				}
+			}
+		}
+		catch (const std::exception&) {
+			success = false;
+		}
+	}
+#endif
+
+	// 方法3：备选方案 - 使用手动转换（确保兼容性）
+	if (!success) {
+		std::ifstream binaryFs(filePath, std::ios::binary);
+		if (binaryFs.is_open()) {
+			std::string utf8Content((std::istreambuf_iterator<char>(binaryFs)), std::istreambuf_iterator<char>());
+			binaryFs.close();
+
+			if (!utf8Content.empty()) {
+				// 处理UTF-8 BOM
+				const char* utf8Data = utf8Content.c_str();
+				size_t utf8Size = utf8Content.size();
+
+				if (utf8Size >= 3 && IsUtf8Bom(utf8Data))
+				{
+					utf8Data += 3;
+					utf8Size -= 3;
+				}
+
+#if HAZE_PLATFORM_WINDOWS
+				// Windows: 使用MultiByteToWideChar
+				if (utf8Size > 0) {
+					int len = MultiByteToWideChar(CP_UTF8, 0, utf8Data, (int)utf8Size, NULL, 0);
+					if (len > 0) {
+						content.resize(len);
+						MultiByteToWideChar(CP_UTF8, 0, utf8Data, (int)utf8Size, content.data(), len);
+						success = true;
+
+						// 调试信息
+						HAZE_LOG_INFO_W("使用MultiByteToWideChar读取UTF-8文件 [%s]: %s\n",
+							H_TEXT(HAZE_COMPILER_STRING), filePath.c_str());
+					}
+				}
+#else
+				// Linux/Mac: 使用简单转换
+				if (utf8Size > 0) {
+					content.reserve(utf8Size);
+					for (size_t i = 0; i < utf8Size; ++i) {
+						content.push_back(static_cast<wchar_t>(static_cast<unsigned char>(utf8Data[i])));
+					}
+					success = true;
+
+					// 调试信息
+					HAZE_LOG_INFO_W("使用简单字符转换读取UTF-8文件 [%s]: %s\n",
+						HAZE_COMPILER_STRING, filePath.c_str());
+				}
+#endif
+			}
+		}
+	}
+
+	if (!success) {
+		HAZE_LOG_ERR_W("无法读取文件 [%s %s]: %s\n", H_TEXT(HAZE_COMPILER_STRING), H_TEXT(HAZE_CPP_VERSION_STRING), filePath.c_str());
+	}
+
+	return content;
+}
+
 char* UTF8_2_GB2312(const char* utf8)
 {
 	HString& hazeString = s_HazeString;
@@ -509,4 +651,48 @@ V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter)
 	}
 
 	return result;
+}
+
+#include "HazeCompilerVersion.h"
+
+// 显示编译环境信息
+void ShowCompilerInfo()
+{
+	HAZE_LOG_INFO_W("=== Haze编译环境信息 ===\n");
+	
+	// 测试宏展开（可选的调试代码）
+	const char* cpp_version = HAZE_CPP_VERSION_STRING;
+	HAZE_LOG_INFO_W("C++标准版本: %s\n", cpp_version);
+	
+	HAZE_LOG_INFO_W("编译器: %s\n", HAZE_COMPILER_STRING);
+	
+	HAZE_LOG_INFO_W("支持的特性:\n");
+	HAZE_LOG_INFO_W("  - std::codecvt: %s\n", HAZE_HAS_CODECVT ? "✓" : "✗");
+	HAZE_LOG_INFO_W("  - std::filesystem: %s\n", HAZE_HAS_FILESYSTEM ? "✓" : "✗");
+	HAZE_LOG_INFO_W("  - std::string_view: %s\n", HAZE_HAS_STRING_VIEW ? "✓" : "✗");
+	HAZE_LOG_INFO_W("  - Windows UTF-8 locale: %s\n", HAZE_HAS_WIN32_UTF8_LOCALE ? "✓" : "✗");
+	
+	HAZE_LOG_INFO_W("目标平台: ");
+#if HAZE_PLATFORM_WINDOWS
+	HAZE_LOG_INFO_W("Windows\n");
+#elif HAZE_PLATFORM_LINUX
+	HAZE_LOG_INFO_W("Linux\n");
+#elif HAZE_PLATFORM_MAC
+	HAZE_LOG_INFO_W("macOS\n");
+#else
+	HAZE_LOG_INFO_W("Unknown\n");
+#endif
+
+	HAZE_LOG_INFO_W("编译器版本详情:\n");
+#if HAZE_COMPILER_MSVC
+	HAZE_LOG_INFO_W("  - MSVC版本号: %d\n", _MSC_VER);
+	HAZE_LOG_INFO_W("  - Visual Studio: %d\n", HAZE_MSVC_VERSION);
+#elif HAZE_COMPILER_GCC
+	HAZE_LOG_INFO_W("  - GCC版本: %d.%d\n", __GNUC__, __GNUC_MINOR__);
+#elif HAZE_COMPILER_CLANG
+	HAZE_LOG_INFO_W("  - Clang版本: %d.%d\n", __clang_major__, __clang_minor__);
+#endif
+
+	HAZE_LOG_INFO_W("原始__cplusplus值: %ld\n", __cplusplus);
+	HAZE_LOG_INFO_W("========================\n");
 }

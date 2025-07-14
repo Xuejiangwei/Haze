@@ -47,7 +47,7 @@ Share<CompilerValue> CompilerElementValue::CreateGetFunctionCall()
 	}
 	else
 	{
-		COMPILER_ERR_MODULE_W("¸´ÔÓÀàĞÍ<%s>²»Ö§³Ö<%s>·½·¨", GetHazeValueTypeString(GetParentBaseType()), HAZE_ADVANCE_GET_FUNCTION,
+		COMPILER_ERR_MODULE_W("å¤æ‚ç±»å‹<%s>ä¸æ”¯æŒ<%s>æ–¹æ³•", GetHazeValueTypeString(GetParentBaseType()), HAZE_ADVANCE_GET_FUNCTION,
 			m_Module->GetName().c_str());
 	}*/
 

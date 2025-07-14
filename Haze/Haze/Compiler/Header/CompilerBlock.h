@@ -3,7 +3,7 @@
 class CompilerValue;
 class CompilerFunction;
 
-//¿¼ÂÇ½«¿éµÄÒıÓÃ¼°ĞĞÊıĞÅÏ¢Ğ´Èëµ½·ûºÅ±íÖĞ
+//è€ƒè™‘å°†å—çš„å¼•ç”¨åŠè¡Œæ•°ä¿¡æ¯å†™å…¥åˆ°ç¬¦å·è¡¨ä¸­
 class CompilerBlock : public std::enable_shared_from_this<CompilerBlock>
 {
 public:

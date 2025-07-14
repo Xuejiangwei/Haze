@@ -6,17 +6,17 @@
 
 static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
-	{ H_TEXT("´ò¿ªÎÄ¼ş"), &HazeFileLib::OpenFile },
-	{ H_TEXT("¹Ø±ÕÎÄ¼ş"), &HazeFileLib::CloseFile },
+	{ H_TEXT("æ‰“å¼€æ–‡ä»¶"), &HazeFileLib::OpenFile },
+	{ H_TEXT("å…³é—­æ–‡ä»¶"), &HazeFileLib::CloseFile },
 
-	{ H_TEXT("¶ÁÈ¡×Ö·û"), &HazeFileLib::ReadChar },
-	{ H_TEXT("¶ÁÈ¡×Ö·û´®"), &HazeFileLib::ReadString },
-	{ H_TEXT("¶ÁÈ¡"), &HazeFileLib::Read },
-	{ H_TEXT("¶ÁÈ¡Ò»ĞĞ"), &HazeFileLib::ReadLine },
+	{ H_TEXT("è¯»å–å­—ç¬¦"), &HazeFileLib::ReadChar },
+	{ H_TEXT("è¯»å–å­—ç¬¦ä¸²"), &HazeFileLib::ReadString },
+	{ H_TEXT("è¯»å–"), &HazeFileLib::Read },
+	{ H_TEXT("è¯»å–ä¸€è¡Œ"), &HazeFileLib::ReadLine },
 
-	{ H_TEXT("Ğ´Èë×Ö·û"), &HazeFileLib::WriteChar },
-	{ H_TEXT("Ğ´Èë×Ö·û´®"), &HazeFileLib::WriteString },
-	{ H_TEXT("Ğ´Èë"), &HazeFileLib::Write },
+	{ H_TEXT("å†™å…¥å­—ç¬¦"), &HazeFileLib::WriteChar },
+	{ H_TEXT("å†™å…¥å­—ç¬¦ä¸²"), &HazeFileLib::WriteString },
+	{ H_TEXT("å†™å…¥"), &HazeFileLib::Write },
 };
 
 //FILE* f;

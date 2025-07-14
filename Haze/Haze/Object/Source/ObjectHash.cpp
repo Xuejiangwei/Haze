@@ -8,7 +8,7 @@
 #include "HazeMemory.h"
 
 #define FACTOR			0.5
-#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "¹þÏ£")
+#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "å“ˆå¸Œ")
 
 template<typename T>
 x_uint64 __ObjectHash_Hash__(T* v)
@@ -80,9 +80,9 @@ ObjectHash::~ObjectHash()
 AdvanceClassInfo* ObjectHash::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	info.Add(H_TEXT("³¤¶È"), { &ObjectHash::GetLength, OBJ_TYPE_DEF(UInt64), {} });
-	info.Add(H_TEXT("Ìí¼Ó"), { &ObjectHash::Add, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
-	info.Add(H_TEXT("ÒÆ³ý"), { &ObjectHash::Remove, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(H_TEXT("é•¿åº¦"), { &ObjectHash::GetLength, OBJ_TYPE_DEF(UInt64), {} });
+	info.Add(H_TEXT("æ·»åŠ "), { &ObjectHash::Add, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(H_TEXT("ç§»é™¤"), { &ObjectHash::Remove, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 
 	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectHash::Get, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectHash::Set, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
@@ -249,7 +249,7 @@ x_uint64 ObjectHash::GetHash(ObjectHash* obj, void* value, HazeStack* stack)
 			hashValue = __ObjectHash_Hash__(value);
 			break;
 		default:
-			OBJECT_ERR_W("ÀàÐÍ<%s>²»ÄÜ¹þÏ£", GetHazeValueTypeString(obj->GetValueBaseType().BaseType));
+			OBJECT_ERR_W("ç±»åž‹<%s>ä¸èƒ½å“ˆå¸Œ", GetHazeValueTypeString(obj->GetValueBaseType().BaseType));
 			break;
 	}
 	return hashValue % ((obj->m_Capacity - 1) | 1);
@@ -349,7 +349,7 @@ void ObjectHash::Remove(HAZE_OBJECT_CALL_PARAM)
 
 	if (newCapacity < obj->m_Capacity)
 	{
-		// ÖØÐÂHash
+		// é‡æ–°Hash
 		obj->Rehash();
 	}
 }

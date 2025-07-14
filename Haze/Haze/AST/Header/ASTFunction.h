@@ -28,7 +28,7 @@ private:
 
 	HString m_FunctionName;
 	HazeVariableType m_FunctionType;
-	V_Array<Unique<ASTBase>> m_FunctionParams; //从左到右
+	V_Array<Unique<ASTBase>> m_FunctionParams; //浠庡乏鍒板彸
 	Unique<ASTBase> m_Body;
 
 	SourceLocation m_StartLocation;
@@ -77,5 +77,5 @@ private:
 	Compiler* m_Compiler;
 	HString m_FunctionName;
 	HazeVariableType m_FunctionType;
-	V_Array<Unique<ASTBase>> m_FunctionParams; //从左到右
+	V_Array<Unique<ASTBase>> m_FunctionParams; //浠庡乏鍒板彸
 };

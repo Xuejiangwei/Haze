@@ -4,39 +4,39 @@
 #define HAZE_MULTI_COMMENT_START		H_TEXT("/*")
 #define HAZE_MULTI_COMMENT_END			H_TEXT("*/")
 
-#define TOKEN_VOID						H_TEXT("¿Õ")
-#define TOKEN_BOOL						H_TEXT("²¼¶û")
+#define TOKEN_VOID						H_TEXT("ç©º")
+#define TOKEN_BOOL						H_TEXT("å¸ƒå°”")
 
-#define TOKEN_INT						H_TEXT("ÕûÊı")
-#define TOKEN_UNSIGNED_INT				H_TEXT("ÕıÕûÊı")
-#define TOKEN_FLOAT						H_TEXT("Ğ¡Êı")
+#define TOKEN_INT						H_TEXT("æ•´æ•°")
+#define TOKEN_UNSIGNED_INT				H_TEXT("æ­£æ•´æ•°")
+#define TOKEN_FLOAT						H_TEXT("å°æ•°")
 
 #define TOKEN_ARRAY_START				H_TEXT("[")
 #define TOKEN_ARRAY_END					H_TEXT("]")
 
 #define TOKEN_STRING_MATCH				H_TEXT("\"")
 
-#define TOKEN_DATA						H_TEXT("Êı¾İ")
-#define TOKEN_FUNCTION					H_TEXT("º¯Êı")
+#define TOKEN_DATA						H_TEXT("æ•°æ®")
+#define TOKEN_FUNCTION					H_TEXT("å‡½æ•°")
 
-#define TOKEN_CLASS						H_TEXT("Àà")
-#define TOKEN_CLASS_DATA_PUBLIC			H_TEXT("ÏÔ")
-#define TOKEN_CLASS_DATA_PRIVATE		H_TEXT("Òş")
+#define TOKEN_CLASS						H_TEXT("ç±»")
+#define TOKEN_CLASS_DATA_PUBLIC			H_TEXT("æ˜¾")
+#define TOKEN_CLASS_DATA_PRIVATE		H_TEXT("éš")
 
-#define TOKEN_DYNAMIC_CLASS				H_TEXT("¶¯Ì¬Àà")
+#define TOKEN_DYNAMIC_CLASS				H_TEXT("åŠ¨æ€ç±»")
 
-#define TOKEN_UNION						H_TEXT("ºÏ")
+#define TOKEN_UNION						H_TEXT("åˆ")
 
-#define TOKEN_ENUM						H_TEXT("Ã¶¾Ù")
+#define TOKEN_ENUM						H_TEXT("æšä¸¾")
 
-#define TOKEN_STRING					H_TEXT("×Ö·û")
+#define TOKEN_STRING					H_TEXT("å­—ç¬¦")
 
-#define TOKEN_DEDUCTION					H_TEXT("Éè")
+#define TOKEN_DEDUCTION					H_TEXT("è®¾")
 
-#define TOKEN_TRUE						H_TEXT("Õæ")
-#define TOKEN_FALSE						H_TEXT("¼Ù")
+#define TOKEN_TRUE						H_TEXT("çœŸ")
+#define TOKEN_FALSE						H_TEXT("å‡")
 
-#define TOKEN_THIS						H_TEXT("¼º")
+#define TOKEN_THIS						H_TEXT("å·±")
 #define TOKEN_CLASS_ATTR				H_TEXT(".")
 
 #define TOKEN_ADD						H_TEXT("+")
@@ -45,9 +45,9 @@
 #define TOKEN_DIV						H_TEXT("/")
 #define TOKEN_MOD						H_TEXT("%")
 
-#define TOKEN_AND						H_TEXT("ÇÒ")		//&&
-#define TOKEN_OR						H_TEXT("»ò")		//||
-#define TOKEN_NOT						H_TEXT("·Ç")		//!
+#define TOKEN_AND						H_TEXT("ä¸”")		//&&
+#define TOKEN_OR						H_TEXT("æˆ–")		//||
+#define TOKEN_NOT						H_TEXT("é")		//!
 
 #define TOKEN_BIT_AND					H_TEXT("&")
 #define TOKEN_BIT_OR					H_TEXT("|")
@@ -90,45 +90,45 @@
 #define TOKEN_QUESTION_MARK				H_TEXT("?")
 #define TOKEN_QUESTIOB_COLON			H_TEXT(":")
 
-#define TOKEN_IF						H_TEXT("Èô")
-#define TOKEN_ELSE						H_TEXT("·ñÔò")
+#define TOKEN_IF						H_TEXT("è‹¥")
+#define TOKEN_ELSE						H_TEXT("å¦åˆ™")
 
-#define TOKEN_FOR						H_TEXT("Ñ­»·")
+#define TOKEN_FOR						H_TEXT("å¾ªç¯")
 
-#define TOKEN_BREAK						H_TEXT("Ìø³ö")
-#define TOKEN_CONTINUE					H_TEXT("Ìø¹ı")
-#define TOKEN_RETURN					H_TEXT("·µ")
+#define TOKEN_BREAK						H_TEXT("è·³å‡º")
+#define TOKEN_CONTINUE					H_TEXT("è·³è¿‡")
+#define TOKEN_RETURN					H_TEXT("è¿”")
 
-#define TOKEN_WHILE						H_TEXT("µ±")
+#define TOKEN_WHILE						H_TEXT("å½“")
 
-#define TOKEN_CAST						H_TEXT("×ª")
+#define TOKEN_CAST						H_TEXT("è½¬")
 
-#define TOKEN_VIRTUAL					H_TEXT("Ğé")
-#define TOKEN_PUREVIRTUAL				H_TEXT("´¿Ğé")
+#define TOKEN_VIRTUAL					H_TEXT("è™š")
+#define TOKEN_PUREVIRTUAL				H_TEXT("çº¯è™š")
 
-#define TOKEN_DEFINE					H_TEXT("¶¨Òå")
+#define TOKEN_DEFINE					H_TEXT("å®šä¹‰")
 
-#define TOKEN_STATIC_LIBRARY			H_TEXT("¾²Ì¬¿â")
-#define TOKEN_DLL_LIBRARY				H_TEXT("¶¯Ì¬¿â")
-#define TOKEN_IMPORT_MODULE				H_TEXT("Òı")
+#define TOKEN_STATIC_LIBRARY			H_TEXT("é™æ€åº“")
+#define TOKEN_DLL_LIBRARY				H_TEXT("åŠ¨æ€åº“")
+#define TOKEN_IMPORT_MODULE				H_TEXT("å¼•")
 
 #define TOKEN_MULTI_VARIABLE			H_TEXT("...")
 
-#define TOKEN_NEW						H_TEXT("Éú³É")
+#define TOKEN_NEW						H_TEXT("ç”Ÿæˆ")
 
-#define TOKEN_NULL_PTR					H_TEXT("¿ÕÖ¸Õë")
+#define TOKEN_NULL_PTR					H_TEXT("ç©ºæŒ‡é’ˆ")
 
-#define TOKEN_TYPENAME					H_TEXT("ÀàĞÍ")
+#define TOKEN_TYPENAME					H_TEXT("ç±»å‹")
 
-#define TOKEN_SIZE_OF					H_TEXT("´óĞ¡")
+#define TOKEN_SIZE_OF					H_TEXT("å¤§å°")
 
 #define TOKEN_TWO_COLON					H_TEXT("::")
 
-#define TOKEN_GET_ADDRESS				H_TEXT("È¡Ö·")
+#define TOKEN_GET_ADDRESS				H_TEXT("å–å€")
 
-#define TOKEN_OBJECT_BASE				H_TEXT("¶ÔÏó")
+#define TOKEN_OBJECT_BASE				H_TEXT("å¯¹è±¡")
 
-#define TOKEN_HASH						H_TEXT("¹şÏ£")
+#define TOKEN_HASH						H_TEXT("å“ˆå¸Œ")
 
 #define TOKEN_INT_8						TOKEN_INT H_TEXT("8")
 #define TOKEN_UINT_8					TOKEN_UNSIGNED_INT H_TEXT("8")

@@ -45,12 +45,12 @@ void HazeLibraryManager::ExecuteDLLFunction(const HString& moduleName, const HSt
 		{
 			if (func(functionName.c_str(), paramStartAddress, retStartAddress, stack) == EXE_FUNC_ERR)
 			{
-				HAZE_LOG_ERR_W("Ö´ĞĞÈı·½¿â<%s>ÖĞº¯Êı<%s>·µ»Ø´íÎó´úÂë!\n", moduleName.c_str(), functionName.c_str());
+				HAZE_LOG_ERR_W("æ‰§è¡Œä¸‰æ–¹åº“<%s>ä¸­å‡½æ•°<%s>è¿”å›é”™è¯¯ä»£ç !\n", moduleName.c_str(), functionName.c_str());
 			}
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("µ÷ÓÃÈı·½¿â<%s>ÖĞº¯Êı<%s>´íÎó,Î´ÄÜÕÒµ½!\n", moduleName.c_str(), functionName.c_str());
+			HAZE_LOG_ERR_W("è°ƒç”¨ä¸‰æ–¹åº“<%s>ä¸­å‡½æ•°<%s>é”™è¯¯,æœªèƒ½æ‰¾åˆ°!\n", moduleName.c_str(), functionName.c_str());
 		}
 	}
 }
@@ -69,7 +69,7 @@ void HazeLibraryManager::LoadDLLLibrary(const HString& libraryPath, const HStrin
 		else
 		{
 			auto error = GetLastError();
-			HAZE_LOG_ERR_W("µ¼ÈëÈı·½¿â<%s>Ê§°Ü, ´íÎóÂë<%d>!\n", libraryPath.c_str(), error);
+			HAZE_LOG_ERR_W("å¯¼å…¥ä¸‰æ–¹åº“<%s>å¤±è´¥, é”™è¯¯ç <%d>!\n", libraryPath.c_str(), error);
 		}
 	}
 }

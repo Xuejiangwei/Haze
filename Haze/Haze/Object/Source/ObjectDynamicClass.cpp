@@ -48,7 +48,7 @@ void ObjectDynamicClass::GetMember(HAZE_OBJECT_CALL_PARAM)
 	if (!obj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏó<%s>Îª¿Õ", var.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡<%s>ä¸ºç©º", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -57,14 +57,14 @@ void ObjectDynamicClass::GetMember(HAZE_OBJECT_CALL_PARAM)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
 		auto& var2 = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 3].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏó»ñÈ¡<%s>³ÉÔ±´íÎó", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡èŽ·å–<%s>æˆå‘˜é”™è¯¯", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
 		return;
 	}
 
 	if (!obj->m_Methods || !obj->m_Methods->IsValid())
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏó<%s>µÄ»ñÈ¡º¯Êý±íÎª¿Õ", var.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡<%s>çš„èŽ·å–å‡½æ•°è¡¨ä¸ºç©º", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -81,7 +81,7 @@ void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 	if (!obj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏó<%s>Îª¿Õ", var.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡<%s>ä¸ºç©º", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -90,14 +90,14 @@ void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
 		auto& var2 = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 3].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏóÉèÖÃ<%s>³ÉÔ±´íÎó", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡è®¾ç½®<%s>æˆå‘˜é”™è¯¯", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
 		return;
 	}
 
 	if (!obj->m_Methods || !obj->m_Methods->IsValid())
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏó<%s>µÄÉèÖÃº¯Êý±íÎª¿Õ", var.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡<%s>çš„è®¾ç½®å‡½æ•°è¡¨ä¸ºç©º", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -115,7 +115,7 @@ void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)
 	if (!obj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏó<%s>Îª¿Õ", var.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡<%s>ä¸ºç©º", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -124,14 +124,14 @@ void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
 		auto& var2 = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 3].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏóµ÷ÓÃ<%s>º¯Êý´íÎó", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡è°ƒç”¨<%s>å‡½æ•°é”™è¯¯", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
 		return;
 	}
 
 	if (!obj->m_Methods || !obj->m_Methods->IsValid())
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("¶¯Ì¬Àà¶ÔÏó<%s>µÄµ÷ÓÃº¯Êý±íÎª¿Õ", var.Variable.Name.c_str());
+		OBJECT_ERR_W("åŠ¨æ€ç±»å¯¹è±¡<%s>çš„è°ƒç”¨å‡½æ•°è¡¨ä¸ºç©º", var.Variable.Name.c_str());
 		return;
 	}
 

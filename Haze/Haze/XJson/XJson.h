@@ -12,7 +12,7 @@ enum class JsonType
 	V_Array,
 };
 
-//²Î¿¼×Ôopenjson
+//å‚è€ƒè‡ªopenjson
 class XJson
 {
 private:

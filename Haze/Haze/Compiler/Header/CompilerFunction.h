@@ -109,7 +109,7 @@ protected:
 		bool HasClear = false;
 	};
 
-	// Í¬Ò»ÀàĞÍ£¬µ«ÊÇ²»ÔÙÒıÓÃµÄÁÙÊ±¼Ä´æÆ÷¿ÉÒÔÖØ¸´Ê¹ÓÃ, Í³Ò»´óĞ¡¶¼Îª8¸ö×Ö½Ú
+	// åŒä¸€ç±»å‹ï¼Œä½†æ˜¯ä¸å†å¼•ç”¨çš„ä¸´æ—¶å¯„å­˜å™¨å¯ä»¥é‡å¤ä½¿ç”¨, ç»Ÿä¸€å¤§å°éƒ½ä¸º8ä¸ªå­—èŠ‚
 	Share<CompilerValue> CreateTempRegister(const HazeVariableType& type);
 
 	void TryClearTempRegister();
@@ -121,10 +121,10 @@ protected:
 	HString m_Name;
 	HazeVariableType m_Type;
 
-	V_Array<Pair<HString, Share<CompilerValue>>> m_Params;	//´ÓÓÒµ½×ó¼ÓÈë²ÎÊı
+	V_Array<Pair<HString, Share<CompilerValue>>> m_Params;	//ä»å³åˆ°å·¦åŠ å…¥å‚æ•°
 
-	V_Array<Pair<Share<CompilerValue>, int>> m_LocalVariables; // { ±äÁ¿, ¶¨ÒåËùÔÚµÄĞĞÊı }
-	V_Array<TempRegisterCountData> m_TempRegisters;		//{ ÁÙÊ±¼Ä´æÆ÷, Ïà¶ÔÆ«ÒÆ¸öÊı } Ïà¶ÔÆ«ÒÆÊÇ ¸öÊı * 8
+	V_Array<Pair<Share<CompilerValue>, int>> m_LocalVariables; // { å˜é‡, å®šä¹‰æ‰€åœ¨çš„è¡Œæ•° }
+	V_Array<TempRegisterCountData> m_TempRegisters;		//{ ä¸´æ—¶å¯„å­˜å™¨, ç›¸å¯¹åç§»ä¸ªæ•° } ç›¸å¯¹åç§»æ˜¯ ä¸ªæ•° * 8
 
 	Share<CompilerBlock> m_EntryBlock;
 

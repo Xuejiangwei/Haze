@@ -24,7 +24,7 @@ void CompilerEnum::AddEnumValue(const HString& name, Share<CompilerValue> value)
 	}
 	else
 	{
-		COMPILER_ERR_W("添加重复枚举<%s>", name.c_str());
+		COMPILER_ERR_W("娣诲姞閲嶅鏋氫妇<%s>", name.c_str());
 	}
 }
 
@@ -49,7 +49,7 @@ Share<CompilerEnumValue> CompilerEnum::GetEnumValueByIndex(x_uint64 index)
 	}
 	else
 	{
-		COMPILER_ERR_W("枚举没有<%d>个成员数", index + 1);
+		COMPILER_ERR_W("鏋氫妇娌℃湁<%d>涓垚鍛樻暟", index + 1);
 	}
 
 	return nullptr;

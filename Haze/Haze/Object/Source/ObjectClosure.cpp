@@ -6,12 +6,12 @@
 #include "HazeLibraryDefine.h"
 #include "HazeMemory.h"
 
-#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "±Õ°ü")
+#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "é—­åŒ…")
 
 ObjectClosure::ObjectClosure(x_uint32 gcIndex, const FunctionData* functionData, const FunctionData* refFunction, char* refStackESP)
 	: GCObject(gcIndex), m_FunctionData(functionData)
 {
-	// ±£ÁôÍâ²¿±äÁ¿µÄÒýÓÃ, ÒòÎªÄÜ¹»ÒýÓÃµÄ¶¼ÊÇ¶ÔÏóÀàÐÍ, ËùÒÔ×Ö½Ú´óÐ¡¶¼ÊÇ8
+	// ä¿ç•™å¤–éƒ¨å˜é‡çš„å¼•ç”¨, å› ä¸ºèƒ½å¤Ÿå¼•ç”¨çš„éƒ½æ˜¯å¯¹è±¡ç±»åž‹, æ‰€ä»¥å­—èŠ‚å¤§å°éƒ½æ˜¯8
 	auto pair = HazeMemory::GetMemory()->AllocaGCData(m_FunctionData->RefVariables.size() * sizeof(ClosureRefVariable), GC_ObjectType::ClosureData);
 	m_Data = (ClosureRefVariable*)pair.first;
 	m_DataGCIndex = pair.second;

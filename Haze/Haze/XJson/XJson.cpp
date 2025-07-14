@@ -235,7 +235,7 @@ void XJson::operator=(bool val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÈİÆ÷ÀàĞÍ£¬²»ÄÜ½ÓÊÜÖµ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å®¹å™¨ç±»å‹ï¼Œä¸èƒ½æ¥å—å€¼!\n"));
 		return;
 	}
 
@@ -257,7 +257,7 @@ void XJson::operator=(int val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÈİÆ÷ÀàĞÍ£¬²»ÄÜ½ÓÊÜÖµ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å®¹å™¨ç±»å‹ï¼Œä¸èƒ½æ¥å—å€¼!\n"));
 		return;
 	}
 
@@ -279,7 +279,7 @@ void XJson::operator=(unsigned int val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÈİÆ÷ÀàĞÍ£¬²»ÄÜ½ÓÊÜÖµ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å®¹å™¨ç±»å‹ï¼Œä¸èƒ½æ¥å—å€¼!\n"));
 		return;
 	}
 
@@ -301,7 +301,7 @@ void XJson::operator=(long long val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÈİÆ÷ÀàĞÍ£¬²»ÄÜ½ÓÊÜÖµ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å®¹å™¨ç±»å‹ï¼Œä¸èƒ½æ¥å—å€¼!\n"));
 		return;
 	}
 
@@ -323,7 +323,7 @@ void XJson::operator=(unsigned long long val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÈİÆ÷ÀàĞÍ£¬²»ÄÜ½ÓÊÜÖµ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å®¹å™¨ç±»å‹ï¼Œä¸èƒ½æ¥å—å€¼!\n"));
 		return;
 	}
 
@@ -345,7 +345,7 @@ void XJson::operator=(float val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÈİÆ÷ÀàĞÍ£¬²»ÄÜ½ÓÊÜÖµ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å®¹å™¨ç±»å‹ï¼Œä¸èƒ½æ¥å—å€¼!\n"));
 		return;
 	}
 
@@ -367,7 +367,7 @@ void XJson::operator=(double val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÈİÆ÷ÀàĞÍ£¬²»ÄÜ½ÓÊÜÖµ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å®¹å™¨ç±»å‹ï¼Œä¸èƒ½æ¥å—å€¼!\n"));
 		return;
 	}
 
@@ -389,7 +389,7 @@ void XJson::operator=(const char* val)
 {
 	if (m_Type == JsonType::Object || m_Type == JsonType::V_Array)
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÈİÆ÷ÀàĞÍ£¬²»ÄÜ½ÓÊÜÖµ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å®¹å™¨ç±»å‹ï¼Œä¸èƒ½æ¥å—å€¼!\n"));
 		return;
 	}
 
@@ -430,7 +430,7 @@ XJson& XJson::SetArray(unsigned long long idx)
 	{
 		if (m_Type == JsonType::Object)
 		{
-			//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇÊı×éÀàĞÍ£¬²»ÄÜ½ÓÊÜ¶ÔÏó!\n"));
+			//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯æ•°ç»„ç±»å‹ï¼Œä¸èƒ½æ¥å—å¯¹è±¡!\n"));
 		}
 		m_Type = JsonType::V_Array;
 	}
@@ -469,7 +469,7 @@ XJson& XJson::SetObject(const char* str)
 	{
 		if (m_Type == JsonType::V_Array)
 		{
-			//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÊÇ¶ÔÏóÀàĞÍ£¬²»ÄÜ½ÓÊÜÊı×é!\n"));
+			//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹æ˜¯å¯¹è±¡ç±»å‹ï¼Œä¸èƒ½æ¥å—æ•°ç»„!\n"));
 		}
 		m_Type = JsonType::Object;
 	}
@@ -528,7 +528,7 @@ const char* XJson::Data()
 		}
 	}
 
-	//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÎª¿Õ£¬Ã»ÓĞÊı¾İ!\n"));
+	//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹ä¸ºç©ºï¼Œæ²¡æœ‰æ•°æ®!\n"));
 	return nullptr;
 }
 
@@ -582,7 +582,7 @@ void XJson::AddNode(Unique<XJson>& node)
 	{
 		if (m_Type != JsonType::Object && m_Type != JsonType::V_Array)
 		{
-			//HAZE_LOG_INFO(H_TEXT("Json½Úµã±ØĞëÎª¶ÔÏó»òÊı×éÀàĞÍ²ÅÄÜÌí¼Ó½Úµã!\n"));
+			//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹å¿…é¡»ä¸ºå¯¹è±¡æˆ–æ•°ç»„ç±»å‹æ‰èƒ½æ·»åŠ èŠ‚ç‚¹!\n"));
 			m_Type = node->m_KeyNameNode ? JsonType::Object : JsonType::V_Array;
 		}
 
@@ -765,7 +765,7 @@ const char* XJson::NodeDataString()
 	}
 	else
 	{
-		//HAZE_LOG_INFO(H_TEXT("Json½ÚµãÀàĞÍ²»ÊÇ×Ö·û´®ÀàĞÍ!\n"));
+		//HAZE_LOG_INFO(H_TEXT("JsonèŠ‚ç‚¹ç±»å‹ä¸æ˜¯å­—ç¬¦ä¸²ç±»å‹!\n"));
 	}
 
 	return nullptr;
@@ -819,7 +819,7 @@ bool XJson::Decode(const std::string& buffer)
 	//catch (const char* error) 
 	//{
 		//auto wError = String2WString(error);
-		//HAZE_LOG_ERR_W("½âÂëJson´íÎó <%s>!\n", wError.c_str());
+		//HAZE_LOG_ERR_W("è§£ç Jsoné”™è¯¯ <%s>!\n", wError.c_str());
 	//}
 
 	return true;
@@ -982,7 +982,7 @@ void XJson::ReadNumber()
 
 	if (m_ReadIndex < sidx)
 	{
-		//HAZE_LOG_ERR_W("¶ªÊ§Êı×ÖÀàĞÍÖµ!\n");
+		//HAZE_LOG_ERR_W("ä¸¢å¤±æ•°å­—ç±»å‹å€¼!\n");
 		return;
 	}
 	m_Length = m_ReadIndex - sidx + 1;
@@ -998,7 +998,7 @@ void XJson::ReadString()
 		code = '\'';
 		if (!CheckCode(code))
 		{
-			//HAZE_LOG_ERR_W("¶ªÊ§<'\"'>»ò<\"'\">!\n");
+			//HAZE_LOG_ERR_W("ä¸¢å¤±<'\"'>æˆ–<\"'\">!\n");
 			return;
 		}
 	}
@@ -1006,7 +1006,7 @@ void XJson::ReadString()
 	unsigned long long eidx = SearchCode(code);
 	if (eidx < 0)
 	{
-		//HAZE_LOG_ERR_W("¶ªÊ§<'\"'>»ò<\"'\">!\n");
+		//HAZE_LOG_ERR_W("ä¸¢å¤±<'\"'>æˆ–<\"'\">!\n");
 		return;
 	}
 	m_ReadIndex = sidx;
@@ -1020,7 +1020,7 @@ void XJson::ReadObject()
 
 	if (!CheckCode('{'))
 	{
-		//HAZE_LOG_ERR_W("¶ªÊ§<'{'>!\n");
+		//HAZE_LOG_ERR_W("ä¸¢å¤±<'{'>!\n");
 		return;
 	}
 
@@ -1031,7 +1031,7 @@ void XJson::ReadObject()
 		code = GetChar();
 		if (code == 0)
 		{
-			//HAZE_LOG_ERR_W("¶ªÊ§<'}'>!\n");
+			//HAZE_LOG_ERR_W("ä¸¢å¤±<'}'>!\n");
 			return;
 		}
 
@@ -1043,7 +1043,7 @@ void XJson::ReadObject()
 		auto keyNode = CreateNode(code);
 		if (keyNode->m_Type != JsonType::String)
 		{
-			//HAZE_LOG_ERR_W("¶ªÊ§JsonµÄKey!\n");
+			//HAZE_LOG_ERR_W("ä¸¢å¤±Jsonçš„Key!\n");
 			return;
 		}
 		m_DecodeContext->m_Offset = m_ReadIndex;
@@ -1052,7 +1052,7 @@ void XJson::ReadObject()
 
 		if (!CheckCode(':'))
 		{
-			//HAZE_LOG_ERR_W("¶ªÊ§JsonµÄ<':'>!\n");
+			//HAZE_LOG_ERR_W("ä¸¢å¤±Jsonçš„<':'>!\n");
 			return;
 		}
 
@@ -1071,7 +1071,7 @@ void XJson::ReadObject()
 		}
 		if (!CheckCode(','))
 		{
-			//HAZE_LOG_ERR_W("¶ªÊ§JsonµÄ<','>!\n");
+			//HAZE_LOG_ERR_W("ä¸¢å¤±Jsonçš„<','>!\n");
 			return;
 		}
 		m_DecodeContext->m_Data[m_ReadIndex - 1] = 0;
@@ -1086,7 +1086,7 @@ void XJson::ReadArray()
 	assert(m_Type == JsonType::V_Array);
 	if (!CheckCode('['))
 	{
-		//HAZE_LOG_ERR_W("¶ªÊ§Êı×éÀàĞÍµÄ<'['>!\n");
+		//HAZE_LOG_ERR_W("ä¸¢å¤±æ•°ç»„ç±»å‹çš„<'['>!\n");
 		return;
 	}
 	unsigned char code = 0;
@@ -1096,7 +1096,7 @@ void XJson::ReadArray()
 		code = GetChar();
 		if (code == 0)
 		{
-			//HAZE_LOG_ERR_W("¶ªÊ§Êı×éÀàĞÍµÄ<']'>!\n");
+			//HAZE_LOG_ERR_W("ä¸¢å¤±æ•°ç»„ç±»å‹çš„<']'>!\n");
 			return;
 		}
 		if (CheckCode(']')) break;
@@ -1113,7 +1113,7 @@ void XJson::ReadArray()
 		}
 		if (!CheckCode(','))
 		{
-			//HAZE_LOG_ERR_W("¶ªÊ§JsonµÄ<','>!\n");
+			//HAZE_LOG_ERR_W("ä¸¢å¤±Jsonçš„<','>!\n");
 			return;
 		}
 		m_DecodeContext->m_Data[m_ReadIndex - 1] = 0;

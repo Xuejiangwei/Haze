@@ -5,7 +5,7 @@
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
 
-#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "基本类型")
+#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "鍩烘湰绫诲瀷")
 
 
 ObjectBase::ObjectBase(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
@@ -24,7 +24,7 @@ AdvanceClassInfo* ObjectBase::GetAdvanceClassInfo()
 	static AdvanceClassInfo info;
 
 	info.Add(HAZE_OBJECT_BASE_CONSTRUCTOR, { &ObjectBase::Constructor, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
-	info.Add(H_TEXT("等于"), { &ObjectBase::Equal, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(ObjectBase) } });
+	info.Add(H_TEXT("绛変簬"), { &ObjectBase::Equal, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(ObjectBase) } });
 	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectBase::Get, OBJ_TYPE_DEF(Void), { } });
 	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectBase::Set, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 

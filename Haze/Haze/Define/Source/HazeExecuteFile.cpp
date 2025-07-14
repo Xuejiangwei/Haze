@@ -12,12 +12,12 @@ thread_local static HAZE_BINARY_STRING s_BinaryString;
 
 static HashMap<HazeFileFormat, const x_HChar*> s_HashMap_FileFormatString =
 {
-	{HazeFileFormat::Symbol, H_TEXT("·ûºÅ±í")},
-	{HazeFileFormat::GlobalDataTable, H_TEXT("È«¾ÖÊı¾İ±í")},
-	{HazeFileFormat::StringTable, H_TEXT("×Ö·û´®±í")},
-	{HazeFileFormat::ClassTable, H_TEXT("Àà±í")},
-	{HazeFileFormat::FunctionTable, H_TEXT("º¯Êı±í")},
-	{HazeFileFormat::InstructionTable, H_TEXT("Ö¸Áî±í")},
+	{HazeFileFormat::Symbol, H_TEXT("ç¬¦å·è¡¨")},
+	{HazeFileFormat::GlobalDataTable, H_TEXT("å…¨å±€æ•°æ®è¡¨")},
+	{HazeFileFormat::StringTable, H_TEXT("å­—ç¬¦ä¸²è¡¨")},
+	{HazeFileFormat::ClassTable, H_TEXT("ç±»è¡¨")},
+	{HazeFileFormat::FunctionTable, H_TEXT("å‡½æ•°è¡¨")},
+	{HazeFileFormat::InstructionTable, H_TEXT("æŒ‡ä»¤è¡¨")},
 };
 
 static const x_HChar* GetFileFormatString(HazeFileFormat format)
@@ -28,7 +28,7 @@ static const x_HChar* GetFileFormatString(HazeFileFormat format)
 		return Iter->second;
 	}
 
-	HAZE_LOG_ERR_W("²»ÄÜ¹»ÕÒµ½¶ş½øÖÆÎÄ¼şµÄ¸ñÊ½<%d>!\n", (int)format);
+	HAZE_LOG_ERR_W("ä¸èƒ½å¤Ÿæ‰¾åˆ°äºŒè¿›åˆ¶æ–‡ä»¶çš„æ ¼å¼<%d>!\n", (int)format);
 	return H_TEXT("None");
 }
 
@@ -42,11 +42,11 @@ struct FileFormatCheck
 			{
 				if (type == ExeFileType::Out)
 				{
-					HAZE_LOG_ERR_W("Éú³ÉÖ´ĞĞÎÄ¼ş´íÎó,Ã»ÓĞÉú³É<%s>Êı¾İ!\n", GetFileFormatString((HazeFileFormat)i));
+					HAZE_LOG_ERR_W("ç”Ÿæˆæ‰§è¡Œæ–‡ä»¶é”™è¯¯,æ²¡æœ‰ç”Ÿæˆ<%s>æ•°æ®!\n", GetFileFormatString((HazeFileFormat)i));
 				}
 				else if (type == ExeFileType::In)
 				{
-					HAZE_LOG_ERR_W("½âÎöÖ´ĞĞÎÄ¼ş´íÎó,Ã»ÓĞ½âÎö<%s>Êı¾İ!\n", GetFileFormatString((HazeFileFormat)i));
+					HAZE_LOG_ERR_W("è§£ææ‰§è¡Œæ–‡ä»¶é”™è¯¯,æ²¡æœ‰è§£æ<%s>æ•°æ®!\n", GetFileFormatString((HazeFileFormat)i));
 				}
 			}
 		}
@@ -55,11 +55,11 @@ struct FileFormatCheck
 		{
 			if (type == ExeFileType::Out)
 			{
-				HAZE_LOG_ERR_W("Éú³ÉÖ´ĞĞÎÄ¼ş´íÎó,ÖØ¸´Éú³É<%s>!\n", GetFileFormatString(Format));
+				HAZE_LOG_ERR_W("ç”Ÿæˆæ‰§è¡Œæ–‡ä»¶é”™è¯¯,é‡å¤ç”Ÿæˆ<%s>!\n", GetFileFormatString(Format));
 			}
 			else if (type == ExeFileType::In)
 			{
-				HAZE_LOG_ERR_W("½âÎöÖ´ĞĞÎÄ¼ş´íÎó,ÖØ¸´½âÎö<%s>!\n", GetFileFormatString(Format));
+				HAZE_LOG_ERR_W("è§£ææ‰§è¡Œæ–‡ä»¶é”™è¯¯,é‡å¤è§£æ<%s>!\n", GetFileFormatString(Format));
 			}
 		}
 	}
@@ -93,7 +93,7 @@ HazeExecuteFile::HazeExecuteFile(ExeFileType type)
 	if (type == ExeFileType::Out)
 	{
 		m_FileStream = MakeUnique<HAZE_BINARY_OFSTREAM>();
-		//²»ÓÃ¶ş½øÖÆµÄ»°£¬Ğ´Èë10£¬»áµ±³É»»ĞĞÌØÊâ´¦Àí£¬Ğ´ÈëÁ½¸ö×Ö·û 0x0d 0x0a£¬¼´»Ø³µ»»ĞĞ·û
+		//ä¸ç”¨äºŒè¿›åˆ¶çš„è¯ï¼Œå†™å…¥10ï¼Œä¼šå½“æˆæ¢è¡Œç‰¹æ®Šå¤„ç†ï¼Œå†™å…¥ä¸¤ä¸ªå­—ç¬¦ 0x0d 0x0aï¼Œå³å›è½¦æ¢è¡Œç¬¦
 		m_FileStream->open(GetMainBinaryFilePath(), std::ios::out | std::ios::binary);
 	}
 	else if (type == ExeFileType::In)
@@ -103,7 +103,7 @@ HazeExecuteFile::HazeExecuteFile(ExeFileType type)
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("´¦ÀíHaze¶ş½øÖÆÎÄ¼şÊ§°Ü!\n");
+		HAZE_LOG_ERR_W("å¤„ç†HazeäºŒè¿›åˆ¶æ–‡ä»¶å¤±è´¥!\n");
 	}
 
 	memset(&m_States, 0, sizeof(m_States));
@@ -135,11 +135,11 @@ void HazeExecuteFile::CheckAll()
 				auto it = s_HashMap_FileFormatString.find((HazeFileFormat)i);
 				if (it != s_HashMap_FileFormatString.end())
 				{
-					HAZE_LOG_ERR_W("Éú³É<%s>´íÎó!\n", it->second);
+					HAZE_LOG_ERR_W("ç”Ÿæˆ<%s>é”™è¯¯!\n", it->second);
 				}
 				else
 				{
-					HAZE_LOG_ERR_W("Éú³É¶ş½øÖÆÎÄ¼ş´íÎó\n");
+					HAZE_LOG_ERR_W("ç”ŸæˆäºŒè¿›åˆ¶æ–‡ä»¶é”™è¯¯\n");
 				}
 			}
 			else
@@ -147,11 +147,11 @@ void HazeExecuteFile::CheckAll()
 				auto it = s_HashMap_FileFormatString.find((HazeFileFormat)i);
 				if (it != s_HashMap_FileFormatString.end())
 				{
-					HAZE_LOG_ERR_W("½âÎö<%s>´íÎó!\n", it->second);
+					HAZE_LOG_ERR_W("è§£æ<%s>é”™è¯¯!\n", it->second);
 				}
 				else
 				{
-					HAZE_LOG_ERR_W("½âÎö¶ş½øÖÆÎÄ¼ş´íÎó\n");
+					HAZE_LOG_ERR_W("è§£æäºŒè¿›åˆ¶æ–‡ä»¶é”™è¯¯\n");
 				}
 			}
 		}
@@ -428,7 +428,7 @@ x_uint64 HazeExecuteFile::WriteFunctionTable(const ModuleUnit::FunctionTable& ta
 				m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.second));
 			}
 
-			//Ğ´ÈëÖ¸ÁîÊıÓëÆğÊ¼µØÖ·
+			//å†™å…¥æŒ‡ä»¤æ•°ä¸èµ·å§‹åœ°å€
 			number = (x_uint32)function.Instructions.size();
 			m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 
@@ -459,25 +459,25 @@ void HazeExecuteFile::WriteAllInstruction(const ModuleUnit::FunctionTable& table
 
 void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& instruction)
 {
-	m_FileStream->write(HAZE_WRITE_AND_SIZE(instruction.InsCode));				//×Ö½ÚÂë
+	m_FileStream->write(HAZE_WRITE_AND_SIZE(instruction.InsCode));				//å­—èŠ‚ç 
 
 	x_uint32 number = (x_uint32)instruction.Operator.size();
-	m_FileStream->write(HAZE_WRITE_AND_SIZE(number));						//²Ù×÷Êı¸öÊı
+	m_FileStream->write(HAZE_WRITE_AND_SIZE(number));						//æ“ä½œæ•°ä¸ªæ•°
 
 	for (auto& iter : instruction.Operator)
 	{
 		s_BinaryString = WString2String(iter.Variable.Name);
 		number = (x_uint32)s_BinaryString.size();
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
-		m_FileStream->write(s_BinaryString.data(), number);											//²Ù×÷ÊıÃû×Ö
+		m_FileStream->write(s_BinaryString.data(), number);											//æ“ä½œæ•°åå­—
 
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Scope));										//²Ù×÷Êı×÷ÓÃÓò
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Desc));											//²Ù×÷ÊıÊı¾İÃèÊö
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Scope));										//æ“ä½œæ•°ä½œç”¨åŸŸ
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Desc));											//æ“ä½œæ•°æ•°æ®æè¿°
 		WriteType(m_FileStream, iter.Variable.Type);
 
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.AddressType));									//²Ù×÷ÊıÈ¡Ö·ÀàĞÍ
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Index));									//²Ù×÷ÊıË÷Òı
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Address.Offset));							//²Ù×÷ÊıµØÖ·Æ«ÒÆ
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.AddressType));									//æ“ä½œæ•°å–å€ç±»å‹
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Index));									//æ“ä½œæ•°ç´¢å¼•
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Address.Offset));							//æ“ä½œæ•°åœ°å€åç§»
 	}
 
 #if HAZE_INS_LOG
@@ -802,7 +802,7 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 		ReadInstruction(vm, vm->m_Instructions[i]);
 	}
 
-	//ÖØĞÂÖ¸ÈÏstd lib º¯ÊıÖ¸Õë
+	//é‡æ–°æŒ‡è®¤std lib å‡½æ•°æŒ‡é’ˆ
 	auto& stdLib = HazeStandardLibraryBase::GetStdLib();
 	for (auto& iter : vm->m_HashFunctionTable)
 	{
@@ -823,7 +823,7 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 
 			if (!set)
 			{
-				HAZE_LOG_ERR_W("±ê×¼¿âÎ´ÄÜÆ¥Åäµ½º¯Êı<%s>!\n", iter.first.c_str());
+				HAZE_LOG_ERR_W("æ ‡å‡†åº“æœªèƒ½åŒ¹é…åˆ°å‡½æ•°<%s>!\n", iter.first.c_str());
 			}
 		}
 	}
@@ -857,7 +857,7 @@ void HazeExecuteFile::ReadInstruction(HazeVM* vm, Instruction& instruction)
 		m_InFileStream->read(HAZE_READ(iter.AddressType));
 
 		m_InFileStream->read(HAZE_READ(iter.Extra.Index));
-		m_InFileStream->read(HAZE_READ(iter.Extra.Address.Offset));	//²Ù×÷ÊıµØÖ·Æ«ÒÆ, Ö¸ÕëÖ¸Ö®ÊôĞÔÓ¦¶¨Òåµ¥¶ÀÀàĞÍ
+		m_InFileStream->read(HAZE_READ(iter.Extra.Address.Offset));	//æ“ä½œæ•°åœ°å€åç§», æŒ‡é’ˆæŒ‡ä¹‹å±æ€§åº”å®šä¹‰å•ç‹¬ç±»å‹
 	}
 
 #if HAZE_INS_LOG

@@ -12,10 +12,10 @@
 
 static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
-	{ H_TEXT("´òÓ¡"), &HazeStream::HazePrintf },
-	{ H_TEXT("ÊäÈë"), &HazeStream::HazeScanf },
-	{ H_TEXT("×Ö·û¸ñÊ½»¯"), &HazeStream::HazeStringFormat },
-	{ H_TEXT("Éú³É¶¯Ì¬Àà"), &HazeStream::CreateDynamicClass },
+	{ H_TEXT("æ‰“å°"), &HazeStream::HazePrintf },
+	{ H_TEXT("è¾“å…¥"), &HazeStream::HazeScanf },
+	{ H_TEXT("å­—ç¬¦æ ¼å¼åŒ–"), &HazeStream::HazeStringFormat },
+	{ H_TEXT("ç”ŸæˆåŠ¨æ€ç±»"), &HazeStream::CreateDynamicClass },
 };
 
 static bool Z_NoUse_HazeStream = HazeStandardLibraryBase::AddStdLib(H_TEXT("HazeStream"), &s_HashMap_Functions);
@@ -40,7 +40,7 @@ const x_HChar* HazeStream::GetFormat(const x_HChar* strfrmt, x_HChar* form)
 
 void HazeStream::InitializeLib()
 {
-	HazeStandardLibraryBase::AddStdLib(H_TEXT("±ê×¼Á÷"), &s_HashMap_Functions);
+	HazeStandardLibraryBase::AddStdLib(H_TEXT("æ ‡å‡†æµ"), &s_HashMap_Functions);
 }
 
 HString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
@@ -81,9 +81,9 @@ HString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
 		}
 		else
 		{
-			if (++argNum > multiParamNum + 1) //ÈëÕ»²ÎÊı¸öÊı
+			if (++argNum > multiParamNum + 1) //å…¥æ ˆå‚æ•°ä¸ªæ•°
 			{
-				HAZE_LOG_ERR_W("µ÷ÓÃ<´òÓ¡>º¯Êı²ÎÊı¸öÊı´íÎó!\n");
+				HAZE_LOG_ERR_W("è°ƒç”¨<æ‰“å°>å‡½æ•°å‚æ•°ä¸ªæ•°é”™è¯¯!\n");
 				break;
 			}
 			x_HChar Form[MAX_FORMAT];
@@ -200,9 +200,9 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 		}
 		else
 		{
-			if (++argNum > multiParamNum) //ÈëÕ»²ÎÊı¸öÊı
+			if (++argNum > multiParamNum) //å…¥æ ˆå‚æ•°ä¸ªæ•°
 			{
-				HAZE_LOG_ERR_W("µ÷ÓÃ<´òÓ¡>º¯Êı²ÎÊı¸öÊı´íÎó!\n");
+				HAZE_LOG_ERR_W("è°ƒç”¨<æ‰“å°>å‡½æ•°å‚æ•°ä¸ªæ•°é”™è¯¯!\n");
 				break;
 			}
 			x_HChar Form[MAX_FORMAT];
@@ -351,9 +351,9 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 		}
 		else
 		{
-			if (++argNum > multiParamNum) //ÈëÕ»²ÎÊı¸öÊı
+			if (++argNum > multiParamNum) //å…¥æ ˆå‚æ•°ä¸ªæ•°
 			{
-				HAZE_LOG_ERR_W("µ÷ÓÃ<´òÓ¡>º¯Êı²ÎÊı¸öÊı´íÎó!\n");
+				HAZE_LOG_ERR_W("è°ƒç”¨<æ‰“å°>å‡½æ•°å‚æ•°ä¸ªæ•°é”™è¯¯!\n");
 				return;
 			}
 			x_HChar Form[MAX_FORMAT];
@@ -470,7 +470,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 				HSS << *(Start++);
 			}*/
 
-			HAZE_LOG_ERR_W("ÊäÈëº¯ÊıÖ»ÄÜÊäÈë¸ñÊ½×Ö·û!\n");
+			HAZE_LOG_ERR_W("è¾“å…¥å‡½æ•°åªèƒ½è¾“å…¥æ ¼å¼å­—ç¬¦!\n");
 			return;
 		}
 		else if (*(++Start) == PRE_SIGN)
@@ -479,7 +479,7 @@ void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 		}
 		else
 		{
-			if (++argNum > multiParamNum) //ÈëÕ»²ÎÊı¸öÊı
+			if (++argNum > multiParamNum) //å…¥æ ˆå‚æ•°ä¸ªæ•°
 			{
 				return;
 			}

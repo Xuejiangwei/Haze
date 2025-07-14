@@ -236,20 +236,20 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	if (!m_Type.StringStreamTo(hss))
 	{
-		HAZE_LOG_ERR_W("º¯Êı<%s>ÀàĞÍ½âÎöÊ§°Ü,Éú³ÉÖĞ¼ä´úÂë´íÎó!\n", m_Name.c_str());
+		HAZE_LOG_ERR_W("å‡½æ•°<%s>ç±»å‹è§£æå¤±è´¥,ç”Ÿæˆä¸­é—´ä»£ç é”™è¯¯!\n", m_Name.c_str());
 		return;
 	}
 
 	hss << HAZE_ENDL;
 
-	//PushËùÓĞ²ÎÊı£¬´ÓÓÒµ½×ó, push ²ÎÊıÓë·µ»ØµØÖ·µÄÊÂÓÉfunction callÈ¥×ö
+	//Pushæ‰€æœ‰å‚æ•°ï¼Œä»å³åˆ°å·¦, push å‚æ•°ä¸è¿”å›åœ°å€çš„äº‹ç”±function callå»åš
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 	{
 		hss << GetFunctionParamHeader() << " " << m_Params[i].first << " ";
 
 		if (!m_Params[i].second->GetVariableType().StringStreamTo(hss))
 		{
-			HAZE_LOG_ERR_W("º¯Êı<%s>µÄ²ÎÊı<%s>ÀàĞÍ½âÎöÊ§°Ü,Éú³ÉÖĞ¼ä´úÂë´íÎó!\n", m_Name.c_str(), m_Params[i].first.c_str());
+			HAZE_LOG_ERR_W("å‡½æ•°<%s>çš„å‚æ•°<%s>ç±»å‹è§£æå¤±è´¥,ç”Ÿæˆä¸­é—´ä»£ç é”™è¯¯!\n", m_Name.c_str(), m_Params[i].first.c_str());
 			return;
 		}
 
@@ -263,7 +263,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	{
 		if (!FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName))
 		{
-			HAZE_LOG_ERR_W("º¯Êı<%s>Éú³ÉÖĞ¼ä´úÂë´íÎó£¬Î´ÄÜÕÒµ½²ÎÊıÁÙÊ±±äÁ¿!\n", m_Name.c_str());
+			HAZE_LOG_ERR_W("å‡½æ•°<%s>ç”Ÿæˆä¸­é—´ä»£ç é”™è¯¯ï¼Œæœªèƒ½æ‰¾åˆ°å‚æ•°ä¸´æ—¶å˜é‡!\n", m_Name.c_str());
 			return;
 		}
 		size -= m_LocalVariables[i].first->GetVariableType().GetTypeSize();
@@ -442,7 +442,7 @@ HazeVariableType CompilerFunction::GetParamTypeByIndex(x_uint64 index)
 	{
 		if (index > 0)
 		{
-			COMPILER_ERR_W("º¯Êı<%s>´ÓÓÒÍù×ó£¬»ñµÃº¯ÊıµÄµÚ<%d>¸ö²ÎÊı´íÎó", m_Name.c_str(), m_Params.size() - 1 - index);
+			COMPILER_ERR_W("å‡½æ•°<%s>ä»å³å¾€å·¦ï¼Œè·å¾—å‡½æ•°çš„ç¬¬<%d>ä¸ªå‚æ•°é”™è¯¯", m_Name.c_str(), m_Params.size() - 1 - index);
 		}
 		
 		return m_Params[0].second->GetVariableType();
@@ -468,7 +468,7 @@ HazeVariableType CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index
 		}
 		else
 		{
-			COMPILER_ERR_W("º¯Êı<%s>´Ó×óÍùÓÒ£¬»ñµÃº¯ÊıµÄµÚ<%d>¸ö²ÎÊı´íÎó", m_Name.c_str(), index);
+			COMPILER_ERR_W("å‡½æ•°<%s>ä»å·¦å¾€å³ï¼Œè·å¾—å‡½æ•°çš„ç¬¬<%d>ä¸ªå‚æ•°é”™è¯¯", m_Name.c_str(), index);
 			return m_Params[0].second->GetVariableType();
 		}
 	}

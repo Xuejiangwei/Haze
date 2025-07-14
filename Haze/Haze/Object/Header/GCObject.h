@@ -12,7 +12,7 @@ public:
 	if (!OBJ) \
 	{ \
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0]; \
-		OBJECT_ERR_W(TYPE_STR "¶ÔÏó<%s>Îª¿Õ", var.Variable.Name.c_str()); \
+		OBJECT_ERR_W(TYPE_STR "å¯¹è±¡<%s>ä¸ºç©º", var.Variable.Name.c_str()); \
 		return; \
 	}
 

@@ -1,4 +1,4 @@
-﻿#include "HazePch.h"
+#include "HazePch.h"
 #include "HazeVM.h"
 #include "Parse.h"
 
@@ -9,7 +9,6 @@
 #include "ASTLibrary.h"
 #include "ASTTemplateClass.h"
 
-#include "HazeTypeInfo.h"
 #include "Compiler.h"
 #include "CompilerHelper.h"
 #include "CompilerModule.h"
@@ -18,6 +17,7 @@
 #include <cstdarg>
 
 #include "HazeTokenText.h"
+
 
 //因为会出现嵌套解析同一种AST的情况，所以需要记录不同的行
 static HashMap<HString, HazeToken> s_HashMap_Token =
@@ -261,15 +261,8 @@ Parse::~Parse()
 
 void Parse::InitializeFile(const HString& filePath)
 {
-	HAZE_BINARY_IFSTREAM fs(filePath);
-	fs.imbue(std::locale("chs"));
-
-	std::string content(std::istreambuf_iterator<char>(fs), {});
-	content = UTF8_2_GB2312(content.c_str());
-	m_CodeText = String2WString(content);
-
+	m_CodeText = Move(ReadUtf8File(filePath));
 	m_CurrCode = m_CodeText.c_str();
-	fs.close();
 }
 
 void Parse::InitializeString(const HString& str, x_uint32 startLine)
@@ -1117,7 +1110,7 @@ Unique<ASTBase> Parse::ParseVariableDefine()
 	else if (IsClassType(m_DefineVariable.Type.BaseType) && TokenIs(HazeToken::TwoColon))
 	{
 		temp.Reset();
-		m_CurrLexeme = *m_Compiler->GetTypeInfoMap()->GetClassName(m_DefineVariable.Type.TypeId); //*m_DefineVariable.Type.CustomName;
+		m_CurrLexeme = *m_Compiler->GetTypeInfoMap()->GetClassNameById(m_DefineVariable.Type.TypeId); //*m_DefineVariable.Type.CustomName;
 		return ParseIdentifer(nullptr, m_CurrToken);
 	}
 	

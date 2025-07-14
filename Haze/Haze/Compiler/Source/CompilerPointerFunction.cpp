@@ -29,7 +29,7 @@ const HazeVariableType& CompilerPointerFunction::GetParamTypeByIndex(x_uint64 in
 	{
 		if (index > 0)
 		{
-			COMPILER_ERR_W("´ÓÓÒÍù×ó£¬»ñµÃÖ¸Õëº¯ÊýµÄµÚ<%d>¸ö²ÎÊý´íÎó", index);
+			COMPILER_ERR_W("ä»Žå³å¾€å·¦ï¼ŒèŽ·å¾—æŒ‡é’ˆå‡½æ•°çš„ç¬¬<%d>ä¸ªå‚æ•°é”™è¯¯", index);
 			return m_ParamTypes[0].Type->BaseType;
 		}
 		else
@@ -49,7 +49,7 @@ const HazeVariableType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(
 	{
 		if (index > 0)
 		{
-			COMPILER_ERR_W("´Ó×óÍùÓÒ£¬»ñµÃÖ¸Õëº¯ÊýµÄµÚ<%d>¸ö²ÎÊý´íÎó", m_ParamTypes.size() - 1 - index);
+			COMPILER_ERR_W("ä»Žå·¦å¾€å³ï¼ŒèŽ·å¾—æŒ‡é’ˆå‡½æ•°çš„ç¬¬<%d>ä¸ªå‚æ•°é”™è¯¯", m_ParamTypes.size() - 1 - index);
 		}
 
 		return m_ParamTypes[0].Type->BaseType;

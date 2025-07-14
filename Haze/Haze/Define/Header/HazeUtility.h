@@ -68,6 +68,10 @@ HString String2WString(const HAZE_BINARY_STRING& str);
 
 HAZE_BINARY_STRING WString2String(const HString& str);
 
+bool IsUtf8Bom(const char* utf8);
+
+HString ReadUtf8File(const HString& filePath);
+
 char* UTF8_2_GB2312(const char* utf8);
 
 char* GB2312_2_UFT8(const char* gb2312);
@@ -97,5 +101,8 @@ HString ToHazeString(T value);
 void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2);
 
 V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter);
+
+// 编译环境信息显示
+void ShowCompilerInfo();
 
 #include "HazeTemplate.inl"

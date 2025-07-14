@@ -35,8 +35,8 @@ ObjectString::~ObjectString()
 AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	info.Add(H_TEXT("½Ó"), { &ObjectString::Append, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(String) } });
-	info.Add(H_TEXT("¸ñÊ½»¯"), { &ObjectString::Format, OBJ_TYPE_DEF(String), { OBJ_TYPE_DEF(String), OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(H_TEXT("æŽ¥"), { &ObjectString::Append, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(String) } });
+	info.Add(H_TEXT("æ ¼å¼åŒ–"), { &ObjectString::Format, OBJ_TYPE_DEF(String), { OBJ_TYPE_DEF(String), OBJ_TYPE_DEF(MultiVariable) } });
 
 	return &info;
 }
@@ -55,7 +55,7 @@ void ObjectString::Append(HAZE_OBJECT_CALL_PARAM)
 	if (!thisStr)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("×Ö·û´®¶ÔÏó<%s>Îª¿Õ", var.Variable.Name.c_str());
+		OBJECT_ERR_W("å­—ç¬¦ä¸²å¯¹è±¡<%s>ä¸ºç©º", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -90,7 +90,7 @@ void ObjectString::Format(HAZE_OBJECT_CALL_PARAM)
 	if (!thisStr)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0];
-		OBJECT_ERR_W("×Ö·û´®¶ÔÏó<%s>Îª¿Õ", var.Variable.Name.c_str());
+		OBJECT_ERR_W("å­—ç¬¦ä¸²å¯¹è±¡<%s>ä¸ºç©º", var.Variable.Name.c_str());
 		return;
 	}
 

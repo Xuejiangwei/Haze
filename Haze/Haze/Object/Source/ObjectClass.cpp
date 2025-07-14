@@ -25,7 +25,7 @@ ObjectClass::~ObjectClass()
 AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	//info.Functions[H_TEXT("生成")] = { &ObjectArray::NewObjectArray, OBJ_TYPE_DEF(::Void, { OBJ_TYPE_DEF(::MultiVariable } };
+	//info.Functions[H_TEXT("鐢熸垚")] = { &ObjectArray::NewObjectArray, OBJ_TYPE_DEF(::Void, { OBJ_TYPE_DEF(::MultiVariable } };
 	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectClass::GetOffset, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64) } });
 	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectClass::SetOffset, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64), OBJ_TYPE_DEF(MultiVariable) } });
 
@@ -77,7 +77,7 @@ void ObjectClass::GetOffset(HAZE_OBJECT_CALL_PARAM)
 	if (!classObj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("对象<%s>为空", var.Variable.Name.c_str());
+		OBJECT_ERR_W("瀵硅薄<%s>涓虹┖", var.Variable.Name.c_str());
 		return;
 	}
 
@@ -104,7 +104,7 @@ void ObjectClass::SetOffset(HAZE_OBJECT_CALL_PARAM)
 	if (!classObj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("对象<%s>为空", var.Variable.Name.c_str());
+		OBJECT_ERR_W("瀵硅薄<%s>涓虹┖", var.Variable.Name.c_str());
 		return;
 	}
 

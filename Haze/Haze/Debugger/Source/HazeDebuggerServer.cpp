@@ -40,56 +40,56 @@ void HazeDebuggerServer::Start(HazeVM* m_VM)
 	WORD sockVersion = MAKEWORD(2, 2);
 	WSADATA wsaData;
 
-	//³õÊ¼»¯WSA
+	//åˆå§‹åŒ–WSA
 	if (WSAStartup(sockVersion, &wsaData) != 0)
 	{
-		HAZE_LOG_ERR_W("Hazeµ÷ÊÔÆ÷Socket³õÊ¼»¯Ê§°Ü!\n");
+		HAZE_LOG_ERR_W("Hazeè°ƒè¯•å™¨Socketåˆå§‹åŒ–å¤±è´¥!\n");
 		return;
 	}
 
-	//´´½¨Ì×½Ó×Ö
+	//åˆ›å»ºå¥—æ¥å­—
 	g_SocketServer = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (g_SocketServer == INVALID_SOCKET)
 	{
-		HAZE_LOG_ERR_W("Hazeµ÷ÊÔÆ÷Socket´´½¨Ê§°Ü!\n");
+		HAZE_LOG_ERR_W("Hazeè°ƒè¯•å™¨Socketåˆ›å»ºå¤±è´¥!\n");
 		return;
 	}
 
-	//°ó¶¨IPºÍ¶Ë¿Ú
-	sockaddr_in sin;						//ipv4µÄÖ¸¶¨·½·¨ÊÇÊ¹ÓÃstruct sockaddr_inÀàĞÍµÄ±äÁ¿
+	//ç»‘å®šIPå’Œç«¯å£
+	sockaddr_in sin;						//ipv4çš„æŒ‡å®šæ–¹æ³•æ˜¯ä½¿ç”¨struct sockaddr_inç±»å‹çš„å˜é‡
 	sin.sin_family = AF_INET;
-	sin.sin_port = htons(11003);			//ÉèÖÃ¶Ë¿Ú¡£htons½«Ö÷»úµÄunsigned short int×ª»»ÎªÍøÂç×Ö½ÚË³Ğò
-	sin.sin_addr.S_un.S_addr = INADDR_ANY;	//IPµØÖ·ÉèÖÃ³ÉINADDR_ANY£¬ÈÃÏµÍ³×Ô¶¯»ñÈ¡±¾»úµÄIPµØÖ·
+	sin.sin_port = htons(11003);			//è®¾ç½®ç«¯å£ã€‚htonså°†ä¸»æœºçš„unsigned short intè½¬æ¢ä¸ºç½‘ç»œå­—èŠ‚é¡ºåº
+	sin.sin_addr.S_un.S_addr = INADDR_ANY;	//IPåœ°å€è®¾ç½®æˆINADDR_ANYï¼Œè®©ç³»ç»Ÿè‡ªåŠ¨è·å–æœ¬æœºçš„IPåœ°å€
 	
-	//bindº¯Êı°ÑÒ»¸öµØÖ·×åÖĞµÄÌØ¶¨µØÖ·¸³¸øscket¡£
+	//bindå‡½æ•°æŠŠä¸€ä¸ªåœ°å€æ—ä¸­çš„ç‰¹å®šåœ°å€èµ‹ç»™scketã€‚
 	if (bind(g_SocketServer, (LPSOCKADDR)&sin, sizeof(sin)) == SOCKET_ERROR)
 	{
-		HAZE_LOG_ERR_W("Hazeµ÷ÊÔÆ÷Socket°ó¶¨Ê§°Ü!\n");
+		HAZE_LOG_ERR_W("Hazeè°ƒè¯•å™¨Socketç»‘å®šå¤±è´¥!\n");
 		return;
 	}
 
-	//¿ªÊ¼¼àÌı
+	//å¼€å§‹ç›‘å¬
 	if (listen(g_SocketServer, 5) == SOCKET_ERROR)
 	{
-		HAZE_LOG_ERR_W("Hazeµ÷ÊÔÆ÷Socket¼àÌıÊ§°Ü!\n");
+		HAZE_LOG_ERR_W("Hazeè°ƒè¯•å™¨Socketç›‘å¬å¤±è´¥!\n");
 		return;
 	}
 
-	//Ñ­»·½ÓÊÕÊı¾İ
+	//å¾ªç¯æ¥æ”¶æ•°æ®
 
 	while (m_VM)
 	{
-		sockaddr_in remoteAddr;				//sockaddr_in³£ÓÃÓÚsocket¶¨ÒåºÍ¸³Öµ,sockaddrÓÃÓÚº¯Êı²ÎÊı
+		sockaddr_in remoteAddr;				//sockaddr_inå¸¸ç”¨äºsocketå®šä¹‰å’Œèµ‹å€¼,sockaddrç”¨äºå‡½æ•°å‚æ•°
 		int nAddrlen = sizeof(remoteAddr);
 
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔÆ÷µÈ´ıSocketÁ¬½Ó...\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•å™¨ç­‰å¾…Socketè¿æ¥...\n"));
 		g_SocketClient = accept(g_SocketServer, (sockaddr*)&remoteAddr, &nAddrlen);
 		if (g_SocketClient == INVALID_SOCKET)
 		{
-			HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔÆ÷SocketÁ¬½ÓÊ§°Ü!\n"));
+			HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•å™¨Socketè¿æ¥å¤±è´¥!\n"));
 			break;
 		}
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔÆ÷½ÓÊÕµ½Ò»¸öÁ¬½Ó<%s>!\n"), String2WString(inet_ntoa(remoteAddr.sin_addr)).c_str());
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•å™¨æ¥æ”¶åˆ°ä¸€ä¸ªè¿æ¥<%s>!\n"), String2WString(inet_ntoa(remoteAddr.sin_addr)).c_str());
 
 		if (!g_Debugger)
 		{
@@ -98,7 +98,7 @@ void HazeDebuggerServer::Start(HazeVM* m_VM)
 		break;
 	}
 
-	//½ÓÊÕÊı¾İ
+	//æ¥æ”¶æ•°æ®
 	Recv();
 }
 
@@ -112,50 +112,50 @@ static bool HandleMessage(char* Message)
 	switch ((HazeDebugOperatorType)m_Type)
 	{
 	case HazeDebugOperatorType::None:
-		HAZE_LOG_ERR_W("Hazeµ÷ÊÔ½ÓÊÕµ½<¿Õµ÷ÊÔ>²Ù×÷\n");
+		HAZE_LOG_ERR_W("Hazeè°ƒè¯•æ¥æ”¶åˆ°<ç©ºè°ƒè¯•>æ“ä½œ\n");
 		return false;
 	case HazeDebugOperatorType::Start:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<¿ªÊ¼>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<å¼€å§‹>æ“ä½œ\n"));
 		g_Debugger->Start();
 		return true;
 	case HazeDebugOperatorType::End:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<ÍË³ö>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<é€€å‡º>æ“ä½œ\n"));
 		g_Debugger->End();
 		return true;
 	case HazeDebugOperatorType::StepOver:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<µ¥²½¶Ïµã>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<å•æ­¥æ–­ç‚¹>æ“ä½œ\n"));
 		g_Debugger->StepOver();
 		return true;
 	case HazeDebugOperatorType::StepIn:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<µ¥²½½øÈë>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<å•æ­¥è¿›å…¥>æ“ä½œ\n"));
 		g_Debugger->StepIn();
 		return true;
 	case HazeDebugOperatorType::StepInstruction:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<µ¥²½Ö¸Áî>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<å•æ­¥æŒ‡ä»¤>æ“ä½œ\n"));
 		g_Debugger->StepInstruction();
 		return true;
 	case HazeDebugOperatorType::AddBreakPoint:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<Ìí¼Ó¶Ïµã>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<æ·»åŠ æ–­ç‚¹>æ“ä½œ\n"));
 		g_Debugger->AddBreakPoint(Message + 1);
 		return true;
 	case HazeDebugOperatorType::DeleteBreakPoint:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<É¾³ı¶Ïµã>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<åˆ é™¤æ–­ç‚¹>æ“ä½œ\n"));
 		g_Debugger->DeleteBreakPoint(Message + 1);
 		return true;
 	case HazeDebugOperatorType::DeleteModuleAllBreakPoint:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<É¾³ıÄ£¿éËùÓĞ¶Ïµã>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<åˆ é™¤æ¨¡å—æ‰€æœ‰æ–­ç‚¹>æ“ä½œ\n"));
 		g_Debugger->DeleteModuleAllBreakPoint(Message + 1);
 		return true;
 	case HazeDebugOperatorType::DeleteAllBreakPoint:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<É¾³ıËùÓĞ¶Ïµã>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<åˆ é™¤æ‰€æœ‰æ–­ç‚¹>æ“ä½œ\n"));
 		g_Debugger->DeleteAllBreakPoint();
 		return true;
 	case HazeDebugOperatorType::Continue:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<¼ÌĞø>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<ç»§ç»­>æ“ä½œ\n"));
 		g_Debugger->Continue();
 		return true;
 	case HazeDebugOperatorType::GetLocalVariable:
-		HAZE_LOG_INFO(H_TEXT("Hazeµ÷ÊÔ½ÓÊÕµ½<ÇëÇóÁÙÊ±±äÁ¿Êı¾İ>²Ù×÷\n"));
+		HAZE_LOG_INFO(H_TEXT("Hazeè°ƒè¯•æ¥æ”¶åˆ°<è¯·æ±‚ä¸´æ—¶å˜é‡æ•°æ®>æ“ä½œ\n"));
 		{
 			XJson json;
 			json["Type"] = (int)HazeDebugOperatorType::GetLocalVariable;
@@ -205,17 +205,17 @@ void HazeDebuggerServer::Recv()
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("½ÓÊÕµÄSocketÊı¾İ´óĞ¡³¬¹ı1024!\n");
+				HAZE_LOG_ERR_W("æ¥æ”¶çš„Socketæ•°æ®å¤§å°è¶…è¿‡1024!\n");
 			}
 		}
 		else
 		{
 			in_addr Addr;
 			Addr.S_un.S_addr = (decltype(Addr.S_un.S_addr))g_SocketClient;
-			HAZE_LOG_INFO(H_TEXT("¹Ø±Õµ÷ÊÔÆ÷Socket<%s>!\n"), String2WString(inet_ntoa(Addr)).c_str());
+			HAZE_LOG_INFO(H_TEXT("å…³é—­è°ƒè¯•å™¨Socket<%s>!\n"), String2WString(inet_ntoa(Addr)).c_str());
 			break;
 		}
-		//·¢ËÍÊı¾İ
+		//å‘é€æ•°æ®
 	}
 
 	closesocket(g_SocketClient);

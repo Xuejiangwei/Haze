@@ -23,6 +23,6 @@ public:
 	bool ExistRefVariable(const HString& name) const;
 
 private:
-	V_Array<Pair<int, int>> m_RefValues; // { ÉÏ¸öº¯ÊıÒıÓÃµÄ±äÁ¿Ë÷Òı, Õâ¸öº¯Êı±äÁ¿ËùÔÚµÄË÷Òı }
+	V_Array<Pair<int, int>> m_RefValues; // { ä¸Šä¸ªå‡½æ•°å¼•ç”¨çš„å˜é‡ç´¢å¼•, è¿™ä¸ªå‡½æ•°å˜é‡æ‰€åœ¨çš„ç´¢å¼• }
 	Share<CompilerBlock> m_UpLevelBlock;
 };

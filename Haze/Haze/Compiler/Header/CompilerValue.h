@@ -105,7 +105,7 @@ protected:
 	HazeVariableScope m_Scope;
 	HazeDataDesc m_Desc;
 
-	int m_Count;			//ÃüÃû¼ÆÊı
+	int m_Count;			//å‘½åè®¡æ•°
 };
 
 

@@ -25,19 +25,19 @@
 
 	static HashMap<GC_ObjectType, const x_HChar*> s_GCTypeStr =
 	{
-		{ GC_ObjectType::Array, H_TEXT("Êı×é") },
-		{ GC_ObjectType::String, H_TEXT("×Ö·û´®") },
-		{ GC_ObjectType::Class, H_TEXT("Àà") },
-		{ GC_ObjectType::DynamicClass, H_TEXT("¶¯Ì¬Àà") },
-		{ GC_ObjectType::ObjectBase, H_TEXT("»ù±¾¶ÔÏó") },
-		{ GC_ObjectType::Hash, H_TEXT("¹şÏ£") },
-		{ GC_ObjectType::Closure, H_TEXT("±Õ°ü") },
+		{ GC_ObjectType::Array, H_TEXT("æ•°ç»„") },
+		{ GC_ObjectType::String, H_TEXT("å­—ç¬¦ä¸²") },
+		{ GC_ObjectType::Class, H_TEXT("ç±»") },
+		{ GC_ObjectType::DynamicClass, H_TEXT("åŠ¨æ€ç±»") },
+		{ GC_ObjectType::ObjectBase, H_TEXT("åŸºæœ¬å¯¹è±¡") },
+		{ GC_ObjectType::Hash, H_TEXT("å“ˆå¸Œ") },
+		{ GC_ObjectType::Closure, H_TEXT("é—­åŒ…") },
 
-		{ GC_ObjectType::ArrayData, H_TEXT("Êı×éÊı¾İ") },
-		{ GC_ObjectType::StringData, H_TEXT("×Ö·û´®Êı¾İ") },
-		{ GC_ObjectType::ClassData, H_TEXT("ÀàÊı¾İ") },
-		{ GC_ObjectType::HashData, H_TEXT("¹şÏ£Êı¾İ") },
-		{ GC_ObjectType::ClosureData, H_TEXT("±Õ°üÊı¾İ") },
+		{ GC_ObjectType::ArrayData, H_TEXT("æ•°ç»„æ•°æ®") },
+		{ GC_ObjectType::StringData, H_TEXT("å­—ç¬¦ä¸²æ•°æ®") },
+		{ GC_ObjectType::ClassData, H_TEXT("ç±»æ•°æ®") },
+		{ GC_ObjectType::HashData, H_TEXT("å“ˆå¸Œæ•°æ®") },
+		{ GC_ObjectType::ClosureData, H_TEXT("é—­åŒ…æ•°æ®") },
 	};
 
 	struct GCTimer
@@ -56,7 +56,7 @@
 			localtime_s(&now_tm,&t);
 			std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &now_tm);
 
-			HAZE_LOG_INFO_W("¿ªÊ¼GC<%s.%d>, µ±Ç°ÉêÇëÄÚ´æ<%d>\n", String2WString(buffer).c_str(), milli, StartMemory);
+			HAZE_LOG_INFO_W("å¼€å§‹GC<%s.%d>, å½“å‰ç”³è¯·å†…å­˜<%d>\n", String2WString(buffer).c_str(), milli, StartMemory);
 		}
 
 		void End()
@@ -70,7 +70,7 @@
 			localtime_s(&now_tm, &t);
 			std::strftime(buffer, sizeof(buffer), "%Y-%m-%d %H:%M:%S", &now_tm);
 
-			HAZE_LOG_INFO_W("½áÊøGC<%s.%d>, µ±Ç°ÉêÇëÄÚ´æ<%d>, ÓÃÊ±<%d>ºÁÃë, »ØÊÕÇ°<%d>¸ö×Ö½Ú, »ØÊÕ<%d>¸ö×Ö½Ú\n", String2WString(buffer).c_str(), milli, s_TotalAllocMemory,
+			HAZE_LOG_INFO_W("ç»“æŸGC<%s.%d>, å½“å‰ç”³è¯·å†…å­˜<%d>, ç”¨æ—¶<%d>æ¯«ç§’, å›æ”¶å‰<%d>ä¸ªå­—èŠ‚, å›æ”¶<%d>ä¸ªå­—èŠ‚\n", String2WString(buffer).c_str(), milli, s_TotalAllocMemory,
 				endTime - StartTimestamp, StartMemory, StartMemory - s_TotalAllocMemory);
 		}
 
@@ -78,7 +78,7 @@
 		{
 			s_TotalAllocMemory += size;
 #if ENABLE_MEMORY_LOG
-			HAZE_LOG_INFO_W("ÉêÇëÄÚ´æ<%d>, µ±Ç°ÉêÇëÄÚ´æ<%d> µØÖ·<%p>, ÀàĞÍ<%s>\n", size, s_TotalAllocMemory, address, s_GCTypeStr[type]);
+			HAZE_LOG_INFO_W("ç”³è¯·å†…å­˜<%d>, å½“å‰ç”³è¯·å†…å­˜<%d> åœ°å€<%p>, ç±»å‹<%s>\n", size, s_TotalAllocMemory, address, s_GCTypeStr[type]);
 #endif // ENABLE_MEMORY_LOG
 		}
 
@@ -86,7 +86,7 @@
 		{
 			s_TotalAllocMemory -= size;
 #if ENABLE_MEMORY_LOG
-			HAZE_LOG_INFO_W("»ØÊÕÄÚ´æ<%d>, µ±Ç°ÉêÇëÄÚ´æ<%d> µØÖ·<%p>, ÀàĞÍ<%s>\n", size, s_TotalAllocMemory, address, s_GCTypeStr[type]);
+			HAZE_LOG_INFO_W("å›æ”¶å†…å­˜<%d>, å½“å‰ç”³è¯·å†…å­˜<%d> åœ°å€<%p>, ç±»å‹<%s>\n", size, s_TotalAllocMemory, address, s_GCTypeStr[type]);
 #endif // ENABLE_MEMORY_LOG
 		}
 
@@ -213,7 +213,7 @@ void* HazeMemory::Alloca(x_uint64 size, GC_ObjectType type)
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("ÉêÇëÄÚ´æÌ«´ó£¬´óĞ¡Îª<%d>\n", size);
+		HAZE_LOG_ERR_W("ç”³è¯·å†…å­˜å¤ªå¤§ï¼Œå¤§å°ä¸º<%d>\n", size);
 		ret = malloc(size);
 		GetMemory()->m_BigMemorys[ret] = { GC_State::Black, ret };
 	}
@@ -255,7 +255,7 @@ void HazeMemory::Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex)
 				}
 				else
 				{
-					GC_ERR_W("»ØÊÕÄÚ´æ´íÎó, ´óÄÚ´æÎ´ÄÜÕÒµ½");
+					GC_ERR_W("å›æ”¶å†…å­˜é”™è¯¯, å¤§å†…å­˜æœªèƒ½æ‰¾åˆ°");
 					return;
 				}
 			}
@@ -267,7 +267,7 @@ void HazeMemory::Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex)
 	}
 }
 
-//ĞèÒª¿¼ÂÇµ½Ñ­»·ÒıÓÃµÄÒıÆğµÄËÀÑ­»·Çé¿ö, ÒªÃ´ÔÚObjectÖĞÌí¼Ó±ê¼ÇÎ»£¨ÀıÈçObjectClassÖĞÌí¼Óuint8ÀàĞÍ³ÉÔ±È¥×ö±ê¼ÇÎ»£©£¬ÒªÃ´hashSet´æ´¢ÒÑ±ê¼ÇµÄobject
+//éœ€è¦è€ƒè™‘åˆ°å¾ªç¯å¼•ç”¨çš„å¼•èµ·çš„æ­»å¾ªç¯æƒ…å†µ, è¦ä¹ˆåœ¨Objectä¸­æ·»åŠ æ ‡è®°ä½ï¼ˆä¾‹å¦‚ObjectClassä¸­æ·»åŠ uint8ç±»å‹æˆå‘˜å»åšæ ‡è®°ä½ï¼‰ï¼Œè¦ä¹ˆhashSetå­˜å‚¨å·²æ ‡è®°çš„object
 void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 {
 	switch (type.BaseType)
@@ -342,7 +342,7 @@ void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 				x_uint64 size = ((ObjectArray*)address)->m_Length  * GetSizeByHazeType(type.BaseType);
 				if (size == 0)
 				{
-					GC_ERR_W("»ù±¾ÀàĞÍÊı×é³¤¶ÈÎª0");
+					GC_ERR_W("åŸºæœ¬ç±»å‹æ•°ç»„é•¿åº¦ä¸º0");
 					return;
 				}
 		#endif // _DEBUG
@@ -441,10 +441,10 @@ void HazeMemory::Mark()
 		s_GCTimer.Start();
 #endif // ENABLE_GC_LOG
 
-		//½«ËùÓĞÑÕÉ«ÉèÖÃÎª°×É«
+		//å°†æ‰€æœ‰é¢œè‰²è®¾ç½®ä¸ºç™½è‰²
 		m_ObjectList->MarkAllWhite();
 
-		//¸ù½ÚµãÄÚ´æÓĞ ¾²Ì¬±äÁ¿¡¢Õ»¡¢º¯Êıµ÷ÓÃÕ»ÖĞ»º´æµÄ¼Ä´æÆ÷¡¢µ±Ç°µÄ¼Ä´æÆ÷
+		//æ ¹èŠ‚ç‚¹å†…å­˜æœ‰ é™æ€å˜é‡ã€æ ˆã€å‡½æ•°è°ƒç”¨æ ˆä¸­ç¼“å­˜çš„å¯„å­˜å™¨ã€å½“å‰çš„å¯„å­˜å™¨
 		void* address = 0;
 
 		for (auto& it : m_VM->m_GlobalData)
@@ -466,7 +466,7 @@ void HazeMemory::Mark()
 			}
 		}
 
-		//ÒòÎªÖ»ÔÚº¯Êı½áÊøµ÷ÓÃRetÖ¸ÁîÊ±»áGC£¬ËùÒÔÖ»´æÔÚRetĞéÄâ¼Ä´æÆ÷ÓĞÒıÓÃµÄÇé¿ö
+		//å› ä¸ºåªåœ¨å‡½æ•°ç»“æŸè°ƒç”¨RetæŒ‡ä»¤æ—¶ä¼šGCï¼Œæ‰€ä»¥åªå­˜åœ¨Retè™šæ‹Ÿå¯„å­˜å™¨æœ‰å¼•ç”¨çš„æƒ…å†µ
 		auto retRegister = m_VM->m_Stack->GetVirtualRegister(RET_REGISTER);
 		if (retRegister && retRegister->Data.size() > 0)
 		{
@@ -501,7 +501,7 @@ void HazeMemory::Sweep()
 	}
 	m_MarkStage = MarkStage::Sweep;
 
-	//ĞèÒªÇå¿ÕËùÓĞfreelist,»ØÊÕÊ±ÔÙ¼ÓÈë
+	//éœ€è¦æ¸…ç©ºæ‰€æœ‰freelist,å›æ”¶æ—¶å†åŠ å…¥
 	/*for (int i = 0; i < _countof(memoryIns->m_FreeList); i++)
 	{
 		if (memoryIns->m_FreeList[i])
@@ -510,7 +510,7 @@ void HazeMemory::Sweep()
 		}
 	}*/
 
-	//±ê¼ÇÎªºÚÉ«
+	//æ ‡è®°ä¸ºé»‘è‰²
 	/*for (auto& iter : memoryIns->m_MemoryBlocks)
 	{
 		auto block = iter;
@@ -529,7 +529,7 @@ void HazeMemory::Sweep()
 		}
 	}*/
 
-	//Çå³ı²¢ÇÒ»ØÊÕµ½freelist
+	//æ¸…é™¤å¹¶ä¸”å›æ”¶åˆ°freelist
 	for (x_uint64 i = 0; i < m_ObjectList->m_StateList.size(); i++)
 	{
 		if (m_ObjectList->m_StateList[i].IsUse && m_ObjectList->m_StateList[i].State == GC_State::White)

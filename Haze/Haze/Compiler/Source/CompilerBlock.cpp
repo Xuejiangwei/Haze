@@ -138,17 +138,17 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 		{
 			if (scope == HazeVariableScope::Global)
 			{
-				HAZE_LOG_ERR_W("ÖØ¸´È«¾ÖÌí¼Ó±äÁ¿<%s> !\n", defineVar.Name.c_str());
+				HAZE_LOG_ERR_W("é‡å¤å…¨å±€æ·»åŠ å˜é‡<%s> !\n", defineVar.Name.c_str());
 
 			}
 			else if (scope == HazeVariableScope::Local)
 			{
-				HAZE_LOG_ERR_W("ÖØ¸´Ìí¼Ó¾Ö²¿±äÁ¿<%s> !\n", defineVar.Name.c_str());
+				HAZE_LOG_ERR_W("é‡å¤æ·»åŠ å±€éƒ¨å˜é‡<%s> !\n", defineVar.Name.c_str());
 
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("ÖØ¸´Ìí¼Ó±äÁ¿<%s>ÇÒ×÷ÓÃÓò´íÎó !\n", defineVar.Name.c_str());
+				HAZE_LOG_ERR_W("é‡å¤æ·»åŠ å˜é‡<%s>ä¸”ä½œç”¨åŸŸé”™è¯¯ !\n", defineVar.Name.c_str());
 			}
 			return nullptr;
 		}
@@ -157,13 +157,13 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 	auto m = m_ParentFunction->GetModule()->ExistGlobalValue(defineVar.Name);
 	if (m)
 	{
-		HAZE_LOG_ERR_W("¾Ö²¿±äÁ¿<%s>Óë<%s>Ä£¿éÈ«¾Ö±äÁ¿ÃûÖØ¸´!\n", defineVar.Name.c_str(), m->GetName().c_str());
+		HAZE_LOG_ERR_W("å±€éƒ¨å˜é‡<%s>ä¸<%s>æ¨¡å—å…¨å±€å˜é‡åé‡å¤!\n", defineVar.Name.c_str(), m->GetName().c_str());
 		return nullptr;
 	}
 
 	if (dynamic_cast<CompilerClosureFunction*>(m_ParentFunction) && dynamic_cast<CompilerClosureFunction*>(m_ParentFunction)->ExistRefVariable(defineVar.Name))
 	{
-		HAZE_LOG_ERR_W("¾Ö²¿±äÁ¿<%s>´æÔÚÏàÍ¬Ãû×ÖµÄ±Õ°üÒıÓÃ!\n", defineVar.Name.c_str());
+		HAZE_LOG_ERR_W("å±€éƒ¨å˜é‡<%s>å­˜åœ¨ç›¸åŒåå­—çš„é—­åŒ…å¼•ç”¨!\n", defineVar.Name.c_str());
 		return nullptr;
 	}
 

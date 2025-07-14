@@ -10,7 +10,7 @@ struct ClosureRefVariable
 };
 
 /*
-* »ù±¾ÀàĞÍµÄÖµ±£Áô
+* åŸºæœ¬ç±»å‹çš„å€¼ä¿ç•™
 */
 
 class ObjectClosure : public GCObject

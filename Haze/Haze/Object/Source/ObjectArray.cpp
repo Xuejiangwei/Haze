@@ -10,7 +10,7 @@
 #include "ObjectClosure.h"
 
 #define DEFAULT_CAPACITY 2
-#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "数组")
+#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "鏁扮粍")
 
 ObjectArray::ObjectArray(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId, x_uint64* lengths)
 	: GCObject(gcIndex)
@@ -73,11 +73,11 @@ ObjectArray::~ObjectArray()
 AdvanceClassInfo* ObjectArray::GetAdvanceClassInfo()
 {
 	static AdvanceClassInfo info;
-	//info.Functions[H_TEXT("生成")] = { &ObjectArray::NewObjectArray, HazeValueType::Void, { HazeValueType::MultiVariable } };
-	info.Add(H_TEXT("长度"), { &ObjectArray::GetLength, OBJ_TYPE_DEF(UInt64), {} });
-	info.Add(H_TEXT("维之长度"), { &ObjectArray::GetLengthOfDimension, OBJ_TYPE_DEF(UInt64), { OBJ_TYPE_DEF(UInt64) } });
-	info.Add(H_TEXT("维数"), { &ObjectArray::GetDimensionCount, OBJ_TYPE_DEF(UInt64), {} });
-	info.Add(H_TEXT("添加"), { &ObjectArray::Add, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
+	//info.Functions[H_TEXT("鐢熸垚")] = { &ObjectArray::NewObjectArray, HazeValueType::Void, { HazeValueType::MultiVariable } };
+	info.Add(H_TEXT("闀垮害"), { &ObjectArray::GetLength, OBJ_TYPE_DEF(UInt64), {} });
+	info.Add(H_TEXT("缁翠箣闀垮害"), { &ObjectArray::GetLengthOfDimension, OBJ_TYPE_DEF(UInt64), { OBJ_TYPE_DEF(UInt64) } });
+	info.Add(H_TEXT("缁存暟"), { &ObjectArray::GetDimensionCount, OBJ_TYPE_DEF(UInt64), {} });
+	info.Add(H_TEXT("娣诲姞"), { &ObjectArray::Add, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 
 	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectArray::Get, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64) } });
 	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectArray::Set, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64), OBJ_TYPE_DEF(MultiVariable) } });

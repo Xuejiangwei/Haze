@@ -177,7 +177,7 @@ bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<Co
 				outName = GetLocalVariableName(data.first, data.second) + outName;
 				if (!value->IsClassPublicMember() && function->GetClass() != compilerClass->GetOwnerClass())
 				{
-					HAZE_LOG_ERR_W("²»ÄÜ¹»·ÃÎÊÀà<%s>·Ç¹«¿ª³ÉÔ±±äÁ¿<%s>!\n", compilerClass->GetOwnerClassName().c_str(), outName.c_str());
+					HAZE_LOG_ERR_W("ä¸èƒ½å¤Ÿè®¿é—®ç±»<%s>éå…¬å¼€æˆå‘˜å˜é‡<%s>!\n", compilerClass->GetOwnerClassName().c_str(), outName.c_str());
 					return false;
 				}
 				return true;
@@ -249,7 +249,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("Éú³ÉÖĞ¼ä´úÂë´íÎó,±äÁ¿×÷ÓÃÓò´íÎó!\n");
+		HAZE_LOG_ERR_W("ç”Ÿæˆä¸­é—´ä»£ç é”™è¯¯,å˜é‡ä½œç”¨åŸŸé”™è¯¯!\n");
 		return;
 	}
 
@@ -260,7 +260,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 
 		}*/
 
-		HAZE_LOG_ERR_W("Éú³ÉÖĞ¼ä´úÂë´íÎó,Î´ÄÜÕÒµ½±äÁ¿!\n");
+		HAZE_LOG_ERR_W("ç”Ÿæˆä¸­é—´ä»£ç é”™è¯¯,æœªèƒ½æ‰¾åˆ°å˜é‡!\n");
 		return;
 	}
 
@@ -345,7 +345,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			}
 			else
 			{
-				COMPILER_ERR_MODULE_W("Éú³ÉÖĞ¼ä´úÂë´íÎó, ÔªËØÀàĞÍÖĞµÄÔªËØÎ´ÉèÖÃÖµ");
+				COMPILER_ERR_MODULE_W("ç”Ÿæˆä¸­é—´ä»£ç é”™è¯¯, å…ƒç´ ç±»å‹ä¸­çš„å…ƒç´ æœªè®¾ç½®å€¼");
 			}
 		}
 		else if (assignTo && assignTo->IsRefrence())
@@ -428,7 +428,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	switch (opCode)
 	{
 	case InstructionOpCode::NONE:
-		COMPILER_ERR_MODULE_W("Éú³ÉÖĞ¼ä´úÂë´íÎó, ÖĞ¼ä²Ù×÷ÂëÎª¿Õ", m->GetName().c_str());
+		COMPILER_ERR_MODULE_W("ç”Ÿæˆä¸­é—´ä»£ç é”™è¯¯, ä¸­é—´æ“ä½œç ä¸ºç©º", m->GetName().c_str());
 		break;
 	case InstructionOpCode::MOV:
 	case InstructionOpCode::MOVPV:
@@ -546,7 +546,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		}
 			break;
 		default:
-			COMPILER_ERR_MODULE_W("Éú³É<%s>ÖĞ¼ä´úÂë´íÎó, ÖĞ¼ä²Ù×÷ÂëÎª¿Õ", GetInstructionString(opCode), m->GetName().c_str());
+			COMPILER_ERR_MODULE_W("ç”Ÿæˆ<%s>ä¸­é—´ä»£ç é”™è¯¯, ä¸­é—´æ“ä½œç ä¸ºç©º", GetInstructionString(opCode), m->GetName().c_str());
 			break;
 	}
 }
@@ -587,7 +587,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				m->GetCurrFunction()->FindLocalVariableName(pointerFunction, varName);
 				if (varName.empty())
 				{
-					HAZE_LOG_ERR_W("º¯ÊıÖ¸Õëµ÷ÓÃÊ§°Ü!\n");
+					HAZE_LOG_ERR_W("å‡½æ•°æŒ‡é’ˆè°ƒç”¨å¤±è´¥!\n");
 					return;
 				}
 			}
@@ -604,7 +604,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				m->GetCurrFunction()->FindLocalVariableName(advancePointerTo, varName);
 				if (varName.empty())
 				{
-					HAZE_LOG_ERR_W("¸´ÔÓÀàĞÍº¯Êıµ÷ÓÃÊ§°Ü!\n");
+					HAZE_LOG_ERR_W("å¤æ‚ç±»å‹å‡½æ•°è°ƒç”¨å¤±è´¥!\n");
 					return;
 				}
 			}

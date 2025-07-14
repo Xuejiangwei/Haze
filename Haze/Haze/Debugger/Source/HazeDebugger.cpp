@@ -115,7 +115,7 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 	}
 	break;
 	default:
-		HAZE_LOG_ERR_W("Debug »ñµÃ»ù´¡ÀàĞÍ<%d>Êı¾İ´íÎó!\n", (x_uint32)type);
+		HAZE_LOG_ERR_W("Debug è·å¾—åŸºç¡€ç±»å‹<%d>æ•°æ®é”™è¯¯!\n", (x_uint32)type);
 		break;
 	}
 }
@@ -165,7 +165,7 @@ void HazeDebugger::AddBreakPoint(const char* message)
 
 #if ENABLE_DEBUGGER_LOG
 
-	HAZE_LOG_INFO(H_TEXT("Ìí¼Ó¶Ïµã<%s><%s><%d>\n"), moduleName.c_str(), fileName.c_str(), Line);
+	HAZE_LOG_INFO(H_TEXT("æ·»åŠ æ–­ç‚¹<%s><%s><%d>\n"), moduleName.c_str(), fileName.c_str(), Line);
 
 #endif
 }
@@ -189,12 +189,12 @@ void HazeDebugger::DeleteBreakPoint(const char* message)
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("É¾³ı¶Ïµã´íÎó,ÔÚÄ£¿é<%s>Î´ÄÜÕÒµ½<%d>ĞĞ!\n", fileName.c_str(), line);
+			HAZE_LOG_ERR_W("åˆ é™¤æ–­ç‚¹é”™è¯¯,åœ¨æ¨¡å—<%s>æœªèƒ½æ‰¾åˆ°<%d>è¡Œ!\n", fileName.c_str(), line);
 		}
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("É¾³ı¶Ïµã´íÎó,Î´ÄÜÕÒµ½Ä£¿é<%s>!\n", fileName.c_str());
+		HAZE_LOG_ERR_W("åˆ é™¤æ–­ç‚¹é”™è¯¯,æœªèƒ½æ‰¾åˆ°æ¨¡å—<%s>!\n", fileName.c_str());
 	}
 }
 
@@ -214,7 +214,7 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* message)
 		iter->second.first.clear();
 	}
 
-	HAZE_LOG_ERR_W("Çå³ıÄ£¿é<%s>µÄËùÓĞ¶Ïµã!\n", moduleName.c_str());
+	HAZE_LOG_ERR_W("æ¸…é™¤æ¨¡å—<%s>çš„æ‰€æœ‰æ–­ç‚¹!\n", moduleName.c_str());
 }
 
 void HazeDebugger::OnExecLine(x_uint32 line)
@@ -223,7 +223,7 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 
 #if ENABLE_DEBUGGER_LOG
 
-	HAZE_LOG_INFO(H_TEXT("ÔËĞĞµ½<%s><%d>ĞĞ!\n"), moduleName->c_str(), line);
+	HAZE_LOG_INFO(H_TEXT("è¿è¡Œåˆ°<%s><%d>è¡Œ!\n"), moduleName->c_str(), line);
 
 #endif // ENABLE_DEBUGGER_LOG
 
@@ -305,7 +305,7 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 	if (m_IsPause)
 	{
 #if ENABLE_DEBUGGER_LOG
-		HAZE_LOG_INFO(H_TEXT("µ÷ÊÔÆ÷ÔİÍ£<%s><%d>!\n"), m_CurrPauseModule.ModuleName.c_str(), line);
+		HAZE_LOG_INFO(H_TEXT("è°ƒè¯•å™¨æš‚åœ<%s><%d>!\n"), m_CurrPauseModule.ModuleName.c_str(), line);
 #endif
 
 		SendBreakInfo();
@@ -333,7 +333,7 @@ void HazeDebugger::StepOver()
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("µ¥²½µ÷ÊÔ´íÎó,²»ÊÇÔİÍ£×´Ì¬!\n");
+		HAZE_LOG_ERR_W("å•æ­¥è°ƒè¯•é”™è¯¯,ä¸æ˜¯æš‚åœçŠ¶æ€!\n");
 	}
 }
 

@@ -6,7 +6,7 @@ class CompilerValue;
 class CompilerEnumValue;
 class CompilerModule;
 
-// Ĭ�ϼ̳��������ͣ�ö������ֻ�ڽ������жϣ��������ͼ��ֽڴ�С�Ǽ̳�����
+// 默认继承整数类型，枚举类型只在解析是判断，真正类型及字节大小是继承类型
 class CompilerEnum
 {
 public:

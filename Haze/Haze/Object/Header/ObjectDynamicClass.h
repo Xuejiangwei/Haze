@@ -10,7 +10,7 @@ class ObjectDynamicClass : public GCObject
 public:
 	struct CustomMethods
 	{
-		//需要每个都设置
+		//闇�瑕佹瘡涓兘璁剧疆
 		void(*Constructor)(void*);
 		void(*Deconstructor)(void*);
 		void(*GetMember)(HazeStack* stack, const HString& name, void* dataPtr);

@@ -100,7 +100,7 @@ public:
 	x_uint32 RegisterType(const HString& moduleName, HazeComplexTypeInfo* type);
 	x_uint32 RegisterType(const HString& moduleName, x_uint32 functionTypeId, V_Array<x_uint32>&& paramTypeId);
 
-	const HString* GetClassName(x_uint32 typeId);
+	const HString* GetClassNameById(x_uint32 typeId);
 
 	const HString* GetEnumName(x_uint32 typeId);
 

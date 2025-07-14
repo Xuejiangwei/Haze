@@ -99,7 +99,7 @@ const x_HChar* GetInstructionString(InstructionOpCode code)
 		return iter->second;
 	}
 
-	HAZE_LOG_ERR_W("Î´ÄÜÕÒµ½×Ö½ÚÂë²Ù×÷·ûÃû³Æ<%d>!\n", (int)code);
+	HAZE_LOG_ERR_W("æœªèƒ½æ‰¾åˆ°å­—èŠ‚ç æ“ä½œç¬¦åç§°<%d>!\n", (int)code);
 	return H_TEXT("None");
 }
 
@@ -111,7 +111,7 @@ InstructionOpCode GetInstructionByString(const HString& str)
 		return iter->second;
 	}
 
-	HAZE_LOG_ERR_W("Î´ÄÜÕÒµ½Ãû³Æ¶ÔÓ¦×Ö½ÚÂë²Ù×÷·û<%s>!\n", str.c_str());
+	HAZE_LOG_ERR_W("æœªèƒ½æ‰¾åˆ°åç§°å¯¹åº”å­—èŠ‚ç æ“ä½œç¬¦<%s>!\n", str.c_str());
 	return InstructionOpCode::NONE;
 }
 
@@ -188,19 +188,19 @@ class InstructionProcessor
 
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("¿ªÊ¼ ²Ù×÷ÊıÒ»µØÖ·<%p> ´æ´¢µØÖ·<%p> ²Ù×÷Êı¶şµØÖ·<%p> EBP<%d> ESP<%d>", address, (char*)Address, GetOperatorAddress(stack, Data[1]),
+				HAZE_LOG_ERR_W("å¼€å§‹ æ“ä½œæ•°ä¸€åœ°å€<%p> å­˜å‚¨åœ°å€<%p> æ“ä½œæ•°äºŒåœ°å€<%p> EBP<%d> ESP<%d>", address, (char*)Address, GetOperatorAddress(stack, Data[1]),
 					Stack->m_EBP, Stack->m_ESP);
 				ShowData2();
 				HAZE_LOG_ERR_W("\n");
 
-				HAZE_LOG_INFO(H_TEXT("Ö´ĞĞÖ¸Áî<%s> <%s> <%s>\n"), GetInstructionString(opCode),
+				HAZE_LOG_INFO(H_TEXT("æ‰§è¡ŒæŒ‡ä»¤<%s> <%s> <%s>\n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str(), Data[1].Variable.Name.c_str());
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("¿ªÊ¼ ²Ù×÷ÊıÒ»µØÖ·<%p> ´æ´¢µØÖ·<%p> EBP<%d> ESP<%d>\n", address, (char*)Address, Stack->m_EBP, Stack->m_ESP);
+				HAZE_LOG_ERR_W("å¼€å§‹ æ“ä½œæ•°ä¸€åœ°å€<%p> å­˜å‚¨åœ°å€<%p> EBP<%d> ESP<%d>\n", address, (char*)Address, Stack->m_EBP, Stack->m_ESP);
 
-				HAZE_LOG_INFO(H_TEXT("Ö´ĞĞÖ¸Áî<%s> <%s> \n"), GetInstructionString(opCode),
+				HAZE_LOG_INFO(H_TEXT("æ‰§è¡ŒæŒ‡ä»¤<%s> <%s> \n"), GetInstructionString(opCode),
 					Data[0].Variable.Name.c_str());
 			}
 		}
@@ -220,14 +220,14 @@ class InstructionProcessor
 			
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("½áÊø ²Ù×÷ÊıÒ»µØÖ·<%p> ´æ´¢µØÖ·<%p> ²Ù×÷Êı¶şµØÖ·<%p> EBP<%d> ESP<%d>", address, (char*)Address,
+				HAZE_LOG_ERR_W("ç»“æŸ æ“ä½œæ•°ä¸€åœ°å€<%p> å­˜å‚¨åœ°å€<%p> æ“ä½œæ•°äºŒåœ°å€<%p> EBP<%d> ESP<%d>", address, (char*)Address,
 					GetOperatorAddress(Stack, Data[1]), Stack->m_EBP, Stack->m_ESP);
 				ShowData2();
 				HAZE_LOG_ERR_W("\n\n");
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("½áÊø ²Ù×÷ÊıÒ»µØÖ·<%p> ´æ´¢µØÖ·<%p> EBP<%d> ESP<%d>\n\n", address, (char*)Address, Stack->m_EBP, Stack->m_ESP);
+				HAZE_LOG_ERR_W("ç»“æŸ æ“ä½œæ•°ä¸€åœ°å€<%p> å­˜å‚¨åœ°å€<%p> EBP<%d> ESP<%d>\n\n", address, (char*)Address, Stack->m_EBP, Stack->m_ESP);
 			}
 		}
 
@@ -239,35 +239,35 @@ class InstructionProcessor
 			{
 				int v;
 				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(int));
-				HAZE_LOG_ERR_W(" Öµ<%d>", v);
+				HAZE_LOG_ERR_W(" å€¼<%d>", v);
 			}
 			break;
 			case HazeValueType::Int64:
 			{
 				x_int64 v;
 				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(x_int64));
-				HAZE_LOG_ERR_W(" Öµ<%d>", v);
+				HAZE_LOG_ERR_W(" å€¼<%d>", v);
 			}
 			break;
 			case HazeValueType::UInt32:
 			{
 				x_uint32 v;
 				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(x_uint32));
-				HAZE_LOG_ERR_W(" Öµ<%d>", v);
+				HAZE_LOG_ERR_W(" å€¼<%d>", v);
 			}
 			break;
 			case HazeValueType::UInt64:
 			{
 				x_uint64 v;
 				memcpy(&v, GetOperatorAddress(Stack, Data[1]), sizeof(x_uint64));
-				HAZE_LOG_ERR_W(" Öµ<%d>", v);
+				HAZE_LOG_ERR_W(" å€¼<%d>", v);
 			}
 			break;
 			case HazeValueType::String:
 			case HazeValueType::Array:
 			case HazeValueType::Class:
 			{
-				HAZE_LOG_ERR_W(" Öµ<%p>", GetOperatorAddress(Stack, Data[1]));
+				HAZE_LOG_ERR_W(" å€¼<%p>", GetOperatorAddress(Stack, Data[1]));
 			}
 			break;
 			default:
@@ -471,7 +471,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -492,7 +492,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -513,7 +513,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -534,7 +534,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -555,7 +555,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -576,7 +576,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -597,7 +597,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 
@@ -619,7 +619,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -640,7 +640,7 @@ public:
 		}
 		else
 		{
-			INS_ERR_W("²Ù×÷Êı²»¶Ô");
+			INS_ERR_W("æ“ä½œæ•°ä¸å¯¹");
 		}
 
 		stack->m_VM->InstructionExecPost();
@@ -663,7 +663,7 @@ public:
 				
 #if HAZE_CALL_LOG
 				HString functionName = stack->m_VM->GetAdvanceFunctionName((x_uint16)oper[0].Extra.ObjectCall.Index);;
-				HAZE_LOG_INFO(H_TEXT("µ÷ÓÃ¶ÔÏó<%s>º¯Êı<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), functionName.c_str(), stack->m_EBP, stack->m_ESP);
+				HAZE_LOG_INFO(H_TEXT("è°ƒç”¨å¯¹è±¡<%s>å‡½æ•°<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), functionName.c_str(), stack->m_EBP, stack->m_ESP);
 #endif
 				
 				stack->m_VM->GetAdvanceFunction((x_uint16)oper[0].Extra.ObjectCall.Index)->ClassFunc(stack, oper[0].Extra.Call.ParamNum, paramByteSize);
@@ -677,7 +677,7 @@ public:
 			else if (oper[0].Variable.Type.BaseType == HazeValueType::Function)
 			{
 #if HAZE_CALL_LOG
-				HAZE_LOG_INFO(H_TEXT("µ÷ÓÃº¯Êı<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
+				HAZE_LOG_INFO(H_TEXT("è°ƒç”¨å‡½æ•°<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
 #endif
 				void* value = GetOperatorAddress(stack, oper[0]);
 				x_uint64 functionAddress;
@@ -698,7 +698,7 @@ public:
 				}
 
 #if HAZE_CALL_LOG
-				HAZE_LOG_INFO(H_TEXT("µ÷ÓÃº¯Êı<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
+				HAZE_LOG_INFO(H_TEXT("è°ƒç”¨å‡½æ•°<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
 #endif
 				 
 				if (functionIndex >= 0)
@@ -738,7 +738,7 @@ public:
 				}
 				else
 				{
-					HAZE_LOG_ERR_W("µ÷ÓÃº¯Êı<%s>´íÎó£¬Î´ÄÜÕÒµ½!\n", oper[0].Variable.Name.c_str());
+					HAZE_LOG_ERR_W("è°ƒç”¨å‡½æ•°<%s>é”™è¯¯ï¼Œæœªèƒ½æ‰¾åˆ°!\n", oper[0].Variable.Name.c_str());
 				}
 				
 			}
@@ -853,7 +853,7 @@ public:
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("NEW<%s>´íÎó Ö»ÄÜÉú³É<Àà><Êı×é><×Ö·û´®><»ù±¾ÀàĞÍ><±Õ°ü>!\n", oper[0].Variable.Name.c_str());
+				HAZE_LOG_ERR_W("NEW<%s>é”™è¯¯ åªèƒ½ç”Ÿæˆ<ç±»><æ•°ç»„><å­—ç¬¦ä¸²><åŸºæœ¬ç±»å‹><é—­åŒ…>!\n", oper[0].Variable.Name.c_str());
 				//address = HazeMemory::Alloca(newSize);
 			}
 
@@ -1054,7 +1054,7 @@ public:
 			}
 			else
 			{
-				INS_ERR_W("<%s>×ª»»Îª<%s>µÄÀàĞÍÊ±´íÎó!", oper[1].Variable.Name.c_str(), oper[0].Variable.Name.c_str());
+				INS_ERR_W("<%s>è½¬æ¢ä¸º<%s>çš„ç±»å‹æ—¶é”™è¯¯!", oper[1].Variable.Name.c_str(), oper[0].Variable.Name.c_str());
 			}
 		}
 
@@ -1215,12 +1215,12 @@ private:
 				}
 				else
 				{
-					INS_ERR_W("¶şÔª¼ÆËã´íÎó, ¶¯Ì¬Àà³ÉÔ±²»È«ÊÇÊı×Ö <%s> <%s>", oper[0].Variable.Name.c_str(), oper[1].Variable.Name.c_str());
+					INS_ERR_W("äºŒå…ƒè®¡ç®—é”™è¯¯, åŠ¨æ€ç±»æˆå‘˜ä¸å…¨æ˜¯æ•°å­— <%s> <%s>", oper[0].Variable.Name.c_str(), oper[1].Variable.Name.c_str());
 				}
 			}
 			else
 			{
-				INS_ERR_W("¶şÔª¼ÆËã´íÎó, <%s> <%s>", oper[0].Variable.Name.c_str(),oper[1].Variable.Name.c_str());
+				INS_ERR_W("äºŒå…ƒè®¡ç®—é”™è¯¯, <%s> <%s>", oper[0].Variable.Name.c_str(),oper[1].Variable.Name.c_str());
 			}
 		}
 	}
@@ -1233,7 +1233,7 @@ private:
 		va_end(args);
 	}*/
 
-	//Ö»ÄÜC++¶à²ÎÊıº¯Êıµ÷ÓÃ
+	//åªèƒ½C++å¤šå‚æ•°å‡½æ•°è°ƒç”¨
 	static void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, int paramNum, va_list& args)
 	{
 		stack->m_EBP = stack->m_ESP;
@@ -1278,7 +1278,7 @@ private:
 			case HazeValueType::Bool:
 				src = &va_arg(args, bool);
 				break;
-			//ÔÚ¿É±ä³¤²ÎÊıÖĞ£¬»á±»À©Õ¹³Éint
+			//åœ¨å¯å˜é•¿å‚æ•°ä¸­ï¼Œä¼šè¢«æ‰©å±•æˆint
 			case HazeValueType::Int8:
 				{
 					value.Value.Int8 = (x_int8)va_arg(args, int);
@@ -1316,7 +1316,7 @@ private:
 				src = &va_arg(args, x_uint64);
 				break;
 
-			//ÔÚ¿É±ä³¤²ÎÊıÖĞ£¬float»á±»À©Õ¹³Édouble
+			//åœ¨å¯å˜é•¿å‚æ•°ä¸­ï¼Œfloatä¼šè¢«æ‰©å±•æˆdouble
 			case HazeValueType::Float32:
 				{
 					value.Value.Float32 = (x_float32)va_arg(args, x_float64);
@@ -1327,7 +1327,7 @@ private:
 				src = &va_arg(args, x_float64);
 				break;
 			default:
-				HAZE_LOG_ERR_W("Èı·½¿âµ÷ÓÃHazeº¯ÊıPush²ÎÊı<%s>ÀàĞÍ´íÎó", GetHazeValueTypeString(type.BaseType));
+				HAZE_LOG_ERR_W("ä¸‰æ–¹åº“è°ƒç”¨Hazeå‡½æ•°Pushå‚æ•°<%s>ç±»å‹é”™è¯¯", GetHazeValueTypeString(type.BaseType));
 				break;
 			}
 
@@ -1338,7 +1338,7 @@ private:
 		}*/
 		else
 		{
-			HAZE_LOG_ERR_W("Èı·½¿âµ÷ÓÃHazeº¯ÊıÔİÊ±Ö»Ö§³ÖÄ¬ÈÏÀàĞÍ!\n");
+			HAZE_LOG_ERR_W("ä¸‰æ–¹åº“è°ƒç”¨Hazeå‡½æ•°æš‚æ—¶åªæ”¯æŒé»˜è®¤ç±»å‹!\n");
 		}
 
 		PushParam(stack, src, size);
@@ -1347,7 +1347,7 @@ private:
 
 	static void ClearRegisterType(HazeStack* stack, const InstructionData& oper)
 	{
-		//NewºÍRet¼Ä´æÆ÷µÄtypeÇå¿Õ£¬·ÀÖ¹Ã»ÓĞÀ¬»ø»ØÊÕµô
+		//Newå’ŒRetå¯„å­˜å™¨çš„typeæ¸…ç©ºï¼Œé˜²æ­¢æ²¡æœ‰åƒåœ¾å›æ”¶æ‰
 		if (oper.AddressType == InstructionAddressType::Register)
 		{
 			auto Register = stack->GetVirtualRegister(oper.Variable.Name.c_str());
@@ -1372,7 +1372,7 @@ void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData)
 	return InstructionProcessor::GetOperatorAddress(stack, insData);
 }
 
-//¿ÉÒÔ¿¼ÂÇ½«HashMap¸ÄÎªÊ¹ÓÃÊı×é
+//å¯ä»¥è€ƒè™‘å°†HashMapæ”¹ä¸ºä½¿ç”¨æ•°ç»„
 HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
 {
 	{InstructionOpCode::MOV, &InstructionProcessor::Mov},

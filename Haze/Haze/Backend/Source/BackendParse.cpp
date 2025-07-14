@@ -93,7 +93,7 @@ void BackendParse::Parse()
 	HString codeText;
 
 	{
-		HAZE_TO_DO(Ö®ºó¿¼ÂÇÉ¾³ıÖĞ¼ä·ûºÅÎÄ¼şÈ¥Ê¹ÓÃÒıÓÃÀàĞÍ±íÀïµÄ×Ö·û´®);
+		HAZE_TO_DO(ä¹‹åè€ƒè™‘åˆ é™¤ä¸­é—´ç¬¦å·æ–‡ä»¶å»ä½¿ç”¨å¼•ç”¨ç±»å‹è¡¨é‡Œçš„å­—ç¬¦ä¸²);
 		HAZE_IFSTREAM fs(GetIntermediateModuleFile(HAZE_INTER_SYMBOL_TABLE));
 		fs.imbue(std::locale("chs"));
 		codeText = HString(std::istreambuf_iterator<x_HChar>(fs), {});
@@ -165,7 +165,7 @@ void BackendParse::GetNextLexmeAssign_HazeStringCustomClassName(const HString*& 
 	}
 	else
 	{
-		BACKEND_ERR_W("ÔÚ·ûºÅ±íÖĞÎ´ÄÜ²éÕÒµ½<%s>ÀàĞÍĞÅÏ¢", m_CurrLexeme.c_str());
+		BACKEND_ERR_W("åœ¨ç¬¦å·è¡¨ä¸­æœªèƒ½æŸ¥æ‰¾åˆ°<%s>ç±»å‹ä¿¡æ¯", m_CurrLexeme.c_str());
 	}
 }
 
@@ -266,7 +266,7 @@ void BackendParse::Parse_I_Code()
 	x_uint64 timestamp;
 	GetNextLexmeAssign_CustomType<x_uint32>(timestamp);
 
-	//ÔİÊ±ÓÃÀ´¶ÁÈ¡°æ±¾ºÅ
+	//æš‚æ—¶ç”¨æ¥è¯»å–ç‰ˆæœ¬å·
 	GetNextLexmeAssign_HazeString(m_CurrParseModule->m_Path);
 
 	//Standard lib
@@ -329,7 +329,7 @@ void BackendParse::Parse_I_Code_ImportTable()
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("ºó¶Ë½âÎöÊ§°Ü,ÒıÓÃLabel´íÎó<%s>!\n", m_CurrLexeme.c_str());
+				HAZE_LOG_ERR_W("åç«¯è§£æå¤±è´¥,å¼•ç”¨Labelé”™è¯¯<%s>!\n", m_CurrLexeme.c_str());
 				return;
 			}
 		}
@@ -349,7 +349,7 @@ void BackendParse::Parse_I_Code_GlobalTable()
 
 		for (x_uint64 i = 0; i < table.Data.size(); i++)
 		{
-			//ÒòÎª½«ËùÓĞµÄÖ¸ÁîºÏÔÚÒ»ÆğÁË£¬ĞèÒªÖØĞÂ¼ÆËã
+			//å› ä¸ºå°†æ‰€æœ‰çš„æŒ‡ä»¤åˆåœ¨ä¸€èµ·äº†ï¼Œéœ€è¦é‡æ–°è®¡ç®—
 			/*GetNextLexmeAssign_CustomType<uint32>(table.Data[i].StartAddress);
 			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].EndAddress);*/
 
@@ -414,7 +414,7 @@ void BackendParse::Parse_I_Code_EnumTable()
 		x_uint32 number;
 		GetNextLexmeAssign_StandardType(number);
 
-		//Ôİ²»¼ÇÂ¼
+		//æš‚ä¸è®°å½•
 		HString str;
 		for (x_uint32 i = 0; i < number; i++)
 		{
@@ -855,7 +855,7 @@ inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorDat
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("ÔÚº¯Êı<%s>ÖĞ²éÕÒ<%s>µÄÆ«ÒÆÖµÊ§°Ü!\n", function.Name.c_str(), operatorData.Variable.Name.c_str());
+				HAZE_LOG_ERR_W("åœ¨å‡½æ•°<%s>ä¸­æŸ¥æ‰¾<%s>çš„åç§»å€¼å¤±è´¥!\n", function.Name.c_str(), operatorData.Variable.Name.c_str());
 				return;
 			}
 		}
@@ -881,7 +881,7 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 			return;
 		}
 
-		HAZE_LOG_ERR_W("Î´ÄÜ²éÕÒµ½È«¾Ö±äÁ¿<%s>!\n", operatorData.Variable.Name.c_str());
+		HAZE_LOG_ERR_W("æœªèƒ½æŸ¥æ‰¾åˆ°å…¨å±€å˜é‡<%s>!\n", operatorData.Variable.Name.c_str());
 		return;
 	}
 
@@ -896,7 +896,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 		HashMap_FunctionIndexAndAddress[newFunctionTable.m_Functions[i].Name] = i;
 	}
 
-	//Ìæ»»±äÁ¿ÎªË÷Òı»òÏà¶Ôº¯ÊıÆğÊ¼Æ«ÒÆ
+	//æ›¿æ¢å˜é‡ä¸ºç´¢å¼•æˆ–ç›¸å¯¹å‡½æ•°èµ·å§‹åç§»
 	for (x_uint64 k = 0; k < newFunctionTable.m_Functions.size(); ++k)
 	{
 #if BACKEND_INSTRUCTION_LOG
@@ -920,7 +920,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 		{
 			if (IsJmpOpCode(m_CurrFunction.Instructions[i].InsCode))
 			{
-				//ÉèÖÃ Block¿é Æ«ÒÆÖµ
+				//è®¾ç½® Blockå— åç§»å€¼
 				for (auto& operatorData : m_CurrFunction.Instructions[i].Operator)
 				{
 					if (operatorData.Variable.Name != HAZE_JMP_NULL)
@@ -946,7 +946,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 					}
 					else
 					{
-						HAZE_LOG_ERR_W("²éÕÒµ÷ÓÃµÄº¯ÊıÖ¸Õë<%s>Ê§°Ü!\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str());
+						HAZE_LOG_ERR_W("æŸ¥æ‰¾è°ƒç”¨çš„å‡½æ•°æŒ‡é’ˆ<%s>å¤±è´¥!\n"), CurrFunction.Vector_Instruction[i].Operator[0].Variable.Name.c_str());
 					}
 				}
 			}*/
@@ -976,7 +976,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 						//	else*/
 						//	{
 						//		operatorData.AddressType = InstructionAddressType::Register;
-						//		HAZE_LOG_ERR_W("Ñ°ÕÒÁÙÊ±±äÁ¿<%s>µÄµØÖ·Ê§°Ü!\n", operatorData.Variable.Name.c_str());
+						//		HAZE_LOG_ERR_W("å¯»æ‰¾ä¸´æ—¶å˜é‡<%s>çš„åœ°å€å¤±è´¥!\n", operatorData.Variable.Name.c_str());
 						//	}
 						//}
 						else if (IS_SCOPE_IGNORE(operatorData.Scope))
@@ -995,12 +995,12 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 							}*/
 							else
 							{
-								HAZE_LOG_ERR_W("Ñ°ÕÒºöÂÔ±äÁ¿<%s>µÄµØÖ·Ê§°Ü!\n", operatorData.Variable.Name.c_str());
+								HAZE_LOG_ERR_W("å¯»æ‰¾å¿½ç•¥å˜é‡<%s>çš„åœ°å€å¤±è´¥!\n", operatorData.Variable.Name.c_str());
 							}
 						}
 						else
 						{
-							HAZE_LOG_ERR_W("Ñ°ÕÒ±äÁ¿<%s>µÄµØÖ·Ê§°Ü!\n", operatorData.Variable.Name.c_str());
+							HAZE_LOG_ERR_W("å¯»æ‰¾å˜é‡<%s>çš„åœ°å€å¤±è´¥!\n", operatorData.Variable.Name.c_str());
 						}
 					}
 				}

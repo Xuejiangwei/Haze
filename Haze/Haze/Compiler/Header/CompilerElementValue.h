@@ -8,7 +8,7 @@ class CompilerElementValue : public CompilerValue
 public:
 	explicit CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, Share<CompilerValue> element);
 
-	// Dynamica Class Ê¹ÓÃÕâ¸ö¹¹Ôìº¯Êı
+	// Dynamica Class ä½¿ç”¨è¿™ä¸ªæ„é€ å‡½æ•°
 	explicit CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const HString& elementName);
 
 	virtual ~CompilerElementValue() override;
@@ -27,7 +27,7 @@ public:
 
 private:
 	Share<CompilerValue> m_Parent;
-	Share<CompilerValue> m_Element;		//Êı×éµÄÆ«ÒÆ»òÀàµÄ³ÉÔ±
-	Unique<HString> m_ElementName;		//DynamicClass³ÉÔ±Ãû
+	Share<CompilerValue> m_Element;		//æ•°ç»„çš„åç§»æˆ–ç±»çš„æˆå‘˜
+	Unique<HString> m_ElementName;		//DynamicClassæˆå‘˜å
 };
 

@@ -29,7 +29,7 @@ void ASTTemplateClass::CodeGen()
 {
 	/*if (m_ParentClasses.size() > g_ClassInheritLimit)
 	{
-		HAZE_LOG_ERR_W("½âÎö´´½¨Ä£°åÀà´íÎó,Àà<%s>¼Ì³ĞÀà¸öÊı³¬¹ı<%d>!\n", m_ClassName.c_str(), g_ClassInheritLimit);
+		HAZE_LOG_ERR_W("è§£æåˆ›å»ºæ¨¡æ¿ç±»é”™è¯¯,ç±»<%s>ç»§æ‰¿ç±»ä¸ªæ•°è¶…è¿‡<%d>!\n", m_ClassName.c_str(), g_ClassInheritLimit);
 		return;
 	}
 
@@ -43,7 +43,7 @@ void ASTTemplateClass::CodeGen()
 		}
 		else
 		{
-			HAZE_LOG_ERR_W("½âÎö´´½¨Àà´íÎó,Î´ÄÜÕÒµ½Àà<%s>µÄ¸¸Àà<%s>!\n", m_ClassName.c_str(), m_ParentClasses[i].c_str());
+			HAZE_LOG_ERR_W("è§£æåˆ›å»ºç±»é”™è¯¯,æœªèƒ½æ‰¾åˆ°ç±»<%s>çš„çˆ¶ç±»<%s>!\n", m_ClassName.c_str(), m_ParentClasses[i].c_str());
 			return;
 		}
 	}
@@ -52,7 +52,7 @@ void ASTTemplateClass::CodeGen()
 	{
 		if (parentClass->GetClassInheritLevel() > g_ClassInheritLevelLimit)
 		{
-			HAZE_LOG_ERR_W("½âÎö´´½¨Àà´íÎó,Àà<%s>¼Ì³Ğ²ã¼¶³¬¹ı<%d>!\n", m_ClassName.c_str(), g_ClassInheritLevelLimit);
+			HAZE_LOG_ERR_W("è§£æåˆ›å»ºç±»é”™è¯¯,ç±»<%s>ç»§æ‰¿å±‚çº§è¶…è¿‡<%d>!\n", m_ClassName.c_str(), g_ClassInheritLevelLimit);
 			return;
 		}
 	}
@@ -68,7 +68,7 @@ void ASTTemplateClass::CodeGen()
 			{
 				if (Class->GetMemberIndex(m_ClassDatas[i].second[j]->GetName()) >= 0)
 				{
-					HAZE_LOG_ERR_W("½âÎö´´½¨Àà´íÎó,Àà<%s>ÖĞ´æÔÚÓë¸¸Àà<%s>ÏàÍ¬ÃüÃûµÄ³ÉÔ±±äÁ¿<%s>!\n", m_ClassName.c_str(), Class->GetName().c_str(),
+					HAZE_LOG_ERR_W("è§£æåˆ›å»ºç±»é”™è¯¯,ç±»<%s>ä¸­å­˜åœ¨ä¸çˆ¶ç±»<%s>ç›¸åŒå‘½åçš„æˆå‘˜å˜é‡<%s>!\n", m_ClassName.c_str(), Class->GetName().c_str(),
 						m_ClassDatas[i].second[j]->GetName());
 					return;
 				}

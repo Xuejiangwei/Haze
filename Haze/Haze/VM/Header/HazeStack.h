@@ -37,9 +37,9 @@ public:
 	{
 		const FunctionData* FunctionInfo;
 		x_uint32 FunctionParamSize;
-		x_uint32 EBP;					// ֮ǰ���ú���ջ����ʱ������ʼ�ĵ�ַ
-		x_uint32 ESP;					// ֮ǰ���ú���ջ����ʱ���������ĵ�ַ
-		x_uint32 CurrParamESP;			// ��ǰ�����Ĳ�����PC��ַ�Ľ�����ַ
+		x_uint32 EBP;					// 之前调用函数栈的临时变量开始的地址
+		x_uint32 ESP;					// 之前调用函数栈的临时变量结束的地址
+		x_uint32 CurrParamESP;			// 当前函数的参数加PC地址的结束地址
 		RegisterData Register;
 
 		HazeStackFrame(const FunctionData* Info, x_uint32 ParamSize, x_uint32 EBP, x_uint32 ESP, x_uint32 currParamESP, RegisterData& Register)
@@ -94,8 +94,8 @@ private:
 	V_Array<HazeStackFrame> m_StackFrame;
 
 	HAZE_ADDRESS_TYPE m_PC;
-	x_uint32 m_EBP;		//ջ��
-	x_uint32 m_ESP;		//ջ��
+	x_uint32 m_EBP;		//栈底
+	x_uint32 m_ESP;		//栈顶
 
 	HashMap<HString, HazeRegister>  m_VirtualRegister;
 
