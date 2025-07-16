@@ -80,6 +80,7 @@ struct HazeComplexTypeInfo
 
 class HazeTypeInfoMap
 {
+public:
 	struct TypeInfo
 	{
 		HString Name;
@@ -110,6 +111,8 @@ public:
 
 	const x_uint32 GetTypeId(const HString& name) const;
 
+	ModuleRefrenceTypeId& GetModuleRefTypeId(const HString& name);
+
 	void GenICode(HAZE_STRING_STREAM& hss);
 	void GenModuleReferenceTypeInfo(HAZE_STRING_STREAM& hss, const HString& moduleName);
 
@@ -122,6 +125,11 @@ public:
 	void AddFunctionTypeInfo(x_uint32 typeId, V_Array<x_uint32>& typeAndParams);
 	void AddTypeInfo(HString&& name, x_uint32 typeId, HazeComplexTypeInfo* info);
 
+	void RegisterModuleRefTypes(const HString& moduleName, ModuleRefrenceTypeId&& refTypes);
+	void RemoveModuleRefTypes(const HString& moduleName);
+
+	void ParseInterFile(HAZE_IFSTREAM& stream);
+
 private:
 	x_uint32 RegisterFunctionParamListType(const HString& moduleName, x_uint32 typeId, V_Array<x_uint32>& paramList);
 
@@ -133,6 +141,8 @@ private:
 	HashMap<x_int32, V_Array<x_uint32>> m_FunctionInfoMap;
 	
 	HashMap<HString, ModuleRefrenceTypeId> m_ModuleRefTypes;
+
+	LessRBTreeSet<x_uint32> m_NoRefTypeIds;
 };
 
 

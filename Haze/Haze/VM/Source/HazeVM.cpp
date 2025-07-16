@@ -67,6 +67,9 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 		}
 	}
 
+	// 提前读取类型信息表
+	m_Compiler->ParseTypeInfoFile();
+
 	for (auto& iter : Vector_ModulePath)
 	{
 		if (ParseFile(iter).empty())

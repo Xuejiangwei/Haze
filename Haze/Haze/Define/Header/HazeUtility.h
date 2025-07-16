@@ -24,6 +24,8 @@ HString GetHazeModuleGlobalDataInitFunctionName(const HString& moduleName);
 const x_HChar* GetImportHeaderString();
 const x_HChar* GetImportHeaderModuleString();
 
+const x_HChar* GetRefTypeIdString();
+
 const x_HChar* GetGlobalDataHeaderString();
 //const x_HChar* GetGlobalDataInitBlockStart();
 //const x_HChar* GetGlobalDataInitBlockEnd();

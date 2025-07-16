@@ -260,6 +260,22 @@ void BackendParse::Parse_I_TypeInfo()
 			GetNextLexeme();
 		}
 	}
+
+
+	GetNextLexeme();
+	while (m_CurrLexeme == GetRefTypeIdString())
+	{
+		GetNextLexeme();
+
+		x_uint64 count;
+		GetNextLexmeAssign_StandardType(count);
+		for (x_uint64 i = 0; i < count; i++)
+		{
+			GetNextLexeme();
+		}
+
+		GetNextLexeme();
+	}
 }
 
 void BackendParse::Parse_I_Code()

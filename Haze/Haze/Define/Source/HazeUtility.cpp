@@ -98,6 +98,10 @@ const x_HChar* GetImportHeaderModuleString()
 	return HEADER_IMPORT_MODULE_MODULE;
 }
 
+const x_HChar* GetRefTypeIdString()
+{
+	return HEADER_REF_TYPE_ID;
+}
 
 const x_HChar* GetGlobalDataHeaderString()
 {

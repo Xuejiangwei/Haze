@@ -104,6 +104,8 @@ public:
 
 	CompilerModule* ParseModuleByPath(const HString& modulePath);
 
+	void ParseTypeInfoFile();
+
 	void FinishModule();
 
 	CompilerModule* GetModule(const HString& name);

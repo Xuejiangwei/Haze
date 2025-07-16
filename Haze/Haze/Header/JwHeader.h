@@ -44,6 +44,12 @@ using LessRBTreeMap = std::map<_Kty, _Ty, _Pr>;
 template <class _Kty, class _Ty, class _Pr = std::greater<_Kty>>
 using GreaterRBTreeMap = std::map<_Kty, _Ty, _Pr>;
 
+template <class _Kty, class _Pr = std::less<_Kty>>
+using LessRBTreeSet = std::set<_Kty, _Pr>;
+
+template <class _Kty, class _Pr = std::greater<_Kty>>
+using GreaterRBTreeSet = std::set<_Kty, _Pr>;
+
 template<class Ty1, class Ty2>
 using Pair = std::pair<Ty1, Ty2>;
 

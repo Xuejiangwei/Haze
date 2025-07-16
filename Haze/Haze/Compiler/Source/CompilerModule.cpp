@@ -21,8 +21,6 @@
 #include "CompilerEnumValue.h"
 #include "CompilerElementValue.h"
 
-#define COMPILER_MODULE_PARSE_INTER 0
-
 struct PushTempRegister
 {
 	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule, const HazeVariableType* defineType, Share<CompilerValue>* retValue)
@@ -83,7 +81,7 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 	auto intermediateFilePath = GetIntermediateModuleFile(moduleName);
 	bool newFS = true;
 
-#if COMPILER_MODULE_PARSE_INTER
+#if COMPILER_PARSE_INTER
 	if (FileExist(intermediateFilePath))
 	{
 		HAZE_IFSTREAM fs(intermediateFilePath);
@@ -103,6 +101,8 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 	m_FS_I_Code = nullptr;
 	if (newFS)
 	{
+		m_Compiler->GetTypeInfoMap()->RemoveModuleRefTypes(moduleName);
+
 		m_FS_I_Code = new HAZE_OFSTREAM();
 		m_FS_I_Code->imbue(std::locale("chs"));
 		m_FS_I_Code->open(GetIntermediateModuleFile(moduleName));
@@ -299,8 +299,6 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 
 			classData[j].second = m_Compiler->CreateClassVariable(this, memberType, nullptr, nullptr);
 			classData[j].second->SetDataDesc(desc);
-
-			HAZE_TO_DO("需要考虑数组和函数, 以及函数数组和函数中有数组参数的情况");
 		}
 
 		Share<CompilerClass> compilerClass = CreateClass(className, parentClass, classData);

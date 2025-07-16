@@ -50,6 +50,8 @@ using HString = std::wstring;
 #define HEADER_IMPORT_MODULE			H_TEXT("ImportModuleTable")
 #define HEADER_IMPORT_MODULE_MODULE		H_TEXT("ImportModule")
 
+#define HEADER_REF_TYPE_ID				H_TEXT("RefrenceTypeId")
+
 #define HEADER_STRING_GLOBAL_DATA		H_TEXT("GlobalDataTable")
 
 #define HEADER_STRING_STRING_TABLE		H_TEXT("StringTable")

@@ -33,8 +33,7 @@ ObjectArray::ObjectArray(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId, x_uint64
 		{
 			pair = HazeMemory::HazeMemory::AllocaGCData(sizeof(ObjectArray), GC_ObjectType::Array);
 
-			//typeId - 1 根据注册代码一定是减一维数的类型
-			new((char*)pair.first) ObjectArray(pair.second, vm, typeId - 1, lengths + 1);
+			new((char*)pair.first) ObjectArray(pair.second, vm, m_ValueType.TypeId, lengths + 1);
 			((ObjectArray**)m_Data)[i] = (ObjectArray*)pair.first;
 		}
 	}

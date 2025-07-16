@@ -1,5 +1,6 @@
 #include "HazePch.h"
 #include "HazeVM.h"
+#include "HazeDebugDefine.h"
 #include "HazeLogDefine.h"
 #include "HazeFilePathHelper.h"
 
@@ -27,7 +28,6 @@ static HashMap<HString, Share<CompilerValue>> g_GlobalRegisters = {
 	{ CMP_REGISTER, CreateVariable(nullptr, HAZE_VAR_TYPE(HazeValueType::Void), HazeVariableScope::Global, HazeDataDesc::RegisterCmp, 0) },
 };
 
-// ֻ��������ʱ�����Ĵ���, ÿ������ջ��Ҫ�洢����������ʱ�Ĵ���, GCʱҲҪɨ��
 static HashMap<HString, Share<CompilerValue>> g_GlobalTempRegisters = {
 	/*{ TEMP_REGISTER_A, CreateVariable(nullptr, HazeDefineVariable(HazeDefineType(HazeValueType::Void),
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },
@@ -194,6 +194,21 @@ CompilerModule* Compiler::ParseModuleByPath(const HString& modulePath)
 	}
 
 	return nullptr;
+}
+
+void Compiler::ParseTypeInfoFile()
+{
+#if COMPILER_PARSE_INTER
+
+	auto typeInfoFile = GetIntermediateModuleFile(HAZE_TYPE_INFO_TABLE);
+
+	if (FileExist(typeInfoFile))
+	{
+		HAZE_IFSTREAM fs(typeInfoFile);
+		m_TypeInfoMap->ParseInterFile(fs);
+	}
+
+#endif // COMPILER_PARSE_INTER
 }
 
 void Compiler::FinishModule()
