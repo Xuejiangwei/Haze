@@ -24,9 +24,10 @@ AdvanceClassInfo* ObjectBase::GetAdvanceClassInfo()
 	static AdvanceClassInfo info;
 
 	info.Add(HAZE_OBJECT_BASE_CONSTRUCTOR, { &ObjectBase::Constructor, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
-	info.Add(H_TEXT("等于"), { &ObjectBase::Equal, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(ObjectBase) } });
 	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectBase::Get, OBJ_TYPE_DEF(Void), { } });
 	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectBase::Set, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(H_TEXT("等于"), { &ObjectBase::Equal, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(ObjectBase) } });
+	info.Add(H_TEXT("地址"), { &ObjectBase::GetAddress, OBJ_TYPE_DEF(Address), { } });
 
 	return &info;
 }
@@ -51,7 +52,7 @@ void ObjectBase::Equal(HAZE_OBJECT_CALL_PARAM)
 	GET_OBJ(obj2);
 
 	bool isEqual = IsEqual(obj1, obj2);
-	SET_RET_BY_TYPE(HazeValueType::Bool, isEqual);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Bool), isEqual);
 }
 
 void ObjectBase::Get(HAZE_OBJECT_CALL_PARAM)
@@ -60,7 +61,9 @@ void ObjectBase::Get(HAZE_OBJECT_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_OBJ(obj);
-	SET_RET_BY_TYPE(obj->m_Type, obj->m_Value);
+	SET_RET_BY_TYPE(HazeVariableType(obj->m_Type), obj->m_Value);
+
+	auto address = GetBinaryPointer(obj->m_Type, obj->m_Value);
 }
 
 void ObjectBase::Set(HAZE_OBJECT_CALL_PARAM)
@@ -73,4 +76,18 @@ void ObjectBase::Set(HAZE_OBJECT_CALL_PARAM)
 
 	GET_PARAM_ADDRESS(data, GetSizeByHazeType(obj->m_Type));
 	SetHazeValueByData(obj->m_Value, obj->m_Type, data);
+
+	auto address = GetBinaryPointer(obj->m_Type, obj->m_Value);
+}
+
+void ObjectBase::GetAddress(HAZE_OBJECT_CALL_PARAM)
+{
+	ObjectBase* obj;
+	char* data;
+
+	GET_PARAM_START();
+	GET_OBJ(obj);
+
+	auto address = GetBinaryPointer(obj->m_Type, obj->m_Value);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::UInt64), address);
 }

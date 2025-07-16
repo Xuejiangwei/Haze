@@ -27,12 +27,12 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*);
 
 #define SET_RET_BY_TYPE(TYPE, V) \
 	HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER); \
-	retRegister->Type.SetBaseTypeAndId(TYPE); \
+	retRegister->Type = TYPE; \
 	retRegister->Data.resize(retRegister->Type.GetTypeSize()); \
 	memcpy(retRegister->Data.begin()._Unwrapped(), &V, retRegister->Data.size())
 
 #define SET_RET_BY_TYPE_AND_ADDRESS(TYPE, V) \
 	HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER); \
-	retRegister->Type.SetBaseTypeAndId(TYPE); \
+	retRegister->Type = TYPE; \
 	retRegister->Data.resize(retRegister->Type.GetTypeSize()); \
 	memcpy(retRegister->Data.begin()._Unwrapped(), V, retRegister->Data.size())

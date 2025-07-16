@@ -92,8 +92,7 @@ protected:
 
 	void AddFunctionParam(const HazeDefineVariable& variable);
 
-	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0,
-		TemplateDefineTypes* params = nullptr);
+	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr, TemplateDefineTypes* params = nullptr);
 
 	Share<CompilerValue> CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue = nullptr);
 

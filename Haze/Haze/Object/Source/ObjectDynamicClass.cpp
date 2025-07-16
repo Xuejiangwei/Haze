@@ -102,7 +102,7 @@ void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 	}
 
 	obj->m_Methods->SetMember(stack, *name, obj->m_Data, (x_uint8*)GET_CURRENT_ADDRESS);
-	SET_RET_BY_TYPE(HazeValueType::Void, obj);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Void), obj);
 }
 
 void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)

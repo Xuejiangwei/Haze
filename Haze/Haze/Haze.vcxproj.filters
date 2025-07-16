@@ -81,9 +81,6 @@
     <ClCompile Include="Compiler\Source\CompilerClassValue.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="Compiler\Source\HazeCompilerPointerValue.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="Define\Source\HazeUtility.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
@@ -291,9 +288,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\CompilerClassValue.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerPointerValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Define\Header\HazeDebugDefine.h">

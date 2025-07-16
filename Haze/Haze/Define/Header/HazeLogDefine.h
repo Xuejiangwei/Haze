@@ -7,8 +7,8 @@
 #define COMPILER_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<编译错误>：" H_TEXT(" 【<%s>模块】") H_TEXT(INFO) H_TEXT("!\n"), \
 							 m_Module->GetName().c_str(), __VA_ARGS__)
 
-#define COMPILER_ERR_MODULE_W(INFO, ...) HAZE_LOG_ERR_W("<编译错误>：" H_TEXT(" 【<%s>模块】") H_TEXT(INFO) H_TEXT("!\n"), \
-							 __VA_ARGS__)
+#define COMPILER_ERR_MODULE_W(INFO, COMPILER, ...) HAZE_LOG_ERR_W("<编译错误>：" H_TEXT(" 【<%s>模块】") H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__); \
+								COMPILER->MarkCompilerError()
 
 #define BACKEND_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<后端错误>：" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__)
 

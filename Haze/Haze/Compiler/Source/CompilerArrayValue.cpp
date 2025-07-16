@@ -5,7 +5,6 @@
 #include "CompilerModule.h"
 #include "CompilerFunction.h"
 #include "CompilerHelper.h"
-#include "HazeCompilerPointerValue.h"
 #include "CompilerClassValue.h"
 #include "HazeLogDefine.h"
 
@@ -24,14 +23,14 @@ HazeVariableType CompilerArrayValue::GetElementType() const
 	auto typeInfoMap = m_Module->GetCompiler()->GetTypeInfoMap();
 	auto info = typeInfoMap->GetTypeById(m_Type.TypeId);
 	HazeVariableType elementType;
-	if (info->_Array.Dimension > 1)
+	/*if (info->_Array.Dimension > 1)
 	{
 		HazeComplexTypeInfo elementInfo = *info;
 		elementInfo._Array.Dimension -= 1;
 		elementType.BaseType = elementInfo._Array.BaseType;
 		elementType.TypeId = typeInfoMap->RegisterType(m_Module->GetName(), & elementInfo);
 	}
-	else
+	else*/
 	{
 		auto elementInfo = typeInfoMap->GetTypeById(info->_Array.TypeId1);
 		elementType.BaseType = elementInfo->_BaseType.BaseType;

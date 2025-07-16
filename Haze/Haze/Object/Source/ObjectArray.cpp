@@ -16,10 +16,10 @@ ObjectArray::ObjectArray(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId, x_uint64
 	: GCObject(gcIndex)
 {
 	auto info = vm->GetTypeInfoMap()->GetTypeById(typeId);
-	
+
 	m_ValueType.BaseType = vm->GetTypeInfoMap()->GetTypeById(info->_Array.TypeId1)->GetBaseType();
 	m_ValueType.TypeId = info->_Array.TypeId1;
-	
+	m_DimensionCount = info->_Array.Dimension;
 	if (info->_Array.Dimension > 1)
 	{
 		m_Length = lengths[0];
@@ -32,7 +32,9 @@ ObjectArray::ObjectArray(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId, x_uint64
 		for (x_uint64 i = 0; i < m_Length; i++)
 		{
 			pair = HazeMemory::HazeMemory::AllocaGCData(sizeof(ObjectArray), GC_ObjectType::Array);
-			new((char*)pair.first) ObjectArray(pair.second, vm, m_ValueType.TypeId, lengths + 1);
+
+			//typeId - 1 根据注册代码一定是减一维数的类型
+			new((char*)pair.first) ObjectArray(pair.second, vm, typeId - 1, lengths + 1);
 			((ObjectArray**)m_Data)[i] = (ObjectArray*)pair.first;
 		}
 	}
@@ -96,7 +98,7 @@ void ObjectArray::GetLength(HAZE_OBJECT_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_OBJ(arr);
-	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_Length);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::UInt64), arr->m_Length);
 }
 
 void ObjectArray::GetLengthOfDimension(HAZE_OBJECT_CALL_PARAM)
@@ -107,7 +109,7 @@ void ObjectArray::GetLengthOfDimension(HAZE_OBJECT_CALL_PARAM)
 	GET_PARAM_START();
 	GET_OBJ(arr);
 	GET_PARAM(dimension);
-	SET_RET_BY_TYPE(HazeValueType::UInt64, stack->GetVM()->GetInstruction()[arr->m_PcAddress + dimension + 1].Operator[0].Extra.SignData);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::UInt64), stack->GetVM()->GetInstruction()[arr->m_PcAddress + dimension + 1].Operator[0].Extra.SignData);
 }
 
 void ObjectArray::GetDimensionCount(HAZE_OBJECT_CALL_PARAM)
@@ -116,7 +118,7 @@ void ObjectArray::GetDimensionCount(HAZE_OBJECT_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_OBJ(arr);
-	SET_RET_BY_TYPE(HazeValueType::UInt64, arr->m_DimensionCount);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::UInt64), arr->m_DimensionCount);
 }
 
 void ObjectArray::Add(HAZE_OBJECT_CALL_PARAM)
@@ -144,7 +146,7 @@ void ObjectArray::Add(HAZE_OBJECT_CALL_PARAM)
 	memcpy((char*)arr->m_Data + arr->m_Length * size, value, size);
 	arr->m_Length += 1;
 
-	SET_RET_BY_TYPE(arr->m_ValueType.BaseType, value);
+	//SET_RET_BY_TYPE(arr->m_ValueType.BaseType, value);
 }
 
 void ObjectArray::Get(HAZE_OBJECT_CALL_PARAM)
@@ -156,11 +158,11 @@ void ObjectArray::Get(HAZE_OBJECT_CALL_PARAM)
 	GET_OBJ(arr);
 	GET_PARAM(offset);
 
-	auto size = GetSizeByHazeType(arr->m_ValueType.BaseType);
+	auto size = GetSizeByHazeType(arr->m_DimensionCount > 1 ? HazeValueType::Array : arr->m_ValueType.BaseType);
 
 	char value[8];
 	memcpy(value, (char*)arr->m_Data + offset * size, size);
-	SET_RET_BY_TYPE(arr->m_ValueType.BaseType, value);
+	SET_RET_BY_TYPE(arr->m_ValueType, value);
 }
 
 void ObjectArray::Set(HAZE_OBJECT_CALL_PARAM)

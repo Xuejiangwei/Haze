@@ -48,8 +48,8 @@ const x_HChar* GetEnumTableLabelHeader();
 const x_HChar* GetEnumStartHeader();
 const x_HChar* GetEnumEndHeader();
 
-const x_HChar* GetSymbolBeginHeader();
-const x_HChar* GetSymbolEndHeader();
+//const x_HChar* GetSymbolBeginHeader();
+//const x_HChar* GetSymbolEndHeader();
 
 const x_HChar* GetTypeInfoFunctionBeginHeader();
 const x_HChar* GetTypeInfoFunctionEndHeader();

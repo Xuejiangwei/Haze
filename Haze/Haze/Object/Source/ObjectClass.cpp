@@ -87,7 +87,7 @@ void ObjectClass::GetOffset(HAZE_OBJECT_CALL_PARAM)
 
 	char value[8];
 	memcpy(value, (char*)classObj->m_Data + memberInfo.Offset, GetSizeByHazeType(memberInfo.Variable.Type.BaseType));
-	SET_RET_BY_TYPE(memberInfo.Variable.Type.BaseType, value);
+	SET_RET_BY_TYPE(memberInfo.Variable.Type, value);
 
 	//HAZE_LOG_INFO(H_TEXT("Class Get <%d> <%s> <%s>\n"), index, memberInfo.Variable.Name.c_str(), classObj->m_ClassInfo->Name.c_str());
 	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p><%p> Get: <%s>\n"), classObj->m_ClassInfo->Name.c_str(), classObj, classObj->m_Data, (char*)classObj->m_Data + memberInfo.Offset, value);

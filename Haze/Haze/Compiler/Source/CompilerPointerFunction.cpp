@@ -5,7 +5,7 @@
 
 CompilerPointerFunction::CompilerPointerFunction(CompilerModule* compilerModule, const HazeVariableType& defineType,
 	HazeVariableScope scope, HazeDataDesc desc, int count, TemplateDefineTypes* paramTypes)
-	: HazeCompilerPointerValue(compilerModule, defineType, scope, desc, count), m_OwnerClass(nullptr)
+	: CompilerValue(compilerModule, defineType, scope, desc, count), m_OwnerClass(nullptr)
 {
 	if (paramTypes)
 	{

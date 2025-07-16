@@ -95,7 +95,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 }
 
 Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeVariableType& type, HazeVariableScope scope, 
-	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
+	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, TemplateDefineTypes* params)
 {
 	switch (type.BaseType)
 	{
@@ -146,15 +146,14 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 }
 
 Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeVariableType& type, HazeVariableScope scope,
-	HazeDataDesc desc, int count, Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
+	HazeDataDesc desc, int count, Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
-	return CreateVariableImpl(compilerModule, type, scope, desc, count, refValue, arrayDimension, params);
+	return CreateVariableImpl(compilerModule, type, scope, desc, count, refValue, params);
 }
 
 Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var)
 {
 	return CreateVariableImpl(compilerModule, var->GetVariableType(), scope, var->GetVariableDesc(), 0, var,
-		var->IsArray() ? DynamicCast<CompilerArrayValue>(var)->GetArrayDimension() : 0,
 		/*var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : */nullptr);
 }
 
@@ -345,7 +344,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			}
 			else
 			{
-				COMPILER_ERR_MODULE_W("生成中间代码错误, 元素类型中的元素未设置值");
+				COMPILER_ERR_MODULE_W("生成中间代码错误, 元素类型中的元素未设置值", m->GetCompiler());
 			}
 		}
 		else if (assignTo && assignTo->IsRefrence())
@@ -428,7 +427,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	switch (opCode)
 	{
 	case InstructionOpCode::NONE:
-		COMPILER_ERR_MODULE_W("生成中间代码错误, 中间操作码为空", m->GetName().c_str());
+		COMPILER_ERR_MODULE_W("生成中间代码错误, 中间操作码为空", m->GetCompiler(), m->GetName().c_str());
 		break;
 	case InstructionOpCode::MOV:
 	case InstructionOpCode::MOVPV:
@@ -546,7 +545,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		}
 			break;
 		default:
-			COMPILER_ERR_MODULE_W("生成<%s>中间代码错误, 中间操作码为空", GetInstructionString(opCode), m->GetName().c_str());
+			COMPILER_ERR_MODULE_W("生成<%s>中间代码错误, 中间操作码为空", m->GetCompiler(), GetInstructionString(opCode), m->GetName().c_str());
 			break;
 	}
 }

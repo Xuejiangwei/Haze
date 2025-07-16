@@ -4,7 +4,6 @@
 #include "CompilerModule.h"
 #include "CompilerFunction.h"
 #include "CompilerHelper.h"
-#include "HazeCompilerPointerValue.h"
 #include "CompilerClassValue.h"
 
 CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name, V_Array<CompilerClass*>& parentClass,
@@ -183,7 +182,7 @@ int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HStr
 			}
 		}
 
-		COMPILER_ERR_MODULE_W("未能在类<%s>中找到<%s>成员", s.c_str(), memberName.c_str());
+		COMPILER_ERR_MODULE_W("未能在类<%s>中找到<%s>成员", m_Module->GetCompiler(), s.c_str(), memberName.c_str());
 	}
 
 	return index;
@@ -289,7 +288,7 @@ void CompilerClass::ParseIntermediateClass(HAZE_IFSTREAM& stream, CompilerModule
 		for (x_uint64 j = 0; j < parentClass->m_Data.size(); ++j)
 		{
 			stream >> str;
-			HazeVariableType::StringStreamFrom<Compiler>(stream, m->GetCompiler(), &Compiler::GetSymbolTableNameAddress);
+			HazeVariableType::StringStreamFrom(stream);
 			stream >> ui32 >> ui64;
 		}
 	}

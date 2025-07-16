@@ -1163,7 +1163,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Array(x_uint32 typeId)
 	m_DefineVariable.Type.TypeId = typeId;
 
 	x_uint32 tempLineCount = m_LineCount;
-	x_uint64 arrayDimension = 0;
+	x_uint32 arrayDimension = 0;
 
 	while (TokenIs(HazeToken::Array))
 	{
@@ -1195,13 +1195,13 @@ Unique<ASTBase> Parse::ParseVariableDefine_Array(x_uint32 typeId)
 			Unique<ASTBase> expression = ParseExpression();
 
 			return MakeUnique<ASTVariableDefine_Array>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
-				m_DefineVariable, Move(expression), arrayDimension);
+				m_DefineVariable, Move(expression));
 		}
 		else
 		{
 			temp.Reset();
 			return MakeUnique<ASTVariableDefine_Array>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(),
-				m_DefineVariable, nullptr, arrayDimension);
+				m_DefineVariable, nullptr);
 		}
 	}
 
@@ -1330,7 +1330,7 @@ Unique<ASTBase> Parse::ParseVariableDefine_Function(x_uint32 templateTypeId)
 				return ParseClosure(templateTypeId);
 			}
 		}
-		else
+		else if (!m_IsParseClassData_Or_FunctionParam)
 		{
 			PARSE_ERR_W("函数变量<%s>定义错误, 需要赋予初始化值或空指针", m_DefineVariable.Name.c_str());
 		}
@@ -1355,17 +1355,22 @@ Unique<ASTBase> Parse::ParseVariableDefine_ObjectBase(x_int32 templateTypeId)
 			m_DefineVariable.Type.BaseType = HazeValueType::ObjectBase;
 			m_DefineVariable.Type.TypeId = templateTypeId;
 
+			TempCurrCode temp(this);
 			if (ExpectNextTokenIs_NoParseError(HazeToken::Assign))
 			{
 				GetNextToken();
 				Unique<ASTBase> expression = ParseExpression();
 				return MakeUnique<ASTVariableDefine_ObjectBase>(m_Compiler, SourceLocation(tempLineCount),
-					m_StackSectionSignal.top(), m_DefineVariable, expression);
+					m_StackSectionSignal.top(), m_DefineVariable, Move(expression));
 			}
-			else
+			else if(!m_IsParseClassData_Or_FunctionParam)
 			{
 				PARSE_ERR_W("基本类型变量<%s>定义错误, 需要赋予初始化值或空指针", m_DefineVariable.Name.c_str());
 			}
+
+			temp.Reset();
+			return MakeUnique<ASTVariableDefine_ObjectBase>(m_Compiler, SourceLocation(tempLineCount),
+				m_StackSectionSignal.top(), m_DefineVariable, nullptr);
 		}
 	}
 
@@ -2738,7 +2743,7 @@ void Parse::GetValueType(HazeVariableType& inType)
 	case HazeToken::Hash:
 		return;
 	default:
-		PARSE_ERR_W("获得变量类型错误");
+		PARSE_ERR_W("获得<%s>变量类型错误", m_CurrLexeme.c_str());
 		break;
 	}
 }

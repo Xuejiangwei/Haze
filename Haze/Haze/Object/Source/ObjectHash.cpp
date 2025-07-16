@@ -149,7 +149,7 @@ void ObjectHash::GetLength(HAZE_OBJECT_CALL_PARAM)
 	GET_PARAM_START();
 	GET_OBJ(obj);
 
-	SET_RET_BY_TYPE(HazeValueType::UInt64, obj->m_Length);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::UInt64), obj->m_Length);
 }
 
 void ObjectHash::Get(HAZE_OBJECT_CALL_PARAM)
@@ -186,7 +186,7 @@ void ObjectHash::Get(HAZE_OBJECT_CALL_PARAM)
 		}
 	}
 
-	SET_RET_BY_TYPE(obj->GetValueBaseType().BaseType, value);
+	SET_RET_BY_TYPE(obj->GetValueBaseType(), value);
 	//HAZE_LOG_INFO("Array Get <%d>\n", offset);
 }
 

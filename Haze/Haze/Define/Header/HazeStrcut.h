@@ -9,7 +9,7 @@
 	#include "JwHeader.h"
 #endif
 
-#define HAZE_VAR_BASE_TYPE(TYPE) HazeVariableType(TYPE, HAZE_TYPE_ID(TYPE))
+#define HAZE_VAR_TYPE(TYPE) HazeVariableType(TYPE, HAZE_TYPE_ID(TYPE))
 
 enum class HazeSectionSignal : x_uint8
 {
@@ -97,15 +97,14 @@ struct HazeVariableType
 	}
 
 	template<typename Class>
-	void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(x_uint32&)) { StringStream(pThis, stringCall, typeCall, *this); }
+	void StringStream(Class* pThis, void(Class::* typeCall)(x_uint32&)) { StringStream(pThis, typeCall, *this); }
 
 	/*bool HasCustomName(const HazeDefineType& type)
 	{
 		return  type.CustomName && !type.CustomName->empty();
 	}*/
 
-	template<typename Class>
-	static HazeVariableType StringStreamFrom(HAZE_IFSTREAM& stream, Class* pThis, const HString*(Class::* stringCall)(const HString&))
+	static HazeVariableType StringStreamFrom(HAZE_IFSTREAM& stream)
 	{
 		HazeVariableType type;
 		stream >> *(x_uint32*)(&type.BaseType);
@@ -120,7 +119,7 @@ struct HazeVariableType
 	}
 
 	template<typename Class>
-	static void StringStream(Class* pThis, void(Class::* stringCall)(const HString*&), void(Class::* typeCall)(x_uint32&), HazeVariableType& type)
+	static void StringStream(Class* pThis, void(Class::* typeCall)(x_uint32&), HazeVariableType& type)
 	{
 		(pThis->*typeCall)((x_uint32&)type.BaseType);
 		(pThis->*typeCall)((x_uint32&)type.TypeId);

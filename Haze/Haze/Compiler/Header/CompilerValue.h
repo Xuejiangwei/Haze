@@ -20,7 +20,7 @@ public:
 
 	Share<CompilerValue> GetShared() { return shared_from_this(); }
 
-	HazeValueType GetBaseType() const { return m_Type.BaseType; }
+	virtual HazeValueType GetBaseType() const { return m_Type.BaseType; }
 	x_uint32 GetTypeId() const { return m_Type.TypeId; }
 	HazeVariableType GetVariableType() const { return m_Type; }
 

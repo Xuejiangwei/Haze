@@ -172,14 +172,13 @@ class ASTVariableDefine_Array : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint64 dimension);
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression);
 	virtual ~ASTVariableDefine_Array() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
 
 protected:
 	TemplateDefineTypes m_TemplateTypes;
-	x_uint64 m_ArrayDimension;
 };
 
 //变量定义 函数
@@ -201,7 +200,7 @@ class ASTVariableDefine_ObjectBase : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_ObjectBase(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression);
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression);
 	virtual ~ASTVariableDefine_ObjectBase() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;

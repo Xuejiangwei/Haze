@@ -42,7 +42,7 @@ private:
 		dst = (T)StringToStandardType<m_Type>(m_CurrLexeme);
 	};
 
-	void Parse_I_Symbol();
+	//void Parse_I_Symbol();
 
 	void Parse_I_TypeInfo();
 

@@ -25,6 +25,8 @@ private:
 
 	static void Set(HAZE_OBJECT_CALL_PARAM);
 
+	static void GetAddress(HAZE_OBJECT_CALL_PARAM);
+
 private:
 	HazeValueType m_Type;
 	HazeValue m_Value;

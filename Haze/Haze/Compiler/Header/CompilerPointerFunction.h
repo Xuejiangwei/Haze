@@ -1,8 +1,8 @@
 #pragma once
 
-#include "HazeCompilerPointerValue.h"
+#include "CompilerValue.h"
 
-class CompilerPointerFunction : public HazeCompilerPointerValue
+class CompilerPointerFunction : public CompilerValue
 {
 	friend class CompilerModule;
 public:

@@ -59,6 +59,7 @@ x_uint32 GetSizeByHazeType(HazeValueType type)
 		case HazeValueType::Int64:
 		case HazeValueType::UInt64:
 		case HazeValueType::Float64:
+		case HazeValueType::Address:
 		case HazeValueType::Refrence:
 		case HazeValueType::Array:
 		case HazeValueType::String:

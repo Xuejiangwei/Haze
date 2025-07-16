@@ -411,8 +411,8 @@ public:
 		if (oper.size() == 1)
 		{
 			auto size = GetOperSize(stack, oper[0]);
-			auto address = GetOperatorAddress(stack, oper[0]);
-			memcpy(address, &stack->m_StackMain[stack->m_ESP - size], size);
+			/*auto address = GetOperatorAddress(stack, oper[0]);
+			memcpy(address, &stack->m_StackMain[stack->m_ESP - size], size);*/
 			
 			stack->m_ESP -= size;
 		}

@@ -48,6 +48,14 @@ x_uint32 HazeTypeInfoMap::RegisterType(const HString& moduleName, HazeComplexTyp
 		case HazeValueType::Array:
 		{
 			auto complexType = (HazeComplexTypeInfo::Array*)info;
+			
+			if (complexType->Dimension > 1)
+			{
+				HazeComplexTypeInfo elementInfo = *info;
+				elementInfo._Array.Dimension -= 1;
+				info->_Array.TypeId1 = RegisterType(moduleName, &elementInfo);
+			}
+
 			str += H_TEXT("Array<");
 			str += m_Map[complexType->TypeId1].Name;
 			str += H_TEXT(">") + ToHazeString(complexType->Dimension);

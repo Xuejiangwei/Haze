@@ -44,10 +44,10 @@ Share<CompilerValue> CompilerFunction::GetParamVariableRightToLeft(x_uint32 inde
 	return m_Params[index].second;
 }
 
-Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
+Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
-	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, arrayDimension, params);
+	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, params);
 }
 
 Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue)
@@ -93,7 +93,7 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeVariableType
 	int offset = 0;
 	for (auto& var : m_TempRegisters)
 	{
-		if (var.Value->GetVariableType() == type)
+		if (var.Value->GetVariableType() == type && var.Value.use_count() == 1)
 		{
 			return var.Value;
 		}

@@ -179,15 +179,15 @@ const x_HChar* GetEnumEndHeader()
 	return ENUM_END_HEADER;
 }
 
-const x_HChar* GetSymbolBeginHeader()
-{
-	return SYMBOL_BEGIN;
-}
-
-const x_HChar* GetSymbolEndHeader()
-{
-	return SYMBOL_END;
-}
+//const x_HChar* GetSymbolBeginHeader()
+//{
+//	return SYMBOL_BEGIN;
+//}
+//
+//const x_HChar* GetSymbolEndHeader()
+//{
+//	return SYMBOL_END;
+//}
 
 const x_HChar* GetTypeInfoFunctionBeginHeader()
 {

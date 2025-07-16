@@ -92,7 +92,7 @@ void BackendParse::Parse()
 	auto& refModules = m_VM->GetReferenceModules();
 	HString codeText;
 
-	{
+	/*{
 		HAZE_TO_DO(之后考虑删除中间符号文件去使用引用类型表里的字符串);
 		HAZE_IFSTREAM fs(GetIntermediateModuleFile(HAZE_INTER_SYMBOL_TABLE));
 		fs.imbue(std::locale("chs"));
@@ -100,7 +100,7 @@ void BackendParse::Parse()
 		m_CurrCode = codeText.c_str();
 		Parse_I_Symbol();
 		fs.close();
-	}
+	}*/
 
 	{
 		HAZE_IFSTREAM fs(GetIntermediateModuleFile(HAZE_TYPE_INFO_TABLE));
@@ -169,19 +169,19 @@ void BackendParse::GetNextLexmeAssign_HazeStringCustomClassName(const HString*& 
 	}
 }
 
-void BackendParse::Parse_I_Symbol()
-{
-	GetNextLexeme();
-	if (m_CurrLexeme == GetSymbolBeginHeader())
-	{
-		GetNextLexeme();
-		while (m_CurrLexeme != GetSymbolEndHeader())
-		{
-			m_InterSymbol.insert(m_CurrLexeme);
-			GetNextLexeme();
-		}
-	}
-}
+//void BackendParse::Parse_I_Symbol()
+//{
+//	GetNextLexeme();
+//	if (m_CurrLexeme == GetSymbolBeginHeader())
+//	{
+//		GetNextLexeme();
+//		while (m_CurrLexeme != GetSymbolEndHeader())
+//		{
+//			m_InterSymbol.insert(m_CurrLexeme);
+//			GetNextLexeme();
+//		}
+//	}
+//}
 
 void BackendParse::Parse_I_TypeInfo()
 {
@@ -194,7 +194,7 @@ void BackendParse::Parse_I_TypeInfo()
 		{
 			number = StringToStandardType<x_uint32>(m_CurrLexeme);
 
-			x_int32 count;
+			x_uint32 count;
 			GetNextLexmeAssign_StandardType(count);
 			V_Array<x_uint32> param(count);
 			for (x_uint32 i = 0; i < count; i++)
@@ -232,6 +232,7 @@ void BackendParse::Parse_I_TypeInfo()
 					break;
 				case HazeValueType::Class:
 				case HazeValueType::Enum:
+					m_InterSymbol.insert(name);
 					break;
 				case HazeValueType::Array:
 				{
@@ -357,9 +358,7 @@ void BackendParse::Parse_I_Code_GlobalTable()
 
 			//GetNextLexmeAssign_StandardType(table.Data[i].Size);
 
-			table.Data[i].Type.StringStream<BackendParse>(this,
-				&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
-				&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+			table.Data[i].Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 		}
 
 		/*GetNextLexeme();
@@ -473,9 +472,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 					//HazeDesc
 					GetNextLexmeAssign_StandardType(number);
 
-					classMember.Variable.Type.StringStream<BackendParse>(this,
-						&BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
-						&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+					classMember.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
 					GetNextLexmeAssign_CustomType<x_uint32>(classMember.Offset);
 					GetNextLexmeAssign_CustomType<x_uint32>(classMember.Size);
@@ -520,16 +517,14 @@ void BackendParse::Parse_I_Code_FunctionTable()
 				}
 				GetNextLexmeAssign_HazeString(functionData.Name);
 
-				functionData.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
-					&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+				functionData.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
 				GetNextLexeme();
 				while (m_CurrLexeme == GetFunctionParamHeader())
 				{
 					HazeDefineVariable param;
 					GetNextLexmeAssign_HazeString(param.Name);
-					param.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
-						&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+					param.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
 					functionData.Params.push_back(Move(param));
 					GetNextLexeme();
@@ -542,8 +537,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 					GetNextLexmeAssign_HazeString(var.Variable.Name);
 
-					var.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
-						&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+					var.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 					GetNextLexmeAssign_CustomType<x_uint32>(var.Size);
 					GetNextLexmeAssign_CustomType<x_uint32>(var.Line);
 
@@ -557,8 +551,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 					GetNextLexmeAssign_HazeString(data.Name);
 					BackendParse::GetNextLexmeAssign_CustomType<x_uint32>(data.Offset);
-					data.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
-						&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+					data.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
 					functionData.TempRegisters.push_back(Move(data));
 					GetNextLexeme();
@@ -619,8 +612,7 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 	GetNextLexmeAssign_CustomType<x_uint32>(data.Scope);
 	GetNextLexmeAssign_CustomType<x_uint32>(data.Desc);
 
-	data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_HazeStringCustomClassName,
-		&BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+	data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
 	if (data.Desc == HazeDataDesc::ConstantString)
 	{

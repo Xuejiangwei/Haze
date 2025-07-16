@@ -10,7 +10,6 @@
 #include "CompilerHelper.h"
 #include "CompilerModule.h"
 #include "CompilerValue.h"
-#include "HazeCompilerPointerValue.h"
 #include "CompilerPointerFunction.h"
 #include "CompilerClosureFunction.h"
 #include "CompilerClassValue.h"
@@ -51,7 +50,7 @@ struct PushTempRegister
 		Compiler->GetInsertBlock()->PushIRCode(Hss.str());
 		Compiler->ResetTempRegister(UseTempRegisters);
 
-		if (DefineType && RetValue)
+		if (DefineType && !IsVoidType(DefineType->BaseType) && RetValue)
 		{
 			*RetValue = Compiler->CreateFunctionRet(*DefineType);
 		}
@@ -186,7 +185,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			for (int i = 0; i < ui64; i++)
 			{
 				stream >> str;
-				HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+				HazeVariableType::StringStreamFrom(stream);
 			}
 		}
 	} 
@@ -293,12 +292,12 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		{
 			HazeDataDesc desc;
 			stream >> classData[j].first >> *((x_uint32*)(&desc));
-			auto memberType = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+			auto memberType = HazeVariableType::StringStreamFrom(stream);
 
 			x_uint32 ui32;
 			stream >> ui32 >> ui64;
 
-			classData[j].second = m_Compiler->CreateClassVariable(this, memberType, nullptr, 0, nullptr);
+			classData[j].second = m_Compiler->CreateClassVariable(this, memberType, nullptr, nullptr);
 			classData[j].second->SetDataDesc(desc);
 
 			HAZE_TO_DO("需要考虑数组和函数, 以及函数数组和函数中有数组参数的情况");
@@ -342,7 +341,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		if (isNormalFunc)
 		{
 			stream >> name;
-			auto type = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+			auto type = HazeVariableType::StringStreamFrom(stream);
 
 			params.clear();
 
@@ -351,7 +350,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			{
 				params.resize(params.size() + 1);
 				stream >> params.back().Name;
-				params.back().Type = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+				params.back().Type = HazeVariableType::StringStreamFrom(stream);
 				stream >> str;
 			}
 
@@ -380,7 +379,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			stream >> functionAttrType;
 
 			stream >> name;
-			auto type = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+			auto type = HazeVariableType::StringStreamFrom(stream);
 
 			params.clear();
 
@@ -389,7 +388,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			{
 				params.resize(params.size() + 1);
 				stream >> params.back().Name;
-				params.back().Type = HazeVariableType::StringStreamFrom<Compiler>(stream, m_Compiler, &Compiler::GetSymbolTableNameAddress);
+				params.back().Type = HazeVariableType::StringStreamFrom(stream);
 				stream >> str;
 			}
 
@@ -973,7 +972,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	V_Array<HazeVariableType> funcTypes(params.size());
 	if (!callFunction && !pointerFunc && !advancFunctionInfo)
 	{
-		COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", GetName().c_str(), callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"));
+		COMPILER_ERR_MODULE_W("生成函数调用错误, <%s>为空", m_Compiler, GetName().c_str(), callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"));
 	}
 	else
 	{
@@ -991,14 +990,14 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 			{
 				if (i == (x_int64)params.size() - 1 && !IsMultiVariableType(type.BaseType) && paramSize != params.size())
 				{
-					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", GetName().c_str(),
+					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", m_Compiler, GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
 				}
 				else if (IsMultiVariableType(type.BaseType))
 				{
 					if (params.size() - i < paramSize)
 					{
-						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误,  第<%d>个参数枚举类型不匹配", GetName().c_str(),
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误,  第<%d>个参数枚举类型不匹配", m_Compiler, GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
@@ -1008,7 +1007,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					if (enumValue && enumValue->GetEnum() && enumValue->GetEnum()->GetTypeId() == type.TypeId) {}
 					else
 					{
-						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数枚举类型不匹配", GetName().c_str(),
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数枚举类型不匹配", m_Compiler, GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
@@ -1020,13 +1019,13 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					if (hazeClass && hazeClass->IsParentClass(type)) {}
 					else
 					{
-						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<>类", GetName().c_str(),
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<>类", m_Compiler, GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
 					}
 				}
 				else if (!IsMultiVariableType(type.BaseType))
 				{
-					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", GetName().c_str(),
+					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", m_Compiler, GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
 						params.size() - 1 - i);
 				}
@@ -1046,7 +1045,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					}
 					else
 					{
-						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数引用类型不匹配", GetName().c_str(),
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数引用类型不匹配", m_Compiler, GetName().c_str(),
 							callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
 							params.size() - 1 - i);
 					}
@@ -1068,7 +1067,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 			if ((IsMultiVariableType(lastParam.BaseType) && params.size() + 1 < paramSize) || (!IsMultiVariableType(lastParam.BaseType) && params.size() != paramSize))
 			{
-				COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 函数个数不匹配", GetName().c_str(),
+				COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 函数个数不匹配", m_Compiler, GetName().c_str(),
 					callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"));
 			}
 		}
@@ -1149,7 +1148,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 	return ret;
 }
 
-Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo* functionInfo, x_uint16 index, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
+Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFunctionInfo* functionInfo, x_uint16 index, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo, HazeVariableType* expectType)
 {
 	HAZE_STRING_STREAM hss;
 	x_uint32 size = 0;
@@ -1166,20 +1165,40 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 		}
 	}
 
+	HazeVariableType funcType = functionInfo->Type;
+	if (thisPointerTo->IsObjectBase())
 	{
-		PushTempRegister pushTempRegister(hss, m_Compiler, this, nullptr, nullptr);
+		static AdvanceFunctionInfo* s_objectBaseGetFunction = nullptr;
+		if (!s_objectBaseGetFunction)
+		{
+			s_objectBaseGetFunction = m_Compiler->GetAdvanceFunctionInfo(HazeValueType::ObjectBase, HAZE_ADVANCE_GET_FUNCTION);
+		}
+
+		if (functionInfo == s_objectBaseGetFunction)
+		{
+			funcType = HAZE_VAR_TYPE((HazeValueType)m_Compiler->GetTypeInfoMap()->GetTypeById(thisPointerTo->GetVariableType().TypeId)->_ObjectBase.TypeId1);
+		}
+	}
+
+	Share<CompilerValue> ret = nullptr;
+	{
+		PushTempRegister pushTempRegister(hss, m_Compiler, this, &funcType, &ret);
 		FunctionCall(hss, nullptr, nullptr, functionInfo, size, params, thisPointerTo);
 		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, nullptr, thisPointerTo, index);
 	}
-	
 
-	auto ret = Compiler::GetRegister(RET_REGISTER);
-
-	if (thisPointerTo->IsObjectBase())
+	if (!ret && expectType)
 	{
-		CompilerValueTypeChanger::Reset(ret, HAZE_VAR_BASE_TYPE((HazeValueType)m_Compiler->GetTypeInfoMap()->GetTypeById(thisPointerTo->GetVariableType().TypeId)->_ObjectBase.TypeId1));
+		if (!IsVoidType(expectType->BaseType))
+		{
+			ret = m_Compiler->GetRetRegister(expectType->BaseType, expectType->TypeId);
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("复杂类型函数指针调用失败, 未能输入非空的期望类型!\n");
+		}
 	}
-
+	
 	return ret;
 }
 

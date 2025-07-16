@@ -3,7 +3,6 @@
 #include "CompilerHelper.h"
 #include "CompilerModule.h"
 #include "CompilerValue.h"
-#include "HazeCompilerPointerValue.h"
 #include "CompilerClassValue.h"
 #include "CompilerArrayValue.h"
 #include "CompilerFunction.h"
@@ -130,7 +129,7 @@ void CompilerBlock::PushIRCode(const HString& code)
 }
 
 Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, HazeVariableScope scope,
-	Share<CompilerValue> refValue, x_uint64 arrayDimension, TemplateDefineTypes* params)
+	Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
 	for (auto& iter : m_Allocas)
 	{
@@ -168,8 +167,7 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 	}
 
 	HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
-	Share<CompilerValue> allocaValue = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, scope, desc, count,
-		refValue, arrayDimension, params);
+	Share<CompilerValue> allocaValue = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, scope, desc, count, refValue, params);
 	m_Allocas.push_back({ defineVar.Name, allocaValue });
 
 	m_ParentFunction->AddLocalVariable(allocaValue, line);

@@ -11,7 +11,7 @@
 #include "CompilerClosureFunction.h"
 #include "CompilerValue.h"
 #include "CompilerElementValue.h"
-#include "HazeCompilerPointerValue.h"
+#include "CompilerPointerFunction.h"
 #include "CompilerClassValue.h"
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
@@ -62,7 +62,7 @@ ASTNumber::ASTNumber(Compiler* compiler, const SourceLocation& location, HazeVal
 
 Share<CompilerValue> ASTNumber::CodeGen(Share<CompilerValue> inferValue)
 {
-	if (inferValue && m_DefineVariable.Type != inferValue->GetVariableType())
+	if (inferValue && m_DefineVariable.Type.BaseType != inferValue->GetBaseType())
 	{
 		AST_ERR_W("数字<%s>变量类型与赋值变量不符", HazeValueNumberToString(m_DefineVariable.Type.BaseType, m_Value).c_str());
 	}
@@ -221,17 +221,27 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 
 	V_Array<Share<CompilerValue>> param;
 
-	for (int i = (int)m_FunctionParam.size() - 1; i >= 0; i--)
 	{
-		param.push_back(m_FunctionParam[i]->CodeGen(nullptr));
-		if (!param.back())
+		auto retRegister = m_Compiler->GetRegister(RET_REGISTER);
+		for (int i = (int)m_FunctionParam.size() - 1; i >= 0; i--)
 		{
-			AST_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误", currModule->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
-			return nullptr;
+			auto value = m_FunctionParam[i]->CodeGen(nullptr);
+			if (value == retRegister)
+			{
+				value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value), value);
+			}
+
+			param.push_back(value);
+			if (!param.back())
+			{
+				AST_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误", currModule->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
+				return nullptr;
+			}
 		}
 	}
 
 	Share<CompilerValue> ret = nullptr;
+	HazeVariableType funcType;
 	if (function)
 	{
 		if (function->GetClass())
@@ -246,6 +256,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 			}
 		}
 
+		funcType = function->GetFunctionType();
 		ret = m_Compiler->CreateFunctionCall(function, param, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 	}
 	else
@@ -261,6 +272,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 		{
 			if (functionValue->IsFunction())
 			{
+				funcType = DynamicCast<CompilerPointerFunction>(functionValue)->GetFunctionType();
 				ret = m_Compiler->CreateFunctionCall(functionValue, param);
 			}
 			else if (functionValue->IsClosure())
@@ -294,7 +306,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 		}
 	}
 
-	if (!ret)
+	if (!ret && inferValue)
 	{
 		AST_ERR_W("生成函数调用<%s>错误, 检查函数名或 ( 符号是否与函数名在同一行", m_Name.c_str());
 	}
@@ -472,8 +484,8 @@ Share<CompilerValue> ASTVariableDefine_Class::CodeGen(Share<CompilerValue> infer
 }
 
 ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint64 dimension)
-	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_ArrayDimension(dimension)
+	const HazeDefineVariable& defineVar, Unique<ASTBase> expression)
+	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression))/*, m_ArrayDimension(dimension)*/
 {
 	/*if (templateTypes.Types.size() > 0)
 	{
@@ -485,7 +497,7 @@ Share<CompilerValue> ASTVariableDefine_Array::CodeGen(Share<CompilerValue> infer
 {
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
-		m_DefineVariable, m_Location.Line, nullptr, m_ArrayDimension);
+		m_DefineVariable, m_Location.Line, nullptr);
 
 	return TryAssign(var, H_TEXT("数组变量"));
 }
@@ -518,7 +530,7 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen(Share<CompilerValue> in
 }
 
 ASTVariableDefine_ObjectBase::ASTVariableDefine_ObjectBase(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase>& expression)
+	const HazeDefineVariable& defineVar, Unique<ASTBase> expression)
 	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression))
 {
 }
@@ -735,15 +747,15 @@ Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 
 	for (x_uint64 i = 0; i < m_CountArrayExpression.size(); i++)
 	{
-		if (dynamic_cast<ASTNumber*>(m_CountArrayExpression[i].get()))
+		//if (dynamic_cast<ASTNumber*>(m_CountArrayExpression[i].get()))
 		{
 			countValue[i] = m_CountArrayExpression[i]->CodeGen(nullptr);
 		}
-		else
+		/*else
 		{
 			AST_ERR_W("生成类型错误, 数组初始化长度只能是常量");
 			return nullptr;
-		}
+		}*/
 	}
 
 	Share<CompilerValue> value = m_Compiler->CreateNew(m_DefineVariable.Type, &countValue);
@@ -808,7 +820,7 @@ Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 	{
 		if (m_ConstructorParam.size() == 1)
 		{
-			CompilerValueTypeChanger::Reset(value, HAZE_VAR_BASE_TYPE(value->GetBaseType()));
+			CompilerValueTypeChanger::Reset(value, HAZE_VAR_TYPE(value->GetBaseType()));
 			m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, HAZE_OBJECT_BASE_CONSTRUCTOR, { m_ConstructorParam[0]->CodeGen(nullptr) }, value);
 		}
 		else

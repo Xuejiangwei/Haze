@@ -39,7 +39,7 @@ using HString = std::wstring;
 #define HAZE_FILE_PATH_BIN				H_TEXT("Bin\\")
 #define HAZE_FILE_MAIN_BIN				H_TEXT("Main.Hzb")
 #define HAZE_MODULE_PATH_CONBINE		H_TEXT("·")
-#define HAZE_INTER_SYMBOL_TABLE			H_TEXT("@@中间符号")
+//#define HAZE_INTER_SYMBOL_TABLE			H_TEXT("@@中间符号")
 #define HAZE_TYPE_INFO_TABLE			H_TEXT("@@类型信息")
 
 #define HAZE_LOAD_DLL_SUFFIX			H_TEXT(".dll")
@@ -70,8 +70,8 @@ using HString = std::wstring;
 #define ENUM_START_HEADER				H_TEXT("EnumStart")
 #define ENUM_END_HEADER					H_TEXT("EnumEnd")
 
-#define SYMBOL_BEGIN					H_TEXT("SymbolBegin")
-#define SYMBOL_END						H_TEXT("SymbolEnd")
+//#define SYMBOL_BEGIN					H_TEXT("SymbolBegin")
+//#define SYMBOL_END						H_TEXT("SymbolEnd")
 
 #define TYPE_INFO_FUNC_PARAM_BEGIN		H_TEXT("TypeInfoFunctionBegin")
 #define TYPE_INFO_FUNC_PARAM_END		H_TEXT("TypeInfoFunctionEnd")

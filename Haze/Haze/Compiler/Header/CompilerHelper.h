@@ -16,7 +16,7 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 
 Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeVariableType& type,
 	HazeVariableScope scope, HazeDataDesc desc, int count, Share<CompilerValue> refValue = nullptr,
-	x_uint64 arrayDimension = 0, TemplateDefineTypes* params = nullptr);
+	TemplateDefineTypes* params = nullptr);
 
 Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var);
 

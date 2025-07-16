@@ -192,15 +192,14 @@ public:
 
 public:
 	Share<CompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
-		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, x_uint64 arrayDimension = 0, x_uint32 typeId = 0);
+		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, x_uint32 typeId = 0);
 
 	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
 		Share<CompilerValue> RefValue = nullptr);
 
 	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, int Line, Share<CompilerValue> RefValue = nullptr);
 
-	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeVariableType& Var, Share<CompilerValue> RefValue = nullptr,
-		x_uint64 arrayDimension = 0, TemplateDefineTypes* Params = nullptr);
+	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeVariableType& Var, Share<CompilerValue> RefValue = nullptr, TemplateDefineTypes* Params = nullptr);
 
 	Share<CompilerValue> CreateLea(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 
@@ -242,7 +241,8 @@ public:
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr);
 
-	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName, const V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo);
+	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName, const V_Array<Share<CompilerValue>>& param,
+		Share<CompilerValue> thisPointerTo, HazeVariableType* expectType = nullptr);
 
 	Share<CompilerValue> CreateGetAdvanceElement(Share<CompilerElementValue> element);
 	Share<CompilerValue> CreateSetAdvanceElement(Share<CompilerElementValue> element, Share<CompilerValue> assignValue);
@@ -294,6 +294,8 @@ public:
 
 	x_uint32 GetSymbolTableNameTypeId(const HString& className) const;
 
+	AdvanceFunctionInfo* GetAdvanceFunctionInfo(HazeValueType advanceType, const HString& name);
+
 	Share<CompilerEnum> GetBaseModuleEnum(const HString& name);
 	Share<CompilerEnum> GetBaseModuleEnum(x_uint32 typeId);
 
@@ -322,7 +324,6 @@ private:
 	HashMap<HString, Unique<CompilerModule>> m_CompilerModules;
 	HashMap<HString, CompilerModule*> m_CompilerBaseModules;
 
-	//����
 	HashMap<bool, Share<CompilerValue>> m_BoolConstantValues;
 
 	HashMap<x_int8, Share<CompilerValue>> m_Int8_ConstantValues;
@@ -337,7 +338,7 @@ private:
 	HashMap<x_float32, Share<CompilerValue>> m_Float32_ConstantValues;
 	HashMap<x_float64, Share<CompilerValue>> m_Float64_ConstantValues;
 
-	List<HString> m_CacheSymbols;
+	//List<HString> m_CacheSymbols;
 	HashMap<HashHString, Pair<Share<CompilerClass>, x_uint32>> m_SymbolTable;
 
 	//BaseBlock
