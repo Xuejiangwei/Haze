@@ -6,8 +6,8 @@
 
 #include "HazeDebugger.h"
 
-extern HashMap<InstructionOpCode, void (*)(HazeStack* Stack)> g_InstructionProcessor;
 extern Unique<HazeDebugger> g_Debugger;
+extern const A_Array<void(*)(HazeStack* stack), ((x_uint32)InstructionOpCode::LINE + 1)> g_InstructionProcessor;
 
 HazeStack::HazeStack(HazeVM* vm) 
 	: m_VM(vm), m_PC(0), m_EBP(0), m_ESP(0)
@@ -29,22 +29,12 @@ void HazeStack::RunGlobalDataInit(x_int64 startPC, x_int64 endPC)
 	//bool isConstructor = endPC - startPC > 1;
 	for (m_PC = startPC; true; m_PC++)
 	{
-		auto iter = g_InstructionProcessor.find(m_VM->m_Instructions[m_PC].InsCode);
-		if (iter != g_InstructionProcessor.end())
-		{
-			iter->second(this);
-		}
-		else
-		{
-			HAZE_LOG_ERR_W("<初始化全局变量错误>："  H_TEXT("!\n"));
-			return;
-		}
+		g_InstructionProcessor[(x_uint32)m_VM->m_Instructions[m_PC].InsCode](this);
 
 		if (m_PC == endPC - 1)
 		{
 			break;
 		}
-
 	}
 
 	m_PC = pc;
@@ -111,15 +101,7 @@ void HazeStack::Run(bool isHazeCall)
 			}
 		}
 
-		auto iter = g_InstructionProcessor.find(m_VM->m_Instructions[m_PC].InsCode);
-		if (iter != g_InstructionProcessor.end())
-		{
-			iter->second(this);
-		}
-		else
-		{
-			return;
-		}
+		g_InstructionProcessor[(x_uint32)m_VM->m_Instructions[m_PC].InsCode](this);
 
 		if (isHazeCall && m_CallHazeStack.size() == 0)
 		{
@@ -132,9 +114,16 @@ void HazeStack::Run(bool isHazeCall)
 
 void HazeStack::PCStepInc()
 {
+	static x_uint64 pcRunTimes = 0;
+
 	++m_PC;
 
-	HazeMemory::GetMemory()->TryGC();
+	// 假设每条字节码运行平均花费1.5微秒, 暂时10秒检测一次, 则大约运行30万次字节码GC一次
+	if (++pcRunTimes > (10 * 1000 * 1000  * 2 / 3))
+	{
+		HazeMemory::GetMemory()->TryGC();
+		pcRunTimes = 0;
+	}
 }
 
 void HazeStack::InitStackRegister()
@@ -256,60 +245,4 @@ bool HazeStack::PopGCTempRegister(void* address)
 		return true;
 	}
 	return false;
-}
-
-void HazeStack::OnNewSignInternal(TemplateDefineTypes* type)
-{
-	/*for (x_uint64 i = 0; i < type->Types.size(); i++)
-	{
-		auto oper = m_VM->m_Instructions[m_PC++].Operator[0];
-		if (IsNoneType(oper.Variable.Type.BaseType))
-		{
-			m_NewSignType.Types[i].Defines = MakeShare<TemplateDefineTypes>();
-			m_NewSignType.Types[i].Defines->Types.resize(oper.Extra.SignData.TemplateCount);
-			OnNewSignInternal(m_NewSignType.Types[i].Defines.get());
-		}
-		else
-		{
-			m_NewSignType.Types[i].Type = MakeShare<HazeNewDefineType>();
-			m_NewSignType.Types[i].Type->BaseType = oper.Variable.Type;
-			m_NewSignType.Types[i].Type->ArrayDimension = oper.Extra.SignData.ArrayDimension;
-		}
-	}*/
-}
-
-void HazeStack::OnNewSign()
-{
-	/*auto oper = m_VM->m_Instructions[m_PC++].Operator[0];
-	m_NewSignType.Types.resize(oper.Extra.SignData.TemplateCount);
-	OnNewSignInternal(&m_NewSignType);
-	m_PC--;*/
-
-	/*auto oper = m_VM->m_Instructions[m_PC].Operator[0];
-	m_NewSignType.Type = oper.Variable.Type;
-	m_NewSignType.Extra.ArrayDimensionAndInitLength.resize(oper.Extra.SignData);
-		
-	if (m_NewSignType.Extra.ArrayDimensionAndInitLength.size() > 0)
-	{
-		for (x_uint64 i = 0; i < m_NewSignType.Extra.ArrayDimensionAndInitLength.size(); i++)
-		{
-			oper = m_VM->m_Instructions[m_PC + i + 1].Operator[0];
-			m_NewSignType.Extra.ArrayDimensionAndInitLength[i] = oper.Extra.SignData;
-		}
-	}
-	else if (IsHashType(m_NewSignType.Type.BaseType))
-	{
-		m_NewSignType.Extra.HashKeyAndValueType.KeyType = m_VM->m_Instructions[m_PC + 1].Operator[0].Variable.Type;
-		m_NewSignType.Extra.HashKeyAndValueType.ValueType = new NewSignData();
-
-		if (m_NewSignType.Extra.ArrayDimensionAndInitLength.size() > 0)
-		{
-			for (x_uint64 i = 0; i < m_NewSignType.Extra.ArrayDimensionAndInitLength.size(); i++)
-			{
-				oper = m_VM->m_Instructions[m_PC + i + 1].Operator[0];
-				m_NewSignType.Extra.ArrayDimensionAndInitLength[i] = oper.Extra.SignData;
-			}
-		}
-	}*/
-
 }

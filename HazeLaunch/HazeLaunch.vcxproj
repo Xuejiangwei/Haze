@@ -106,6 +106,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Define\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\HazeLog\Header</AdditionalIncludeDirectories>
       <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +127,8 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(SolutionDir)Haze\Header;$(SolutionDir)Haze\VM\Header;$(SolutionDir)Haze\Define\Header;$(SolutionDir)Haze\MetaData\Header;$(SolutionDir)Haze\HazeLog\Header</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

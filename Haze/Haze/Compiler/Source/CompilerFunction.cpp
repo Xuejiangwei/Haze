@@ -300,9 +300,14 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	hss << GetFunctionStartHeader() << " " << m_StartLine << HAZE_ENDL;
 
-	m_EntryBlock->GenI_Code(hss);
-
+	HashMap<CompilerBlock*, x_uint64> blockIndex;
+	m_EntryBlock->GenI_Code(hss, blockIndex);
+	
 	hss << GetFunctionEndHeader() << " " << m_EndLine << HAZE_ENDL << HAZE_ENDL;
+
+	hss << GetBlockFlowHeader() << " " << blockIndex.size() << HAZE_ENDL;
+	m_EntryBlock->GenI_Code_FlowGraph(hss, blockIndex);
+	hss << HAZE_ENDL;
 
 	m_EntryBlock->ClearLocalVariable();
 }

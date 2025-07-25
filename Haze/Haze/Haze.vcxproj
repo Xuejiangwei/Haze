@@ -106,7 +106,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -136,6 +136,7 @@
       xcopy /y /d "$(ProjectDir)Define\Header\HazeValue.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Define\Header\HazeTypeInfo.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Define\Header\HazeValueTypeTemplate"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeOpCodeTemplate"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)HazeLog\Header\HazeLog.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeLibraryDefine.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeStandardLibraryBase.h"  "$(OutDir)..\include\"
@@ -169,12 +170,13 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>HazePch.h</PrecompiledHeaderFile>
       <WholeProgramOptimization>false</WholeProgramOptimization>
       <Optimization>Full</Optimization>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -198,6 +200,7 @@
       xcopy /y /d "$(ProjectDir)Define\Header\HazeValue.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Define\Header\HazeTypeInfo.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Define\Header\HazeValueTypeTemplate"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)Define\Header\HazeOpCodeTemplate"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)HazeLog\Header\HazeLog.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeLibraryDefine.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Library\Header\HazeStandardLibraryBase.h"  "$(OutDir)..\include\"
@@ -263,6 +266,7 @@
     <ClCompile Include="Define\Source\HazeUtility.cpp" />
     <ClCompile Include="Define\Source\HazeValue.cpp" />
     <ClCompile Include="Define\Source\HazeInstruction.cpp" />
+    <ClCompile Include="JIT\Source\HazeJIT.cpp" />
     <ClCompile Include="Library\Source\HazeFileLib.cpp" />
     <ClCompile Include="Library\Source\HazeMemoryLib.cpp" />
     <ClCompile Include="Memory\Source\GCObjectList.cpp" />
@@ -304,6 +308,7 @@
     <ClInclude Include="Backend\Header\BackendParse.h" />
     <ClInclude Include="Backend\Header\ModuleUnit.h" />
     <ClInclude Include="Backend\Header\Optimizer.h" />
+    <ClInclude Include="Backend\Header\OptimizerDefine.h" />
     <ClInclude Include="Compiler\Header\CompilerBlock.h" />
     <ClInclude Include="Compiler\Header\Compiler.h" />
     <ClInclude Include="Compiler\Header\CompilerArrayValue.h" />
@@ -330,6 +335,7 @@
     <ClInclude Include="Debugger\Header\HazeDebugInfo.h" />
     <ClInclude Include="Define\Header\HazeBaseLibraryDefine.h" />
     <ClInclude Include="Define\Header\HazeCompare.h" />
+    <ClInclude Include="Define\Header\HazeCompilerVersion.h" />
     <ClInclude Include="Define\Header\HazeDebugDefine.h" />
     <ClInclude Include="Define\Header\HazeExecuteFile.h" />
     <ClInclude Include="Define\Header\HazeInstruction.h" />
@@ -348,6 +354,8 @@
     <ClInclude Include="Header\HazeHeader.h" />
     <ClInclude Include="Header\HazePch.h" />
     <ClInclude Include="Header\JwHeader.h" />
+    <ClInclude Include="JIT\Header\HazeJIT.h" />
+    <ClInclude Include="JIT\Header\HazeProfiler.h" />
     <ClInclude Include="Library\Header\HazeFileLib.h" />
     <ClInclude Include="Library\Header\HazeLibraryDefine.h" />
     <ClInclude Include="Library\Header\HazeMemoryLib.h" />
@@ -375,6 +383,7 @@
     <ClInclude Include="Memory\Header\MemoryFreeList.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Define\Header\HazeOpCodeTemplate" />
     <None Include="Define\Header\HazeTemplate.inl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

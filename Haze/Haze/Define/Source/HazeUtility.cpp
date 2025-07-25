@@ -163,6 +163,11 @@ const x_HChar* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
+const x_HChar* GetBlockFlowHeader()
+{
+	return BLOCK_FLOW_HEADER;
+}
+
 const x_HChar* GetClosureRefrenceVariableHeader()
 {
 	return CLOSURE_REF_VARIABLE;

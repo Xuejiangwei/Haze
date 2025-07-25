@@ -5,6 +5,7 @@
 #define HAZE_IFSTREAM std::wifstream
 
 using HString = std::wstring;
+using HStringView = std::wstring_view;
 
 #define HAZE_BINARY_STRING std::string
 #define HAZE_BINARY_OFSTREAM std::ofstream
@@ -65,6 +66,8 @@ using HString = std::wstring;
 #define FUNCTION_PARAM_HEADER			H_TEXT("Param")
 #define FUNCTION_START_HEADER			H_TEXT("FunctionStart")
 #define FUNCTION_END_HEADER				H_TEXT("FunctionEnd")
+
+#define BLOCK_FLOW_HEADER				H_TEXT("BlockFlows")
 
 #define CLOSURE_NAME_PREFIX				H_TEXT("Closure_")
 #define CLOSURE_REF_VARIABLE			H_TEXT("ClosureRef")

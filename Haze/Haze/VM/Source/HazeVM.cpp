@@ -359,6 +359,11 @@ x_uint32 HazeVM::GetClassSize(x_uint32 typeId)
 	return Class ? Class->Size : 0;
 }
 
+void HazeVM::JitFunction(const FunctionData* func)
+{
+	HAZE_TO_DO(JIT);
+}
+
 void HazeVM::InitRegisterObjectFunction()
 {
 #define REGISTER_OBJ_FUNCTION(TYPE, OBJ) m_Compiler->RegisterAdvanceClassInfo(HazeValueType::TYPE, { OBJ::GetAdvanceClassInfo(), (x_int16)m_FunctionObjectTable.size() }); \

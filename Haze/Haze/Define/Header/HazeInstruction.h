@@ -83,52 +83,9 @@ enum class HazeDataDesc : x_uint32
 
 enum class InstructionOpCode : x_uint32
 {
-	NONE,
-	MOV,		// A = B
-	MOVPV,		// A = *B
-	MOVTOPV,	// *A = B
-	LEA,		// A = &B
-	ADD,		// A = B + C
-	SUB,		// A = B - C
-	MUL,		// A = B * C
-	DIV,		// A = B / C
-	MOD,		// A = b % C
-
-	NEG,		// A = -B
-
-	NOT,		// A = !B
-
-	BIT_AND,	// A = B & C
-	BIT_OR,		// A = B | C
-	BIT_NEG,	// A = ~B
-	BIT_XOR,	// A = B ^ C
-	SHL,		// A = B << C
-	SHR,		// A = B >> C
-
-	PUSH,		// A
-	POP,		// A
-
-	CALL,		//A
-	RET,		//A
-
-	NEW,		//A
-
-	CMP,		// A, B
-	JMP,
-	JNE,		//不等于
-	JNG,		//不大于
-	JNL,		//不小于
-	JE,			//等于
-	JG,			//大于
-	JL,			//小于
-
-	CVT,		//基本类型转换
-
-	MOV_DCU,	//DynamicClassUnknown赋值用
-
-	//NEW_SIGN,	//New类型, 若stack中为置零状态, 则为主类型, 之后会根据不同的主类型, 进行不同需要类型数据的解析
-
-	LINE,		//调试用
+#define HAZE_OP_CODE_DEFINE(OP_CODE) OP_CODE,
+	#include "HazeOpCodeTemplate"
+#undef HAZE_OP_CODE_DEFINE
 };
 
 //Jmp 等跳转label,需要在第一遍遍历源文件时将所有label及其后面的相邻一条指令的数组索引的收集(注意重复的报错处理，所有的指令都要存在一个数组里面)，
@@ -316,11 +273,15 @@ struct HazeRegister
 //	V_Array<HazeDefineVariable*> LocalParams;
 //};
 
-bool IsRegisterDesc(HazeDataDesc scope);
+bool IsRegisterDesc(HazeDataDesc desc);
+bool IsClassMember(HazeDataDesc desc);
+bool IsConstant(HazeDataDesc desc);
 
 bool IsJmpOpCode(InstructionOpCode code);
-
-bool IsClassMember(HazeDataDesc scope);
+bool IsArithmeticOpCode(InstructionOpCode opcode);
+bool IsComparisonOpCode(InstructionOpCode opcode);
+bool IsCallOpCode(InstructionOpCode opcode);
+bool IsMovOpCode(InstructionOpCode opcode);
 
 const x_HChar* GetInstructionString(InstructionOpCode code);
 

@@ -476,8 +476,7 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 		WriteType(m_FileStream, iter.Variable.Type);
 
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.AddressType));									//操作数取址类型
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Index));									//操作数索引
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra.Address.Offset));							//操作数地址偏移
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra));										//操作数额外数据
 	}
 
 #if HAZE_INS_LOG
@@ -845,19 +844,17 @@ void HazeExecuteFile::ReadInstruction(HazeVM* vm, Instruction& instruction)
 		m_InFileStream->read(HAZE_READ(iter.Scope));
 		m_InFileStream->read(HAZE_READ(iter.Desc));
 
-		if (instruction.InsCode == InstructionOpCode::NEW)
+		/*if (instruction.InsCode == InstructionOpCode::NEW)
 		{
 			ReadType(vm, m_InFileStream, iter.Variable.Type);
-
 		}
-		else
+		else*/
 		{
 			ReadType(vm, m_InFileStream, iter.Variable.Type);
 		}
 		m_InFileStream->read(HAZE_READ(iter.AddressType));
 
-		m_InFileStream->read(HAZE_READ(iter.Extra.Index));
-		m_InFileStream->read(HAZE_READ(iter.Extra.Address.Offset));	//操作数地址偏移, 指针指之属性应定义单独类型
+		m_InFileStream->read(HAZE_READ(iter.Extra));
 	}
 
 #if HAZE_INS_LOG

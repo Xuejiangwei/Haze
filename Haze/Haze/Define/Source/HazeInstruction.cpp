@@ -28,57 +28,29 @@
 
 extern Unique<HazeLibraryManager> g_HazeLibManager;
 
+// 声明指令处理函数，否则Lib库有报错
+extern const A_Array<void(*)(HazeStack* stack), ((x_uint32)InstructionOpCode::LINE + 1)> g_InstructionProcessor;
+
 static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
 {
-	{H_TEXT("MOV"), InstructionOpCode::MOV },
-	{H_TEXT("MOVPV"), InstructionOpCode::MOVPV },
-	{H_TEXT("MOVTOPV"), InstructionOpCode::MOVTOPV },
-	{H_TEXT("LEA"), InstructionOpCode::LEA },
-	{H_TEXT("ADD"), InstructionOpCode::ADD },
-	{H_TEXT("SUB"), InstructionOpCode::SUB },
-	{H_TEXT("MUL"), InstructionOpCode::MUL },
-	{H_TEXT("DIV"), InstructionOpCode::DIV },
-	{H_TEXT("MOD"), InstructionOpCode::MOD },
-
-	{H_TEXT("NEG"), InstructionOpCode::NEG },
-	{H_TEXT("NOT"), InstructionOpCode::NOT },
-
-	{H_TEXT("BIT_AND"), InstructionOpCode::BIT_AND },
-	{H_TEXT("BIT_OR"), InstructionOpCode::BIT_OR },
-	{H_TEXT("BIT_NEG"), InstructionOpCode::BIT_NEG },
-	{H_TEXT("BIT_XOR"), InstructionOpCode::BIT_XOR },
-	{H_TEXT("SHL"), InstructionOpCode::SHL },
-	{H_TEXT("SHR"), InstructionOpCode::SHR },
-
-	{H_TEXT("PUSH"), InstructionOpCode::PUSH },
-	{H_TEXT("POP"), InstructionOpCode::POP },
-
-	{H_TEXT("CALL"), InstructionOpCode::CALL },
-	{H_TEXT("RET"), InstructionOpCode::RET },
-
-	{H_TEXT("NEW"), InstructionOpCode::NEW },
-
-	{H_TEXT("CMP"), InstructionOpCode::CMP },
-	{H_TEXT("JMP"), InstructionOpCode::JMP },
-	{H_TEXT("JNE"), InstructionOpCode::JNE },
-	{H_TEXT("JNG"), InstructionOpCode::JNG },
-	{H_TEXT("JNL"), InstructionOpCode::JNL },
-	{H_TEXT("JE"), InstructionOpCode::JE },
-	{H_TEXT("JG"), InstructionOpCode::JG },
-	{H_TEXT("JL"), InstructionOpCode::JL },
-
-	{H_TEXT("CVT"), InstructionOpCode::CVT },
-
-	{H_TEXT("MOV_DCU"), InstructionOpCode::MOV_DCU },
-
-	//{H_TEXT("NEW_SIGN"), InstructionOpCode::NEW_SIGN },
-
-	{H_TEXT("LINE"), InstructionOpCode::LINE },
+#define HAZE_OP_CODE_DEFINE(OP_CODE) { H_TEXT(#OP_CODE), InstructionOpCode::OP_CODE },
+	#include "HazeOpCodeTemplate"
+#undef HAZE_OP_CODE_DEFINE
 };
 
 bool IsRegisterDesc(HazeDataDesc desc)
 {
 	return HazeDataDesc::RegisterBegin < desc && desc < HazeDataDesc::RegisterEnd;
+}
+
+bool IsClassMember(HazeDataDesc desc)
+{
+	return desc >= HazeDataDesc::ClassMember_Local_Public && desc <= HazeDataDesc::ClassMember_Local_Private;
+}
+
+bool IsConstant(HazeDataDesc desc)
+{
+	return desc == HazeDataDesc::Constant;
 }
 
 const x_HChar* GetInstructionString(InstructionOpCode code)
@@ -120,9 +92,24 @@ bool IsJmpOpCode(InstructionOpCode code)
 	return code >= InstructionOpCode::JMP && code <= InstructionOpCode::JL;
 }
 
-bool IsClassMember(HazeDataDesc desc)
+bool IsArithmeticOpCode(InstructionOpCode opcode)
 {
-	return desc >= HazeDataDesc::ClassMember_Local_Public && desc <= HazeDataDesc::ClassMember_Local_Private;
+	return opcode >= InstructionOpCode::ADD && opcode == InstructionOpCode::SHR;
+}
+
+bool IsComparisonOpCode(InstructionOpCode opcode)
+{
+	return opcode == InstructionOpCode::CMP;
+}
+
+bool IsCallOpCode(InstructionOpCode opcode)
+{
+	return opcode == InstructionOpCode::CALL;
+}
+
+bool IsMovOpCode(InstructionOpCode opcode)
+{
+	return opcode >= InstructionOpCode::MOV && opcode <= InstructionOpCode::LEA;
 }
 
 void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
@@ -297,7 +284,12 @@ public:
 	}
 
 public:
-	static void Mov(HazeStack* stack)
+	static void NONE(HazeStack* stack)
+	{
+		INS_ERR_W("操作码为空");
+	}
+
+	static void MOV(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
@@ -313,7 +305,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void MovPV(HazeStack* stack)
+	static void MOVPV(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -333,7 +325,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void MovToPV(HazeStack* stack)
+	static void MOVTOPV(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -353,7 +345,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Lea(HazeStack* stack)
+	static void LEA(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -368,7 +360,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Push(HazeStack* stack)
+	static void PUSH(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -403,7 +395,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Pop(HazeStack* stack)
+	static void POP(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -420,7 +412,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Add(HazeStack* stack)
+	static void ADD(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -429,7 +421,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Sub(HazeStack* stack)
+	static void SUB(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 	
@@ -438,7 +430,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Mul(HazeStack* stack)
+	static void MUL(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -447,7 +439,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Div(HazeStack* stack)
+	static void DIV(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -456,7 +448,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Mod(HazeStack* stack)
+	static void MOD(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -477,7 +469,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Neg(HazeStack* stack)
+	static void NEG(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -498,7 +490,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Not(HazeStack* stack)
+	static void NOT(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -519,7 +511,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Bit_And(HazeStack* stack)
+	static void BIT_AND(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
@@ -540,7 +532,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Bit_Or(HazeStack* stack)
+	static void BIT_OR(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -561,7 +553,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Bit_Xor(HazeStack* stack)
+	static void BIT_XOR(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 	
@@ -582,7 +574,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Bit_Neg(HazeStack* stack)
+	static void BIT_NEG(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG; 
 		
@@ -604,7 +596,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Shl(HazeStack* stack)
+	static void SHL(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
@@ -625,7 +617,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Shr(HazeStack* stack)
+	static void SHR(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -646,7 +638,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Call(HazeStack* stack)
+	static void CALL(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
@@ -747,7 +739,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Ret(HazeStack* stack)
+	static void RET(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -767,13 +759,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void New_Sign(HazeStack* stack)
-	{
-		stack->OnNewSign();
-		stack->m_VM->InstructionExecPost();
-	}
-
-	static void New(HazeStack* stack)
+	static void NEW(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -782,25 +768,6 @@ public:
 		auto& type = oper[0].Variable.Type;
 		if (oper.size() == 2)
 		{
-
-			bool isArray = IsArrayType(type.BaseType);
-		
-			/*x_uint64 size = 0;
-			if (isArray)
-			{
-				if (IsClassType(type.BaseType))
-				{
-					size = stack->m_VM->GetClassSize(*type.CustomName);
-				}
-				else
-				{
-					size = GetSizeByHazeType(type.SecondaryType);
-				}
-			}
-			else
-			{
-				size = type.GetTypeSize();
-			}*/
 			auto countAddress = GetOperatorAddress(stack, oper[1]);
 			
 			auto count = *((x_uint64*)countAddress);
@@ -869,7 +836,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Cmp(HazeStack* stack)
+	static void CMP(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -886,7 +853,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Jmp(HazeStack* stack)
+	static void JMP(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -899,7 +866,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Jne(HazeStack* stack)
+	static void JNE(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -925,7 +892,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Jng(HazeStack* stack)
+	static void JNG(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
@@ -947,7 +914,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Jnl(HazeStack* stack)
+	static void JNL(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -969,7 +936,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Je(HazeStack* stack)
+	static void JE(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 
@@ -991,7 +958,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Jg(HazeStack* stack)
+	static void JG(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
@@ -1013,7 +980,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Jl(HazeStack* stack)
+	static void JL(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		
@@ -1061,7 +1028,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Mov_DynamicClassUnknown(HazeStack* stack)
+	static void MOV_DCU(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
@@ -1093,7 +1060,7 @@ public:
 		stack->m_VM->InstructionExecPost();
 	}
 
-	static void Line(HazeStack* stack)
+	static void LINE(HazeStack* stack)
 	{
 		INSTRUCTION_DATA_DEBUG;
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
@@ -1135,7 +1102,7 @@ private:
 			case InstructionAddressType::Constant:
 			{
 				auto& value = const_cast<HazeValue&>(insData.Extra.RuntimeDynamicValue);
-				StringToHazeValueNumber(insData.Variable.Name, insData.Variable.Type.BaseType, value);
+				//StringToHazeValueNumber(insData.Variable.Name, insData.Variable.Type.BaseType, value);
 				ret = GetBinaryPointer(insData.Variable.Type.BaseType, value);
 			}
 				break;
@@ -1372,53 +1339,10 @@ void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData)
 	return InstructionProcessor::GetOperatorAddress(stack, insData);
 }
 
-//可以考虑将HashMap改为使用数组
-HashMap<InstructionOpCode, void(*)(HazeStack* stack)> g_InstructionProcessor =
+// 指令处理器函数表定义
+const A_Array<void(*)(HazeStack* stack), ((x_uint32)InstructionOpCode::LINE + 1)> g_InstructionProcessor =
 {
-	{InstructionOpCode::MOV, &InstructionProcessor::Mov},
-	{InstructionOpCode::MOVPV, &InstructionProcessor::MovPV},
-	{InstructionOpCode::MOVTOPV, &InstructionProcessor::MovToPV},
-	{InstructionOpCode::LEA, &InstructionProcessor::Lea},
-
-	{InstructionOpCode::ADD, &InstructionProcessor::Add},
-	{InstructionOpCode::SUB, &InstructionProcessor::Sub},
-	{InstructionOpCode::MUL, &InstructionProcessor::Mul},
-	{InstructionOpCode::DIV, &InstructionProcessor::Div},
-	{InstructionOpCode::MOD, &InstructionProcessor::Mod},
-
-	{InstructionOpCode::NEG, &InstructionProcessor::Neg},
-
-	{InstructionOpCode::NOT, &InstructionProcessor::Not},
-
-	{InstructionOpCode::BIT_AND, &InstructionProcessor::Bit_And},
-	{InstructionOpCode::BIT_OR, &InstructionProcessor::Bit_Or},
-	{InstructionOpCode::BIT_NEG, &InstructionProcessor::Bit_Neg},
-	{InstructionOpCode::BIT_XOR, &InstructionProcessor::Bit_Xor},
-
-	{InstructionOpCode::SHL, &InstructionProcessor::Shl},
-	{InstructionOpCode::SHR, &InstructionProcessor::Shr},
-
-	{InstructionOpCode::PUSH, &InstructionProcessor::Push},
-	{InstructionOpCode::POP, &InstructionProcessor::Pop},
-
-	{InstructionOpCode::CALL, &InstructionProcessor::Call},
-	{InstructionOpCode::RET, &InstructionProcessor::Ret},
-	{InstructionOpCode::NEW, &InstructionProcessor::New},
-
-	{InstructionOpCode::CMP, &InstructionProcessor::Cmp},
-	{InstructionOpCode::JMP, &InstructionProcessor::Jmp},
-	{InstructionOpCode::JNE, &InstructionProcessor::Jne},
-	{InstructionOpCode::JNG, &InstructionProcessor::Jng},
-	{InstructionOpCode::JNL, &InstructionProcessor::Jnl},
-	{InstructionOpCode::JE, &InstructionProcessor::Je},
-	{InstructionOpCode::JG, &InstructionProcessor::Jg},
-	{InstructionOpCode::JL, &InstructionProcessor::Jl},
-
-	{InstructionOpCode::CVT, &InstructionProcessor::CVT},
-
-	{InstructionOpCode::MOV_DCU, &InstructionProcessor::Mov_DynamicClassUnknown},
-
-	//{InstructionOpCode::NEW_SIGN, &InstructionProcessor::New_Sign},
-
-	{InstructionOpCode::LINE, &InstructionProcessor::Line},
+#define HAZE_OP_CODE_DEFINE(OP_CODE) &InstructionProcessor::OP_CODE,
+	#include "HazeOpCodeTemplate"
+#undef HAZE_OP_CODE_DEFINE
 };

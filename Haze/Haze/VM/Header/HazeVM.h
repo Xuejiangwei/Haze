@@ -85,6 +85,16 @@ public:
 
 	HazeTypeInfoMap* GetTypeInfoMap() { return m_TypeInfoMap.get(); }
 
+	//JIT
+public:
+	void JitFunction(const FunctionData* func);
+	
+	// 获取函数数据
+	const FunctionData* getFunction(const HString& function_name) const;
+	
+	// 设置JIT优化级别
+	void setJITOptimizationLevel(int level);
+
 private:
 	void InitRegisterObjectFunction();
 

@@ -7,12 +7,21 @@ project(HazeLaunch
     LANGUAGES CXX
 )
 
-# 设置C++标准
-set(CMAKE_CXX_STANDARD 17)
+# 设置C++标准（与主项目保持一致）
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # 创建启动器可执行文件
 add_executable(HazeLaunch HazeLaunch.cpp)
+
+# 设置包含目录
+target_include_directories(HazeLaunch PRIVATE 
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Haze/Haze/Header
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Haze/Haze/Define/Header
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Haze/Haze/VM/Header
+    ${CMAKE_CURRENT_SOURCE_DIR}/../Haze/Haze/HazeLog/Header
+)
 
 # 链接到HazeCore库
 target_link_libraries(HazeLaunch PRIVATE HazeCore)

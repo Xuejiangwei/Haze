@@ -23,6 +23,9 @@ Unique<T> MakeUnique(_Types&&... _Args)
 
 using String = std::string;
 
+template<typename T, size_t SIZE>
+using A_Array = std::array<T, SIZE>;
+
 template<typename T>
 using V_Array = std::vector<T>;
 

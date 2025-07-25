@@ -81,18 +81,82 @@ void CompilerBlock::AddChildBlock(Share<CompilerBlock> block)
 	m_ChildBlocks.push_back(block);
 }
 
-void CompilerBlock::GenI_Code(HAZE_STRING_STREAM& hss)
+void CompilerBlock::AddPredecessor(Share<CompilerBlock> block)
+{
+	if (block)
+	{
+		m_Predecessors.push_back(block);
+	}
+}
+
+void CompilerBlock::AddSuccessor(Share<CompilerBlock> block1, Share<CompilerBlock> block2)
+{
+	if (block1)
+	{
+		m_Successors.push_back(block1);
+		block1->AddPredecessor(GetShared());
+	}
+
+	if (block2)
+	{
+		m_Successors.push_back(block2);
+		block2->AddPredecessor(GetShared());
+	}
+}
+
+void CompilerBlock::GenI_Code(HAZE_STRING_STREAM& hss, HashMap<CompilerBlock*, x_uint64>& blockIndex)
 {
 	hss << HAZE_ENDL;
 
-	for (size_t i = 0; i < m_IRCodes.size(); i++)
+	if (m_IRCodes.size() > 0)
+	{
+		blockIndex[this] = blockIndex.size();
+	}
+
+	for (x_uint64 i = 0; i < m_IRCodes.size(); i++)
 	{
 		hss << m_IRCodes[i];
 	}
 
 	for (auto& iter : m_ChildBlocks)
 	{
-		iter->GenI_Code(hss);
+		iter->GenI_Code(hss, blockIndex);
+	}
+}
+
+void CompilerBlock::GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss, HashMap<CompilerBlock*, x_uint64>& blockIndex)
+{
+	auto iter = blockIndex.find(this);
+	if (iter != blockIndex.end())
+	{
+		hss << iter->second << " ";
+
+		hss << m_Predecessors.size() << " ";
+		for (auto it = m_Predecessors.begin(); it != m_Predecessors.end(); it++)
+		{
+			auto iter = blockIndex.find(it->get());
+			if (iter != blockIndex.end())
+			{
+				hss << iter->second << " ";
+			}
+		}
+
+		hss << m_Successors.size() << " ";
+		for (auto it = m_Successors.begin(); it != m_Successors.end(); it++)
+		{
+			auto iter = blockIndex.find(it->get());
+			if (iter != blockIndex.end())
+			{
+				hss << iter->second << " ";
+			}
+		}
+		
+		hss << HAZE_ENDL;
+	}
+
+	for (auto& iter : m_ChildBlocks)
+	{
+		iter->GenI_Code_FlowGraph(hss, blockIndex);
 	}
 }
 

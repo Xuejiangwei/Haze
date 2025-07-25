@@ -95,7 +95,8 @@ bool IsClosureType(HazeValueType type);
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);
 HString HazeValueNumberToString(HazeValueType type, HazeValue value);
 
-void CalculateValueByType(HazeValueType type, InstructionOpCode typeCod, const void* source, const void* oper1, const void* oper2);
+void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const HazeValue& source, const HazeValue& oper1, const HazeValue& oper2);
+void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const void* source, const void* oper1, const void* oper2);
 
 void CompareValueByType(HazeValueType type, struct HazeRegister* hazeRegister, const void* source, const void* target);
 bool IsEqualByType(HazeValueType type, HazeValue v1, HazeValue v2);
@@ -109,6 +110,9 @@ void SetHazeValueByData(HazeValue& value, HazeValueType type, void* data);
 HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value);
 
 HazeValue GetNegValue(HazeValueType type, const HazeValue& value);
+
+bool IsNumberZero(HazeValueType type, const HazeValue& value);
+bool IsNumberOne(HazeValueType type, const HazeValue& value);
 
 bool CanPointer(HazeValueType type);
 

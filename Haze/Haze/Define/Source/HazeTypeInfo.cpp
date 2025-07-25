@@ -192,7 +192,7 @@ void HazeTypeInfoMap::GenICode(HAZE_STRING_STREAM& hss)
 
 	hss << TYPE_INFO_BEGIN << HAZE_ENDL_D;
 
-	for (x_uint64 i = COMPLEX_TYPE_START + 1; i <= startIndex; i++)
+	for (x_uint32 i = COMPLEX_TYPE_START + 1; i <= startIndex; i++)
 	{
 		auto iter = m_Map.find(i);
 		if (iter != m_Map.end())

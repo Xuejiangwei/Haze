@@ -83,9 +83,6 @@ private:
 	void PushGCTempRegister(void* address, const HazeVariableType* type);
 
 	bool PopGCTempRegister(void* address);
-
-	void OnNewSign();
-	void OnNewSignInternal(TemplateDefineTypes* type);
 	
 private:
 	HazeVM* m_VM;
@@ -94,6 +91,7 @@ private:
 	V_Array<HazeStackFrame> m_StackFrame;
 
 	HAZE_ADDRESS_TYPE m_PC;
+
 	x_uint32 m_EBP;		//栈底
 	x_uint32 m_ESP;		//栈顶
 

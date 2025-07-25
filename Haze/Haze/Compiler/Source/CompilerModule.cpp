@@ -898,6 +898,8 @@ void CompilerModule::GenIRCode_Cmp(HazeCmpType cmpType, Share<CompilerBlock> ifJ
 		HAZE_LOG_ERR_W("比较失败,比较类型为空,当前函数<%s>!\n", GetCurrFunction()->GetName().c_str());
 	}
 
+	m_Compiler->GetInsertBlock()->AddSuccessor(ifJmpBlock, elseJmpBlock);
+
 	GenIRCode(hss, this, GetInstructionOpCodeByCmpType(cmpType), ifJmpBlock, elseJmpBlock);
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
@@ -906,6 +908,8 @@ void CompilerModule::GenIRCode_JmpTo(Share<CompilerBlock> block)
 {
 	HAZE_STRING_STREAM hss;
 	GenIRCode(hss, this, InstructionOpCode::JMP, block);
+
+	m_Compiler->GetInsertBlock()->AddSuccessor(block);
 	m_Compiler->GetInsertBlock()->PushIRCode(hss.str());
 }
 

@@ -244,6 +244,8 @@ void HazeMemory::Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex)
 				x_uint32 offset = memorySize % GRANULE == 0 ? -1 : 1;
 				x_uint32 index = (x_uint32)memorySize / GRANULE + offset;
 				m_FreeList[index]->Push(data);
+
+				HAZE_TO_DO(内存碎片合并);
 			}
 			else
 			{
@@ -617,6 +619,7 @@ void HazeMemory::Sweep()
 
 void HazeMemory::TryGC(bool forceGC)
 {
+	static auto old = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 	if (forceGC)
 	{
 		ForceGC();
@@ -627,6 +630,13 @@ void HazeMemory::TryGC(bool forceGC)
 		if (currTime - m_LastGCTime > GC_TIME)
 		{
 			ForceGC();
+		}
+		else
+		{
+
+			auto endTime = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+			HAZE_LOG_INFO_W("用时<%d>毫秒\n", endTime - old);
+			old = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
 		}
 	}
 }

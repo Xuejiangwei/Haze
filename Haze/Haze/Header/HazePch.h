@@ -7,6 +7,7 @@
 #include <map>
 #include <unordered_map>
 #include <unordered_set>
+#include <array>
 #include <vector>
 #include <list>
 #include <functional>

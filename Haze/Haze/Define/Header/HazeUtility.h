@@ -44,6 +44,8 @@ const x_HChar* GetFunctionTempRegisterHeader();
 const x_HChar* GetFunctionStartHeader();
 const x_HChar* GetFunctionEndHeader();
 
+const x_HChar* GetBlockFlowHeader();
+
 const x_HChar* GetClosureRefrenceVariableHeader();
 
 const x_HChar* GetEnumTableLabelHeader();

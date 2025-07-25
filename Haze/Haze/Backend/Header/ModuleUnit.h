@@ -2,6 +2,7 @@
 
 class ModuleUnit
 {
+	friend class Optimizer;
 public:
 	ModuleUnit(const HString& name);
 
@@ -100,6 +101,9 @@ public:
 		HString BlockName;
 		int InstructionNum;
 		int StartAddress;
+
+		V_Array<x_uint32> Predecessors;
+		V_Array<x_uint32> Successors;
 	};
 
 	struct FunctionTableData

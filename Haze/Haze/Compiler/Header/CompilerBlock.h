@@ -48,7 +48,11 @@ public:
 
 	void AddChildBlock(Share<CompilerBlock> block);
 
-	void GenI_Code(HAZE_STRING_STREAM& hss);
+	void AddPredecessor(Share<CompilerBlock> block);
+	void AddSuccessor(Share<CompilerBlock> block1, Share<CompilerBlock> block2 = nullptr);
+
+	void GenI_Code(HAZE_STRING_STREAM& hss, HashMap<CompilerBlock*, x_uint64>& blockIndex);
+	void GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss, HashMap<CompilerBlock*, x_uint64>& blockIndex);
 
 	void ClearLocalVariable();
 
@@ -67,6 +71,8 @@ private:
 	CompilerBlock* m_LoopStepBlock;
 
 	List<Share<CompilerBlock>> m_ChildBlocks;
+	List<Share<CompilerBlock>> m_Predecessors;
+	List<Share<CompilerBlock>> m_Successors;
 
 	V_Array<Pair<HString, Share<CompilerValue>>> m_Allocas;
 

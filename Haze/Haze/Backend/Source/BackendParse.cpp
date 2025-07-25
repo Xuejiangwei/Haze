@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "BackendParse.h"
+#include "Optimizer.h"
 #include "HazeUtility.h"
 #include "HazeVM.h"
 #include "HazeExecuteFile.h"
@@ -125,6 +126,20 @@ void BackendParse::Parse()
 		m_CurrCode = codeText.c_str();
 
 		Parse_I_Code();
+
+		// 执行后端优化
+		Optimizer optimizer(this);
+		optimizer.setConfig(OptimizerConfig::GetBasicOptimizationConfig());
+		
+		optimizer.optimize(*m_CurrParseModule);
+		auto stats = optimizer.getStats();
+
+		HAZE_LOG_INFO_W("优化统计:\n");
+		HAZE_LOG_INFO_W("  消除指令: %d\n", stats.instructions_eliminated);
+		HAZE_LOG_INFO_W("  常量折叠: %d\n", stats.constants_folded);
+		HAZE_LOG_INFO_W("  函数内联: %d\n", stats.functions_inlined);
+		HAZE_LOG_INFO_W("  循环优化: %d\n", stats.loops_unrolled);
+		HAZE_LOG_INFO_W("  寄存器分配: %d\n", stats.strength_reductions);
 
 		fs.close();
 	}
@@ -617,6 +632,38 @@ void BackendParse::Parse_I_Code_FunctionTable()
 						}
 					}
 				}
+
+				GetNextLexeme();
+				if (m_CurrLexeme == GetBlockFlowHeader())
+				{
+					x_uint32 flowSize;
+					GetNextLexmeAssign_StandardType(flowSize);
+					for (x_uint32 j = 0; j < flowSize; j++)
+					{
+						x_uint32 blockIndex;
+						GetNextLexmeAssign_StandardType(blockIndex);
+
+						GetNextLexmeAssign_StandardType(number);
+						if (number > 0)
+						{
+							functionData.Blocks[blockIndex].Predecessors.resize(number);
+							for (x_uint32 k = 0; k < number; k++)
+							{
+								GetNextLexmeAssign_StandardType(functionData.Blocks[blockIndex].Predecessors[k]);
+							}
+						}
+
+						GetNextLexmeAssign_StandardType(number);
+						if (number > 0)
+						{
+							functionData.Blocks[blockIndex].Successors.resize(number);
+							for (x_uint32 k = 0; k < number; k++)
+							{
+								GetNextLexmeAssign_StandardType(functionData.Blocks[blockIndex].Successors[k]);
+							}
+						}
+					}
+				}
 			}
 		}
 	}
@@ -630,7 +677,11 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 
 	data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
-	if (data.Desc == HazeDataDesc::ConstantString)
+	if (data.Desc == HazeDataDesc::Constant)
+	{
+		StringToHazeValueNumber(data.Variable.Name, data.Variable.Type.BaseType, data.Extra.RuntimeDynamicValue);
+	}
+	else if (data.Desc == HazeDataDesc::ConstantString)
 	{
 		GetNextLexmeAssign_CustomType<x_uint32>(data.Extra.Index);
 	}

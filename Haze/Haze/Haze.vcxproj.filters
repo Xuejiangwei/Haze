@@ -210,6 +210,9 @@
     <ClCompile Include="Define\Source\HazeTypeInfo.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="JIT\Source\HazeJIT.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -449,10 +452,23 @@
     <ClInclude Include="Define\Header\HazeTypeInfo.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Define\Header\HazeCompilerVersion.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="Backend\Header\OptimizerDefine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JIT\Header\HazeJIT.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="JIT\Header\HazeProfiler.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Define\Header\HazeTemplate.inl">
       <Filter>头文件</Filter>
     </None>
+    <None Include="Define\Header\HazeOpCodeTemplate" />
   </ItemGroup>
 </Project>
