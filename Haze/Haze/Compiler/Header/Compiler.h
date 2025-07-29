@@ -288,13 +288,13 @@ public:
 	void ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Share<CompilerValue>& right);
 
 public:
-	void RegisterClassToSymbolTable(const HString& className);
+	x_uint32 RegisterClassToSymbolTable(const HString& className);
 
 	void OnCreateClass(Share<CompilerClass> compClass);
 
 	const HString* GetSymbolTableNameAddress(const HString& className);
 
-	x_uint32 GetSymbolTableNameTypeId(const HString& className) const;
+	x_uint32 GetSymbolTableNameTypeId(const HString& className);
 
 	AdvanceFunctionInfo* GetAdvanceFunctionInfo(HazeValueType advanceType, const HString& name);
 

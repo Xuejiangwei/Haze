@@ -470,5 +470,6 @@
       <Filter>头文件</Filter>
     </None>
     <None Include="Define\Header\HazeOpCodeTemplate" />
+    <None Include="Define\Header\HazeToDoList" />
   </ItemGroup>
 </Project>

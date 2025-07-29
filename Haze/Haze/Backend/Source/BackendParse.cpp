@@ -1,7 +1,4 @@
 #include "HazePch.h"
-#include <filesystem>
-#include <fstream>
-
 #include "BackendParse.h"
 #include "Optimizer.h"
 #include "HazeUtility.h"
@@ -11,6 +8,7 @@
 #include "HazeLog.h"
 
 #define BACKEND_INSTRUCTION_LOG			0
+#define BACKEND_OPTIMIZER				0
 
 static Pair<bool, int> ParseStringCount = { false, 0 };
 
@@ -127,7 +125,8 @@ void BackendParse::Parse()
 
 		Parse_I_Code();
 
-		// 执行后端优化
+#if BACKEND_OPTIMIZER
+
 		Optimizer optimizer(this);
 		optimizer.setConfig(OptimizerConfig::GetBasicOptimizationConfig());
 		
@@ -140,6 +139,9 @@ void BackendParse::Parse()
 		HAZE_LOG_INFO_W("  函数内联: %d\n", stats.functions_inlined);
 		HAZE_LOG_INFO_W("  循环优化: %d\n", stats.loops_unrolled);
 		HAZE_LOG_INFO_W("  寄存器分配: %d\n", stats.strength_reductions);
+
+#endif // BACKEND_OPTIMIZER
+
 
 		fs.close();
 	}

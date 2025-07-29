@@ -27,7 +27,6 @@
 #include "ObjectClosure.h"
 
 #include <cstdarg>
-#include <filesystem>
 
 extern Unique<HazeDebugger> g_Debugger;
 extern Unique<HazeLibraryManager> g_HazeLibManager;
@@ -289,9 +288,28 @@ const HString* HazeVM::GetModuleNameByCurrFunction()
 	return nullptr;
 }
 
-int HazeVM::GetFucntionIndexByName(const HString& m_Name)
+const HString* HazeVM::GetFunctionNameByData(const FunctionData* data)
 {
-	auto Iter = m_HashFunctionTable.find(m_Name);
+	for (x_uint32 i = 0; i < m_FunctionTable.size(); i++)
+	{
+		if (&m_FunctionTable[i] == data)
+		{
+			for (auto& iter : m_HashFunctionTable)
+			{
+				if (iter.second == i)
+				{
+					return &iter.first;
+				}
+			}
+		}
+	}
+
+	return nullptr;
+}
+
+int HazeVM::GetFucntionIndexByName(const HString& name)
+{
+	auto Iter = m_HashFunctionTable.find(name);
 	if (Iter == m_HashFunctionTable.end())
 	{
 		return -1;
@@ -299,15 +317,15 @@ int HazeVM::GetFucntionIndexByName(const HString& m_Name)
 	return Iter->second;
 }
 
-const FunctionData& HazeVM::GetFunctionByName(const HString& m_Name)
+const FunctionData& HazeVM::GetFunctionByName(const HString& name)
 {
-	int index = GetFucntionIndexByName(m_Name);
+	int index = GetFucntionIndexByName(name);
 	return m_FunctionTable[index];
 }
 
-const FunctionData* HazeVM::GetFunctionDataByName(const HString& m_Name)
+const FunctionData* HazeVM::GetFunctionDataByName(const HString& name)
 {
-	int index = GetFucntionIndexByName(m_Name);
+	int index = GetFucntionIndexByName(name);
 	return index >= 0 ? &m_FunctionTable[index] : nullptr;
 }
 
@@ -316,11 +334,11 @@ const ObjectString* HazeVM::GetConstantStringByIndex(int index) const
 	return m_StringTable[index];
 }
 
-char* HazeVM::GetGlobalValueByIndex(x_uint32 Index)
+char* HazeVM::GetGlobalValueByIndex(x_uint32 index)
 {
-	if (Index < m_GlobalData.size())
+	if (index < m_GlobalData.size())
 	{
-		return (char*)(&m_GlobalData[Index].Value);
+		return (char*)(&m_GlobalData[index].Value);
 	}
 
 	return nullptr;

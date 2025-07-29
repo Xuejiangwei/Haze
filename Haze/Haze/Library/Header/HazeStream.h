@@ -22,6 +22,8 @@ public:
 
 	HAZE_STD_LIB_FUNCTION(void, HazeStringFormat);
 
+	HAZE_STD_LIB_FUNCTION_NO_CALL(void, HazeLogStack);
+
 	HAZE_STD_LIB_FUNCTION_NO_CALL(void, CreateDynamicClass);
 };
 

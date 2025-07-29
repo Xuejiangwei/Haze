@@ -40,8 +40,18 @@ void HazeStack::RunGlobalDataInit(x_int64 startPC, x_int64 endPC)
 	m_PC = pc;
 }
 
+void HazeStack::OnError()
+{
+	LogStack();
+	m_CallHazeStack.clear();
+}
+
 void HazeStack::LogStack()
 {
+	for (int i = m_StackFrame.size() - 1; i >= 0; i--)
+	{
+		HAZE_LOG_ERR_W("Error<%s>\n", m_VM->GetFunctionNameByData(m_StackFrame[i].FunctionInfo)->c_str());
+	}
 }
 
 void HazeStack::JmpTo(const InstructionData& data)
@@ -103,7 +113,7 @@ void HazeStack::Run(bool isHazeCall)
 
 		g_InstructionProcessor[(x_uint32)m_VM->m_Instructions[m_PC].InsCode](this);
 
-		if (isHazeCall && m_CallHazeStack.size() == 0)
+		if (/*isHazeCall && */m_CallHazeStack.size() == 0)
 		{
 			return;
 		}

@@ -134,7 +134,7 @@ void CompilerBlock::GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss, HashMap<Compile
 		hss << m_Predecessors.size() << " ";
 		for (auto it = m_Predecessors.begin(); it != m_Predecessors.end(); it++)
 		{
-			auto iter = blockIndex.find(it->get());
+			iter = blockIndex.find(it->get());
 			if (iter != blockIndex.end())
 			{
 				hss << iter->second << " ";
@@ -144,7 +144,7 @@ void CompilerBlock::GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss, HashMap<Compile
 		hss << m_Successors.size() << " ";
 		for (auto it = m_Successors.begin(); it != m_Successors.end(); it++)
 		{
-			auto iter = blockIndex.find(it->get());
+			iter = blockIndex.find(it->get());
 			if (iter != blockIndex.end())
 			{
 				hss << iter->second << " ";
@@ -154,9 +154,9 @@ void CompilerBlock::GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss, HashMap<Compile
 		hss << HAZE_ENDL;
 	}
 
-	for (auto& iter : m_ChildBlocks)
+	for (auto& block : m_ChildBlocks)
 	{
-		iter->GenI_Code_FlowGraph(hss, blockIndex);
+		block->GenI_Code_FlowGraph(hss, blockIndex);
 	}
 }
 

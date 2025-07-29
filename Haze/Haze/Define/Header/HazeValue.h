@@ -95,8 +95,8 @@ bool IsClosureType(HazeValueType type);
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);
 HString HazeValueNumberToString(HazeValueType type, HazeValue value);
 
-void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const HazeValue& source, const HazeValue& oper1, const HazeValue& oper2);
-void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const void* source, const void* oper1, const void* oper2);
+void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const HazeValue& source, const HazeValue& oper1, const HazeValue& oper2, void* stack = nullptr);
+void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const void* source, const void* oper1, const void* oper2, void* stack = nullptr);
 
 void CompareValueByType(HazeValueType type, struct HazeRegister* hazeRegister, const void* source, const void* target);
 bool IsEqualByType(HazeValueType type, HazeValue v1, HazeValue v2);

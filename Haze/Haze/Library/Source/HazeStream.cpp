@@ -15,6 +15,7 @@ static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 	{ H_TEXT("打印"), &HazeStream::HazePrintf },
 	{ H_TEXT("输入"), &HazeStream::HazeScanf },
 	{ H_TEXT("字符格式化"), &HazeStream::HazeStringFormat },
+	{ H_TEXT("打印函数栈"), &HazeStream::HazeLogStack },
 	{ H_TEXT("生成动态类"), &HazeStream::CreateDynamicClass },
 };
 
@@ -544,6 +545,11 @@ void HazeStream::HazeStringFormat(HAZE_STD_CALL_PARAM)
 void HazeStream::HazeStringFormatCall()
 {
 
+}
+
+void HazeStream::HazeLogStack(HAZE_STD_CALL_PARAM)
+{
+	stack->LogStack();
 }
 
 V_Array<TestDynamic> g_TestDynamics;

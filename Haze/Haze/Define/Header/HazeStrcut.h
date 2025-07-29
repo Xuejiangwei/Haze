@@ -90,19 +90,13 @@ struct HazeVariableType
 		TypeId = HAZE_TYPE_ID(BaseType);
 	}
 
-	void DynamicClassUnknow()
-	{
-		BaseType = HazeValueType::DynamicClassUnknow;
-		TypeId = HAZE_TYPE_ID(BaseType);
-	}
-
 	template<typename Class>
 	void StringStream(Class* pThis, void(Class::* typeCall)(x_uint32&)) { StringStream(pThis, typeCall, *this); }
 
-	/*bool HasCustomName(const HazeDefineType& type)
+	static HazeVariableType GetDynamicClassUnknow()
 	{
-		return  type.CustomName && !type.CustomName->empty();
-	}*/
+		return HazeVariableType(HazeValueType::DynamicClassUnknow, HAZE_TYPE_ID(HazeValueType::DynamicClassUnknow));
+	}
 
 	static HazeVariableType StringStreamFrom(HAZE_IFSTREAM& stream)
 	{

@@ -53,6 +53,8 @@ public:
 
 	bool FrameIsValid() { return m_StackFrame.size() > 0; }
 
+	void OnError();
+
 	void LogStack();
 
 	void JmpTo(const InstructionData& m_Data);

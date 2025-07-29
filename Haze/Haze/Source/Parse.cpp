@@ -2213,6 +2213,10 @@ Unique<ASTClass> Parse::ParseClass()
 				{
 					parentClasses.push_back(m_CurrLexeme);
 
+					// 添加引用次数
+					CLASS_TYPE_INFO(info, m_CurrLexeme);
+					m_TypeInfoMap->RegisterType(m_Compiler->GetCurrModuleName(), &info);
+
 					GetNextToken();
 					if (TokenIs(HazeToken::Comma))
 					{

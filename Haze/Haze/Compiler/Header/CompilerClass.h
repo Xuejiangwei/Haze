@@ -12,7 +12,7 @@ class CompilerClass
 public:
 
 	CompilerClass(CompilerModule* compilerModule, const HString& name, V_Array<CompilerClass*>& parentClass,
-		V_Array<Pair<HString, Share<CompilerValue>>>& data);
+		V_Array<Pair<HString, Share<CompilerValue>>>& data, x_uint32 typeId);
 
 	~CompilerClass();
 

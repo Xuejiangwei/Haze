@@ -29,7 +29,7 @@ JITCompilationUnit* HazeJIT::compileFunction(const HString& function_name)
     }
 
     // 获取函数字节码
-    auto function = m_VM->getFunction(function_name);
+    auto function = m_VM->GetFunctionDataByName(function_name);
     if (!function)
     {
         HAZE_LOG_ERR_W("函数 %s 不存在\\n", function_name.c_str());

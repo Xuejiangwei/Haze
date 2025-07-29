@@ -7,8 +7,8 @@
 #include "CompilerClassValue.h"
 
 CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name, V_Array<CompilerClass*>& parentClass,
-	V_Array<Pair<HString, Share<CompilerValue>>>& data)
-	: m_Module(compilerModule), m_Name(name), m_ParentClass(Move(parentClass)), m_Data(Move(data))
+	V_Array<Pair<HString, Share<CompilerValue>>>& data, x_uint32 typeId)
+	: m_Module(compilerModule), m_Name(name), m_ParentClass(Move(parentClass)), m_Data(Move(data)), m_TypeId(typeId)
 {
 	m_DataSize = 0;
 	m_MemberCount = (x_uint32)m_Data.size();
@@ -288,6 +288,7 @@ void CompilerClass::ParseIntermediateClass(HAZE_IFSTREAM& stream, CompilerModule
 		for (x_uint64 j = 0; j < parentClass->m_Data.size(); ++j)
 		{
 			stream >> str;
+			stream >> ui32;
 			HazeVariableType::StringStreamFrom(stream);
 			stream >> ui32 >> ui64;
 		}

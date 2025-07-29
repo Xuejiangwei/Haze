@@ -1,6 +1,4 @@
 #include "HazePch.h"
-
-
 #include "Haze.h"
 #include "HazeVM.h"
 #include "HazeMemory.h"
@@ -105,13 +103,14 @@ int GetParam(ParamType type, char** paramArray, int length)
 HazeVM* HazeMain(int argCount, char* argValue[])
 {
 	atexit(HazeExit);
+	HazePreInit();
+
+#include "HazeToDoList"
 
 	for (int i = 0; i < argCount; i++)
 	{
 		HAZE_LOG_INFO_W("Param<%d><%s>\n", i, String2WString(argValue[i]).c_str());
 	}
-
-	HazePreInit();
 
 	std::filesystem::path ExeFile(argValue[0]);
 	g_HazeExePath = ExeFile.parent_path().wstring() + H_TEXT("\\");

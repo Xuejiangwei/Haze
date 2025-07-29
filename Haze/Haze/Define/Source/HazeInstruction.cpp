@@ -458,7 +458,7 @@ public:
 			if (IsNumberType(oper[0].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::MOD, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[1]));
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[1]), stack);
 			}
 		}
 		else
@@ -479,7 +479,7 @@ public:
 			if (IsNumberType(oper[0].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::NEG, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), nullptr);
+					GetOperatorAddress(stack, oper[1]), nullptr, stack);
 			}
 		}
 		else
@@ -500,7 +500,7 @@ public:
 			if (IsNumberType(oper[0].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::NOT, GetOperatorAddress(stack, oper[0]), 
-					GetOperatorAddress(stack, oper[1]), nullptr);
+					GetOperatorAddress(stack, oper[1]), nullptr, stack);
 			}
 		}
 		else
@@ -521,7 +521,7 @@ public:
 			if (IsNumberType(oper[0].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::BIT_AND, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]), stack);
 			}
 		}
 		else
@@ -542,7 +542,7 @@ public:
 			if (IsNumberType(oper[0].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::BIT_OR, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]), stack);
 			}
 		}
 		else
@@ -563,7 +563,7 @@ public:
 			if (IsNumberType(oper[0].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::BIT_XOR, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]), stack);
 			}
 		}
 		else
@@ -584,7 +584,7 @@ public:
 			if (IsIntegerType(oper[0].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::BIT_NEG, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), nullptr);
+					GetOperatorAddress(stack, oper[1]), nullptr, stack);
 			}
 		}
 		else
@@ -606,7 +606,7 @@ public:
 			if (IsNumberType(oper[0].Variable.Type.BaseType) && IsIntegerType(oper[1].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::SHL, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]), stack);
 			}
 		}
 		else
@@ -627,7 +627,7 @@ public:
 			if (IsNumberType(oper[0].Variable.Type.BaseType))
 			{
 				CalculateValueByType(oper[0].Variable.Type.BaseType, InstructionOpCode::SHR, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]), stack);
 			}
 		}
 		else
@@ -1165,7 +1165,7 @@ private:
 			if (IsNumberType(oper[1].Variable.Type.BaseType) && oper[1].Variable.Type == oper[2].Variable.Type)
 			{
 				CalculateValueByType(oper[1].Variable.Type.BaseType, instruction.InsCode, GetOperatorAddress(stack, oper[0]),
-					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+					GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]), stack);
 			}
 			else if (oper[0].AddressType == InstructionAddressType::Register && 
 				IsDynamicClassUnknowType(oper[1].Variable.Type.BaseType) || IsDynamicClassUnknowType(oper[2].Variable.Type.BaseType))
@@ -1176,7 +1176,7 @@ private:
 				if (IsNumberType(operType1.BaseType) && IsNumberType(operType2.BaseType) && operType1 == operType2)
 				{
 					CalculateValueByType(operType1.BaseType, instruction.InsCode, GetOperatorAddress(stack, oper[0]),
-						GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]));
+						GetOperatorAddress(stack, oper[1]), GetOperatorAddress(stack, oper[2]), stack);
 					
 					stack->ResetTempRegisterTypeByDynamicClassUnknow(oper[0].Variable.Name, operType1);
 				}

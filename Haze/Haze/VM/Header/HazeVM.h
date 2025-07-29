@@ -62,15 +62,17 @@ public:
 public:
 	const HString* GetModuleNameByCurrFunction();
 
-	int GetFucntionIndexByName(const HString& m_Name);
+	const HString* GetFunctionNameByData(const FunctionData* data);
 
-	const FunctionData& GetFunctionByName(const HString& m_Name);
+	int GetFucntionIndexByName(const HString& name);
 
-	const FunctionData* GetFunctionDataByName(const HString& m_Name);
+	const FunctionData& GetFunctionByName(const HString& name);
+
+	const FunctionData* GetFunctionDataByName(const HString& name);
 
 	const class ObjectString* GetConstantStringByIndex(int index) const;
 
-	char* GetGlobalValueByIndex(x_uint32 Index);
+	char* GetGlobalValueByIndex(x_uint32 index);
 
 	ClassData* FindClass(x_uint32 typeId);
 	ClassData* FindClass(const HString& name);
@@ -88,9 +90,6 @@ public:
 	//JIT
 public:
 	void JitFunction(const FunctionData* func);
-	
-	// 获取函数数据
-	const FunctionData* getFunction(const HString& function_name) const;
 	
 	// 设置JIT优化级别
 	void setJITOptimizationLevel(int level);

@@ -1,6 +1,7 @@
 #include "HazePch.h"
 #include "HazeHeader.h"
 #include "HazeLog.h"
+#include "HazeStack.h"
 #include "ObjectString.h"
 #include "ObjectClass.h"
 #include "ObjectBase.h"
@@ -344,7 +345,7 @@ HString HazeValueNumberToString(HazeValueType type, HazeValue value)
 #define TWO_VARIABLE_DEFINE_INIT(TYPE, OPER1, OPER2) TYPE T1, T2; memcpy(&T1, OPER1, sizeof(TYPE)); memcpy(&T2, OPER2, sizeof(TYPE))
 #define CALC_ASSIGN_VALUE(TYPE, T_CODE, TARGET, OPER1, OPER2) { TYPE T, T1, T2; \
 	memcpy(&T, TARGET, sizeof(TYPE)); memcpy(&T1, OPER1, sizeof(TYPE)); memcpy(&T2, OPER2, sizeof(TYPE)); \
-	CalculateValue<TYPE>(T_CODE, T, T1, T2); memcpy((void*)TARGET, &T, sizeof(TYPE)); }
+	CalculateValue<TYPE>(T_CODE, T, T1, T2, stack); memcpy((void*)TARGET, &T, sizeof(TYPE)); }
 
 #define VARIABLE_CALCULATE(TYPE, OP) CalculateValue<TYPE>(OP, T)
 
@@ -353,7 +354,7 @@ HString HazeValueNumberToString(HazeValueType type, HazeValue value)
 	hazeRegister->Data[1] = CmpGreater; hazeRegister->Data[2] = CmpLess
 
 template<typename T>
-void CalculateValue(InstructionOpCode typeCode, T& target, T& oper1, T& oper2)
+void CalculateValue(InstructionOpCode typeCode, T& target, T& oper1, T& oper2, void* stack)
 {
 	switch (typeCode)
 	{
@@ -399,7 +400,39 @@ void CalculateValue(InstructionOpCode typeCode, T& target, T& oper1, T& oper2)
 }
 
 template<>
-void CalculateValue(InstructionOpCode typeCode, float& target, float& oper1, float& oper2)
+void CalculateValue(InstructionOpCode typeCode, float& target, float& oper1, float& oper2, void* stack)
+{
+	switch (typeCode)
+	{
+		case InstructionOpCode::ADD:
+			target = oper1 + oper2;
+			break;
+		case InstructionOpCode::SUB:
+			target = oper1 - oper2;
+			break;
+		case InstructionOpCode::MUL:
+			target = oper1 * oper2;
+			break;
+		case InstructionOpCode::DIV:
+			target = oper1 / oper2;
+			break;
+		default:
+		{
+			if (stack)
+			{
+				INS_ERR_CODE_W("32位浮点数计算错误", typeCode);
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("32位浮点数计算错误", typeCode);
+			}
+		}
+			break;
+	}
+}
+
+template<>
+void CalculateValue(InstructionOpCode typeCode, double& target, double& oper1, double& oper2, void* stack)
 {
 	switch (typeCode)
 	{
@@ -416,36 +449,20 @@ void CalculateValue(InstructionOpCode typeCode, float& target, float& oper1, flo
 		target = oper1 / oper2;
 		break;
 	default:
-		INS_ERR_CODE_W("32位浮点数计算错误", typeCode);
+		if (stack)
+		{
+			INS_ERR_CODE_W("64位浮点数计算错误", typeCode);
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("64位浮点数计算错误", typeCode);
+		}
 		break;
 	}
 }
 
 template<>
-void CalculateValue(InstructionOpCode typeCode, double& target, double& oper1, double& oper2)
-{
-	switch (typeCode)
-	{
-	case InstructionOpCode::ADD:
-		target = oper1 + oper2;
-		break;
-	case InstructionOpCode::SUB:
-		target = oper1 - oper2;
-		break;
-	case InstructionOpCode::MUL:
-		target = oper1 * oper2;
-		break;
-	case InstructionOpCode::DIV:
-		target = oper1 / oper2;
-		break;
-	default:
-		INS_ERR_CODE_W("64位浮点数计算错误", typeCode);
-		break;
-	}
-}
-
-template<>
-void CalculateValue(InstructionOpCode typeCode, bool& target, bool& oper1, bool& oper2)
+void CalculateValue(InstructionOpCode typeCode, bool& target, bool& oper1, bool& oper2, void* stack)
 {
 	switch (typeCode)
 	{
@@ -453,7 +470,14 @@ void CalculateValue(InstructionOpCode typeCode, bool& target, bool& oper1, bool&
 		target = !oper1;
 		break;
 	default:
-		INS_ERR_CODE_W("布尔计算错误", typeCode);
+		if (stack)
+		{
+			INS_ERR_CODE_W("布尔计算错误", typeCode);
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("布尔计算错误", typeCode);
+		}
 		break;
 	}
 }
@@ -581,18 +605,18 @@ void CalculateValue(InstructionOpCode typeCode, bool& target, bool& oper1, bool&
 //	}
 //}
 
-void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const HazeValue& source, const HazeValue& oper1, const HazeValue& oper2)
+void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const HazeValue& source, const HazeValue& oper1, const HazeValue& oper2, void* stack)
 {
-	CalculateValueByType(type, insCode, GetBinaryPointer(type, source), GetBinaryPointer(type, oper1), GetBinaryPointer(type, oper2));
+	CalculateValueByType(type, insCode, GetBinaryPointer(type, source), GetBinaryPointer(type, oper1), GetBinaryPointer(type, oper2), stack);
 }
 
-void CalculateValueByType(const HazeValueType type, InstructionOpCode insCode, const void* source, const void* oper1, const void* oper2)
+void CalculateValueByType(const HazeValueType type, InstructionOpCode insCode, const void* source, const void* oper1, const void* oper2, void* stack)
 {
 	switch (type)
 	{
 		case HazeValueType::Bool:
 			CALC_ASSIGN_VALUE(bool, insCode, source, oper1, oper2);
-		break;
+			break;
 		case HazeValueType::Int32:
 			CALC_ASSIGN_VALUE(x_int32, insCode, source, oper1, oper2);
 			break;
@@ -612,6 +636,7 @@ void CalculateValueByType(const HazeValueType type, InstructionOpCode insCode, c
 			CALC_ASSIGN_VALUE(x_float64, insCode, source, oper1, oper2);
 			break;
 		default:
+			HAZE_LOG_ERR_W("<%s>类型不能进行计算\n", GetHazeValueTypeString(type));
 			break;
 	}
 }

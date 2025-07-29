@@ -168,7 +168,7 @@ CompilerModule* Compiler::ParseBaseModule(const HString& moduleName)
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("��������ģ��<%s>ʧ�ܣ�δ���ҵ�·��!\n", moduleName.c_str());
+		HAZE_LOG_ERR_W("未能找到<%s>\n", moduleName.c_str());
 	}
 
 	return nullptr;
@@ -277,16 +277,18 @@ x_uint32 Compiler::GetModuleTableEnumTypeId(const HString& name)
 	return 0;
 }
 
-void Compiler::RegisterClassToSymbolTable(const HString& className)
+x_uint32 Compiler::RegisterClassToSymbolTable(const HString& className)
 {
-	if (m_SymbolTable.find(HashHString(&className)) != m_SymbolTable.end())
+	auto iter = m_SymbolTable.find(HashHString(&className));
+	if (iter != m_SymbolTable.end())
 	{
-		return;
+		return iter->second.second;
 	}
 
 	CLASS_TYPE_INFO(info, className);
 	auto typeId = m_TypeInfoMap->RegisterType(GetCurrModuleName(), &info);
 	m_SymbolTable[{ m_TypeInfoMap->GetClassNameById(typeId) }] = { nullptr, typeId };
+	return typeId;
 }
 
 void Compiler::OnCreateClass(Share<CompilerClass> compClass)
@@ -314,7 +316,7 @@ const HString* Compiler::GetSymbolTableNameAddress(const HString& className)
 	return nullptr;
 }
 
-x_uint32 Compiler::GetSymbolTableNameTypeId(const HString& className) const
+x_uint32 Compiler::GetSymbolTableNameTypeId(const HString& className)
 {
 	auto iter = m_SymbolTable.find({ &className });
 	if (iter != m_SymbolTable.end())
@@ -322,6 +324,7 @@ x_uint32 Compiler::GetSymbolTableNameTypeId(const HString& className) const
 		return iter->second.second;
 	}
 
+	COMPILER_ERR_MODULE_W("未能找到类<%s>的符号信息", this, className.c_str(), GetCurrModuleName().c_str());
 	return 0;
 }
 
@@ -962,6 +965,12 @@ void Compiler::AddImportModuleToCurrModule(CompilerModule* compilerModule)
 		}
 	}
 
+	if (compilerModule == GetCurrModule().get())
+	{
+		COMPILER_ERR_MODULE_W("添加自身模块到引用模块", this, GetCurrModuleName().c_str());
+		return;
+	}
+
 	GetCurrModule()->m_ImportModules.push_back(compilerModule);
 }
 
@@ -1003,7 +1012,12 @@ Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share
 		}
 		else if (checkType && allocaValue->GetBaseType() != value->GetBaseType())
 		{
-			COMPILER_ERR_MODULE_W("生成<%s>字节码错误, 操作数类型不同", this, GetCurrModuleName().c_str(), GetInstructionString(InstructionOpCode::MOV));
+			if (IsDynamicClassUnknowType(value->GetBaseType())) {}
+			else if (IsAdvanceType(allocaValue->GetBaseType()) && value->IsNullPtr()) {}
+			else
+			{
+				COMPILER_ERR_MODULE_W("生成<%s>字节码错误, 操作数类型不同", this, GetCurrModuleName().c_str(), GetInstructionString(InstructionOpCode::MOV));
+			}
 		}
 
 		GetCurrModule()->GenIRCode_BinaryOperater(allocaValue, value, nullptr, 
@@ -1400,8 +1414,7 @@ Share<CompilerValue> Compiler::CreateDynamicClassFunctionCall(Share<CompilerValu
 
 	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_CALL_FUNCTION, params, classValue);
 	
-	HazeVariableType type;
-	type.SetBaseTypeAndId(HazeValueType::DynamicClassUnknow);
+	HazeVariableType type = HazeVariableType::GetDynamicClassUnknow();
 	CompilerValueTypeChanger::Reset(ret, type);
 
 	return CreateMov(GetTempRegister(type), ret);

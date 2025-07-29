@@ -143,6 +143,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	stream >> str;
 	if (str != GetImportHeaderString())
 	{
+		HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到引用模块表的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 		return false;
 	}
 	stream >> ui64;
@@ -154,18 +155,19 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		{
 			stream >> str;
 			m = m_Compiler->GetModuleAndTryParseIntermediateFile(str);
-			if (m->NeedParse())
-			{
-				return false;
-			}
-			else if(!m)
+			if (!m)
 			{
 				HAZE_LOG_ERR_W("<%s>解析临时文件失败，引入模块<%s>未能找到!\n", m_Path.c_str(), str.c_str());
+				return false;
+			}
+			else if (m->NeedParse())
+			{
 				return false;
 			}
 		}
 		else
 		{
+			HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到引用模块的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 			return false;
 		}
 
@@ -175,6 +177,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	stream >> str;
 	if (str != GetGlobalDataHeaderString())
 	{
+		HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到全局数据表的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 		return false;
 	}
 
@@ -193,6 +196,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	stream >> str;
 	if (str != GetStringTableHeaderString())
 	{
+		HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到常量字符串表的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 		return false;
 	}
 
@@ -214,6 +218,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	stream >> str;
 	if (str != GetEnumTableLabelHeader())
 	{
+		HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到枚举表的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 		return false;
 	}
 
@@ -250,6 +255,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	stream >> str;
 	if (str != GetClassTableHeaderString())
 	{
+		HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到类表的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 		return false;
 	}
 	x_uint32 classCount = 0;
@@ -259,6 +265,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		stream >> str;
 		if (str != GetClassLabelHeader())
 		{
+			HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到类的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 			return false;
 		}
 
@@ -318,6 +325,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	stream >> str;
 	if (str != GetFucntionTableHeaderString())
 	{
+		HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到函数表的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 		return false;
 	}
 	stream >> ui64;// 包括类函数和普通函数
@@ -400,6 +408,35 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		}
 
 		stream >> str;
+		if (str == GetBlockFlowHeader())
+		{
+			x_uint32 flowCount;
+			stream >> flowCount;
+			for (x_uint32 i = 0; i < flowCount; i++)
+			{
+				stream >> ui64;
+
+				stream >> ui64;
+				x_uint32 number;
+				for (x_uint64 j = 0; j < ui64; j++)
+				{
+					stream >> number;
+				}
+
+				stream >> ui64;
+				for (x_uint64 j = 0; j < ui64; j++)
+				{
+					stream >> number;
+				}
+			}
+		}
+		else
+		{
+			HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到函数块控制流的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
+			return false;
+		}
+
+		stream >> str;
 	}
 
 	return true;
@@ -454,8 +491,8 @@ Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<Co
 	auto compilerClass = GetClass(name);
 	if (!compilerClass)
 	{
-		m_Compiler->RegisterClassToSymbolTable(name);
-		m_HashMap_Classes[name] = MakeShare<CompilerClass>(this, name, parentClass, classData);
+		auto typeId = m_Compiler->RegisterClassToSymbolTable(name);
+		m_HashMap_Classes[name] = MakeShare<CompilerClass>(this, name, parentClass, classData, typeId);
 		compilerClass = m_HashMap_Classes[name];
 
 		m_Compiler->OnCreateClass(compilerClass);
@@ -1021,8 +1058,9 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					if (hazeClass && hazeClass->IsParentClass(type)) {}
 					else
 					{
-						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<>类", m_Compiler, GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
+						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<%s>类, 实际为<%s>", m_Compiler, GetName().c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i, m_Compiler->GetTypeInfoMap()->GetClassNameById(type.TypeId)->c_str(),
+							hazeClass->GetName().c_str());
 					}
 				}
 				else if (!IsMultiVariableType(type.BaseType))
