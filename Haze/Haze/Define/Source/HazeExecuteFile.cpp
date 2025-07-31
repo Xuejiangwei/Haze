@@ -331,6 +331,7 @@ void HazeExecuteFile::WriteClassTable(const ModuleUnit::ClassTable& table)
 		m_FileStream->write(s_BinaryString.data(), number);
 
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Size));
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.TypeId));
 
 
 		number = (x_uint32)iter.ParentClasses.size();
@@ -670,6 +671,7 @@ void HazeExecuteFile::ReadClassTable(HazeVM* vm)
 		vm->m_ClassTable[i].Name = String2WString(s_BinaryString);
 
 		m_InFileStream->read(HAZE_READ(vm->m_ClassTable[i].Size));
+		m_InFileStream->read(HAZE_READ(vm->m_ClassTable[i].TypeId));
 
 		m_InFileStream->read(HAZE_READ(number));
 		vm->m_ClassTable[i].InheritClasses.resize(number);

@@ -297,7 +297,7 @@ void CompilerClass::ParseIntermediateClass(HAZE_IFSTREAM& stream, CompilerModule
 
 void CompilerClass::GenClassData_I_Code(HAZE_STRING_STREAM& hss)
 {
-	hss << GetClassLabelHeader() << " " << m_Name << " " << m_DataSize << HAZE_ENDL;
+	hss << GetClassLabelHeader() << " " << m_Name << " " << m_DataSize << " " << m_TypeId << HAZE_ENDL;
 
 	hss << m_ParentClass.size() << HAZE_ENDL;
 	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)

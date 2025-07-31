@@ -14,10 +14,13 @@ public:
 
 	static bool IsEqual(ObjectString* obj1, ObjectString* obj2);
 
+	static ObjectString* Create(const x_HChar* str = nullptr, bool fixedCapacity = false);
+
 	const x_HChar* GetData() const { return (x_HChar*)m_Data; }
 
 	x_uint64 GetLength() const { return m_Length; }
 
+	x_uint64 Hash() const;
 
 private:
 	static void Append(HAZE_OBJECT_CALL_PARAM);

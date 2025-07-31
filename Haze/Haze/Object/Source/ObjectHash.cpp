@@ -5,51 +5,115 @@
 #include "HazeVM.h"
 #include "HazeLibraryDefine.h"
 #include "ObjectBase.h"
+#include "ObjectString.h"
 #include "HazeMemory.h"
 
+#define DEFAULT_CAPACITY 8
 #define FACTOR			0.5
 #define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "哈希")
 
 template<typename T>
-x_uint64 __ObjectHash_Hash__(T* v)
+x_uint64 __ObjectHash_Hash__(T* v, HazeStack* stack)
 {
 	return *v;
 }
 
 template<>
-x_uint64 __ObjectHash_Hash__(x_float32* v)
+x_uint64 __ObjectHash_Hash__(x_float32* v, HazeStack* stack)
 {
 	return *((x_uint32*)v);
 }
 
 template<>
-x_uint64 __ObjectHash_Hash__(x_float64* v)
+x_uint64 __ObjectHash_Hash__(x_float64* v, HazeStack* stack)
 {
 	return *((x_uint64*)v);
 }
 
 template<>
-x_uint64 __ObjectHash_Hash__(void* v)
+x_uint64 __ObjectHash_Hash__(void* v, HazeStack* stack)
 {
 	return (x_uint64)v;
 }
 
 template<>
-x_uint64 __ObjectHash_Hash__(ObjectString* v)
+x_uint64 __ObjectHash_Hash__(ObjectString* v, HazeStack* stack)
 {
-	return 0;
+	return v->Hash();
 }
 
 template<>
-x_uint64 __ObjectHash_Hash__(ObjectClass* v)
+x_uint64 __ObjectHash_Hash__(ObjectClass* v, HazeStack* stack)
 {
-	return 0;
+	return __ObjectHash_Hash__((void*)v, stack);
 }
 
 template<>
-x_uint64 __ObjectHash_Hash__(ObjectBase* v)
+x_uint64 __ObjectHash_Hash__(ObjectBase* v, HazeStack* stack)
 {
-	return 0;
+	extern x_uint64 __GetHashValue(HazeValueType type, void* value, HazeStack * stack);
+	return __GetHashValue(v->GetBaseType(), v->GetBaseData(), stack);
+}
+
+x_uint64 __GetHashValue(HazeValueType type, void* value, HazeStack* stack)
+{
+	x_uint64 hashValue = 0;
+	switch (type)
+	{
+		case HazeValueType::Bool:
+			hashValue = __ObjectHash_Hash__((bool*)value, stack);
+			break;
+		case HazeValueType::Int8:
+			hashValue = __ObjectHash_Hash__((x_int8*)value, stack);
+			break;
+		case HazeValueType::Int16:
+			hashValue = __ObjectHash_Hash__((x_int16*)value, stack);
+			break;
+		case HazeValueType::Int32:
+			hashValue = __ObjectHash_Hash__((x_int32*)value, stack);
+			break;
+		case HazeValueType::Int64:
+			hashValue = __ObjectHash_Hash__((x_int64*)value, stack);
+			break;
+		case HazeValueType::UInt8:
+			hashValue = __ObjectHash_Hash__((x_int8*)value, stack);
+			break;
+		case HazeValueType::UInt16:
+			hashValue = __ObjectHash_Hash__((x_uint16*)value, stack);
+			break;
+		case HazeValueType::UInt32:
+			hashValue = __ObjectHash_Hash__((x_uint32*)value, stack);
+			break;
+		case HazeValueType::UInt64:
+			hashValue = __ObjectHash_Hash__((x_uint64*)value, stack);
+			break;
+		case HazeValueType::Float32:
+			hashValue = __ObjectHash_Hash__((x_float32*)value, stack);
+			break;
+		case HazeValueType::Float64:
+			hashValue = __ObjectHash_Hash__((x_float64*)value, stack);
+			break;
+		case HazeValueType::String:
+			hashValue = __ObjectHash_Hash__(*((ObjectString**)value), stack);
+			break;
+		case HazeValueType::Class:
+			hashValue = __ObjectHash_Hash__(*((ObjectClass**)value), stack);
+			break;
+		case HazeValueType::ObjectBase:
+			hashValue = __ObjectHash_Hash__(*((ObjectBase**)value), stack);
+			break;
+		case HazeValueType::Enum:
+			hashValue = __ObjectHash_Hash__((x_int8*)value, stack);
+			break;
+		case HazeValueType::Array:
+			hashValue = __ObjectHash_Hash__(value, stack);
+			break;
+		default:
+			OBJECT_ERR_W("类型<%s>不能哈希", GetHazeValueTypeString(type));
+			break;
+	}
+
+	return hashValue;
 }
 
 //template<>
@@ -60,7 +124,7 @@ x_uint64 __ObjectHash_Hash__(ObjectBase* v)
 
 
 ObjectHash::ObjectHash(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
-	: GCObject(gcIndex)
+	: GCObject(gcIndex), m_Capacity(DEFAULT_CAPACITY), m_Length(0)
 {
 	auto info = vm->GetTypeInfoMap()->GetTypeInfoById(typeId);
 	if (IsHashType(info->Info.GetBaseType()))
@@ -68,8 +132,11 @@ ObjectHash::ObjectHash(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
 		m_KeyType = HazeVariableType(vm->GetTypeInfoMap()->GetTypeById(info->Info._Hash.TypeId1)->GetBaseType(), info->Info._Hash.TypeId1);
 		m_ValueType = HazeVariableType(vm->GetTypeInfoMap()->GetTypeById(info->Info._Hash.TypeId2)->GetBaseType(), info->Info._Hash.TypeId2);
 	}
-
-	Rehash();
+	
+	auto pair = HazeMemory::GetMemory()->AllocaGCData(m_Capacity * sizeof(ObjectHashNode), GC_ObjectType::HashData);
+	m_DataGCIndex = pair.second;
+	m_Data = (ObjectHashNode*)pair.first;
+	m_LastFreeNode = m_Data + m_Capacity;
 }
 
 ObjectHash::~ObjectHash()
@@ -170,6 +237,8 @@ void ObjectHash::Get(HAZE_OBJECT_CALL_PARAM)
 	SetHazeValueByData(tempKey, obj->GetKeyBaseType().BaseType, key);
 
 	HazeValue value;
+	memset(&value, 0, sizeof(value));
+
 	while (true)
 	{
 		if (IsEqualByType(obj->GetKeyBaseType().BaseType, node->Key, tempKey))
@@ -197,67 +266,13 @@ void ObjectHash::Set(HAZE_OBJECT_CALL_PARAM)
 
 x_uint64 ObjectHash::GetHash(ObjectHash* obj, void* value, HazeStack* stack)
 {
-	x_uint64 hashValue = 0;
-	switch (obj->GetValueBaseType().BaseType)
-	{
-		case HazeValueType::Bool:
-			hashValue = __ObjectHash_Hash__((bool*)value);
-			break;
-		case HazeValueType::Int8:
-			hashValue = __ObjectHash_Hash__((x_int8*)value);
-			break;
-		case HazeValueType::Int16:
-			hashValue = __ObjectHash_Hash__((x_int16*)value);
-			break;
-		case HazeValueType::Int32:
-			hashValue = __ObjectHash_Hash__((x_int32*)value);
-			break;
-		case HazeValueType::Int64:
-			hashValue = __ObjectHash_Hash__((x_int64*)value);
-			break;
-		case HazeValueType::UInt8:
-			hashValue = __ObjectHash_Hash__((x_int8*)value);
-			break;
-		case HazeValueType::UInt16:
-			hashValue = __ObjectHash_Hash__((x_uint16*)value);
-			break;
-		case HazeValueType::UInt32:
-			hashValue = __ObjectHash_Hash__((x_uint32*)value);
-			break;
-		case HazeValueType::UInt64:
-			hashValue = __ObjectHash_Hash__((x_uint64*)value);
-			break;
-		case HazeValueType::Float32:
-			hashValue = __ObjectHash_Hash__((x_float32*)value);
-			break;
-		case HazeValueType::Float64:
-			hashValue = __ObjectHash_Hash__((x_float64*)value);
-			break;
-		case HazeValueType::String:
-			hashValue = __ObjectHash_Hash__((ObjectString*)value);
-			break;
-		case HazeValueType::Class:
-			hashValue = __ObjectHash_Hash__((ObjectClass*)value);
-			break;
-		case HazeValueType::ObjectBase:
-			hashValue = __ObjectHash_Hash__((ObjectBase*)value);
-			break;
-		case HazeValueType::Enum:
-			hashValue = __ObjectHash_Hash__((x_int8*)value);
-			break;
-		case HazeValueType::Array:
-			hashValue = __ObjectHash_Hash__(value);
-			break;
-		default:
-			OBJECT_ERR_W("类型<%s>不能哈希", GetHazeValueTypeString(obj->GetValueBaseType().BaseType));
-			break;
-	}
+	x_uint64 hashValue = __GetHashValue(obj->GetKeyBaseType().BaseType, value, stack);
 	return hashValue % ((obj->m_Capacity - 1) | 1);
 }
 
 void ObjectHash::Add(HazeValue key, HazeValue value, HazeStack* stack)
 {
-	x_uint64 hashValue = GetHash(this, (void*)(&value), stack);
+	x_uint64 hashValue = GetHash(this, (void*)(&key), stack);
 
 	auto node = &m_Data[hashValue];
 	if (!node->IsNone())

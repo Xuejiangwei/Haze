@@ -113,6 +113,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		case HazeValueType::Float64:
 		case HazeValueType::MultiVariable:
 		case HazeValueType::DynamicClass:
+		case HazeValueType::DynamicClassUnknow:
 			return MakeShare<CompilerValue>(compilerModule, type, scope, desc, count, assignValue);
 		case HazeValueType::Array:
 			return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count);
@@ -337,8 +338,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			}
 			else if (assignElementValue->GetElementName())
 			{
-				HazeVariableType varType;
-				varType.SetBaseTypeAndId(HazeValueType::DynamicClassUnknow);
+				HazeVariableType varType = HazeVariableType::GetDynamicClassUnknowType();
 				assignTo = m->GetCompiler()->GetTempRegister(varType);
 				elementAssign->SetElement(assignElementValue, assignTo);
 			}

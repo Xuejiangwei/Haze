@@ -16,6 +16,10 @@ public:
 
 	static bool IsEqual(ObjectBase* obj1, ObjectBase* obj2);
 
+	HazeValueType GetBaseType() { return m_Type; }
+
+	void* GetBaseData() { return &m_Value; }
+
 private:
 	static void Constructor(HAZE_OBJECT_CALL_PARAM);
 

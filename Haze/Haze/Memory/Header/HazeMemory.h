@@ -44,6 +44,8 @@ public:
 
 	void TryGC(bool forceGC = false);
 
+	void ReleaseAll();
+
 	enum class MarkStage : x_uint8
 	{
 		Ready,

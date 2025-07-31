@@ -231,6 +231,63 @@ CompilerModule* Compiler::GetModule(const HString& name)
 CompilerModule* Compiler::GetModuleAndTryParseIntermediateFile(const HString& filePath)
 {
 	HString moduleName = GetModuleNameByFilePath(filePath);
+	auto& parseInfo = m_ModuleParseStates[moduleName];
+
+	// 检查解析深度
+	if (parseInfo.ParseDepth >= ModuleParseInfo::MAX_PARSE_DEPTH)
+	{
+		HAZE_LOG_ERR_W("模块解析深度超限: %s (深度: %d)\n", moduleName.c_str(), parseInfo.ParseDepth);
+		return nullptr;
+	}
+
+	// 检查循环依赖
+	if (parseInfo.State == ModuleParseInterState::Parsing)
+	{
+		HAZE_LOG_ERR_W("检测到循环依赖: 模块<%s>\n", moduleName.c_str());
+		HAZE_LOG_ERR_W("解析调用栈:\n");
+		for (const auto& stackModule : parseInfo.ParseStack)
+		{
+			HAZE_LOG_ERR_W("  -> %s\n", stackModule.c_str());
+		}
+		return nullptr;
+	}
+
+	// 如果已解析，直接返回
+	if (parseInfo.State == ModuleParseInterState::Parsed && parseInfo.Module)
+	{
+		return parseInfo.Module;
+	}
+
+	// 如果解析失败，不再尝试
+	if (parseInfo.State == ModuleParseInterState::Failed)
+	{
+		return nullptr;
+	}
+
+	// 开始解析
+	parseInfo.State = ModuleParseInterState::Parsing;
+	parseInfo.ParseStack.push_back(moduleName);
+	parseInfo.ParseDepth++;
+
+	// 解析模块
+	CompilerModule* m = ParseModuleByPath(filePath);
+
+	if (m)
+	{
+		parseInfo.State = ModuleParseInterState::Parsed;
+		parseInfo.Module = m;
+	}
+	else
+	{
+		parseInfo.State = ModuleParseInterState::Failed;
+	}
+
+	// 清理调用栈
+	parseInfo.ParseStack.pop_back();
+	parseInfo.ParseDepth--;
+	return m;
+
+	/*HString moduleName = GetModuleNameByFilePath(filePath);
 	CompilerModule* m = GetModule(moduleName);
 	if (!m)
 	{
@@ -241,7 +298,7 @@ CompilerModule* Compiler::GetModuleAndTryParseIntermediateFile(const HString& fi
 		}
 	}
 
-	return m;
+	return m;*/
 }
 
 const HString* Compiler::GetModuleName(const CompilerModule* compilerModule) const
@@ -341,9 +398,10 @@ AdvanceFunctionInfo* Compiler::GetAdvanceFunctionInfo(HazeValueType advanceType,
 
 Share<CompilerEnum> Compiler::GetBaseModuleEnum(const HString& name)
 {
+	CompilerModule::SearchContext context;
 	for (auto& it : m_CompilerBaseModules)
 	{
-		auto ret = it.second->GetEnum_Internal(name);
+		auto ret = it.second->GetEnum_Internal(name, context);
 		if (ret)
 		{
 			return ret;
@@ -369,9 +427,10 @@ Share<CompilerEnum> Compiler::GetBaseModuleEnum(x_uint32 typeId)
 
 Share<CompilerValue> Compiler::GetBaseModuleGlobalVariable(const HString& name)
 {
+	CompilerModule::SearchContext context;
 	for (auto& it : m_CompilerBaseModules)
 	{
-		auto ret = it.second->GetGlobalVariable_Internal(name);
+		auto ret = it.second->GetGlobalVariable_Internal(name, context);
 		if (ret)
 		{
 			return ret;
@@ -398,9 +457,10 @@ Share<CompilerClass> Compiler::GetBaseModuleClass(const HString& className)
 bool Compiler::GetBaseModuleGlobalVariableName(const Share<CompilerValue>& value, HString& outName, bool getOffset, 
 	V_Array<Pair<x_uint64, CompilerValue*>>* offsets)
 {
+	CompilerModule::SearchContext context;
 	for (auto& it : m_CompilerBaseModules)
 	{
-		if (it.second->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
+		if (it.second->GetGlobalVariableName_Internal(value, outName, getOffset, offsets, context))
 		{
 			return true;
 		}
@@ -1012,8 +1072,9 @@ Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share
 		}
 		else if (checkType && allocaValue->GetBaseType() != value->GetBaseType())
 		{
-			if (IsDynamicClassUnknowType(value->GetBaseType())) {}
-			else if (IsAdvanceType(allocaValue->GetBaseType()) && value->IsNullPtr()) {}
+			if (IsDynamicClassUnknowType(value->GetBaseType())) { }
+			else if (IsAdvanceType(allocaValue->GetBaseType()) && value->IsNullPtr()) { }
+			else if (IsDynamicClassUnknowType(allocaValue->GetBaseType())){ }
 			else
 			{
 				COMPILER_ERR_MODULE_W("生成<%s>字节码错误, 操作数类型不同", this, GetCurrModuleName().c_str(), GetInstructionString(InstructionOpCode::MOV));
@@ -1250,14 +1311,18 @@ Share<CompilerValue> Compiler::CreateGetAdvanceElement(Share<CompilerElementValu
 
 			if (!hashValue->IsKeyType(keyValue))
 			{
-				keyValue = CreateCVT(GetTempRegister(hashValue->GetKeyType()), keyValue);
+				if (CanCVT(hashValue->GetKeyType().BaseType, keyValue->GetBaseType()))
+				{
+					keyValue = CreateCVT(GetTempRegister(hashValue->GetKeyType()), keyValue);
+				}
+				else
+				{
+					COMPILER_ERR_MODULE_W("哈希类型错误", this, GetCurrModuleName().c_str());
+				}
 			}
-			else
-			{
-				COMPILER_ERR_MODULE_W("哈希类型错误", this, GetCurrModuleName().c_str());
-			}
-
-			return CreateMov(GetTempRegister(hashValue->GetValueType()), CreateAdvanceTypeFunctionCall(HazeValueType::Hash, HAZE_ADVANCE_GET_FUNCTION, { keyValue }, hashValue), false);
+			
+			auto valueType = hashValue->GetValueType();
+			return CreateMov(GetTempRegister(hashValue->GetValueType()), CreateAdvanceTypeFunctionCall(HazeValueType::Hash, HAZE_ADVANCE_GET_FUNCTION, { keyValue }, hashValue, &valueType), false);
 		}
 		default:
 			COMPILER_ERR_MODULE_W("复杂类型<%s>没有<%s>函数", this, GetHazeValueTypeString(element->GetParentBaseType().BaseType), HAZE_ADVANCE_GET_FUNCTION, element->GetModule()->GetName().c_str());
@@ -1280,12 +1345,7 @@ Share<CompilerValue> Compiler::CreateSetAdvanceElement(Share<CompilerElementValu
 		{
 			auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), HazeVariableScope::Local, HazeDataDesc::None, 0);
 			prueStr->SetPureString(element->GetElementName());
-			auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, { assignValue, prueStr }, element->GetParent());
-
-			HazeVariableType type;
-			type.SetBaseTypeAndId(HazeValueType::DynamicClassUnknow);
-			CompilerValueTypeChanger::Reset(ret, type);
-			return CreateMov(GetTempRegister(type), ret);
+			return CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, { assignValue, prueStr }, element->GetParent());
 		}
 		case HazeValueType::Hash:
 		{
@@ -1298,11 +1358,14 @@ Share<CompilerValue> Compiler::CreateSetAdvanceElement(Share<CompilerElementValu
 
 			if (!hashValue->IsKeyType(keyValue))
 			{
-				keyValue = CreateCVT(GetTempRegister(hashValue->GetKeyType()), keyValue);
-			}
-			else
-			{
-				COMPILER_ERR_MODULE_W("哈希类型错误", this, GetCurrModuleName().c_str());
+				if (CanCVT(hashValue->GetKeyType().BaseType, keyValue->GetBaseType()))
+				{
+					keyValue = CreateCVT(GetTempRegister(hashValue->GetKeyType()), keyValue);
+				}
+				else
+				{
+					COMPILER_ERR_MODULE_W("哈希类型错误", this, GetCurrModuleName().c_str());
+				}
 			}
 
 			return CreateAdvanceTypeFunctionCall(HazeValueType::Hash, HAZE_ADVANCE_SET_FUNCTION, { assignValue,  keyValue }, hashValue);
@@ -1384,8 +1447,7 @@ Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> 
 
 	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_GET_MEMBER, params, dynamicClassValue);
 
-	HazeVariableType type;
-	type.SetBaseTypeAndId(HazeValueType::DynamicClassUnknow);
+	HazeVariableType type = HazeVariableType::GetDynamicClassUnknowType();
 	CompilerValueTypeChanger::Reset(ret, type);
 
 	return CreateMov(GetTempRegister(type), ret);
@@ -1399,8 +1461,7 @@ Share<CompilerValue> Compiler::CreateSetDynamicClassMember(Share<CompilerValue> 
 
 	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, params, classValue);
 	
-	HazeVariableType type;
-	type.SetBaseTypeAndId(HazeValueType::DynamicClassUnknow);
+	HazeVariableType type = HazeVariableType::GetDynamicClassUnknowType();
 	CompilerValueTypeChanger::Reset(ret, type);
 
 	return CreateMov(GetTempRegister(type), ret);
@@ -1414,7 +1475,7 @@ Share<CompilerValue> Compiler::CreateDynamicClassFunctionCall(Share<CompilerValu
 
 	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_CALL_FUNCTION, params, classValue);
 	
-	HazeVariableType type = HazeVariableType::GetDynamicClassUnknow();
+	HazeVariableType type = HazeVariableType::GetDynamicClassUnknowType();
 	CompilerValueTypeChanger::Reset(ret, type);
 
 	return CreateMov(GetTempRegister(type), ret);

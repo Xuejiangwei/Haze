@@ -485,6 +485,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 
 				GetNextLexmeAssign_HazeString(classData.Name);
 				GetNextLexmeAssign_StandardType(classData.Size);
+				GetNextLexmeAssign_StandardType(classData.TypeId);
 
 				GetNextLexmeAssign_StandardType(number);
 				classData.ParentClasses.resize(number);

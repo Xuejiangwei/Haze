@@ -83,6 +83,22 @@ struct std::hash<HashHString>
 
 class Compiler
 {
+	enum class ModuleParseInterState
+	{
+		NotParsed,
+		Parsing,
+		Parsed,
+		Failed
+	};
+
+	struct ModuleParseInfo
+	{
+		ModuleParseInterState State = ModuleParseInterState::NotParsed;
+		CompilerModule* Module = nullptr;
+		V_Array<HString> ParseStack;
+		x_uint32 ParseDepth = 0;
+		static const int MAX_PARSE_DEPTH = 10;
+	};
 public:
 	Compiler(HazeVM* vm);
 
@@ -347,6 +363,8 @@ private:
 	Share<CompilerBlock> m_InsertBaseBlock;
 
 	Unique<HazeTypeInfoMap> m_TypeInfoMap;
+
+	HashMap<HString, ModuleParseInfo> m_ModuleParseStates;
 
 	bool m_MarkError;
 	bool m_MarkNewCode;

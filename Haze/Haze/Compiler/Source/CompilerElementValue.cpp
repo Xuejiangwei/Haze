@@ -21,7 +21,7 @@ CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share
 }
 
 CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const HString& elementName)
-	: CompilerValue(compilerModule, HAZE_VAR_TYPE(HazeValueType::DynamicClassUnknow), HazeVariableScope::Local, HazeDataDesc::Element, 0),
+	: CompilerValue(compilerModule, HazeVariableType::GetDynamicClassUnknowType(), HazeVariableScope::Local, HazeDataDesc::Element, 0),
 	m_Parent(parent), m_Element(nullptr), m_ElementName(MakeUnique<HString>(elementName))
 {
 
@@ -29,6 +29,23 @@ CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share
 
 CompilerElementValue::~CompilerElementValue()
 {
+}
+
+HazeValueType CompilerElementValue::GetBaseType() const
+{
+	switch (GetParentBaseType().BaseType)
+	{
+		case HazeValueType::Array:
+			return DynamicCast<CompilerArrayValue>(m_Parent)->GetElementType().BaseType;
+		case HazeValueType::Hash:
+			return DynamicCast<CompilerHashValue>(m_Parent)->GetValueType().BaseType;
+		case HazeValueType::DynamicClass:
+			return HazeValueType::DynamicClassUnknow;
+		default:
+			break;
+	}
+
+	return m_Element->GetBaseType();
 }
 
 Share<CompilerValue> CompilerElementValue::CreateGetFunctionCall()

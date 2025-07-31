@@ -2,7 +2,8 @@
 #include "HazeLog.h"
 
 #define PARSE_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<解析错误>：" H_TEXT(" 【<%s>模块 <%d>行 】") H_TEXT(INFO) H_TEXT("!\n"), \
-							 m_Compiler->GetCurrModuleName().c_str(), m_LineCount, __VA_ARGS__)
+							 m_Compiler->GetCurrModuleName().c_str(), m_LineCount, __VA_ARGS__); \
+							 m_IsParseError = true;
 
 #define COMPILER_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<编译错误>：" H_TEXT(" 【<%s>模块】") H_TEXT(INFO) H_TEXT("!\n"), \
 							 m_Module->GetName().c_str(), __VA_ARGS__)

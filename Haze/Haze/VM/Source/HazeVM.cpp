@@ -409,9 +409,9 @@ void HazeVM::SetGlobalString(x_uint64 index, const HString& str)
 	if (index < m_StringTable.size())
 	{
 		auto newStr = HazeStream::FormatConstantString(str);
-		auto address = HazeMemory::AllocaGCData(sizeof(ObjectString), GC_ObjectType::String);
-		new((char*)address.first) ObjectString(address.second, newStr.c_str(), true);
-		m_StringTable[index] = (ObjectString*)address.first;
+		/*auto address = HazeMemory::AllocaGCData(sizeof(ObjectString), GC_ObjectType::String);
+		new((char*)address.first) ObjectString(address.second, newStr.c_str(), true);*/
+		m_StringTable[index] = ObjectString::Create(newStr.c_str(), true);
 	}
 	else
 	{

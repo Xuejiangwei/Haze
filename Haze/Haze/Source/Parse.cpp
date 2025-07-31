@@ -114,6 +114,8 @@ static HashMap<HString, HazeToken> s_HashMap_Token =
 	{ TOKEN_VIRTUAL, HazeToken::VirtualFunction },
 	{ TOKEN_PUREVIRTUAL, HazeToken::PureVirtualFunction },
 
+	//{ TOKEN_STATIC, HazeToken:: },
+
 	{ TOKEN_DEFINE, HazeToken::Define },
 
 	{ TOKEN_STATIC_LIBRARY, HazeToken::StaticLibrary },
@@ -573,6 +575,11 @@ Unique<ASTBase> Parse::HandleParseExpression()
 
 Unique<ASTBase> Parse::ParseExpression(int prec, HazeToken prevOpToken, Unique<ASTBase> left)
 {
+	if (m_IsParseError)
+	{
+		return nullptr;
+	}
+
 	Unique<ASTBase> right = ParseUnaryExpression();
 
 	if (right)
@@ -1386,16 +1393,20 @@ Unique<ASTBase> Parse::ParseVariableDefine_Hash(x_uint32 templateTypeId)
 		m_DefineVariable.Name = m_CurrLexeme;
 		m_DefineVariable.Type.TypeId = templateTypeId;
 
+		TempCurrCode temp(this);
 		if (ExpectNextTokenIs_NoParseError(HazeToken::Assign))
 		{
 			GetNextToken();
 			Unique<ASTBase> expression = ParseExpression();
-			return MakeUnique<ASTVariableDefine_Hash>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), m_DefineVariable, expression, templateTypeId);
+			return MakeUnique<ASTVariableDefine_Hash>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), m_DefineVariable, Move(expression), templateTypeId);
 		}
-		else
+		else if(!m_IsParseClassData_Or_FunctionParam)
 		{
 			PARSE_ERR_W("函数变量<%s>定义错误, 需要赋予初始化值或空指针", m_DefineVariable.Name.c_str());
 		}
+
+		temp.Reset();
+		return MakeUnique<ASTVariableDefine_Hash>(m_Compiler, SourceLocation(tempLineCount), m_StackSectionSignal.top(), m_DefineVariable, nullptr, templateTypeId);
 	}
 
 	return nullptr;
@@ -2724,7 +2735,8 @@ void Parse::GetValueType(HazeVariableType& inType)
 		break;
 	case HazeToken::String:
 	{
-		inType.BaseType = HazeValueType::String;
+		inType = HAZE_VAR_TYPE(HazeValueType::String);
+		//inType.BaseType = HazeValueType::String;
 	}
 		break;
 	case HazeToken::Void:

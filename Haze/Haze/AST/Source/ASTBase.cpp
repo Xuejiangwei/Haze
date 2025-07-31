@@ -268,7 +268,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 			functionValue = currModule->GetCurrFunction()->GetLocalVariable(m_Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 		}
 
-		if (functionValue)
+		if (functionValue && DynamicCast<CompilerPointerFunction>(functionValue))
 		{
 			if (functionValue->IsFunction())
 			{
@@ -294,6 +294,10 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 			else if (classObj->IsObjectBase())
 			{
 				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, m_Name, param, classObj);
+			}
+			else if (classObj->IsClass())
+			{
+				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Class, m_Name, param, classObj);
 			}
 			else
 			{
@@ -545,7 +549,7 @@ Share<CompilerValue> ASTVariableDefine_ObjectBase::CodeGen(Share<CompilerValue> 
 }
 
 ASTVariableDefine_Hash::ASTVariableDefine_Hash(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, x_uint32 templateTypeId)
+	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId)
 	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_TemplateTypeId(templateTypeId)
 {
 }

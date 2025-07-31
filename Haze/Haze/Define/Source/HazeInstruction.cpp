@@ -828,7 +828,7 @@ public:
 			memcpy(newRegister->Data.begin()._Unwrapped(), &address, sizeof(address));*/
 
 			auto dst = GetOperatorAddress(stack, oper[0]);
-			memcpy(dst, &address, sizeof(address));
+			memcpy(dst, &address.first, sizeof(address.first));
 			
 			//stack->m_PC += (uint32)count;
 		}
@@ -1019,9 +1019,15 @@ public:
 				ConvertBaseTypeValue(oper[0].Variable.Type.BaseType, v1, oper[1].Variable.Type.BaseType, v2);
 				memcpy(address, &v1, GetSizeByHazeType(oper[0].Variable.Type.BaseType));
 			}
+			else if (IsClassType(oper[0].Variable.Type.BaseType) && IsDynamicClassType(oper[1].Variable.Type.BaseType))
+			{
+				void* dst = GetOperatorAddress(stack, oper[0]);
+				const void* src = GetOperatorAddress(stack, oper[1]);
+				memcpy(dst, src, oper[0].Variable.Type.GetTypeSize());
+			}
 			else
 			{
-				INS_ERR_W("<%s>转换为<%s>的类型时错误!", oper[1].Variable.Name.c_str(), oper[0].Variable.Name.c_str());
+				INS_ERR_W("<%s>转换为<%s>的类型时错误", oper[1].Variable.Name.c_str(), oper[0].Variable.Name.c_str());
 			}
 		}
 
@@ -1238,10 +1244,8 @@ private:
 		int size = type.GetTypeSize();
 		void* src = nullptr;
 
-		if (IsHazeBaseType(type.BaseType))
+		switch (type.BaseType)
 		{
-			switch (type.BaseType)
-			{
 			case HazeValueType::Bool:
 				src = &va_arg(args, bool);
 				break;
@@ -1293,21 +1297,21 @@ private:
 			case HazeValueType::Float64:
 				src = &va_arg(args, x_float64);
 				break;
-			default:
-				HAZE_LOG_ERR_W("三方库调用Haze函数Push参数<%s>类型错误", GetHazeValueTypeString(type.BaseType));
+
+			case HazeValueType::Array:
+			case HazeValueType::String:
+			case HazeValueType::Class:
+			case HazeValueType::DynamicClass:
+			case HazeValueType::ObjectBase:
+			case HazeValueType::Hash:
+				src = &va_arg(args, x_uint64);
 				break;
-			}
-
-		}
-		/*else if (IsPointerType(type.BaseType))
-		{
-			src = &va_arg(args, void*);
-		}*/
-		else
-		{
-			HAZE_LOG_ERR_W("三方库调用Haze函数暂时只支持默认类型!\n");
+			default:
+				INS_ERR_W("三方库调用Haze函数Push参数<%s>类型错误", GetHazeValueTypeString(type.BaseType));
+				break;
 		}
 
+		
 		PushParam(stack, src, size);
 		return size;
 	}

@@ -13,7 +13,7 @@ public:
 
 	virtual ~CompilerElementValue() override;
 
-	virtual HazeValueType GetBaseType() const { return m_Element->GetBaseType(); }
+	virtual HazeValueType GetBaseType() const;
 
 	HazeVariableType GetParentBaseType() const { return m_Parent->GetVariableType(); }
 

@@ -113,7 +113,7 @@ void HazeStack::Run(bool isHazeCall)
 
 		g_InstructionProcessor[(x_uint32)m_VM->m_Instructions[m_PC].InsCode](this);
 
-		if (/*isHazeCall && */m_CallHazeStack.size() == 0)
+		if (isHazeCall && m_CallHazeStack.size() == 0)
 		{
 			return;
 		}
@@ -206,8 +206,6 @@ void HazeStack::OnRet()
 	m_StackFrame.pop_back();
 
 	SubCallHazeTimes();
-
-	//HazeMemory::GetMemory()->TryGC();
 }
 
 void HazeStack::ResetCallHaze()
@@ -223,7 +221,7 @@ void HazeStack::ResetCallHaze()
 		tempStack.pop_back();
 	}
 
-	m_CallHazeStack = tempStack;
+	m_CallHazeStack = Move(tempStack);
 }
 
 void HazeStack::AddCallHazeTimes()

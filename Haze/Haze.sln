@@ -20,6 +20,8 @@ Global
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
+		UnrealDebug|x64 = UnrealDebug|x64
+		UnrealDebug|x86 = UnrealDebug|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.Debug|x64.ActiveCfg = Debug|x64
@@ -30,6 +32,10 @@ Global
 		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.Release|x64.Build.0 = Release|x64
 		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.Release|x86.ActiveCfg = Release|Win32
 		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.Release|x86.Build.0 = Release|Win32
+		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.UnrealDebug|x64.ActiveCfg = UnrealDebug|x64
+		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.UnrealDebug|x64.Build.0 = UnrealDebug|x64
+		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.UnrealDebug|x86.ActiveCfg = UnrealDebug|Win32
+		{F9E7CC42-BC39-4735-9040-5B1F7B756D81}.UnrealDebug|x86.Build.0 = UnrealDebug|Win32
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Debug|x64.ActiveCfg = Debug|x64
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Debug|x64.Build.0 = Debug|x64
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Debug|x86.ActiveCfg = Debug|Win32
@@ -38,6 +44,10 @@ Global
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x64.Build.0 = Release|x64
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x86.ActiveCfg = Release|Win32
 		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.Release|x86.Build.0 = Release|Win32
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.UnrealDebug|x64.ActiveCfg = UnrealDebug|x64
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.UnrealDebug|x64.Build.0 = UnrealDebug|x64
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.UnrealDebug|x86.ActiveCfg = UnrealDebug|Win32
+		{F8FABDA0-C17D-4B99-BDE6-62480386E31B}.UnrealDebug|x86.Build.0 = UnrealDebug|Win32
 		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Debug|x64.ActiveCfg = Debug|x64
 		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Debug|x64.Build.0 = Debug|x64
 		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Debug|x86.ActiveCfg = Debug|Win32
@@ -46,6 +56,10 @@ Global
 		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Release|x64.Build.0 = Release|x64
 		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Release|x86.ActiveCfg = Release|Win32
 		{002125F8-A25A-44DB-9D9C-412753FC4D77}.Release|x86.Build.0 = Release|Win32
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.UnrealDebug|x64.ActiveCfg = UnrealDebug|x64
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.UnrealDebug|x64.Build.0 = UnrealDebug|x64
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.UnrealDebug|x86.ActiveCfg = UnrealDebug|Win32
+		{002125F8-A25A-44DB-9D9C-412753FC4D77}.UnrealDebug|x86.Build.0 = UnrealDebug|Win32
 		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.Debug|x64.ActiveCfg = Debug|x64
 		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.Debug|x64.Build.0 = Debug|x64
 		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.Debug|x86.ActiveCfg = Debug|Win32
@@ -54,6 +68,10 @@ Global
 		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.Release|x64.Build.0 = Release|x64
 		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.Release|x86.ActiveCfg = Release|Win32
 		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.Release|x86.Build.0 = Release|Win32
+		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.UnrealDebug|x64.ActiveCfg = UnrealDebug|x64
+		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.UnrealDebug|x64.Build.0 = UnrealDebug|x64
+		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.UnrealDebug|x86.ActiveCfg = UnrealDebug|Win32
+		{2D8EE59A-058E-4D73-A2A0-A85BB96D926F}.UnrealDebug|x86.Build.0 = UnrealDebug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

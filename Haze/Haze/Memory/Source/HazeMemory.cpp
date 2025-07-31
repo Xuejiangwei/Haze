@@ -641,6 +641,13 @@ void HazeMemory::TryGC(bool forceGC)
 	}
 }
 
+void HazeMemory::ReleaseAll()
+{
+	m_ObjectList->MarkAllWhite();
+	m_MarkStage = MarkStage::MarkEnd;
+	Sweep();
+}
+
 void HazeMemory::ForceGC()
 {
 	m_IsForceGC = true;

@@ -16,6 +16,8 @@ public:
 
 	static bool IsEqual(ObjectClass* obj1, ObjectClass* obj2);
 
+	static ObjectClass* Create(HazeVM* vm, ClassData* classData);
+
 	const char* GetMember(const x_HChar* memberName);
 
 	void SetMember(const x_HChar* memberName, void* value);
@@ -24,6 +26,8 @@ private:
 	static void GetOffset(HAZE_OBJECT_CALL_PARAM);
 
 	static void SetOffset(HAZE_OBJECT_CALL_PARAM);
+
+	static void GetClassName(HAZE_OBJECT_CALL_PARAM);
 
 private:
 	x_uint32 m_DataGCIndex;

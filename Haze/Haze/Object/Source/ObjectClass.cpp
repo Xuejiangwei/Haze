@@ -1,5 +1,6 @@
 #include "HazePch.h"
 #include "ObjectClass.h"
+#include "ObjectString.h"
 #include "HazeMemory.h"
 #include "HazeVM.h"
 #include "HazeStack.h"
@@ -28,6 +29,7 @@ AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 	//info.Functions[H_TEXT("生成")] = { &ObjectArray::NewObjectArray, OBJ_TYPE_DEF(::Void, { OBJ_TYPE_DEF(::MultiVariable } };
 	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectClass::GetOffset, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64) } });
 	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectClass::SetOffset, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(UInt64), OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(H_TEXT("类名"), { &ObjectClass::GetClassName, OBJ_TYPE_DEF(String), { } });
 
 	return &info;
 }
@@ -35,6 +37,20 @@ AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 bool ObjectClass::IsEqual(ObjectClass* obj1, ObjectClass* obj2)
 {
 	return false;
+}
+
+ObjectClass* ObjectClass::Create(HazeVM* vm, ClassData* classData)
+{
+	auto allocaData = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
+	new(allocaData.first) ObjectClass(allocaData.second, vm, classData->TypeId);
+
+	auto constructor = vm->GetFunctionDataByName(GetHazeClassFunctionName(classData->Name, classData->Name));
+	if (constructor && constructor->Params.size() == 1)
+	{
+		vm->CallFunction(constructor, allocaData.first);
+	}
+
+	return (ObjectClass*)allocaData.first;
 }
 
 const char* ObjectClass::GetMember(const x_HChar* memberName)
@@ -119,4 +135,23 @@ void ObjectClass::SetOffset(HAZE_OBJECT_CALL_PARAM)
 
 	//HAZE_LOG_INFO(H_TEXT("Class Set <%d> <%s>\n"), index, memberInfo.Variable.Name.c_str());
 	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p> Set: <%s>\n"), classObj->m_ClassInfo->Name.c_str(), classObj, classObj->m_Data, (char*)classObj->m_Data + memberInfo.Offset, value);
+}
+
+void ObjectClass::GetClassName(HAZE_OBJECT_CALL_PARAM)
+{
+	ObjectClass* classObj;
+	x_uint64 index = 0;
+	char* value = nullptr;
+
+	GET_PARAM_START();
+	GET_PARAM(classObj);
+	if (!classObj)
+	{
+		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
+		OBJECT_ERR_W("对象<%s>为空", var.Variable.Name.c_str());
+		return;
+	}
+
+	auto name = ObjectString::Create(classObj->m_ClassInfo->Name.c_str(), true);
+	SET_RET_BY_TYPE(HAZE_VAR_TYPE(HazeValueType::String), name);
 }

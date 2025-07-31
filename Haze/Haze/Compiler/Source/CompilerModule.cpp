@@ -275,6 +275,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		x_uint32 dataSize;
 		stream >> dataSize;
 		stream >> ui64;
+		stream >> ui64;
 
 		V_Array<HString> parentName(ui64);
 		for (int j = 0; j < ui64; j++)
@@ -577,26 +578,8 @@ Share<CompilerFunction> CompilerModule::GetUpOneLevelClosureOrFunction()
 
 Share<CompilerFunction> CompilerModule::GetFunction(const HString& name)
 {
-	auto it = m_HashMap_Functions.find(name);
-	if (it != m_HashMap_Functions.end())
-	{
-		return it->second;
-	}
-	else if (!m_CurrClass.empty())
-	{
-		auto iter = m_HashMap_Classes.find(m_CurrClass);
-		if (iter != m_HashMap_Classes.end())
-		{
-			auto func = iter->second->FindFunction(name, nullptr);
-			if (func)
-			{
-				return func;
-			}
-
-		}
-	}
-
-	return nullptr;
+	SearchContext context;
+	return GetFunction_Internal(name, context);
 }
 
 bool CompilerModule::IsImportModule(CompilerModule* m) const
@@ -611,32 +594,16 @@ bool CompilerModule::IsImportModule(CompilerModule* m) const
 	return false;
 }
 
-const CompilerModule* CompilerModule::ExistGlobalValue(const HString& name) const
+CompilerModule* CompilerModule::ExistGlobalValue(const HString& name)
 {
-	auto variables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
-	for (auto& it : variables)
-	{
-		if (it.first == name)
-		{
-			return this;
-		}
-	}
-
-	for (auto& it : m_ImportModules)
-	{
-		auto m = it->ExistGlobalValue(name);
-		if (m)
-		{
-			return m;
-		}
-	}
-
-	return nullptr;
+	SearchContext context;
+	return ExistGlobalValue_Internal(name, context);
 }
 
 Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const HString& name)
 {
-	auto ret = m->GetEnum_Internal(name);
+	SearchContext context;
+	auto ret = m->GetEnum_Internal(name, context);
 	if (ret)
 	{
 		return ret;
@@ -1020,10 +987,11 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		for (x_int64 i = params.size() - 1; i >= 0; i--)
 		{
 			auto variable = params[i];
-			auto type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
-				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(params.size() - 1 - i) :
-				advancFunctionInfo->Params.size() > params.size() - 1 - i ? advancFunctionInfo->Params.at(params.size() - 1 - i)
-				: advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
+			auto index = params.size() - 1 - i;
+			auto type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(index) :
+				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(index) :
+				advancFunctionInfo->Params.size() > index ? advancFunctionInfo->Params.at(index) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
+
 
 			if (type != variable->GetVariableType() && !variable->GetVariableType().IsStrongerType(type))
 			{
@@ -1255,9 +1223,7 @@ Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const HStri
 
 	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = &it->first;
 
-	HazeVariableType defineVarType;
-	defineVarType.BaseType = HazeValueType::String;
-
+	HazeVariableType defineVarType = HAZE_VAR_TYPE(HazeValueType::String);
 	it->second = CreateVariable(this, defineVarType, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
 
 	HazeValue& hazeValue = const_cast<HazeValue&>(it->second->GetValue());
@@ -1287,7 +1253,8 @@ x_uint32 CompilerModule::GetGlobalStringIndex(Share<CompilerValue> value)
 
 Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const HString& name)
 {
-	auto ret = m->GetGlobalVariable_Internal(name);
+	SearchContext context;
+	auto ret = m->GetGlobalVariable_Internal(name, context);
 	if (ret)
 	{
 		return ret;
@@ -1299,7 +1266,8 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const 
 bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset,
 	V_Array<Pair<x_uint64, CompilerValue*>>* offsets)
 {
-	if (m->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
+	SearchContext context;
+	if (m->GetGlobalVariableName_Internal(value, outName, getOffset, offsets, context))
 	{
 		return true;
 	}
@@ -1325,7 +1293,96 @@ bool CompilerModule::GetClosureVariableName(CompilerModule* m, const Share<Compi
 	return false;
 }
 
-Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& name)
+Share<CompilerFunction> CompilerModule::GetFunction_Internal(const HString& name, SearchContext& context)
+{
+	auto it = m_HashMap_Functions.find(name);
+	if (it != m_HashMap_Functions.end())
+	{
+		return it->second;
+	}
+	else if (!m_CurrClass.empty())
+	{
+		auto iter = m_HashMap_Classes.find(m_CurrClass);
+		if (iter != m_HashMap_Classes.end())
+		{
+			auto func = iter->second->FindFunction(name, nullptr);
+			if (func)
+			{
+				return func;
+			}
+
+		}
+	}
+
+	if (context.CurrentDepth >= context.MaxDepth)
+	{
+		HAZE_LOG_ERR_W("查找类<%s>: 递归深度过深，可能存在循环依赖\n", name.c_str());
+		return nullptr;
+	}
+
+	if (context.VisitedModules.find(this) != context.VisitedModules.end())
+	{
+		//HAZE_LOG_ERR_W("GetClass: 检测到循环依赖，模块<%s>已被访问\n", GetName().c_str());
+		return nullptr;
+	}
+
+	context.VisitedModules.insert(this);
+	context.CurrentDepth++;
+
+	for (auto& iter : m_ImportModules)
+	{
+		auto func = iter->GetFunction_Internal(name, context);
+		if (func)
+		{
+			return func;
+		}
+	}
+
+	context.CurrentDepth--;
+
+	return nullptr;
+}
+
+CompilerModule* CompilerModule::ExistGlobalValue_Internal(const HString& name, SearchContext& context)
+{
+	auto variables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
+	for (auto& it : variables)
+	{
+		if (it.first == name)
+		{
+			return this;
+		}
+	}
+
+	if (context.CurrentDepth >= context.MaxDepth)
+	{
+		HAZE_LOG_ERR_W("查找类<%s>: 递归深度过深，可能存在循环依赖\n", name.c_str());
+		return nullptr;
+	}
+
+	if (context.VisitedModules.find(this) != context.VisitedModules.end())
+	{
+		//HAZE_LOG_ERR_W("GetClass: 检测到循环依赖，模块<%s>已被访问\n", GetName().c_str());
+		return nullptr;
+	}
+
+	context.VisitedModules.insert(this);
+	context.CurrentDepth++;
+
+	for (auto& it : m_ImportModules)
+	{
+		auto m = it->ExistGlobalValue_Internal(name, context);
+		if (m)
+		{
+			return m;
+		}
+	}
+
+	context.CurrentDepth--;
+	return nullptr;
+}
+
+Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& name, SearchContext& context)
 {
 	auto variables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
 	for (auto& it : variables)
@@ -1336,20 +1393,36 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& n
 		}
 	}
 
+	if (context.CurrentDepth >= context.MaxDepth)
+	{
+		HAZE_LOG_ERR_W("查找全局变量<%s>: 递归深度过深，可能存在循环依赖\n", name.c_str());
+		return nullptr;
+	}
+
+	if (context.VisitedModules.find(this) != context.VisitedModules.end())
+	{
+		//HAZE_LOG_ERR_W("GetClass: 检测到循环依赖，模块<%s>已被访问\n", GetName().c_str());
+		return nullptr;
+	}
+
+	context.VisitedModules.insert(this);
+	context.CurrentDepth++;
+
 	for (auto& m : m_ImportModules)
 	{
-		auto ret = m->GetGlobalVariable_Internal(name);
+		auto ret = m->GetGlobalVariable_Internal(name, context);
 		if (ret)
 		{
 			return ret;
 		}
 	}
 
+	context.CurrentDepth--;
 	return nullptr;
 }
 
 bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset,
-	V_Array<Pair<x_uint64, CompilerValue*>>* offsets)
+	V_Array<Pair<x_uint64, CompilerValue*>>* offsets, SearchContext& context)
 {
 	if (value->IsRegister())
 	{
@@ -1367,9 +1440,24 @@ bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& 
 		}
 	}
 
+	if (context.CurrentDepth >= context.MaxDepth)
+	{
+		HAZE_LOG_ERR_W("查找全局变量名: 递归深度过深，可能存在循环依赖\n");
+		return false;
+	}
+
+	if (context.VisitedModules.find(this) != context.VisitedModules.end())
+	{
+		//HAZE_LOG_ERR_W("GetClass: 检测到循环依赖，模块<%s>已被访问\n", GetName().c_str());
+		return false;
+	}
+
+	context.VisitedModules.insert(this);
+	context.CurrentDepth++;
+
 	for (auto& it : m_ImportModules)
 	{
-		if (it->GetGlobalVariableName_Internal(value, outName, getOffset, offsets))
+		if (it->GetGlobalVariableName_Internal(value, outName, getOffset, offsets, context))
 		{
 			return true;
 		}
@@ -1384,30 +1472,11 @@ bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& 
 		}
 	}
 
-	return value->TryGetVariableName(outName);
+	context.CurrentDepth--;
+	return false;
 }
 
-Share<CompilerEnum> CompilerModule::GetEnum_Internal(const HString& name)
-{
-	auto iter = m_HashMap_Enums.find(name);
-	if (iter != m_HashMap_Enums.end())
-	{
-		return iter->second;
-	}
-
-	for (auto& m : m_ImportModules)
-	{
-		auto ret = m->GetEnum_Internal(name);
-		if (ret)
-		{
-			return ret;
-		}
-	}
-
-	return nullptr;
-}
-
-Share<CompilerClass> CompilerModule::GetClass(const HString& className)
+Share<CompilerClass> CompilerModule::GetClass_Internal(const HString& className, SearchContext& context)
 {
 	auto iter = m_HashMap_Classes.find(className);
 	if (iter != m_HashMap_Classes.end())
@@ -1415,16 +1484,74 @@ Share<CompilerClass> CompilerModule::GetClass(const HString& className)
 		return iter->second;
 	}
 
+	if (context.CurrentDepth >= context.MaxDepth)
+	{
+		HAZE_LOG_ERR_W("查找类<%s>: 递归深度过深，可能存在循环依赖\n", className.c_str());
+		return nullptr;
+	}
+
+	if (context.VisitedModules.find(this) != context.VisitedModules.end())
+	{
+		//HAZE_LOG_ERR_W("GetClass: 检测到循环依赖，模块<%s>已被访问\n", GetName().c_str());
+		return nullptr;
+	}
+
+	context.VisitedModules.insert(this);
+	context.CurrentDepth++;
+
 	for (auto& it : m_ImportModules)
 	{
-		auto ret = it->GetClass(className);
+		auto ret = it->GetClass_Internal(className, context);
 		if (ret)
 		{
 			return ret;
 		}
 	}
 
+	context.CurrentDepth--;
 	return nullptr;
+}
+
+Share<CompilerEnum> CompilerModule::GetEnum_Internal(const HString& name, SearchContext& context)
+{
+	auto iter = m_HashMap_Enums.find(name);
+	if (iter != m_HashMap_Enums.end())
+	{
+		return iter->second;
+	}
+
+	if (context.CurrentDepth >= context.MaxDepth)
+	{
+		HAZE_LOG_ERR_W("查找枚举<%s>: 递归深度过深，可能存在循环依赖\n", name.c_str());
+		return nullptr;
+	}
+
+	if (context.VisitedModules.find(this) != context.VisitedModules.end())
+	{
+		//HAZE_LOG_ERR_W("GetClass: 检测到循环依赖，模块<%s>已被访问\n", GetName().c_str());
+		return nullptr;
+	}
+
+	context.VisitedModules.insert(this);
+	context.CurrentDepth++;
+
+	for (auto& it : m_ImportModules)
+	{
+		auto ret = it->GetEnum_Internal(name, context);
+		if (ret)
+		{
+			return ret;
+		}
+	}
+
+	context.CurrentDepth--;
+	return nullptr;
+}
+
+Share<CompilerClass> CompilerModule::GetClass(const HString& className)
+{
+	SearchContext context;
+	return GetClass_Internal(className, context);
 }
 
 x_uint32 CompilerModule::GetClassSize(const HString& className)

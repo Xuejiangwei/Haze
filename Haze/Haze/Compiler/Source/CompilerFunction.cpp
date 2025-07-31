@@ -102,26 +102,19 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeVariableType
 	}
 
 	Share<CompilerValue> v = nullptr;
-	if (IsArrayType(type.BaseType))
+
+
+	switch (type.BaseType)
 	{
-		v = MakeShare<CompilerArrayValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
-	}
-	else if (IsClassType(type.BaseType))
-	{
-		v = MakeShare<CompilerClassValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
-	}
-	else if (IsStringType(type.BaseType))
-	{
-		v = MakeShare<CompilerStringValue>(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
-	}
-	else
-	{
-		v = MakeShare<CompilerValue>(m_Module, type, HazeVariableScope::Local,
-			HazeDataDesc::RegisterTemp, 0);
+		case HazeValueType::Refrence:
+			HAZE_LOG_ERR_W("创建错误类型的临时变量\n");
+			break;
+		default:
+			v = CreateVariable(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
+			break;
 	}
 
 	m_TempRegisters.push_back({ v , offset });
-
 
 	/*if (IsStringType(type.BaseType) && str)
 	{

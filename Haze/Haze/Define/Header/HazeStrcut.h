@@ -93,9 +93,9 @@ struct HazeVariableType
 	template<typename Class>
 	void StringStream(Class* pThis, void(Class::* typeCall)(x_uint32&)) { StringStream(pThis, typeCall, *this); }
 
-	static HazeVariableType GetDynamicClassUnknow()
+	static HazeVariableType GetDynamicClassUnknowType()
 	{
-		return HazeVariableType(HazeValueType::DynamicClassUnknow, HAZE_TYPE_ID(HazeValueType::DynamicClassUnknow));
+		return HAZE_VAR_TYPE(HazeValueType::DynamicClassUnknow);
 	}
 
 	static HazeVariableType StringStreamFrom(HAZE_IFSTREAM& stream)

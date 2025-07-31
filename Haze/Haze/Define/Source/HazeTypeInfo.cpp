@@ -149,12 +149,24 @@ const HString* HazeTypeInfoMap::GetEnumName(x_uint32 typeId)
 
 const HazeTypeInfoMap::TypeInfo* HazeTypeInfoMap::GetTypeInfoById(x_uint32 typeId)
 {
-	return &m_Map[typeId];
+	auto iter = m_Map.find(typeId);
+	if (iter != m_Map.end())
+	{
+		return &iter->second;
+	}
+
+	return nullptr;
 }
 
 const HazeComplexTypeInfo* HazeTypeInfoMap::GetTypeById(x_uint32 typeId)
 {
-	return &m_Map[typeId].Info;
+	auto iter = m_Map.find(typeId);
+	if (iter != m_Map.end())
+	{
+		return &iter->second.Info;
+	}
+
+	return nullptr;
 }
 
 const x_uint32 HazeTypeInfoMap::GetTypeId(const HString& name) const

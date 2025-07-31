@@ -48,7 +48,8 @@ bool IsCanCastToken(HazeToken token)
 	case HazeToken::UInt64:
 	case HazeToken::Float32:
 	case HazeToken::Float64:
-	case HazeToken::Enum:
+	case HazeToken::CustomEnum:
+	case HazeToken::CustomClass:
 		return true;
 	default:
 		break;

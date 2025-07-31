@@ -106,6 +106,8 @@
 #define TOKEN_VIRTUAL					H_TEXT("虚")
 #define TOKEN_PUREVIRTUAL				H_TEXT("纯虚")
 
+//#define TOKEN_STATIC					H_TEXT("净")
+
 #define TOKEN_DEFINE					H_TEXT("定义")
 
 #define TOKEN_STATIC_LIBRARY			H_TEXT("静态库")

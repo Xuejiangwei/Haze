@@ -85,6 +85,7 @@ public:
 	{
 		HString Name;
 		x_uint32 Size;
+		x_uint32 TypeId;
 		V_Array<ClassMemberData> Members;
 		V_Array<HString> ParentClasses;
 	};

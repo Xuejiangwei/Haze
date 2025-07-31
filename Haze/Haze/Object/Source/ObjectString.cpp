@@ -14,10 +14,10 @@ ObjectString::ObjectString(x_uint32 gcIndex, const x_HChar* str, bool fixedCapac
 	{
 		m_Length = wcslen(str);
 		m_Capacity = (m_Length + 1) * sizeof(x_HChar);
-		if (!fixedCapacity)
+		/*if (!fixedCapacity)
 		{
 			m_Capacity = m_Length;
-		}
+		}*/
 
 		auto pair = HazeMemory::AllocaGCData(m_Capacity, GC_ObjectType::StringData);
 		m_Data = pair.first;
@@ -44,6 +44,28 @@ AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
 bool ObjectString::IsEqual(ObjectString* obj1, ObjectString* obj2)
 {
 	return obj1 && obj2 && HString((x_HChar*)obj1->m_Data) == HString((x_HChar*)obj2->m_Data);
+}
+
+ObjectString* ObjectString::Create(const x_HChar* str, bool fixedCapacity)
+{
+	auto allocaData = HazeMemory::AllocaGCData(sizeof(ObjectString), GC_ObjectType::String);
+	return new(allocaData.first) ObjectString(allocaData.second, str, fixedCapacity);
+}
+
+x_uint64 ObjectString::Hash() const
+{
+	// FNV-1a哈希算法实现
+	static constexpr x_uint32 FNV_PRIME = 0x01000193;
+	static constexpr x_uint32 FNV_OFFSET_BASIS = 0x811C9DC5;
+
+	uint32_t hash = FNV_OFFSET_BASIS;
+	for (x_uint64 i = 0; i < m_Length; ++i)
+	{
+		hash ^= static_cast<x_uint32>(((x_HChar*)m_Data)[i]);
+		hash *= FNV_PRIME;
+	}
+
+	return hash;
 }
 
 void ObjectString::Append(HAZE_OBJECT_CALL_PARAM)

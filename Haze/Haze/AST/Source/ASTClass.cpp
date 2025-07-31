@@ -62,16 +62,25 @@ void ASTClass::CodeGen()
 		for (x_uint64 j = 0; j < m_ClassDatas[i].second.size(); j++)
 		{
 			auto v = m_ClassDatas[i].second[j]->CodeGen(nullptr);
-			if (v->IsRefrence())
+			if (v)
 			{
-				auto m_Location = m_ClassDatas[i].second[j]->m_Location;
-				AST_ERR_W("类<%s>成员不允许是引用类型", m_ClassName.c_str());
-				return;
+				if (v->IsRefrence())
+				{
+					auto m_Location = m_ClassDatas[i].second[j]->m_Location;
+					AST_ERR_W("类<%s>成员不允许是引用类型", m_ClassName.c_str());
+					return;
+				}
+				else
+				{
+					v->SetDataDesc(m_ClassDatas[i].first);
+					datas.push_back({ m_ClassDatas[i].second[j]->GetName(), v });
+				}
 			}
 			else
 			{
-				v->SetDataDesc(m_ClassDatas[i].first);
-				datas.push_back({ m_ClassDatas[i].second[j]->GetName(), v });
+				auto m_Location = m_ClassDatas[i].second[j]->m_Location;
+				AST_ERR_W("类<%s>成员<%s>生成错误", m_ClassName.c_str(), m_ClassDatas[i].second[j]->GetName());
+				return;
 			}
 		}
 	}

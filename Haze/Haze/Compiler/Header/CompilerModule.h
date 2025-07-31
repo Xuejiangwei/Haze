@@ -20,6 +20,14 @@ class CompilerModule
 {
 	friend class Compiler;
 	friend struct PushTempRegister;
+private:
+	struct SearchContext
+	{
+		HashSet<const CompilerModule*> VisitedModules;
+		x_uint32 MaxDepth = 10;
+		x_uint32 CurrentDepth = 0;
+	};
+
 public:
 
 	CompilerModule(Compiler* compiler, const HString& moduleName, const HString& modulePath);
@@ -97,7 +105,7 @@ public:
 
 	bool IsImportModule(CompilerModule* m) const;
 
-	const CompilerModule* ExistGlobalValue(const HString& name) const;
+	CompilerModule* ExistGlobalValue(const HString& name);
 
 	Share<CompilerValue> GetOrCreateGlobalStringVariable(const HString& str);
 
@@ -169,12 +177,18 @@ private:
 	//void GenICode_TypeInfo();
 
 private:
-	Share<CompilerValue> GetGlobalVariable_Internal(const HString& name);
+	Share<CompilerFunction> GetFunction_Internal(const HString& name, SearchContext& context);
+
+	CompilerModule* ExistGlobalValue_Internal(const HString& name, SearchContext& context);
+
+	Share<CompilerValue> GetGlobalVariable_Internal(const HString& name, SearchContext& context);
 
 	bool GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset,
-		V_Array<Pair<x_uint64, CompilerValue*>>* offsets);
+		V_Array<Pair<x_uint64, CompilerValue*>>* offsets, SearchContext& context);
 
-	Share<CompilerEnum> GetEnum_Internal(const HString& name);
+	Share<CompilerClass> GetClass_Internal(const HString& className, SearchContext& context);
+
+	Share<CompilerEnum> GetEnum_Internal(const HString& name, SearchContext& context);
 
 private:
 	Compiler* m_Compiler;

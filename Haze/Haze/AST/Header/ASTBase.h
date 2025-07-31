@@ -211,7 +211,7 @@ class ASTVariableDefine_Hash : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Hash(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, x_uint32 templateTypeId);
+		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId);
 	virtual ~ASTVariableDefine_Hash() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
