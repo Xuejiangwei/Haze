@@ -196,7 +196,7 @@ ObjectClass* HazeVM::CreateObjectClass(const x_HChar* className, ...)
 	auto pair = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
 	new(pair.first) ObjectClass(pair.second, this, m_TypeInfoMap->GetTypeIdByClassName(className));
 
-	auto& constructorFunc = GetFunctionByName(GetHazeClassFunctionName(className, className));
+	auto& constructorFunc = GetFunctionByName(className, className);
 
 	va_list args;
 	//va_start(args, constructorFunc.Params.size());
@@ -317,15 +317,15 @@ int HazeVM::GetFucntionIndexByName(const HString& name)
 	return Iter->second;
 }
 
-const FunctionData& HazeVM::GetFunctionByName(const HString& name)
+const FunctionData& HazeVM::GetFunctionByName(const HString& name, const x_HChar* className)
 {
-	int index = GetFucntionIndexByName(name);
+	int index = GetFucntionIndexByName(className ? GetHazeClassFunctionName(className, name) : name);
 	return m_FunctionTable[index];
 }
 
-const FunctionData* HazeVM::GetFunctionDataByName(const HString& name)
+const FunctionData* HazeVM::GetFunctionDataByName(const HString& name, const x_HChar* className)
 {
-	int index = GetFucntionIndexByName(name);
+	int index = GetFucntionIndexByName(className ? GetHazeClassFunctionName(className, name) : name);
 	return index >= 0 ? &m_FunctionTable[index] : nullptr;
 }
 

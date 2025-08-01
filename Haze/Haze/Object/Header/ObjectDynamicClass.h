@@ -28,6 +28,8 @@ public:
 
 	~ObjectDynamicClass();
 
+	void* GetData() { return m_Data; }
+
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 private:
 	static void GetMember(HAZE_OBJECT_CALL_PARAM);

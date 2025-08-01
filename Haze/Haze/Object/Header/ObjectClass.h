@@ -22,6 +22,8 @@ public:
 
 	void SetMember(const x_HChar* memberName, void* value);
 
+	const ClassData* GetClassData() const { return m_ClassInfo; }
+
 private:
 	static void GetOffset(HAZE_OBJECT_CALL_PARAM);
 

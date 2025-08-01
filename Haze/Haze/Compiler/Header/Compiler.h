@@ -104,6 +104,8 @@ public:
 
 	~Compiler();
 
+	void CollectAllModule();
+
 	void RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassIndexInfo info);
 
 	void PreRegisterClass(const ClassData& data);

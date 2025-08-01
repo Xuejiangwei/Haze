@@ -66,9 +66,9 @@ public:
 
 	int GetFucntionIndexByName(const HString& name);
 
-	const FunctionData& GetFunctionByName(const HString& name);
+	const FunctionData& GetFunctionByName(const HString& name, const x_HChar* className = nullptr);
 
-	const FunctionData* GetFunctionDataByName(const HString& name);
+	const FunctionData* GetFunctionDataByName(const HString& name, const x_HChar* className = nullptr);
 
 	const class ObjectString* GetConstantStringByIndex(int index) const;
 

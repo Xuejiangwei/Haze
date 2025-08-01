@@ -493,6 +493,18 @@ Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<Co
 	if (!compilerClass)
 	{
 		auto typeId = m_Compiler->RegisterClassToSymbolTable(name);
+
+		// 检验是否存在循环继承
+		HazeVariableType tempType(HazeValueType::Class, typeId);
+		for (auto& parent : parentClass)
+		{
+			if (parent->IsParentClass(tempType))
+			{
+				COMPILER_ERR_MODULE_W("类<%s>与类<%s>存在循环继承", m_Compiler, GetName().c_str(), name.c_str(), parent->GetName().c_str());
+				return nullptr;
+			}
+		}
+
 		m_HashMap_Classes[name] = MakeShare<CompilerClass>(this, name, parentClass, classData, typeId);
 		compilerClass = m_HashMap_Classes[name];
 

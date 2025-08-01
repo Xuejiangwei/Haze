@@ -61,6 +61,11 @@ Compiler::~Compiler()
 {
 }
 
+void Compiler::CollectAllModule()
+{
+
+}
+
 void Compiler::RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassIndexInfo info)
 {
 	if (IsAdvanceType(type))
