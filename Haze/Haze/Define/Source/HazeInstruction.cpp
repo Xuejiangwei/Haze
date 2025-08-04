@@ -651,7 +651,7 @@ public:
 			{
 				x_uint32 tempEBP = stack->m_EBP;
 				stack->m_EBP = stack->m_ESP;
-				x_int64 paramByteSize = 0;
+				int paramByteSize = 0;
 				
 #if HAZE_CALL_LOG
 				HString functionName = stack->m_VM->GetAdvanceFunctionName((x_uint16)oper[0].Extra.ObjectCall.Index);;
@@ -1209,6 +1209,8 @@ private:
 	//只能C++多参数函数调用
 	static void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, int paramNum, va_list& args)
 	{
+		assert(paramNum == funcData->Params.size());
+
 		stack->m_EBP = stack->m_ESP;
 
 		int size = 0;

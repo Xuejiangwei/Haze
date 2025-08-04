@@ -171,7 +171,7 @@ public:
 
 	Share<CompilerValue> GenConstantValueBool(bool isTrue);
 
-	Share<CompilerValue> GetNullPtr(const HazeVariableType& type);
+	Share<CompilerValue> GetNullPtr();
 
 	bool IsConstantValueBoolTrue(Share<CompilerValue> v);
 
@@ -212,7 +212,7 @@ public:
 
 public:
 	Share<CompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
-		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr, x_uint32 typeId = 0);
+		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr);
 
 	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
 		Share<CompilerValue> RefValue = nullptr);
@@ -317,7 +317,7 @@ public:
 	AdvanceFunctionInfo* GetAdvanceFunctionInfo(HazeValueType advanceType, const HString& name);
 
 	Share<CompilerEnum> GetBaseModuleEnum(const HString& name);
-	Share<CompilerEnum> GetBaseModuleEnum(x_uint32 typeId);
+	//Share<CompilerEnum> GetBaseModuleEnum(x_uint32 typeId);
 
 	Share<CompilerValue> GetBaseModuleGlobalVariable(const HString& name);
 

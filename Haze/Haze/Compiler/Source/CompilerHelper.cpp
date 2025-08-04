@@ -158,8 +158,7 @@ Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeV
 		/*var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : */nullptr);
 }
 
-bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
-	const CompilerValue* value, HString& outName)
+bool TrtGetVariableName(const Pair<HString, Share<CompilerValue>>& data, const CompilerValue* value, HString& outName)
 {
 	if (data.second.get() == value)
 	{

@@ -894,7 +894,7 @@ void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::Functio
 }
 
 inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
-	HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister, ModuleUnit::GlobalDataTable& newGlobalDataTable)
+	HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister)
 {
 	{
 		auto iterIndex = localVariable.find(operatorData.Variable.Name);
@@ -1023,7 +1023,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 					{
 						if (IS_SCOPE_LOCAL(operatorData.Scope))
 						{
-							ResetLocalOperatorAddress(operatorData, m_CurrFunction, localVariables, tempRegisters, newGlobalDataTable);
+							ResetLocalOperatorAddress(operatorData, m_CurrFunction, localVariables, tempRegisters);
 						}
 						else if (IS_SCOPE_GLOBAL(operatorData.Scope))
 						{

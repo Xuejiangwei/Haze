@@ -78,7 +78,6 @@ x_uint32 GetSizeByHazeType(HazeValueType type)
 			return 0;
 		default:
 			HAZE_LOG_ERR_W("获得类型<%s>的大小错误!\n", GetHazeValueTypeString(type));
-			throw;
 			break;
 	}
 	return 0;
@@ -358,44 +357,54 @@ void CalculateValue(InstructionOpCode typeCode, T& target, T& oper1, T& oper2, v
 {
 	switch (typeCode)
 	{
-	case InstructionOpCode::ADD:
-		target = oper1 + oper2;
-		break;
-	case InstructionOpCode::SUB:
-		target = oper1 - oper2;
-		break;
-	case InstructionOpCode::MUL:
-		target = oper1 * oper2;
-		break;
-	case InstructionOpCode::DIV:
-		target = oper1 / oper2;
-		break;
-	case InstructionOpCode::MOD:
-		target = oper1 % oper2;
-		break;
-	case InstructionOpCode::BIT_AND:
-		target = oper1 & oper2;
-		break;
-	case InstructionOpCode::BIT_OR:
-		target = oper1 | oper2;
-		break;
-	case InstructionOpCode::BIT_XOR:
-		target = oper1 ^ oper2;
-		break;
-	case InstructionOpCode::SHL:
-		target = oper1 << oper2;
-		break;
-	case InstructionOpCode::SHR:
-		target = oper1 >> oper2;
-		break;
-	case InstructionOpCode::BIT_NEG:
-		target = ~oper1;
-		break;
-	case InstructionOpCode::NEG:
-		target = oper1 * -1;
-		break;
-	default:
-		break;
+		case InstructionOpCode::ADD:
+			target = oper1 + oper2;
+			break;
+		case InstructionOpCode::SUB:
+			target = oper1 - oper2;
+			break;
+		case InstructionOpCode::MUL:
+			target = oper1 * oper2;
+			break;
+		case InstructionOpCode::DIV:
+			target = oper1 / oper2;
+			break;
+		case InstructionOpCode::MOD:
+			target = oper1 % oper2;
+			break;
+		case InstructionOpCode::BIT_AND:
+			target = oper1 & oper2;
+			break;
+		case InstructionOpCode::BIT_OR:
+			target = oper1 | oper2;
+			break;
+		case InstructionOpCode::BIT_XOR:
+			target = oper1 ^ oper2;
+			break;
+		case InstructionOpCode::SHL:
+			target = oper1 << oper2;
+			break;
+		case InstructionOpCode::SHR:
+			target = oper1 >> oper2;
+			break;
+		case InstructionOpCode::BIT_NEG:
+			target = ~oper1;
+			break;
+		case InstructionOpCode::NEG:
+			target = oper1 * -1;
+			break;
+		default:
+		{
+			if (stack)
+			{
+				INS_ERR_CODE_W("目前不能参与计算", typeCode);
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("目前不能参与计算", typeCode);
+			}
+		}
+			break;
 	}
 }
 
@@ -436,28 +445,30 @@ void CalculateValue(InstructionOpCode typeCode, double& target, double& oper1, d
 {
 	switch (typeCode)
 	{
-	case InstructionOpCode::ADD:
-		target = oper1 + oper2;
-		break;
-	case InstructionOpCode::SUB:
-		target = oper1 - oper2;
-		break;
-	case InstructionOpCode::MUL:
-		target = oper1 * oper2;
-		break;
-	case InstructionOpCode::DIV:
-		target = oper1 / oper2;
-		break;
-	default:
-		if (stack)
+		case InstructionOpCode::ADD:
+			target = oper1 + oper2;
+			break;
+		case InstructionOpCode::SUB:
+			target = oper1 - oper2;
+			break;
+		case InstructionOpCode::MUL:
+			target = oper1 * oper2;
+			break;
+		case InstructionOpCode::DIV:
+			target = oper1 / oper2;
+			break;
+		default:
 		{
-			INS_ERR_CODE_W("64位浮点数计算错误", typeCode);
+			if (stack)
+			{
+				INS_ERR_CODE_W("64位浮点数计算错误", typeCode);
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("64位浮点数计算错误", typeCode);
+			}
 		}
-		else
-		{
-			HAZE_LOG_ERR_W("64位浮点数计算错误", typeCode);
-		}
-		break;
+			break;
 	}
 }
 
@@ -466,19 +477,21 @@ void CalculateValue(InstructionOpCode typeCode, bool& target, bool& oper1, bool&
 {
 	switch (typeCode)
 	{
-	case InstructionOpCode::NOT:
-		target = !oper1;
-		break;
-	default:
-		if (stack)
+		case InstructionOpCode::NOT:
+			target = !oper1;
+			break;
+		default:
 		{
-			INS_ERR_CODE_W("布尔计算错误", typeCode);
+			if (stack)
+			{
+				INS_ERR_CODE_W("布尔计算错误", typeCode);
+			}
+			else
+			{
+				HAZE_LOG_ERR_W("布尔计算错误", typeCode);
+			}
 		}
-		else
-		{
-			HAZE_LOG_ERR_W("布尔计算错误", typeCode);
-		}
-		break;
+			break;
 	}
 }
 
@@ -645,71 +658,71 @@ void CompareValueByType(HazeValueType type, HazeRegister* hazeRegister, const vo
 {
 	switch (type)
 	{
-	case HazeValueType::Bool:
-	{
-		TWO_VARIABLE_DEFINE_INIT(bool, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::Int32:
-	{
-		TWO_VARIABLE_DEFINE_INIT(x_int32, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::UInt32:
-	{
-		TWO_VARIABLE_DEFINE_INIT(x_uint32, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::Int64:
-	{
-		TWO_VARIABLE_DEFINE_INIT(x_int64, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::UInt64:
-	{
-		TWO_VARIABLE_DEFINE_INIT(x_uint64, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::Float32:
-	{
-		TWO_VARIABLE_DEFINE_INIT(x_float32, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	
-	case HazeValueType::Float64:
-	{
-		TWO_VARIABLE_DEFINE_INIT(x_float64, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	case HazeValueType::Array:
-	case HazeValueType::Class:
-	//case HazeValueType::String:
-	case HazeValueType::Function:
-	case HazeValueType::DynamicClass:
-	{
-		//uint64 s = *(uint64*)source, t = *(uint64*)target;
-		TWO_VARIABLE_DEFINE_INIT(x_uint64, source, target);
-		VARIABLE_COMPARE();
-		COMPARE_ASSIGN();
-	}
-	break;
-	default:
-		HAZE_LOG_ERR_W("类型比较错误!\n");
+		case HazeValueType::Bool:
+		{
+			TWO_VARIABLE_DEFINE_INIT(bool, source, target);
+			VARIABLE_COMPARE();
+			COMPARE_ASSIGN();
+		}
 		break;
+		case HazeValueType::Int32:
+		{
+			TWO_VARIABLE_DEFINE_INIT(x_int32, source, target);
+			VARIABLE_COMPARE();
+			COMPARE_ASSIGN();
+		}
+		break;
+		case HazeValueType::UInt32:
+		{
+			TWO_VARIABLE_DEFINE_INIT(x_uint32, source, target);
+			VARIABLE_COMPARE();
+			COMPARE_ASSIGN();
+		}
+		break;
+		case HazeValueType::Int64:
+		{
+			TWO_VARIABLE_DEFINE_INIT(x_int64, source, target);
+			VARIABLE_COMPARE();
+			COMPARE_ASSIGN();
+		}
+		break;
+		case HazeValueType::UInt64:
+		{
+			TWO_VARIABLE_DEFINE_INIT(x_uint64, source, target);
+			VARIABLE_COMPARE();
+			COMPARE_ASSIGN();
+		}
+		break;
+		case HazeValueType::Float32:
+		{
+			TWO_VARIABLE_DEFINE_INIT(x_float32, source, target);
+			VARIABLE_COMPARE();
+			COMPARE_ASSIGN();
+		}
+		break;
+	
+		case HazeValueType::Float64:
+		{
+			TWO_VARIABLE_DEFINE_INIT(x_float64, source, target);
+			VARIABLE_COMPARE();
+			COMPARE_ASSIGN();
+		}
+		break;
+		case HazeValueType::Array:
+		case HazeValueType::Class:
+		//case HazeValueType::String:
+		case HazeValueType::Function:
+		case HazeValueType::DynamicClass:
+		{
+			//uint64 s = *(uint64*)source, t = *(uint64*)target;
+			TWO_VARIABLE_DEFINE_INIT(x_uint64, source, target);
+			VARIABLE_COMPARE();
+			COMPARE_ASSIGN();
+		}
+		break;
+		default:
+			HAZE_LOG_ERR_W("类型比较错误!\n");
+			break;
 	}
 }
 
@@ -756,7 +769,6 @@ bool IsEqualByType(HazeValueType type, HazeValue v1, HazeValue v2)
 			return v1.Value.Pointer == v2.Value.Pointer;
 		default:
 			HAZE_LOG_ERR_W("类型<%s>不能比较相等!\n", GetHazeValueTypeString(type));
-			throw;
 			break;
 	}
 
@@ -853,26 +865,26 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value)
 {
 	switch (type)
 	{
-	case HazeValueType::Bool:
-		return (HAZE_BINARY_CHAR*)&value.Value.Bool;
-	case HazeValueType::Int32:
-		return (HAZE_BINARY_CHAR*)&value.Value.Int32;
-	case HazeValueType::UInt32:
-		return (HAZE_BINARY_CHAR*)&value.Value.UInt32;
-	case HazeValueType::Int64:
-		return (HAZE_BINARY_CHAR*)&value.Value.Int64;
-	case HazeValueType::UInt64:
-		return (HAZE_BINARY_CHAR*)&value.Value.UInt64;
-	case HazeValueType::Float32:
-		return (HAZE_BINARY_CHAR*)&value.Value.Float32;
-	case HazeValueType::Float64:
-		return (HAZE_BINARY_CHAR*)&value.Value.Float64;
-	case HazeValueType::Array:
-	case HazeValueType::Class:
-	case HazeValueType::Function:
-		return (HAZE_BINARY_CHAR*)&value.Value.UInt64;
-	default:
-		break;
+		case HazeValueType::Bool:
+			return (HAZE_BINARY_CHAR*)&value.Value.Bool;
+		case HazeValueType::Int32:
+			return (HAZE_BINARY_CHAR*)&value.Value.Int32;
+		case HazeValueType::UInt32:
+			return (HAZE_BINARY_CHAR*)&value.Value.UInt32;
+		case HazeValueType::Int64:
+			return (HAZE_BINARY_CHAR*)&value.Value.Int64;
+		case HazeValueType::UInt64:
+			return (HAZE_BINARY_CHAR*)&value.Value.UInt64;
+		case HazeValueType::Float32:
+			return (HAZE_BINARY_CHAR*)&value.Value.Float32;
+		case HazeValueType::Float64:
+			return (HAZE_BINARY_CHAR*)&value.Value.Float64;
+		case HazeValueType::Array:
+		case HazeValueType::Class:
+		case HazeValueType::Function:
+			return (HAZE_BINARY_CHAR*)&value.Value.UInt64;
+		default:
+			break;
 	}
 	return nullptr;
 }
@@ -883,20 +895,20 @@ HazeValue GetNegValue(HazeValueType type, const HazeValue& value)
 	ret = 0;
 	switch (type)
 	{
-	case HazeValueType::Int32:
-		ret.Value.Int32 = -value.Value.Int32;
-		break;
-	case HazeValueType::Int64:
-		ret.Value.Int64 = -value.Value.Int64;
-		break;
-	case HazeValueType::Float32:
-		ret.Value.Float32 = -value.Value.Float32;
-		break;
-	case HazeValueType::Float64:
-		ret.Value.Float64 = -value.Value.Float64;
-		break;
-	default:
-		break;
+		case HazeValueType::Int32:
+			ret.Value.Int32 = -value.Value.Int32;
+			break;
+		case HazeValueType::Int64:
+			ret.Value.Int64 = -value.Value.Int64;
+			break;
+		case HazeValueType::Float32:
+			ret.Value.Float32 = -value.Value.Float32;
+			break;
+		case HazeValueType::Float64:
+			ret.Value.Float64 = -value.Value.Float64;
+			break;
+		default:
+			break;
 	}
 
 	return ret;
@@ -965,84 +977,84 @@ bool CanCVT(HazeValueType type1, HazeValueType type2)
 		{
 			switch (type2)
 			{
-			case HazeValueType::UInt32:
-			case HazeValueType::Int64:
-			case HazeValueType::UInt64:
-			case HazeValueType::Float32:
-			case HazeValueType::Float64:
-				return true;
-			default:
-				break;
+				case HazeValueType::UInt32:
+				case HazeValueType::Int64:
+				case HazeValueType::UInt64:
+				case HazeValueType::Float32:
+				case HazeValueType::Float64:
+					return true;
+				default:
+					break;
 			}
 		}
 		break;
-	case HazeValueType::Float32:
-		switch (type2)
-		{
-		case HazeValueType::Int32:
-		case HazeValueType::UInt32:
-		case HazeValueType::Int64:
-		case HazeValueType::UInt64:
-		case HazeValueType::Float64:
-			return true;
-		default:
-			break;
-		}
-		break;
-	case HazeValueType::Int64:
-		switch (type2)
-		{
-		case HazeValueType::Int32:
-		case HazeValueType::UInt32:
-		case HazeValueType::UInt64:
 		case HazeValueType::Float32:
-		case HazeValueType::Float64:
-			return true;
-		default:
+			switch (type2)
+			{
+				case HazeValueType::Int32:
+				case HazeValueType::UInt32:
+				case HazeValueType::Int64:
+				case HazeValueType::UInt64:
+				case HazeValueType::Float64:
+					return true;
+				default:
+					break;
+			}
 			break;
-		}
-		break;
-	case HazeValueType::Float64:
-		switch (type2)
-		{
-		case HazeValueType::Int32:
+		case HazeValueType::Int64:
+			switch (type2)
+			{
+				case HazeValueType::Int32:
+				case HazeValueType::UInt32:
+				case HazeValueType::UInt64:
+				case HazeValueType::Float32:
+				case HazeValueType::Float64:
+					return true;
+				default:
+					break;
+			}
+			break;
+		case HazeValueType::Float64:
+			switch (type2)
+			{
+				case HazeValueType::Int32:
+				case HazeValueType::UInt32:
+				case HazeValueType::Int64:
+				case HazeValueType::UInt64:
+				case HazeValueType::Float32:
+					return true;
+				default:
+					break;
+			}
+			break;
 		case HazeValueType::UInt32:
-		case HazeValueType::Int64:
+			switch (type2)
+			{
+				case HazeValueType::Int32:
+				case HazeValueType::Int64:
+				case HazeValueType::UInt64:
+				case HazeValueType::Float32:
+				case HazeValueType::Float64:
+					return true;
+				default:
+					break;
+			}
+			break;
 		case HazeValueType::UInt64:
-		case HazeValueType::Float32:
-			return true;
+			switch (type2)
+			{
+				case HazeValueType::Int32:
+				case HazeValueType::UInt32:
+				case HazeValueType::Int64:
+				case HazeValueType::Float32:
+				case HazeValueType::Float64:
+					return true;
+				default:
+					break;
+			}
+			break;
 		default:
 			break;
-		}
-		break;
-	case HazeValueType::UInt32:
-		switch (type2)
-		{
-		case HazeValueType::Int32:
-		case HazeValueType::Int64:
-		case HazeValueType::UInt64:
-		case HazeValueType::Float32:
-		case HazeValueType::Float64:
-			return true;
-		default:
-			break;
-		}
-		break;
-	case HazeValueType::UInt64:
-		switch (type2)
-		{
-		case HazeValueType::Int32:
-		case HazeValueType::UInt32:
-		case HazeValueType::Int64:
-		case HazeValueType::Float32:
-		case HazeValueType::Float64:
-			return true;
-		default:
-			break;
-		}
-		break;
-	default:
-		break;
 	}
 
 	return false;

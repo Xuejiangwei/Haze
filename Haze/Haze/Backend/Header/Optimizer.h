@@ -83,7 +83,7 @@ private:
     void markUnreachableCode(ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg);
     void markDeadInstructionsWithoutSideEffects(ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg);
     void markRedundantInstructions(ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg);
-    void markDeadLoopsAndBranches(ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg);
+    void markDeadLoopsAndBranches(ModuleUnit::FunctionTableData& function);
     
     // 可达性分析
     void markReachableInstructions(ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg, 
@@ -94,10 +94,8 @@ private:
     bool isInstructionWithoutSideEffects(const ModuleUnit::FunctionInstruction& inst);
     bool isRedundantInstruction(const ModuleUnit::FunctionInstruction& inst, size_t index, 
                                ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg);
-    bool isDeadLoop(const ModuleUnit::FunctionInstruction& inst, size_t index, 
-                   ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg);
-    bool isDeadBranch(const ModuleUnit::FunctionInstruction& inst, size_t index, 
-                     ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg);
+    bool isDeadLoop(const ModuleUnit::FunctionInstruction& inst, size_t index, ModuleUnit::FunctionTableData& function);
+    bool isDeadBranch(const ModuleUnit::FunctionInstruction& inst, size_t index, ModuleUnit::FunctionTableData& function);
     bool isConditionAlwaysFalse(const ModuleUnit::FunctionInstruction& inst, size_t index, 
                                ModuleUnit::FunctionTableData& function);
     bool isConditionAlwaysTrue(const ModuleUnit::FunctionInstruction& inst, size_t index, 

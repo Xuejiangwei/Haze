@@ -25,7 +25,7 @@ bool CompilerBlock::FindLocalVariableName(const Share<CompilerValue>& value, HSt
 {
 	for (auto& it : m_Allocas)
 	{
-		if (TrtGetVariableName(m_ParentFunction, it, value.get(), outName))
+		if (TrtGetVariableName(it, value.get(), outName))
 		{
 			return true;
 		}

@@ -36,6 +36,11 @@ AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
 
 bool ObjectClass::IsEqual(ObjectClass* obj1, ObjectClass* obj2)
 {
+	if (obj1 == obj2)
+	{
+		return true;
+	}
+
 	return false;
 }
 
@@ -140,8 +145,6 @@ void ObjectClass::SetOffset(HAZE_OBJECT_CALL_PARAM)
 void ObjectClass::GetClassName(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectClass* classObj;
-	x_uint64 index = 0;
-	char* value = nullptr;
 
 	GET_PARAM_START();
 	GET_PARAM(classObj);

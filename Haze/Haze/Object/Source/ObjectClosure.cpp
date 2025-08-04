@@ -56,7 +56,7 @@ void ObjectClosure::CallFunction(HAZE_OBJECT_CALL_PARAM)
 	}*/
 
 	auto func = obj->m_FunctionData;
-	stack->OnCall(func, paramByteSize);
+	stack->OnCall(func, (int)paramByteSize);
 
 	for (x_uint64 i = 0; i < func->RefVariables.size(); i++)
 	{

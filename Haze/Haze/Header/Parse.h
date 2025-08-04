@@ -145,7 +145,7 @@ private:
 
 	//void ParseVariableType();
 
-	void IncLineCount(bool insert = false);
+	void IncLineCount();
 
 private:
 	Compiler* m_Compiler;

@@ -143,7 +143,7 @@ using HStringView = std::wstring_view;
 #define HAZE_CLOSURE_NAME				H_TEXT("@@ClosureCaller")
 
 #define HAZE_STD_CALL_PARAM			class HazeStack* stack, int multiParamNum, int paramByteSize
-#define HAZE_OBJECT_CALL_PARAM		class HazeStack* stack, int multiParamNum, x_int64& paramByteSize
+#define HAZE_OBJECT_CALL_PARAM		class HazeStack* stack, int multiParamNum, int& paramByteSize
 #define HAZE_STD_CALL_PARAM_VAR		stack, multiParamNum, paramByteSize
 
 #define HAZE_VM_STACK_SIZE 1024 * 1024 * 4

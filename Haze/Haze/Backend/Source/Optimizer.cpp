@@ -71,7 +71,7 @@ void Optimizer::ConstantFolding(ModuleUnit& module)
 {
     for (auto& function : module.m_FunctionTable.m_Functions)
     {
-        for (size_t i = 0; i < function.Instructions.size(); ++i)
+        for (x_uint64 i = 0; i < function.Instructions.size(); ++i)
         {
             auto& inst = function.Instructions[i];
 
@@ -79,9 +79,9 @@ void Optimizer::ConstantFolding(ModuleUnit& module)
             if (IsArithmeticOpCode(inst.InsCode) && inst.Operator.size() > 2)
             {
                 bool allConstants = true;
-                for (size_t i = 1; i < inst.Operator.size(); i++)
+                for (x_uint64 j = 1; j < inst.Operator.size(); j++)
                 {
-                    if (!IsConstant(inst.Operator[i].Desc))
+                    if (!IsConstant(inst.Operator[j].Desc))
                     {
                         allConstants = false;
                         break;
@@ -272,7 +272,7 @@ void Optimizer::markDeadInstructions(ModuleUnit::FunctionTableData& function, Co
     markRedundantInstructions(function, cfg);
     
     // 第五遍：标记死循环和死分支
-    markDeadLoopsAndBranches(function, cfg);
+    markDeadLoopsAndBranches(function);
 }
 
 void Optimizer::markDeadInstructionsByLiveness(ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg)
@@ -458,7 +458,7 @@ void Optimizer::markRedundantInstructions(ModuleUnit::FunctionTableData& functio
     }
 }
 
-void Optimizer::markDeadLoopsAndBranches(ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg)
+void Optimizer::markDeadLoopsAndBranches(ModuleUnit::FunctionTableData& function)
 {
     for (size_t i = 0; i < function.Instructions.size(); ++i)
     {
@@ -472,14 +472,14 @@ void Optimizer::markDeadLoopsAndBranches(ModuleUnit::FunctionTableData& function
         }
         
         // 检查死循环
-        if (isDeadLoop(inst, i, function, cfg))
+        if (isDeadLoop(inst, i, function))
         {
             analysis.is_dead = true;
             analysis.can_be_eliminated = true;
         }
         
         // 检查死分支
-        if (isDeadBranch(inst, i, function, cfg))
+        if (isDeadBranch(inst, i, function))
         {
             analysis.is_dead = true;
             analysis.can_be_eliminated = true;
@@ -572,8 +572,7 @@ bool Optimizer::isRedundantInstruction(const ModuleUnit::FunctionInstruction& in
     return false;
 }
 
-bool Optimizer::isDeadLoop(const ModuleUnit::FunctionInstruction& inst, size_t index, 
-                          ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg)
+bool Optimizer::isDeadLoop(const ModuleUnit::FunctionInstruction& inst, size_t index, ModuleUnit::FunctionTableData& function)
 {
     // 检查死循环：条件永远为false的循环
     if (IsJmpOpCode(inst.InsCode) && inst.InsCode != InstructionOpCode::JMP)
@@ -588,8 +587,7 @@ bool Optimizer::isDeadLoop(const ModuleUnit::FunctionInstruction& inst, size_t i
     return false;
 }
 
-bool Optimizer::isDeadBranch(const ModuleUnit::FunctionInstruction& inst, size_t index, 
-                            ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg)
+bool Optimizer::isDeadBranch(const ModuleUnit::FunctionInstruction& inst, size_t index, ModuleUnit::FunctionTableData& function)
 {
     // 检查死分支：条件永远为true的分支
     if (IsJmpOpCode(inst.InsCode) && inst.InsCode != InstructionOpCode::JMP)
@@ -1107,7 +1105,7 @@ void Optimizer::dfsFindLoops(size_t block_idx, ModuleUnit::FunctionTableData& fu
             loop.body.clear();
             
             // 从栈中找到循环体
-            for (int i = dfs_stack.size() - 1; i >= 0; --i)
+            for (x_int64 i = (x_int64)dfs_stack.size() - 1; i >= 0; --i)
             {
                 size_t current = dfs_stack[i];
                 loop.body.insert(current);
@@ -1203,10 +1201,10 @@ bool Optimizer::isVariableDefined(const ModuleUnit::FunctionInstruction& inst, c
 bool Optimizer::shouldUnrollLoop(const LoopInfo& loop, const ControlFlowGraph& cfg)
 {
     // 简单的循环展开判断
-    int loop_size = 0;
+    x_int64 loop_size = 0;
     for (size_t block_idx : loop.body)
     {
-        loop_size += cfg.blocks[block_idx].instructions.size();
+        loop_size += (x_int64)cfg.blocks[block_idx].instructions.size();
     }
     
     // 如果循环体较小且迭代次数可预测，则展开
@@ -1347,7 +1345,7 @@ void Optimizer::functionInliningFunction(ModuleUnit::FunctionTableData& function
     }
     
     // 从后往前处理，避免索引变化
-    for (int i = call_sites.size() - 1; i >= 0; --i)
+    for (x_int64 i = (x_int64)call_sites.size() - 1; i >= 0; --i)
     {
         size_t call_site = call_sites[i];
         auto& inst = function.Instructions[call_site];

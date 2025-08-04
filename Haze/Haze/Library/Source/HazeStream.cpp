@@ -46,6 +46,8 @@ void HazeStream::InitializeLib()
 
 HString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
 {
+	NO_PARAM_WARNING();
+
 #define PRE_SIGN x_HChar('%')
 
 	x_uint64 v = 0;
@@ -165,6 +167,8 @@ HString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
 
 HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 {
+	NO_PARAM_WARNING();
+
 #define PRE_SIGN x_HChar('%')
 
 	x_uint64 v = 0;
@@ -316,6 +320,8 @@ HString HazeStream::FormatConstantString(const HString& str)
 
 void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 {
+	NO_PARAM_WARNING();
+
 #define PRE_SIGN x_HChar('%')
 
 	x_uint64 v = 0;
@@ -438,6 +444,8 @@ void HazeStream::HazePrintfCall(const x_HChar* V)
 
 void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)
 {
+	NO_PARAM_WARNING();
+
 #define PRE_SIGN x_HChar('%')
 
 	x_uint64 v = 0;
@@ -539,7 +547,12 @@ void HazeStream::HazeScanfCall()
 
 void HazeStream::HazeStringFormat(HAZE_STD_CALL_PARAM)
 {
+	NO_PARAM_WARNING();
+	
+	if (stack)
+	{
 
+	}
 }
 
 void HazeStream::HazeStringFormatCall()
@@ -549,6 +562,7 @@ void HazeStream::HazeStringFormatCall()
 
 void HazeStream::HazeLogStack(HAZE_STD_CALL_PARAM)
 {
+	NO_PARAM_WARNING();
 	stack->LogStack();
 }
 
@@ -571,6 +585,8 @@ void TestGetMember(HazeStack* stack, const HString& name, void* obj)
 
 void TestSetMember(HazeStack* stack, const HString& name, void* obj, x_uint8* currESP)
 {
+	assert(stack);
+
 	HAZE_LOG_INFO(H_TEXT("set member %s\n"), name.c_str());
 	auto size = sizeof(((TestDynamic*)obj)->value);
 	memcpy(&((TestDynamic*)obj)->value, currESP - size, size);
@@ -589,6 +605,8 @@ void TestCallFunction(HazeStack* stack, const HString& name, void* obj, x_uint8*
 
 void HazeStream::CreateDynamicClass(HAZE_STD_CALL_PARAM)
 {
+	NO_PARAM_WARNING();
+
 	static ObjectDynamicClass::CustomMethods methods;
 	methods.Constructor = &TestConstructor;
 	methods.Deconstructor = &TestDeconstructor;

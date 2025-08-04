@@ -20,8 +20,7 @@ Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeVa
 
 Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var);
 
-bool TrtGetVariableName(CompilerFunction* function, const Pair<HString, Share<CompilerValue>>& data,
-	const CompilerValue* value, HString& outName);
+bool TrtGetVariableName(const Pair<HString, Share<CompilerValue>>& data, const CompilerValue* value, HString& outName);
 
 void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes);
 

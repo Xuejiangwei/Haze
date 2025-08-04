@@ -14,6 +14,18 @@ struct ObjectHashNode
 	{
 		return Key.Value.UInt64 == 0 && Value.Value.UInt64 == 0 && Next == 0;
 	}
+
+	bool HasNext() const
+	{
+		return Next != 0;
+	}
+
+	void ToNone()
+	{
+		Key.Value.UInt64 = 0;
+		Value.Value.UInt64 = 0;
+		Next = 0;
+	}
 };
 
 class ObjectHash : public GCObject
@@ -46,6 +58,7 @@ private:
 	static x_uint64 GetHash(ObjectHash* obj, void* value, HazeStack* stack);
 
 	void Add(HazeValue key, HazeValue value, HazeStack* stack);
+	void Remove(HazeValue key, HazeStack* stack);
 
 private:
 	ObjectHashNode* GetFreeNode();

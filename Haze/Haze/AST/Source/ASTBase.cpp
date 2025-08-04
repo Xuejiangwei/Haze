@@ -528,7 +528,7 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen(Share<CompilerValue> in
 
 	m_DefineVariable.Type.BaseType = HazeValueType::Function;
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
-		m_DefineVariable, m_Location.Line, nullptr, {}/*, &m_TemplateTypes*/);
+		m_DefineVariable, m_Location.Line, nullptr);
 
 	return TryAssign(var, H_TEXT("函数指针变量"));
 }
@@ -543,7 +543,7 @@ Share<CompilerValue> ASTVariableDefine_ObjectBase::CodeGen(Share<CompilerValue> 
 {
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
-		m_DefineVariable, m_Location.Line, nullptr, {});
+		m_DefineVariable, m_Location.Line, nullptr);
 
 	return TryAssign(var, H_TEXT("基本对象变量"));
 }
@@ -559,7 +559,7 @@ Share<CompilerValue> ASTVariableDefine_Hash::CodeGen(Share<CompilerValue> inferV
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
-		m_DefineVariable, m_Location.Line, nullptr, {});
+		m_DefineVariable, m_Location.Line, nullptr);
 
 	return TryAssign(var, H_TEXT("函数指针变量"));
 }
@@ -622,7 +622,7 @@ Share<CompilerValue> ASTVariableDefine_Closure::CodeGen(Share<CompilerValue> inf
 
 	m_DefineVariable.Type = HazeVariableType(HazeValueType::Closure, m_TemplateTypeId);
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
-		m_DefineVariable, m_Location.Line, nullptr, {});
+		m_DefineVariable, m_Location.Line, nullptr);
 
 	return m_Compiler->CreateMov(var, closureValue);
 }
@@ -921,7 +921,7 @@ ASTNullPtr::ASTNullPtr(Compiler* compiler, const SourceLocation& location) : AST
 
 Share<CompilerValue> ASTNullPtr::CodeGen(Share<CompilerValue> inferValue)
 {
-	return m_Compiler->GetNullPtr(inferValue->GetVariableType());
+	return m_Compiler->GetNullPtr();
 }
 
 void ASTNullPtr::SetDefineType(const HazeVariableType& type)

@@ -72,7 +72,7 @@ private:
 		ModuleUnit::FunctionTable& newFunctionTable, size_t& functionCount);
 
 	inline void ResetLocalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
-		HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister, ModuleUnit::GlobalDataTable& newGlobalDataTable);
+		HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister);
 
 	inline void ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::GlobalDataTable& newGlobalDataTable);
 

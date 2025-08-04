@@ -47,26 +47,26 @@ void HazeFileLib::OpenFile(HAZE_STD_CALL_PARAM)
 	const x_HChar* mode = H_TEXT("r");
 	switch (type)
 	{
-	case 0 :
-		mode = H_TEXT("r, ccs=utf-8");
-		break;
-	case 1:
-		mode = H_TEXT("r+, ccs=utf-8");
-		break;
-	case 10:
-		mode = H_TEXT("w, ccs=utf-8");
-		break;
-	case 11:
-		mode = H_TEXT("w+, ccs=utf-8");
-		break;
-	case 20:
-		mode = H_TEXT("a, ccs=utf-8");
-		break;
-	case 21:
-		mode = H_TEXT("a+, ccs=utf-8");
-		break;
-	default:
-		break;
+		case 0 :
+			mode = H_TEXT("r, ccs=utf-8");
+			break;
+		case 1:
+			mode = H_TEXT("r+, ccs=utf-8");
+			break;
+		case 10:
+			mode = H_TEXT("w, ccs=utf-8");
+			break;
+		case 11:
+			mode = H_TEXT("w+, ccs=utf-8");
+			break;
+		case 20:
+			mode = H_TEXT("a, ccs=utf-8");
+			break;
+		case 21:
+			mode = H_TEXT("a+, ccs=utf-8");
+			break;
+		default:
+			break;
 	}
 
 

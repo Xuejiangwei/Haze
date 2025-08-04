@@ -379,6 +379,10 @@ x_uint32 HazeVM::GetClassSize(x_uint32 typeId)
 
 void HazeVM::JitFunction(const FunctionData* func)
 {
+	if (func)
+	{
+
+	}
 	HAZE_TO_DO(JIT);
 }
 

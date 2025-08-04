@@ -15,42 +15,49 @@
 template<typename T>
 x_uint64 __ObjectHash_Hash__(T* v, HazeStack* stack)
 {
+	assert(stack);
 	return *v;
 }
 
 template<>
 x_uint64 __ObjectHash_Hash__(x_float32* v, HazeStack* stack)
 {
+	assert(stack);
 	return *((x_uint32*)v);
 }
 
 template<>
 x_uint64 __ObjectHash_Hash__(x_float64* v, HazeStack* stack)
 {
+	assert(stack);
 	return *((x_uint64*)v);
 }
 
 template<>
 x_uint64 __ObjectHash_Hash__(void* v, HazeStack* stack)
 {
+	assert(stack);
 	return (x_uint64)v;
 }
 
 template<>
 x_uint64 __ObjectHash_Hash__(ObjectString* v, HazeStack* stack)
 {
+	assert(stack);
 	return v->Hash();
 }
 
 template<>
 x_uint64 __ObjectHash_Hash__(ObjectClass* v, HazeStack* stack)
 {
-	return __ObjectHash_Hash__((void*)v, stack);
+	assert(stack);
+	return __ObjectHash_Hash__((x_uint64*)v, stack);
 }
 
 template<>
 x_uint64 __ObjectHash_Hash__(ObjectBase* v, HazeStack* stack)
 {
+	assert(stack);
 	extern x_uint64 __GetHashValue(HazeValueType type, void* value, HazeStack * stack);
 	return __GetHashValue(v->GetBaseType(), v->GetBaseData(), stack);
 }
@@ -328,6 +335,41 @@ void ObjectHash::Add(HazeValue key, HazeValue value, HazeStack* stack)
 	m_Length++;
 }
 
+void ObjectHash::Remove(HazeValue key, HazeStack* stack)
+{
+	x_uint64 hashValue = GetHash(this, (void*)(&key), stack);
+
+	auto node = &m_Data[hashValue];
+	if (!node->IsNone())
+	{
+		m_Length--;
+		if (node->HasNext())
+		{
+			*node = m_Data[node->Next];
+		}
+		else
+		{
+			node->ToNone();
+			if (node > m_LastFreeNode)
+			{
+				m_LastFreeNode = node + 1;
+			}
+		}
+	}
+
+	x_uint64 newCapacity = 1;
+	x_uint64 doubleLength = (m_Length - 1) * 2;
+	while (newCapacity < doubleLength)
+	{
+		newCapacity = newCapacity << 1;
+	}
+
+	if (newCapacity < m_Capacity)
+	{
+		Rehash();
+	}
+}
+
 void ObjectHash::Add(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectHash* obj;
@@ -350,21 +392,14 @@ void ObjectHash::Add(HAZE_OBJECT_CALL_PARAM)
 void ObjectHash::Remove(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectHash* obj;
-	char* value = nullptr;
+	char* key = nullptr;
 
 	GET_PARAM_START();
 	GET_OBJ(obj);
 
-	x_uint64 newCapacity = 1;
-	x_uint64 doubleLength = (obj->m_Length - 1) * 2;
-	while (newCapacity < doubleLength)
-	{
-		newCapacity = newCapacity << 1;
-	}
+	GET_PARAM_ADDRESS(key, obj->GetKeyBaseType().GetTypeSize());
 
-	if (newCapacity < obj->m_Capacity)
-	{
-		// 重新Hash
-		obj->Rehash();
-	}
+	HazeValue tempKey;
+	SetHazeValueByData(tempKey, obj->GetKeyBaseType().BaseType, key);
+	obj->Remove(tempKey, stack);
 }

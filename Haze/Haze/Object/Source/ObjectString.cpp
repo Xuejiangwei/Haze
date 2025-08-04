@@ -1,6 +1,7 @@
 #include "HazePch.h"
 #include "ObjectString.h"
 #include "HazeMemory.h"
+#include "MemoryHelper.h"
 #include "HazeStack.h"
 #include "HazeVM.h"
 #include "Compiler.h"
@@ -8,28 +9,31 @@
 #include "HazeStream.h"
 
 ObjectString::ObjectString(x_uint32 gcIndex, const x_HChar* str, bool fixedCapacity)
-	: GCObject(gcIndex), m_Data(nullptr), m_Length(0), m_Capacity(0)
+	: GCObject(gcIndex), m_Data(nullptr), m_Length(0), m_Capacity(0), m_DataGCIndex(0)
 {
 	if (str)
 	{
 		m_Length = wcslen(str);
-		m_Capacity = (m_Length + 1) * sizeof(x_HChar);
-		/*if (!fixedCapacity)
+		m_Capacity = m_Length + 1;
+		if (!fixedCapacity)
 		{
-			m_Capacity = m_Length;
-		}*/
+			if (m_Length < 128)
+			{
+				m_Length = RoundUp(m_Length);
+				m_Capacity = m_Length + 1;
+			}
+		}
 
-		auto pair = HazeMemory::AllocaGCData(m_Capacity, GC_ObjectType::StringData);
+		auto pair = HazeMemory::AllocaGCData(GetCapacityByteSize(), GC_ObjectType::StringData);
 		m_Data = pair.first;
 		m_DataGCIndex = pair.second;
-
 		memcpy(m_Data, str, m_Capacity);
 	}
 }
 
 ObjectString::~ObjectString()
 {
-	HazeMemory::GetMemory()->Remove(m_Data, m_Capacity, m_DataGCIndex);
+	HazeMemory::GetMemory()->Remove(m_Data, GetCapacityByteSize(), m_DataGCIndex);
 }
 
 AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
@@ -83,17 +87,17 @@ void ObjectString::Append(HAZE_OBJECT_CALL_PARAM)
 
 	GET_PARAM(str);
 
-	if (thisStr->m_Length + str->m_Length <= thisStr->m_Capacity)
+	if (thisStr->m_Length + str->m_Length < thisStr->m_Capacity)
 	{
-		memcpy((x_HChar*)thisStr->m_Data + thisStr->m_Length, str, str->m_Length);
+		memcpy((x_HChar*)thisStr->m_Data + thisStr->m_Length, str->m_Data, str->m_Length * sizeof(x_HChar));
 	}
 	else
 	{
 		auto oldLength = thisStr->m_Length;
 		thisStr->m_Length += str->m_Length;
-		thisStr->m_Capacity = (thisStr->m_Length + 1) * sizeof(x_HChar);
+		thisStr->m_Capacity = thisStr->m_Length + 1;
 
-		auto pair = HazeMemory::AllocaGCData(thisStr->m_Capacity, GC_ObjectType::StringData);
+		auto pair = HazeMemory::AllocaGCData(thisStr->GetCapacityByteSize(), GC_ObjectType::StringData);
 		memcpy(pair.first, thisStr->m_Data, oldLength* sizeof(x_HChar));
 		memcpy((x_HChar*)pair.first + oldLength, str->m_Data, str->m_Length * sizeof(x_HChar));
 		
@@ -118,15 +122,15 @@ void ObjectString::Format(HAZE_OBJECT_CALL_PARAM)
 
 	if (str.length() <= thisStr->m_Capacity)
 	{
-		memcpy((x_HChar*)thisStr->m_Data, str.c_str(), str.length());
+		memcpy((x_HChar*)thisStr->m_Data, str.c_str(), str.length() * sizeof(x_HChar));
 	}
 	else
 	{
 		thisStr->m_Length = str.length();
-		thisStr->m_Capacity = (thisStr->m_Length + 1) * sizeof(x_HChar);
+		thisStr->m_Capacity = thisStr->m_Length + 1;
 
-		auto pair = HazeMemory::AllocaGCData(thisStr->m_Capacity, GC_ObjectType::StringData);
-		memcpy(pair.first, str.c_str(), thisStr->m_Capacity);
+		auto pair = HazeMemory::AllocaGCData(thisStr->GetCapacityByteSize(), GC_ObjectType::StringData);
+		memcpy(pair.first, str.c_str(), thisStr->m_Capacity * sizeof(x_HChar));
 
 		thisStr->m_Data = pair.first;
 		thisStr->m_DataGCIndex = pair.second;

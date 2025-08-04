@@ -93,7 +93,7 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 
 		if (!newFS)
 		{
-			newFS = !ParseIntermediateFile(fs, moduleName);
+			newFS = !ParseIntermediateFile(fs/*, moduleName*/);
 		}
 	}
 #endif
@@ -121,7 +121,7 @@ CompilerModule::~CompilerModule()
 	}
 }
 
-bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString& moduleName)
+bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream/*, const HString& moduleName*/)
 {
 	HString str;
 	x_uint64 ui64;

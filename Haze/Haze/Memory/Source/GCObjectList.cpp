@@ -33,13 +33,17 @@ x_uint32 GCObjectList::Add(void* object, GC_ObjectType type)
 		state.Type = type;
 		state.IsUse = true;
 	}
-	else
+	else if (m_ObjectList.size() <= std::numeric_limits<x_uint32>::max())
 	{
-		index = m_ObjectList.size();
+		index = (x_uint32)m_ObjectList.size();
 		m_ObjectList.push_back(object);
 
 		ObjectCacheState state(GC_State::Black, type, true);
 		m_StateList.push_back(state);
+	}
+	else
+	{
+		HAZE_LOG_ERR_W("GC对象列表添加错误, 超过32位无符号整数的最大值\n");
 	}
 
 	return index;

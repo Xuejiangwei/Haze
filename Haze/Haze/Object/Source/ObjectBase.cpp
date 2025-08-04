@@ -63,7 +63,7 @@ void ObjectBase::Get(HAZE_OBJECT_CALL_PARAM)
 	GET_OBJ(obj);
 	SET_RET_BY_TYPE(HazeVariableType(obj->m_Type), obj->m_Value);
 
-	auto address = GetBinaryPointer(obj->m_Type, obj->m_Value);
+	//auto address = GetBinaryPointer(obj->m_Type, obj->m_Value);
 }
 
 void ObjectBase::Set(HAZE_OBJECT_CALL_PARAM)
@@ -77,13 +77,12 @@ void ObjectBase::Set(HAZE_OBJECT_CALL_PARAM)
 	GET_PARAM_ADDRESS(data, GetSizeByHazeType(obj->m_Type));
 	SetHazeValueByData(obj->m_Value, obj->m_Type, data);
 
-	auto address = GetBinaryPointer(obj->m_Type, obj->m_Value);
+	//auto address = GetBinaryPointer(obj->m_Type, obj->m_Value);
 }
 
 void ObjectBase::GetAddress(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectBase* obj;
-	char* data;
 
 	GET_PARAM_START();
 	GET_OBJ(obj);

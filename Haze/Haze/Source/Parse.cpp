@@ -423,7 +423,7 @@ HazeToken Parse::GetNextToken(bool clearLexeme)
 	{
 		if (bNewLine)
 		{
-			IncLineCount(true);
+			IncLineCount();
 		}
 
 		if (IsHazeSignalToken(m_CurrCode, signal))
@@ -2928,7 +2928,7 @@ x_uint32 Parse::ParseTemplateTypes(HazeVariableType baseType, TemplateDefineType
 //	}
 //}
 
-void Parse::IncLineCount(bool insert)
+void Parse::IncLineCount()
 {
 	m_LineCount++;
 

@@ -18,6 +18,8 @@ public:
 
 	const x_HChar* GetData() const { return (x_HChar*)m_Data; }
 
+	x_uint64 GetCapacityByteSize() const { return m_Capacity * sizeof(x_HChar); }
+
 	x_uint64 GetLength() const { return m_Length; }
 
 	x_uint64 Hash() const;

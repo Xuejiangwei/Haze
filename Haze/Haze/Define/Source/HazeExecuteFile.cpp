@@ -84,8 +84,11 @@ inline void WriteType(Unique<HAZE_BINARY_OFSTREAM>& fileStream, const HazeVariab
 
 inline void HazeExecuteFile::ReadType(HazeVM* vm, Unique<HAZE_BINARY_IFSTREAM>& fileStream, HazeVariableType& type)
 {
-	fileStream->read(HAZE_READ(type.BaseType));
-	fileStream->read(HAZE_READ(type.TypeId));
+	if (vm)
+	{
+		fileStream->read(HAZE_READ(type.BaseType));
+		fileStream->read(HAZE_READ(type.TypeId));
+	}
 }
 
 HazeExecuteFile::HazeExecuteFile(ExeFileType type)

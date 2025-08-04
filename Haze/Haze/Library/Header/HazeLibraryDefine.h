@@ -19,10 +19,11 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*);
 #define ARG_N_HELPER(...)  ARG_T(ARG_N(__VA_ARGS__))										//辅助宏
 #define COUNT_ARG(...)  ARG_N_HELPER(__VA_ARGS__,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0)	//返回可变参数个数
 
-#define GET_PARAM_START() paramByteSize = 0; x_int64 zzzOffset = 0; auto zzzAddress = stack->GetAddressByESP(HAZE_ADDRESS_SIZE)
+#define NO_PARAM_WARNING() { multiParamNum = multiParamNum; paramByteSize = paramByteSize; }
+#define GET_PARAM_START() NO_PARAM_WARNING() paramByteSize = 0; x_int64 zzzOffset = 0; auto zzzAddress = stack->GetAddressByESP(HAZE_ADDRESS_SIZE)
 #define GET_CURRENT_ADDRESS (zzzAddress - zzzOffset)
-#define GET_PARAM(V)  memcpy(&V, zzzAddress - sizeof(V) - zzzOffset, sizeof(V)); zzzOffset += sizeof(V); paramByteSize = zzzOffset
-#define GET_PARAM_ADDRESS(V, SIZE)  V = zzzAddress - SIZE - zzzOffset; zzzOffset += SIZE; paramByteSize = zzzOffset
+#define GET_PARAM(V)  memcpy(&V, zzzAddress - sizeof(V) - zzzOffset, sizeof(V)); zzzOffset += sizeof(V); paramByteSize = (int)zzzOffset
+#define GET_PARAM_ADDRESS(V, SIZE)  V = zzzAddress - SIZE - zzzOffset; zzzOffset += SIZE; paramByteSize = (int)zzzOffset
 #define SET_HAZE_CALL_PARAM(...) COUNT_ARG(__VA_ARGS__), __VA_ARGS__
 
 #define SET_RET_BY_TYPE(TYPE, V) \

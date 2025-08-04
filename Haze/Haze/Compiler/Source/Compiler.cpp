@@ -416,19 +416,19 @@ Share<CompilerEnum> Compiler::GetBaseModuleEnum(const HString& name)
 	return nullptr;
 }
 
-Share<CompilerEnum> Compiler::GetBaseModuleEnum(x_uint32 typeId)
-{
-	/*for (auto& it : m_CompilerBaseModules)
-	{
-		auto ret = it.second->GetEnumByTypeId_Internal(typeId);
-		if (ret)
-		{
-			return ret;
-		}
-	}*/
-
-	return nullptr;
-}
+//Share<CompilerEnum> Compiler::GetBaseModuleEnum(x_uint32 typeId)
+//{
+//	/*for (auto& it : m_CompilerBaseModules)
+//	{
+//		auto ret = it.second->GetEnumByTypeId_Internal(typeId);
+//		if (ret)
+//		{
+//			return ret;
+//		}
+//	}*/
+//
+//	return nullptr;
+//}
 
 Share<CompilerValue> Compiler::GetBaseModuleGlobalVariable(const HString& name)
 {
@@ -497,7 +497,6 @@ void Compiler::InsertLineCount(x_int64 lineCount)
 {
 	if (m_VM->IsDebug() && m_InsertBaseBlock)
 	{
-		HAZE_LOG_INFO(H_TEXT("�� %d\n"), lineCount);
 		m_InsertBaseBlock->PushIRCode(GenIRCode(InstructionOpCode::LINE, lineCount));
 	}
 }
@@ -949,7 +948,7 @@ Share<CompilerValue> Compiler::GenConstantValueBool(bool isTrue)
 	return GenConstantValue(HazeValueType::Bool, Value);
 }
 
-Share<CompilerValue> Compiler::GetNullPtr(const HazeVariableType& type)
+Share<CompilerValue> Compiler::GetNullPtr()
 {
 	// UInt64类型可以是class的stronger
 	static auto s_Null = CreateVariable(nullptr, HazeVariableType(HazeValueType::UInt64), HazeVariableScope::Global, HazeDataDesc::NullPtr, 0);
@@ -1115,7 +1114,7 @@ Share<CompilerValue> Compiler::CreateMovPV(Share<CompilerValue> allocaValue, Sha
 
 
 Share<CompilerValue> Compiler::CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
-	const HazeDefineVariable& var, int line, Share<CompilerValue> refValue, x_uint32 typeId)
+	const HazeDefineVariable& var, int line, Share<CompilerValue> refValue)
 {
 	switch (section)
 	{
