@@ -69,9 +69,19 @@ bool HazeVM::InitVM(V_Array<HString> Vector_ModulePath)
 	// 提前读取类型信息表
 	m_Compiler->ParseTypeInfoFile();
 
-	for (auto& iter : Vector_ModulePath)
+	while (!m_Compiler->IsFinishStage())
 	{
-		if (ParseFile(iter).empty())
+		HAZE_LOG_INFO_W("解析阶段<%d>\n", (int)m_Compiler->GetParseStage());
+		for (auto& iter : Vector_ModulePath)
+		{
+			if (ParseFile(iter).empty())
+			{
+				return false;
+			}
+		}
+
+		m_Compiler->NextStage();
+		if (m_Compiler->IsCompileError())
 		{
 			return false;
 		}
@@ -248,10 +258,10 @@ HString HazeVM::ParseFile(const HString& FilePath)
 	if (m_Compiler->InitializeCompiler(moduleName, FilePath))
 	{
 		PopCurrModule = true;
-		Parse P(m_Compiler.get());
-		P.InitializeFile(FilePath);
+		Parse parse(m_Compiler.get());
+		parse.InitializeFile(FilePath);
 
-		if (!P.ParseContent())
+		if (!parse.ParseContent())
 		{
 			return HString();
 		}

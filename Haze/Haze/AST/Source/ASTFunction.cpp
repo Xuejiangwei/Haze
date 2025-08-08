@@ -8,13 +8,13 @@
 #include "CompilerClass.h"
 #include "CompilerClassValue.h"
 #include "CompilerModule.h"
+#include "CompilerSymbol.h"
 
 ASTFunction::ASTFunction(Compiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation,
 	HazeSectionSignal section, HString& name, HazeVariableType& type, V_Array<Unique<ASTBase>>& params,
-	Unique<ASTBase> body, bool isVirtual, bool isPureVirtual)
+	Unique<ASTBase> body, HazeFunctionDesc desc)
 	: m_Compiler(compiler), m_StartLocation(startLocation), m_EndLocation(endLocation), m_Section(section), 
-	m_FunctionName(Move(name)),m_FunctionType(Move(type)),m_FunctionParams(Move(params)), m_Body(Move(body)), 
-	m_IsVirtual(isVirtual), m_IsPureVirtual(isPureVirtual)
+	m_FunctionName(Move(name)),m_FunctionType(Move(type)),m_FunctionParams(Move(params)), m_Body(Move(body)), m_Desc(desc)
 {
 }
 
@@ -41,11 +41,8 @@ HazeValue* ASTFunction::CodeGen()
 	}
 	else if (m_Section == HazeSectionSignal::Class)
 	{
-		auto typeInfoMap = m_Compiler->GetTypeInfoMap();
-		currClass = currModule->GetClass(*typeInfoMap->GetClassNameById(m_FunctionParams[0]->GetDefine().Type.TypeId));
-		compilerFunction = currModule->CreateFunction(currClass, m_IsVirtual ? ClassCompilerFunctionType::Virtual : m_IsPureVirtual ?
-			ClassCompilerFunctionType::PureVirtual : ClassCompilerFunctionType::Normal,
-			m_FunctionName, m_FunctionType, paramDefines);
+		currClass = currModule->GetClass(*m_Compiler->GetCompilerSymbol()->GetSymbolByTypeId(m_FunctionParams[0]->GetDefine().Type.TypeId));
+		compilerFunction = currModule->CreateFunction(currClass, m_Desc, m_FunctionName, m_FunctionType, paramDefines);
 	}
 	compilerFunction->SetStartEndLine(m_StartLocation.Line, m_EndLocation.Line);
 	m_Compiler->SetInsertBlock(compilerFunction->GetEntryBlock());
@@ -93,10 +90,9 @@ void ASTFunction::RegisterFunction()
 	}
 	else if (m_Section == HazeSectionSignal::Class)
 	{
-		auto info = m_Compiler->GetTypeInfoMap()->GetTypeById(m_FunctionParams[0]->GetDefine().Type.TypeId);
+		auto info = m_Compiler->GetCompilerSymbol()->GetTypeInfoMap()->GetTypeById(m_FunctionParams[0]->GetDefine().Type.TypeId);
 		currClass = currModule->GetClass(*info->_Class.GetString());
-		currModule->CreateFunction(currClass, m_IsVirtual ? ClassCompilerFunctionType::Virtual : m_IsPureVirtual ?
-			ClassCompilerFunctionType::PureVirtual : ClassCompilerFunctionType::Normal, m_FunctionName, m_FunctionType, paramDefines);
+		currModule->CreateFunction(currClass, m_Desc, m_FunctionName, m_FunctionType, paramDefines);
 	}
 }
 

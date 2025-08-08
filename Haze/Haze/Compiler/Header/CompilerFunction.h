@@ -7,14 +7,6 @@ class CompilerClass;
 class CompilerClassValue;
 class CompilerBlock;
 
-enum class ClassCompilerFunctionType : x_uint8
-{
-	None,
-	Normal,
-	Virtual,
-	PureVirtual
-};
-
 class CompilerFunction
 {
 	friend class Compiler;
@@ -22,9 +14,8 @@ class CompilerFunction
 	friend class ASTMultiExpression;
 
 public:
-	CompilerFunction(CompilerModule* compilerModule, const HString& name, HazeVariableType& type,
-		V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass = nullptr,
-		ClassCompilerFunctionType classFunctionType = ClassCompilerFunctionType::None);
+	CompilerFunction(CompilerModule* compilerModule, const HString& name, const HazeVariableType& type,
+		V_Array<HazeDefineVariable>& params, HazeFunctionDesc desc, CompilerClass* compilerClass = nullptr);
 
 	virtual ~CompilerFunction();
 
@@ -82,8 +73,7 @@ public:
 
 	Share<CompilerClassValue> GetThisLocalVariable();
 
-	bool IsVirtualFunction() const { return m_ClassFunctionType == ClassCompilerFunctionType::PureVirtual ||
-			m_ClassFunctionType == ClassCompilerFunctionType::Virtual; }
+	bool IsVirtualFunction() const { return m_Desc == HazeFunctionDesc::ClassPureVirtual || m_Desc == HazeFunctionDesc::ClassVirtual; }
 
 	x_uint32 GetFunctionPointerTypeId();
 
@@ -134,5 +124,5 @@ protected:
 	x_uint32 m_EndLine;
 	InstructionFunctionType m_DescType;
 
-	ClassCompilerFunctionType m_ClassFunctionType;
+	HazeFunctionDesc m_Desc;
 };

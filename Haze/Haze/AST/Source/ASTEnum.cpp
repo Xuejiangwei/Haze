@@ -6,9 +6,8 @@
 #include "CompilerValue.h"
 #include "CompilerEnum.h"
 
-ASTEnum::ASTEnum(Compiler* compiler, const SourceLocation& location, HString& name, HazeValueType baseType,
-	V_Array<Pair<HString, Unique<ASTBase>>>& enums)
-	: m_Compiler(compiler), m_Location(location), m_EnumName(Move(name)), m_BaseType(baseType), m_Enums(Move(enums))
+ASTEnum::ASTEnum(Compiler* compiler, const SourceLocation& location, HString& name, V_Array<Pair<HString, Unique<ASTBase>>>& enums)
+	: m_Compiler(compiler), m_Location(location), m_EnumName(Move(name)), m_Enums(Move(enums))
 {
 }
 
@@ -18,7 +17,7 @@ ASTEnum::~ASTEnum()
 
 void ASTEnum::CodeGen()
 {
-	auto enumValue = m_Compiler->GetCurrModule()->CreateEnum(m_EnumName, 0);
+	auto enumValue = m_Compiler->GetCurrModule()->CreateEnum(m_EnumName);
 
 	for (size_t i = 0; i < m_Enums.size(); i++)
 	{
@@ -54,7 +53,7 @@ void ASTEnum::CodeGen()
 				memset(&value.Value, 0, sizeof(value.Value));
 			}
 
-			v = m_Compiler->GenConstantValue(m_BaseType, value);
+			v = m_Compiler->GenConstantValue(HazeValueType::Int32, value);
 		}
 
 		if (!v->IsConstant())
@@ -71,34 +70,34 @@ void ASTEnum::CodeGen()
 
 void ASTEnum::AddEnumOneValueByType(HazeValue& value, const HazeValue& prValue)
 {
-	switch (m_BaseType)
+	/*switch (m_BaseType)
 	{
-	case HazeValueType::Int8:
-		value.Value.Int8 = prValue.Value.Int8 + 1;
-		break;
-	case HazeValueType::UInt8:
-		value.Value.UInt8 = prValue.Value.UInt8 + 1;
-		break;
-	case HazeValueType::Int16:
-		value.Value.Int16 = prValue.Value.Int16 + 1;
-		break;
-	case HazeValueType::UInt16:
-		value.Value.UInt16 = prValue.Value.UInt16 + 1;
-		break;
-	case HazeValueType::Int32:
-		value.Value.Int32 = prValue.Value.Int32 + 1;
-		break;
-	case HazeValueType::UInt32:
-		value.Value.UInt32 = prValue.Value.UInt32 + 1;
-		break;
-	case HazeValueType::Int64:
-		value.Value.Int64 = prValue.Value.Int64 + 1;
-		break;
-	case HazeValueType::UInt64:
-		value.Value.UInt64 = prValue.Value.UInt64 + 1;
-		break;
-	default:
-		AST_ERR_W("枚举自动匹配常量值出错");
-		break;
-	}
+		case HazeValueType::Int8:
+			value.Value.Int8 = prValue.Value.Int8 + 1;
+			break;
+		case HazeValueType::UInt8:
+			value.Value.UInt8 = prValue.Value.UInt8 + 1;
+			break;
+		case HazeValueType::Int16:
+			value.Value.Int16 = prValue.Value.Int16 + 1;
+			break;
+		case HazeValueType::UInt16:
+			value.Value.UInt16 = prValue.Value.UInt16 + 1;
+			break;
+		case HazeValueType::Int32:*/
+			value.Value.Int32 = prValue.Value.Int32 + 1;
+			/*break;
+		case HazeValueType::UInt32:
+			value.Value.UInt32 = prValue.Value.UInt32 + 1;
+			break;
+		case HazeValueType::Int64:
+			value.Value.Int64 = prValue.Value.Int64 + 1;
+			break;
+		case HazeValueType::UInt64:
+			value.Value.UInt64 = prValue.Value.UInt64 + 1;
+			break;
+		default:
+			AST_ERR_W("枚举自动匹配常量值出错");
+			break;
+	}*/
 }

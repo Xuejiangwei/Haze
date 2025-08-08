@@ -19,6 +19,7 @@
 #include "CompilerClass.h"
 #include "CompilerModule.h"
 #include "CompilerHelper.h"
+#include "CompilerSymbol.h"
 
 //static Share<HazeCompilerFunction> s_GlobalVariebleDefine = MakeShare<HazeCompilerFunction>();
 
@@ -51,10 +52,10 @@ static HashMap<HString, Share<CompilerValue>> g_GlobalTempRegisters = {
 		H_TEXT("")), HazeVariableScope::Temp, HazeDataDesc::RegisterTemp, 0) },*/
 };
 
-Compiler::Compiler(HazeVM* vm) : m_VM(vm), m_MarkError(false), m_MarkNewCode(false)
+Compiler::Compiler(HazeVM* vm) : m_VM(vm), m_MarkError(false), m_MarkNewCode(false), m_ParseStage(ParseStage::RegisterSymbol)
 {
 	m_AdvanceClassIndexInfo.clear();
-	m_TypeInfoMap = MakeUnique<HazeTypeInfoMap>();
+	m_CompilerSymbol = MakeUnique<CompilerSymbol>(this);
 }
 
 Compiler::~Compiler()
@@ -107,10 +108,22 @@ void Compiler::PreRegisterFunction()
 
 bool Compiler::InitializeCompiler(const HString& moduleName, const HString& path)
 {
-	auto It = m_CompilerModules.find(moduleName);
-	if (It != m_CompilerModules.end())
+	auto m = m_CompilerModules.find(moduleName);
+	if (m != m_CompilerModules.end())
 	{
-		return false;
+		bool needParese = m->second->m_ParseStage != m_ParseStage;
+		if (needParese)
+		{
+			for (auto& iter : m_ModuleNameStack)
+			{
+				if (iter == moduleName)
+				{
+					return false;
+				}
+			}
+			m_ModuleNameStack.push_back(moduleName);
+		}
+		return needParese;
 	}
 
 	m_ModuleNameStack.push_back(moduleName);
@@ -151,7 +164,7 @@ void Compiler::FinishParse()
 
 	ofstream.open(GetIntermediateModuleFile(HAZE_TYPE_INFO_TABLE));
 	hss.str(H_TEXT(""));
-	m_TypeInfoMap->GenICode(hss);
+	m_CompilerSymbol->GetTypeInfoMap()->GenICode(hss);
 	ofstream << hss.str();
 	ofstream.close();
 
@@ -218,7 +231,9 @@ void Compiler::ParseTypeInfoFile()
 
 void Compiler::FinishModule()
 {
-	m_CompilerModules[GetCurrModuleName()]->FinishModule();
+	auto& m = m_CompilerModules[GetCurrModuleName()];
+	m->m_ParseStage = m_ParseStage;
+	m->FinishModule();
 	ClearBlockPoint();
 }
 
@@ -339,56 +354,56 @@ x_uint32 Compiler::GetModuleTableEnumTypeId(const HString& name)
 	return 0;
 }
 
-x_uint32 Compiler::RegisterClassToSymbolTable(const HString& className)
-{
-	auto iter = m_SymbolTable.find(HashHString(&className));
-	if (iter != m_SymbolTable.end())
-	{
-		return iter->second.second;
-	}
+//x_uint32 Compiler::RegisterClassToSymbolTable(const HString& className)
+//{
+//	auto iter = m_SymbolTable.find(HashHString(&className));
+//	if (iter != m_SymbolTable.end())
+//	{
+//		return iter->second.second;
+//	}
+//
+//	CLASS_TYPE_INFO(info, className);
+//	auto typeId = m_TypeInfoMap->RegisterType(GetCurrModuleName(), &info);
+//	m_SymbolTable[{ m_TypeInfoMap->GetClassNameById(typeId) }] = { nullptr, typeId };
+//	return typeId;
+//}
 
-	CLASS_TYPE_INFO(info, className);
-	auto typeId = m_TypeInfoMap->RegisterType(GetCurrModuleName(), &info);
-	m_SymbolTable[{ m_TypeInfoMap->GetClassNameById(typeId) }] = { nullptr, typeId };
-	return typeId;
-}
+//void Compiler::OnCreateClass(Share<CompilerClass> compClass)
+//{
+//	auto iter = m_SymbolTable.find({ &compClass->GetName() });
+//	if (iter->second.first == nullptr)
+//	{
+//		iter->second = { compClass, compClass->GetTypeId() };
+//		return;
+//	}
+//	else
+//	{
+//		COMPILER_ERR_MODULE_W("重复创建类<%s>", this, compClass->GetName().c_str(), GetCurrModuleName().c_str());
+//		return;
+//	}
+//}
 
-void Compiler::OnCreateClass(Share<CompilerClass> compClass)
-{
-	auto iter = m_SymbolTable.find({ &compClass->GetName() });
-	if (iter->second.first == nullptr)
-	{
-		iter->second = { compClass, compClass->GetTypeId() };
-		return;
-	}
-	else
-	{
-		COMPILER_ERR_MODULE_W("重复创建类<%s>", this, compClass->GetName().c_str(), GetCurrModuleName().c_str());
-		return;
-	}
-}
-
-const HString* Compiler::GetSymbolTableNameAddress(const HString& className)
-{
-	auto iter = m_SymbolTable.find({ &className });
-	if (iter != m_SymbolTable.end())
-	{
-		return iter->first.Str;
-	}
-	return nullptr;
-}
-
-x_uint32 Compiler::GetSymbolTableNameTypeId(const HString& className)
-{
-	auto iter = m_SymbolTable.find({ &className });
-	if (iter != m_SymbolTable.end())
-	{
-		return iter->second.second;
-	}
-
-	COMPILER_ERR_MODULE_W("未能找到类<%s>的符号信息", this, className.c_str(), GetCurrModuleName().c_str());
-	return 0;
-}
+//const HString* Compiler::GetSymbolTableNameAddress(const HString& className)
+//{
+//	auto iter = m_SymbolTable.find({ &className });
+//	if (iter != m_SymbolTable.end())
+//	{
+//		return iter->first.Str;
+//	}
+//	return nullptr;
+//}
+//
+//x_uint32 Compiler::GetSymbolTableNameTypeId(const HString& className)
+//{
+//	auto iter = m_SymbolTable.find({ &className });
+//	if (iter != m_SymbolTable.end())
+//	{
+//		return iter->second.second;
+//	}
+//
+//	COMPILER_ERR_MODULE_W("未能找到类<%s>的符号信息", this, className.c_str(), GetCurrModuleName().c_str());
+//	return 0;
+//}
 
 AdvanceFunctionInfo* Compiler::GetAdvanceFunctionInfo(HazeValueType advanceType, const HString& name)
 {
@@ -504,6 +519,19 @@ void Compiler::InsertLineCount(x_int64 lineCount)
 bool Compiler::IsDebug() const
 {
 	return m_VM->IsDebug();
+}
+
+void Compiler::NextStage()
+{
+	if (m_ParseStage == ParseStage::RegisterSymbol)
+	{
+		m_CompilerSymbol->IdentifySymbolType();
+	}
+
+	if (m_ParseStage < ParseStage::Finish)
+	{
+		m_ParseStage = (ParseStage)((int)m_ParseStage + 1);
+	}
 }
 
 Unique<CompilerModule>& Compiler::GetCurrModule()
@@ -672,7 +700,6 @@ const x_HChar* Compiler::GetRegisterName(const Share<CompilerValue>& compilerReg
 		}
 	}
 
-	//HAZE_LOG_ERR_W("���ҼĴ�������,δ���ҵ�!\n");
 	return H_TEXT("");
 }
 
@@ -700,6 +727,11 @@ bool Compiler::IsClass(const HString& name)
 				return true;
 			}
 		}
+	}
+
+	if (IsStage1())
+	{
+		return m_CompilerSymbol->IsValidSymbol(name);
 	}
 
 	return false;

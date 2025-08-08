@@ -263,7 +263,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 		return;
 	}
 
-	hss << s_StrName << " " << CAST_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " ";
+	hss << s_StrName << " " << INT_VAR_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " ";
 	value->GetVariableType().StringStreamTo(hss);
 
 	if (value->IsString())
@@ -491,7 +491,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		{
 			HazeVariableType voidType(HazeValueType::Void);
 			hss << GetInstructionString(InstructionOpCode::RET) << " " << H_TEXT("Void") << " " << 
-				CAST_SCOPE(HazeVariableScope::None) << " " << CAST_DESC(HazeDataDesc::None) << " ";
+				INT_VAR_SCOPE(HazeVariableScope::None) << " " << CAST_DESC(HazeDataDesc::None) << " ";
 
 			voidType.StringStreamTo(hss);
 		}
@@ -573,7 +573,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		{
 			auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
 			auto& funcName = desc == HazeDataDesc::FunctionDynamicAddress ? function->GetName() : function->GetRealName();
-			hss << funcName << " " << CAST_TYPE(HazeValueType::None) << " " << CAST_SCOPE(HazeVariableScope::Ignore) << " " <<
+			hss << funcName << " " << CAST_TYPE(HazeValueType::None) << " " << INT_VAR_SCOPE(HazeVariableScope::Ignore) << " " <<
 				CAST_DESC(desc) << " " << paramCount << " " << paramSize << HAZE_ENDL;/*<< " " << function->GetModule()->GetName() << " "
 				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;*/
 		}
@@ -591,7 +591,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			}
 
 			hss << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
-				<< CAST_SCOPE(pointerFunction->GetVariableScope()) << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
+				<< INT_VAR_SCOPE(pointerFunction->GetVariableScope()) << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
 				<< " " << paramSize << HAZE_ENDL;//<< " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;
 		}
 		else
@@ -607,7 +607,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				}
 			}
 
-			hss << varName << " " << CAST_TYPE(HazeValueType::ObjectFunction) << " " << CAST_SCOPE(advancePointerTo->GetVariableScope()) << " "
+			hss << varName << " " << CAST_TYPE(HazeValueType::ObjectFunction) << " " << INT_VAR_SCOPE(advancePointerTo->GetVariableScope()) << " "
 				<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " "// << paramSize << " " << m->GetName() << " " 
 				<< advanceFuncIndex << HAZE_ENDL;
 		}

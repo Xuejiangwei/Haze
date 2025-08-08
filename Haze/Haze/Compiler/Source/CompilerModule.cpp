@@ -20,6 +20,7 @@
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
 #include "CompilerElementValue.h"
+#include "CompilerSymbol.h"
 
 struct PushTempRegister
 {
@@ -101,7 +102,7 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 	m_FS_I_Code = nullptr;
 	if (newFS)
 	{
-		m_Compiler->GetTypeInfoMap()->RemoveModuleRefTypes(moduleName);
+		m_Compiler->GetCompilerSymbol()->GetTypeInfoMap()->RemoveModuleRefTypes(moduleName);
 
 		m_FS_I_Code = new HAZE_OFSTREAM();
 		m_FS_I_Code->imbue(std::locale("chs"));
@@ -233,7 +234,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream/*, const HStrin
 				if (str == GetEnumStartHeader())
 				{
 					stream >> str;
-					auto enumValue = CreateEnum(str, 0);
+					auto enumValue = CreateEnum(str);
 
 					stream >> str;
 					while (str != GetEnumEndHeader())
@@ -405,7 +406,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream/*, const HStrin
 			}
 
 			stream >> ui64;
-			CreateFunction(compilerClass, (ClassCompilerFunctionType)functionAttrType, NativeClassFunctionName(compilerClass->GetName(), name), type, params);
+			CreateFunction(compilerClass, (HazeFunctionDesc)functionAttrType, NativeClassFunctionName(compilerClass->GetName(), name), type, params);
 		}
 
 		stream >> str;
@@ -492,7 +493,7 @@ Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<Co
 	auto compilerClass = GetClass(name);
 	if (!compilerClass)
 	{
-		auto typeId = m_Compiler->RegisterClassToSymbolTable(name);
+		auto typeId = m_Compiler->GetCompilerSymbol()->GetSymbolTypeId(name);
 
 		// 检验是否存在循环继承
 		HazeVariableType tempType(HazeValueType::Class, typeId);
@@ -505,25 +506,29 @@ Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<Co
 			}
 		}
 
-		m_HashMap_Classes[name] = MakeShare<CompilerClass>(this, name, parentClass, classData, typeId);
-		compilerClass = m_HashMap_Classes[name];
+		compilerClass = MakeShare<CompilerClass>(this, name, parentClass, classData, typeId);
+		m_HashMap_Classes[name] = compilerClass;
 
-		m_Compiler->OnCreateClass(compilerClass);
+		//m_Compiler->GetCompilerSymbol()->ResolveSymbol_Class(name, compilerClass.get());
+
+		//m_Compiler->OnCreateClass(compilerClass);
 	}
 
 	m_CurrClass = name;
 	return compilerClass;
 }
 
-Share<CompilerEnum> CompilerModule::CreateEnum(const HString& name, x_uint32 typeId)
+Share<CompilerEnum> CompilerModule::CreateEnum(const HString& name)
 {
 	Share<CompilerEnum> compilerEnum = GetEnum(this, name);
 	if (!compilerEnum)
 	{
-		compilerEnum = MakeShare<CompilerEnum>(this, name, typeId);
+		compilerEnum = MakeShare<CompilerEnum>(this, name, m_Compiler->GetCompilerSymbol()->GetSymbolTypeId(name));
 		m_HashMap_Enums[name] = compilerEnum;
 	
 		m_CurrEnum = name;
+
+		//m_Compiler->GetCompilerSymbol()->ResolveSymbol_Enum(name, compilerEnum.get());
 	}
 
 	return compilerEnum;
@@ -626,16 +631,16 @@ Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const HString& na
 
 Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, x_uint32 typeId)
 {
-	return m->GetEnum(m, *m->m_Compiler->GetTypeInfoMap()->GetEnumName(typeId));
+	return m->GetEnum(m, *m->m_Compiler->GetCompilerSymbol()->GetSymbolByTypeId(typeId));
 }
 
-Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
+Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
 	Share<CompilerFunction> function = nullptr;
 	auto it = m_HashMap_Functions.find(name);
 	if (it == m_HashMap_Functions.end())
 	{
-		m_HashMap_Functions[name] = MakeShare<CompilerFunction>(this, name, type, params);
+		m_HashMap_Functions[name] = MakeShare<CompilerFunction>(this, name, type, params, HazeFunctionDesc::Normal);
 		m_HashMap_Functions[name]->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, m_HashMap_Functions[name], nullptr));
 
 		function = m_HashMap_Functions[name];
@@ -649,14 +654,13 @@ Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, Haze
 	return function;
 }
 
-Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType,
-	const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
+Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> compilerClass, HazeFunctionDesc desc,
+	const HString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
 	Share<CompilerFunction> function = compilerClass->FindFunction(name, &compilerClass->GetName());
 	if (!function)
 	{
-		function = MakeShare<CompilerFunction>(this, name, type, params, compilerClass.get(),
-			classFunctionType);
+		function = MakeShare<CompilerFunction>(this, name, type, params, desc, compilerClass.get());
 		compilerClass->AddFunction(function);
 
 		function->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, function, nullptr));
@@ -1039,7 +1043,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					else
 					{
 						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类不匹配, 参数应为<%s>类, 实际为<%s>", m_Compiler, GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i, m_Compiler->GetTypeInfoMap()->GetClassNameById(type.TypeId)->c_str(),
+							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i, m_Compiler->GetCompilerSymbol()->GetSymbolByTypeId(type.TypeId)->c_str(),
 							hazeClass->GetName().c_str());
 					}
 				}
@@ -1114,7 +1118,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	}
 
 	HazeVariableType retPcType(HAZE_CALL_PUSH_ADDRESS_TYPE);
-	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << CAST_SCOPE(HazeVariableScope::None)
+	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << INT_VAR_SCOPE(HazeVariableScope::None)
 		<< " " << (x_uint32)HazeDataDesc::Address << " ";
 	retPcType.StringStreamTo(hss);
 	hss << HAZE_ENDL;
@@ -1196,7 +1200,7 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 
 		if (functionInfo == s_objectBaseGetFunction)
 		{
-			funcType = HAZE_VAR_TYPE((HazeValueType)m_Compiler->GetTypeInfoMap()->GetTypeById(thisPointerTo->GetVariableType().TypeId)->_ObjectBase.TypeId1);
+			funcType = HAZE_VAR_TYPE((HazeValueType)m_Compiler->GetCompilerSymbol()->GetTypeInfoMap()->GetTypeById(thisPointerTo->GetVariableType().TypeId)->_ObjectBase.TypeId1);
 		}
 	}
 

@@ -10,7 +10,7 @@ class CompilerEnum;
 class CompilerClass;
 class CompilerModule;
 class CompilerBlock;
-class HazeTypeInfoMap;
+class CompilerSymbol;
 
 struct AdvanceFunctionInfo
 {
@@ -81,6 +81,17 @@ struct std::hash<HashHString>
 	}
 };
 
+enum class ParseStage
+{
+	// 此阶段不要生成AST
+	RegisterSymbol,
+
+	// 此阶段能过正确解析
+	ParseAll,
+
+	Finish
+};
+
 class Compiler
 {
 	enum class ModuleParseInterState
@@ -99,6 +110,7 @@ class Compiler
 		x_uint32 ParseDepth = 0;
 		static const int MAX_PARSE_DEPTH = 10;
 	};
+
 public:
 	Compiler(HazeVM* vm);
 
@@ -127,7 +139,7 @@ public:
 	void FinishModule();
 
 	CompilerModule* GetModule(const HString& name);
-	
+
 	CompilerModule* GetModuleAndTryParseIntermediateFile(const HString& filePath);
 
 	const HString* GetModuleName(const CompilerModule* compilerModule) const;
@@ -181,7 +193,7 @@ public:
 	Share<CompilerValue> GetTempRegister(Share<CompilerValue> v);
 	Share<CompilerValue> GetTempRegister(const CompilerValue* v);
 	Share<CompilerValue> GetTempRegister(const HazeVariableType& type);
-	
+
 	//static Share<CompilerValue> GetNewRegister(CompilerModule* compilerModule, const HazeDefineType& data);
 
 	static HashMap<const x_HChar*, Share<CompilerValue>> GetUseTempRegister();
@@ -210,17 +222,26 @@ public:
 	bool IsNewCode() const;
 	void MarkNewCode();
 
+	// 创建变量
 public:
 	Share<CompilerValue> CreateVariableBySection(HazeSectionSignal section, Unique<CompilerModule>& mod, Share<CompilerFunction> func,
 		const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr);
 
-	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line,
-		Share<CompilerValue> RefValue = nullptr);
-
+	Share<CompilerValue> CreateLocalVariable(Share<CompilerFunction> Function, const HazeDefineVariable& Variable, int Line, Share<CompilerValue> RefValue = nullptr);
 	Share<CompilerValue> CreateGlobalVariable(Unique<CompilerModule>& m_Module, const HazeDefineVariable& Var, int Line, Share<CompilerValue> RefValue = nullptr);
 
 	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeVariableType& Var, Share<CompilerValue> RefValue = nullptr, TemplateDefineTypes* Params = nullptr);
 
+	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);
+	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, const HString& memberName);
+
+	Share<CompilerValue> CreatePointerToValue(Share<CompilerValue> value);
+	Share<CompilerValue> CreatePointerToFunction(Share<CompilerFunction> function, Share<CompilerValue> pointer);
+
+	void ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Share<CompilerValue>& right);
+
+	// 创建字节码
+public:
 	Share<CompilerValue> CreateLea(Share<CompilerValue> allocaValue, Share<CompilerValue> value);
 
 	Share<CompilerValue> CreateMov(Share<CompilerValue> allocaValue, Share<CompilerValue> value, bool checkType = true);
@@ -251,11 +272,14 @@ public:
 	Share<CompilerValue> CreateDec(Share<CompilerValue> value, bool isPreDec);
 
 	Share<CompilerValue> CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, Share<CompilerFunction> closure = nullptr);
-	
+
 	Share<CompilerValue> CreateCast(const HazeVariableType& type, Share<CompilerValue> value);
 
 	Share<CompilerValue> CreateCVT(Share<CompilerValue> left, Share<CompilerValue> right);
 
+	Share<CompilerValue> CreateFunctionRet(const HazeVariableType& type);
+
+	// 以下是创建函数调用字节码
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> function, const V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr,
 		const HString* nameSpace = nullptr);
 
@@ -271,7 +295,6 @@ public:
 	Share<CompilerValue> CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue);
 
 	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, const HString& memberName);
-	//Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
 	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member);
 	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue);
 
@@ -279,19 +302,7 @@ public:
 	Share<CompilerValue> CreateSetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
 	Share<CompilerValue> CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const HString& functionName, const V_Array<Share<CompilerValue>>& params);
 
-public:
-	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);
-	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, const HString& memberName);
-	Share<CompilerValue> CreatePointerToValue(Share<CompilerValue> value);
-
-	//Share<HazeCompilerValue> CreatePointerToArray(Share<HazeCompilerValue> arrValue, Share<HazeCompilerValue> index = nullptr);
-
-	//Share<HazeCompilerValue> CreatePointerToArrayElement(Share<HazeCompilerValue> elementValue);
-
-	//Share<HazeCompilerValue> CreatePointerToPointerArray(Share<HazeCompilerValue> pointerArray, Share<HazeCompilerValue> index = nullptr);
-
-	Share<CompilerValue> CreatePointerToFunction(Share<CompilerFunction> function, Share<CompilerValue> pointer);
-
+	// 创建条件判断字节码
 public:
 	void CreateJmpToBlock(Share<CompilerBlock> block);
 
@@ -301,18 +312,13 @@ public:
 
 	Share<CompilerValue> CreateBoolCmp(Share<CompilerValue> value);
 
-	Share<CompilerValue> CreateFunctionRet(const HazeVariableType& type);
-
-	void ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Share<CompilerValue>& right);
-
 public:
-	x_uint32 RegisterClassToSymbolTable(const HString& className);
 
-	void OnCreateClass(Share<CompilerClass> compClass);
+	/*void OnCreateClass(Share<CompilerClass> compClass);*/
 
-	const HString* GetSymbolTableNameAddress(const HString& className);
+	/*const HString* GetSymbolTableNameAddress(const HString& className);
 
-	x_uint32 GetSymbolTableNameTypeId(const HString& className);
+	x_uint32 GetSymbolTableNameTypeId(const HString& className);*/
 
 	AdvanceFunctionInfo* GetAdvanceFunctionInfo(HazeValueType advanceType, const HString& name);
 
@@ -328,11 +334,18 @@ public:
 
 	//void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
 
-	HazeTypeInfoMap* GetTypeInfoMap() { return m_TypeInfoMap.get(); }
+	CompilerSymbol* GetCompilerSymbol() { return m_CompilerSymbol.get(); }
 
 	void InsertLineCount(x_int64 lineCount);
 
 	bool IsDebug() const;
+
+	const ParseStage GetParseStage() const { return m_ParseStage; }
+	bool IsStage1() const { return m_ParseStage == ParseStage::RegisterSymbol; }
+	bool IsStage2() const { return m_ParseStage == ParseStage::ParseAll; }
+	bool IsFinishStage() const { return m_ParseStage == ParseStage::Finish; }
+
+	void NextStage();
 
 private:
 	HazeVM* m_VM;
@@ -359,15 +372,16 @@ private:
 	HashMap<x_float64, Share<CompilerValue>> m_Float64_ConstantValues;
 
 	//List<HString> m_CacheSymbols;
-	HashMap<HashHString, Pair<Share<CompilerClass>, x_uint32>> m_SymbolTable;
+	//HashMap<HashHString, Pair<Share<CompilerClass>, x_uint32>> m_SymbolTable;
 
 	//BaseBlock
 	Share<CompilerBlock> m_InsertBaseBlock;
 
-	Unique<HazeTypeInfoMap> m_TypeInfoMap;
+	Unique<CompilerSymbol> m_CompilerSymbol;
 
 	HashMap<HString, ModuleParseInfo> m_ModuleParseStates;
 
+	ParseStage m_ParseStage;
 	bool m_MarkError;
 	bool m_MarkNewCode;
 };

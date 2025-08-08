@@ -1,5 +1,6 @@
 HAZE_TO_DO(编译的警告问题)
 HAZE_TO_DO(二段解析解决模块循环引用捎带解决解析临时文件的问题);
+HAZE_TO_DO(枚举整数化和提前符号注册)
 HAZE_TO_DO(调用动态类的函数时 现在会默认生成MOV_DCU返回寄存器的字节码 需要移除 优化整体的返回值生成MOV字节码逻辑)
 HAZE_TO_DO(分代GC和定期碎片合并);
 HAZE_TO_DO(整个项目和符号表的StringView尝试替代);

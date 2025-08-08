@@ -1,6 +1,7 @@
 #include "HazePch.h"
 #include "CompilerClassValue.h"
 #include "Compiler.h"
+#include "CompilerSymbol.h"
 #include "CompilerModule.h"
 #include "CompilerHelper.h"
 #include "CompilerClass.h"
@@ -12,7 +13,7 @@ CompilerClassValue::CompilerClassValue(CompilerModule* compilerModule, const Haz
 	HazeVariableScope scope, HazeDataDesc desc, int count)
 	: CompilerValue(compilerModule, defineType, scope, desc, count)
 {
-	m_OwnerClass = compilerModule->GetClass(*compilerModule->GetCompiler()->GetTypeInfoMap()->GetClassNameById(defineType.TypeId)).get();
+	m_OwnerClass = compilerModule->GetClass(*compilerModule->GetCompiler()->GetCompilerSymbol()->GetSymbolByTypeId(defineType.TypeId)).get();
 	m_Data = m_OwnerClass->CreateVariableCopyClassMember(compilerModule, scope);
 }
 

@@ -80,6 +80,7 @@ struct HazeComplexTypeInfo
 
 class HazeTypeInfoMap
 {
+	friend class CompilerSymbol;
 public:
 	struct TypeInfo
 	{
@@ -92,20 +93,28 @@ public:
 	struct ModuleRefrenceTypeId
 	{
 		Set<x_uint32> TypeIds;
+		Set<x_uint32> DefineTypes;
 	};
 
 public:
 	HazeTypeInfoMap();
 	~HazeTypeInfoMap();
 
-	x_uint32 RegisterType(const HString& moduleName, HazeComplexTypeInfo* type);
+	x_uint32 ReserveTypeId(const HString& name);
+	//void ResolveTypeId(x_uint32 typeId);
+
+	x_uint32 RegisterType(const HString& moduleName, HazeComplexTypeInfo* type, x_uint32 resolvedTypeId = 0);
 	x_uint32 RegisterType(const HString& moduleName, x_uint32 functionTypeId, V_Array<x_uint32>&& paramTypeId);
+
+	HazeVariableType GetVarTypeById(x_uint32 typeId);
 
 	const HString* GetClassNameById(x_uint32 typeId);
 
 	const HString* GetEnumName(x_uint32 typeId);
 
 	const TypeInfo* GetTypeInfoById(x_uint32 typeId);
+
+	const HString* GetTypeName(x_uint32 typeId);
 
 	const HazeComplexTypeInfo* GetTypeById(x_uint32 typeId);
 
@@ -125,13 +134,19 @@ public:
 	void AddFunctionTypeInfo(x_uint32 typeId, V_Array<x_uint32>& typeAndParams);
 	void AddTypeInfo(HString&& name, x_uint32 typeId, HazeComplexTypeInfo* info);
 
+	const HString* GetRegisterTypeModule(const HString& symbol);
+	const HString* GetRegisterTypeModule(x_uint32 typeId);
 	void RegisterModuleRefTypes(const HString& moduleName, ModuleRefrenceTypeId&& refTypes);
 	void RemoveModuleRefTypes(const HString& moduleName);
 
 	void ParseInterFile(HAZE_IFSTREAM& stream);
 
 private:
+	x_uint32 GetNewTypeId();
+
 	x_uint32 RegisterFunctionParamListType(const HString& moduleName, x_uint32 typeId, V_Array<x_uint32>& paramList);
+
+	void RegisterResolvedType(const HString& moduleName, x_uint32 typeId, HazeComplexTypeInfo* type);
 
 	bool AddModuleRef(const HString& moduleName, x_uint32 typeId);
 

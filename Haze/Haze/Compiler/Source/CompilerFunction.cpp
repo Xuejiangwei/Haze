@@ -2,6 +2,7 @@
 #include "Compiler.h"
 #include "CompilerHelper.h"
 #include "Compiler.h"
+#include "CompilerSymbol.h"
 #include "CompilerModule.h"
 #include "CompilerClassValue.h"
 #include "CompilerArrayValue.h"
@@ -13,10 +14,10 @@
 #include "HazeLogDefine.h"
 #include "CompilerClosureFunction.h"
 
-CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const HString& name, 
-	HazeVariableType& type, V_Array<HazeDefineVariable>& params, CompilerClass* compilerClass, ClassCompilerFunctionType classFunctionType)
+CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const HString& name, const HazeVariableType& type, 
+	V_Array<HazeDefineVariable>& params, HazeFunctionDesc desc, CompilerClass* compilerClass)
 	: m_Module(compilerModule), m_Name(name), m_Type(type), m_OwnerClass(compilerClass), m_CurrBlockCount(0), 
-		m_CurrVariableCount(0), m_StartLine(0), m_EndLine(0), m_ClassFunctionType(classFunctionType)
+		m_CurrVariableCount(0), m_StartLine(0), m_EndLine(0), m_Desc(desc)
 {
 	for (int i = (int)params.size() - 1; i >= 0; i--)
 	{
@@ -190,7 +191,7 @@ x_uint32 CompilerFunction::GetFunctionPointerTypeId()
 	{
 		params[i] = m_Params[i].second->GetTypeId();
 	} 
-	return m_Module->GetCompiler()->GetTypeInfoMap()->RegisterType(m_Module->GetName(), m_Type.TypeId, Move(params));
+	return m_Module->GetCompiler()->GetCompilerSymbol()->GetTypeInfoMap()->RegisterType(m_Module->GetName(), m_Type.TypeId, Move(params));
 }
 
 void CompilerFunction::FunctionFinish()
@@ -218,7 +219,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	if (m_OwnerClass)
 	{
 		hss << GetClassFunctionLabelHeader() << " " << CAST_DESC(m_DescType) << " ";
-		hss << m_OwnerClass->GetName() << " " << (x_uint32)m_ClassFunctionType;
+		hss << m_OwnerClass->GetName() << " " << (x_uint32)m_Desc;
 	}
 	else
 	{

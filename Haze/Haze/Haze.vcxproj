@@ -359,6 +359,7 @@
     <ClCompile Include="Compiler\Source\CompilerPointerFunction.cpp" />
     <ClCompile Include="Compiler\Source\CompilerStringValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerRefValue.cpp" />
+    <ClCompile Include="Compiler\Source\CompilerSymbol.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerTemplateClass.cpp" />
     <ClCompile Include="Compiler\Source\HazeCompilerTemplateFunction.cpp" />
     <ClCompile Include="Compiler\Source\CompilerValue.cpp" />
@@ -432,6 +433,7 @@
     <ClInclude Include="Compiler\Header\CompilerPointerFunction.h" />
     <ClInclude Include="Compiler\Header\CompilerStringValue.h" />
     <ClInclude Include="Compiler\Header\CompilerRefValue.h" />
+    <ClInclude Include="Compiler\Header\CompilerSymbol.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerTemplateClass.h" />
     <ClInclude Include="Compiler\Header\CompilerValue.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerTemplateFunction.h.h" />

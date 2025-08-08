@@ -11,6 +11,7 @@ class CompilerBlock;
 class CompilerFunction;
 class CompilerClosureFunction;
 enum class ClassCompilerFunctionType : x_uint8;
+enum class ParseStage;
 class CompilerClass;
 class CompilerEnum;
 class HazeCompilerTemplateFunction;
@@ -19,6 +20,7 @@ class HazeCompilerTemplateClass;
 class CompilerModule
 {
 	friend class Compiler;
+	friend class CompilerSymbol;
 	friend struct PushTempRegister;
 private:
 	struct SearchContext
@@ -54,10 +56,9 @@ public:
 
 	void FinishModule();
 
-	Share<CompilerClass> CreateClass(const HString& name, V_Array<CompilerClass*>& parentClass,
-		V_Array<Pair<HString, Share<CompilerValue>>>& classData);
+	Share<CompilerClass> CreateClass(const HString& name, V_Array<CompilerClass*>& parentClass, V_Array<Pair<HString, Share<CompilerValue>>>& classData);
 
-	Share<CompilerEnum> CreateEnum(const HString& name, x_uint32 typeId);
+	Share<CompilerEnum> CreateEnum(const HString& name);
 
 	Share<CompilerEnum> GetCurrEnum();
 
@@ -81,10 +82,10 @@ public:
 
 	Share<CompilerFunction> GetUpOneLevelClosureOrFunction();
 
-	Share<CompilerFunction> CreateFunction(const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params);
+	Share<CompilerFunction> CreateFunction(const HString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
-	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, ClassCompilerFunctionType classFunctionType,
-		const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params);
+	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, HazeFunctionDesc desc,
+		const HString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
 	Share<CompilerClosureFunction> CreateClosureFunction(HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
@@ -218,6 +219,7 @@ private:
 
 	V_Array<CompilerModule*> m_ImportModules;
 
+	ParseStage m_ParseStage;
 	bool m_IsBeginCreateFunctionVariable;
 	bool m_IsGenTemplateCode;
 };

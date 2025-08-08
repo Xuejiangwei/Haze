@@ -9,10 +9,13 @@ class CompilerClassValue;
 class CompilerClass
 {
 	friend class Compiler;
+	friend class CompilerSymbol;
 public:
 
 	CompilerClass(CompilerModule* compilerModule, const HString& name, V_Array<CompilerClass*>& parentClass,
 		V_Array<Pair<HString, Share<CompilerValue>>>& data, x_uint32 typeId);
+
+	CompilerClass(CompilerModule* compilerModule, const HString& name, x_uint32 typeId);
 
 	~CompilerClass();
 
@@ -66,8 +69,13 @@ public:
 
 private:
 	void MemoryAlign(x_uint32 memberNum);
+	void InitMemberData();
 
 	void GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, x_uint32& offset);
+
+private:
+	void ResolveClassParent(V_Array<CompilerClass*>&& parentClass);
+	void ResolveClassData(V_Array<Pair<HString, Share<CompilerValue>>>&& data);
 
 private:
 	CompilerModule* m_Module;

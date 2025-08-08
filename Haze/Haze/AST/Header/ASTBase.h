@@ -24,6 +24,8 @@ public:
 
 	const HazeDefineVariable& GetDefine() const { return m_DefineVariable; }
 
+	const HazeValue& GetValue() const { return m_Value; }
+
 protected:
 	Compiler* m_Compiler;
 	HazeValue m_Value;

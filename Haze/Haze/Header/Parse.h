@@ -2,6 +2,7 @@
 
 class Compiler;
 class HazeTypeInfoMap;
+class CompilerSymbol;
 
 class ASTBase;
 class ASTVariableDefine;
@@ -18,6 +19,8 @@ class ASTTemplateBase;
 class Parse
 {
 	friend struct TempCurrCode;
+	friend struct ParseStage1Spin;
+	friend struct ExpectNextScope;
 public:
 	Parse(Compiler* compiler);
 
@@ -49,6 +52,7 @@ private:
 
 	Unique<ASTBase> ParseIdentifer(Unique<ASTBase> preAST = nullptr, HazeToken preToken = HazeToken::None);
 
+	// 暂时可以在第一解析阶段解析赋值内容，之后看是否有问题
 	Unique<ASTBase> ParseVariableDefine();
 	Unique<ASTBase> ParseVariableDefine_MultiVariable();
 	Unique<ASTBase> ParseVariableDefine_Array(x_uint32 typeId);
@@ -120,12 +124,12 @@ private:
 
 	Unique<ASTEnum> ParseEnum();
 
-	Unique<ASTTemplateBase> ParseTemplateClass(V_Array<HString>& templateTypes);
+	//Unique<ASTTemplateBase> ParseTemplateClass(V_Array<HString>& templateTypes);
 
-	Unique<ASTTemplateBase> ParseTemplateFunction(V_Array<HString>& templateTypes);
+	//Unique<ASTTemplateBase> ParseTemplateFunction(V_Array<HString>& templateTypes);
 
 private:
-	Unique<ASTFunction> ParseFunction(const HString* className = nullptr);
+	Unique<ASTFunction> ParseFunction(const HString* className = nullptr, bool isClassPublic = false);
 
 	bool ExpectNextTokenIs(HazeToken token, const x_HChar* errorInfo = nullptr, bool parseError = true);
 
@@ -143,17 +147,23 @@ private:
 
 	x_uint32 ParseTemplateTypes(HazeVariableType baseType, TemplateDefineTypes& templateTypes);
 
-	//void ParseVariableType();
+	void RegisterClassData(const HString& name, V_Array<HString>& Parents, V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& classDatas);
+	void RegisterEnumData(const HString& name, V_Array<Pair<HString, Unique<ASTBase>>>& members);
+	void RegisterFunctionSymbol(const HString& functionName, x_uint32 funcType, V_Array<Unique<ASTBase>>&& params, HazeFunctionDesc desc, const HString* className, bool isClassPublic);
+
+	void EnableExpectIdentiferIsClassOrEnum();
+	void OnHitExpectIdentiferIsClassOrEnum();
 
 	void IncLineCount();
 
 private:
 	Compiler* m_Compiler;
-	HazeTypeInfoMap* m_TypeInfoMap;
+	CompilerSymbol* m_CompilerSymbol;
 
 	HazeLibraryType m_LibraryType;
 	HazeToken m_CurrToken;
 	const x_HChar* m_CurrCode;
+	HString m_ModuleName;
 	HString m_CodeText;
 	HString m_CurrLexeme;
 	Pair<HString, int> m_CurrPreLexeme;		//LexemeString, skip char count
@@ -167,6 +177,7 @@ private:
 	x_uint32 m_LineCount;
 
 	bool m_IsParseError;
+	bool m_IsExpectIdentiferIsClass_Or_Enum;
 	bool m_IsParseClassData_Or_FunctionParam;
 	bool m_IsParseArray;
 	bool m_IsParseTemplate;

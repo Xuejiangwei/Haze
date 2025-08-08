@@ -10,28 +10,13 @@ CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name
 	V_Array<Pair<HString, Share<CompilerValue>>>& data, x_uint32 typeId)
 	: m_Module(compilerModule), m_Name(name), m_ParentClass(Move(parentClass)), m_Data(Move(data)), m_TypeId(typeId)
 {
-	m_DataSize = 0;
-	m_MemberCount = (x_uint32)m_Data.size();
-	for (size_t i = 0; i < m_ParentClass.size(); i++)
-	{
-		m_DataSize += m_ParentClass[i]->GetDataSize();
-		m_MemberCount += m_ParentClass[i]->GetMemberCount();
-	}
+	InitMemberData();
+}
 
-	x_uint32 memberNum = 0;
-	Share<CompilerValue> lastMember = nullptr;
+CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name, x_uint32 typeId)
+	: m_Module(compilerModule), m_Name(name), m_TypeId(typeId)
+{
 
-	for (size_t i = 0; i < m_Data.size(); i++)
-	{
-		memberNum++;
-		lastMember = m_Data[i].second;
-	}
-
-	MemoryAlign(memberNum);
-	x_uint32 alignSize = GetAlignSize();
-	alignSize = alignSize > HAZE_ALIGN_BYTE ? alignSize : HAZE_ALIGN_BYTE;
-	m_DataSize = lastMember ? HAZE_ALIGN(m_Offsets.back() + lastMember->GetSize(), alignSize) + m_DataSize : m_DataSize;
-	HAZE_LOG_INFO(H_TEXT("类<%s> DataSize %d\n"), name.c_str(), m_DataSize);
 }
 
 CompilerClass::~CompilerClass()
@@ -342,6 +327,17 @@ void CompilerClass::GenClassData_I_CodeToHss(HAZE_STRING_STREAM& hss, x_uint32& 
 	}
 }
 
+void CompilerClass::ResolveClassParent(V_Array<CompilerClass*>&& parentClass)
+{
+	m_ParentClass = parentClass;
+}
+
+void CompilerClass::ResolveClassData(V_Array<Pair<HString, Share<CompilerValue>>>&& data)
+{
+	m_Data = data;
+	InitMemberData();
+}
+
 void CompilerClass::GenClassFunction_I_Code(HAZE_STRING_STREAM& hss)
 {
 	for (auto& iter : m_Functions)
@@ -524,4 +520,30 @@ void CompilerClass::MemoryAlign(x_uint32 memberNum)
 		}
 		index++;
 	}
+}
+
+void CompilerClass::InitMemberData()
+{
+	m_DataSize = 0;
+	m_MemberCount = (x_uint32)m_Data.size();
+	for (size_t i = 0; i < m_ParentClass.size(); i++)
+	{
+		m_DataSize += m_ParentClass[i]->GetDataSize();
+		m_MemberCount += m_ParentClass[i]->GetMemberCount();
+	}
+
+	x_uint32 memberNum = 0;
+	Share<CompilerValue> lastMember = nullptr;
+
+	for (size_t i = 0; i < m_Data.size(); i++)
+	{
+		memberNum++;
+		lastMember = m_Data[i].second;
+	}
+
+	MemoryAlign(memberNum);
+	x_uint32 alignSize = GetAlignSize();
+	alignSize = alignSize > HAZE_ALIGN_BYTE ? alignSize : HAZE_ALIGN_BYTE;
+	m_DataSize = lastMember ? HAZE_ALIGN(m_Offsets.back() + lastMember->GetSize(), alignSize) + m_DataSize : m_DataSize;
+	HAZE_LOG_INFO(H_TEXT("类<%s> DataSize %d\n"), m_Name.c_str(), m_DataSize);
 }

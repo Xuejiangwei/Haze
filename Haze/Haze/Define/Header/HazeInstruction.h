@@ -1,36 +1,6 @@
 #pragma once
 
-//操作数数据顺序 ValueType Name Scope
-
-/*  指令字节码说明
-	uint8		uint8		uint8		uint64		(uint8		uint64)		...(uint8		uint64)
-	指令字节id	操作数个数	操作数类型	操作数值		(操作数类型	操作数值)	...(操作数类型	操作数值)
-*/
-enum class InstructionOpCodeType : x_uint8
-{
-	Memory,
-
-	Bool,
-	Char,
-
-	Byte,
-	UnsignedByte,
-
-	Short,
-	UnsignedShort,
-
-	Int,
-	UnsignedInt,
-
-	Float,
-
-	Long,
-	UnsignedLong,
-
-	Double,
-};
-
-#define CAST_SCOPE(V) (x_uint32)V
+#define INT_VAR_SCOPE(V) (x_uint32)V
 #define IS_SCOPE_GLOBAL(V) V == HazeVariableScope::Global
 #define IS_SCOPE_LOCAL(V) V == HazeVariableScope::Local
 #define IS_SCOPE_IGNORE(V) V == HazeVariableScope::Ignore
@@ -79,6 +49,19 @@ enum class HazeDataDesc : x_uint32
 	NullPtr,
 
 	CallFunctionModule,
+};
+
+#define IS_VIRTUAL(DESC) (DESC == HazeFunctionDesc::ClassVirtual)
+#define IS_PURE_VIRTUAL(DESC) (DESC == HazeFunctionDesc::ClassPureVirtual)
+
+enum class HazeFunctionDesc : x_uint8
+{
+	Normal,
+	ClassNormal,
+	ClassVirtual,
+	ClassPureVirtual,
+
+	Closure,
 };
 
 enum class InstructionOpCode : x_uint32

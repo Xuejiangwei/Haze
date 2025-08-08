@@ -9,6 +9,7 @@ class CompilerModule;
 // 默认继承整数类型，枚举类型只在解析是判断，真正类型及字节大小是继承类型
 class CompilerEnum
 {
+	friend class CompilerSymbol;
 public:
 	CompilerEnum(CompilerModule* compilerModule, const HString& name, x_uint32 typeId);
 

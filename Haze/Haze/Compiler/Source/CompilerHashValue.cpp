@@ -3,11 +3,12 @@
 #include "CompilerModule.h"
 #include "CompilerHashValue.h"
 #include "CompilerArrayValue.h "
+#include "CompilerSymbol.h"
 
 CompilerHashValue::CompilerHashValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count)
 	: CompilerValue(compilerModule, defineType, scope, desc, count)
 {
-	auto typeInfoMap = m_Module->GetCompiler()->GetTypeInfoMap();
+	auto typeInfoMap = m_Module->GetCompiler()->GetCompilerSymbol()->GetTypeInfoMap();
 	auto typeInfo = (HazeComplexTypeInfo::Hash*)typeInfoMap->GetTypeById(defineType.TypeId);
 
 	auto keyTypeInfo = typeInfoMap->GetTypeById(typeInfo->TypeId1);

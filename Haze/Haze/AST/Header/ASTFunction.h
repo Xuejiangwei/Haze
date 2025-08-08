@@ -10,7 +10,7 @@ class ASTFunction
 {
 public:
 	ASTFunction(Compiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
-		HString& name, HazeVariableType& type, V_Array<Unique<ASTBase>>& params, Unique<ASTBase> body, bool isVirtual, bool isPureVirtual);
+		HString& name, HazeVariableType& type, V_Array<Unique<ASTBase>>& params, Unique<ASTBase> body, HazeFunctionDesc desc);
 
 	~ASTFunction();
 
@@ -23,8 +23,7 @@ public:
 private:
 	Compiler* m_Compiler;
 	HazeSectionSignal m_Section;
-	bool m_IsVirtual;
-	bool m_IsPureVirtual;
+	HazeFunctionDesc m_Desc;
 
 	HString m_FunctionName;
 	HazeVariableType m_FunctionType;
