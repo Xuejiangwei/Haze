@@ -129,8 +129,7 @@ private:
 class ASTVariableDefine : public ASTBase
 {
 public:
-	ASTVariableDefine(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression);
+	ASTVariableDefine(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HazeDefineVariable&& defineVar, Unique<ASTBase> expression);
 	virtual ~ASTVariableDefine() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
@@ -160,7 +159,7 @@ class ASTVariableDefine_Class : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Class(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, V_Array<Unique<ASTBase>> params = {});
+		HazeDefineVariable&& defineVar, Unique<ASTBase> expression, V_Array<Unique<ASTBase>> params = {});
 	virtual ~ASTVariableDefine_Class() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
@@ -174,7 +173,7 @@ class ASTVariableDefine_Array : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression);
+		HazeDefineVariable&& defineVar, Unique<ASTBase> expression);
 	virtual ~ASTVariableDefine_Array() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
@@ -188,7 +187,7 @@ class ASTVariableDefine_Function : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Function(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId);
+		HazeDefineVariable&& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId);
 	virtual ~ASTVariableDefine_Function() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
@@ -202,7 +201,7 @@ class ASTVariableDefine_ObjectBase : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_ObjectBase(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression);
+		HazeDefineVariable&& defineVar, Unique<ASTBase> expression);
 	virtual ~ASTVariableDefine_ObjectBase() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
@@ -213,7 +212,7 @@ class ASTVariableDefine_Hash : public ASTVariableDefine
 {
 public:
 	ASTVariableDefine_Hash(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId);
+		HazeDefineVariable&& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId);
 	virtual ~ASTVariableDefine_Hash() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
@@ -228,7 +227,7 @@ class ASTVariableDefine_Closure : public ASTVariableDefine_Function
 {
 public:
 	ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
-		const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, x_uint32 templateTypeId, V_Array<Unique<ASTBase>>& params);
+		HazeDefineVariable&& defineVar, Unique<ASTBase>& expression, x_uint32 templateTypeId, V_Array<Unique<ASTBase>>& params);
 	virtual ~ASTVariableDefine_Closure() override {}
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;

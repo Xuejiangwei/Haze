@@ -436,7 +436,6 @@
     <ClInclude Include="Compiler\Header\CompilerSymbol.h" />
     <ClInclude Include="Compiler\Header\HazeCompilerTemplateClass.h" />
     <ClInclude Include="Compiler\Header\CompilerValue.h" />
-    <ClInclude Include="Compiler\Header\HazeCompilerTemplateFunction.h.h" />
     <ClInclude Include="Debugger\Header\HazeDebugger.h" />
     <ClInclude Include="Debugger\Header\HazeDebuggerServer.h" />
     <ClInclude Include="Debugger\Header\HazeDebugInfo.h" />

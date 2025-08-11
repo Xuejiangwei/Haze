@@ -306,7 +306,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 		}
 		else
 		{
-			AST_ERR_W("生成函数调用错误, 未能找到函数");
+			AST_ERR_W("生成函数调用错误, 未能找到函数<%s>", m_Name.c_str());
 		}
 	}
 
@@ -394,8 +394,13 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 //}
 
 ASTVariableDefine::ASTVariableDefine(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression)
-	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(Move(expression)) {
+	HazeDefineVariable&& defineVar, Unique<ASTBase> expression)
+	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(Move(expression))
+{
+	if (m_DefineVariable.Name.empty())
+	{
+		PARSE_AST_ERR_W("变量定义错误, 未能获得名称");
+	}
 }
 
 Share<CompilerValue> ASTVariableDefine::CodeGen(Share<CompilerValue> inferValue)
@@ -474,8 +479,8 @@ Share<CompilerValue> ASTVariableDefine_MultiVariable::CodeGen(Share<CompilerValu
 }
 
 ASTVariableDefine_Class::ASTVariableDefine_Class(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, V_Array<Unique<ASTBase>> params)
-	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_Params(Move(params))
+	HazeDefineVariable&& defineVar, Unique<ASTBase> expression, V_Array<Unique<ASTBase>> params)
+	: ASTVariableDefine(compiler, location, section, Move(defineVar), Move(expression)), m_Params(Move(params))
 {
 }
 
@@ -488,8 +493,8 @@ Share<CompilerValue> ASTVariableDefine_Class::CodeGen(Share<CompilerValue> infer
 }
 
 ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression)
-	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression))/*, m_ArrayDimension(dimension)*/
+	HazeDefineVariable&& defineVar, Unique<ASTBase> expression)
+	: ASTVariableDefine(compiler, location, section, Move(defineVar), Move(expression))/*, m_ArrayDimension(dimension)*/
 {
 	/*if (templateTypes.Types.size() > 0)
 	{
@@ -507,8 +512,8 @@ Share<CompilerValue> ASTVariableDefine_Array::CodeGen(Share<CompilerValue> infer
 }
 
 ASTVariableDefine_Function::ASTVariableDefine_Function(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId)
-	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_TemplateTypeId(templateTypeId)
+	HazeDefineVariable&& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId)
+	: ASTVariableDefine(compiler, location, section, Move(defineVar), Move(expression)), m_TemplateTypeId(templateTypeId)
 {
 }
 
@@ -534,8 +539,8 @@ Share<CompilerValue> ASTVariableDefine_Function::CodeGen(Share<CompilerValue> in
 }
 
 ASTVariableDefine_ObjectBase::ASTVariableDefine_ObjectBase(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression)
-	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression))
+	HazeDefineVariable&& defineVar, Unique<ASTBase> expression)
+	: ASTVariableDefine(compiler, location, section, Move(defineVar), Move(expression))
 {
 }
 
@@ -549,8 +554,8 @@ Share<CompilerValue> ASTVariableDefine_ObjectBase::CodeGen(Share<CompilerValue> 
 }
 
 ASTVariableDefine_Hash::ASTVariableDefine_Hash(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	const HazeDefineVariable& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId)
-	: ASTVariableDefine(compiler, location, section, defineVar, Move(expression)), m_TemplateTypeId(templateTypeId)
+	HazeDefineVariable&& defineVar, Unique<ASTBase> expression, x_uint32 templateTypeId)
+	: ASTVariableDefine(compiler, location, section, Move(defineVar), Move(expression)), m_TemplateTypeId(templateTypeId)
 {
 }
 
@@ -564,8 +569,9 @@ Share<CompilerValue> ASTVariableDefine_Hash::CodeGen(Share<CompilerValue> inferV
 	return TryAssign(var, H_TEXT("函数指针变量"));
 }
 
-ASTVariableDefine_Closure::ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section, const HazeDefineVariable& defineVar, Unique<ASTBase>& expression, x_uint32 templateTypeId, V_Array<Unique<ASTBase>>& params)
-	: ASTVariableDefine_Function(compiler, location, section, defineVar, Move(expression), templateTypeId), m_Params(Move(params)), m_StartLocation(startLocation), m_EndLocation(endLocation)
+ASTVariableDefine_Closure::ASTVariableDefine_Closure(Compiler* compiler, const SourceLocation& location, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
+	HazeDefineVariable&& defineVar, Unique<ASTBase>& expression, x_uint32 templateTypeId, V_Array<Unique<ASTBase>>& params)
+	: ASTVariableDefine_Function(compiler, location, section, Move(defineVar), Move(expression), templateTypeId), m_Params(Move(params)), m_StartLocation(startLocation), m_EndLocation(endLocation)
 {
 }
 

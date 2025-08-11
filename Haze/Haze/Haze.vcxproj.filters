@@ -416,9 +416,6 @@
     <ClInclude Include="Compiler\Header\CompilerElementValue.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="Compiler\Header\HazeCompilerTemplateFunction.h.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="Object\Header\ObjectDynamicClass.h">
       <Filter>头文件</Filter>
     </ClInclude>

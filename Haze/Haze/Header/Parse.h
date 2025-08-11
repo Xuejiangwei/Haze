@@ -55,14 +55,14 @@ private:
 	// 暂时可以在第一解析阶段解析赋值内容，之后看是否有问题
 	Unique<ASTBase> ParseVariableDefine();
 	Unique<ASTBase> ParseVariableDefine_MultiVariable();
-	Unique<ASTBase> ParseVariableDefine_Array(x_uint32 typeId);
-	Unique<ASTBase> ParseVariableDefine_String(struct TempCurrCode* tempCode);
-	Unique<ASTBase> ParseVariableDefine_Class();
-	Unique<ASTBase> ParseVariableDefine_Function(x_uint32 templateTypeId);
-	Unique<ASTBase> ParseVariableDefine_ObjectBase(x_int32 templateTypeId);
-	Unique<ASTBase> ParseVariableDefine_Hash(x_uint32 templateTypeId);
+	Unique<ASTBase> ParseVariableDefine_Array(x_uint32 typeId, HazeDefineVariable&& defineVar);
+	Unique<ASTBase> ParseVariableDefine_String(struct TempCurrCode* tempCode, HazeDefineVariable&& defineVar);
+	Unique<ASTBase> ParseVariableDefine_Class(HazeDefineVariable&& defineVar);
+	Unique<ASTBase> ParseVariableDefine_Function(x_uint32 templateTypeId, HazeDefineVariable&& defineVar);
+	Unique<ASTBase> ParseVariableDefine_ObjectBase(x_int32 templateTypeId, HazeDefineVariable&& defineVar);
+	Unique<ASTBase> ParseVariableDefine_Hash(x_uint32 templateTypeId, HazeDefineVariable&& defineVar);
 
-	Unique<ASTBase> ParseClosure(x_uint32 templateTypeId);
+	Unique<ASTBase> ParseClosure(x_uint32 templateTypeId, HazeDefineVariable&& defineVar);
 
 	Unique<ASTBase> ParseStringText();
 
@@ -170,7 +170,7 @@ private:
 
 	std::stack<HazeSectionSignal> m_StackSectionSignal;
 
-	HazeDefineVariable m_DefineVariable;
+	//HazeDefineVariable m_DefineVariable;
 	HString m_CurrParseClass;
 
 	int m_LeftParenthesesExpressionCount;

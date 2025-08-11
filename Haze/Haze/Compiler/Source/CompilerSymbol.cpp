@@ -422,7 +422,7 @@ void CompilerSymbol::IdentifySymbolType()
 				params[i].Name = iter.second.ParamNames[i];
 				params[i].Type = m_TypeInfo->GetVarTypeById(iter.second.Params[i]);
 			}
-			iter.second.Module->CreateFunction(iter.first, m_TypeInfo->GetVarTypeById(iter.second.ClassTypeId), params);
+			iter.second.Module->CreateFunction(iter.first, m_TypeInfo->GetVarTypeById(iter.second.FunctionType), params);
 		}
 
 	}

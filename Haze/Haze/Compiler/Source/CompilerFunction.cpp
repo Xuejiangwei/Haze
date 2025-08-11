@@ -125,6 +125,11 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeVariableType
 		v = m_Module->GetCompiler()->CreateMov(v, prueStr);
 	}*/
 
+	if (!v)
+	{
+		COMPILER_ERR_W("未能创建<%s>类型的临时变量", m_Module->GetCompiler()->GetCompilerSymbol()->GetSymbolByTypeId(type.TypeId)->c_str());
+	}
+
 	return v;
 }
 
@@ -196,7 +201,8 @@ x_uint32 CompilerFunction::GetFunctionPointerTypeId()
 
 void CompilerFunction::FunctionFinish()
 {
-	if (m_Type.BaseType == HazeValueType::Void)
+	// 构造函数也返回空
+	if (m_Type.BaseType == HazeValueType::Void || (m_OwnerClass && m_OwnerClass->GetName() == m_Name))
 	{
 		HAZE_STRING_STREAM hss;
 		GenIRCode(hss, GetModule(), InstructionOpCode::RET, nullptr, nullptr, nullptr, nullptr);

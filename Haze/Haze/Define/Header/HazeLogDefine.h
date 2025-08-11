@@ -5,6 +5,10 @@
 							 m_Compiler->GetCurrModuleName().c_str(), m_LineCount, __VA_ARGS__); \
 							 m_IsParseError = true;
 
+#define PARSE_AST_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<解析错误>：" H_TEXT(" 【<%s>模块 <%d>行 】") H_TEXT(INFO) H_TEXT("!\n"), \
+							 m_Compiler->GetCurrModuleName().c_str(), m_Location.Line, __VA_ARGS__); \
+							m_Compiler->MarkCompilerError();
+
 #define SYMBOL_ERR_W(INFO, ...) HAZE_LOG_ERR_W("<符号错误>：" H_TEXT(INFO) H_TEXT("!\n"), __VA_ARGS__); \
 							 m_Compiler->MarkCompilerError()
 

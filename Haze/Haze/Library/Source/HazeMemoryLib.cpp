@@ -73,6 +73,6 @@ void HazeMemoryLib::CreateClassByName(HAZE_STD_CALL_PARAM)
 	else
 	{
 		HAZE_LOG_ERR_W("生成类对象<%s>错误, 未能找到或者没有引用未能生成类型信息\n", strName.c_str());
-		stack->LogStack();
+		stack->OnError();
 	}
 }

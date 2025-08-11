@@ -1009,7 +1009,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			if (IsNumberType(oper[0].Variable.Type.BaseType) && IsNumberType(oper[1].Variable.Type.BaseType))
+			if (IsNumberType(oper[0].Variable.Type.BaseType) && (IsNumberType(oper[1].Variable.Type.BaseType) || IsEnumType(oper[1].Variable.Type.BaseType)))
 			{
 				HazeValue v1, v2;
 				auto address = GetOperatorAddress(stack, oper[0]);

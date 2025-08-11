@@ -114,6 +114,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		case HazeValueType::MultiVariable:
 		case HazeValueType::DynamicClass:
 		case HazeValueType::DynamicClassUnknow:
+		case HazeValueType::Address:
 			return MakeShare<CompilerValue>(compilerModule, type, scope, desc, count, assignValue);
 		case HazeValueType::Array:
 			return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count);
