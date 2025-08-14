@@ -13,16 +13,15 @@ public:
 
 	const HazeVariableType& GetType() const { return m_Type; }
 
-	const HazeValue& GetValue() const { return Value; }
+	const HazeValue& GetValue() const { return m_Value.Value; }
 
 private:
 	HString m_Name;
-
 	HazeVariableType m_Type;
 
 	union
 	{
 		HazeValue Value;
 		void* Address;
-	};
+	} m_Value;
 };

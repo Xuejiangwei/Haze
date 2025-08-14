@@ -30,9 +30,25 @@ HazeValue* ASTFunction::CodeGen()
 	Share<CompilerClass> currClass = nullptr;
 
 	V_Array<HazeDefineVariable> paramDefines(m_FunctionParams.size());
+
+	bool startCheckDefaultValue = false;
 	for (size_t i = 0; i < m_FunctionParams.size(); i++)
 	{
 		paramDefines[i] = m_FunctionParams[i]->GetDefine();
+
+		auto ast = dynamic_cast<ASTVariableDefine*>(m_FunctionParams[i].get());
+		if (ast)
+		{
+			if (ast->HasAssignExpression())
+			{
+				startCheckDefaultValue = true;
+			}
+			else if (startCheckDefaultValue)
+			{
+				AST_LINE_ERR_W("生成函数<%s>结束错误, 参数<%s>未设置默认值", ast->GetLine(), m_FunctionName.c_str(), ast->GetName());
+				return nullptr;
+			}
+		}
 	}
 
 	if (m_Section == HazeSectionSignal::Global)
@@ -49,7 +65,7 @@ HazeValue* ASTFunction::CodeGen()
 
 	for (int i = (int)m_FunctionParams.size() - 1; i >= 0; i--)
 	{
-		currModule->BeginCreateFunctionParamVariable();
+		currModule->BeginCreateFunctionParamVariable((x_int8)i);
 		m_FunctionParams[i]->CodeGen(nullptr);
 		currModule->EndCreateFunctionParamVariable();
 	}
@@ -65,36 +81,35 @@ HazeValue* ASTFunction::CodeGen()
 	}
 	else
 	{
-		auto& m_Location = m_EndLocation;
-		AST_ERR_W("生成函数<%s>结束错误, 不是当前模块解析的函数<%s>", m_FunctionName.c_str(), currModule->GetCurrFunction()->GetName().c_str());
+		AST_LINE_ERR_W("生成函数<%s>结束错误, 不是当前模块解析的函数<%s>", m_EndLocation, m_FunctionName.c_str(), currModule->GetCurrFunction()->GetName().c_str());
 	}
 
 	return nullptr;
 }
 
-void ASTFunction::RegisterFunction()
-{
-	auto& currModule = m_Compiler->GetCurrModule();
-
-	Share<CompilerClass> currClass = nullptr;
-
-	V_Array<HazeDefineVariable> paramDefines(m_FunctionParams.size());
-	for (size_t i = 0; i < m_FunctionParams.size(); i++)
-	{
-		paramDefines[i] = m_FunctionParams[i]->GetDefine();
-	}
-
-	if (m_Section == HazeSectionSignal::Global)
-	{
-		currModule->CreateFunction(m_FunctionName, m_FunctionType, paramDefines);
-	}
-	else if (m_Section == HazeSectionSignal::Class)
-	{
-		auto info = m_Compiler->GetCompilerSymbol()->GetTypeInfoMap()->GetTypeById(m_FunctionParams[0]->GetDefine().Type.TypeId);
-		currClass = currModule->GetClass(*info->_Class.GetString());
-		currModule->CreateFunction(currClass, m_Desc, m_FunctionName, m_FunctionType, paramDefines);
-	}
-}
+//void ASTFunction::RegisterFunction()
+//{
+//	auto& currModule = m_Compiler->GetCurrModule();
+//
+//	Share<CompilerClass> currClass = nullptr;
+//
+//	V_Array<HazeDefineVariable> paramDefines(m_FunctionParams.size());
+//	for (size_t i = 0; i < m_FunctionParams.size(); i++)
+//	{
+//		paramDefines[i] = m_FunctionParams[i]->GetDefine();
+//	}
+//
+//	if (m_Section == HazeSectionSignal::Global)
+//	{
+//		currModule->CreateFunction(m_FunctionName, m_FunctionType, paramDefines);
+//	}
+//	else if (m_Section == HazeSectionSignal::Class)
+//	{
+//		auto info = m_Compiler->GetCompilerSymbol()->GetTypeInfoMap()->GetTypeById(m_FunctionParams[0]->GetDefine().Type.TypeId);
+//		currClass = currModule->GetClass(*info->_Class.GetString());
+//		currModule->CreateFunction(currClass, m_Desc, m_FunctionName, m_FunctionType, paramDefines);
+//	}
+//}
 
 ASTFunctionSection::ASTFunctionSection(Compiler* compiler,/* const SourceLocation& Location,*/ V_Array<Unique<ASTFunction>>& functions)
 	: m_Compiler(compiler), m_Functions(Move(functions))
@@ -107,10 +122,10 @@ ASTFunctionSection::~ASTFunctionSection()
 
 void ASTFunctionSection::CodeGen()
 {
-	for (auto& iter : m_Functions)
+	/*for (auto& iter : m_Functions)
 	{
 		iter->RegisterFunction();
-	}
+	}*/
 
 	for (auto& iter : m_Functions)
 	{
@@ -175,10 +190,10 @@ void ASTClassFunctionSection::CodeGen()
 			}
 		}
 
-		for (auto& function : iter.second)
+		/*for (auto& function : iter.second)
 		{
 			function->RegisterFunction();
-		}
+		}*/
 	}
 
 	for (auto& iter : m_Functions)

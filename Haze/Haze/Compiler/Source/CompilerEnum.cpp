@@ -1,6 +1,7 @@
 #include "HazePch.h"
 #include "CompilerEnum.h"
 #include "CompilerEnumValue.h"
+#include "Compiler.h"
 #include "CompilerModule.h"
 #include "CompilerHelper.h"
 

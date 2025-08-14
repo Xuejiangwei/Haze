@@ -256,7 +256,7 @@ void ObjectHash::Get(HAZE_OBJECT_CALL_PARAM)
 
 		node += node->Next;
 
-		if (node->IsNone())
+		if (node->IsNone() || !node->HasNext())
 		{
 			break;
 		}

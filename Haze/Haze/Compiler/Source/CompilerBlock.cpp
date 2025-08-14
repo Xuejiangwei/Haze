@@ -1,5 +1,6 @@
 #include "HazePch.h"
 #include "CompilerBlock.h"
+#include "Compiler.h"
 #include "CompilerHelper.h"
 #include "CompilerModule.h"
 #include "CompilerValue.h"
@@ -175,9 +176,14 @@ void CompilerBlock::ClearLocalVariable()
 	}
 }
 
-Share<CompilerBlock> CompilerBlock::CreateBaseBlock(const HString& name, Share<CompilerFunction> Parent, Share<CompilerBlock> parentBlock)
+Share<CompilerBlock> CompilerBlock::CreateBaseBlock(const HString& name, Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock)
 {
-	auto BB = MakeShare<CompilerBlock>(name, Parent.get(), parentBlock.get());
+	return CreateBaseBlock(name, parent.get(), parentBlock.get());
+}
+
+Share<CompilerBlock> CompilerBlock::CreateBaseBlock(const HString& name, CompilerFunction* Parent, CompilerBlock* parentBlock)
+{
+	auto BB = MakeShare<CompilerBlock>(name, Parent, parentBlock);
 
 	if (parentBlock)
 	{
@@ -201,17 +207,16 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 		{
 			if (scope == HazeVariableScope::Global)
 			{
-				HAZE_LOG_ERR_W("重复全局添加变量<%s> !\n", defineVar.Name.c_str());
-
+				return iter.second;
+				//COMPILER_ERR_MODULE_W("重复全局添加变量<%s>", m_ParentFunction->GetModule()->GetCompiler(), m_ParentFunction->GetModule()->GetName().c_str(), defineVar.Name.c_str());
 			}
 			else if (scope == HazeVariableScope::Local)
 			{
-				HAZE_LOG_ERR_W("重复添加局部变量<%s> !\n", defineVar.Name.c_str());
-
+				COMPILER_ERR_MODULE_W("重复添加局部变量<%s>", m_ParentFunction->GetModule()->GetCompiler(), m_ParentFunction->GetModule()->GetName().c_str(), defineVar.Name.c_str());
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("重复添加变量<%s>且作用域错误 !\n", defineVar.Name.c_str());
+				COMPILER_ERR_MODULE_W("重复添加变量<%s>且作用域错误", m_ParentFunction->GetModule()->GetCompiler(), m_ParentFunction->GetModule()->GetName().c_str(), defineVar.Name.c_str());
 			}
 			return nullptr;
 		}
@@ -220,13 +225,13 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 	auto m = m_ParentFunction->GetModule()->ExistGlobalValue(defineVar.Name);
 	if (m)
 	{
-		HAZE_LOG_ERR_W("局部变量<%s>与<%s>模块全局变量名重复!\n", defineVar.Name.c_str(), m->GetName().c_str());
+		COMPILER_ERR_MODULE_W("局部变量<%s>与<%s>模块全局变量名重复", m_ParentFunction->GetModule()->GetCompiler(), m_ParentFunction->GetModule()->GetName().c_str(), defineVar.Name.c_str(), m->GetName().c_str());
 		return nullptr;
 	}
 
 	if (dynamic_cast<CompilerClosureFunction*>(m_ParentFunction) && dynamic_cast<CompilerClosureFunction*>(m_ParentFunction)->ExistRefVariable(defineVar.Name))
 	{
-		HAZE_LOG_ERR_W("局部变量<%s>存在相同名字的闭包引用!\n", defineVar.Name.c_str());
+		COMPILER_ERR_MODULE_W("局部变量<%s>存在相同名字的闭包引用", m_ParentFunction->GetModule()->GetCompiler(), m_ParentFunction->GetModule()->GetName().c_str(), defineVar.Name.c_str());
 		return nullptr;
 	}
 

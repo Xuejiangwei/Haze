@@ -14,8 +14,6 @@ enum class ClassCompilerFunctionType : x_uint8;
 enum class ParseStage;
 class CompilerClass;
 class CompilerEnum;
-class HazeCompilerTemplateFunction;
-class HazeCompilerTemplateClass;
 
 class CompilerModule
 {
@@ -89,15 +87,17 @@ public:
 
 	Share<CompilerClosureFunction> CreateClosureFunction(HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
-	void BeginCreateFunctionParamVariable() { m_IsBeginCreateFunctionVariable = true; }
+	void BeginCreateFunctionParamVariable(x_int8 index) { m_BeginCreateFunctionParamVariableIndex = index; }
 
-	void EndCreateFunctionParamVariable() { m_IsBeginCreateFunctionVariable = false; }
+	void EndCreateFunctionParamVariable() { m_BeginCreateFunctionParamVariableIndex = -1; }
+
+	bool IsBeginCreateFunctionParamVariable() const { return m_BeginCreateFunctionParamVariableIndex >= 0; }
+
+	x_int8 GetCreateFunctionParamVariable() const { return m_BeginCreateFunctionParamVariableIndex; }
 
 	void BeginGlobalDataDefine();
 
 	void EndGlobalDataDefine();
-
-	bool IsBeginCreateFunctionVariable() const { return m_IsBeginCreateFunctionVariable; }
 
 	void FinishFunction();
 	void FinishClosure();
@@ -220,6 +220,6 @@ private:
 	V_Array<CompilerModule*> m_ImportModules;
 
 	ParseStage m_ParseStage;
-	bool m_IsBeginCreateFunctionVariable;
+	x_int8 m_BeginCreateFunctionParamVariableIndex;
 	bool m_IsGenTemplateCode;
 };

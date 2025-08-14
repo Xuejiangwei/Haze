@@ -147,7 +147,7 @@ private:
 
 	x_uint32 ParseTemplateTypes(HazeVariableType baseType, TemplateDefineTypes& templateTypes);
 
-	void RegisterClassData(const HString& name, V_Array<HString>& Parents, V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& classDatas);
+	void RegisterClassData(const HString& name, V_Array<HString>& parents, V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& classDatas);
 	void RegisterEnumData(const HString& name, V_Array<Pair<HString, Unique<ASTBase>>>& members);
 	void RegisterFunctionSymbol(const HString& functionName, x_uint32 funcType, V_Array<Unique<ASTBase>>&& params, HazeFunctionDesc desc, const HString* className, bool isClassPublic);
 

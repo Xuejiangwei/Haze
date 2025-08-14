@@ -57,8 +57,8 @@ public:
 	void ClearLocalVariable();
 
 public:
-	static Share<CompilerBlock> CreateBaseBlock(const HString& name,
-		Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock);
+	static Share<CompilerBlock> CreateBaseBlock(const HString& name, Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock);
+	static Share<CompilerBlock> CreateBaseBlock(const HString& name, CompilerFunction* parent, CompilerBlock* parentBlock);
 
 	void PushIRCode(const HString& code);
 

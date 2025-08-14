@@ -348,7 +348,7 @@ char* HazeVM::GetGlobalValueByIndex(x_uint32 index)
 {
 	if (index < m_GlobalData.size())
 	{
-		return (char*)(&m_GlobalData[index].Value);
+		return (char*)(&m_GlobalData[index].GetValue().Value);
 	}
 
 	return nullptr;

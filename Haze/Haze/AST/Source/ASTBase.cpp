@@ -213,6 +213,10 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 		{
 			function = classValue->GetOwnerClass()->FindFunction(m_Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 		}
+		else if (!classObj)
+		{
+			AST_ERR_W("未能正确找到对象<%s>", m_ClassObj->GetName());
+		}
 	}
 	else
 	{
@@ -441,21 +445,27 @@ Share<CompilerValue> ASTVariableDefine::TryAssign(Share<CompilerValue> var, cons
 	{
 		if (m_Expression)
 		{
-			auto v = GenExpressionValue(var);
-			if (v)
+			if (!m_Compiler->GetCurrModule()->IsBeginCreateFunctionParamVariable())
 			{
-				return m_Compiler->CreateMov(var, v);
+				auto v = GenExpressionValue(var);
+				if (v)
+				{
+					return m_Compiler->CreateMov(var, v);
+				}
+				else
+				{
+					AST_ERR_W("%s<%s>定义赋值右边表达式错误", errorPrefix, m_DefineVariable.Name.c_str());
+				}
 			}
 			else
 			{
-				AST_ERR_W("%s<%s>定义赋值右边表达式错误", errorPrefix, m_DefineVariable.Name.c_str());
+				m_Compiler->GetCurrModule()->GetCurrClosureOrFunction()->SetParamDefaultAST(m_Expression);
 			}
 		}
 		else
 		{
 			return var;
 		}
-
 	}
 	else
 	{
@@ -594,9 +604,9 @@ Share<CompilerValue> ASTVariableDefine_Closure::CodeGen(Share<CompilerValue> inf
 
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 	{
-		currModule->BeginCreateFunctionParamVariable();
+		//currModule->BeginCreateFunctionParamVariable();
 		m_Params[i]->CodeGen(nullptr);
-		currModule->EndCreateFunctionParamVariable();
+		//currModule->EndCreateFunctionParamVariable();
 	}
 
 	if (m_Expression)

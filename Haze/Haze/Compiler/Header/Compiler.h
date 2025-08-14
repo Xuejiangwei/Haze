@@ -277,6 +277,8 @@ public:
 
 	Share<CompilerValue> CreateCVT(Share<CompilerValue> left, Share<CompilerValue> right);
 
+	void CreatePush(Share<CompilerValue> value);
+
 	Share<CompilerValue> CreateFunctionRet(const HazeVariableType& type);
 
 	// 以下是创建函数调用字节码

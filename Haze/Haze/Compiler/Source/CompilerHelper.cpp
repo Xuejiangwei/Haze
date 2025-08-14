@@ -2,6 +2,7 @@
 #include "CompilerHelper.h"
 
 #include "Compiler.h"
+#include "CompilerSymbol.h"
 #include "CompilerModule.h"
 #include "CompilerBlock.h"
 #include "CompilerClass.h"
@@ -141,6 +142,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		case HazeValueType::Closure:
 			return MakeShare<CompilerClosureValue>(compilerModule, type, scope, desc, count, params);
 		default:
+			COMPILER_ERR_MODULE_W("不能创建<%s>类型的变量", compilerModule->GetCompiler(), compilerModule->GetName().c_str(), compilerModule->GetCompiler()->GetCompilerSymbol()->GetSymbolByTypeId(type.TypeId)->c_str());
 			break;
 	}
 
@@ -249,7 +251,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 	else
 	{
-		HAZE_LOG_ERR_W("生成中间代码错误,变量作用域错误!\n");
+		COMPILER_ERR_MODULE_W("生成中间代码错误,变量作用域错误", compilerModule->GetCompiler(), compilerModule->GetName().c_str());
 		return;
 	}
 
@@ -259,8 +261,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 		{
 
 		}*/
-
-		HAZE_LOG_ERR_W("生成中间代码错误,未能找到变量!\n");
+		COMPILER_ERR_MODULE_W("生成中间代码错误,未能找到变量", compilerModule->GetCompiler(), compilerModule->GetName().c_str());
 		return;
 	}
 

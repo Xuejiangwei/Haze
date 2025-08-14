@@ -26,6 +26,8 @@ public:
 
 	const HazeValue& GetValue() const { return m_Value; }
 
+	const x_uint32 GetLine() const { return m_Location.Line; }
+
 protected:
 	Compiler* m_Compiler;
 	HazeValue m_Value;
@@ -138,6 +140,8 @@ public:
 	Share<CompilerValue> GenExpressionValue(Share<CompilerValue> value);
 
 	HazeSectionSignal GetSectionSingal() const { return m_SectionSignal; }
+
+	bool HasAssignExpression() const { return m_Expression != nullptr; }
 
 protected:
 	Share<CompilerValue> TryAssign(Share<CompilerValue> var, const x_HChar* errorPrefix);

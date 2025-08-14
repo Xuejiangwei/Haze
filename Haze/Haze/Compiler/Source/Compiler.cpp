@@ -111,7 +111,7 @@ bool Compiler::InitializeCompiler(const HString& moduleName, const HString& path
 	auto m = m_CompilerModules.find(moduleName);
 	if (m != m_CompilerModules.end())
 	{
-		bool needParese = m->second->m_ParseStage != m_ParseStage;
+		bool needParese = m->second->m_ParseStage < m_ParseStage;
 		if (needParese)
 		{
 			for (auto& iter : m_ModuleNameStack)
@@ -232,7 +232,7 @@ void Compiler::ParseTypeInfoFile()
 void Compiler::FinishModule()
 {
 	auto& m = m_CompilerModules[GetCurrModuleName()];
-	m->m_ParseStage = m_ParseStage;
+	m->m_ParseStage = (m->GetModuleLibraryType() == HazeLibraryType::Static || m->GetModuleLibraryType() == HazeLibraryType::DLL) ? ParseStage::Finish : m_ParseStage;
 	m->FinishModule();
 	ClearBlockPoint();
 }
@@ -1585,6 +1585,11 @@ Share<CompilerValue> Compiler::CreateCVT(Share<CompilerValue> left, Share<Compil
 	GetCurrModule()->GenIRCode_BinaryOperater(tempReg, right, nullptr, InstructionOpCode::CVT);
 
 	return tempReg;
+}
+
+void Compiler::CreatePush(Share<CompilerValue> value)
+{
+	GetCurrModule()->GenIRCode_UnaryOperator(nullptr, value, InstructionOpCode::PUSH);
 }
 
 Share<CompilerValue> Compiler::CreateBitNeg(Share<CompilerValue> assignTo, Share<CompilerValue> oper1)

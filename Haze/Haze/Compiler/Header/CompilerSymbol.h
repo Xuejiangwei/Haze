@@ -7,7 +7,7 @@ class HazeTypeInfoMap;
 
 struct SymbolHeader
 {
-	bool IsResolved = false;
+	//bool IsResolved = false;
 };
 
 struct SymbolTypeHeader : SymbolHeader
@@ -42,6 +42,13 @@ struct FunctionSymbol : SymbolHeader
 	V_Array<HString> ParamNames;
 };
 
+struct GlobalVariableSymbol //: SymbolHeader
+{
+	CompilerModule* Module = nullptr;
+	x_uint32 TypeId = 0;
+	x_uint32 Line = 0;
+};
+
 //这里记录与验证类和函数(包括类函数), 等第二遍解析时就会有所有的确定的类型了
 class CompilerSymbol
 {
@@ -60,8 +67,8 @@ public:
 
 	x_uint32 RegisterSymbol(const HString& name);
 	//void RegisterFunctionSymbol(const HString& name, x_uint32 functionType, V_Array<x_uint32>&& params, HazeFunctionDesc desc, const HString* className = nullptr, bool isClassPublic = false);
-	void RegisterGlobalVariable(const HString& name, x_uint32 typeId);
 
+	void Register_GlobalVariable(const HString& moduleName, const HString& name, x_uint32 typeId, x_uint32 line);
 	void Register_Class(const HString& moduleName, const HString& name, V_Array<HString>& parents, V_Array<Pair<HString, x_uint32>>&& publicMembers, V_Array<Pair<HString, x_uint32>>&& privateMembers, bool publicFirst);
 	void Register_Enum(const HString& moduleName, const HString& name, V_Array<Pair<HString, int>>&& members);
 	void Register_Function(const HString& moduleName, const HString& name, x_uint32 functionType, V_Array<HazeDefineVariable>&& params, HazeFunctionDesc desc, const HString* className = nullptr, bool isClassPublic = false);
@@ -80,14 +87,17 @@ public:
 	const HString* GetSymbolByTypeId(x_uint32 typeId);
 	
 private:
-	void ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& classMap, x_uint32 typeId);
+	bool CheckValidClassInherit(x_uint32 checkTypeId, x_uint32 typeId, const HashMap<x_uint32, ResolveClassData>& classMap);
+
+	bool ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& classMap, x_uint32 typeId);
 
 private:
 	Compiler* m_Compiler;
 	HazeTypeInfoMap* m_TypeInfo;
 
 	HashMap<HString, Pair<x_uint32, SymbolTypeHeader*>> m_Symbols;
+
 	HashMap<HString, FunctionSymbol> m_FunctionSymbols;
 
-	HashMap<HString, x_uint32> m_GlobalVariables;
+	HashMap<HString, GlobalVariableSymbol> m_GlobalVariables;
 };

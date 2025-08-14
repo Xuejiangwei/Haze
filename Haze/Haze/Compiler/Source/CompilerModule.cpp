@@ -68,7 +68,7 @@ private:
 
 
 CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, const HString& modulePath)
-	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_IsBeginCreateFunctionVariable(false),
+	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_BeginCreateFunctionParamVariableIndex(-1),
 	 m_IsGenTemplateCode(false), m_Path(modulePath)
 {
 #if HAZE_I_CODE_ENABLE
@@ -641,7 +641,7 @@ Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, cons
 	if (it == m_HashMap_Functions.end())
 	{
 		m_HashMap_Functions[name] = MakeShare<CompilerFunction>(this, name, type, params, HazeFunctionDesc::Normal);
-		m_HashMap_Functions[name]->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, m_HashMap_Functions[name], nullptr));
+		//m_HashMap_Functions[name]->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, m_HashMap_Functions[name], nullptr));
 
 		function = m_HashMap_Functions[name];
 	}
@@ -663,7 +663,7 @@ Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> comp
 		function = MakeShare<CompilerFunction>(this, name, type, params, desc, compilerClass.get());
 		compilerClass->AddFunction(function);
 
-		function->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, function, nullptr));
+		//function->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, function, nullptr));
 	}
 
 	m_CurrFunction = name;
@@ -674,7 +674,7 @@ Share<CompilerClosureFunction> CompilerModule::CreateClosureFunction(HazeVariabl
 {
 	HString name = CLOSURE_NAME_PREFIX + GetName() + ToHazeString(m_ClosureStack.size());
 	auto closure = MakeShare<CompilerClosureFunction>(this, name, type, params);
-	closure->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, closure, nullptr));
+	//closure->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, closure, nullptr));
 
 	m_Closures.push_back(closure);
 	m_ClosureStack.push_back(closure);
@@ -889,7 +889,7 @@ void CompilerModule::GenIRCode_UnaryOperator(Share<CompilerValue> assignTo, Shar
 
 	if (m_CurrFunction.empty())
 	{
-		HAZE_TO_DO(全局语句暂时不处理);
+		COMPILER_ERR_MODULE_W("未能找到有效函数生成字节码", m_Compiler);
 	}
 	else
 	{
@@ -990,6 +990,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	HString strName;
 
 	auto pointerFunc = DynamicCast<CompilerPointerFunction>(pointerFunction);
+	x_uint64 pushDefaultParamCount = 0;
 
 	V_Array<HazeVariableType> funcTypes(params.size());
 	if (!callFunction && !pointerFunc && !advancFunctionInfo)
@@ -998,7 +999,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	}
 	else
 	{
-		auto paramSize = callFunction ? callFunction->GetParamSize() : pointerFunc ? pointerFunc->GetParamSize() : advancFunctionInfo->Params.size();
+		x_uint64 paramSize = callFunction ? callFunction->GetParamCount() : pointerFunc ? pointerFunc->GetParamCount() : advancFunctionInfo->Params.size();
 
 		for (x_int64 i = params.size() - 1; i >= 0; i--)
 		{
@@ -1089,12 +1090,25 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		{
 			auto& lastParam = callFunction ? callFunction->GetParamTypeByIndex(0) :
 				pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
-			if ((IsMultiVariableType(lastParam.BaseType) && params.size() + 1 < paramSize) || (!IsMultiVariableType(lastParam.BaseType) && params.size() != paramSize))
+			if ((IsMultiVariableType(lastParam.BaseType) && params.size() + 1 >= paramSize)) {}
+			else if (!IsMultiVariableType(lastParam.BaseType) && (params.size() + (callFunction ? callFunction->GetDefaultParamCount() : 0) >= paramSize))
+			{
+				if (params.size() != paramSize && callFunction)
+				{
+					pushDefaultParamCount = paramSize - params.size();
+				}
+			}
+			else
 			{
 				COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 函数个数不匹配", m_Compiler, GetName().c_str(),
 					callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"));
 			}
 		}
+	}
+
+	if (pushDefaultParamCount > 0)
+	{
+		callFunction->PushDefaultParam(pushDefaultParamCount);
 	}
 
 	for (x_uint64 i = 0; i < params.size(); i++)

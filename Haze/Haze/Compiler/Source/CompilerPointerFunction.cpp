@@ -1,5 +1,6 @@
 #include "HazePch.h"
 #include "CompilerPointerFunction.h"
+#include "Compiler.h"
 #include "CompilerModule.h"
 #include "HazeLogDefine.h"
 
@@ -56,7 +57,7 @@ const HazeVariableType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(
 	}
 }
 
-const x_uint64 CompilerPointerFunction::GetParamSize() const
+const x_uint64 CompilerPointerFunction::GetParamCount() const
 {
 	return m_OwnerClass ? m_ParamTypes.size() - 1 : m_ParamTypes.size();
 }

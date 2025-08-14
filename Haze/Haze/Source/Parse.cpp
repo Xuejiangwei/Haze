@@ -7,7 +7,6 @@
 #include "ASTEnum.h"
 #include "ASTFunction.h"
 #include "ASTLibrary.h"
-#include "ASTTemplateClass.h"
 
 #include "Compiler.h"
 #include "CompilerSymbol.h"
@@ -2009,7 +2008,7 @@ Unique<ASTBase> Parse::ParseDataSection()
 		{
 			for (x_uint64 i = 0; i < expressions.size(); i++)
 			{
-				m_CompilerSymbol->RegisterGlobalVariable(expressions[i]->GetDefine().Name, expressions[i]->GetDefine().Type.TypeId);
+				m_CompilerSymbol->Register_GlobalVariable(m_ModuleName, expressions[i]->GetDefine().Name, expressions[i]->GetDefine().Type.TypeId, expressions[i]->GetLine());
 			}
 			return nullptr;
 		}
@@ -2078,11 +2077,16 @@ Unique<ASTFunction> Parse::ParseFunction(const HString* className, bool isClassP
 		functionName = m_CurrLexeme;
 		GetNextToken();
 	}
-	else if (funcType.TypeId > 0 && funcType.TypeId == m_CompilerSymbol->GetSymbolTypeId(*className) && !IS_VIRTUAL(desc) && !IS_PURE_VIRTUAL(desc))
+	else if (className && funcType.TypeId > 0 && funcType.TypeId == m_CompilerSymbol->GetSymbolTypeId(*className) && !IS_VIRTUAL(desc) && !IS_PURE_VIRTUAL(desc))
 	{
 		//类构造函数
 		funcType.BaseType = HazeValueType::Void;
 		functionName = *className;
+	}
+	else
+	{
+		PARSE_ERR_W("未能找到有效的函数命名");
+		return nullptr;
 	}
 
 	if (TokenIs(HazeToken::LeftParentheses, H_TEXT("函数参数解析错误, 需要 ( ")))
@@ -2102,9 +2106,21 @@ Unique<ASTFunction> Parse::ParseFunction(const HString* className, bool isClassP
 		GetNextToken();
 
 		m_IsParseClassData_Or_FunctionParam = true;
+		bool startCheckDefaultParam = false;
 		while (!TokenIs(HazeToken::LeftBrace) && !TokenIs(HazeToken::RightParentheses))
 		{
 			params.push_back(ParseExpression());
+
+			auto ast = dynamic_cast<ASTVariableDefine*>(params.back().get());
+			if (!startCheckDefaultParam)
+			{
+				startCheckDefaultParam = ast->HasAssignExpression();
+			}
+			else if (!ast->HasAssignExpression())
+			{
+				PARSE_ERR_W("默认参数之后的参数也必须有默认值");
+			}
+
 			if (!ExpectNextTokenIs_NoParseError(HazeToken::Comma))
 			{
 				break;
@@ -2271,6 +2287,27 @@ Unique<ASTClass> Parse::ParseClass()
 			if (ExpectNextTokenIs_NoParseError(HazeToken::CustomClass))
 			{
 				while (TokenIs(HazeToken::CustomClass))
+				{
+					parentClasses.push_back(m_CurrLexeme);
+
+					GetNextToken();
+					if (TokenIs(HazeToken::Comma))
+					{
+						GetNextToken();
+					}
+					else if (TokenIs(HazeToken::LeftBrace))
+					{
+						break;
+					}
+					else
+					{
+						PARSE_ERR_W("类<%s>继承<%s>错误", name.c_str(), m_CurrLexeme.c_str());
+					}
+				}
+			}
+			else if (m_Compiler->IsStage1())
+			{
+				while (TokenIs(HazeToken::CustomClass) || TokenIs(HazeToken::Identifier))
 				{
 					parentClasses.push_back(m_CurrLexeme);
 					m_CompilerSymbol->AddModuleRefSymbol(m_ModuleName, m_CurrLexeme);
@@ -2833,9 +2870,9 @@ void Parse::GetValueType(HazeVariableType& inType)
 	case HazeToken::Float32:
 	case HazeToken::Float64:
 	case HazeToken::Function:
+	case HazeToken::DynamicClass:
 		inType.TypeId = HAZE_TYPE_ID(GetValueTypeByToken(m_CurrToken));
 		break;
-	case HazeToken::DynamicClass:
 	case HazeToken::ObjectBase:
 	case HazeToken::Hash:
 		return;
@@ -2949,7 +2986,7 @@ x_uint32 Parse::ParseTemplateTypes(HazeVariableType baseType, TemplateDefineType
 	return  m_CompilerSymbol->GetTypeInfoMap()->RegisterType(m_ModuleName, &info);
 }
 
-void Parse::RegisterClassData(const HString& name, V_Array<HString>& Parents, V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& classDatas)
+void Parse::RegisterClassData(const HString& name, V_Array<HString>& parents, V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& classDatas)
 {
 	bool isPublicFirst = classDatas.size() > 0 && classDatas[0].first == HazeDataDesc::ClassMember_Local_Public;
 
@@ -2973,7 +3010,7 @@ void Parse::RegisterClassData(const HString& name, V_Array<HString>& Parents, V_
 		}
 	}
 
-	m_CompilerSymbol->Register_Class(m_ModuleName, name, Parents, Move(publicMembers), Move(privateMembers), isPublicFirst);
+	m_CompilerSymbol->Register_Class(m_ModuleName, name, parents, Move(publicMembers), Move(privateMembers), isPublicFirst);
 }
 
 void Parse::RegisterEnumData(const HString& name, V_Array<Pair<HString, Unique<ASTBase>>>& members)

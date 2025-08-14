@@ -1,15 +1,14 @@
 HAZE_TO_DO(编译的警告问题)
-HAZE_TO_DO(二段解析解决模块循环引用捎带解决解析临时文件的问题);
-HAZE_TO_DO(枚举整数化和提前符号注册)
+HAZE_TO_DO(二段解析解决模块循环引用捎带解决解析临时文件的问题)
+HAZE_TO_DO(函数参数默认值)
+HAZE_TO_DO(类的默认赋值 与模块的全局变量初始化类似 创建一个初始化所有数据的函数 在new时先调用这个 再调用构造函数)
 HAZE_TO_DO(调用动态类的函数时 现在会默认生成MOV_DCU返回寄存器的字节码 需要移除 优化整体的返回值生成MOV字节码逻辑)
 HAZE_TO_DO(分代GC和定期碎片合并);
 HAZE_TO_DO(整个项目和符号表的StringView尝试替代);
 HAZE_TO_DO(Vector查找的替代);
 HAZE_TO_DO(并行文件IO);
 HAZE_TO_DO(GC循环引用);
-HAZE_TO_DO(模块循环引用解析会失败);
 HAZE_TO_DO(部分文件修改时回收typeId有问题 会有连续的增长而之前的一直不回收);
 HAZE_TO_DO(解析模块的临时文件时存在循环引用的问题);
-HAZE_TO_DO(不允许类的循环继承);
 HAZE_TO_DO(读取字节码文件时的函数地址查找优化)
 HAZE_TO_DO(gc类对象之间也有循环引用的问题)

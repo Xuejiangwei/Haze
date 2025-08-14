@@ -14,6 +14,8 @@
 #include "HazeLogDefine.h"
 #include "CompilerClosureFunction.h"
 
+#include "ASTBase.h"
+
 CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const HString& name, const HazeVariableType& type, 
 	V_Array<HazeDefineVariable>& params, HazeFunctionDesc desc, CompilerClass* compilerClass)
 	: m_Module(compilerModule), m_Name(name), m_Type(type), m_OwnerClass(compilerClass), m_CurrBlockCount(0), 
@@ -24,6 +26,7 @@ CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const HString
 		AddFunctionParam(params[i]);
 	}
 
+	InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, this, nullptr));
 	m_DescType = GetFunctionTypeByLibraryType(m_Module->GetModuleLibraryType());
 }
 
@@ -42,19 +45,26 @@ void CompilerFunction::SetStartEndLine(x_uint32 startLine, x_uint32 endLine)
 
 Share<CompilerValue> CompilerFunction::GetParamVariableRightToLeft(x_uint32 index)
 {
-	return m_Params[index].second;
+	return m_Params[index].Value;
 }
 
 Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
-	auto block = m_Module->GetCompiler()->GetInsertBlock();
-	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, params);
+	return m_EntryBlock->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, params);
 }
 
 Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
 	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Local, refValue);
+}
+
+void CompilerFunction::PushDefaultParam(x_uint64 pushCount)
+{
+	for (x_uint64 i = 0; i < pushCount; i++)
+	{
+		m_Module->GetCompiler()->CreatePush(m_Params[i].DefaultParamAST->CodeGen(m_Params[i].Value));
+	}
 }
 
 //Share<CompilerValue> CompilerFunction::CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue)
@@ -194,9 +204,14 @@ x_uint32 CompilerFunction::GetFunctionPointerTypeId()
 	V_Array<x_uint32> params(m_Params.size());
 	for (x_uint64 i = 0; i < params.size(); i++)
 	{
-		params[i] = m_Params[i].second->GetTypeId();
+		params[i] = m_Params[i].Value->GetTypeId();
 	} 
 	return m_Module->GetCompiler()->GetCompilerSymbol()->GetTypeInfoMap()->RegisterType(m_Module->GetName(), m_Type.TypeId, Move(params));
+}
+
+void CompilerFunction::SetParamDefaultAST(Unique<ASTBase>& ast)
+{
+	m_Params[(m_Params.size() - 1) - m_Module->GetCreateFunctionParamVariable()].DefaultParamAST = Move(ast);
 }
 
 void CompilerFunction::FunctionFinish()
@@ -245,11 +260,11 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	//Push所有参数，从右到左, push 参数与返回地址的事由function call去做
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 	{
-		hss << GetFunctionParamHeader() << " " << m_Params[i].first << " ";
+		hss << GetFunctionParamHeader() << " " << m_Params[i].Name << " ";
 
-		if (!m_Params[i].second->GetVariableType().StringStreamTo(hss))
+		if (!m_Params[i].Value->GetVariableType().StringStreamTo(hss))
 		{
-			HAZE_LOG_ERR_W("函数<%s>的参数<%s>类型解析失败,生成中间代码错误!\n", m_Name.c_str(), m_Params[i].first.c_str());
+			HAZE_LOG_ERR_W("函数<%s>的参数<%s>类型解析失败,生成中间代码错误!\n", m_Name.c_str(), m_Params[i].Name.c_str());
 			return;
 		}
 
@@ -391,7 +406,7 @@ int CompilerFunction::FindLocalVariableIndex(const Share<CompilerValue> value)
 {
 	for (x_uint64 i = 0; i < m_Params.size(); i++)
 	{
-		if (m_Params[i].second == value)
+		if (m_Params[i].Value == value)
 		{
 			return (int)i;
 		}
@@ -414,7 +429,7 @@ bool CompilerFunction::HasExceptThisParam() const
 	{
 		if (m_Params.size() > 0)
 		{
-			if (m_Params[0].second->IsClassThis())
+			if (m_Params[0].Value->IsClassThis())
 			{
 				return m_Params.size() > 1;
 			}
@@ -441,7 +456,7 @@ HazeVariableType CompilerFunction::GetParamTypeByIndex(x_uint64 index)
 {
 	if (index < m_Params.size())
 	{
-		return m_Params[index].second->GetVariableType();
+		return m_Params[index].Value->GetVariableType();
 	}
 	else
 	{
@@ -450,7 +465,7 @@ HazeVariableType CompilerFunction::GetParamTypeByIndex(x_uint64 index)
 			COMPILER_ERR_W("函数<%s>从右往左，获得函数的第<%d>个参数错误", m_Name.c_str(), m_Params.size() - 1 - index);
 		}
 		
-		return m_Params[0].second->GetVariableType();
+		return m_Params[0].Value->GetVariableType();
 	}
 }
 
@@ -463,25 +478,39 @@ HazeVariableType CompilerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index
 
 	if (index < m_Params.size())
 	{
-		return m_Params[m_Params.size() - 1 - index].second->GetVariableType();
+		return m_Params[m_Params.size() - 1 - index].Value->GetVariableType();
 	}
 	else
 	{
-		if (index > 0 && IsMultiVariableType(m_Params[0].second->GetBaseType()))
+		if (index > 0 && IsMultiVariableType(m_Params[0].Value->GetBaseType()))
 		{
-			return m_Params[0].second->GetVariableType();
+			return m_Params[0].Value->GetVariableType();
 		}
 		else
 		{
 			COMPILER_ERR_W("函数<%s>从左往右，获得函数的第<%d>个参数错误", m_Name.c_str(), index);
-			return m_Params[0].second->GetVariableType();
+			return m_Params[0].Value->GetVariableType();
 		}
 	}
 }
 
-const x_uint64 CompilerFunction::GetParamSize() const
+const x_uint64 CompilerFunction::GetParamCount() const
 {
 	return m_OwnerClass ? m_Params.size() - 1 : m_Params.size();
+}
+
+const x_uint64 CompilerFunction::GetDefaultParamCount() const
+{
+	x_uint64 count = 0;
+	for (auto& param : m_Params)
+	{
+		if (param.DefaultParamAST)
+		{
+			count++;
+		}
+	}
+
+	return count;
 }
 
 Share<CompilerClassValue> CompilerFunction::GetThisLocalVariable()
@@ -505,7 +534,7 @@ Share<CompilerClassValue> CompilerFunction::GetThisLocalVariable()
 
 void CompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)
 {
-	m_Module->BeginCreateFunctionParamVariable();
-	m_Params.push_back({ variable.Name, CreateVariable(m_Module, variable.Type, HazeVariableScope::Local, HazeDataDesc::None, 0) });
-	m_Module->EndCreateFunctionParamVariable();
+	//m_Module->BeginCreateFunctionParamVariable();
+	m_Params.push_back({ variable.Name, CreateVariable(m_Module, variable.Type, HazeVariableScope::Local, HazeDataDesc::None, 0), nullptr });
+	//m_Module->EndCreateFunctionParamVariable();
 }

@@ -88,15 +88,21 @@ x_uint32 CompilerSymbol::RegisterSymbol(const HString& name)
 //	}
 //}
 
-void CompilerSymbol::RegisterGlobalVariable(const HString& name, x_uint32 typeId)
+void CompilerSymbol::Register_GlobalVariable(const HString& moduleName, const HString& name, x_uint32 typeId, x_uint32 line)
 {
+	auto m = m_Compiler->GetModule(moduleName);
 	auto iter = m_GlobalVariables.find(name);
 	if (iter != m_GlobalVariables.end())
 	{
+		if (iter->second.Module != m)
+		{
+			SYMBOL_ERR_W("模块<%s>与模块<%s>存在相同名称的全局变量<%s>", moduleName.c_str(), iter->second.Module->GetName().c_str(), name.c_str());
+		}
+
 		return;
 	}
 
-	m_GlobalVariables[name] = typeId;
+	m_GlobalVariables[name] = { m, typeId, line };
 }
 
 void CompilerSymbol::Register_Class(const HString& moduleName, const HString& name, V_Array<HString>& parents, V_Array<Pair<HString, x_uint32>>&& publicMembers, V_Array<Pair<HString, x_uint32>>&& privateMembers, bool publicFirst)
@@ -117,7 +123,15 @@ void CompilerSymbol::Register_Class(const HString& moduleName, const HString& na
 			data->Parents.resize(parents.size());
 			for (x_uint64 i = 0; i < parents.size(); i++)
 			{
-				data->Parents[i] = m_TypeInfo->GetTypeId(parents[i]);
+				auto it = m_Symbols.find(parents[i]);
+				if (it != m_Symbols.end())
+				{
+					data->Parents[i] = it->second.first;
+				}
+				else
+				{
+					SYMBOL_ERR_W("未能找到符号<%s>的信息", parents[i].c_str());
+				}
 			}
 
 			CLASS_TYPE_INFO(info, name);
@@ -362,7 +376,10 @@ void CompilerSymbol::IdentifySymbolType()
 
 	for (auto& iter : classMap)
 	{
-		ResolveCompilerClass(classMap, iter.first);
+		if (!ResolveCompilerClass(classMap, iter.first))
+		{
+			return;
+		}
 	}
 
 	for (auto& iter : m_FunctionSymbols)
@@ -424,36 +441,59 @@ void CompilerSymbol::IdentifySymbolType()
 			}
 			iter.second.Module->CreateFunction(iter.first, m_TypeInfo->GetVarTypeById(iter.second.FunctionType), params);
 		}
-
 	}
 
 	for (auto& iter : m_GlobalVariables)
 	{
-		auto symbol = GetSymbolByTypeId(iter.second);
-		auto symbolData = m_Symbols.find(*symbol);
-		if (symbolData != m_Symbols.end())
-		{
-			if (!symbolData->second.second)
-			{
-				SYMBOL_ERR_W("全局变量<%s>的类型<%s>未能找到定义", iter.first.c_str(), symbol->c_str());
-			}
-		}
+		iter.second.Module->CreateGlobalVariable({ m_TypeInfo->GetVarTypeById(iter.second.TypeId), iter.first }, iter.second.Line);
 	}
 }
 
-void CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& classMap, x_uint32 typeId)
+bool CompilerSymbol::CheckValidClassInherit(x_uint32 checkTypeId, x_uint32 typeId, const HashMap<x_uint32, ResolveClassData>& classMap)
+{
+	auto iter = classMap.find(typeId);
+	if (iter == classMap.end())
+	{
+		SYMBOL_ERR_W("未能找到类<%s>的定义", GetSymbolByTypeId(typeId)->c_str());
+		return false;
+	}
+
+	if (checkTypeId == typeId)
+	{
+		return false;
+	}
+
+	auto data = iter->second;
+	for (auto parent : data.SymbolInfo->Parents)
+	{
+		if (!CheckValidClassInherit(checkTypeId, parent, classMap))
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& classMap, x_uint32 typeId)
 {
 	auto data = classMap[typeId];
 	if (data.IsResolved)
 	{
-		return;
+		return true;
 	}
 
 	// 补全父类
-	{
+	{	
 		V_Array<CompilerClass*> parentClass;
 		for (x_uint64 i = 0; i < data.SymbolInfo->Parents.size(); i++)
 		{
+			if (!CheckValidClassInherit(typeId, data.SymbolInfo->Parents[i], classMap))
+			{
+				SYMBOL_ERR_W("类<%s>与类<%s>存在循环继承", GetSymbolByTypeId(typeId)->c_str(), GetSymbolByTypeId(data.SymbolInfo->Parents[i])->c_str());
+				return false;
+			}
+
 			if (data.IsResolved)
 			{
 				parentClass.push_back(classMap[data.SymbolInfo->Parents[i]].CompClass.get());
@@ -466,6 +506,11 @@ void CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& c
 		}
 
 		data.CompClass->ResolveClassParent(Move(parentClass));
+
+		if (m_Compiler->IsCompileError())
+		{
+			return false;
+		}
 	}
 
 	// 补全成员
@@ -499,6 +544,8 @@ void CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& c
 
 	data.IsResolved = true;
 	data.CompClass->m_Module->m_HashMap_Classes[data.CompClass->GetName()] = data.CompClass;
+
+	return true;
 }
 
 bool CompilerSymbol::IsValidSymbol(const HString& symbol)

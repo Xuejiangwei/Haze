@@ -16,7 +16,7 @@ public:
 
 	HazeValue* CodeGen();
 
-	void RegisterFunction();
+	//void RegisterFunction();
 
 	const HString& GetName() const { return m_FunctionName; }
 

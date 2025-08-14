@@ -19,7 +19,7 @@ public:
 
 	const HazeVariableType& GetParamTypeLeftToRightByIndex(x_uint64 index) const;
 
-	const x_uint64 GetParamSize() const;
+	const x_uint64 GetParamCount() const;
 
 private:
 	V_Array<TemplateDefineType> m_ParamTypes;

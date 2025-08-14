@@ -6,6 +6,18 @@ class CompilerModule;
 class CompilerClass;
 class CompilerClassValue;
 class CompilerBlock;
+class ASTBase;
+
+struct CompilerFunctionParamData
+{
+	HString Name;
+	Share<CompilerValue> Value;
+	Unique<ASTBase> DefaultParamAST;
+};
+
+/*
+* C++调用Haze函数时, 不支持填充默认参数值, 必须全部设置
+*/
 
 class CompilerFunction
 {
@@ -69,13 +81,17 @@ public:
 
 	HazeVariableType GetParamTypeLeftToRightByIndex(x_uint64 index);
 
-	const x_uint64 GetParamSize() const;
+	const x_uint64 GetParamCount() const;
+
+	const x_uint64 GetDefaultParamCount() const;
 
 	Share<CompilerClassValue> GetThisLocalVariable();
 
 	bool IsVirtualFunction() const { return m_Desc == HazeFunctionDesc::ClassPureVirtual || m_Desc == HazeFunctionDesc::ClassVirtual; }
 
 	x_uint32 GetFunctionPointerTypeId();
+
+	void SetParamDefaultAST(Unique<ASTBase>& ast);
 
 protected:
 	void FunctionFinish();
@@ -89,6 +105,8 @@ protected:
 	//Share<CompilerValue> CreateNew(const HazeDefineType& data, V_Array<Share<CompilerValue>>* countValue);
 
 	void InitEntryBlock(Share<CompilerBlock> block) { m_EntryBlock = block; }
+
+	void PushDefaultParam(x_uint64 pushCount);
 
 protected:
 	struct TempRegisterCountData
@@ -110,12 +128,13 @@ protected:
 	HString m_Name;
 	HazeVariableType m_Type;
 
-	V_Array<Pair<HString, Share<CompilerValue>>> m_Params;	//从右到左加入参数
+	V_Array<CompilerFunctionParamData> m_Params;	//从右到左加入参数, 只用做查询, 实际变量生成的在block中
 
 	V_Array<Pair<Share<CompilerValue>, int>> m_LocalVariables; // { 变量, 定义所在的行数 }
 	V_Array<TempRegisterCountData> m_TempRegisters;		//{ 临时寄存器, 相对偏移个数 } 相对偏移是 个数 * 8
 
 	Share<CompilerBlock> m_EntryBlock;
+	V_Array<HString> m_DefaultParamIRCodes;
 
 	int m_CurrBlockCount;
 	int m_CurrVariableCount;
