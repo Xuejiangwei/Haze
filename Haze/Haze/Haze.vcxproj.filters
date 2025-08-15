@@ -204,6 +204,9 @@
     <ClCompile Include="Compiler\Source\CompilerSymbol.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="BaseContainer\Source\HazeString.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Header\Parse.h">
@@ -444,6 +447,9 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="Compiler\Header\CompilerSymbol.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="BaseContainer\Header\HazeString.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>

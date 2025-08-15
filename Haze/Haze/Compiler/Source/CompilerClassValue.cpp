@@ -42,6 +42,16 @@ Share<CompilerValue> CompilerClassValue::GetMember(const HString& name, HString*
 	return m_Data.size() > index  ? m_Data[index] : nullptr;
 }
 
+Share<CompilerValue> CompilerClassValue::GetMember(x_int32 index, bool indexFromSelf)
+{
+	if (indexFromSelf)
+	{
+		return m_Data[m_Data.size() - m_OwnerClass->GetClassMemberData().size() + index];
+	}
+
+	return m_Data[index];
+}
+
 int CompilerClassValue::GetMemberIndex(const HString& memberName, HString* nameSpace)
 {
 	return m_OwnerClass->GetMemberIndex(memberName, nameSpace);

@@ -145,7 +145,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header;$(ProjectDir)BaseContainer/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -209,7 +209,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_ITERATOR_DEBUG_LEVEL=0;_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header;$(ProjectDir)BaseContainer/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <SupportJustMyCode>false</SupportJustMyCode>
       <DisableSpecificWarnings>%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -274,7 +274,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header;$(ProjectDir)BaseContainer/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>HazePch.h</PrecompiledHeaderFile>
@@ -339,6 +339,7 @@
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
     <ClCompile Include="Backend\Source\Optimizer.cpp" />
+    <ClCompile Include="BaseContainer\Source\HazeString.cpp" />
     <ClCompile Include="Compiler\Source\CompilerClosureFunction.cpp" />
     <ClCompile Include="Compiler\Source\CompilerClosureValue.cpp" />
     <ClCompile Include="Compiler\Source\CompilerElementValue.cpp" />
@@ -409,6 +410,7 @@
     <ClInclude Include="Backend\Header\ModuleUnit.h" />
     <ClInclude Include="Backend\Header\Optimizer.h" />
     <ClInclude Include="Backend\Header\OptimizerDefine.h" />
+    <ClInclude Include="BaseContainer\Header\HazeString.h" />
     <ClInclude Include="Compiler\Header\CompilerBlock.h" />
     <ClInclude Include="Compiler\Header\Compiler.h" />
     <ClInclude Include="Compiler\Header\CompilerArrayValue.h" />

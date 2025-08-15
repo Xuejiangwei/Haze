@@ -95,6 +95,14 @@ public:
 
 	x_int8 GetCreateFunctionParamVariable() const { return m_BeginCreateFunctionParamVariableIndex; }
 
+	void BeginCreateClassVariable(x_int32 index) { m_BeginCreateClassVariableIndex = index; }
+
+	void EndCreateClassVariable() { m_BeginCreateClassVariableIndex = -1; }
+
+	bool IsBeginCreateClassVariable() const { return m_BeginCreateClassVariableIndex >= 0; }
+
+	x_int32 GetCreateClassVariable() const { return m_BeginCreateClassVariableIndex; }
+
 	void BeginGlobalDataDefine();
 
 	void EndGlobalDataDefine();
@@ -220,6 +228,7 @@ private:
 	V_Array<CompilerModule*> m_ImportModules;
 
 	ParseStage m_ParseStage;
+	x_int32 m_BeginCreateClassVariableIndex;
 	x_int8 m_BeginCreateFunctionParamVariableIndex;
 	bool m_IsGenTemplateCode;
 };

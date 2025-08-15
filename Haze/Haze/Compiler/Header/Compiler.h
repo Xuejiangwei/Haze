@@ -232,7 +232,7 @@ public:
 
 	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeVariableType& Var, Share<CompilerValue> RefValue = nullptr, TemplateDefineTypes* Params = nullptr);
 
-	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);
+	Share<CompilerElementValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);
 	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, const HString& memberName);
 
 	Share<CompilerValue> CreatePointerToValue(Share<CompilerValue> value);

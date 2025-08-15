@@ -24,10 +24,12 @@ ASTClass::~ASTClass()
 
 void ASTClass::CodeGen()
 {
+	auto& currModule = m_Compiler->GetCurrModule();
+
 	V_Array<CompilerClass*> parentClasses;
 	for (x_uint64 i = 0; i < m_ParentClasses.size(); i++)
 	{
-		auto parentClass = m_Compiler->GetCurrModule()->GetClass(m_ParentClasses[i]);
+		auto parentClass = currModule->GetClass(m_ParentClasses[i]);
 		if (parentClass)
 		{
 			parentClasses.push_back(parentClass.get());
@@ -48,8 +50,7 @@ void ASTClass::CodeGen()
 			{
 				if (CompilerClass::HasCommomInheritClass(parentClasses[i], parentClasses[j]))
 				{
-					HAZE_LOG_ERR_W("创建类<%s>错误, 父类<%s><%s>存在共同的父类!\n", m_ClassName.c_str(), 
-						m_ParentClasses[i].c_str(), m_ParentClasses[j].c_str());
+					HAZE_LOG_ERR_W("创建类<%s>错误, 父类<%s><%s>存在共同的父类!\n", m_ClassName.c_str(), m_ParentClasses[i].c_str(), m_ParentClasses[j].c_str());
 					return;
 				}
 			}
@@ -61,7 +62,10 @@ void ASTClass::CodeGen()
 	{
 		for (x_uint64 j = 0; j < m_ClassDatas[i].second.size(); j++)
 		{
+			currModule->BeginCreateClassVariable((x_int32)i);
 			auto v = m_ClassDatas[i].second[j]->CodeGen(nullptr);
+			currModule->EndCreateClassVariable();
+
 			if (v)
 			{
 				if (v->IsRefrence())
@@ -85,14 +89,31 @@ void ASTClass::CodeGen()
 		}
 	}
 
-	m_Compiler->GetCurrModule()->CreateClass(m_ClassName, parentClasses, datas);
+	assert(datas.size() <= std::numeric_limits<x_int32>::max());
+	auto currClass = currModule->CreateClass(m_ClassName, parentClasses, datas);
+
+	// 遍历所有的类成员数据，有设置默认值的需要拿出AST
+	x_int32 counter = 0;
+	for (x_uint64 i = 0; i < m_ClassDatas.size(); i++)
+	{
+		for (x_uint64 j = 0; j < m_ClassDatas[i].second.size(); j++)
+		{
+			auto ast = dynamic_cast<ASTVariableDefine*>(m_ClassDatas[i].second[j].get());
+			if (ast->m_Expression)
+			{
+				currClass->SetClassMemberDefaultAST(counter, ast->m_Expression);
+			}
+
+			counter++;
+		}
+	}
 
 	if (m_ClassFunctionSection)
 	{
 		m_ClassFunctionSection->CodeGen();
 	}
 
-	m_Compiler->GetCurrModule()->FinishCreateClass();
+	currModule->FinishCreateClass();
 }
 
 ASTClassDefine::ASTClassDefine(Compiler* compiler, /*const SourceLocation& Location,*/ HString& name,

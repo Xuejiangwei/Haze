@@ -5,11 +5,13 @@ class CompilerFunction;
 class CompilerValue;
 class HazeCompilerPointerValue;
 class CompilerClassValue;
+class ASTBase;
 
 class CompilerClass
 {
 	friend class Compiler;
 	friend class CompilerSymbol;
+	friend class ASTNew;
 public:
 
 	CompilerClass(CompilerModule* compilerModule, const HString& name, V_Array<CompilerClass*>& parentClass,
@@ -38,6 +40,10 @@ public:
 	//bool GetThisMemberName(const HazeCompilerValue* value, HString& outName, bool getOffset = false, V_Array<uint64>* offsets = nullptr);
 
 	//bool GetMemberName(CompilerClassValue* classValue, const CompilerValue* value, HString& outName, bool getOffset = false, V_Array<Pair<uint64, CompilerValue*>>* = nullptr);
+
+	bool HasDefaultDataAST() const { return m_DefaultValueAST.size() > 0; }
+
+	void SetClassMemberDefaultAST(x_int32 memberIndex, Unique<ASTBase>& ast);
 
 	const V_Array<Pair<HString, Share<CompilerValue>>>& GetClassMemberData() const { return m_Data; }
 
@@ -86,6 +92,7 @@ private:
 	x_uint32 m_MemberCount;
 
 	V_Array<Pair<HString, Share<CompilerValue>>> m_Data;
+	V_Array<Pair<x_int32, Unique<ASTBase>>> m_DefaultValueAST;
 
 	V_Array<Share<CompilerFunction>> m_Functions;
 	HashMap<HString, unsigned int> m_HashMap_Functions;

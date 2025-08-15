@@ -1517,7 +1517,7 @@ Share<CompilerValue> Compiler::CreateDynamicClassFunctionCall(Share<CompilerValu
 	return CreateMov(GetTempRegister(type), ret);
 }
 
-Share<CompilerValue> Compiler::CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue)
+Share<CompilerElementValue> Compiler::CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue)
 {
 	return MakeShare<CompilerElementValue>(GetCurrModule().get(), parentValue, elementValue);
 }

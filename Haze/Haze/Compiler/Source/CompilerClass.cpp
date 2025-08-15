@@ -6,6 +6,8 @@
 #include "CompilerHelper.h"
 #include "CompilerClassValue.h"
 
+#include "ASTBase.h"
+
 CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name, V_Array<CompilerClass*>& parentClass,
 	V_Array<Pair<HString, Share<CompilerValue>>>& data, x_uint32 typeId)
 	: m_Module(compilerModule), m_Name(name), m_ParentClass(Move(parentClass)), m_Data(Move(data)), m_TypeId(typeId)
@@ -171,6 +173,11 @@ int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HStr
 	}
 
 	return index;
+}
+
+void CompilerClass::SetClassMemberDefaultAST(x_int32 memberIndex, Unique<ASTBase>& ast)
+{
+	m_DefaultValueAST.push_back({ memberIndex, Move(ast) });
 }
 
 //int CompilerClass::GetMemberIndex(CompilerValue* value)

@@ -445,7 +445,16 @@ Share<CompilerValue> ASTVariableDefine::TryAssign(Share<CompilerValue> var, cons
 	{
 		if (m_Expression)
 		{
-			if (!m_Compiler->GetCurrModule()->IsBeginCreateFunctionParamVariable())
+			if (m_Compiler->GetCurrModule()->IsBeginCreateFunctionParamVariable())
+			{
+				m_Compiler->GetCurrModule()->GetCurrClosureOrFunction()->SetParamDefaultAST(m_Expression);
+				return var;
+			}
+			else if (m_Compiler->GetCurrModule()->IsBeginCreateClassVariable())
+			{
+				return var;
+			}
+			else
 			{
 				auto v = GenExpressionValue(var);
 				if (v)
@@ -456,10 +465,6 @@ Share<CompilerValue> ASTVariableDefine::TryAssign(Share<CompilerValue> var, cons
 				{
 					AST_ERR_W("%s<%s>定义赋值右边表达式错误", errorPrefix, m_DefineVariable.Name.c_str());
 				}
-			}
-			else
-			{
-				m_Compiler->GetCurrModule()->GetCurrClosureOrFunction()->SetParamDefaultAST(m_Expression);
 			}
 		}
 		else
@@ -820,6 +825,15 @@ Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 		}
 		else
 		{
+			if (newClass->HasDefaultDataAST())
+			{
+				for (x_uint64 i = 0; i < newClass->m_DefaultValueAST.size(); i++)
+				{
+					auto member = classValue->GetMember(newClass->m_DefaultValueAST[i].first);
+					m_Compiler->CreateSetAdvanceElement(m_Compiler->CreateElementValue(value, member), newClass->m_DefaultValueAST[i].second->CodeGen(member));
+				}
+			}
+
 			auto function = newClass->FindFunction(classValue->GetOwnerClassName(), nullptr);
 			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetVariableType()), value);
 

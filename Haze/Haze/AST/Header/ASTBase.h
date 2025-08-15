@@ -130,6 +130,7 @@ private:
 //变量定义 基本类型 类对象
 class ASTVariableDefine : public ASTBase
 {
+	friend class ASTClass;
 public:
 	ASTVariableDefine(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HazeDefineVariable&& defineVar, Unique<ASTBase> expression);
 	virtual ~ASTVariableDefine() override {}

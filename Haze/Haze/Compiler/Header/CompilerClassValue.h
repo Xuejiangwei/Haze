@@ -21,11 +21,11 @@ public:
 
 	Share<CompilerValue> GetMember(const HString& name, HString* nameSpace = nullptr);
 
+	Share<CompilerValue> GetMember(x_int32 index, bool indexFromSelf = true);
+
 	int GetMemberIndex(const HString& memberName, HString* nameSpace = nullptr);
 
 	int GetMemberIndex(CompilerValue* value);
-
-	//bool GetMemberName(const CompilerValue* memberValue, HString& outName);
 
 private:
 	CompilerClass* m_OwnerClass;
