@@ -48,6 +48,33 @@ Share<CompilerValue> CompilerFunction::GetParamVariableRightToLeft(x_uint32 inde
 	return m_Params[index].Value;
 }
 
+Share<CompilerValue> CompilerFunction::GetParamVariableLeftToRight(x_uint32 index)
+{
+	if (m_OwnerClass)
+	{
+		index += 1;
+	}
+
+	if (index < m_Params.size())
+	{
+		return m_Params[m_Params.size() - 1 - index].Value;
+	}
+	else
+	{
+		if (index > 0 && IsMultiVariableType(m_Params[0].Value->GetBaseType()))
+		{
+			return m_Params[0].Value;
+		}
+		else
+		{
+			COMPILER_ERR_W("函数<%s>从左往右，获得函数的第<%d>个参数错误", m_Name.c_str(), index);
+			return m_Params[0].Value;
+		}
+	}
+
+	return nullptr;
+}
+
 Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
 	return m_EntryBlock->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, params);

@@ -202,8 +202,17 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 	m_Compiler->InsertLineCount(m_Location.Line);
 	auto& currModule = m_Compiler->GetCurrModule();
 
+	V_Array<Share<CompilerValue>> paramInferValues(m_FunctionParam.size());
+
 	Share<CompilerFunction> function = nullptr;
+	Share<CompilerValue> pointerFunction = nullptr;
+
 	Share<CompilerValue> classObj = nullptr;
+
+	if (m_Name == H_TEXT("打印点"))
+	{
+		m_ClassObj = nullptr;
+	}
 
 	if (m_ClassObj)
 	{
@@ -221,31 +230,71 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 	else
 	{
 		function = m_Compiler->GetFunction(m_Name);
-	}
-
-	V_Array<Share<CompilerValue>> param;
-
-	{
-		auto retRegister = m_Compiler->GetRegister(RET_REGISTER);
-		for (int i = (int)m_FunctionParam.size() - 1; i >= 0; i--)
+		if (!function)
 		{
-			auto value = m_FunctionParam[i]->CodeGen(nullptr);
-			if (value == retRegister)
+			pointerFunction = currModule->GetClosureVariable(m_Name, true);
+			if (!pointerFunction)
 			{
-				value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value), value);
-			}
-
-			param.push_back(value);
-			if (!param.back())
-			{
-				AST_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误", currModule->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
-				return nullptr;
+				pointerFunction = currModule->GetCurrFunction()->GetLocalVariable(m_Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 			}
 		}
 	}
 
+	AdvanceFunctionInfo* advanceFunctionInfo = nullptr;
+	if (function)
+	{
+		for (x_uint64 i = 0; i < paramInferValues.size(); i++)
+		{
+			paramInferValues[i] = function->GetParamVariableLeftToRight((x_uint32)i);
+		}
+	}
+	else if (pointerFunction)
+	{
+		auto pointerFuncValue = DynamicCast<CompilerPointerFunction>(pointerFunction);
+		for (x_uint64 i = 0; i < paramInferValues.size(); i++)
+		{
+			paramInferValues[i] = CreateAstTempVariable(currModule.get(), pointerFunction->GetVariableType());
+		}
+	}
+	else if (classObj)
+	{
+		if (classObj->IsElement())
+		{
+			advanceFunctionInfo = m_Compiler->GetAdvanceFunctionInfo(DynamicCast<CompilerElementValue>(classObj)->GetParentBaseType().BaseType, m_Name);
+		}
+		else
+		{
+			advanceFunctionInfo = m_Compiler->GetAdvanceFunctionInfo(classObj->GetBaseType(), m_Name);
+		}
+
+		if (advanceFunctionInfo)
+		{
+			for (x_uint64 i = 0; i < paramInferValues.size(); i++)
+			{
+				paramInferValues[i] = CreateAstTempVariable(currModule.get(), advanceFunctionInfo->Params[i]);
+			}
+		}
+		else
+		{
+			AST_ERR_W("生成函数调用错误, 未能找到函数<%s>", m_Name.c_str());
+		}
+	}
+
+	for (int i = (int)m_FunctionParam.size() - 1; i >= 0; i--)
+	{
+		auto value = m_FunctionParam[i]->CodeGen(paramInferValues[i]);
+
+		paramInferValues[i] = value;
+		if (!value)
+		{
+			AST_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误", currModule->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
+			return nullptr;
+		}
+	}
+
+	std::reverse(paramInferValues.begin(), paramInferValues.end());
+
 	Share<CompilerValue> ret = nullptr;
-	HazeVariableType funcType;
 	if (function)
 	{
 		if (function->GetClass())
@@ -258,65 +307,66 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 					function = DynamicCast<CompilerClassValue>(classObj)->GetOwnerClass()->FindFunction(m_Name, &m_NameSpace);
 				}
 			}
-		}
 
-		funcType = function->GetFunctionType();
-		ret = m_Compiler->CreateFunctionCall(function, param, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
-	}
-	else
-	{
-		Share<CompilerValue> functionValue = nullptr;
-		functionValue = currModule->GetClosureVariable(m_Name, true);
-		if (!functionValue)
-		{
-			functionValue = currModule->GetCurrFunction()->GetLocalVariable(m_Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
-		}
-
-		if (functionValue && DynamicCast<CompilerPointerFunction>(functionValue))
-		{
-			if (functionValue->IsFunction())
-			{
-				funcType = DynamicCast<CompilerPointerFunction>(functionValue)->GetFunctionType();
-				ret = m_Compiler->CreateFunctionCall(functionValue, param);
-			}
-			else if (functionValue->IsClosure())
-			{
-				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Closure, HAZE_CUSTOM_CALL_FUNCTION, param, functionValue);
-			}
-		}
-		else if (classObj)
-		{
-			if (classObj->IsElement())
-			{
-				auto elementValue = DynamicCast<CompilerElementValue>(classObj);
-				ret = m_Compiler->CreateAdvanceTypeFunctionCall(elementValue->GetParentBaseType().BaseType, m_Name, param, elementValue);
-			}
-			else if (classObj->IsDynamicClass())
-			{
-				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, m_Name, param, classObj);
-			}
-			else if (classObj->IsObjectBase())
-			{
-				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, m_Name, param, classObj);
-			}
-			else if (classObj->IsClass())
-			{
-				ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Class, m_Name, param, classObj);
-			}
-			else
-			{
-				AST_ERR_W("生成函数调用错误, <%s>类型错误", m_Name.c_str());
-			}
+			ret = m_Compiler->CreateFunctionCall(function, paramInferValues, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 		}
 		else
 		{
-			AST_ERR_W("生成函数调用错误, 未能找到函数<%s>", m_Name.c_str());
+			ret = m_Compiler->CreateFunctionCall(function, paramInferValues, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 		}
 	}
+	else if (pointerFunction)
+	{
+		if (pointerFunction->IsFunction())
+		{
+			ret = m_Compiler->CreateFunctionCall(pointerFunction, paramInferValues);
+		}
+		else if (pointerFunction->IsClosure())
+		{
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Closure, HAZE_CUSTOM_CALL_FUNCTION, paramInferValues, pointerFunction);
+		}
+	}
+	else if (classObj)
+	{
+		if (classObj->IsElement())
+		{
+			auto elementValue = DynamicCast<CompilerElementValue>(classObj);
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(elementValue->GetParentBaseType().BaseType, m_Name, paramInferValues, elementValue);
+		}
+		else if (classObj->IsDynamicClass())
+		{
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, m_Name, paramInferValues, classObj);
+		}
+		else if (classObj->IsObjectBase())
+		{
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, m_Name, paramInferValues, classObj);
+		}
+		else if (classObj->IsClass())
+		{
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Class, m_Name, paramInferValues, classObj);
+		}
+		else
+		{
+			AST_ERR_W("生成函数调用错误, <%s>类型错误", m_Name.c_str());
+		}
+	}
+
 
 	if (!ret && inferValue)
 	{
 		AST_ERR_W("生成函数调用<%s>错误, 检查函数名或 ( 符号是否与函数名在同一行", m_Name.c_str());
+	}
+
+	if (inferValue)
+	{
+		if (!IsMultiVariableType(inferValue->GetBaseType()))
+		{
+			ret = m_Compiler->CreateFunctionRet(inferValue->GetVariableType());
+		}
+		else
+		{
+			ret = m_Compiler->CreateFunctionRet(ret->GetVariableType());
+		}
 	}
 
 	return ret;
@@ -733,7 +783,7 @@ Share<CompilerValue> ASTReturn::CodeGen(Share<CompilerValue> inferValue)
 		retValueType = DynamicCast<CompilerEnumValue>(retValue)->GetBaseType();
 	}*/
 
-	if (m_Expression ? retValueType == funcType : IsVoidType(funcType.BaseType))
+	if (m_Expression ? (retValueType == funcType || CanCVT(funcType.BaseType, retValueType.BaseType)) : IsVoidType(funcType.BaseType))
 	{
 		return m_Compiler->CreateRet(retValue);
 	}
@@ -835,7 +885,7 @@ Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 			}
 
 			auto function = newClass->FindFunction(classValue->GetOwnerClassName(), nullptr);
-			value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetVariableType()), value);
+			//value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetVariableType()), value);
 
 			if (function)
 			{

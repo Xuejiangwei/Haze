@@ -982,6 +982,7 @@ bool CanCVT(HazeValueType type1, HazeValueType type2)
 				case HazeValueType::UInt64:
 				case HazeValueType::Float32:
 				case HazeValueType::Float64:
+				case HazeValueType::Enum:
 					return true;
 				default:
 					break;
@@ -1009,6 +1010,7 @@ bool CanCVT(HazeValueType type1, HazeValueType type2)
 				case HazeValueType::UInt64:
 				case HazeValueType::Float32:
 				case HazeValueType::Float64:
+				case HazeValueType::Enum:
 					return true;
 				default:
 					break;
@@ -1035,6 +1037,7 @@ bool CanCVT(HazeValueType type1, HazeValueType type2)
 				case HazeValueType::UInt64:
 				case HazeValueType::Float32:
 				case HazeValueType::Float64:
+				case HazeValueType::Enum:
 					return true;
 				default:
 					break;
@@ -1048,6 +1051,7 @@ bool CanCVT(HazeValueType type1, HazeValueType type2)
 				case HazeValueType::Int64:
 				case HazeValueType::Float32:
 				case HazeValueType::Float64:
+				case HazeValueType::Enum:
 					return true;
 				default:
 					break;

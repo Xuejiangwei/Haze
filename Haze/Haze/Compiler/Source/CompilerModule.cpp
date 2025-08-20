@@ -51,7 +51,7 @@ struct PushTempRegister
 
 		if (DefineType && !IsVoidType(DefineType->BaseType) && RetValue)
 		{
-			*RetValue = Compiler->CreateFunctionRet(*DefineType);
+			*RetValue = Compiler->GetRetRegister(DefineType->BaseType, DefineType->TypeId);
 		}
 	}
 
@@ -1001,29 +1001,23 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	{
 		x_uint64 paramSize = callFunction ? callFunction->GetParamCount() : pointerFunc ? pointerFunc->GetParamCount() : advancFunctionInfo->Params.size();
 
-		for (x_int64 i = params.size() - 1; i >= 0; i--)
+		for (x_uint64 i = 0; i < params.size(); i++)
 		{
-			auto variable = params[i];
-			auto index = params.size() - 1 - i;
-			auto type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(index) :
-				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(index) :
-				advancFunctionInfo->Params.size() > index ? advancFunctionInfo->Params.at(index) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
+			x_uint64 realLeftToRightIndex = params.size() - 1 - i;
+			auto variable = params[realLeftToRightIndex];
+			auto type = callFunction ? callFunction->GetParamTypeLeftToRightByIndex(i) :
+				pointerFunc ? pointerFunc->GetParamTypeLeftToRightByIndex(i) :
+				advancFunctionInfo->Params.size() > i ? advancFunctionInfo->Params.at(i) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 
-
-			if (type != variable->GetVariableType() && !variable->GetVariableType().IsStrongerType(type))
+			if (type != variable->GetVariableType() && !CanCVT(type.BaseType, variable->GetVariableType().BaseType) && !IsMultiVariableType(type.BaseType))
 			{
-				if (i == (x_int64)params.size() - 1 && !IsMultiVariableType(type.BaseType) && paramSize != params.size())
+				COMPILER_ERR_MODULE_W("生成函数调用<%s>错误,  第<%d>个参数枚举类型不匹配", m_Compiler, GetName().c_str(),
+					callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), realLeftToRightIndex);
+				
+				/*else if (i >= paramSize - 1 && !IsMultiVariableType(type.BaseType) && paramSize != params.size())
 				{
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 应填入<%d>个参数，实际填入了<%d>个", m_Compiler, GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), paramSize, params.size());
-				}
-				else if (IsMultiVariableType(type.BaseType))
-				{
-					if (params.size() - i < paramSize)
-					{
-						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误,  第<%d>个参数枚举类型不匹配", m_Compiler, GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : H_TEXT("函数指针"), params.size() - 1 - i);
-					}
 				}
 				else if (variable->IsEnum())
 				{
@@ -1053,7 +1047,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 					COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数类型不匹配", m_Compiler, GetName().c_str(),
 						callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
 						params.size() - 1 - i);
-				}
+				}*/
 			}
 
 			if (IsMultiVariableType(type.BaseType))
@@ -1062,27 +1056,26 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 				{
 					if (IsIntegerType(HAZE_ID_2_TYPE(variable->GetVariableType().TypeId)))
 					{
-						funcTypes[i] = s_UInt64;
+						funcTypes[realLeftToRightIndex] = s_UInt64;
 					}
 					else if (IsFloatingType(HAZE_ID_2_TYPE(variable->GetVariableType().TypeId)))
 					{
-						funcTypes[i] = s_Float64;
+						funcTypes[realLeftToRightIndex] = s_Float64;
 					}
 					else
 					{
 						COMPILER_ERR_MODULE_W("生成函数调用<%s>错误, 第<%d>个参数引用类型不匹配", m_Compiler, GetName().c_str(),
-							callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"),
-							params.size() - 1 - i);
+							callFunction ? callFunction->GetName().c_str() : pointerFunc ? H_TEXT("函数指针") : H_TEXT("复杂类型"), realLeftToRightIndex);
 					}
 				}
 				else
 				{
-					funcTypes[i] = variable->GetVariableType();
+					funcTypes[realLeftToRightIndex] = variable->GetVariableType();
 				}
 			}
 			else
 			{
-				funcTypes[i] = type;
+				funcTypes[realLeftToRightIndex] = type;
 			}
 		}
 

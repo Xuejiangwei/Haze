@@ -3,7 +3,7 @@
 #include "CompilerEnum.h"
 
 CompilerEnumValue::CompilerEnumValue(CompilerEnum* owner, Share<CompilerValue> value)
-	: m_OwnerEnum(owner), CompilerValue(nullptr, value->GetVariableType(), value->GetVariableScope(), value->GetVariableDesc(), 0, value)
+	: m_OwnerEnum(owner), CompilerValue(nullptr, HazeVariableType(HazeValueType::Enum, owner->GetTypeId()), value->GetVariableScope(), value->GetVariableDesc(), 0, value)
 {
 }
 

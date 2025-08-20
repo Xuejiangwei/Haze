@@ -1106,7 +1106,7 @@ Share<CompilerValue> Compiler::CreateMov(Share<CompilerValue> allocaValue, Share
 		{
 			value = CreateCVT(allocaValue, value);
 		}
-		else if (checkType && allocaValue->GetBaseType() != value->GetBaseType())
+		else if (checkType && allocaValue->GetBaseType() != value->GetBaseType() && !CanCVT(allocaValue->GetBaseType(), value->GetBaseType()))
 		{
 			if (IsDynamicClassUnknowType(value->GetBaseType())) { }
 			else if (IsAdvanceType(allocaValue->GetBaseType()) && value->IsNullPtr()) { }

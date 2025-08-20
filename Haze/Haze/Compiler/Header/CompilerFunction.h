@@ -34,6 +34,7 @@ public:
 	void SetStartEndLine(x_uint32 startLine, x_uint32 endLine);
 
 	Share<CompilerValue> GetParamVariableRightToLeft(x_uint32 index);
+	Share<CompilerValue> GetParamVariableLeftToRight(x_uint32 index);
 
 	Share<CompilerValue> GetLocalVariable(const HString& VariableName, HString* nameSpace);
 

@@ -95,6 +95,11 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 	HazeCompilerStream(hss, value.get(), bStreamValue);
 }
 
+Share<CompilerValue> CreateAstTempVariable(CompilerModule* compilerModule, const HazeVariableType& type)
+{
+	return MakeShare<CompilerValue>(compilerModule, type, HazeVariableScope::Ignore, HazeDataDesc::None, 0);
+}
+
 Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeVariableType& type, HazeVariableScope scope, 
 	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, TemplateDefineTypes* params)
 {

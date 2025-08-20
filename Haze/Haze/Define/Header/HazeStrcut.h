@@ -33,7 +33,7 @@ struct HazeVariableType
 
 	explicit HazeVariableType(HazeValueType type, x_uint32 typeId) : BaseType(type), TypeId(typeId) {}
 
-	bool operator==(const HazeVariableType& type) const { return type.BaseType == BaseType && type.TypeId == TypeId; }
+	bool operator==(const HazeVariableType& type) const { return (type.BaseType == BaseType && type.TypeId == TypeId); }
 
 	bool operator!=(const HazeVariableType& type) const { return !(type == *this); }
 
@@ -63,6 +63,20 @@ struct HazeVariableType
 			{
 				auto strongerType = GetStrongerType(BaseType, type.BaseType, false);
 				return strongerType == HazeValueType::None ? false : strongerType == BaseType;
+			}
+		}
+
+		return false;
+	}
+
+	bool IsWeakerType(const HazeVariableType& type) const
+	{
+		if (*this != type)
+		{
+			if (type.BaseType != BaseType)
+			{
+				auto strongerType = GetStrongerType(BaseType, type.BaseType, false);
+				return strongerType == HazeValueType::None ? false : strongerType == type.BaseType;
 			}
 		}
 
