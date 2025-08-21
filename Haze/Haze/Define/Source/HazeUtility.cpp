@@ -563,6 +563,7 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	case HazeValueType::UInt16: \
 		V = (V_TYPE)v2.Value.UInt16; \
 		break; \
+	case HazeValueType::Enum: \
 	case HazeValueType::Int32: \
 		V = (V_TYPE)v2.Value.Int32; \
 		break; \

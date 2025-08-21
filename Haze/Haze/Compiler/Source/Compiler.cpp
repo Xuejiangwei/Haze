@@ -1630,15 +1630,11 @@ void Compiler::CreateJmpToBlock(Share<CompilerBlock> block)
 
 Share<CompilerValue> Compiler::CreateIntCmp(Share<CompilerValue> left, Share<CompilerValue> right)
 {
-	/*if (left->IsArrayElement())
+	if (left->IsEnum() && right->IsEnum() && left->GetVariableType() != right->GetVariableType())
 	{
-		left = GetArrayElementToValue(GetCurrModule().get(), left);
+		COMPILER_ERR_MODULE_W("类型<%s>与类型<%s>不能比较", this, GetCurrModuleName().c_str(), m_CompilerSymbol->GetSymbolByTypeId(left->GetTypeId())->c_str(),
+			m_CompilerSymbol->GetSymbolByTypeId(right->GetTypeId())->c_str());
 	}
-
-	if (right->IsArrayElement())
-	{
-		right = GetArrayElementToValue(GetCurrModule().get(), right);
-	}*/
 
 	GetCurrModule()->GenIRCode_BinaryOperater(nullptr, left, right, InstructionOpCode::CMP);
 	return GetRegister(CMP_REGISTER);

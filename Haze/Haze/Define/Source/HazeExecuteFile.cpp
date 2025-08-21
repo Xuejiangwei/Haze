@@ -808,21 +808,26 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 
 	//重新指认std lib 函数指针
 	auto& stdLib = HazeStandardLibraryBase::GetStdLib();
+	HashMap<HStringView, void(*)(HAZE_STD_CALL_PARAM)> stdLibMap;
+	for (auto& lib : stdLib)
+	{
+		for (auto& func : *lib.second)
+		{
+			stdLibMap[func.first] = func.second;
+		}
+	}
+
 	for (auto& iter : vm->m_HashFunctionTable)
 	{
 		auto& function = vm->m_FunctionTable[iter.second];
 		if (function.FunctionDescData.Type == InstructionFunctionType::StaticLibFunction)
 		{
 			bool set = false;
-			for (auto& lib : stdLib)
+			auto pointer = stdLibMap.find(iter.first);
+			if (pointer != stdLibMap.end())
 			{
-				auto pointer = lib.second->find(iter.first);
-				if (pointer != lib.second->end())
-				{
-					set = true;
-					function.FunctionDescData.StdLibFunction = pointer->second;
-				}
-				
+				set = true;
+				function.FunctionDescData.StdLibFunction = pointer->second;
 			}
 
 			if (!set)

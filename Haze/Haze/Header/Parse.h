@@ -70,7 +70,7 @@ private:
 
 	Unique<ASTBase> ParseNumberExpression();
 
-	Unique<ASTBase> ParseIfExpression(bool recursion = false);
+	Unique<ASTBase> ParseIfExpression(/*bool recursion = false*/);
 
 	Unique<ASTBase> ParseForExpression();
 

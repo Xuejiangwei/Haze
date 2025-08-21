@@ -93,7 +93,7 @@ void HazeStack::ResetTempRegisterTypeByDynamicClassUnknow(const HString& name, c
 
 void HazeStack::Run(bool isHazeCall)
 {
-	while (m_PC < m_VM->m_Instructions.size())
+	while (m_PC < (x_int64)m_VM->m_Instructions.size())
 	{
 		while (m_VM->IsDebug())
 		{

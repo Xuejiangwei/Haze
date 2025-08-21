@@ -129,6 +129,9 @@ HazeValueType GetStrongerType(HazeValueType type1, HazeValueType type2, bool isL
 		{ HazeValueType::String, { HazeValueType::PureString } },
 	};
 
+	type1 = type1 != HazeValueType::Enum ? type1 : HazeValueType::Int32;
+	type2 = type2 != HazeValueType::Enum ? type2 : HazeValueType::Int32;
+
 	if (type1 == type2)
 	{
 		return type1;
@@ -272,38 +275,35 @@ bool IsClosureType(HazeValueType type)
 
 void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value)
 {
-	static HAZE_STRING_STREAM wss;
-	wss.clear();
-	wss << str;
-
 	switch (type)
 	{
+		case HazeValueType::Bool:
 		case HazeValueType::Int8:
 		case HazeValueType::Int16:
-			wss >> value.Value.Int16;
+			value.Value.Int16 = StringToStandardType<x_int16>(str);
 			break;
 		case HazeValueType::UInt8:
 		case HazeValueType::UInt16:
-			wss >> value.Value.UInt16;
+			value.Value.UInt16 = StringToStandardType<x_uint16>(str);
 			break;
-		case HazeValueType::Bool:
+		case HazeValueType::Enum:
 		case HazeValueType::Int32:
-			wss >> value.Value.Int32;
+			value.Value.Int32 = StringToStandardType<x_int32>(str);
 			break;
 		case HazeValueType::UInt32:
-			wss >> value.Value.UInt32;
+			value.Value.UInt32 = StringToStandardType<x_uint32>(str);
 			break;
 		case HazeValueType::Int64:
-			wss >> value.Value.Int64;
+			value.Value.Int64 = StringToStandardType<x_int64>(str);
 			break;
 		case HazeValueType::UInt64:
-			wss >> value.Value.UInt64;
+			value.Value.UInt64 = StringToStandardType<x_uint64>(str);
 			break;
 		case HazeValueType::Float32:
-			wss >> value.Value.Float32;
+			value.Value.Float32 = StringToStandardType<x_float32>(str);
 			break;
 		case HazeValueType::Float64:
-			wss >> value.Value.Float64;
+			value.Value.Float64 = StringToStandardType<x_float64>(str);
 			break;
 		default:
 			break;
@@ -867,6 +867,7 @@ HAZE_BINARY_CHAR* GetBinaryPointer(HazeValueType type, const HazeValue& value)
 	{
 		case HazeValueType::Bool:
 			return (HAZE_BINARY_CHAR*)&value.Value.Bool;
+		case HazeValueType::Enum:
 		case HazeValueType::Int32:
 			return (HAZE_BINARY_CHAR*)&value.Value.Int32;
 		case HazeValueType::UInt32:

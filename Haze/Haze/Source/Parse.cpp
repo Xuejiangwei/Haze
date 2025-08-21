@@ -1564,7 +1564,7 @@ Unique<ASTBase> Parse::ParseNumberExpression()
 	return MakeUnique<ASTNumber>(m_Compiler, SourceLocation(tempLineCount), type, value);
 }
 
-Unique<ASTBase> Parse::ParseIfExpression(bool recursion)
+Unique<ASTBase> Parse::ParseIfExpression(/*bool recursion*/)
 {
 	x_uint32 tempLineCount = m_LineCount;
 	if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("若 表达式期望捕捉 (")))
@@ -1605,7 +1605,7 @@ Unique<ASTBase> Parse::ParseIfExpression(bool recursion)
 						}
 						else
 						{
-							elseExpression = ParseIfExpression(true);
+							elseExpression = ParseIfExpression(/*true*/);
 							//nextIfHasElseExpression = dynamic_cast<ASTIfExpression*>(elseExpression.get())->HasElseExpression();
 
 							if (!TokenIs(HazeToken::RightBrace, H_TEXT("否则 执行表达式期望捕捉 } ")))
@@ -2965,6 +2965,8 @@ x_uint32 Parse::ParseTemplateTypes(HazeVariableType baseType, TemplateDefineType
 	}*/
 
 	HazeComplexTypeInfo info;
+
+#undef TYPE_INFO_VAR
 #define TYPE_INFO_VAR(INFO)
 	switch (baseType.BaseType)
 	{
