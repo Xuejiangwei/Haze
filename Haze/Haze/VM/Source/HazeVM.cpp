@@ -37,7 +37,7 @@ HazeVM::HazeVM(HazeRunType GenType) : GenType(GenType)
 {
 	m_Stack = MakeUnique<HazeStack>(this);
 	m_Compiler = MakeUnique<Compiler>(this);
-	m_TypeInfoMap = MakeUnique<HazeTypeInfoMap>();
+	m_TypeInfoMap = MakeUnique<HazeTypeInfoMap>(nullptr);
 }
 
 HazeVM::~HazeVM()

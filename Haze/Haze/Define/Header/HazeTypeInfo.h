@@ -1,6 +1,6 @@
 #pragma once
 
-//#define HAZE_COMPLEX_BASE_CAST(INFO) ((HazeComplexTypeInfoBase*)(&INFO))
+class Compiler;
 
 struct HazeComplexTypeInfoBase
 {
@@ -97,7 +97,7 @@ public:
 	};
 
 public:
-	HazeTypeInfoMap();
+	HazeTypeInfoMap(Compiler* compiler);
 	~HazeTypeInfoMap();
 
 	x_uint32 ReserveTypeId(const HString& name);
@@ -125,7 +125,6 @@ public:
 	void GenICode(HAZE_STRING_STREAM& hss);
 	void GenModuleReferenceTypeInfo(HAZE_STRING_STREAM& hss, const HString& moduleName);
 
-	
 	// 通用函数
 public:
 	const x_uint32 GetTypeIdByClassName(const HString& name) const;
@@ -142,7 +141,7 @@ public:
 	void ParseInterFile(HAZE_IFSTREAM& stream);
 
 private:
-	x_uint32 GetNewTypeId();
+	x_uint32 GetNewTypeId(const HString& symbol);
 
 	x_uint32 RegisterFunctionParamListType(const HString& moduleName, x_uint32 typeId, V_Array<x_uint32>& paramList);
 
@@ -151,13 +150,13 @@ private:
 	bool AddModuleRef(const HString& moduleName, x_uint32 typeId);
 
 private:
+	Compiler* m_Compiler;
+
 	HashMap<x_uint32, TypeInfo> m_Map;
 	HashMap<HString, x_uint32> m_NameCache;
 	HashMap<x_int32, V_Array<x_uint32>> m_FunctionInfoMap;
 	
 	HashMap<HString, ModuleRefrenceTypeId> m_ModuleRefTypes;
-
-	LessRBTreeSet<x_uint32> m_NoRefTypeIds;
 };
 
 

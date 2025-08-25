@@ -1,5 +1,6 @@
 #include "HazePch.h"
 #include "HazeTypeInfo.h"
+#include "Compiler.h"
 
 // type id需要与枚举值相等
 //HashMap<HazeValueType, x_uint32> g_HazeTypeIdMap =
@@ -10,7 +11,6 @@
 //};
 
 #define COMPLEX_TYPE_START 100
-static x_uint32 startIndex = COMPLEX_TYPE_START;
 
 struct ResetInfoNameAddress
 {
@@ -35,7 +35,7 @@ private:
 	HazeTypeInfoMap::TypeInfo& Info;
 };
 
-HazeTypeInfoMap::HazeTypeInfoMap()
+HazeTypeInfoMap::HazeTypeInfoMap(Compiler* compiler) : m_Compiler(compiler)
 {
 	/*m_BaseTypeMap =
 	{
@@ -65,7 +65,7 @@ HazeTypeInfoMap::~HazeTypeInfoMap()
 
 x_uint32 HazeTypeInfoMap::ReserveTypeId(const HString& name)
 {
-	x_uint32 newTypeId = GetNewTypeId();
+	x_uint32 newTypeId = GetNewTypeId(name);
 
 	// 一律先当作类来存储
 	CLASS_TYPE_INFO(info, name);
@@ -145,16 +145,16 @@ x_uint32 HazeTypeInfoMap::RegisterType(const HString& moduleName, HazeComplexTyp
 	x_uint32 newTypeId = resolvedTypeId;
 	if (newTypeId == 0)
 	{
-		newTypeId = GetNewTypeId();
+		newTypeId = GetNewTypeId(str);
 	}
 	
 	m_Map[newTypeId] = { str, 1, newTypeId, *info };
 	ResetInfoNameAddress temp(m_Map[newTypeId]);
 
 	m_NameCache[str] = newTypeId;
-	AddModuleRef(moduleName, startIndex);
+	AddModuleRef(moduleName, newTypeId);
 
-	return startIndex;
+	return newTypeId;
 }
 
 x_uint32 HazeTypeInfoMap::RegisterType(const HString& moduleName, x_uint32 functionTypeId, V_Array<x_uint32>&& paramTypeId)
@@ -253,38 +253,34 @@ void HazeTypeInfoMap::GenICode(HAZE_STRING_STREAM& hss)
 
 	hss << TYPE_INFO_BEGIN << HAZE_ENDL_D;
 
-	for (x_uint32 i = COMPLEX_TYPE_START + 1; i <= startIndex; i++)
+	for (auto& iter : m_Map)
 	{
-		auto iter = m_Map.find(i);
-		if (iter != m_Map.end())
+		auto& typeInfo = iter.second;
+		hss << typeInfo.Name << " " << typeInfo.RefCount << " " << typeInfo.TypeId << " " << (x_uint32)typeInfo.Info._BaseType.BaseType << " ";
+
+		auto& info = typeInfo.Info;
+		switch (info.GetBaseType())
 		{
-			auto& typeInfo = iter->second;
-			hss << typeInfo.Name << " " << typeInfo.RefCount << " " << typeInfo.TypeId << " " << (x_uint32)typeInfo.Info._BaseType.BaseType << " ";
-
-			auto& info = typeInfo.Info;
-			switch (info.GetBaseType())
-			{
-				case HazeValueType::ObjectBase:
-					hss << info._ObjectBase.TypeId1;
-					break;
-				case HazeValueType::Class:
-				case HazeValueType::Enum:
-					break;
-				case HazeValueType::Array:
-					hss << info._Array.TypeId1 << " " << info._Array.Dimension;
-					break;
-				case HazeValueType::Hash:
-					hss << info._Hash.TypeId1 << " " << info._Hash.TypeId2;
-					break;
-				case HazeValueType::Function:
-					hss << info._Function.TypeId1 << " " << info._Function.FunctionInfoIndex;
-					break;
-				default:
-					break;
-			}
-
-			hss << HAZE_ENDL;
+			case HazeValueType::ObjectBase:
+				hss << info._ObjectBase.TypeId1;
+				break;
+			case HazeValueType::Class:
+			case HazeValueType::Enum:
+				break;
+			case HazeValueType::Array:
+				hss << info._Array.TypeId1 << " " << info._Array.Dimension;
+				break;
+			case HazeValueType::Hash:
+				hss << info._Hash.TypeId1 << " " << info._Hash.TypeId2;
+				break;
+			case HazeValueType::Function:
+				hss << info._Function.TypeId1 << " " << info._Function.FunctionInfoIndex;
+				break;
+			default:
+				break;
 		}
+
+		hss << HAZE_ENDL;
 	}
 
 	hss << HAZE_ENDL << TYPE_INFO_END << HAZE_ENDL_D;
@@ -375,7 +371,7 @@ void HazeTypeInfoMap::RemoveModuleRefTypes(const HString& moduleName)
 				if (--info->second.RefCount == 0)
 				{
 					m_NameCache.erase(m_NameCache.find(info->second.Name));
-					m_NoRefTypeIds.insert(typeId);
+					//m_NoRefTypeIds.insert(typeId);
 					m_Map.erase(info);
 				}
 			}
@@ -444,25 +440,11 @@ void HazeTypeInfoMap::ParseInterFile(HAZE_IFSTREAM& stream)
 					break;
 			}
 
-			if (info.TypeId >= startIndex)
-			{
-				startIndex = info.TypeId;
-			}
-
 			m_Map[info.TypeId] = info;
 			m_NameCache[info.Name] = info.TypeId;
 			stream >> str;
 
-
-			auto& typeInfo = m_Map[info.TypeId];
-			switch (typeInfo.Info._BaseType.BaseType)
-			{
-				case HazeValueType::Class:
-					typeInfo.Info._Class.SetName(&typeInfo.Name);
-					break;
-				default:
-					break;
-			}
+			ResetInfoNameAddress temp(m_Map[info.TypeId]);
 		}
 	}
 
@@ -486,17 +468,48 @@ void HazeTypeInfoMap::ParseInterFile(HAZE_IFSTREAM& stream)
 	}
 }
 
-x_uint32 HazeTypeInfoMap::GetNewTypeId()
+x_uint32 HazeTypeInfoMap::GetNewTypeId(const HString& symbol)
 {
-	x_uint32 newTypeId = 0;
-	if (m_NoRefTypeIds.size() > 0)
+#define SIP_ROTATE_LEFT(X, BITS) ((X << BITS) | (X >> (64 - BITS)))
+#define SIP_ROUND(V0, V1, V2, V3) V0 += V1; V1 = SIP_ROTATE_LEFT(V1, 13); V1 ^= V0; V0 = SIP_ROTATE_LEFT(V0, 32); \
+								  v2 += v3; v3 = SIP_ROTATE_LEFT(v3, 16); v3 ^= v2; \
+								  v0 += v3; v3 = SIP_ROTATE_LEFT(v3, 21); v3 ^= v0; \
+								  v2 += v1; v1 = SIP_ROTATE_LEFT(v1, 17); v1 ^= v2; v2 = SIP_ROTATE_LEFT(v2, 32) \
+
+#define SIP_FINISH_64() (v0 ^ v1 ^ v2 ^ v3)
+#define SIP_FINISH_32() static_cast<uint32_t>(SIP_FINISH_64() ^ (SIP_FINISH_64() >> 32))
+
+	// 简化的SipHash实现，固定种子确保一致性
+	x_uint64 v0 = 0x736f6d6570736575ULL;
+	x_uint64 v1 = 0x646f72616e646f6dULL;
+	x_uint64 v2 = 0x6c7967656e657261ULL;
+	x_uint64 v3 = 0x7465646279746573ULL;
+
+	for (x_uint64 i = 0; i < symbol.length(); ++i)
 	{
-		newTypeId = *m_NoRefTypeIds.begin();
-		m_NoRefTypeIds.erase(m_NoRefTypeIds.begin());
+		auto c = symbol[i];
+		v3 ^= c;
+		
+		SIP_ROUND(v0, v1, v2, v3);
+
+		v0 ^= c;
 	}
-	else
+	
+	for (int i = 0; i < 4; i++)
 	{
-		newTypeId = ++startIndex;
+		SIP_ROUND(v0, v1, v2, v3);
+	}
+
+	x_uint32 newTypeId = (SIP_FINISH_32() % std::numeric_limits<x_uint32>::max()) + COMPLEX_TYPE_START;
+
+	auto iter = m_Map.find(newTypeId);
+	if (iter != m_Map.end())
+	{
+		auto typeName = GetTypeName(newTypeId);
+		if (typeName && *typeName != symbol)
+		{
+			SYMBOL_ERR_W("<%s>和<%s>生成冲突的类型ID", typeName->c_str(), symbol.c_str());
+		}
 	}
 
 	return newTypeId;
@@ -532,7 +545,7 @@ x_uint32 HazeTypeInfoMap::RegisterFunctionParamListType(const HString& moduleNam
 
 	assert(!str.empty());
 
-	auto newTypeId = ++startIndex;
+	auto newTypeId = GetNewTypeId(str);
 
 	HazeComplexTypeInfo info;
 	info._Function.BaseType = HazeValueType::Function;
@@ -546,9 +559,9 @@ x_uint32 HazeTypeInfoMap::RegisterFunctionParamListType(const HString& moduleNam
 	paramList.insert(paramList.begin(), typeId);
 	m_FunctionInfoMap[newTypeId] = Move(paramList);
 
-	AddModuleRef(moduleName, startIndex);
+	AddModuleRef(moduleName, newTypeId);
 
-	return startIndex;
+	return newTypeId;
 }
 
 void HazeTypeInfoMap::RegisterResolvedType(const HString& moduleName, x_uint32 typeId, HazeComplexTypeInfo* type)

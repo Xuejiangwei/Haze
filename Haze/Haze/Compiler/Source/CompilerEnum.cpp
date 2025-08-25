@@ -59,7 +59,7 @@ Share<CompilerEnumValue> CompilerEnum::GetEnumValueByIndex(x_uint64 index)
 void CompilerEnum::GenEnum_I_Code(HAZE_STRING_STREAM& hss)
 {
 	hss << GetEnumStartHeader() << HAZE_ENDL;
-	hss << m_Name << HAZE_ENDL;
+	hss << m_Name << " " << m_Type.TypeId << HAZE_ENDL;
 
 	for (auto& it : m_EnumValues)
 	{

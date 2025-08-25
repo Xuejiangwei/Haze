@@ -94,7 +94,7 @@ CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, co
 
 		if (!newFS)
 		{
-			newFS = !ParseIntermediateFile(fs/*, moduleName*/);
+			newFS = !ParseIntermediateFile(fs, moduleName);
 		}
 	}
 #endif
@@ -122,7 +122,7 @@ CompilerModule::~CompilerModule()
 	}
 }
 
-bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream/*, const HString& moduleName*/)
+bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString& moduleName)
 {
 	HString str;
 	x_uint64 ui64;
@@ -175,7 +175,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream/*, const HStrin
 		m_ImportModules.push_back(m);
 	}
 
-	stream >> str;
+	stream >> str;	
 	if (str != GetGlobalDataHeaderString())
 	{
 		HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到全局数据表的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
@@ -228,12 +228,15 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream/*, const HStrin
 		if (ui64 > 0)
 		{
 			HString enumValueStr;
+			x_uint32 typeId;
 			for (int i = 0; i < ui64; i++)
 			{
 				stream >> str;
 				if (str == GetEnumStartHeader())
 				{
 					stream >> str;
+					stream >> typeId;
+
 					auto enumValue = CreateEnum(str);
 
 					stream >> str;
@@ -273,9 +276,9 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream/*, const HStrin
 		HString className;
 		stream >> className;
 
-		x_uint32 dataSize;
-		stream >> dataSize;
-		stream >> ui64;
+		x_uint32 ui32;
+		stream >> ui32;
+		stream >> ui32;
 		stream >> ui64;
 
 		V_Array<HString> parentName(ui64);

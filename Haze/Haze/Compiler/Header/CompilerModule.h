@@ -38,7 +38,7 @@ public:
 
 	bool NeedParse() const { return m_FS_I_Code != nullptr; }
 
-	bool ParseIntermediateFile(HAZE_IFSTREAM& stream/*, const HString& moduleName*/);
+	bool ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString& moduleName);
 
 	const HString& GetName() const;
 

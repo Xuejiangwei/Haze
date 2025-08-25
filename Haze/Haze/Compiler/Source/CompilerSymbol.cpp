@@ -11,7 +11,7 @@
 
 CompilerSymbol::CompilerSymbol(Compiler* compiler) : m_Compiler(compiler)
 {
-	m_TypeInfo = new HazeTypeInfoMap();
+	m_TypeInfo = new HazeTypeInfoMap(compiler);
 }
 
 CompilerSymbol::~CompilerSymbol()

@@ -66,7 +66,6 @@ public:
 	HazeTypeInfoMap* GetTypeInfoMap() { return m_TypeInfo; }
 
 	x_uint32 RegisterSymbol(const HString& name);
-	//void RegisterFunctionSymbol(const HString& name, x_uint32 functionType, V_Array<x_uint32>&& params, HazeFunctionDesc desc, const HString* className = nullptr, bool isClassPublic = false);
 
 	void Register_GlobalVariable(const HString& moduleName, const HString& name, x_uint32 typeId, x_uint32 line);
 	void Register_Class(const HString& moduleName, const HString& name, V_Array<HString>& parents, V_Array<Pair<HString, x_uint32>>&& publicMembers, V_Array<Pair<HString, x_uint32>>&& privateMembers, bool publicFirst);
@@ -74,10 +73,6 @@ public:
 	void Register_Function(const HString& moduleName, const HString& name, x_uint32 functionType, V_Array<HazeDefineVariable>&& params, HazeFunctionDesc desc, const HString* className = nullptr, bool isClassPublic = false);
 
 	void AddModuleRefSymbol(const HString& moduleName, const HString& symbol);
-
-	/*void ResolveSymbol_Class(const HString& name, class CompilerClass* compilerClass);
-	void ResolveSymbol_Enum(const HString& name, class CompilerEnum* compilerEnum);*/
-	//void ResolveSymbol_Enum(const HString& name, V_Array<Pair<HString, x_uint32>> members);
 
 	//当第一遍收集完所有符号后，在第二遍解析前，已经可以将所有之前未定的符号，如暂时将枚举当做类，这些都全部纠正过来，可以加个是否正确确定所有类型的标记和log看哪些被修改过来了。
 	void IdentifySymbolType();
