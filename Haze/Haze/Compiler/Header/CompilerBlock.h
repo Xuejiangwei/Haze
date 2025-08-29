@@ -7,7 +7,7 @@ class CompilerFunction;
 class CompilerBlock : public std::enable_shared_from_this<CompilerBlock>
 {
 public:
-	explicit CompilerBlock(const HString& name, CompilerFunction* parentFunction, CompilerBlock* parentBlock);
+	explicit CompilerBlock(STDString&& name, CompilerFunction* parentFunction, CompilerBlock* parentBlock);
 
 	~CompilerBlock();
 
@@ -20,19 +20,19 @@ public:
 
 	Share<CompilerBlock> GetShared() { return shared_from_this(); }
 
-	const V_Array<Pair<HString, Share<CompilerValue>>>& GetAllocaList() const { return m_Allocas; }
+	const V_Array<Pair<STDString, Share<CompilerValue>>>& GetAllocaList() const { return m_Allocas; }
 
-	void AddClosureRefValue(Share<CompilerValue> refValue, const HString& name);
+	void AddClosureRefValue(Share<CompilerValue> refValue, const STDString& name);
 
 	CompilerBlock* GetParentBlock() const { return m_ParentBlock; }
 
-	const HString& GetName() const { return m_Name; }
+	const STDString& GetName() const { return m_Name; }
 
 	x_uint64 GetIRCodeSize() { return m_IRCodes.size() - 1; }
 
-	const V_Array<HString>& GetIRCode() const { return m_IRCodes; }
+	const V_Array<STDString>& GetIRCode() const { return m_IRCodes; }
 
-	bool FindLocalVariableName(const Share<CompilerValue>& value, HString& outName);
+	bool FindLocalVariableName(const Share<CompilerValue>& value, HStringView& outName);
 
 	void SetLoopEnd(CompilerBlock* block) { m_LoopEndBlock = block; }
 
@@ -57,13 +57,13 @@ public:
 	void ClearLocalVariable();
 
 public:
-	static Share<CompilerBlock> CreateBaseBlock(const HString& name, Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock);
-	static Share<CompilerBlock> CreateBaseBlock(const HString& name, CompilerFunction* parent, CompilerBlock* parentBlock);
+	static Share<CompilerBlock> CreateBaseBlock(STDString&& name, Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock);
+	static Share<CompilerBlock> CreateBaseBlock(STDString&& name, CompilerFunction* parent, CompilerBlock* parentBlock);
 
-	void PushIRCode(const HString& code);
+	void PushIRCode(const STDString& code);
 
 private:
-	HString m_Name;
+	STDString m_Name;
 	CompilerFunction* m_ParentFunction;
 
 	CompilerBlock* m_ParentBlock;
@@ -74,7 +74,7 @@ private:
 	List<Share<CompilerBlock>> m_Predecessors;
 	List<Share<CompilerBlock>> m_Successors;
 
-	V_Array<Pair<HString, Share<CompilerValue>>> m_Allocas;
+	V_Array<Pair<STDString, Share<CompilerValue>>> m_Allocas;
 
-	V_Array<HString> m_IRCodes;
+	V_Array<STDString> m_IRCodes;
 };

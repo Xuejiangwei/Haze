@@ -1,11 +1,11 @@
 #pragma once
 
-HString GetModuleFilePath(const HString& modulePath, const HString* refModulePath = nullptr);
+STDString GetModuleFilePath(const STDString& modulePath, const STDString* refModulePath = nullptr);
 
-HString GetMainBinaryFilePath();
+STDString GetMainBinaryFilePath();
 
-HString GetIntermediateModuleFile(const HString& moduleName);
+STDString GetIntermediateModuleFile(const STDString& moduleName);
 
-x_uint64 GetFileLastTime(const HString& filePath);
+x_uint64 GetFileLastTime(const STDString& filePath);
 
-bool FileExist(const HString& filePath);
+bool FileExist(const STDString& filePath);

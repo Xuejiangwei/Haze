@@ -9,7 +9,7 @@ public:
 	explicit CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, Share<CompilerValue> element);
 
 	// Dynamica Class 使用这个构造函数
-	explicit CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const HString& elementName);
+	explicit CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const STDString& elementName);
 
 	virtual ~CompilerElementValue() override;
 
@@ -21,7 +21,7 @@ public:
 
 	Share<CompilerValue> GetElement() const { return m_Element; }
 
-	const HString* GetElementName() const { return m_ElementName.get(); }
+	const STDString* GetElementName() const { return m_ElementName.get(); }
 
 	Share<CompilerValue> CreateGetFunctionCall();
 
@@ -30,6 +30,6 @@ public:
 private:
 	Share<CompilerValue> m_Parent;
 	Share<CompilerValue> m_Element;		//数组的偏移或类的成员
-	Unique<HString> m_ElementName;		//DynamicClass成员名
+	Unique<STDString> m_ElementName;		//DynamicClass成员名
 };
 

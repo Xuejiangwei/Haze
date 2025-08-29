@@ -18,5 +18,7 @@
 #include <assert.h>
 #include <stack>
 
+#include "HazeString.h"
+
 #include "HazeHeader.h"
 #include "HazeLogDefine.h"

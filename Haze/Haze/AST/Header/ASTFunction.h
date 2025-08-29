@@ -10,7 +10,7 @@ class ASTFunction
 {
 public:
 	ASTFunction(Compiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
-		HString& name, HazeVariableType& type, V_Array<Unique<ASTBase>>& params, Unique<ASTBase> body, HazeFunctionDesc desc);
+		STDString& name, HazeVariableType& type, V_Array<Unique<ASTBase>>& params, Unique<ASTBase> body, HazeFunctionDesc desc);
 
 	~ASTFunction();
 
@@ -18,14 +18,14 @@ public:
 
 	//void RegisterFunction();
 
-	const HString& GetName() const { return m_FunctionName; }
+	const STDString& GetName() const { return m_FunctionName; }
 
 private:
 	Compiler* m_Compiler;
 	HazeSectionSignal m_Section;
 	HazeFunctionDesc m_Desc;
 
-	HString m_FunctionName;
+	STDString m_FunctionName;
 	HazeVariableType m_FunctionType;
 	V_Array<Unique<ASTBase>> m_FunctionParams; //从左到右
 	Unique<ASTBase> m_Body;
@@ -65,7 +65,7 @@ private:
 class ASTFunctionDefine
 {
 public:
-	ASTFunctionDefine(Compiler* compiler,/* const SourceLocation& Location,*/ const HString& name, HazeVariableType& type,
+	ASTFunctionDefine(Compiler* compiler,/* const SourceLocation& Location,*/  STDString&& name, HazeVariableType& type,
 		V_Array<Unique<ASTBase>>& params);
 
 	~ASTFunctionDefine();
@@ -74,7 +74,7 @@ public:
 
 private:
 	Compiler* m_Compiler;
-	HString m_FunctionName;
+	STDString m_FunctionName;
 	HazeVariableType m_FunctionType;
 	V_Array<Unique<ASTBase>> m_FunctionParams; //从左到右
 };

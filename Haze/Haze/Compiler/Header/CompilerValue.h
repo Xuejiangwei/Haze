@@ -44,17 +44,17 @@ public:
 
 	void SetDataDesc(HazeDataDesc desc) { m_Desc = desc; }
 
-	const HString* GetPointerFunctionName() const;
-	void SetPointerFunctionName(const HString* name);
+	const STDString* GetPointerFunctionName() const;
+	void SetPointerFunctionName(const STDString* name);
 
 public:
 	bool IsRegister() const { return IsRegisterDesc(m_Desc); }
 
 	bool IsRegister(HazeDataDesc type) const { return IsRegisterDesc(m_Desc) && m_Desc == type; }
 
-	bool IsConstant() const { return m_Desc == HazeDataDesc::Constant; }
+	bool IsConstant() const { return IsConstDesc(m_Desc) && !IsConstStringDesc(m_Desc); }
 
-	bool IsString() const { return m_Desc == HazeDataDesc::ConstantString; }
+	bool IsString() const { return IsConstStringDesc(m_Desc); }
 
 	bool IsElement() const { return m_Desc == HazeDataDesc::Element; }
 
@@ -96,7 +96,8 @@ public:
 public:
 	virtual x_uint32 GetSize() { return GetSizeByHazeType(m_Type.BaseType);}
 
-	bool TryGetVariableName(HString& outName);
+	bool TryGetVariableName(HStringView& outName);
+	bool TryGetVariableId(InstructionOpId& outId);
 
 protected:
 	HazeVariableType m_Type;

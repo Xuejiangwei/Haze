@@ -6,7 +6,7 @@
 #include "CompilerValue.h"
 #include "CompilerEnum.h"
 
-ASTEnum::ASTEnum(Compiler* compiler, const SourceLocation& location, HString& name, V_Array<Pair<HString, Unique<ASTBase>>>& enums)
+ASTEnum::ASTEnum(Compiler* compiler, const SourceLocation& location, STDString& name, V_Array<Pair<STDString, Unique<ASTBase>>>& enums)
 	: m_Compiler(compiler), m_Location(location), m_EnumName(Move(name)), m_Enums(Move(enums))
 {
 }

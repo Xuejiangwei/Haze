@@ -4,6 +4,7 @@
 #include "HazeStrcut.h"
 #include "HazeValue.h"
 #include "HazeLibraryType.h"
+#include "HazeInstruction.h"
 #include "JwHeader.h"
 
 bool IsAndOrToken(HazeToken token);
@@ -16,10 +17,10 @@ bool IsCanCastToken(HazeToken token);
 
 int Log2(int n);
 
-HString GetHazeClassFunctionName(const HString& className, const HString& functionName);
-HString NativeClassFunctionName(const HString& className, const HString& functionName);
+STDString GetHazeClassFunctionName(const STDString& className, const STDString& functionName);
+STDString NativeClassFunctionName(const STDString& className, const STDString& functionName);
 
-HString GetHazeModuleGlobalDataInitFunctionName(const HString& moduleName);
+STDString GetHazeModuleGlobalDataInitFunctionName(const STDString& moduleName);
 
 const x_HChar* GetImportHeaderString();
 const x_HChar* GetImportHeaderModuleString();
@@ -62,34 +63,34 @@ const x_HChar* GetTypeInfoEndHeader();
 
 bool HazeIsSpace(x_HChar hChar, bool* isNewLine = nullptr);
 
-bool IsNumber(const HString& str);
+bool IsNumber(const STDString& str);
 
-HazeValueType GetNumberDefaultType(const HString& str);
+HazeValueType GetNumberDefaultType(const STDString& str);
 
-HString String2WString(const char* str);
+STDString String2WString(const char* str);
 
-HString String2WString(const HAZE_BINARY_STRING& str);
+STDString String2WString(const HAZE_BINARY_STRING& str);
 
-HAZE_BINARY_STRING WString2String(const HString& str);
+HAZE_BINARY_STRING WString2String(const STDString& str);
 
 bool IsUtf8Bom(const char* utf8);
 
-HString ReadUtf8File(const HString& filePath);
+STDString ReadUtf8File(const STDString& filePath);
 
 char* UTF8_2_GB2312(const char* utf8);
 
 char* GB2312_2_UFT8(const char* gb2312);
 
-void ReplacePathSlash(HString& path);
+void ReplacePathSlash(STDString& path);
 
 HazeLibraryType GetHazeLibraryTypeByToken(HazeToken token);
 
 enum class InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type);
 
-HString GetModuleNameByFilePath(const HString& filePath);
+STDString GetModuleNameByFilePath(const STDString& filePath);
 
 template <typename T>
-T StringToStandardType(const HString& str);
+T StringToStandardType(const STDString& str);
 
 template <typename T>
 T StringToStandardType(const x_HChar* str);
@@ -100,11 +101,13 @@ HAZE_BINARY_STRING ToString(T value);
 HAZE_BINARY_STRING ToString(void* value);
 
 template <typename T>
-HString ToHazeString(T value);
+STDString ToHazeString(T value);
 
 void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2);
 
-V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter);
+V_Array<STDString> HazeStringSplit(const STDString& str, const STDString& delimiter);
+
+HazeValueType GetHazeBaseTypeByDesc(HazeDataDesc desc);
 
 // 编译环境信息显示
 void ShowCompilerInfo();

@@ -14,14 +14,14 @@ class CompilerClass
 	friend class ASTNew;
 public:
 
-	CompilerClass(CompilerModule* compilerModule, const HString& name, V_Array<CompilerClass*>& parentClass,
-		V_Array<Pair<HString, Share<CompilerValue>>>& data, x_uint32 typeId);
+	CompilerClass(CompilerModule* compilerModule, const STDString& name, V_Array<CompilerClass*>& parentClass,
+		V_Array<Pair<STDString, Share<CompilerValue>>>& data, x_uint32 typeId);
 
-	CompilerClass(CompilerModule* compilerModule, const HString& name, x_uint32 typeId);
+	CompilerClass(CompilerModule* compilerModule, const STDString& name, x_uint32 typeId);
 
 	~CompilerClass();
 
-	Share<CompilerFunction> FindFunction(const HString& functionName, const HString* nameSpace);
+	Share<CompilerFunction> FindFunction(const STDString& functionName, const STDString* nameSpace);
 
 	Share<CompilerFunction> AddFunction(Share<CompilerFunction>& function);
 
@@ -29,11 +29,11 @@ public:
 
 	x_uint32 GetTypeId() const { return m_TypeId; }
 
-	const HString& GetName() { return m_Name; }
+	const STDString& GetName() { return m_Name; }
 
-	int GetMemberIndex(const HString& memberName, const HString* nameSpace);
+	int GetMemberIndex(const STDString& memberName, const STDString* nameSpace);
 
-	int GetMemberIndex(const V_Array<HString>& classNames, const HString& memberName);
+	int GetMemberIndex(const V_Array<STDString>& classNames, const STDString& memberName);
 
 	//int GetMemberIndex(CompilerValue* value);
 
@@ -45,7 +45,7 @@ public:
 
 	void SetClassMemberDefaultAST(x_int32 memberIndex, Unique<ASTBase>& ast);
 
-	const V_Array<Pair<HString, Share<CompilerValue>>>& GetClassMemberData() const { return m_Data; }
+	const V_Array<Pair<STDString, Share<CompilerValue>>>& GetClassMemberData() const { return m_Data; }
 
 	//const CompilerValue* GetMemberValue(uint64 index);
 
@@ -81,21 +81,21 @@ private:
 
 private:
 	void ResolveClassParent(V_Array<CompilerClass*>&& parentClass);
-	void ResolveClassData(V_Array<Pair<HString, Share<CompilerValue>>>&& data);
+	void ResolveClassData(V_Array<Pair<STDString, Share<CompilerValue>>>&& data);
 
 private:
 	CompilerModule* m_Module;
 	V_Array<CompilerClass*> m_ParentClass;
 
-	HString m_Name;
+	STDString m_Name;
 	x_uint32 m_DataSize;
 	x_uint32 m_MemberCount;
 
-	V_Array<Pair<HString, Share<CompilerValue>>> m_Data;
+	V_Array<Pair<STDString, Share<CompilerValue>>> m_Data;
 	V_Array<Pair<x_int32, Unique<ASTBase>>> m_DefaultValueAST;
 
 	V_Array<Share<CompilerFunction>> m_Functions;
-	HashMap<HString, unsigned int> m_HashMap_Functions;
+	HashMap<STDString, unsigned int> m_HashMap_Functions;
 
 	V_Array<x_uint32> m_Offsets;
 

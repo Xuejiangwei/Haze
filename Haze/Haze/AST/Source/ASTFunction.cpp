@@ -11,7 +11,7 @@
 #include "CompilerSymbol.h"
 
 ASTFunction::ASTFunction(Compiler* compiler, const SourceLocation& startLocation, const SourceLocation& endLocation,
-	HazeSectionSignal section, HString& name, HazeVariableType& type, V_Array<Unique<ASTBase>>& params,
+	HazeSectionSignal section, STDString& name, HazeVariableType& type, V_Array<Unique<ASTBase>>& params,
 	Unique<ASTBase> body, HazeFunctionDesc desc)
 	: m_Compiler(compiler), m_StartLocation(startLocation), m_EndLocation(endLocation), m_Section(section), 
 	m_FunctionName(Move(name)),m_FunctionType(Move(type)),m_FunctionParams(Move(params)), m_Body(Move(body)), m_Desc(desc)
@@ -133,9 +133,9 @@ void ASTFunctionSection::CodeGen()
 	}
 }
 
-ASTFunctionDefine::ASTFunctionDefine(Compiler* compiler, /*const SourceLocation& Location,*/ const HString& name, 
+ASTFunctionDefine::ASTFunctionDefine(Compiler* compiler, /*const SourceLocation& Location,*/ STDString&& name, 
 	HazeVariableType& type, V_Array<Unique<ASTBase>>& params)
-	: m_Compiler(compiler), m_FunctionName(name), m_FunctionType(type), m_FunctionParams(Move(params))
+	: m_Compiler(compiler), m_FunctionName(Move(name)), m_FunctionType(type), m_FunctionParams(Move(params))
 {
 }
 

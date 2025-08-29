@@ -38,7 +38,7 @@ public:
     ~HazeJIT();
     
     // 编译函数
-    JITCompilationUnit* compileFunction(const HString& function_name);
+    JITCompilationUnit* compileFunction(const STDString& function_name);
     
     // 执行JIT编译的代码
     void executeNativeCode(JITCompilationUnit* unit, HazeStack* stack);
@@ -47,19 +47,19 @@ public:
     void executeBytecode(JITCompilationUnit* unit, HazeStack* stack);
     
     // 热点检测
-    bool isHotPath(const HString& function_name);
+    bool isHotPath(const STDString& function_name);
     
     // 性能分析
-    void updateProfile(const HString& function_name, double execution_time);
+    void updateProfile(const STDString& function_name, double execution_time);
     
     // 优化配置
     void setOptimizationLevel(JITOptimizationLevel level);
     
 private:
     HazeVM* m_VM;
-    std::unordered_map<HString, JITCompilationUnit*> m_compiled_units;
-    std::unordered_map<HString, int> m_execution_counts;
-    std::unordered_map<HString, double> m_execution_times;
+    std::unordered_map<STDString, JITCompilationUnit*> m_compiled_units;
+    std::unordered_map<STDString, int> m_execution_counts;
+    std::unordered_map<STDString, double> m_execution_times;
     
     JITOptimizationLevel m_optimization_level;
     
@@ -95,12 +95,12 @@ private:
     void devirtualizeCalls(JITCompilationUnit* unit);
     
     // 辅助函数
-    size_t findLabelIndex(JITCompilationUnit* unit, const HString& label_name);
+    size_t findLabelIndex(JITCompilationUnit* unit, const STDString& label_name);
     int calculateLoopExecutionCount(JITCompilationUnit* unit, size_t loop_start, size_t loop_end);
     void aggressiveLoopOptimization(JITCompilationUnit* unit, size_t loop_start, size_t loop_end);
     void moderateLoopOptimization(JITCompilationUnit* unit, size_t loop_start, size_t loop_end);
     void inlineFunction(JITCompilationUnit* unit, size_t call_site, JITCompilationUnit* callee_unit);
-    void applyRegisterAllocation(JITCompilationUnit* unit, const std::unordered_map<HString, int>& register_assignment);
+    void applyRegisterAllocation(JITCompilationUnit* unit, const std::unordered_map<STDString, int>& register_assignment);
     bool isDynamicTypeOperation(const Instruction& inst);
     void specializeInstruction(JITCompilationUnit* unit, size_t index, const Instruction& inst);
     void specializeStringOperation(JITCompilationUnit* unit, size_t index, const Instruction& inst);

@@ -8,14 +8,14 @@
 
 #include "ASTBase.h"
 
-CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name, V_Array<CompilerClass*>& parentClass,
-	V_Array<Pair<HString, Share<CompilerValue>>>& data, x_uint32 typeId)
+CompilerClass::CompilerClass(CompilerModule* compilerModule, const STDString& name, V_Array<CompilerClass*>& parentClass,
+	V_Array<Pair<STDString, Share<CompilerValue>>>& data, x_uint32 typeId)
 	: m_Module(compilerModule), m_Name(name), m_ParentClass(Move(parentClass)), m_Data(Move(data)), m_TypeId(typeId)
 {
 	InitMemberData();
 }
 
-CompilerClass::CompilerClass(CompilerModule* compilerModule, const HString& name, x_uint32 typeId)
+CompilerClass::CompilerClass(CompilerModule* compilerModule, const STDString& name, x_uint32 typeId)
 	: m_Module(compilerModule), m_Name(name), m_TypeId(typeId)
 {
 
@@ -25,7 +25,7 @@ CompilerClass::~CompilerClass()
 {
 }
 
-Share<CompilerFunction> CompilerClass::FindFunction(const HString& functionName, const HString* nameSpace)
+Share<CompilerFunction> CompilerClass::FindFunction(const STDString& functionName, const STDString* nameSpace)
 {
 	if (nameSpace && !nameSpace->empty() && *nameSpace != m_Name)
 	{
@@ -86,7 +86,7 @@ Share<CompilerFunction> CompilerClass::AddFunction(Share<CompilerFunction>& func
 	return m_Functions[iter->second];
 }
 
-int CompilerClass::GetMemberIndex(const HString& memberName, const HString* nameSpace)
+int CompilerClass::GetMemberIndex(const STDString& memberName, const STDString* nameSpace)
 {
 	bool find = false;
 	int index = 0;
@@ -129,7 +129,7 @@ int CompilerClass::GetMemberIndex(const HString& memberName, const HString* name
 	return index;
 }
 
-int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HString& memberName)
+int CompilerClass::GetMemberIndex(const V_Array<STDString>& classNames, const STDString& memberName)
 {
 	bool find = false;
 	int index = 0;
@@ -158,7 +158,7 @@ int CompilerClass::GetMemberIndex(const V_Array<HString>& classNames, const HStr
 	}
 	else
 	{
-		HString s;
+		STDString s;
 		for (x_uint64 i = 0; i < classNames.size(); i++)
 		{
 			s += classNames[i];
@@ -273,7 +273,7 @@ void CompilerClass::ParseIntermediateClass(HAZE_IFSTREAM& stream, CompilerModule
 		auto& parentClass = parents[i];
 		ParseIntermediateClass(stream, m, parentClass->m_ParentClass);
 
-		HString str;
+		STDString str;
 		HazeVariableType valueType;
 		x_uint32 ui32;
 		x_uint64 ui64;
@@ -339,7 +339,7 @@ void CompilerClass::ResolveClassParent(V_Array<CompilerClass*>&& parentClass)
 	m_ParentClass = parentClass;
 }
 
-void CompilerClass::ResolveClassData(V_Array<Pair<HString, Share<CompilerValue>>>&& data)
+void CompilerClass::ResolveClassData(V_Array<Pair<STDString, Share<CompilerValue>>>&& data)
 {
 	m_Data = data;
 	InitMemberData();

@@ -9,17 +9,17 @@ extern std::wstring g_MainFilePath;
 extern Unique<V_Array<std::wstring>> g_CustomPaths;
 extern Unique<HazeLibraryManager> g_HazeLibManager;
 
-HString GetModuleFilePathByLibPath(const HString& modulePath, const HString* refModulePath)
+STDString GetModuleFilePathByLibPath(const STDString& modulePath, const STDString* refModulePath)
 {
 	auto modulePackage = HazeStringSplit(modulePath, HAZE_MODULE_PATH_CONBINE);
-	const HString* path = g_HazeLibManager->TryGetFilePath(modulePackage.back());
+	auto path = g_HazeLibManager->TryGetFilePath(modulePackage.back());
 	if (path)
 	{
-		return *path;
+		return path->c_str();
 	}
 
-	HString filePath;
-	HString modulePackagePath;
+	STDString filePath;
+	STDString modulePackagePath;
 	for (auto it : modulePackage)
 	{
 		modulePackagePath += (H_TEXT("\\") + it);
@@ -73,12 +73,12 @@ HString GetModuleFilePathByLibPath(const HString& modulePath, const HString* ref
 		}
 	}
 
-	return HString();
+	return STDString();
 }
 
-HString GetModuleFilePathByParentPath(const HString& parentPath, const HString& moduleName, const HString* refModulePath)
+STDString GetModuleFilePathByParentPath(const STDString& parentPath, const STDString& moduleName, const STDString* refModulePath)
 {
-	const HString* path = g_HazeLibManager->TryGetFilePath(moduleName);
+	const STDString* path = g_HazeLibManager->TryGetFilePath(moduleName);
 	if (path)
 	{
 		return *path;
@@ -132,11 +132,11 @@ HString GetModuleFilePathByParentPath(const HString& parentPath, const HString& 
 		}
 	}*/
 
-	return HString();
+	return STDString();
 }
 
 
-HString GetModuleFilePath(const HString& modulePath, const HString* refModulePath)
+STDString GetModuleFilePath(const STDString& modulePath, const STDString* refModulePath)
 {
 	auto path = GetModuleFilePathByLibPath(modulePath, refModulePath);
 	/*if (path.empty())
@@ -152,21 +152,21 @@ HString GetModuleFilePath(const HString& modulePath, const HString* refModulePat
 	return path;
 }
 
-HString GetMainBinaryFilePath()
+STDString GetMainBinaryFilePath()
 {
 	return g_MainFilePath + HAZE_FILE_PATH_BIN + HAZE_FILE_MAIN_BIN;
 }
 
-HString GetIntermediateModuleFile(const HString& moduleName)
+STDString GetIntermediateModuleFile(const STDString& moduleName)
 {
-	return g_MainFilePath + HAZE_FILE_INTER + moduleName + HAZE_FILE_INTER_SUFFIX;
+	return g_MainFilePath + HAZE_FILE_INTER + moduleName.c_str() + HAZE_FILE_INTER_SUFFIX;
 }
 
-x_uint64 GetFileLastTime(const HString& filePath)
+x_uint64 GetFileLastTime(const STDString& filePath)
 {
 	if (FileExist(filePath))
 	{
-		auto time = std::filesystem::last_write_time(filePath);
+		auto time = std::filesystem::last_write_time(filePath.c_str());
 		auto sysTime = std::chrono::clock_cast<std::chrono::system_clock>(time);
 		return std::chrono::duration_cast<std::chrono::milliseconds>(sysTime.time_since_epoch()).count();
 	}
@@ -174,7 +174,7 @@ x_uint64 GetFileLastTime(const HString& filePath)
 	return 0;
 }
 
-bool FileExist(const HString& filePath)
+bool FileExist(const STDString& filePath)
 {
-	return std::filesystem::exists(filePath);
+	return std::filesystem::exists(filePath.c_str());
 }

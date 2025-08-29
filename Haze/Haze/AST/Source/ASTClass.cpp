@@ -11,7 +11,7 @@
 
 #include "HazeLog.h"
 
-ASTClass::ASTClass(Compiler* compiler,/* const SourceLocation& Location,*/ HString& name, V_Array<HString>& parentClass,
+ASTClass::ASTClass(Compiler* compiler,/* const SourceLocation& Location,*/ STDString& name, V_Array<STDString>& parentClass,
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data, Unique<ASTClassFunctionSection>& functionSection)
 	: m_Compiler(compiler), m_ClassName(Move(name)), m_ParentClasses(Move(parentClass)),
 	m_ClassDatas(Move(data)), m_ClassFunctionSection(Move(functionSection))
@@ -57,7 +57,7 @@ void ASTClass::CodeGen()
 		}
 	}
 	
-	V_Array<Pair<HString, Share<CompilerValue>>> datas;
+	V_Array<Pair<STDString, Share<CompilerValue>>> datas;
 	for (x_uint64 i = 0; i < m_ClassDatas.size(); i++)
 	{
 		for (x_uint64 j = 0; j < m_ClassDatas[i].second.size(); j++)
@@ -116,7 +116,7 @@ void ASTClass::CodeGen()
 	currModule->FinishCreateClass();
 }
 
-ASTClassDefine::ASTClassDefine(Compiler* compiler, /*const SourceLocation& Location,*/ HString& name,
+ASTClassDefine::ASTClassDefine(Compiler* compiler, /*const SourceLocation& Location,*/ STDString& name,
 	V_Array<V_Array<Unique<ASTBase>>>& datas, V_Array<Unique<ASTFunctionDefine>>& functions)
 	: m_Compiler(compiler), m_ClassName(Move(name)), m_ClassDatas(Move(datas)), 
 	m_ClassFunctions(Move(functions))

@@ -36,8 +36,8 @@ ASTBase::ASTBase(Compiler* compiler, const SourceLocation& location) : m_Compile
 	m_DefineVariable.Name = H_TEXT("");
 }
 
-ASTBase::ASTBase(Compiler* compiler, const SourceLocation& location, const HazeDefineVariable& var)
-	: m_Compiler(compiler), m_DefineVariable(var), m_Location(location)
+ASTBase::ASTBase(Compiler* compiler, const SourceLocation& location, HazeDefineVariable&& var)
+	: m_Compiler(compiler), m_DefineVariable(Move(var)), m_Location(location)
 {
 	memset(&m_Value.Value, 0, sizeof(m_Value.Value));
 }
@@ -70,7 +70,7 @@ Share<CompilerValue> ASTNumber::CodeGen(Share<CompilerValue> inferValue)
 	return m_Compiler->GenConstantValue(m_DefineVariable.Type.BaseType, m_Value);
 }
 
-ASTStringText::ASTStringText(Compiler* compiler, const SourceLocation& location, HString& text)
+ASTStringText::ASTStringText(Compiler* compiler, const SourceLocation& location, STDString& text)
 	: ASTBase(compiler, location), m_Text(Move(text)) {
 }
 
@@ -79,8 +79,8 @@ Share<CompilerValue> ASTStringText::CodeGen(Share<CompilerValue> inferValue)
 	return m_Compiler->GenStringVariable(m_Text);
 }
 
-ASTIdentifier::ASTIdentifier(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& name,
-	Unique<ASTBase> arrayIndexExpression, Unique<ASTBase> preAst, HString nameSpace)
+ASTIdentifier::ASTIdentifier(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, STDString&& name,
+	Unique<ASTBase> arrayIndexExpression, Unique<ASTBase> preAst, STDString nameSpace)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_ArrayIndexExpression(Move(arrayIndexExpression)),
 	m_PreAst(Move(preAst)), m_NameSpace(Move(nameSpace))
 {
@@ -192,7 +192,7 @@ Share<CompilerValue> ASTIdentifier::GetNameValue()
 }
 
 ASTFunctionCall::ASTFunctionCall(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-	HString& name, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj, HString nameSpaces)
+	STDString&& name, V_Array<Unique<ASTBase>>& functionParam, Unique<ASTBase> classObj, STDString nameSpaces)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_Name(Move(name)),
 	m_FunctionParam(Move(functionParam)), m_ClassObj(Move(classObj)), m_NameSpace(Move(nameSpaces)) {
 }
@@ -208,11 +208,6 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 	Share<CompilerValue> pointerFunction = nullptr;
 
 	Share<CompilerValue> classObj = nullptr;
-
-	if (m_Name == H_TEXT("打印点"))
-	{
-		m_ClassObj = nullptr;
-	}
 
 	if (m_ClassObj)
 	{
@@ -449,7 +444,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 
 ASTVariableDefine::ASTVariableDefine(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	HazeDefineVariable&& defineVar, Unique<ASTBase> expression)
-	: ASTBase(compiler, location, defineVar), m_SectionSignal(section), m_Expression(Move(expression))
+	: ASTBase(compiler, location, Move(defineVar)), m_SectionSignal(section), m_Expression(Move(expression))
 {
 	if (m_DefineVariable.Name.empty())
 	{
@@ -648,7 +643,7 @@ Share<CompilerValue> ASTVariableDefine_Closure::CodeGen(Share<CompilerValue> inf
 	Share<CompilerClass> currClass = nullptr;
 
 	V_Array<HazeDefineVariable> paramDefines(m_Params.size());
-	for (size_t i = 0; i < m_Params.size(); i++)
+	for (x_uint64 i = 0; i < m_Params.size(); i++)
 	{
 		paramDefines[i] = m_Params[i]->GetDefine();
 	}
@@ -775,7 +770,7 @@ Share<CompilerValue> ASTReturn::CodeGen(Share<CompilerValue> inferValue)
 	m_Compiler->InsertLineCount(m_Location.Line);
 
 	auto& funcType = m_Compiler->GetCurrModule()->GetCurrClosureOrFunction()->GetFunctionType();
-	auto retReg = Compiler::GetRetRegister(funcType.BaseType, 0);
+	auto retReg = m_Compiler->GetRetRegister(funcType.BaseType, 0);
 	Share<CompilerValue> retValue = m_Expression ? m_Expression->CodeGen(nullptr) : m_Compiler->GetConstantValueInt(0);
 	auto retValueType = retValue->GetVariableType();
 	/*if (retValue->IsEnum())
@@ -795,9 +790,9 @@ Share<CompilerValue> ASTReturn::CodeGen(Share<CompilerValue> inferValue)
 	return nullptr;
 }
 
-ASTNew::ASTNew(Compiler* compiler, const SourceLocation& location, const HazeDefineVariable& DefineVar/*, TemplateDefineTypes& templateTypes*/, V_Array<Unique<ASTBase>> countArrayExpression
+ASTNew::ASTNew(Compiler* compiler, const SourceLocation& location, HazeDefineVariable&& DefineVar/*, TemplateDefineTypes& templateTypes*/, V_Array<Unique<ASTBase>> countArrayExpression
 	, V_Array<Unique<ASTBase>> constructorParam)
-	: ASTBase(compiler, location, DefineVar), m_CountArrayExpression(Move(countArrayExpression)),
+	: ASTBase(compiler, location, Move(DefineVar)), m_CountArrayExpression(Move(countArrayExpression)),
 	m_ConstructorParam(Move(constructorParam))
 {
 	/*if (templateTypes.Types.size() > 0)
@@ -1504,8 +1499,9 @@ Share<CompilerValue> ASTThreeExpression::CodeGen(Share<CompilerValue> inferValue
 	return retValue;
 }
 
-ASTImportModule::ASTImportModule(Compiler* compiler, const SourceLocation& location, const HString& modulepath)
-	: ASTBase(compiler, location), m_ModulePath(modulepath) {
+ASTImportModule::ASTImportModule(Compiler* compiler, const SourceLocation& location, STDString&& modulepath)
+	: ASTBase(compiler, location), m_ModulePath(Move(modulepath))
+{
 }
 
 Share<CompilerValue> ASTImportModule::CodeGen(Share<CompilerValue> inferValue)

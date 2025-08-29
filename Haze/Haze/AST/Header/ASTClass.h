@@ -10,7 +10,7 @@ class ASTFunctionDefine;
 class ASTClass
 {
 public:
-	ASTClass(Compiler* compiler, /*const SourceLocation& Location,*/ HString& name, V_Array<HString>& parentClass,
+	ASTClass(Compiler* compiler, /*const SourceLocation& Location,*/ STDString& name, V_Array<STDString>& parentClass,
 		V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& data, Unique<ASTClassFunctionSection>& functionSection);
 	
 	~ASTClass();
@@ -20,8 +20,8 @@ public:
 private:
 	Compiler* m_Compiler;
 
-	HString m_ClassName;
-	V_Array<HString> m_ParentClasses;
+	STDString m_ClassName;
+	V_Array<STDString> m_ParentClasses;
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> m_ClassDatas;
 	Unique<ASTClassFunctionSection> m_ClassFunctionSection;
 };
@@ -29,7 +29,7 @@ private:
 class ASTClassDefine
 {
 public:
-	ASTClassDefine(Compiler* compiler, /*const SourceLocation& Location,*/ HString& name, 
+	ASTClassDefine(Compiler* compiler, /*const SourceLocation& Location,*/ STDString& name, 
 		V_Array<V_Array<Unique<ASTBase>>>& data, V_Array<Unique<ASTFunctionDefine>>& function);
 
 	~ASTClassDefine();
@@ -38,7 +38,7 @@ public:
 private:
 	Compiler* m_Compiler;
 
-	HString m_ClassName;
+	STDString m_ClassName;
 	V_Array<V_Array<Unique<ASTBase>>> m_ClassDatas;
 	V_Array<Unique<ASTFunctionDefine>> m_ClassFunctions;
 };

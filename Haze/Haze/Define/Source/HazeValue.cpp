@@ -273,7 +273,7 @@ bool IsClosureType(HazeValueType type)
 	return type == HazeValueType::Closure;
 }
 
-void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value)
+void StringToHazeValueNumber(const STDString& str, HazeValueType type, HazeValue& value)
 {
 	switch (type)
 	{
@@ -310,7 +310,7 @@ void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& 
 	}
 }
 
-HString HazeValueNumberToString(HazeValueType type, HazeValue value)
+STDString HazeValueNumberToString(HazeValueType type, HazeValue value)
 {
 	switch (type)
 	{
@@ -338,7 +338,7 @@ HString HazeValueNumberToString(HazeValueType type, HazeValue value)
 			break;
 	}
 
-	return HString(H_TEXT("None"));
+	return STDString(H_TEXT("None"));
 }
 
 #define TWO_VARIABLE_DEFINE_INIT(TYPE, OPER1, OPER2) TYPE T1, T2; memcpy(&T1, OPER1, sizeof(TYPE)); memcpy(&T2, OPER2, sizeof(TYPE))
@@ -782,8 +782,8 @@ size_t GetHazeCharPointerLength(const x_HChar* hChar)
 
 const x_HChar* GetHazeValueTypeString(HazeValueType type)
 {
-	extern const HashMap<HString, HazeToken>& GetHashMap_Token();
-	extern const HashMap<HString, HazeToken>& GetHashMap_MoreNumberToken();
+	extern const HashMap<STDString, HazeToken>& GetHashMap_Token();
+	extern const HashMap<STDString, HazeToken>& GetHashMap_MoreNumberToken();
 	static HashMap<HazeValueType, const x_HChar*> s_HashMap_Code2String;
 
 	if (s_HashMap_Code2String.size() <= 0)

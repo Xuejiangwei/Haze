@@ -92,8 +92,8 @@ bool IsObjectBaseType(HazeValueType type);
 bool IsHashType(HazeValueType type);
 bool IsClosureType(HazeValueType type);
 
-void StringToHazeValueNumber(const HString& str, HazeValueType type, HazeValue& value);
-HString HazeValueNumberToString(HazeValueType type, HazeValue value);
+void StringToHazeValueNumber(const STDString& str, HazeValueType type, HazeValue& value);
+STDString HazeValueNumberToString(HazeValueType type, HazeValue value);
 
 void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const HazeValue& source, const HazeValue& oper1, const HazeValue& oper2, void* stack = nullptr);
 void CalculateValueByType(const HazeValueType type, const InstructionOpCode insCode, const void* source, const void* oper1, const void* oper2, void* stack = nullptr);

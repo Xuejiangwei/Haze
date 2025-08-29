@@ -31,11 +31,11 @@ public:
 
 	~HazeVM();
 
-	bool InitVM(V_Array<HString> Vector_ModulePath);
+	bool InitVM(V_Array<STDString> Vector_ModulePath);
 
 	bool IsDebug() const { return GenType == HazeRunType::Debug; }
 
-	void LoadStandardLibrary(V_Array<HString> Vector_ModulePath);
+	void LoadStandardLibrary(V_Array<STDString> Vector_ModulePath);
 
 	const V_Array<Instruction>& GetInstruction() const { return m_Instructions; }
 
@@ -47,35 +47,35 @@ public:
 
 	AdvanceFunctionInfo* GetAdvanceFunction(x_uint16 index);
 
-	HString GetAdvanceFunctionName(x_uint16 index);
+	STDString GetAdvanceFunctionName(x_uint16 index);
 
 	ObjectClass* CreateObjectClass(const x_HChar* className, ...);
 
 	bool ParseString(const x_HChar* moduleName, const x_HChar* moduleCode);
 
-	HString ParseFile(const HString& FilePath);
+	STDString ParseFile(const STDString& FilePath);
 
 	Unique<Compiler>& GetCompiler() { return m_Compiler; }
 
-	const HashSet<HString>& GetReferenceModules() const { return HashSet_RefModule; }
+	const HashSet<STDString>& GetReferenceModules() const { return HashSet_RefModule; }
 
 public:
-	const HString* GetModuleNameByCurrFunction();
+	const STDString* GetModuleNameByCurrFunction();
 
-	const HString* GetFunctionNameByData(const FunctionData* data);
+	const STDString* GetFunctionNameByData(const FunctionData* data);
 
-	int GetFucntionIndexByName(const HString& name);
+	int GetFucntionIndexByName(const STDString& name);
 
-	const FunctionData& GetFunctionByName(const HString& name, const x_HChar* className = nullptr);
+	const FunctionData& GetFunctionByName(const STDString& name, const x_HChar* className = nullptr);
 
-	const FunctionData* GetFunctionDataByName(const HString& name, const x_HChar* className = nullptr);
+	const FunctionData* GetFunctionDataByName(const STDString& name, const x_HChar* className = nullptr);
 
 	const class ObjectString* GetConstantStringByIndex(int index) const;
 
 	char* GetGlobalValueByIndex(x_uint32 index);
 
 	ClassData* FindClass(x_uint32 typeId);
-	ClassData* FindClass(const HString& name);
+	ClassData* FindClass(const STDString& name);
 
 	x_uint32 GetClassSize(x_uint32 typeId);
 
@@ -98,11 +98,11 @@ private:
 	void InitRegisterObjectFunction();
 
 	void InitGlobalStringCount(x_uint64 count);
-	void SetGlobalString(x_uint64 index, const HString& str);
+	void SetGlobalString(x_uint64 index, const STDString& str);
 
-	const HString* GetSymbolClassName(const HString& name);
+	const STDString* GetSymbolClassName(const STDString& name);
 
-	void ResetSymbolClassIndex(const HString& name, x_uint64 index);
+	void ResetSymbolClassIndex(const STDString& name, x_uint64 index);
 
 	void LoadDLLModules();
 	
@@ -116,7 +116,7 @@ private:
 
 	x_uint32 GetNextInstructionLine(x_uint32 currLine);
 
-	Pair<HString, x_uint32> GetStepIn(x_uint32 currLine);
+	Pair<HStringView, x_uint32> GetStepIn(x_uint32 currLine);
 
 	x_uint32 GetCurrCallFunctionLine();
 
@@ -125,15 +125,15 @@ private:
 
 private:
 	//HashMap<HString, Unique<Module>> MapModule;
-	HashSet<HString> MapString;
+	HashSet<STDString> MapString;
 
 	Unique<HazeStack> m_Stack;
 
-	HashSet<HString> HashSet_RefModule;
+	HashSet<STDString> HashSet_RefModule;
 
 private:
 	V_Array<ModuleData> m_ModuleData;
-	V_Array<HString> m_ModuleFilePath;
+	V_Array<STDString> m_ModuleFilePath;
 
 	V_Array<x_uint64> m_GlobalInitFunction;
 	V_Array<HazeVariable> m_GlobalData;
@@ -141,11 +141,11 @@ private:
 
 	V_Array<ObjectString*> m_StringTable;
 
-	HashMap<HString, x_uint64> m_ClassSymbol;
+	HashMap<STDString, x_uint64> m_ClassSymbol;
 	V_Array<ClassData> m_ClassTable;
 
 	V_Array<FunctionData> m_FunctionTable;
-	HashMap<HString, x_uint32> m_HashFunctionTable;
+	HashMap<STDString, x_uint32> m_HashFunctionTable;
 	V_Array<AdvanceFunctionInfo*> m_FunctionObjectTable;
 
 	V_Array<Instruction> m_Instructions;

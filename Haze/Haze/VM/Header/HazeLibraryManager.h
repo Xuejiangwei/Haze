@@ -10,8 +10,8 @@ struct LibraryData
 {
 	LibraryLoadState State;
 	void* Address;
-	HString LibraryPath;
-	HString FilePath;
+	STDString LibraryPath;
+	STDString FilePath;
 };
 
 class HazeLibraryManager
@@ -21,18 +21,18 @@ public:
 
 	~HazeLibraryManager();
 
-	void ExecuteDLLFunction(const HString& moduleName, const HString& functionName, char* paramStartAddress, char* retStartAddress, void* stack);
+	void ExecuteDLLFunction(const STDString& moduleName, const STDString& functionName, char* paramStartAddress, char* retStartAddress, void* stack);
 
-	void LoadDLLLibrary(const HString& libraryPath, const HString& filePath);
+	void LoadDLLLibrary(STDString libraryPath, STDString filePath);
 
-	void UnloadDLLLibrary(const HString& libraryPath);
+	void UnloadDLLLibrary(const STDString& libraryPath);
 
-	const HString* TryGetFilePath(const HString& moduleName);
+	const STDString* TryGetFilePath(const STDString& moduleName);
 
 	const void* GetExeAddress();
 
 	static void LoadStdLibrary();
 
 private:
-	HashMap<HString, LibraryData> m_Libraries;
+	HashMap<STDString, LibraryData> m_Libraries;
 };

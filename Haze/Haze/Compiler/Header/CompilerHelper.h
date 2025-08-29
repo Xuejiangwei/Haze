@@ -8,7 +8,7 @@ class CompilerValue;
 class CompilerFunction;
 class CompilerClass;
 
-HString GetLocalVariableName(const HString& name, Share<CompilerValue> value);
+//STDString GetLocalVariableName(const STDString& name, Share<CompilerValue> value);
 
 void HazeCompilerStream(HAZE_STRING_STREAM& hss, CompilerValue* value, bool streamValue = true);
 
@@ -22,9 +22,9 @@ Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeVa
 
 Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var);
 
-bool TrtGetVariableName(const Pair<HString, Share<CompilerValue>>& data, const CompilerValue* value, HString& outName);
+//bool TrtGetVariableName(const Pair<STDString, Share<CompilerValue>>& data, const CompilerValue* value, HStringView& outName);
 
-void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes);
+void GetTemplateClassName(STDString& inName, const V_Array<TemplateDefineType>& templateTypes);
 
 void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const Share<CompilerValue>& value);
 
@@ -34,11 +34,10 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerBlock> block1,
 	Share<CompilerBlock> block2 = nullptr);
 
-HString GenIRCode(InstructionOpCode opCode, x_uint64 number);
-
+STDString GenIRCode(InstructionOpCode opCode, x_uint64 number);
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, x_uint64 paramCount, x_uint64 paramSize,
 	Share<CompilerFunction> function, Share<CompilerValue> pointerFunction = nullptr, Share<CompilerValue> advancePointerTo = nullptr, 
-	x_int16 advanceFuncIndex = -1, const HString* nameSpace = nullptr);
+	x_int16 advanceFuncIndex = -1, const STDString* nameSpace = nullptr);
 
 //void GenIRCode_NewSign(HAZE_STRING_STREAM& hss, TemplateDefineTypes* defineTypes);

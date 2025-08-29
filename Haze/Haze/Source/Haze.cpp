@@ -14,7 +14,7 @@ extern Unique<HazeLibraryManager> g_HazeLibManager;
 bool g_IsHazeEnd = false;
 std::wstring g_HazeExePath;
 std::wstring g_MainFilePath;
-Unique<V_Array<std::wstring>> g_CustomPaths;
+Unique<V_Array<STDString>> g_CustomPaths;
 
 void HazeNewHandler()
 {
@@ -116,7 +116,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	g_HazeExePath = ExeFile.parent_path().wstring() + H_TEXT("\\");
 
 	char* mainFilePath = nullptr;
-	HString mainFunction;
+	STDString mainFunction;
 	if (argCount < 2)
 	{
 		return 0;
@@ -186,7 +186,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	auto vm = new HazeVM(runType);
 
 	{
-		V_Array<HString> files;
+		V_Array<STDString> files;
 		files.push_back(mainFile);
 
 		int index = GetParam(ParamType::Files, argValue, argCount);

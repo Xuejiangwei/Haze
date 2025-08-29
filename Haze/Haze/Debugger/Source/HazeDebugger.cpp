@@ -8,10 +8,10 @@
 
 #define ENABLE_DEBUGGER_LOG 0
 
-static HString GetFileName(const x_HChar*& msg)
+static STDString GetFileName(const x_HChar*& msg)
 {
 	bool IsNewLine = false;
-	HString FileName;
+	STDString FileName;
 	FileName.clear();
 	while (!HazeIsSpace(*msg, &IsNewLine))
 	{
@@ -155,7 +155,7 @@ void HazeDebugger::AddBreakPoint(const char* message)
 
 	auto fileName = GetFileName(hazeChar);
 	auto moduleName = GetModuleNameByFilePath(fileName);
-	x_uint32 Line = StringToStandardType<x_uint32>(HString(hazeChar));
+	x_uint32 Line = StringToStandardType<x_uint32>(STDString(hazeChar));
 
 	auto iter = m_BreakPoints.find(moduleName);
 	if (iter != m_BreakPoints.end())
@@ -349,11 +349,11 @@ void HazeDebugger::StepIn()
 		m_IsStepIn = true;
 		m_StepInStack.push_back({ m_CurrPauseModule.ModuleName, m_VM->GetNextInstructionLine(m_CurrPauseModule.CurrLine) });
 		auto pauseModule = m_VM->GetStepIn(m_CurrPauseModule.CurrLine);
-		AddTempBreakPoint(pauseModule.first, pauseModule.second);
+		AddTempBreakPoint(pauseModule.first.data(), pauseModule.second);
 
 		XJson json;
 		SetJsonType(json, HazeDebugInfoType::StepInInfo);
-		SetJsonBreakFilePath(json, GetModuleFilePath(pauseModule.first));
+		SetJsonBreakFilePath(json, GetModuleFilePath(pauseModule.first.data()));
 		SetJsonBreakLine(json, pauseModule.second);
 		auto& data = json.Encode();
 		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
@@ -414,7 +414,7 @@ void HazeDebugger::AddTempBreakPoint(x_uint32 line)
 	}
 }
 
-void HazeDebugger::AddTempBreakPoint(const HString& moduleName, x_uint32 line)
+void HazeDebugger::AddTempBreakPoint(const STDString& moduleName, x_uint32 line)
 {
 	m_TempBreakPoints[moduleName].first.insert(line);
 }
@@ -439,7 +439,7 @@ bool HazeDebugger::CurrModuleIsStepOver()
 	return false;
 }
 
-void HazeDebugger::SetJsonBreakFilePath(XJson& json, HString path)
+void HazeDebugger::SetJsonBreakFilePath(XJson& json, STDString path)
 {
 	ReplacePathSlash(path);
 	auto m_Name = WString2String(path);
@@ -453,7 +453,7 @@ void HazeDebugger::SendBreakInfo()
 	{
 		XJson json;
 		SetJsonType(json, HazeDebugInfoType::BreakInfo);
-		SetJsonBreakFilePath(json, GetModuleFilePath(m_CurrPauseModule.ModuleName));
+		SetJsonBreakFilePath(json, GetModuleFilePath(m_CurrPauseModule.ModuleName.data()));
 		SetJsonBreakLine(json, m_CurrPauseModule.CurrLine);
 		SetJsonLocalVariable(json);
 		//SetJsonModuleGlobalVariable(json);

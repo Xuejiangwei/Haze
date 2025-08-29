@@ -41,7 +41,7 @@ AdvanceClassInfo* ObjectDynamicClass::GetAdvanceClassInfo()
 void ObjectDynamicClass::GetMember(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
-	HString* name;
+	STDString* name;
 
 	GET_PARAM_START();
 	GET_PARAM(obj);
@@ -74,7 +74,7 @@ void ObjectDynamicClass::GetMember(HAZE_OBJECT_CALL_PARAM)
 void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
-	HString* name;
+	STDString* name;
 
 	GET_PARAM_START();
 	GET_PARAM(obj);
@@ -108,7 +108,7 @@ void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
-	HString* name;
+	STDString* name;
 
 	GET_PARAM_START();
 	GET_PARAM(obj);

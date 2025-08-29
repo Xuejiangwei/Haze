@@ -17,13 +17,13 @@ public:
 
 	CompilerClass* GetOwnerClass() { return m_OwnerClass; };
 
-	const HString& GetOwnerClassName();
+	const STDString& GetOwnerClassName();
 
-	Share<CompilerValue> GetMember(const HString& name, HString* nameSpace = nullptr);
+	Share<CompilerValue> GetMember(const STDString& name, STDString* nameSpace = nullptr);
 
 	Share<CompilerValue> GetMember(x_int32 index, bool indexFromSelf = true);
 
-	int GetMemberIndex(const HString& memberName, HString* nameSpace = nullptr);
+	int GetMemberIndex(const STDString& memberName, STDString* nameSpace = nullptr);
 
 	int GetMemberIndex(CompilerValue* value);
 

@@ -16,7 +16,7 @@ public:
 	const HazeValue& GetValue() const { return m_Value.Value; }
 
 private:
-	HString m_Name;
+	STDString m_Name;
 	HazeVariableType m_Type;
 
 	union

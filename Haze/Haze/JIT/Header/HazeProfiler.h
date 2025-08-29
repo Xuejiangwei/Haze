@@ -19,7 +19,7 @@ struct ProfileData
     double hot_threshold;              // 热点阈值
     
     // 调用栈信息
-    std::vector<HString> call_stack;   // 调用栈
+    std::vector<STDString> call_stack;   // 调用栈
 };
 
 // 性能分析器
@@ -30,16 +30,16 @@ public:
     ~HazeProfiler();
     
     // 开始性能分析
-    void startProfile(const HString& function_name);
+    void startProfile(const STDString& function_name);
     
     // 结束性能分析
-    void endProfile(const HString& function_name);
+    void endProfile(const STDString& function_name);
     
     // 获取性能数据
-    ProfileData* getProfileData(const HString& function_name);
+    ProfileData* getProfileData(const STDString& function_name);
     
     // 检测热点函数
-    std::vector<HString> getHotFunctions();
+    std::vector<STDString> getHotFunctions();
     
     // 生成性能报告
     void generateReport();
@@ -48,9 +48,9 @@ public:
     void setHotThreshold(double threshold);
     
 private:
-    std::unordered_map<HString, ProfileData> m_profile_data;
-    std::unordered_map<HString, std::chrono::high_resolution_clock::time_point> m_start_times;
-    std::vector<HString> m_call_stack;
+    std::unordered_map<STDString, ProfileData> m_profile_data;
+    std::unordered_map<STDString, std::chrono::high_resolution_clock::time_point> m_start_times;
+    std::vector<STDString> m_call_stack;
     
     double m_hot_threshold;  // 热点阈值（毫秒）
     

@@ -155,11 +155,26 @@ struct HazeNewDefineType
 struct HazeDefineVariable
 {
 	HazeVariableType Type;		//变量类型
-	HString Name;				//变量名
+	STDString Name;				//变量名
 
 	HazeDefineVariable() : Type(HazeValueType::None, HAZE_TYPE_ID(HazeValueType::None)) {}
-	HazeDefineVariable(const HazeVariableType& type, const HString& name)
+	HazeDefineVariable(const HazeVariableType& type, const STDString& name)
+		: Type(type), Name(name.c_str()) {}
+};
+
+struct HazeDefineVariableView
+{
+	HazeVariableType Type;		//变量类型
+	HStringView Name;			//变量名
+
+	HazeDefineVariableView() : Type(HazeValueType::None, HAZE_TYPE_ID(HazeValueType::None)) {}
+	HazeDefineVariableView(const HazeVariableType& type, const STDString& name)
+		: Type(type), Name(name.data()) {}
+	HazeDefineVariableView(const HazeVariableType& type, const HStringView& name)
 		: Type(type), Name(name) {}
+	HazeDefineVariableView(const HazeDefineVariable& var)
+		: Type(var.Type), Name(var.Name.data()) {
+	}
 };
 
 struct HazeVariableData
@@ -172,7 +187,7 @@ struct HazeVariableData
 
 struct HazeTempRegisterData
 {
-	HString Name;
+	STDString Name;
 	x_uint32 Offset;
 	HazeVariableType Type;
 };

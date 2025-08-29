@@ -19,8 +19,8 @@ struct ClassSymbol : SymbolTypeHeader
 {
 	bool PublicFirst;
 	V_Array<x_uint32> Parents;
-	V_Array<Pair<HString, x_uint32>> PublicMembers;
-	V_Array<Pair<HString, x_uint32>> PrivateMembers;
+	V_Array<Pair<STDString, x_uint32>> PublicMembers;
+	V_Array<Pair<STDString, x_uint32>> PrivateMembers;
 
 	V_Array<struct FunctionSymbol*> Functions;
 };
@@ -28,7 +28,7 @@ struct ClassSymbol : SymbolTypeHeader
 struct EnumSymbol : SymbolTypeHeader
 {
 	// 名称和值
-	V_Array<Pair<HString, int>> Members;
+	V_Array<Pair<STDString, int>> Members;
 };
 
 struct FunctionSymbol : SymbolHeader
@@ -39,13 +39,13 @@ struct FunctionSymbol : SymbolHeader
 	x_uint32 ClassTypeId = 0;
 	x_uint32 FunctionType;
 	V_Array<x_uint32> Params;
-	V_Array<HString> ParamNames;
+	V_Array<STDString> ParamNames;
 };
 
 struct GlobalVariableSymbol //: SymbolHeader
 {
 	CompilerModule* Module = nullptr;
-	x_uint32 TypeId = 0;
+	x_uint64 VarId = 0;
 	x_uint32 Line = 0;
 };
 
@@ -65,21 +65,22 @@ public:
 
 	HazeTypeInfoMap* GetTypeInfoMap() { return m_TypeInfo; }
 
-	x_uint32 RegisterSymbol(const HString& name);
+	x_uint32 RegisterSymbol(const STDString& name);
 
-	void Register_GlobalVariable(const HString& moduleName, const HString& name, x_uint32 typeId, x_uint32 line);
-	void Register_Class(const HString& moduleName, const HString& name, V_Array<HString>& parents, V_Array<Pair<HString, x_uint32>>&& publicMembers, V_Array<Pair<HString, x_uint32>>&& privateMembers, bool publicFirst);
-	void Register_Enum(const HString& moduleName, const HString& name, V_Array<Pair<HString, int>>&& members);
-	void Register_Function(const HString& moduleName, const HString& name, x_uint32 functionType, V_Array<HazeDefineVariable>&& params, HazeFunctionDesc desc, const HString* className = nullptr, bool isClassPublic = false);
+	void Register_GlobalVariable(const STDString& moduleName, const STDString& name, HazeVariableType type, x_uint32 line);
+	void Register_Class(const STDString& moduleName, const STDString& name, V_Array<STDString>& parents, V_Array<Pair<STDString, x_uint32>>&& publicMembers, V_Array<Pair<STDString, x_uint32>>&& privateMembers, bool publicFirst);
+	void Register_Enum(const STDString& moduleName, const STDString& name, V_Array<Pair<STDString, int>>&& members);
+	void Register_Function(const STDString& moduleName, const STDString& name, x_uint32 functionType, V_Array<HazeDefineVariableView>&& params, HazeFunctionDesc desc, const STDString* className = nullptr, bool isClassPublic = false);
 
-	void AddModuleRefSymbol(const HString& moduleName, const HString& symbol);
+	void AddModuleRefSymbol(const STDString& moduleName, const STDString& symbol);
 
 	//当第一遍收集完所有符号后，在第二遍解析前，已经可以将所有之前未定的符号，如暂时将枚举当做类，这些都全部纠正过来，可以加个是否正确确定所有类型的标记和log看哪些被修改过来了。
 	void IdentifySymbolType();
 
-	bool IsValidSymbol(const HString& symbol);
-	x_uint32 GetSymbolTypeId(const HString& symbol);
-	const HString* GetSymbolByTypeId(x_uint32 typeId);
+	bool IsValidSymbol(const STDString& symbol);
+	x_uint32 GetSymbolTypeId(const STDString& symbol);
+	x_uint32 GetGlobalVariableId(const STDString& name);
+	const STDString* GetSymbolByTypeId(x_uint32 typeId);
 	
 private:
 	bool CheckValidClassInherit(x_uint32 checkTypeId, x_uint32 typeId, const HashMap<x_uint32, ResolveClassData>& classMap);
@@ -90,9 +91,9 @@ private:
 	Compiler* m_Compiler;
 	HazeTypeInfoMap* m_TypeInfo;
 
-	HashMap<HString, Pair<x_uint32, SymbolTypeHeader*>> m_Symbols;
+	HashMap<STDString, Pair<x_uint32, SymbolTypeHeader*>> m_Symbols;
 
-	HashMap<HString, FunctionSymbol> m_FunctionSymbols;
+	HashMap<STDString, FunctionSymbol> m_FunctionSymbols;
 
-	HashMap<HString, GlobalVariableSymbol> m_GlobalVariables;
+	HashMap<STDString, GlobalVariableSymbol> m_GlobalVariables;
 };

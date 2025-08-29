@@ -19,7 +19,7 @@ HazeJIT::~HazeJIT()
     }
 }
 
-JITCompilationUnit* HazeJIT::compileFunction(const HString& function_name)
+JITCompilationUnit* HazeJIT::compileFunction(const STDString& function_name)
 {
     // 检查是否已编译
     auto it = m_compiled_units.find(function_name);
@@ -158,11 +158,11 @@ void HazeJIT::optimizeLoops(JITCompilationUnit* unit)
         if (inst.InsCode == InstructionOpCode::JMP) {
             // 查找循环
             if (inst.Operator.size() >= 1) {
-                HString target_name = inst.Operator[0].Variable.Name;
+               /* HString target_name = inst.Operator[0].Variable.Name;
                 size_t target = findLabelIndex(unit, target_name);
                 if (target < i) {
                     loops.push_back({target, i});
-                }
+                }*/
             }
         }
     }
@@ -253,7 +253,7 @@ void HazeJIT::executeBytecode(JITCompilationUnit* unit, HazeStack* stack)
     }
 }
 
-bool HazeJIT::isHotPath(const HString& function_name)
+bool HazeJIT::isHotPath(const STDString& function_name)
 {
     // 检查是否为热点路径
     auto it = m_execution_counts.find(function_name);
@@ -269,7 +269,7 @@ bool HazeJIT::isHotPath(const HString& function_name)
     return false;
 }
 
-void HazeJIT::updateProfile(const HString& function_name, double execution_time)
+void HazeJIT::updateProfile(const STDString& function_name, double execution_time)
 {
     m_execution_counts[function_name]++;
     m_execution_times[function_name] += execution_time;
@@ -288,10 +288,10 @@ bool HazeJIT::isRuntimeConstant(const InstructionData& operand)
     // 例如：配置值、环境变量、用户输入等
     if (operand.Desc == HazeDataDesc::Constant) {
         // 检查常量名称是否包含运行时信息
-        HString const_name = operand.Variable.Name;
+        /*HString const_name = operand.Variable.Name;
         return const_name.find(H_TEXT("runtime_")) != HString::npos ||
                const_name.find(H_TEXT("config_")) != HString::npos ||
-               const_name.find(H_TEXT("env_")) != HString::npos;
+               const_name.find(H_TEXT("env_")) != HString::npos;*/
     }
     return false;
 }
@@ -349,10 +349,10 @@ bool HazeJIT::isRuntimeConditionalDeadCode(const Instruction& inst, size_t index
 bool HazeJIT::isConfigValue(const InstructionData& operand)
 {
     if (operand.Desc == HazeDataDesc::Constant) {
-        HString const_name = operand.Variable.Name;
+        /*HString const_name = operand.Variable.Name;
         return const_name.find(H_TEXT("debug_")) != HString::npos ||
                const_name.find(H_TEXT("feature_")) != HString::npos ||
-               const_name.find(H_TEXT("mode_")) != HString::npos;
+               const_name.find(H_TEXT("mode_")) != HString::npos;*/
     }
     return false;
 }
@@ -380,10 +380,10 @@ bool HazeJIT::isDebugRelatedJump(const Instruction& inst)
 {
     // 检查跳转目标是否为调试相关代码
     if (inst.Operator.size() >= 1) {
-        HString target = inst.Operator[0].Variable.Name;
+       /* HString target = inst.Operator[0].Variable.Name;
         return target.find(H_TEXT("debug_")) != HString::npos ||
                target.find(H_TEXT("log_")) != HString::npos ||
-               target.find(H_TEXT("assert_")) != HString::npos;
+               target.find(H_TEXT("assert_")) != HString::npos;*/
     }
     return false;
 } 
@@ -403,11 +403,11 @@ void HazeJIT::optimizeLoopsWithProfile(JITCompilationUnit* unit)
         if (inst.InsCode == InstructionOpCode::JMP) {
             // 查找循环
             if (inst.Operator.size() >= 1) {
-                HString target_name = inst.Operator[0].Variable.Name;
+                /*HString target_name = inst.Operator[0].Variable.Name;
                 size_t target = findLabelIndex(unit, target_name);
                 if (target < i) {
                     loops.push_back({target, i});
-                }
+                }*/
             }
         }
     }
@@ -439,18 +439,18 @@ void HazeJIT::inlineHotFunctions(JITCompilationUnit* unit)
         
         if (inst.InsCode == InstructionOpCode::CALL) {
             if (inst.Operator.size() >= 1) {
-                HString callee_name = inst.Operator[0].Variable.Name;
-                
-                // 检查是否为热点函数
-                if (isHotPath(callee_name)) {
-                    // 检查函数大小是否适合内联
-                    auto callee_unit = m_compiled_units.find(callee_name);
-                    if (callee_unit != m_compiled_units.end()) {
-                        if (callee_unit->second->bytecode.size() <= 20) { // 小函数内联
-                            inlineFunction(unit, i, callee_unit->second);
-                        }
-                    }
-                }
+                //HString callee_name = inst.Operator[0].Variable.Name;
+                //
+                //// 检查是否为热点函数
+                //if (isHotPath(callee_name)) {
+                //    // 检查函数大小是否适合内联
+                //    auto callee_unit = m_compiled_units.find(callee_name);
+                //    if (callee_unit != m_compiled_units.end()) {
+                //        if (callee_unit->second->bytecode.size() <= 20) { // 小函数内联
+                //            inlineFunction(unit, i, callee_unit->second);
+                //        }
+                //    }
+                //}
             }
         }
     }
@@ -461,7 +461,7 @@ void HazeJIT::optimizeRegisterAllocationWithProfile(JITCompilationUnit* unit)
     HAZE_LOG_INFO_W("执行基于性能分析的寄存器分配优化\\n");
     
     // 分析变量使用频率
-    std::unordered_map<HString, int> variable_usage_count;
+    std::unordered_map<STDString, int> variable_usage_count;
     
     for (const auto& inst : unit->bytecode) {
         // 统计变量使用次数
@@ -475,9 +475,9 @@ void HazeJIT::optimizeRegisterAllocationWithProfile(JITCompilationUnit* unit)
     }
     
     // 为高频变量分配寄存器
-    std::vector<std::pair<HString, int>> sorted_variables;
+    std::vector<std::pair<STDString, int>> sorted_variables;
     for (const auto& pair : variable_usage_count) {
-        sorted_variables.push_back(pair);
+        //sorted_variables.push_back(pair);
     }
     
     // 按使用频率排序
@@ -487,7 +487,7 @@ void HazeJIT::optimizeRegisterAllocationWithProfile(JITCompilationUnit* unit)
               });
     
     // 分配寄存器（简化实现）
-    std::unordered_map<HString, int> register_assignment;
+    std::unordered_map<STDString, int> register_assignment;
     int available_registers = 8; // 假设有8个可用寄存器
     
     for (size_t i = 0; i < sorted_variables.size() && i < available_registers; ++i) {
@@ -556,7 +556,7 @@ void HazeJIT::devirtualizeCalls(JITCompilationUnit* unit)
 
 // 辅助函数实现
 
-size_t HazeJIT::findLabelIndex(JITCompilationUnit* unit, const HString& label_name)
+size_t HazeJIT::findLabelIndex(JITCompilationUnit* unit, const STDString& label_name)
 {
     for (size_t i = 0; i < unit->bytecode.size(); ++i) {
         auto& inst = unit->bytecode[i];
@@ -625,7 +625,7 @@ void HazeJIT::inlineFunction(JITCompilationUnit* unit, size_t call_site, JITComp
     unit->bytecode = new_bytecode;
 }
 
-void HazeJIT::applyRegisterAllocation(JITCompilationUnit* unit, const std::unordered_map<HString, int>& register_assignment)
+void HazeJIT::applyRegisterAllocation(JITCompilationUnit* unit, const std::unordered_map<STDString, int>& register_assignment)
 {
     // 应用寄存器分配
     for (auto& inst : unit->bytecode) {
@@ -638,7 +638,7 @@ void HazeJIT::applyRegisterAllocation(JITCompilationUnit* unit, const std::unord
                 if (it != register_assignment.end()) {
                     // 替换为寄存器引用
                     operand.Desc = HazeDataDesc::RegisterTemp;
-                    operand.Variable.Name = H_TEXT("R") + ToHazeString(it->second);
+                    //operand.Variable.Name = H_TEXT("R") + ToHazeString(it->second);
                 }
             }
         }
@@ -668,16 +668,16 @@ void HazeJIT::specializeInstruction(JITCompilationUnit* unit, size_t index, cons
     
     if (inst.InsCode == InstructionOpCode::CALL) {
         // 函数调用特化
-        HString function_name = inst.Operator[0].Variable.Name;
-        
-        // 检查是否为已知的特定类型函数
-        if (function_name.find(H_TEXT("string_")) != HString::npos) {
-            // 字符串操作特化
-            specializeStringOperation(unit, index, inst);
-        } else if (function_name.find(H_TEXT("array_")) != HString::npos) {
-            // 数组操作特化
-            specializeArrayOperation(unit, index, inst);
-        }
+        //HString function_name = inst.Operator[0].Variable.Name;
+        //
+        //// 检查是否为已知的特定类型函数
+        //if (function_name.find(H_TEXT("string_")) != HString::npos) {
+        //    // 字符串操作特化
+        //    specializeStringOperation(unit, index, inst);
+        //} else if (function_name.find(H_TEXT("array_")) != HString::npos) {
+        //    // 数组操作特化
+        //    specializeArrayOperation(unit, index, inst);
+        //}
     }
 }
 
@@ -720,11 +720,11 @@ void HazeJIT::optimizeFrequentBranch(JITCompilationUnit* unit, size_t branch_ind
 bool HazeJIT::isVirtualFunctionCall(const Instruction& inst)
 {
     // 检查是否为虚函数调用
-    if (inst.InsCode == InstructionOpCode::CALL) {
+   /* if (inst.InsCode == InstructionOpCode::CALL) {
         HString function_name = inst.Operator[0].Variable.Name;
         return function_name.find(H_TEXT("virtual_")) != HString::npos ||
                function_name.find(H_TEXT("polymorphic_")) != HString::npos;
-    }
+    }*/
     return false;
 }
 
@@ -742,11 +742,11 @@ void HazeJIT::devirtualizeCall(JITCompilationUnit* unit, size_t index, const Ins
     
     // 将虚函数调用替换为直接函数调用
     auto& call_inst = unit->bytecode[index];
-    HString virtual_function = call_inst.Operator[0].Variable.Name;
+    //HString virtual_function = call_inst.Operator[0].Variable.Name;
     
     // 简化的去虚拟化：替换为直接调用
-    HString direct_function = virtual_function + H_TEXT("_direct");
-    call_inst.Operator[0].Variable.Name = direct_function;
+    //HString direct_function = virtual_function + H_TEXT("_direct");
+    //call_inst.Operator[0].Variable.Name = direct_function;
 }
 
 void HazeJIT::unrollLoop(JITCompilationUnit* unit, size_t loop_start, size_t loop_end, int unroll_factor)

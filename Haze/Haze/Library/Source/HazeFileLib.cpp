@@ -4,7 +4,7 @@
 #include "HazeStack.h"
 #include "HazeFileLib.h"
 
-static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
+static HashMap<STDString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
 	{ H_TEXT("打开文件"), &HazeFileLib::OpenFile },
 	{ H_TEXT("关闭文件"), &HazeFileLib::CloseFile },

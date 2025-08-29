@@ -22,9 +22,9 @@ struct AdvanceFunctionInfo
 struct AdvanceClassInfo
 {
 	V_Array<AdvanceFunctionInfo> Functions;
-	HashMap<HString, x_int16> FunctionMapping;
+	HashMap<STDString, x_int16> FunctionMapping;
 
-	void Add(const HString& name, const AdvanceFunctionInfo& info)
+	void Add(const STDString& name, const AdvanceFunctionInfo& info)
 	{
 		if (FunctionMapping.find(name) == FunctionMapping.end())
 		{
@@ -39,7 +39,7 @@ struct AdvanceClassIndexInfo
 	AdvanceClassInfo* Info = nullptr;
 	x_int16 StartIndex = 0;
 
-	const x_int16 GetIndex(const HString& name) const
+	const x_int16 GetIndex(const STDString& name) const
 	{
 		auto it = Info->FunctionMapping.find(name);
 		if (it != Info->FunctionMapping.end())
@@ -50,7 +50,7 @@ struct AdvanceClassIndexInfo
 		return -1;
 	}
 
-	Pair<AdvanceFunctionInfo*, x_int16> GetInfoAndIndex(const HString& name)
+	Pair<AdvanceFunctionInfo*, x_int16> GetInfoAndIndex(const STDString& name)
 	{
 		auto it = Info->FunctionMapping.find(name);
 		if (it != Info->FunctionMapping.end())
@@ -62,24 +62,24 @@ struct AdvanceClassIndexInfo
 	}
 };
 
-struct HashHString
-{
-	const HString* Str;
-
-	bool operator== (const HashHString& p) const
-	{
-		return *Str == *p.Str;
-	}
-};
-
-template<>
-struct std::hash<HashHString>
-{
-	size_t operator() (const HashHString& s) const noexcept
-	{
-		return std::hash<HString>()(*s.Str);
-	}
-};
+//struct HashHString
+//{
+//	const HString* Str;
+//
+//	bool operator== (const HashHString& p) const
+//	{
+//		return *Str == *p.Str;
+//	}
+//};
+//
+//template<>
+//struct std::hash<HashHString>
+//{
+//	size_t operator() (const HashHString& s) const noexcept
+//	{
+//		return std::hash<HString>()(s.Str);
+//	}
+//};
 
 enum class ParseStage
 {
@@ -106,7 +106,7 @@ class Compiler
 	{
 		ModuleParseInterState State = ModuleParseInterState::NotParsed;
 		CompilerModule* Module = nullptr;
-		V_Array<HString> ParseStack;
+		V_Array<STDString> ParseStack;
 		x_uint32 ParseDepth = 0;
 		static const int MAX_PARSE_DEPTH = 10;
 	};
@@ -120,62 +120,62 @@ public:
 
 	void RegisterAdvanceClassInfo(HazeValueType type, AdvanceClassIndexInfo info);
 
-	void PreRegisterClass(const ClassData& data);
+	//void PreRegisterClass(const ClassData& data);
 	void PreRegisterVariable();
 	void PreRegisterFunction();
 
-	bool InitializeCompiler(const HString& moduleName, const HString& path);
+	bool InitializeCompiler(const STDString& moduleName, const STDString& path);
 
 	void FinishParse();
 
-	CompilerModule* ParseBaseModule(const HString& moduleName);
+	CompilerModule* ParseBaseModule(const STDString& moduleName);
 
-	CompilerModule* ParseModuleByImportPath(const HString& importPath);
+	CompilerModule* ParseModuleByImportPath(const STDString& importPath);
 
-	CompilerModule* ParseModuleByPath(const HString& modulePath);
+	CompilerModule* ParseModuleByPath(const STDString& modulePath);
 
 	void ParseTypeInfoFile();
 
 	void FinishModule();
 
-	CompilerModule* GetModule(const HString& name);
+	CompilerModule* GetModule(const STDString& name);
 
-	CompilerModule* GetModuleAndTryParseIntermediateFile(const HString& filePath);
+	CompilerModule* GetModuleAndTryParseIntermediateFile(const STDString& filePath);
 
-	const HString* GetModuleName(const CompilerModule* compilerModule) const;
+	const STDString* GetModuleName(const CompilerModule* compilerModule) const;
 
-	const HString* GetModuleTableClassName(const HString& name);
-	x_uint32 GetModuleTableEnumTypeId(const HString& name);
+	const STDString* GetModuleTableClassName(const STDString& name);
+	x_uint32 GetModuleTableEnumTypeId(const STDString& name);
 
 	Unique<CompilerModule>& GetCurrModule();
 
 	bool CurrModuleIsStdLib();
 
-	Share<CompilerFunction> GetFunction(const HString& name);
+	Share<CompilerFunction> GetFunction(const STDString& name);
 
-	const HString& GetCurrModuleName() const { return m_ModuleNameStack.back(); }
+	const STDString& GetCurrModuleName() const { return m_ModuleNameStack.back(); }
 
 	void PopCurrModule() { return m_ModuleNameStack.pop_back(); }
 
 	void AddImportModuleToCurrModule(CompilerModule* compilerModule);
 
-	bool IsClass(const HString& name);
+	bool IsClass(const STDString& name);
 
-	bool IsEnum(const HString& name);
+	bool IsEnum(const STDString& name);
 
-	void MarkParseTemplate(bool begin, const HString* moduleName = nullptr);
+	void MarkParseTemplate(bool begin, const STDString* moduleName = nullptr);
 
 	Share<CompilerValue> GenConstantValue(HazeValueType type, const HazeValue& var, HazeValueType* varType = nullptr);
 
-	Share<CompilerValue> GenStringVariable(const HString& str);
+	Share<CompilerValue> GenStringVariable(const STDString& str);
 
-	Share<CompilerValue> GetGlobalVariable(const HString& name);
+	Share<CompilerValue> GetGlobalVariable(const STDString& name);
 
-	Share<CompilerValue> GetLocalVariable(const HString& name, HString* nameSpace = nullptr);
+	Share<CompilerValue> GetLocalVariable(const STDString& name, STDString* nameSpace = nullptr);
 
-	Share<CompilerValue> GetClosureVariable(const HString& name, bool addRef = true);
+	Share<CompilerValue> GetClosureVariable(const STDString& name, bool addRef = true);
 
-	Share<CompilerValue> GetEnumVariable(const HString& enumName, const HString& name);
+	Share<CompilerValue> GetEnumVariable(const STDString& enumName, const STDString& name);
 
 	Share<CompilerValue> GetConstantValueInt(int v);
 
@@ -189,24 +189,19 @@ public:
 
 	bool IsConstantValueBoolFalse(Share<CompilerValue> v);
 
+	// 寄存器
 public:
 	Share<CompilerValue> GetTempRegister(Share<CompilerValue> v);
 	Share<CompilerValue> GetTempRegister(const CompilerValue* v);
 	Share<CompilerValue> GetTempRegister(const HazeVariableType& type);
 
-	//static Share<CompilerValue> GetNewRegister(CompilerModule* compilerModule, const HazeDefineType& data);
+	Share<CompilerValue> GetRegister(HazeDataDesc desc);
+	Share<CompilerValue> GetRetRegister(HazeValueType baseType, x_uint32 typeId);
 
-	static HashMap<const x_HChar*, Share<CompilerValue>> GetUseTempRegister();
+	const x_HChar* GetRegisterName(const Share<CompilerValue>& compilerRegister);
+	x_uint64 GetRegisterIndex(const Share<CompilerValue>& compilerRegister);
 
-	static void ClearTempRegister(const HashMap<const x_HChar*, Share<CompilerValue>>& useTempRegisters);
-
-	static void ResetTempRegister(const HashMap<const x_HChar*, Share<CompilerValue>>& useTempRegisters);
-
-	static Share<CompilerValue> GetRegister(const x_HChar* name);
-	static Share<CompilerValue> GetRetRegister(HazeValueType baseType, x_uint32 typeId);
-
-	static const x_HChar* GetRegisterName(const Share<CompilerValue>& compilerRegister);
-
+	// 编译块
 public:
 	void SetInsertBlock(Share<CompilerBlock> block);
 
@@ -233,7 +228,7 @@ public:
 	Share<CompilerValue> CreateClassVariable(CompilerModule* m_Module, const HazeVariableType& Var, Share<CompilerValue> RefValue = nullptr, TemplateDefineTypes* Params = nullptr);
 
 	Share<CompilerElementValue> CreateElementValue(Share<CompilerValue> parentValue, Share<CompilerValue> elementValue);
-	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, const HString& memberName);
+	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, const STDString& memberName);
 
 	Share<CompilerValue> CreatePointerToValue(Share<CompilerValue> value);
 	Share<CompilerValue> CreatePointerToFunction(Share<CompilerFunction> function, Share<CompilerValue> pointer);
@@ -283,11 +278,11 @@ public:
 
 	// 以下是创建函数调用字节码
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> function, const V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr,
-		const HString* nameSpace = nullptr);
+		const STDString* nameSpace = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr);
 
-	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const HString& functionName, const V_Array<Share<CompilerValue>>& param,
+	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const STDString& functionName, const V_Array<Share<CompilerValue>>& param,
 		Share<CompilerValue> thisPointerTo, HazeVariableType* expectType = nullptr);
 
 	Share<CompilerValue> CreateGetAdvanceElement(Share<CompilerElementValue> element);
@@ -296,13 +291,13 @@ public:
 	Share<CompilerValue> CreateGetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index);
 	Share<CompilerValue> CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue);
 
-	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, const HString& memberName);
+	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, const STDString& memberName);
 	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member);
 	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue);
 
-	Share<CompilerValue> CreateGetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName);
-	Share<CompilerValue> CreateSetDynamicClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue);
-	Share<CompilerValue> CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const HString& functionName, const V_Array<Share<CompilerValue>>& params);
+	Share<CompilerValue> CreateGetDynamicClassMember(Share<CompilerValue> classValue, const STDString& memberName);
+	Share<CompilerValue> CreateSetDynamicClassMember(Share<CompilerValue> classValue, const STDString& memberName, Share<CompilerValue> assignValue);
+	Share<CompilerValue> CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const STDString& functionName, const V_Array<Share<CompilerValue>>& params);
 
 	// 创建条件判断字节码
 public:
@@ -322,17 +317,17 @@ public:
 
 	x_uint32 GetSymbolTableNameTypeId(const HString& className);*/
 
-	AdvanceFunctionInfo* GetAdvanceFunctionInfo(HazeValueType advanceType, const HString& name);
+	AdvanceFunctionInfo* GetAdvanceFunctionInfo(HazeValueType advanceType, const STDString& name);
 
-	Share<CompilerEnum> GetBaseModuleEnum(const HString& name);
+	Share<CompilerEnum> GetBaseModuleEnum(const STDString& name);
 	//Share<CompilerEnum> GetBaseModuleEnum(x_uint32 typeId);
 
-	Share<CompilerValue> GetBaseModuleGlobalVariable(const HString& name);
+	Share<CompilerValue> GetBaseModuleGlobalVariable(const STDString& name);
 
-	Share<CompilerClass> GetBaseModuleClass(const HString& className);
+	Share<CompilerClass> GetBaseModuleClass(const STDString& className);
 
-	bool GetBaseModuleGlobalVariableName(const Share<CompilerValue>& value, HString& outName, bool getOffset = false,
-		V_Array<Pair<x_uint64, CompilerValue*>>* = nullptr);
+	bool GetBaseModuleGlobalVariableName(const Share<CompilerValue>& value, HStringView& outName);
+	bool GetBaseModuleGlobalVariableId(const Share<CompilerValue>& value, InstructionOpId& outId);
 
 	//void GetRealTemplateTypes(const TemplateDefineTypes& types, V_Array<HazeDefineType>& defineTypes);
 
@@ -354,10 +349,10 @@ private:
 
 	HashMap<HazeValueType, AdvanceClassIndexInfo> m_AdvanceClassIndexInfo;
 
-	V_Array<HString> m_ModuleNameStack;
+	V_Array<STDString> m_ModuleNameStack;
 
-	HashMap<HString, Unique<CompilerModule>> m_CompilerModules;
-	HashMap<HString, CompilerModule*> m_CompilerBaseModules;
+	HashMap<STDString, Unique<CompilerModule>> m_CompilerModules;
+	HashMap<STDString, CompilerModule*> m_CompilerBaseModules;
 
 	HashMap<bool, Share<CompilerValue>> m_BoolConstantValues;
 
@@ -381,9 +376,11 @@ private:
 
 	Unique<CompilerSymbol> m_CompilerSymbol;
 
-	HashMap<HString, ModuleParseInfo> m_ModuleParseStates;
+	HashMap<STDString, ModuleParseInfo> m_ModuleParseStates;
 
 	ParseStage m_ParseStage;
 	bool m_MarkError;
 	bool m_MarkNewCode;
+
+	A_Array<Share<CompilerValue>, 2> m_GlobalRegisters;
 };

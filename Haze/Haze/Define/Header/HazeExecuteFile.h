@@ -30,9 +30,9 @@ public:
 	~HazeExecuteFile();
 
 public:
-	void WriteModule(const HashMap<HString, Share<ModuleUnit>>& moduleUnit);
+	void WriteModule(const HashMap<STDString, Share<ModuleUnit>>& moduleUnit);
 
-	void WriteExecuteFileSymbol(V_Array<Pair<x_uint32, V_Array<x_uint32>>>& funtionSymbol, V_Array<Pair<HString, Pair<x_uint32, HazeComplexTypeInfo>>>& symbol);
+	void WriteExecuteFileSymbol(V_Array<Pair<x_uint32, V_Array<x_uint32>>>& funtionSymbol, V_Array<Pair<STDString, Pair<x_uint32, HazeComplexTypeInfo>>>& symbol);
 
 	void WriteExecuteFileData(const ModuleUnit::GlobalDataTable& globalDataTable, const ModuleUnit::StringTable& stringTable,
 		const ModuleUnit::ClassTable& classTable, const ModuleUnit::FunctionTable& functionTable);

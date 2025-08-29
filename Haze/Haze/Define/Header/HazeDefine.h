@@ -4,7 +4,8 @@
 #define HAZE_OFSTREAM std::wofstream
 #define HAZE_IFSTREAM std::wifstream
 
-using HString = std::wstring;
+using HString = HazeString; //std::wstring;
+using STDString = std::wstring;
 using HStringView = std::wstring_view;
 
 #define HAZE_BINARY_STRING std::string
@@ -106,9 +107,9 @@ using HStringView = std::wstring_view;
 #define BLOCK_FOR_CONDITION				H_TEXT("ForConditionBlock")
 #define BLOCK_FOR_STEP					H_TEXT("ForStepBlock")
 
-#define RET_REGISTER					H_TEXT("Ret_R")
+//#define RET_REGISTER					H_TEXT("Ret_R")
 //#define NEW_REGISTER					H_TEXT("New_R")
-#define CMP_REGISTER					H_TEXT("Cmp_R")
+//#define CMP_REGISTER					H_TEXT("Cmp_R")
 
 #define NULL_PTR						H_TEXT("NULL_PTR")
 
@@ -128,7 +129,7 @@ using HStringView = std::wstring_view;
 
 #define	HAZE_JMP_NULL					H_TEXT("JmpNull")
 
-#define HAZE_CALL_PUSH_ADDRESS_NAME		HString(H_TEXT("RetPC"))
+#define HAZE_CALL_PUSH_ADDRESS_NAME		STDString(H_TEXT("RetPC"))
 #define HAZE_CALL_PUSH_ADDRESS_TYPE		(HAZE_ADDRESS_SIZE == 8 ? HazeValueType::Int64 : HAZE_ADDRESS_SIZE == 4 ? HazeValueType::Int32 : HazeValueType::None)
 
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")

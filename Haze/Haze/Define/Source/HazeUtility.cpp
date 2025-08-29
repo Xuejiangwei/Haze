@@ -15,7 +15,7 @@
 
 #include <regex>
 
-thread_local static HString s_HazeString;
+thread_local static STDString s_HazeString;
 thread_local static HAZE_BINARY_STRING s_String;
 
 bool IsAndOrToken(HazeToken token)
@@ -74,17 +74,17 @@ int Log2(int n)
 	return count;
 }
 
-HString GetHazeClassFunctionName(const HString& className, const HString& functionName)
+STDString GetHazeClassFunctionName(const STDString& className, const STDString& functionName)
 {
 	return className + HAZE_CLASS_FUNCTION_CONBINE + functionName;
 }
 
-HString NativeClassFunctionName(const HString& className, const HString& functionName)
+STDString NativeClassFunctionName(const STDString& className, const STDString& functionName)
 {
 	return functionName.substr((className + HAZE_CLASS_FUNCTION_CONBINE).length());
 }
 
-HString GetHazeModuleGlobalDataInitFunctionName(const HString& moduleName)
+STDString GetHazeModuleGlobalDataInitFunctionName(const STDString& moduleName)
 {
 	return moduleName + HAZE_GLOBAL_DATA_INIT_FUNCTION;
 }
@@ -229,13 +229,13 @@ bool HazeIsSpace(x_HChar hChar, bool* isNewLine)
 	return hChar == x_HChar(' ') || hChar == x_HChar('\n') || hChar == x_HChar('\t') || hChar == x_HChar('\v') || hChar == x_HChar('\f') || hChar == x_HChar('\r');
 }
 
-bool IsNumber(const HString& str)
+bool IsNumber(const STDString& str)
 {
 	std::wregex pattern(H_TEXT("-[0-9]+(.[0-9]+)?|[0-9]+(.[0-9]+)?"));
 	return std::regex_match(str, pattern);
 }
 
-HazeValueType GetNumberDefaultType(const HString& str)
+HazeValueType GetNumberDefaultType(const STDString& str)
 {
 	std::wregex pattern(H_TEXT("-?(([1-9]\\d*\\.\\d*)|(0\\.\\d*[1-9]\\d*))"));
 	bool isFloat = std::regex_match(str, pattern);
@@ -252,14 +252,14 @@ HazeValueType GetNumberDefaultType(const HString& str)
 	return HazeValueType::Int32;
 }
 
-HString String2WString(const char* str)
+STDString String2WString(const char* str)
 {
 	return String2WString(HAZE_BINARY_STRING(str));
 }
 
-HString String2WString(const HAZE_BINARY_STRING& str)
+STDString String2WString(const HAZE_BINARY_STRING& str)
 {
-	HString& result = s_HazeString;
+	STDString& result = s_HazeString;
 #ifdef _WIN32
 
 	//��ȡ��������С
@@ -274,7 +274,7 @@ HString String2WString(const HAZE_BINARY_STRING& str)
 	return result;
 }
 
-HAZE_BINARY_STRING WString2String(const HString& wstr)
+HAZE_BINARY_STRING WString2String(const STDString& wstr)
 {
 	HAZE_BINARY_STRING& result = s_String;
 
@@ -297,7 +297,7 @@ bool IsUtf8Bom(const char* utf8)
 	return (x_uint8)utf8[0] == 0xEF && (x_uint8)utf8[1] == 0xBB && (x_uint8)utf8[2] == 0xBF;
 }
 
-HString ReadUtf8File(const HString& filePath)
+STDString ReadUtf8File(const STDString& filePath)
 {
 	std::wstring content;
 	bool success = false;
@@ -431,7 +431,7 @@ HString ReadUtf8File(const HString& filePath)
 
 char* UTF8_2_GB2312(const char* utf8)
 {
-	HString& hazeString = s_HazeString;
+	STDString& hazeString = s_HazeString;
 	HAZE_BINARY_STRING& result = s_String;
 
 #ifdef _WIN32
@@ -453,7 +453,7 @@ char* UTF8_2_GB2312(const char* utf8)
 
 char* GB2312_2_UFT8(const char* gb2312)
 {
-	HString& hazeString = s_HazeString;
+	STDString& hazeString = s_HazeString;
 	HAZE_BINARY_STRING& result = s_String;
 
 #ifdef _WIN32
@@ -473,15 +473,15 @@ char* GB2312_2_UFT8(const char* gb2312)
 	return result.data();
 }
 
-void ReplacePathSlash(HString& path)
+void ReplacePathSlash(STDString& path)
 {
-	static HString WindowsPathSlash(H_TEXT("\\"));
-	static HString PathSlash(H_TEXT("/"));
+	static STDString WindowsPathSlash(H_TEXT("\\"));
+	static STDString PathSlash(H_TEXT("/"));
 
-	for (HString::size_type pos(0); pos != HString::npos; pos += PathSlash.length())
+	for (STDString::size_type pos(0); pos != STDString::npos; pos += PathSlash.length())
 	{
 		pos = path.find(WindowsPathSlash, pos);
-		if (pos != HString::npos)
+		if (pos != STDString::npos)
 		{
 			path.replace(pos, WindowsPathSlash.length(), PathSlash);
 		}
@@ -523,16 +523,16 @@ InstructionFunctionType GetFunctionTypeByLibraryType(HazeLibraryType type)
 	}
 }
 
-HString GetModuleNameByFilePath(const HString& filePath)
+STDString GetModuleNameByFilePath(const STDString& filePath)
 {
 	auto Index = filePath.find_last_of(H_TEXT("\\"));
-	if (Index != HString::npos)
+	if (Index != STDString::npos)
 	{
 		return filePath.substr(Index + 1, filePath.length() - Index - 1 - 3);
 	}
 
 	Index = filePath.find_last_of(H_TEXT("/"));
-	if (Index != HString::npos)
+	if (Index != STDString::npos)
 	{
 		return filePath.substr(Index + 1, filePath.length() - Index - 1 - 3);
 	}
@@ -644,9 +644,9 @@ void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type
 	}
 }
 
-V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter)
+V_Array<STDString> HazeStringSplit(const STDString& str, const STDString& delimiter)
 {
-	V_Array<HString> result;
+	V_Array<STDString> result;
 
 	x_HChar* s = new x_HChar[str.size() + 1];
 	s[str.size()] = '\0';
@@ -662,6 +662,40 @@ V_Array<HString> HazeStringSplit(const HString& str, const HString& delimiter)
 	}
 
 	return result;
+}
+
+HazeValueType GetHazeBaseTypeByDesc(HazeDataDesc desc)
+{
+	switch (desc)
+	{
+		case HazeDataDesc::ConstantBool:
+			return HazeValueType::Bool;
+		case HazeDataDesc::ConstantInt8:
+			return HazeValueType::Int8;
+		case HazeDataDesc::ConstantUInt8:
+			return HazeValueType::UInt8;
+		case HazeDataDesc::ConstantInt16:
+			return HazeValueType::Int16;
+		case HazeDataDesc::ConstantUInt16:
+			return HazeValueType::UInt16;
+		case HazeDataDesc::ConstantInt32:
+			return HazeValueType::Int32;
+		case HazeDataDesc::ConstantUInt32:
+			return HazeValueType::UInt32;
+		case HazeDataDesc::ConstantInt64:
+			return HazeValueType::Int64;
+		case HazeDataDesc::ConstantUInt64:
+			return HazeValueType::UInt64;
+		case HazeDataDesc::ConstantFloat32:
+			return HazeValueType::Float32;
+		case HazeDataDesc::ConstantFloat64:
+			return HazeValueType::Float64;
+		default:
+			break;
+	}
+
+	HAZE_LOG_ERR_W("未获得正确的类型!\n");
+	return HazeValueType::None;
 }
 
 #include "HazeCompilerVersion.h"

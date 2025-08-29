@@ -21,7 +21,7 @@ CompilerSymbol::~CompilerSymbol()
 		delete m_TypeInfo;
 	}
 
-	for (auto iter : m_Symbols)
+	for (auto& iter : m_Symbols)
 	{
 		switch (((SymbolTypeHeader*)iter.second.second)->Type)
 		{
@@ -37,7 +37,7 @@ CompilerSymbol::~CompilerSymbol()
 	}
 }
 
-x_uint32 CompilerSymbol::RegisterSymbol(const HString& name)
+x_uint32 CompilerSymbol::RegisterSymbol(const STDString& name)
 {
 	auto iter = m_Symbols.find(name);
 	if (iter != m_Symbols.end())
@@ -88,7 +88,7 @@ x_uint32 CompilerSymbol::RegisterSymbol(const HString& name)
 //	}
 //}
 
-void CompilerSymbol::Register_GlobalVariable(const HString& moduleName, const HString& name, x_uint32 typeId, x_uint32 line)
+void CompilerSymbol::Register_GlobalVariable(const STDString& moduleName, const STDString& name, HazeVariableType type, x_uint32 line)
 {
 	auto m = m_Compiler->GetModule(moduleName);
 	auto iter = m_GlobalVariables.find(name);
@@ -102,10 +102,12 @@ void CompilerSymbol::Register_GlobalVariable(const HString& moduleName, const HS
 		return;
 	}
 
-	m_GlobalVariables[name] = { m, typeId, line };
+	GLOBAL_VAR_TYPE_INFO(info, type);
+	auto id = m_TypeInfo->RegisterSymbol(moduleName, name, &info);
+	m_GlobalVariables[name] = { m, id, line };
 }
 
-void CompilerSymbol::Register_Class(const HString& moduleName, const HString& name, V_Array<HString>& parents, V_Array<Pair<HString, x_uint32>>&& publicMembers, V_Array<Pair<HString, x_uint32>>&& privateMembers, bool publicFirst)
+void CompilerSymbol::Register_Class(const STDString& moduleName, const STDString& name, V_Array<STDString>& parents, V_Array<Pair<STDString, x_uint32>>&& publicMembers, V_Array<Pair<STDString, x_uint32>>&& privateMembers, bool publicFirst)
 {
 	auto iter = m_Symbols.find(name);
 	if (iter != m_Symbols.end())
@@ -148,7 +150,7 @@ void CompilerSymbol::Register_Class(const HString& moduleName, const HString& na
 	}
 }
 
-void CompilerSymbol::Register_Enum(const HString& moduleName, const HString& name, V_Array<Pair<HString, int>>&& members)
+void CompilerSymbol::Register_Enum(const STDString& moduleName, const STDString& name, V_Array<Pair<STDString, int>>&& members)
 {
 	auto iter = m_Symbols.find(name);
 	if (iter != m_Symbols.end())
@@ -175,14 +177,14 @@ void CompilerSymbol::Register_Enum(const HString& moduleName, const HString& nam
 	}
 }
 
-void CompilerSymbol::Register_Function(const HString& moduleName, const HString& name, x_uint32 functionType, V_Array<HazeDefineVariable>&& params, HazeFunctionDesc desc, const HString* className, bool isClassPublic)
+void CompilerSymbol::Register_Function(const STDString& moduleName, const STDString& name, x_uint32 functionType, V_Array<HazeDefineVariableView>&& params, HazeFunctionDesc desc, const STDString* className, bool isClassPublic)
 {
 	auto m = m_Compiler->GetModule(moduleName);
 	auto iter = m_FunctionSymbols.end();
 	FunctionSymbol* data = nullptr;
 	if (className)
 	{
-		HString classFuncName = GetHazeClassFunctionName(*className, name);
+		STDString classFuncName = GetHazeClassFunctionName(*className, name);
 		iter = m_FunctionSymbols.find(classFuncName);
 	
 		if (iter == m_FunctionSymbols.end())
@@ -211,7 +213,7 @@ void CompilerSymbol::Register_Function(const HString& moduleName, const HString&
 		iter->second.ParamNames.resize(params.size());
 		for (x_uint64 i = 0; i < params.size(); i++)
 		{
-			iter->second.ParamNames[i] = Move(params[i].Name);
+			iter->second.ParamNames[i] = params[i].Name.data();
 		}
 		iter->second.Module = m;
 	}
@@ -237,12 +239,12 @@ void CompilerSymbol::Register_Function(const HString& moduleName, const HString&
 		data->ParamNames.resize(params.size());
 		for (x_uint64 i = 0; i < params.size(); i++)
 		{
-			data->ParamNames[i] = Move(params[i].Name);
+			data->ParamNames[i] = params[i].Name.data();
 		}
 	}
 }
 
-void CompilerSymbol::AddModuleRefSymbol(const HString& moduleName, const HString& symbol)
+void CompilerSymbol::AddModuleRefSymbol(const STDString& moduleName, const STDString& symbol)
 {
 	auto iter = m_Symbols.find(symbol);
 	if (iter != m_Symbols.end())
@@ -445,7 +447,8 @@ void CompilerSymbol::IdentifySymbolType()
 
 	for (auto& iter : m_GlobalVariables)
 	{
-		iter.second.Module->CreateGlobalVariable({ m_TypeInfo->GetVarTypeById(iter.second.TypeId), iter.first }, iter.second.Line);
+		auto info = m_TypeInfo->GetTypeInfoById(iter.second.VarId);
+		iter.second.Module->CreateGlobalVariable({ HazeVariableType(info->Info.GetBaseType(), info->Info._GlobalVariable.TypeId1), iter.first }, iter.second.Line);
 	}
 }
 
@@ -515,7 +518,7 @@ bool CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& c
 
 	// 补全成员
 	{
-		V_Array<Pair<HString, Share<CompilerValue>>> classData;
+		V_Array<Pair<STDString, Share<CompilerValue>>> classData;
 
 		decltype(data.SymbolInfo->PublicMembers)* firstScopeMembers = nullptr;
 		decltype(firstScopeMembers) secondScopeMembers = nullptr;
@@ -532,11 +535,11 @@ bool CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& c
 
 		for (x_uint64 i = 0; i < firstScopeMembers->size(); i++)
 		{
-			classData.push_back({ firstScopeMembers->at(i).first, m_Compiler->CreateClassVariable(data.CompClass->m_Module, m_TypeInfo->GetVarTypeById(firstScopeMembers->at(i).second)) });
+			classData.push_back({ Move(firstScopeMembers->at(i).first), m_Compiler->CreateClassVariable(data.CompClass->m_Module, m_TypeInfo->GetVarTypeById(firstScopeMembers->at(i).second)) });
 		}
 		for (x_uint64 i = 0; i < secondScopeMembers->size(); i++)
 		{
-			classData.push_back({ secondScopeMembers->at(i).first, m_Compiler->CreateClassVariable(data.CompClass->m_Module, m_TypeInfo->GetVarTypeById(secondScopeMembers->at(i).second)) });
+			classData.push_back({ Move(secondScopeMembers->at(i).first), m_Compiler->CreateClassVariable(data.CompClass->m_Module, m_TypeInfo->GetVarTypeById(secondScopeMembers->at(i).second)) });
 		}
 
 		data.CompClass->ResolveClassData(Move(classData));
@@ -548,12 +551,12 @@ bool CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& c
 	return true;
 }
 
-bool CompilerSymbol::IsValidSymbol(const HString& symbol)
+bool CompilerSymbol::IsValidSymbol(const STDString& symbol)
 {
 	return m_Symbols.find(symbol) != m_Symbols.end();
 }
 
-x_uint32 CompilerSymbol::GetSymbolTypeId(const HString& symbol)
+x_uint32 CompilerSymbol::GetSymbolTypeId(const STDString& symbol)
 {
 	auto iter = m_Symbols.find(symbol);
 	if (iter != m_Symbols.end())
@@ -561,11 +564,23 @@ x_uint32 CompilerSymbol::GetSymbolTypeId(const HString& symbol)
 		return iter->second.first;
 	}
 
-	HAZE_LOG_INFO_W("符号<%s>未能找到有效的类型ID", symbol.c_str());
+	SYMBOL_ERR_W("符号<%s>未能找到有效的类型ID", symbol.c_str());
 	return 0;
 }
 
-const HString* CompilerSymbol::GetSymbolByTypeId(x_uint32 typeId)
+x_uint32 CompilerSymbol::GetGlobalVariableId(const STDString& name)
+{
+	auto iter = m_GlobalVariables.find(name);
+	if (iter != m_GlobalVariables.end())
+	{
+		return iter->second.VarId;
+	}
+
+	SYMBOL_ERR_W("全局变量符号<%s>未能找到有效的类型ID", name.c_str());
+	return 0;
+}
+
+const STDString* CompilerSymbol::GetSymbolByTypeId(x_uint32 typeId)
 {
 	return m_TypeInfo->GetClassNameById(typeId);
 }

@@ -19,14 +19,14 @@ public:
 
 	~HazeStandardLibraryBase();
 
-	static bool AddStdLib(HString libName, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>* hashMap);
+	static bool AddStdLib(STDString libName, HashMap<STDString, void(*)(HAZE_STD_CALL_PARAM)>* hashMap);
 
 	static void InitializeStdLibs();
 
-	static const HashMap<HString, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>*>& GetStdLib();
+	static const HashMap<STDString, HashMap<STDString, void(*)(HAZE_STD_CALL_PARAM)>*>& GetStdLib();
 
 	static int GetStdLibSize();
 
 private:
-	static HashMap<HString, HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)>*>* s_Hash_MapStdLib;
+	static HashMap<STDString, HashMap<STDString, void(*)(HAZE_STD_CALL_PARAM)>*>* s_Hash_MapStdLib;
 };

@@ -5,8 +5,8 @@
 #include "CompilerModule.h"
 #include "CompilerHelper.h"
 
-CompilerEnum::CompilerEnum(CompilerModule* compilerModule, const HString& name, x_uint32 typeId)
-	: m_Module(compilerModule), m_Name(name)
+CompilerEnum::CompilerEnum(CompilerModule* compilerModule, const STDString& name, x_uint32 typeId)
+	: m_Module(compilerModule), m_Name(name.c_str())
 {
 	m_Type.BaseType = HazeValueType::Enum;
 	m_Type.TypeId = typeId;
@@ -16,7 +16,7 @@ CompilerEnum::~CompilerEnum()
 {
 }
 
-void CompilerEnum::AddEnumValue(const HString& name, Share<CompilerValue> value)
+void CompilerEnum::AddEnumValue(const STDString& name, Share<CompilerValue> value)
 {
 	if (!GetEnumValue(name))
 	{
@@ -29,7 +29,7 @@ void CompilerEnum::AddEnumValue(const HString& name, Share<CompilerValue> value)
 	}
 }
 
-Share<CompilerEnumValue> CompilerEnum::GetEnumValue(const HString& name)
+Share<CompilerEnumValue> CompilerEnum::GetEnumValue(const STDString& name)
 {
 	for (auto& it : m_EnumValues)
 	{

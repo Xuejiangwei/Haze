@@ -14,10 +14,10 @@ struct BasicBlock
     std::vector<x_uint64> successors;
     
     // 数据流分析
-    std::unordered_set<HString> defs;  // 定义集合
-    std::unordered_set<HString> uses;  // 使用集合
-    std::unordered_set<HString> live_in;
-    std::unordered_set<HString> live_out;
+    std::unordered_set<STDString> defs;  // 定义集合
+    std::unordered_set<STDString> uses;  // 使用集合
+    std::unordered_set<STDString> live_in;
+    std::unordered_set<STDString> live_out;
     
     bool is_reachable = true;
 };
@@ -36,8 +36,8 @@ struct InstructionAnalysis
     HazeValue constant_value;
     bool is_dead = false;
     bool can_be_eliminated = false;
-    std::vector<HString> dependencies;
-    std::vector<HString> definitions;
+    std::vector<STDString> dependencies;
+    std::vector<STDString> definitions;
 };
 
 class Optimizer
@@ -90,7 +90,7 @@ private:
                                   size_t start_inst, std::vector<bool>& reachable);
     
     // 辅助函数
-    size_t findLabelInstruction(ModuleUnit::FunctionTableData& function, const HString& label);
+    size_t findLabelInstruction(ModuleUnit::FunctionTableData& function, const STDString& label);
     bool isInstructionWithoutSideEffects(const ModuleUnit::FunctionInstruction& inst);
     bool isRedundantInstruction(const ModuleUnit::FunctionInstruction& inst, size_t index, 
                                ModuleUnit::FunctionTableData& function, ControlFlowGraph& cfg);
@@ -111,19 +111,19 @@ private:
     void insertInstruction(ModuleUnit::FunctionTableData& function, size_t index, const ModuleUnit::FunctionInstruction& inst);
     
     // 变量分析
-    std::vector<HString> getUsedVariables(const ModuleUnit::FunctionInstruction& inst);
-    std::vector<HString> getDefinedVariables(const ModuleUnit::FunctionInstruction& inst);
-    bool isVariableLive(const HString& var, size_t instruction_index, const ControlFlowGraph& cfg);
+    std::vector<STDString> getUsedVariables(const ModuleUnit::FunctionInstruction& inst);
+    std::vector<STDString> getDefinedVariables(const ModuleUnit::FunctionInstruction& inst);
+    bool isVariableLive(const STDString& var, size_t instruction_index, const ControlFlowGraph& cfg);
     
         // 常量传播
     void constantPropagation(ModuleUnit& module);
     void constantPropagationFunction(ModuleUnit::FunctionTableData& function);
     bool canPropagateConstant(const ModuleUnit::FunctionInstruction& inst, 
-                             const std::unordered_map<HString, HazeValue>& constant_map);
+                             const std::unordered_map<STDString, HazeValue>& constant_map);
     bool propagateConstant(ModuleUnit::FunctionInstruction& inst, 
-                          const std::unordered_map<HString, HazeValue>& constant_map);
+                          const std::unordered_map<STDString, HazeValue>& constant_map);
     void updateConstantMap(const ModuleUnit::FunctionInstruction& inst, 
-                          std::unordered_map<HString, HazeValue>& constant_map);
+                          std::unordered_map<STDString, HazeValue>& constant_map);
     bool canEvaluateConstant(const ModuleUnit::FunctionInstruction& inst);
     
     // 循环优化
@@ -143,8 +143,8 @@ private:
                       std::vector<size_t>& dfs_stack, std::vector<LoopInfo>& loops);
     void hoistInvariantCode(ModuleUnit::FunctionTableData& function, const LoopInfo& loop, const ControlFlowGraph& cfg);
     bool isInvariantInstruction(const ModuleUnit::FunctionInstruction& inst, const LoopInfo& loop, const ControlFlowGraph& cfg, const ModuleUnit::FunctionTableData& function);
-    bool isVariableModifiedInLoop(const HString& var_name, const LoopInfo& loop, const ControlFlowGraph& cfg, const ModuleUnit::FunctionTableData& function);
-    bool isVariableDefined(const ModuleUnit::FunctionInstruction& inst, const HString& var_name);
+    bool isVariableModifiedInLoop(const STDString& var_name, const LoopInfo& loop, const ControlFlowGraph& cfg, const ModuleUnit::FunctionTableData& function);
+    bool isVariableDefined(const ModuleUnit::FunctionInstruction& inst, const STDString& var_name);
     bool shouldUnrollLoop(const LoopInfo& loop, const ControlFlowGraph& cfg);
     bool hasPredictableIterations(const LoopInfo& loop);
     void unrollLoop(ModuleUnit::FunctionTableData& function, const LoopInfo& loop, const ControlFlowGraph& cfg);
@@ -158,17 +158,17 @@ private:
     // 函数内联
     void functionInlining(ModuleUnit& module);
     void functionInliningFunction(ModuleUnit::FunctionTableData& function, const ModuleUnit& module);
-    bool shouldInlineFunction(const HString& function_name, const ModuleUnit& module);
+    bool shouldInlineFunction(const STDString& function_name, const ModuleUnit& module);
     bool isRecursiveFunction(const ModuleUnit::FunctionTableData& function);
     bool hasComplexControlFlow(const ModuleUnit::FunctionTableData& function);
-    void inlineFunctionCall(ModuleUnit::FunctionTableData& function, size_t call_site, const HString& callee_name, const ModuleUnit& module);
-    void renameLocalVariables(ModuleUnit::FunctionInstruction& inst, const HString& caller_name);
-    bool isLocalVariable(const HString& var_name);
+    void inlineFunctionCall(ModuleUnit::FunctionTableData& function, size_t call_site, const STDString& callee_name, const ModuleUnit& module);
+    void renameLocalVariables(ModuleUnit::FunctionInstruction& inst, const STDString& caller_name);
+    bool isLocalVariable(const STDString& var_name);
     
     // 公共子表达式消除
     void commonSubexpressionElimination(ModuleUnit& module);
     void commonSubexpressionEliminationFunction(ModuleUnit::FunctionTableData& function);
-    HString generateExpressionKey(const ModuleUnit::FunctionInstruction& inst);
+    STDString generateExpressionKey(const ModuleUnit::FunctionInstruction& inst);
     bool areOperandsAvailable(const ModuleUnit::FunctionInstruction& prev_inst, size_t current_inst_idx);
     
     // 寄存器分配
@@ -176,14 +176,14 @@ private:
     void registerAllocationFunction(ModuleUnit::FunctionTableData& function);
     
     // 干扰图
-    using InterferenceGraph = std::unordered_map<HString, std::unordered_set<HString>>;
+    using InterferenceGraph = std::unordered_map<STDString, std::unordered_set<STDString>>;
     
     void buildInterferenceGraph(ModuleUnit::FunctionTableData& function, const ControlFlowGraph& cfg,
                                InterferenceGraph& interference_graph);
     bool colorGraph(const InterferenceGraph& interference_graph,
-                   std::unordered_map<HString, int>& register_assignment);
+                   std::unordered_map<STDString, int>& register_assignment);
     void applyRegisterAllocation(ModuleUnit::FunctionTableData& function,
-                                const std::unordered_map<HString, int>& register_assignment);
+                                const std::unordered_map<STDString, int>& register_assignment);
     
     // 指令调度
     void instructionScheduling(ModuleUnit& module);
@@ -201,8 +201,8 @@ private:
     OptimizationStats m_stats;
     
     // 缓存
-    std::unordered_map<HString, HazeValue> m_constant_cache;
-    std::unordered_map<HString, ModuleUnit::FunctionTableData*> m_function_cache;
+    std::unordered_map<STDString, HazeValue> m_constant_cache;
+    std::unordered_map<STDString, ModuleUnit::FunctionTableData*> m_function_cache;
     
     // 分析结果
     std::unordered_map<size_t, InstructionAnalysis> m_instruction_analysis;
@@ -210,5 +210,5 @@ private:
     // 当前分析状态
     ModuleUnit::FunctionTableData* m_current_function = nullptr;
     ControlFlowGraph m_cfg;
-    std::unordered_map<HString, std::shared_ptr<ModuleUnit>> m_modules;
+    std::unordered_map<STDString, std::shared_ptr<ModuleUnit>> m_modules;
 };

@@ -31,26 +31,31 @@ extern Unique<HazeLibraryManager> g_HazeLibManager;
 // 声明指令处理函数，否则Lib库有报错
 extern const A_Array<void(*)(HazeStack* stack), ((x_uint32)InstructionOpCode::LINE + 1)> g_InstructionProcessor;
 
-static HashMap<HString, InstructionOpCode> s_HashMap_String2Code =
+static HashMap<STDString, InstructionOpCode> s_HashMap_String2Code =
 {
 #define HAZE_OP_CODE_DEFINE(OP_CODE) { H_TEXT(#OP_CODE), InstructionOpCode::OP_CODE },
 	#include "HazeOpCodeTemplate"
 #undef HAZE_OP_CODE_DEFINE
 };
 
-bool IsRegisterDesc(HazeDataDesc desc)
+inline bool IsRegisterDesc(HazeDataDesc desc)
 {
 	return HazeDataDesc::RegisterBegin < desc && desc < HazeDataDesc::RegisterEnd;
 }
 
-bool IsClassMember(HazeDataDesc desc)
+inline bool IsConstDesc(HazeDataDesc desc)
 {
-	return desc >= HazeDataDesc::ClassMember_Local_Public && desc <= HazeDataDesc::ClassMember_Local_Private;
+	return HazeDataDesc::ConstantBegin < desc && desc < HazeDataDesc::ConstantEnd;
 }
 
-bool IsConstant(HazeDataDesc desc)
+inline bool IsConstStringDesc(HazeDataDesc desc)
 {
-	return desc == HazeDataDesc::Constant;
+	return desc == HazeDataDesc::ConstantString;
+}
+
+inline bool IsClassMember(HazeDataDesc desc)
+{
+	return desc >= HazeDataDesc::ClassMember_Local_Public && desc <= HazeDataDesc::ClassMember_Local_Private;
 }
 
 const x_HChar* GetInstructionString(InstructionOpCode code)
@@ -75,7 +80,7 @@ const x_HChar* GetInstructionString(InstructionOpCode code)
 	return H_TEXT("None");
 }
 
-InstructionOpCode GetInstructionByString(const HString& str)
+InstructionOpCode GetInstructionByString(const STDString& str)
 {
 	auto iter = s_HashMap_String2Code.find(str);
 	if (iter != s_HashMap_String2Code.end())
@@ -110,6 +115,21 @@ bool IsCallOpCode(InstructionOpCode opcode)
 bool IsMovOpCode(InstructionOpCode opcode)
 {
 	return opcode >= InstructionOpCode::MOV && opcode <= InstructionOpCode::LEA;
+}
+
+HazeVirtualRegister GetVirtualRegisterByDesc(HazeDataDesc desc)
+{
+	switch (desc)
+	{
+		case HazeDataDesc::RegisterRet:
+			return HazeVirtualRegister::RET;
+		case HazeDataDesc::RegisterCmp:
+			return HazeVirtualRegister::CMP;
+		default:
+			break;
+	}
+
+	return HazeVirtualRegister::_END;
 }
 
 void CallHazeFunction(HazeStack* stack, FunctionData* funcData, va_list& args);
@@ -367,7 +387,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
-			int size = oper[0].Variable.Type.GetTypeSize();
+			int size = GetSizeByHazeType(oper[0].Type);
 			if (oper[0].Desc == HazeDataDesc::Address)
 			{
 				memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, HAZE_ADDRESS_SIZE);
@@ -711,7 +731,7 @@ public:
 						}
 						else if (function.FunctionDescData.Type == InstructionFunctionType::DLLLibFunction)
 						{
-							HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER);
+							HazeRegister* retRegister = stack->GetVirtualRegister(HazeVirtualRegister::RET);
 							retRegister->Type = function.Type;
 							int size = retRegister->Type.GetTypeSize();
 							retRegister->Data.resize(size);
@@ -746,7 +766,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 1)
 		{
-			HazeRegister* retRegister = stack->GetVirtualRegister(RET_REGISTER);
+			HazeRegister* retRegister = stack->GetVirtualRegister(HazeVirtualRegister::RET);
 			retRegister->Type = oper[0].Variable.Type;
 
 			int size = retRegister->Type.GetTypeSize();
@@ -843,7 +863,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* cmpRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
 			auto strongerType = GetStrongerType(oper[0].Variable.Type.BaseType, oper[1].Variable.Type.BaseType);
 			CompareValueByType(strongerType != HazeValueType::None ? strongerType : 
 				(GetSizeByHazeType(oper[0].Variable.Type.BaseType) == GetSizeByHazeType(oper[1].Variable.Type.BaseType)) ? oper[0].Variable.Type.BaseType : HazeValueType::None,
@@ -877,7 +897,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* cmpRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
 
 			if (!REGISTER_EQUAL(cmpRegister))
 			{
@@ -899,7 +919,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* cmpRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
 
 			if (!REGISTER_GREATER(cmpRegister))
 			{
@@ -921,7 +941,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* cmpRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
 
 			if (!REGISTER_LESS(cmpRegister))
 			{
@@ -943,7 +963,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* cmpRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
 
 			if (REGISTER_EQUAL(cmpRegister))
 			{
@@ -965,7 +985,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* cmpRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
 
 			if (REGISTER_GREATER(cmpRegister))
 			{
@@ -987,7 +1007,7 @@ public:
 		const auto& oper = stack->m_VM->m_Instructions[stack->m_PC].Operator;
 		if (oper.size() == 2)
 		{
-			HazeRegister* cmpRegister = stack->GetVirtualRegister(CMP_REGISTER);
+			HazeRegister* cmpRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
 
 			if (REGISTER_LESS(cmpRegister))
 			{
@@ -1045,7 +1065,7 @@ public:
 
 			if (oper[1].AddressType == InstructionAddressType::Register)
 			{
-				s_Type = stack->GetVirtualRegister(oper[1].Variable.Name.c_str())->Type;
+				s_Type = stack->GetVirtualRegister(GetVirtualRegisterByDesc(oper[1].Desc))->Type;
 			}
 			else if (IsDynamicClassUnknowType(oper[0].Variable.Type.BaseType))
 			{
@@ -1127,7 +1147,7 @@ private:
 				break;
 			case InstructionAddressType::Register:
 			{
-				HazeRegister* hazeRegister = stack->GetVirtualRegister(insData.Variable.Name.c_str());
+				HazeRegister* hazeRegister = stack->GetVirtualRegister(GetVirtualRegisterByDesc(insData.Desc));
 
 				if (hazeRegister->Type != insData.Variable.Type)
 				{
@@ -1153,10 +1173,8 @@ private:
 
 	static void JmpToOperator(HazeStack* stack, const InstructionData& insData)
 	{
-		if (insData.Variable.Name == HAZE_JMP_NULL)
-		{
-		}
-		else
+		static const STDString s_JmpNull = HAZE_JMP_NULL;
+		if (insData.Variable.Name != s_JmpNull)
 		{
 			stack->JmpTo(insData);
 		}
@@ -1323,8 +1341,8 @@ private:
 		//New和Ret寄存器的type清空，防止没有垃圾回收掉
 		if (oper.AddressType == InstructionAddressType::Register)
 		{
-			auto Register = stack->GetVirtualRegister(oper.Variable.Name.c_str());
-			if (/*Register == stack->GetVirtualRegister(NEW_REGISTER) || */Register == stack->GetVirtualRegister(RET_REGISTER))
+			auto Register = stack->GetVirtualRegister(GetVirtualRegisterByDesc(oper.Desc));
+			if (/*Register == stack->GetVirtualRegister(NEW_REGISTER) || */Register == stack->GetVirtualRegister(HazeVirtualRegister::RET))
 			{
 				Register->Type.Reset();
 			}

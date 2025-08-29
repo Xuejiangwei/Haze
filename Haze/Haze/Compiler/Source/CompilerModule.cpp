@@ -27,27 +27,11 @@ struct PushTempRegister
 	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule, const HazeVariableType* defineType, Share<CompilerValue>* retValue)
 		: Size(0), Hss(hss), Compiler(compiler), Module(compilerModule), DefineType(defineType), RetValue(retValue)
 	{
-		UseTempRegisters = Compiler->GetUseTempRegister();
-		for (auto& regi : UseTempRegisters)
-		{
-			Hss << GetInstructionString(InstructionOpCode::PUSH) << " ";
-			GenVariableHzic(Module, Hss, regi.second);
-			Hss << HAZE_ENDL;
-			Size += regi.second->GetSize();
-		}
 	}
 
 	~PushTempRegister()
 	{
-		for (auto& regi : UseTempRegisters)
-		{
-			Hss << GetInstructionString(InstructionOpCode::POP) << " ";
-			GenVariableHzic(Module, Hss, regi.second);
-			Hss << HAZE_ENDL;
-		}
-		
 		Compiler->GetInsertBlock()->PushIRCode(Hss.str());
-		Compiler->ResetTempRegister(UseTempRegisters);
 
 		if (DefineType && !IsVoidType(DefineType->BaseType) && RetValue)
 		{
@@ -61,13 +45,12 @@ private:
 	HAZE_STRING_STREAM& Hss;
 	Compiler* Compiler;
 	CompilerModule* Module;
-	HashMap<const x_HChar*, Share<CompilerValue>> UseTempRegisters;
 	const HazeVariableType* DefineType;
 	Share<CompilerValue>* RetValue;
 };
 
 
-CompilerModule::CompilerModule(Compiler* compiler, const HString& moduleName, const HString& modulePath)
+CompilerModule::CompilerModule(Compiler* compiler, const STDString& moduleName, const STDString& modulePath)
 	: m_Compiler(compiler), m_ModuleLibraryType(HazeLibraryType::Normal), m_BeginCreateFunctionParamVariableIndex(-1), m_BeginCreateClassVariableIndex(-1),
 	 m_IsGenTemplateCode(false), m_Path(modulePath)
 {
@@ -122,9 +105,9 @@ CompilerModule::~CompilerModule()
 	}
 }
 
-bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString& moduleName)
+bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const STDString& moduleName)
 {
-	HString str;
+	STDString str;
 	x_uint64 ui64;
 
 	stream >> str;
@@ -227,7 +210,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	{
 		if (ui64 > 0)
 		{
-			HString enumValueStr;
+			STDString enumValueStr;
 			x_uint32 typeId;
 			for (int i = 0; i < ui64; i++)
 			{
@@ -273,7 +256,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 			return false;
 		}
 
-		HString className;
+		STDString className;
 		stream >> className;
 
 		x_uint32 ui32;
@@ -281,7 +264,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 		stream >> ui32;
 		stream >> ui64;
 
-		V_Array<HString> parentName(ui64);
+		V_Array<STDString> parentName(ui64);
 		for (int j = 0; j < ui64; j++)
 		{
 			stream >> parentName[j];
@@ -299,7 +282,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 
 		CompilerClass::ParseIntermediateClass(stream, this, parentClass);
 
-		V_Array<Pair<HString, Share<CompilerValue>>> classData(memberCount);
+		V_Array<Pair<STDString, Share<CompilerValue>>> classData(memberCount);
 		for (x_uint32 j = 0; j < memberCount; ++j)
 		{
 			HazeDataDesc desc;
@@ -345,7 +328,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	while (str == GetClassFunctionLabelHeader() || str == GetFunctionLabelHeader())
 	{
 		bool isNormalFunc = str == GetFunctionLabelHeader();
-		HString name;
+		STDString name;
 		int descType;
 		stream >> descType;
 
@@ -447,7 +430,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString&
 	return true;
 }
 
-const HString& CompilerModule::GetName() const
+const STDString& CompilerModule::GetName() const
 {
 	return *m_Compiler->GetModuleName(this);
 }
@@ -457,7 +440,7 @@ void CompilerModule::MarkLibraryType(HazeLibraryType type)
 	m_ModuleLibraryType = type;
 }
 
-void CompilerModule::RestartTemplateModule(const HString& moduleName)
+void CompilerModule::RestartTemplateModule(const STDString& moduleName)
 {
 #if HAZE_I_CODE_ENABLE
 	
@@ -490,8 +473,8 @@ void CompilerModule::GenCodeFile()
 #endif
 }
 
-Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<CompilerClass*>& parentClass,
-	V_Array<Pair<HString, Share<CompilerValue>>>& classData)
+Share<CompilerClass> CompilerModule::CreateClass(const STDString& name, V_Array<CompilerClass*>& parentClass,
+	V_Array<Pair<STDString, Share<CompilerValue>>>& classData)
 {
 	auto compilerClass = GetClass(name);
 	if (!compilerClass)
@@ -521,7 +504,7 @@ Share<CompilerClass> CompilerModule::CreateClass(const HString& name, V_Array<Co
 	return compilerClass;
 }
 
-Share<CompilerEnum> CompilerModule::CreateEnum(const HString& name)
+Share<CompilerEnum> CompilerModule::CreateEnum(const STDString& name)
 {
 	Share<CompilerEnum> compilerEnum = GetEnum(this, name);
 	if (!compilerEnum)
@@ -596,7 +579,7 @@ Share<CompilerFunction> CompilerModule::GetUpOneLevelClosureOrFunction()
 	return m_ClosureStack.size() > 1 ? m_ClosureStack[m_ClosureStack.size() - 2] : GetCurrFunction();
 }
 
-Share<CompilerFunction> CompilerModule::GetFunction(const HString& name)
+Share<CompilerFunction> CompilerModule::GetFunction(const STDString& name)
 {
 	SearchContext context;
 	return GetFunction_Internal(name, context);
@@ -614,13 +597,13 @@ bool CompilerModule::IsImportModule(CompilerModule* m) const
 	return false;
 }
 
-CompilerModule* CompilerModule::ExistGlobalValue(const HString& name)
+CompilerModule* CompilerModule::ExistGlobalValue(const STDString& name)
 {
 	SearchContext context;
 	return ExistGlobalValue_Internal(name, context);
 }
 
-Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const HString& name)
+Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, const STDString& name)
 {
 	SearchContext context;
 	auto ret = m->GetEnum_Internal(name, context);
@@ -637,7 +620,7 @@ Share<CompilerEnum> CompilerModule::GetEnum(CompilerModule* m, x_uint32 typeId)
 	return m->GetEnum(m, *m->m_Compiler->GetCompilerSymbol()->GetSymbolByTypeId(typeId));
 }
 
-Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params)
+Share<CompilerFunction> CompilerModule::CreateFunction(const STDString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
 	Share<CompilerFunction> function = nullptr;
 	auto it = m_HashMap_Functions.find(name);
@@ -658,7 +641,7 @@ Share<CompilerFunction> CompilerModule::CreateFunction(const HString& name, cons
 }
 
 Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> compilerClass, HazeFunctionDesc desc,
-	const HString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params)
+	const STDString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
 	Share<CompilerFunction> function = compilerClass->FindFunction(name, &compilerClass->GetName());
 	if (!function)
@@ -675,7 +658,7 @@ Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> comp
 
 Share<CompilerClosureFunction> CompilerModule::CreateClosureFunction(HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
-	HString name = CLOSURE_NAME_PREFIX + GetName() + ToHazeString(m_ClosureStack.size());
+	STDString name = CLOSURE_NAME_PREFIX + GetName() + ToHazeString(m_ClosureStack.size());
 	auto closure = MakeShare<CompilerClosureFunction>(this, name, type, params);
 	//closure->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, closure, nullptr));
 
@@ -941,7 +924,7 @@ Share<CompilerValue> CompilerModule::CreateGlobalVariable(const HazeDefineVariab
 	return m_GlobalDataFunction->CreateGlobalVariable(var, line, refValue);
 }
 
-Share<CompilerValue> CompilerModule::GetClosureVariable(const HString& name, bool addRef)
+Share<CompilerValue> CompilerModule::GetClosureVariable(const STDString& name, bool addRef)
 {
 	auto block = m_Compiler->GetInsertBlock();
 	for (int i = (int)m_ClosureStack.size() - 1; i >= 0; i--)
@@ -973,7 +956,7 @@ Share<CompilerValue> CompilerModule::GetClosureVariable(const HString& name, boo
 	return nullptr;
 }
 
-void CompilerModule::ClosureAddLocalRef(Share<CompilerValue> value, const HString& name)
+void CompilerModule::ClosureAddLocalRef(Share<CompilerValue> value, const STDString& name)
 {
 	auto index = GetCurrFunction()->FindLocalVariableIndex(value);
 	for (x_uint64 i = 0; i < m_ClosureStack.size(); i++)
@@ -990,7 +973,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 	static HazeVariableType s_Float64 = HazeVariableType(HazeValueType::Float64);
 
 	Share<CompilerBlock> insertBlock = m_Compiler->GetInsertBlock();
-	HString strName;
+	STDString strName;
 
 	auto pointerFunc = DynamicCast<CompilerPointerFunction>(pointerFunction);
 	x_uint64 pushDefaultParamCount = 0;
@@ -1139,7 +1122,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 }
 
 Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> callFunction, 
-	const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo, const HString* nameSpace)
+	const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo, const STDString* nameSpace)
 {
 	HAZE_STRING_STREAM hss;
 	x_uint32 size = 0;
@@ -1154,13 +1137,12 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> 
 	return ret;
 }
 
-Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> pointerFunction, 
-	V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
+Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo)
 {
 	HAZE_STRING_STREAM hss;
 	x_uint32 size = 0;
 
-	HString varName;
+	HStringView varName;
 	GetGlobalVariableName(this, pointerFunction, varName);
 	if (varName.empty())
 	{
@@ -1187,12 +1169,10 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 	HAZE_STRING_STREAM hss;
 	x_uint32 size = 0;
 
-	HString varName;
-	GetGlobalVariableName(this, thisPointerTo, varName);
-	if (varName.empty())
+	InstructionOpId opId;
+	if (!GetGlobalVariableId(this, thisPointerTo, opId))
 	{
-		GetCurrFunction()->FindLocalVariableName(thisPointerTo, varName);
-		if (varName.empty())
+		if (!GetCurrFunction()->FindLocalVariableIndex(thisPointerTo, opId))
 		{
 			HAZE_LOG_ERR_W("函数指针调用失败!\n");
 			return nullptr;
@@ -1236,7 +1216,7 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 	return ret;
 }
 
-Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const HString& str)
+Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const STDString& str)
 {
 	auto it = m_HashMap_StringTable.find(str);
 	if (it != m_HashMap_StringTable.end())
@@ -1247,7 +1227,7 @@ Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const HStri
 
 	it = m_HashMap_StringTable.find(str);
 
-	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = &it->first;
+	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = it->first;
 
 	HazeVariableType defineVarType = HAZE_VAR_TYPE(HazeValueType::String);
 	it->second = CreateVariable(this, defineVarType, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
@@ -1266,7 +1246,7 @@ x_uint32 CompilerModule::GetGlobalStringIndex(Share<CompilerValue> value)
 		{
 			for (auto& It : m_HashMap_StringMapping)
 			{
-				if (&it.first == It.second)
+				if (it.first.c_str() == It.second)
 				{
 					return It.first;
 				}
@@ -1277,7 +1257,7 @@ x_uint32 CompilerModule::GetGlobalStringIndex(Share<CompilerValue> value)
 	return 0;
 }
 
-Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const HString& name)
+Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const STDString& name)
 {
 	SearchContext context;
 	auto ret = m->GetGlobalVariable_Internal(name, context);
@@ -1289,11 +1269,15 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable(CompilerModule* m, const 
 	return m->m_Compiler->GetBaseModuleGlobalVariable(name);
 }
 
-bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset,
-	V_Array<Pair<x_uint64, CompilerValue*>>* offsets)
+bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HStringView& outName)
 {
+	if (!value->IsGlobalVariable())
+	{
+		return false;
+	}
+
 	SearchContext context;
-	if (m->GetGlobalVariableName_Internal(value, outName, getOffset, offsets, context))
+	if (m->GetGlobalVariableName_Internal(value, outName, context))
 	{
 		return true;
 	}
@@ -1306,7 +1290,28 @@ bool CompilerModule::GetGlobalVariableName(CompilerModule* m, const Share<Compil
 	return value->TryGetVariableName(outName);
 }
 
-bool CompilerModule::GetClosureVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName)
+bool CompilerModule::GetGlobalVariableId(CompilerModule* m, const Share<CompilerValue>& value, InstructionOpId& outId)
+{
+	if (!value->IsGlobalVariable())
+	{
+		return false;
+	}
+
+	SearchContext context;
+	if (m->GetGlobalVariableId_Internal(value, outId, context))
+	{
+		return true;
+	}
+
+	if (m->m_Compiler->GetBaseModuleGlobalVariableId(value, outId))
+	{
+		return true;
+	}
+
+	return value->TryGetVariableId(outId);
+}
+
+bool CompilerModule::GetClosureVariableName(CompilerModule* m, const Share<CompilerValue>& value, HStringView& outName)
 {
 	for (int i = (int)m->m_ClosureStack.size() - 1; i >= 0; i--)
 	{
@@ -1319,7 +1324,20 @@ bool CompilerModule::GetClosureVariableName(CompilerModule* m, const Share<Compi
 	return false;
 }
 
-Share<CompilerFunction> CompilerModule::GetFunction_Internal(const HString& name, SearchContext& context)
+bool CompilerModule::GetClosureVariableId(CompilerModule* m, const Share<CompilerValue>& value, InstructionOpId& outId)
+{
+	for (int i = (int)m->m_ClosureStack.size() - 1; i >= 0; i--)
+	{
+		if (m->m_ClosureStack[i]->FindLocalVariableIndex(value, outId))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Share<CompilerFunction> CompilerModule::GetFunction_Internal(const STDString& name, SearchContext& context)
 {
 	auto it = m_HashMap_Functions.find(name);
 	if (it != m_HashMap_Functions.end())
@@ -1369,7 +1387,7 @@ Share<CompilerFunction> CompilerModule::GetFunction_Internal(const HString& name
 	return nullptr;
 }
 
-CompilerModule* CompilerModule::ExistGlobalValue_Internal(const HString& name, SearchContext& context)
+CompilerModule* CompilerModule::ExistGlobalValue_Internal(const STDString& name, SearchContext& context)
 {
 	auto variables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
 	for (auto& it : variables)
@@ -1408,7 +1426,7 @@ CompilerModule* CompilerModule::ExistGlobalValue_Internal(const HString& name, S
 	return nullptr;
 }
 
-Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& name, SearchContext& context)
+Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const STDString& name, SearchContext& context)
 {
 	auto variables = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList();
 	for (auto& it : variables)
@@ -1447,8 +1465,7 @@ Share<CompilerValue> CompilerModule::GetGlobalVariable_Internal(const HString& n
 	return nullptr;
 }
 
-bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset,
-	V_Array<Pair<x_uint64, CompilerValue*>>* offsets, SearchContext& context)
+bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HStringView& outName, SearchContext& context)
 {
 	if (value->IsRegister())
 	{
@@ -1483,7 +1500,7 @@ bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& 
 
 	for (auto& it : m_ImportModules)
 	{
-		if (it->GetGlobalVariableName_Internal(value, outName, getOffset, offsets, context))
+		if (it->GetGlobalVariableName_Internal(value, outName, context))
 		{
 			return true;
 		}
@@ -1502,7 +1519,56 @@ bool CompilerModule::GetGlobalVariableName_Internal(const Share<CompilerValue>& 
 	return false;
 }
 
-Share<CompilerClass> CompilerModule::GetClass_Internal(const HString& className, SearchContext& context)
+bool CompilerModule::GetGlobalVariableId_Internal(const Share<CompilerValue>& value, InstructionOpId& outId, SearchContext& context)
+{
+	if (value->IsRegister())
+	{
+		outId.Id = m_Compiler->GetRegisterIndex(value);
+		return true;
+	}
+
+	if (m_GlobalDataFunction->FindLocalVariableIndex(value, outId))
+	{
+		return true;
+	}
+
+	if (context.CurrentDepth >= context.MaxDepth)
+	{
+		HAZE_LOG_ERR_W("查找全局变量名: 递归深度过深，可能存在循环依赖\n");
+		return false;
+	}
+
+	if (context.VisitedModules.find(this) != context.VisitedModules.end())
+	{
+		//HAZE_LOG_ERR_W("GetClass: 检测到循环依赖，模块<%s>已被访问\n", GetName().c_str());
+		return false;
+	}
+
+	context.VisitedModules.insert(this);
+	context.CurrentDepth++;
+
+	for (auto& it : m_ImportModules)
+	{
+		if (it->GetGlobalVariableId_Internal(value, outId, context))
+		{
+			return true;
+		}
+	}
+
+	for (auto& it : m_HashMap_StringTable)
+	{
+		if (it.second == value)
+		{
+			outId.Id = 0;//HAZE_CONSTANT_STRING_NAME;//It.first;
+			return true;
+		}
+	}
+
+	context.CurrentDepth--;
+	return false;
+}
+
+Share<CompilerClass> CompilerModule::GetClass_Internal(const STDString& className, SearchContext& context)
 {
 	auto iter = m_HashMap_Classes.find(className);
 	if (iter != m_HashMap_Classes.end())
@@ -1538,7 +1604,7 @@ Share<CompilerClass> CompilerModule::GetClass_Internal(const HString& className,
 	return nullptr;
 }
 
-Share<CompilerEnum> CompilerModule::GetEnum_Internal(const HString& name, SearchContext& context)
+Share<CompilerEnum> CompilerModule::GetEnum_Internal(const STDString& name, SearchContext& context)
 {
 	auto iter = m_HashMap_Enums.find(name);
 	if (iter != m_HashMap_Enums.end())
@@ -1574,13 +1640,13 @@ Share<CompilerEnum> CompilerModule::GetEnum_Internal(const HString& name, Search
 	return nullptr;
 }
 
-Share<CompilerClass> CompilerModule::GetClass(const HString& className)
+Share<CompilerClass> CompilerModule::GetClass(const STDString& className)
 {
 	SearchContext context;
 	return GetClass_Internal(className, context);
 }
 
-x_uint32 CompilerModule::GetClassSize(const HString& className)
+x_uint32 CompilerModule::GetClassSize(const STDString& className)
 {
 	return GetClass(className)->GetDataSize();
 }
@@ -1615,7 +1681,8 @@ void CompilerModule::GenICode()
 	{
 		if (!m_ImportModules[i]->GetPath().empty())
 		{
-			hss << GetImportHeaderModuleString() << " " << m_ImportModules[i]->GetPath() << HAZE_ENDL;
+			hss << GetImportHeaderModuleString() << " ";
+			hss << m_ImportModules[i]->GetPath() << HAZE_ENDL;
 		}
 		else
 		{
@@ -1638,6 +1705,7 @@ void CompilerModule::GenICode()
 		auto& var = globaleVariables[i].second;
 	
 		hss << globaleVariables[i].first << " ";
+		hss << m_Compiler->GetCompilerSymbol()->GetGlobalVariableId(globaleVariables[i].first) << " ";
 		var->GetVariableType().StringStreamTo(hss);
 		hss << HAZE_ENDL;
 	}
@@ -1666,7 +1734,7 @@ void CompilerModule::GenICode()
 
 	for (auto& it : m_HashMap_StringMapping)
 	{
-		hss << it.second->length() << " " << *it.second << HAZE_ENDL;
+		hss << it.second.length() << " " << it.second << HAZE_ENDL;
 	}
 
 	/*

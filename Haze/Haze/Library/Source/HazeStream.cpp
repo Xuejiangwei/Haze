@@ -10,7 +10,7 @@
 #include "ObjectDynamicClass.h"
 #include "HazeMemory.h"
 
-static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
+static HashMap<STDString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
 	{ H_TEXT("打印"), &HazeStream::HazePrintf },
 	{ H_TEXT("输入"), &HazeStream::HazeScanf },
@@ -44,7 +44,7 @@ void HazeStream::InitializeLib()
 	HazeStandardLibraryBase::AddStdLib(H_TEXT("标准流"), &s_HashMap_Functions);
 }
 
-HString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
+STDString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
 {
 	NO_PARAM_WARNING();
 
@@ -165,7 +165,7 @@ HString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
 	return hss.str();
 }
 
-HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
+STDString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 {
 	NO_PARAM_WARNING();
 
@@ -284,7 +284,7 @@ HString HazeStream::GetFormatString(HAZE_STD_CALL_PARAM)
 	return hss.str();
 }
 
-HString HazeStream::FormatConstantString(const HString& str)
+STDString HazeStream::FormatConstantString(const STDString& str)
 {
 	HAZE_STRING_STREAM hss;
 	auto start = str.c_str();
@@ -577,13 +577,13 @@ void TestDeconstructor(void* ptr)
 	std::cout << "deconstructor : " << ptr << HAZE_ENDL;
 }
 
-void TestGetMember(HazeStack* stack, const HString& name, void* obj)
+void TestGetMember(HazeStack* stack, const STDString& name, void* obj)
 {
 	HAZE_LOG_INFO(H_TEXT("get member %s\n"), name.c_str());
 	SET_RET_BY_TYPE(HAZE_VAR_TYPE(HazeValueType::Int32), ((TestDynamic*)obj)->value);
 }
 
-void TestSetMember(HazeStack* stack, const HString& name, void* obj, x_uint8* currESP)
+void TestSetMember(HazeStack* stack, const STDString& name, void* obj, x_uint8* currESP)
 {
 	assert(stack);
 
@@ -592,7 +592,7 @@ void TestSetMember(HazeStack* stack, const HString& name, void* obj, x_uint8* cu
 	memcpy(&((TestDynamic*)obj)->value, currESP - size, size);
 }
 
-void TestCallFunction(HazeStack* stack, const HString& name, void* obj, x_uint8* currESP)
+void TestCallFunction(HazeStack* stack, const STDString& name, void* obj, x_uint8* currESP)
 {
 	std::wcout << "call function : " << name.c_str() << HAZE_ENDL;
 	int a, b;

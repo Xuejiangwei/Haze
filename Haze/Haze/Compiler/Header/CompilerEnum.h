@@ -11,15 +11,15 @@ class CompilerEnum
 {
 	friend class CompilerSymbol;
 public:
-	CompilerEnum(CompilerModule* compilerModule, const HString& name, x_uint32 typeId);
+	CompilerEnum(CompilerModule* compilerModule, const STDString& name, x_uint32 typeId);
 
 	~CompilerEnum();
 
-	const HString& GetName() const { return m_Name; }
+	const STDString& GetName() const { return m_Name; }
 
-	void AddEnumValue(const HString& name, Share<CompilerValue> value);
+	void AddEnumValue(const STDString& name, Share<CompilerValue> value);
 
-	Share<CompilerEnumValue> GetEnumValue(const HString& name);
+	Share<CompilerEnumValue> GetEnumValue(const STDString& name);
 
 	Share<CompilerEnumValue> GetEnumValueByIndex(x_uint64 index);
 
@@ -28,10 +28,10 @@ public:
 	void GenEnum_I_Code(HAZE_STRING_STREAM& hss);
 
 private:
-	HString m_Name;
+	STDString m_Name;
 
 	HazeVariableType m_Type;
 	CompilerModule* m_Module;
 
-	V_Array<Pair<HString, Share<CompilerEnumValue>>> m_EnumValues;
+	V_Array<Pair<STDString, Share<CompilerEnumValue>>> m_EnumValues;
 };

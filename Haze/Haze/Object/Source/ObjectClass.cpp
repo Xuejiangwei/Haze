@@ -60,7 +60,7 @@ ObjectClass* ObjectClass::Create(HazeVM* vm, ClassData* classData)
 
 const char* ObjectClass::GetMember(const x_HChar* memberName)
 {
-	HString name = memberName;
+	STDString name = memberName;
 	auto& members = m_ClassInfo->Members;
 	for (size_t i = 0; i < members.size(); i++)
 	{
@@ -75,7 +75,7 @@ const char* ObjectClass::GetMember(const x_HChar* memberName)
 
 void ObjectClass::SetMember(const x_HChar* memberName, void* value)
 {
-	HString name = memberName;
+	STDString name = memberName;
 	auto& members = m_ClassInfo->Members;
 	for (size_t i = 0; i < members.size(); i++)
 	{

@@ -10,24 +10,26 @@
 #include "CompilerClosureFunction.h"
 #include "HazeTokenText.h"
 
-CompilerBlock::CompilerBlock(const HString& name, CompilerFunction* parentFunction, CompilerBlock* parentBlock)
-	: enable_shared_from_this(*this), m_Name(name), m_ParentFunction(parentFunction), m_ParentBlock(parentBlock), m_LoopEndBlock(nullptr)
+CompilerBlock::CompilerBlock(STDString&& name, CompilerFunction* parentFunction, CompilerBlock* parentBlock)
+	: enable_shared_from_this(*this), m_Name(Move(name)), m_ParentFunction(parentFunction), m_ParentBlock(parentBlock), m_LoopEndBlock(nullptr)
 {
 	m_IRCodes.clear();
 	m_Allocas.clear();
-	PushIRCode(HString(BLOCK_START) + H_TEXT(" ") + name + H_TEXT("\n"));
+	PushIRCode(STDString(BLOCK_START) + H_TEXT(" ") + m_Name + H_TEXT("\n"));
 }
 
 CompilerBlock::~CompilerBlock()
 {
 }
 
-bool CompilerBlock::FindLocalVariableName(const Share<CompilerValue>& value, HString& outName)
+bool CompilerBlock::FindLocalVariableName(const Share<CompilerValue>& value, HStringView& outName)
 {
 	for (auto& it : m_Allocas)
 	{
-		if (TrtGetVariableName(it, value.get(), outName))
+		if (it.second == value)
+		//if (TrtGetVariableName(it, value.get(), outName))
 		{
+			outName = it.first;
 			return true;
 		}
 	}
@@ -61,20 +63,7 @@ CompilerBlock* CompilerBlock::FindLoopBlock()
 
 bool CompilerBlock::IsLoopBlock() const
 {
-	static HString s_WhileBlockName = BLOCK_WHILE;
-	static HString s_ForBlockName = BLOCK_LOOP;
-
-	if (m_Name.length() >= s_WhileBlockName.length() && m_Name.substr(0, s_WhileBlockName.length()) == s_WhileBlockName)
-	{
-		return true;
-	}
-
-	if (m_Name.length() >= s_ForBlockName.length() && m_Name.substr(0, s_ForBlockName.length()) == s_ForBlockName)
-	{
-		return true;
-	}
-
-	return false;
+	return m_Name.starts_with(BLOCK_WHILE) || m_Name.starts_with(BLOCK_LOOP);
 }
 
 void CompilerBlock::AddChildBlock(Share<CompilerBlock> block)
@@ -176,14 +165,14 @@ void CompilerBlock::ClearLocalVariable()
 	}
 }
 
-Share<CompilerBlock> CompilerBlock::CreateBaseBlock(const HString& name, Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock)
+Share<CompilerBlock> CompilerBlock::CreateBaseBlock(STDString&& name, Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock)
 {
-	return CreateBaseBlock(name, parent.get(), parentBlock.get());
+	return CreateBaseBlock(Move(name), parent.get(), parentBlock.get());
 }
 
-Share<CompilerBlock> CompilerBlock::CreateBaseBlock(const HString& name, CompilerFunction* Parent, CompilerBlock* parentBlock)
+Share<CompilerBlock> CompilerBlock::CreateBaseBlock(STDString&& name, CompilerFunction* Parent, CompilerBlock* parentBlock)
 {
-	auto BB = MakeShare<CompilerBlock>(name, Parent, parentBlock);
+	auto BB = MakeShare<CompilerBlock>(Move(name), Parent, parentBlock);
 
 	if (parentBlock)
 	{
@@ -193,7 +182,7 @@ Share<CompilerBlock> CompilerBlock::CreateBaseBlock(const HString& name, Compile
 	return BB;
 }
 
-void CompilerBlock::PushIRCode(const HString& code)
+void CompilerBlock::PushIRCode(const STDString& code)
 {
 	m_IRCodes.push_back(code);
 }
@@ -237,14 +226,14 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 
 	HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
 	Share<CompilerValue> allocaValue = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, scope, desc, count, refValue, params);
-	m_Allocas.push_back({ defineVar.Name, allocaValue });
+	m_Allocas.push_back({ STDString(defineVar.Name.c_str()), allocaValue });
 
 	m_ParentFunction->AddLocalVariable(allocaValue, line);
 
 	return allocaValue;
 }
 
-void CompilerBlock::AddClosureRefValue(Share<CompilerValue> refValue, const HString& name)
+void CompilerBlock::AddClosureRefValue(Share<CompilerValue> refValue, const STDString& name)
 {
 	for (auto& it : m_Allocas)
 	{
@@ -254,5 +243,5 @@ void CompilerBlock::AddClosureRefValue(Share<CompilerValue> refValue, const HStr
 		}
 	}
 
-	m_Allocas.push_back({ name, refValue });
+	m_Allocas.push_back({ name.c_str(), refValue});
 }

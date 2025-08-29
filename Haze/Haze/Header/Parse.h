@@ -26,15 +26,15 @@ public:
 
 	~Parse();
 
-	void InitializeFile(const HString& filePath);
+	void InitializeFile(const STDString& filePath);
 
-	void InitializeString(const HString& str, x_uint32 startLine = 0);
+	void InitializeString(const STDString& str, x_uint32 startLine = 0);
 
 	bool ParseContent();
 
 	HazeToken GetNextToken(bool clearLexeme = true);
 
-	const HString& GetCurrLexeme() const { return m_CurrLexeme; }
+	const STDString& GetCurrLexeme() const { return m_CurrLexeme; }
 
 	static bool TokenIsNone(HazeToken token) { return token == HazeToken::None; }
 
@@ -118,7 +118,7 @@ private:
 
 	Unique<ASTClass> ParseClass();
 	V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>> ParseClassData();
-	Unique<ASTClassFunctionSection> ParseClassFunction(const HString& className);
+	Unique<ASTClassFunctionSection> ParseClassFunction(const STDString& className);
 
 	Unique<ASTBase> ParseSizeOf();
 
@@ -129,7 +129,7 @@ private:
 	//Unique<ASTTemplateBase> ParseTemplateFunction(V_Array<HString>& templateTypes);
 
 private:
-	Unique<ASTFunction> ParseFunction(const HString* className = nullptr, bool isClassPublic = false);
+	Unique<ASTFunction> ParseFunction(const STDString* className = nullptr, bool isClassPublic = false);
 
 	bool ExpectNextTokenIs(HazeToken token, const x_HChar* errorInfo = nullptr, bool parseError = true);
 
@@ -141,15 +141,15 @@ private:
 
 	bool IsHazeSignalToken(const x_HChar* hChar, const x_HChar*& outChar, x_uint32 charSize = 1);
 
-	bool IsNumberType(const HString& str, HazeToken& outToken);
+	bool IsNumberType(const STDString& str, HazeToken& outToken);
 
 	void GetValueType(HazeVariableType& inType);
 
 	x_uint32 ParseTemplateTypes(HazeVariableType baseType, TemplateDefineTypes& templateTypes);
 
-	void RegisterClassData(const HString& name, V_Array<HString>& parents, V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& classDatas);
-	void RegisterEnumData(const HString& name, V_Array<Pair<HString, Unique<ASTBase>>>& members);
-	void RegisterFunctionSymbol(const HString& functionName, x_uint32 funcType, V_Array<Unique<ASTBase>>&& params, HazeFunctionDesc desc, const HString* className, bool isClassPublic);
+	void RegisterClassData(const STDString& name, V_Array<STDString>& parents, V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& classDatas);
+	void RegisterEnumData(const STDString& name, V_Array<Pair<STDString, Unique<ASTBase>>>& members);
+	void RegisterFunctionSymbol(const STDString& functionName, x_uint32 funcType, V_Array<Unique<ASTBase>>&& params, HazeFunctionDesc desc, const STDString* className, bool isClassPublic);
 
 	void EnableExpectIdentiferIsClassOrEnum();
 	void OnHitExpectIdentiferIsClassOrEnum();
@@ -163,15 +163,15 @@ private:
 	HazeLibraryType m_LibraryType;
 	HazeToken m_CurrToken;
 	const x_HChar* m_CurrCode;
-	HString m_ModuleName;
-	HString m_CodeText;
-	HString m_CurrLexeme;
-	Pair<HString, int> m_CurrPreLexeme;		//LexemeString, skip char count
+	STDString m_ModuleName;
+	STDString m_CodeText;
+	STDString m_CurrLexeme;
+	Pair<STDString, int> m_CurrPreLexeme;		//LexemeString, skip char count
 
 	std::stack<HazeSectionSignal> m_StackSectionSignal;
 
 	//HazeDefineVariable m_DefineVariable;
-	HString m_CurrParseClass;
+	STDString m_CurrParseClass;
 
 	int m_LeftParenthesesExpressionCount;
 	x_uint32 m_LineCount;
@@ -181,5 +181,5 @@ private:
 	bool m_IsParseClassData_Or_FunctionParam;
 	bool m_IsParseArray;
 	bool m_IsParseTemplate;
-	const V_Array<HString>* m_TemplateTypes;
+	const V_Array<STDString>* m_TemplateTypes;
 };

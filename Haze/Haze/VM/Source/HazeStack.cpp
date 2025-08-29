@@ -71,14 +71,13 @@ const HazeVariableType& HazeStack::GetTempRegister(const x_HChar* name) const
 		if (reg.Name == name)
 		{
 			return reg.Type;
-			break;
 		}
 	}
 
 	return HazeVariableType::VoidType();
 }
 
-void HazeStack::ResetTempRegisterTypeByDynamicClassUnknow(const HString& name, const HazeVariableType& type)
+void HazeStack::ResetTempRegisterTypeByDynamicClassUnknow(const STDString& name, const HazeVariableType& type)
 {
 	auto& backFrame = m_StackFrame.back();
 	for (auto& reg : backFrame.FunctionInfo->TempRegisters)
@@ -138,28 +137,28 @@ void HazeStack::PCStepInc()
 
 void HazeStack::InitStackRegister()
 {
-	m_VirtualRegister =
-	{
-		{RET_REGISTER, HazeRegister()},
-		//{NEW_REGISTER, HazeRegister()},
-		{CMP_REGISTER, HazeRegister()},
+	//m_VirtualRegister =
+	//{
+	//	{RET_REGISTER, HazeRegister()},
+	//	//{NEW_REGISTER, HazeRegister()},
+	//	{CMP_REGISTER, HazeRegister()},
 
-		{TEMP_REGISTER_A, HazeRegister()},
-		{TEMP_REGISTER_B, HazeRegister()},
-		/*{TEMP_REGISTER_2, HazeRegister()},
-		{TEMP_REGISTER_3, HazeRegister()},
-		{TEMP_REGISTER_4, HazeRegister()},
-		{TEMP_REGISTER_5, HazeRegister()},
-		{TEMP_REGISTER_6, HazeRegister()},
-		{TEMP_REGISTER_7, HazeRegister()},
-		{TEMP_REGISTER_8, HazeRegister()},
-		{TEMP_REGISTER_9, HazeRegister()},*/
-	};
+	//	/*{TEMP_REGISTER_A, HazeRegister()},
+	//	{TEMP_REGISTER_B, HazeRegister()},
+	//	{TEMP_REGISTER_2, HazeRegister()},
+	//	{TEMP_REGISTER_3, HazeRegister()},
+	//	{TEMP_REGISTER_4, HazeRegister()},
+	//	{TEMP_REGISTER_5, HazeRegister()},
+	//	{TEMP_REGISTER_6, HazeRegister()},
+	//	{TEMP_REGISTER_7, HazeRegister()},
+	//	{TEMP_REGISTER_8, HazeRegister()},
+	//	{TEMP_REGISTER_9, HazeRegister()},*/
+	//};
 }
 
 void HazeStack::OnCall(const FunctionData* info, int paramSize)
 {
-	RegisterData registerDara({ GetVirtualRegister(CMP_REGISTER)->Data });
+	RegisterData registerDara({ GetVirtualRegister(HazeVirtualRegister::CMP)->Data });
 	m_StackFrame.push_back(HazeStackFrame(info, paramSize, m_EBP, m_ESP - paramSize - HAZE_ADDRESS_SIZE, m_ESP, registerDara));
 
 	m_EBP = m_ESP;
@@ -200,7 +199,7 @@ void HazeStack::OnRet()
 	m_EBP = m_StackFrame.back().EBP;
 	m_ESP = m_StackFrame.back().ESP;
 
-	memcpy(GetVirtualRegister(CMP_REGISTER)->Data.begin()._Unwrapped(), m_StackFrame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
+	memcpy(GetVirtualRegister(HazeVirtualRegister::CMP)->Data.begin()._Unwrapped(), m_StackFrame.back().Register.Cmp_RegisterData.begin()._Unwrapped(),
 		m_StackFrame.back().Register.Cmp_RegisterData.size());
 
 	m_StackFrame.pop_back();

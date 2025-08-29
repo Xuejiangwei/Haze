@@ -161,7 +161,7 @@ void HazeExecuteFile::CheckAll()
 	}
 }
 
-void HazeExecuteFile::WriteModule(const HashMap<HString, Share<ModuleUnit>>& moduleUnit)
+void HazeExecuteFile::WriteModule(const HashMap<STDString, Share<ModuleUnit>>& moduleUnit)
 {
 	x_uint32 globalDataIndex = 0;
 	x_uint32 stringIndex = 0;
@@ -203,7 +203,7 @@ void HazeExecuteFile::WriteModule(const HashMap<HString, Share<ModuleUnit>>& mod
 	}
 }
 
-void HazeExecuteFile::WriteExecuteFileSymbol(V_Array<Pair<x_uint32, V_Array<x_uint32>>>& funtionSymbol, V_Array<Pair<HString, Pair<x_uint32, HazeComplexTypeInfo>>>& symbol)
+void HazeExecuteFile::WriteExecuteFileSymbol(V_Array<Pair<x_uint32, V_Array<x_uint32>>>& funtionSymbol, V_Array<Pair<STDString, Pair<x_uint32, HazeComplexTypeInfo>>>& symbol)
 {
 	FileFormatCheck check(ExeFileType::Out, HazeFileFormat::Symbol, m_States);
 
@@ -706,7 +706,7 @@ void HazeExecuteFile::ReadFunctionTable(HazeVM* vm)
 {
 	FileFormatCheck check(ExeFileType::In, HazeFileFormat::FunctionTable, m_States);
 
-	HString name;
+	STDString name;
 	x_uint32 number = 0;
 	m_InFileStream->read(HAZE_READ(number));
 	vm->m_FunctionTable.resize(number);

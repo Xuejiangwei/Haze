@@ -89,7 +89,7 @@ BackendParse::~BackendParse()
 void BackendParse::Parse()
 {
 	auto& refModules = m_VM->GetReferenceModules();
-	HString codeText;
+	STDString codeText;
 
 	/*{
 		HAZE_TO_DO(之后考虑删除中间符号文件去使用引用类型表里的字符串);
@@ -104,7 +104,7 @@ void BackendParse::Parse()
 	{
 		HAZE_IFSTREAM fs(GetIntermediateModuleFile(HAZE_TYPE_INFO_TABLE));
 		fs.imbue(std::locale("chs"));
-		codeText = HString(std::istreambuf_iterator<x_HChar>(fs), {});
+		codeText = STDString(std::istreambuf_iterator<x_HChar>(fs), {});
 		m_CurrCode = codeText.c_str();
 		Parse_I_TypeInfo();
 		fs.close();
@@ -118,7 +118,7 @@ void BackendParse::Parse()
 		HAZE_IFSTREAM fs(GetIntermediateModuleFile(refModule));
 		fs.imbue(std::locale("chs"));
 
-		HString Content(std::istreambuf_iterator<x_HChar>(fs), {});
+		STDString Content(std::istreambuf_iterator<x_HChar>(fs), {});
 
 		codeText = Move(Content);
 		m_CurrCode = codeText.c_str();
@@ -172,7 +172,7 @@ void BackendParse::GetNextLexeme()
 	}
 }
 
-void BackendParse::GetNextLexmeAssign_HazeStringCustomClassName(const HString*& dst)
+void BackendParse::GetNextLexmeAssign_HazeStringCustomClassName(const STDString*& dst)
 {
 	GetNextLexeme();
 	auto iter = m_InterSymbol.find(m_CurrLexeme);
@@ -227,10 +227,10 @@ void BackendParse::Parse_I_TypeInfo()
 	GetNextLexeme();
 	if (m_CurrLexeme == GetTypeInfoBeginHeader())
 	{
-		HString name;
+		STDString name;
 
 		GetNextLexeme();
-		HString s = GetTypeInfoEndHeader();
+		STDString s = GetTypeInfoEndHeader();
 		while (m_CurrLexeme != GetTypeInfoEndHeader())
 		{
 			name = m_CurrLexeme;
@@ -273,7 +273,12 @@ void BackendParse::Parse_I_TypeInfo()
 					break;
 			}
 
-			m_TypeInfo.push_back({ name, { typeId, info }  });
+
+			Pair<STDString, Pair<x_uint32, HazeComplexTypeInfo>> pairInfo;
+			pairInfo.first = Move(name);
+			pairInfo.second = { typeId, info };
+			m_TypeInfo.push_back(Move(pairInfo));
+
 			GetNextLexeme();
 		}
 	}
@@ -333,7 +338,7 @@ void BackendParse::Parse_I_Code()
 
 void BackendParse::Parse_I_Code_ImportModule()
 {
-	HString str;
+	STDString str;
 	if (m_CurrLexeme == GetImportHeaderString())
 	{
 		GetNextLexeme();
@@ -349,7 +354,7 @@ void BackendParse::Parse_I_Code_ImportModule()
 
 void BackendParse::Parse_I_Code_ImportTable()
 {
-	HString str;
+	STDString str;
 	if (m_CurrLexeme == GetImportHeaderString())
 	{
 		x_uint64 count;
@@ -372,7 +377,7 @@ void BackendParse::Parse_I_Code_ImportTable()
 
 void BackendParse::Parse_I_Code_GlobalTable()
 {
-	HString str;
+	STDString str;
 	if (m_CurrLexeme == GetGlobalDataHeaderString())
 	{
 		GetNextLexeme();
@@ -388,6 +393,7 @@ void BackendParse::Parse_I_Code_GlobalTable()
 			GetNextLexmeAssign_CustomType<uint32>(table.Data[i].EndAddress);*/
 
 			GetNextLexmeAssign_HazeString(table.Data[i].Name);
+			GetNextLexmeAssign_StandardType(table.Data[i].Id);
 
 			//GetNextLexmeAssign_StandardType(table.Data[i].Size);
 
@@ -447,7 +453,7 @@ void BackendParse::Parse_I_Code_EnumTable()
 		GetNextLexmeAssign_StandardType(number);
 
 		//暂不记录
-		HString str;
+		STDString str;
 		for (x_uint32 i = 0; i < number; i++)
 		{
 			GetNextLexmeAssign_HazeString(str);
@@ -468,7 +474,7 @@ void BackendParse::Parse_I_Code_ClassTable()
 	if (m_CurrLexeme == GetClassTableHeaderString())
 	{
 		x_uint32 number;
-		HString str;
+		STDString str;
 
 		GetNextLexmeAssign_StandardType(number);
 
@@ -611,7 +617,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 					{
 						GetNextLexeme();
 						functionData.Blocks.push_back({ m_CurrLexeme, 0, (int)functionData.Instructions.size() });
-						auto& CurrBlock = functionData.Blocks.back();
+						auto& currBlock = functionData.Blocks.back();
 
 						GetNextLexeme();
 						while (m_CurrLexeme != BLOCK_START && m_CurrLexeme != GetFunctionEndHeader())
@@ -623,7 +629,7 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 							functionData.Instructions.push_back(Instruction);
 
-							CurrBlock.InstructionNum++;
+							currBlock.InstructionNum++;
 
 							GetNextLexeme();
 						}
@@ -674,15 +680,32 @@ void BackendParse::Parse_I_Code_FunctionTable()
 
 void BackendParse::ParseInstructionData(InstructionData& data)
 {
-	GetNextLexmeAssign_HazeString(data.Variable.Name);
+	static STDString s_Str;
+
+	//GetNextLexmeAssign_HazeString(data.Variable.Name);
 	GetNextLexmeAssign_CustomType<x_uint32>(data.Scope);
 	GetNextLexmeAssign_CustomType<x_uint32>(data.Desc);
+	//data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
-	data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
+	if (IsConstStringDesc(data.Desc))
+	{
+
+	}
+	else if (IsConstDesc(data.Desc))
+	{
+		GetNextLexmeAssign_HazeString(s_Str);
+		StringToHazeValueNumber(s_Str, GetHazeBaseTypeByDesc(data.Desc), data.Extra.RuntimeDynamicValue);
+	}
+	else
+	{
+		GetNextLexmeAssign_StandardType(data.VariableIndexOrId);
+	}
+
+
+
 
 	if (data.Desc == HazeDataDesc::Constant)
 	{
-		StringToHazeValueNumber(data.Variable.Name, data.Variable.Type.BaseType, data.Extra.RuntimeDynamicValue);
 	}
 	else if (data.Desc == HazeDataDesc::ConstantString)
 	{
@@ -692,7 +715,7 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 
 void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction)
 {
-	HString str;
+	STDString str;
 	switch (instruction.InsCode)
 	{
 		case InstructionOpCode::NONE:
@@ -879,7 +902,8 @@ void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& newStringTable,
 
 void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::FunctionTableData& function)
 {
-	if (operatorData.Variable.Name != HAZE_JMP_NULL)
+	static const STDString m_StaticConstantStr = HAZE_JMP_NULL;
+	if (operatorData.Variable.Name != m_StaticConstantStr)
 	{
 		for (x_uint64 i = 0; i < function.Blocks.size(); i++)
 		{
@@ -894,7 +918,7 @@ void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::Functio
 }
 
 inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
-	HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister)
+	HashMap<STDString, int>& localVariable, HashMap<STDString, int> tempRegister)
 {
 	{
 		auto iterIndex = localVariable.find(operatorData.Variable.Name);
@@ -952,7 +976,7 @@ inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorDa
 void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	ModuleUnit::FunctionTable& newFunctionTable)
 {
-	HashMap<HString, x_uint64> HashMap_FunctionIndexAndAddress;
+	HashMap<STDString, x_uint64> HashMap_FunctionIndexAndAddress;
 	for (x_uint64 i = 0; i < newFunctionTable.m_Functions.size(); i++)
 	{
 		HashMap_FunctionIndexAndAddress[newFunctionTable.m_Functions[i].Name] = i;
@@ -966,13 +990,13 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 #endif
 		auto& m_CurrFunction = newFunctionTable.m_Functions[k];
 
-		HashMap<HString, int> localVariables;
+		HashMap<STDString, int> localVariables;
 		for (x_uint64 i = 0; i < m_CurrFunction.Variables.size(); i++)
 		{
 			localVariables[m_CurrFunction.Variables[i].Variable.Name] = (int)i;
 		}
 
-		HashMap<HString, int> tempRegisters;
+		HashMap<STDString, int> tempRegisters;
 		for (x_uint64 i = 0; i < m_CurrFunction.TempRegisters.size(); i++)
 		{
 			tempRegisters[m_CurrFunction.TempRegisters[i].Name] = (int)i;
@@ -985,7 +1009,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 				//设置 Block块 偏移值
 				for (auto& operatorData : m_CurrFunction.Instructions[i].Operator)
 				{
-					if (operatorData.Variable.Name != HAZE_JMP_NULL)
+					if (operatorData.Variable.Name != m_StaticConstantStr)
 					{
 						ResetFunctionBlockOffset(operatorData, m_CurrFunction);
 					}
@@ -1014,8 +1038,8 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 			}*/
 			else if (!IsIgnoreFindAddressInsCode(m_CurrFunction.Instructions[i]))
 			{
-				HString objName;
-				HString memberName;
+				STDString objName;
+				STDString memberName;
 
 				for (auto& operatorData : m_CurrFunction.Instructions[i].Operator)
 				{
@@ -1082,7 +1106,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 	}
 }
 
-const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HString& className)
+const ModuleUnit::ClassTableData* const BackendParse::GetClass(const STDString& className)
 {
 	for (auto& iter : m_Modules)
 	{
@@ -1098,7 +1122,7 @@ const ModuleUnit::ClassTableData* const BackendParse::GetClass(const HString& cl
 	return nullptr;
 }
 
-x_uint32 const BackendParse::GetClassSize(const HString& className)
+x_uint32 const BackendParse::GetClassSize(const STDString& className)
 {
 	auto classData = GetClass(className);
 	if (classData)
@@ -1108,7 +1132,7 @@ x_uint32 const BackendParse::GetClassSize(const HString& className)
 	return 0;
 }
 
-x_uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HString& memberName)
+x_uint32 BackendParse::GetMemberOffset(const ModuleUnit::ClassTableData& classData, const STDString& memberName)
 {
 	for (auto& iter : classData.Members)
 	{

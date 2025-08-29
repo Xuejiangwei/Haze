@@ -6,7 +6,7 @@
 #include "CompilerModule.h"
 #include "CompilerHelper.h"
 
-CompilerClosureFunction::CompilerClosureFunction(CompilerModule* compilerModule, const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
+CompilerClosureFunction::CompilerClosureFunction(CompilerModule* compilerModule, const STDString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 	: CompilerFunction(compilerModule, name, type, params, HazeFunctionDesc::Closure)
 {
 }
@@ -15,7 +15,7 @@ CompilerClosureFunction::~CompilerClosureFunction()
 {
 }
 
-int CompilerClosureFunction::AddRefValue(int variableIndex, Share<CompilerValue> refValue, const HString& name)
+int CompilerClosureFunction::AddRefValue(int variableIndex, Share<CompilerValue> refValue, const STDString& name)
 {
 	for (auto& v : m_RefValues)
 	{
@@ -41,7 +41,7 @@ void CompilerClosureFunction::GenI_Code_RefVariable(HAZE_STRING_STREAM& hss)
 	}
 }
 
-Share<CompilerValue> CompilerClosureFunction::GetLocalVariable(const HString& name, Share<CompilerBlock> startBlock)
+Share<CompilerValue> CompilerClosureFunction::GetLocalVariable(const STDString& name, Share<CompilerBlock> startBlock)
 {
 	Share<CompilerValue> ret = nullptr;
 
@@ -76,7 +76,7 @@ Share<CompilerValue> CompilerClosureFunction::GetLocalVariable(const HString& na
 	return ret;
 }
 
-bool CompilerClosureFunction::ExistRefVariable(const HString& name) const
+bool CompilerClosureFunction::ExistRefVariable(const STDString& name) const
 {
 	auto func = m_Module->GetUpOneLevelClosureOrFunction();
 

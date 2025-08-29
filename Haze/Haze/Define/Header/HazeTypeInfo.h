@@ -15,20 +15,21 @@ struct HazeComplexTypeInfo
 	};
 
 	typedef BaseTemplate BaseObject;
+	typedef BaseTemplate GlobalVariable;
 
 	struct Class : public HazeComplexTypeInfoBase
 	{
 		char NameAddress[8];
 		//x_HChar* ClassName;
 
-		void SetName(const HString* name)
+		void SetName(const STDString* name)
 		{
 			memcpy(NameAddress, &name, sizeof(name));
 		}
 
-		const HString* GetString() const
+		const STDString* GetString() const
 		{
-			HString* str;
+			STDString* str;
 			memcpy(&str, NameAddress, sizeof(NameAddress));
 			return str;
 		}
@@ -56,6 +57,7 @@ struct HazeComplexTypeInfo
 	union
 	{
 		HazeComplexTypeInfoBase _BaseType;
+		GlobalVariable _GlobalVariable;
 		BaseObject _ObjectBase;
 		Class _Class;
 		Enum _Enum;
@@ -71,6 +73,7 @@ struct HazeComplexTypeInfo
 };
 
 #define TYPE_INFO_VAR(INFO) HazeComplexTypeInfo INFO
+#define GLOBAL_VAR_TYPE_INFO(INFO, TYPE) TYPE_INFO_VAR(INFO); { INFO._GlobalVariable.BaseType = TYPE.BaseType; INFO._Array.TypeId1 = TYPE.TypeId; }
 #define ARRAY_TYPE_INFO(INFO, ID1, DIMENSION) TYPE_INFO_VAR(INFO); { INFO._Array.BaseType = HazeValueType::Array; INFO._Array.TypeId1 = ID1, INFO._Array.Dimension = DIMENSION; }
 #define HASH_TYPE_INFO(INFO, ID1, ID2) TYPE_INFO_VAR(INFO); { INFO._Hash.BaseType = HazeValueType::Hash; INFO._Hash.TypeId1 = ID1; INFO._Hash.TypeId2 = ID2; }
 #define FUNCTION_TYPE_INFO(INFO, ID1, INDEX)  TYPE_INFO_VAR(INFO); { INFO._Function.BaseType = HazeValueType::Function; INFO._Function.TypeId1 = ID1; INFO._Function.FunctionInfoIndex = INDEX; }
@@ -84,7 +87,7 @@ class HazeTypeInfoMap
 public:
 	struct TypeInfo
 	{
-		HString Name;
+		STDString Name;
 		x_uint32 RefCount;
 		x_uint32 TypeId;
 		HazeComplexTypeInfo Info;
@@ -100,63 +103,64 @@ public:
 	HazeTypeInfoMap(Compiler* compiler);
 	~HazeTypeInfoMap();
 
-	x_uint32 ReserveTypeId(const HString& name);
+	x_uint32 ReserveTypeId(const STDString& name);
 	//void ResolveTypeId(x_uint32 typeId);
 
-	x_uint32 RegisterType(const HString& moduleName, HazeComplexTypeInfo* type, x_uint32 resolvedTypeId = 0);
-	x_uint32 RegisterType(const HString& moduleName, x_uint32 functionTypeId, V_Array<x_uint32>&& paramTypeId);
+	x_uint32 RegisterType(const STDString& moduleName, HazeComplexTypeInfo* type, x_uint32 resolvedTypeId = 0);
+	x_uint32 RegisterType(const STDString& moduleName, x_uint32 functionTypeId, V_Array<x_uint32>&& paramTypeId);
+	x_uint32 RegisterSymbol(const STDString& moduleName, const STDString& symbol, HazeComplexTypeInfo* type);
 
 	HazeVariableType GetVarTypeById(x_uint32 typeId);
 
-	const HString* GetClassNameById(x_uint32 typeId);
+	const STDString* GetClassNameById(x_uint32 typeId);
 
-	const HString* GetEnumName(x_uint32 typeId);
+	const STDString* GetEnumName(x_uint32 typeId);
 
 	const TypeInfo* GetTypeInfoById(x_uint32 typeId);
 
-	const HString* GetTypeName(x_uint32 typeId);
+	const STDString* GetTypeName(x_uint32 typeId);
 
 	const HazeComplexTypeInfo* GetTypeById(x_uint32 typeId);
 
-	const x_uint32 GetTypeId(const HString& name) const;
+	const x_uint32 GetTypeId(const STDString& name) const;
 
-	ModuleRefrenceTypeId& GetModuleRefTypeId(const HString& name);
+	ModuleRefrenceTypeId& GetModuleRefTypeId(const STDString& name);
 
 	void GenICode(HAZE_STRING_STREAM& hss);
-	void GenModuleReferenceTypeInfo(HAZE_STRING_STREAM& hss, const HString& moduleName);
+	void GenModuleReferenceTypeInfo(HAZE_STRING_STREAM& hss, const STDString& moduleName);
 
 	// 通用函数
 public:
-	const x_uint32 GetTypeIdByClassName(const HString& name) const;
+	const x_uint32 GetTypeIdByClassName(const STDString& name) const;
 
 public:
 	void AddFunctionTypeInfo(x_uint32 typeId, V_Array<x_uint32>& typeAndParams);
-	void AddTypeInfo(HString&& name, x_uint32 typeId, HazeComplexTypeInfo* info);
+	void AddTypeInfo(STDString&& name, x_uint32 typeId, HazeComplexTypeInfo* info);
 
-	const HString* GetRegisterTypeModule(const HString& symbol);
-	const HString* GetRegisterTypeModule(x_uint32 typeId);
-	void RegisterModuleRefTypes(const HString& moduleName, ModuleRefrenceTypeId&& refTypes);
-	void RemoveModuleRefTypes(const HString& moduleName);
+	const STDString* GetRegisterTypeModule(const STDString& symbol);
+	const STDString* GetRegisterTypeModule(x_uint32 typeId);
+	void RegisterModuleRefTypes(const STDString& moduleName, ModuleRefrenceTypeId&& refTypes);
+	void RemoveModuleRefTypes(const STDString& moduleName);
 
 	void ParseInterFile(HAZE_IFSTREAM& stream);
 
 private:
-	x_uint32 GetNewTypeId(const HString& symbol);
+	x_uint32 GetNewTypeId(const STDString& symbol);
 
-	x_uint32 RegisterFunctionParamListType(const HString& moduleName, x_uint32 typeId, V_Array<x_uint32>& paramList);
+	x_uint32 RegisterFunctionParamListType(const STDString& moduleName, x_uint32 typeId, V_Array<x_uint32>& paramList);
 
-	void RegisterResolvedType(const HString& moduleName, x_uint32 typeId, HazeComplexTypeInfo* type);
+	void RegisterResolvedType(const STDString& moduleName, x_uint32 typeId, HazeComplexTypeInfo* type);
 
-	bool AddModuleRef(const HString& moduleName, x_uint32 typeId);
+	bool AddModuleRef(const STDString& moduleName, x_uint32 typeId);
 
 private:
 	Compiler* m_Compiler;
 
 	HashMap<x_uint32, TypeInfo> m_Map;
-	HashMap<HString, x_uint32> m_NameCache;
+	HashMap<STDString, x_uint32> m_NameCache;
 	HashMap<x_int32, V_Array<x_uint32>> m_FunctionInfoMap;
 	
-	HashMap<HString, ModuleRefrenceTypeId> m_ModuleRefTypes;
+	HashMap<STDString, ModuleRefrenceTypeId> m_ModuleRefTypes;
 };
 
 

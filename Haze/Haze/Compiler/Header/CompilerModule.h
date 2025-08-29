@@ -30,7 +30,7 @@ private:
 
 public:
 
-	CompilerModule(Compiler* compiler, const HString& moduleName, const HString& modulePath);
+	CompilerModule(Compiler* compiler, const STDString& moduleName, const STDString& modulePath);
 
 	~CompilerModule();
 
@@ -38,37 +38,37 @@ public:
 
 	bool NeedParse() const { return m_FS_I_Code != nullptr; }
 
-	bool ParseIntermediateFile(HAZE_IFSTREAM& stream, const HString& moduleName);
+	bool ParseIntermediateFile(HAZE_IFSTREAM& stream, const STDString& moduleName);
 
-	const HString& GetName() const;
+	const STDString& GetName() const;
 
-	const HString& GetPath() const { return m_Path; }
+	const STDString& GetPath() const { return m_Path; }
 
-	const HString& GetCurrClassName() const { return m_CurrClass; }
+	const STDString& GetCurrClassName() const { return m_CurrClass; }
 
 	HazeLibraryType GetModuleLibraryType() { return m_ModuleLibraryType; }
 
 	void MarkLibraryType(HazeLibraryType type);
 
-	void RestartTemplateModule(const HString& moduleName);
+	void RestartTemplateModule(const STDString& moduleName);
 
 	void FinishModule();
 
-	Share<CompilerClass> CreateClass(const HString& name, V_Array<CompilerClass*>& parentClass, V_Array<Pair<HString, Share<CompilerValue>>>& classData);
+	Share<CompilerClass> CreateClass(const STDString& name, V_Array<CompilerClass*>& parentClass, V_Array<Pair<STDString, Share<CompilerValue>>>& classData);
 
-	Share<CompilerEnum> CreateEnum(const HString& name);
+	Share<CompilerEnum> CreateEnum(const STDString& name);
 
 	Share<CompilerEnum> GetCurrEnum();
 
-	const HString& GetCurrEnumName() const { return m_CurrEnum; }
+	const STDString& GetCurrEnumName() const { return m_CurrEnum; }
 
 	void FinishCreateEnum();
 
 	void FinishCreateClass();
 
-	Share<CompilerClass> GetClass(const HString& className);
+	Share<CompilerClass> GetClass(const STDString& className);
 
-	x_uint32 GetClassSize(const HString& className);
+	x_uint32 GetClassSize(const STDString& className);
 
 	Share<CompilerFunction> GetGlobalDataFunction() { return m_GlobalDataFunction; }
 
@@ -80,10 +80,10 @@ public:
 
 	Share<CompilerFunction> GetUpOneLevelClosureOrFunction();
 
-	Share<CompilerFunction> CreateFunction(const HString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params);
+	Share<CompilerFunction> CreateFunction(const STDString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
 	Share<CompilerFunction> CreateFunction(Share<CompilerClass> compilerClass, HazeFunctionDesc desc,
-		const HString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params);
+		const STDString& name, const HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
 	Share<CompilerClosureFunction> CreateClosureFunction(HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
@@ -110,30 +110,31 @@ public:
 	void FinishFunction();
 	void FinishClosure();
 
-	Share<CompilerFunction> GetFunction(const HString& name);
+	Share<CompilerFunction> GetFunction(const STDString& name);
 
 	bool IsImportModule(CompilerModule* m) const;
 
-	CompilerModule* ExistGlobalValue(const HString& name);
+	CompilerModule* ExistGlobalValue(const STDString& name);
 
-	Share<CompilerValue> GetOrCreateGlobalStringVariable(const HString& str);
+	Share<CompilerValue> GetOrCreateGlobalStringVariable(const STDString& str);
 
 	x_uint32 GetGlobalStringIndex(Share<CompilerValue> value);
 
 	Share<CompilerValue> CreateGlobalVariable(const HazeDefineVariable& var, int line, Share<CompilerValue> refValue = nullptr);
 
-	Share<CompilerValue> GetClosureVariable(const HString& name, bool addRef);
+	Share<CompilerValue> GetClosureVariable(const STDString& name, bool addRef);
 
-	void ClosureAddLocalRef(Share<CompilerValue> value, const HString& name);
+	void ClosureAddLocalRef(Share<CompilerValue> value, const STDString& name);
 
-	static Share<CompilerValue> GetGlobalVariable(CompilerModule* m, const HString& name);
+	static Share<CompilerValue> GetGlobalVariable(CompilerModule* m, const STDString& name);
 
-	static bool GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName, bool getOffset = false,
-		V_Array<Pair<x_uint64, CompilerValue*>>* offsets = nullptr);
+	static bool GetGlobalVariableName(CompilerModule* m, const Share<CompilerValue>& value, HStringView& outName);
+	static bool GetGlobalVariableId(CompilerModule* m, const Share<CompilerValue>& value, InstructionOpId& outId);
 
-	static bool GetClosureVariableName(CompilerModule* m, const Share<CompilerValue>& value, HString& outName);
+	static bool GetClosureVariableName(CompilerModule* m, const Share<CompilerValue>& value, HStringView& outName);
+	static bool GetClosureVariableId(CompilerModule* m, const Share<CompilerValue>& value, InstructionOpId& outId);
 
-	static Share<CompilerEnum> GetEnum(CompilerModule* m, const HString& name);
+	static Share<CompilerEnum> GetEnum(CompilerModule* m, const STDString& name);
 
 	static Share<CompilerEnum> GetEnum(CompilerModule* m, x_uint32 typeId);
 
@@ -158,7 +159,7 @@ private:
 	Share<CompilerValue> CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, Share<CompilerFunction> closure = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr,
-		const HString* nameSpace = nullptr);
+		const STDString* nameSpace = nullptr);
 
 	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
 
@@ -186,44 +187,44 @@ private:
 	//void GenICode_TypeInfo();
 
 private:
-	Share<CompilerFunction> GetFunction_Internal(const HString& name, SearchContext& context);
+	Share<CompilerFunction> GetFunction_Internal(const STDString& name, SearchContext& context);
 
-	CompilerModule* ExistGlobalValue_Internal(const HString& name, SearchContext& context);
+	CompilerModule* ExistGlobalValue_Internal(const STDString& name, SearchContext& context);
 
-	Share<CompilerValue> GetGlobalVariable_Internal(const HString& name, SearchContext& context);
+	Share<CompilerValue> GetGlobalVariable_Internal(const STDString& name, SearchContext& context);
 
-	bool GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HString& outName, bool getOffset,
-		V_Array<Pair<x_uint64, CompilerValue*>>* offsets, SearchContext& context);
+	bool GetGlobalVariableName_Internal(const Share<CompilerValue>& value, HStringView& outName, SearchContext& context);
+	bool GetGlobalVariableId_Internal(const Share<CompilerValue>& value, InstructionOpId& outId, SearchContext& context);
 
-	Share<CompilerClass> GetClass_Internal(const HString& className, SearchContext& context);
+	Share<CompilerClass> GetClass_Internal(const STDString& className, SearchContext& context);
 
-	Share<CompilerEnum> GetEnum_Internal(const HString& name, SearchContext& context);
+	Share<CompilerEnum> GetEnum_Internal(const STDString& name, SearchContext& context);
 
 private:
 	Compiler* m_Compiler;
 
-	HString m_Path;
+	STDString m_Path;
 
 	HazeLibraryType m_ModuleLibraryType;
 
 	HAZE_OFSTREAM* m_FS_I_Code;
 
-	HString m_CurrClass;
-	HashMap<HString, Share<CompilerClass>> m_HashMap_Classes;
+	STDString m_CurrClass;
+	HashMap<STDString, Share<CompilerClass>> m_HashMap_Classes;
 
-	HString m_CurrFunction;
-	HashMap<HString, Share<CompilerFunction>> m_HashMap_Functions;
+	STDString m_CurrFunction;
+	HashMap<STDString, Share<CompilerFunction>> m_HashMap_Functions;
 
 	V_Array<Share<CompilerClosureFunction>> m_Closures;
 	V_Array<Share<CompilerClosureFunction>> m_ClosureStack;
 
-	HString m_CurrEnum;
-	HashMap<HString, Share<CompilerEnum>> m_HashMap_Enums;
+	STDString m_CurrEnum;
+	HashMap<STDString, Share<CompilerEnum>> m_HashMap_Enums;
 
 	Share<CompilerFunction> m_GlobalDataFunction;
 
-	HashMap<HString, Share<CompilerValue>> m_HashMap_StringTable;
-	HashMap<int, const HString*> m_HashMap_StringMapping;
+	HashMap<STDString, Share<CompilerValue>> m_HashMap_StringTable;
+	HashMap<int, HStringView> m_HashMap_StringMapping;
 
 	V_Array<CompilerModule*> m_ImportModules;
 

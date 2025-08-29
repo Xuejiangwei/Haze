@@ -6,11 +6,11 @@ class CompilerBlock;
 class CompilerClosureFunction : public CompilerFunction
 {
 public:
-	CompilerClosureFunction(CompilerModule* compilerModule, const HString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params);
+	CompilerClosureFunction(CompilerModule* compilerModule, const STDString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params);
 
 	virtual ~CompilerClosureFunction() override;
 
-	int AddRefValue(int variableIndex, Share<CompilerValue> refValue, const HString& name);
+	int AddRefValue(int variableIndex, Share<CompilerValue> refValue, const STDString& name);
 
 	Share<CompilerBlock> GetUpLevelBlock() { return m_UpLevelBlock; }
 
@@ -18,9 +18,9 @@ public:
 
 	void GenI_Code_RefVariable(HAZE_STRING_STREAM& hss);
 
-	Share<CompilerValue> GetLocalVariable(const HString& name, Share<CompilerBlock> startBlock);
+	Share<CompilerValue> GetLocalVariable(const STDString& name, Share<CompilerBlock> startBlock);
 
-	bool ExistRefVariable(const HString& name) const;
+	bool ExistRefVariable(const STDString& name) const;
 
 private:
 	V_Array<Pair<int, int>> m_RefValues; // { 上个函数引用的变量索引, 这个函数变量所在的索引 }

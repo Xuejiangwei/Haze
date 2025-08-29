@@ -9,7 +9,7 @@
 #include "ObjectString.h"
 #include "ObjectClass.h"
 
-static HashMap<HString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
+static HashMap<STDString, void(*)(HAZE_STD_CALL_PARAM)> s_HashMap_Functions =
 {
 	{ H_TEXT("内存复制"), &HazeMemoryLib::MemoryCopy },
 	{ HAZE_OBJECT_ARRAY_CONSTRUCTOR, &HazeMemoryLib::ObjectArrayConstructor },
@@ -63,7 +63,7 @@ void HazeMemoryLib::CreateClassByName(HAZE_STD_CALL_PARAM)
 	GET_PARAM_START();
 	GET_PARAM(name);
 
-	HString strName = name->GetData();
+	STDString strName = name->GetData();
 	auto classData = vm->FindClass(strName);
 	if (classData)
 	{

@@ -40,7 +40,7 @@ public:
 		x_uint32 EBP;					// 之前调用函数栈的临时变量开始的地址
 		x_uint32 ESP;					// 之前调用函数栈的临时变量结束的地址
 		x_uint32 CurrParamESP;			// 当前函数的参数加PC地址的结束地址
-		RegisterData Register;
+		RegisterData Register;			// 比较寄存器的缓存
 
 		HazeStackFrame(const FunctionData* Info, x_uint32 ParamSize, x_uint32 EBP, x_uint32 ESP, x_uint32 currParamESP, RegisterData& Register)
 			: FunctionParamSize(ParamSize), EBP(EBP), ESP(ESP), CurrParamESP(currParamESP), Register(Register)
@@ -59,11 +59,11 @@ public:
 
 	void JmpTo(const InstructionData& m_Data);
 
-	HazeRegister* GetVirtualRegister(const x_HChar* name) { return &m_VirtualRegister.find(name)->second; }
+	HazeRegister* GetVirtualRegister(HazeVirtualRegister type) { return &m_VirtualRegister[(x_uint8)type]; }
 
 	const HazeVariableType& GetTempRegister(const x_HChar* name) const;
 
-	void ResetTempRegisterTypeByDynamicClassUnknow(const HString& name, const HazeVariableType& type);
+	void ResetTempRegisterTypeByDynamicClassUnknow(const STDString& name, const HazeVariableType& type);
 
 private:
 	void Run(bool isHazeCall = false);
@@ -97,7 +97,7 @@ private:
 	x_uint32 m_EBP;		//栈底
 	x_uint32 m_ESP;		//栈顶
 
-	HashMap<HString, HazeRegister>  m_VirtualRegister;
+	A_Array<HazeRegister, x_uint8(HazeVirtualRegister::_END)>  m_VirtualRegister;
 
 	V_Array<int> m_CallHazeStack;
 

@@ -20,9 +20,9 @@ CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share
 	}
 }
 
-CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const HString& elementName)
+CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const STDString& elementName)
 	: CompilerValue(compilerModule, HazeVariableType::GetDynamicClassUnknowType(), HazeVariableScope::Local, HazeDataDesc::Element, 0),
-	m_Parent(parent), m_Element(nullptr), m_ElementName(MakeUnique<HString>(elementName))
+	m_Parent(parent), m_Element(nullptr), m_ElementName(MakeUnique<STDString>(elementName))
 {
 
 }

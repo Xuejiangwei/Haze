@@ -26,7 +26,7 @@ public:
 
 	struct CurrParseModuleData
 	{
-		HString ModuleName;
+		STDString ModuleName;
 		x_uint32 CurrLine;
 	};
 
@@ -63,7 +63,7 @@ public:
 public:
 	void AddTempBreakPoint(x_uint32 line);
 
-	void AddTempBreakPoint(const HString& moduleName, x_uint32 line);
+	void AddTempBreakPoint(const STDString& moduleName, x_uint32 line);
 
 	void SendProgramEnd();
 
@@ -81,7 +81,7 @@ private:
 
 	void SetJsonType(XJson& json, HazeDebugInfoType type) { json["Type"] = (int)type; }
 
-	void SetJsonBreakFilePath(XJson& json, HString path);
+	void SetJsonBreakFilePath(XJson& json, STDString path);
 
 	void SetJsonBreakLine(XJson& json, x_uint32 line) { json["BreakLine"] = line; }
 
@@ -95,14 +95,14 @@ private:
 	void(*m_EndCall)();
 	x_uint32 m_HookType;
 
-	HashMap<HString, Pair<HashSet<x_uint32>, HString>> m_BreakPoints;
-	HashMap<HString, Pair<HashSet<x_uint32>, HString>> m_TempBreakPoints;
+	HashMap<STDString, Pair<HashSet<x_uint32>, STDString>> m_BreakPoints;
+	HashMap<STDString, Pair<HashSet<x_uint32>, STDString>> m_TempBreakPoints;
 
 	CurrParseModuleData m_CurrPauseModule;
 	bool m_IsPause;
 
-	V_Array<Pair<HString, x_uint32>> m_StepInStack;
-	HashMap<HString, bool> m_IsStepOvers;
+	V_Array<Pair<STDString, x_uint32>> m_StepInStack;
+	HashMap<STDString, bool> m_IsStepOvers;
 
 	bool m_IsStepIn;
 	bool m_IsStepInInstruction;

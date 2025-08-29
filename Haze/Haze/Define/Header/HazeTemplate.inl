@@ -1,7 +1,7 @@
 #include "HazeUtility.h"
 
 template <typename T>
-T StringToStandardType(const HString& str)
+T StringToStandardType(const STDString& str)
 {
 	HAZE_STRING_STREAM wss;
 	wss << str;
@@ -43,7 +43,7 @@ HAZE_BINARY_STRING ToString(T value)
 }
 
 template <typename T>
-HString ToHazeString(T value)
+STDString ToHazeString(T value)
 {
 	return HAZE_TO_HAZE_STR(value);
 }

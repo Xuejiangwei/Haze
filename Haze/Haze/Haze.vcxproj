@@ -339,6 +339,7 @@
     <ClCompile Include="Backend\Source\BackendParse.cpp" />
     <ClCompile Include="Backend\Source\ModuleUnit.cpp" />
     <ClCompile Include="Backend\Source\Optimizer.cpp" />
+    <ClCompile Include="BaseContainer\Source\HazeArray.cpp" />
     <ClCompile Include="BaseContainer\Source\HazeString.cpp" />
     <ClCompile Include="Compiler\Source\CompilerClosureFunction.cpp" />
     <ClCompile Include="Compiler\Source\CompilerClosureValue.cpp" />
@@ -410,6 +411,7 @@
     <ClInclude Include="Backend\Header\ModuleUnit.h" />
     <ClInclude Include="Backend\Header\Optimizer.h" />
     <ClInclude Include="Backend\Header\OptimizerDefine.h" />
+    <ClInclude Include="BaseContainer\Header\HazeArray.h" />
     <ClInclude Include="BaseContainer\Header\HazeString.h" />
     <ClInclude Include="Compiler\Header\CompilerBlock.h" />
     <ClInclude Include="Compiler\Header\Compiler.h" />

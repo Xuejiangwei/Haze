@@ -34,7 +34,7 @@ HazeLibraryManager::~HazeLibraryManager()
 	}
 }
 
-void HazeLibraryManager::ExecuteDLLFunction(const HString& moduleName, const HString& functionName, 
+void HazeLibraryManager::ExecuteDLLFunction(const STDString& moduleName, const STDString& functionName, 
 	char* paramStartAddress, char* retStartAddress, void* stack)
 {
 	auto iter = m_Libraries.find(moduleName);
@@ -55,7 +55,7 @@ void HazeLibraryManager::ExecuteDLLFunction(const HString& moduleName, const HSt
 	}
 }
 
-void HazeLibraryManager::LoadDLLLibrary(const HString& libraryPath, const HString& filePath)
+void HazeLibraryManager::LoadDLLLibrary(STDString libraryPath, STDString filePath)
 {
 	auto iter = m_Libraries.find(libraryPath);
 	if (iter == m_Libraries.end())
@@ -64,7 +64,7 @@ void HazeLibraryManager::LoadDLLLibrary(const HString& libraryPath, const HStrin
 		auto Address = HAZE_LOAD_DLL_EX(libraryPath.c_str());
 		if (Address != nullptr)
 		{
-			m_Libraries[m_Name] = { LibraryLoadState::Load,  Address, std::move(libraryPath), std::move(filePath) };
+			m_Libraries[m_Name] = { LibraryLoadState::Load,  Address, Move(libraryPath), Move(filePath) };
 		}
 		else
 		{
@@ -74,7 +74,7 @@ void HazeLibraryManager::LoadDLLLibrary(const HString& libraryPath, const HStrin
 	}
 }
 
-void HazeLibraryManager::UnloadDLLLibrary(const HString& libraryPath)
+void HazeLibraryManager::UnloadDLLLibrary(const STDString& libraryPath)
 {
 	auto iter = m_Libraries.find(libraryPath);
 	if (iter != m_Libraries.end())
@@ -83,7 +83,7 @@ void HazeLibraryManager::UnloadDLLLibrary(const HString& libraryPath)
 	}
 }
 
-const HString* HazeLibraryManager::TryGetFilePath(const HString& moduleName)
+const STDString* HazeLibraryManager::TryGetFilePath(const STDString& moduleName)
 {
 	auto iter = m_Libraries.find(moduleName);
 	if (iter != m_Libraries.end())

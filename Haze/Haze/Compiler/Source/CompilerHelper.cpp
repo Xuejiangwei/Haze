@@ -22,20 +22,20 @@
 
 static HashMap<CompilerValue*, x_uint64>  g_CacheOffset;
 
-HString GetLocalVariableName(const HString& name, Share<CompilerValue> value)
-{
-	static HAZE_STRING_STREAM s_Hss;
-
-	s_Hss.str(H_TEXT(""));
-
-	s_Hss << name;
-	if (value->GetCount() > 0)
-	{
-		s_Hss << HAZE_LOCAL_VARIABLE_CONBINE << value->GetCount();
-	}
-
-	return s_Hss.str();
-}
+//STDString GetLocalVariableName(const STDString& name, Share<CompilerValue> value)
+//{
+//	static HAZE_STRING_STREAM s_Hss;
+//
+//	s_Hss.str(H_TEXT(""));
+//
+//	s_Hss << name;
+//	if (value->GetCount() > 0)
+//	{
+//		s_Hss << HAZE_LOCAL_VARIABLE_CONBINE << value->GetCount();
+//	}
+//
+//	return s_Hss.str();
+//}
 
 void HazeCompilerStream(HAZE_STRING_STREAM& hss, CompilerValue* value, bool bStreamValue)
 {
@@ -166,13 +166,13 @@ Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeV
 		/*var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : */nullptr);
 }
 
-bool TrtGetVariableName(const Pair<HString, Share<CompilerValue>>& data, const CompilerValue* value, HString& outName)
-{
-	if (data.second.get() == value)
-	{
-		outName = GetLocalVariableName(data.first, data.second);
-		return true;
-	}
+//bool TrtGetVariableName(const Pair<STDString, Share<CompilerValue>>& data, const CompilerValue* value, HStringView& outName)
+//{
+//	if (data.second.get() == value)
+//	{
+//		outName = GetLocalVariableName(data.first, data.second);
+//		return true;
+//	}
 
 	/*if (value->IsClassMember())
 	{
@@ -192,16 +192,16 @@ bool TrtGetVariableName(const Pair<HString, Share<CompilerValue>>& data, const C
 		}
 	}*/
 
-	return false;
-}
+//	return false;
+//}
 
-void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& templateTypes)
+void GetTemplateClassName(STDString& inName, const V_Array<TemplateDefineType>& templateTypes)
 {
 	for (auto& type : templateTypes)
 	{
 		if (type.IsDefines)
 		{
-			HString name;
+			STDString name;
 			GetTemplateClassName(name, type.Defines->Types);
 			inName += HAZE_TEMPLATE_CONBINE + name;
 		}
@@ -212,36 +212,62 @@ void GetTemplateClassName(HString& inName, const V_Array<TemplateDefineType>& te
 	}
 }
 
+HStringView GetCompilerValueName(CompilerModule* compilerModule, const Share<CompilerValue>& value)
+{
+	static HString noneStr(H_TEXT("None"));
+
+	HStringView strView;
+	bool find = false;
+	if (value->IsGlobalVariable())
+	{
+		find = compilerModule->GetGlobalVariableName(compilerModule, value, strView);
+	}
+	else if (value->IsLocalVariable())
+	{
+		find = compilerModule->GetClosureVariableName(compilerModule, value, strView);
+		if (!find)
+		{
+			find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, strView);
+		}
+	}
+
+	if (!find)
+	{
+		strView = noneStr;
+	}
+
+	return strView;
+}
+
 
 void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, const Share<CompilerValue>& value)
 {
-	static HString s_StrName;
+	InstructionOpId varId;
 
 	bool find = false; 
-	s_StrName.clear();
 	if (value->IsGlobalVariable())
 	{
-		find = CompilerModule::GetGlobalVariableName(compilerModule, value, s_StrName);
+		find = compilerModule->GetGlobalVariableId(compilerModule, value, varId);
 		if (!find && value->IsNullPtr())
 		{
 			find = true;
-			s_StrName = NULL_PTR;
+			//s_StrName = NULL_PTR;
 		}
 	}
 	else if (value->IsLocalVariable())
 	{
-		find = compilerModule->GetClosureVariableName(compilerModule, value, s_StrName);
+		find = compilerModule->GetClosureVariableId(compilerModule, value, varId);
 		if (!find)
 		{
-			find = compilerModule->GetCurrFunction()->FindLocalVariableName(value, s_StrName);
-			if (!find && value->IsPureString())
+			find = compilerModule->GetCurrFunction()->FindLocalVariableIndex(value, varId);
+			/*if (!find && value->IsPureString())
 			{
 				find = true;
 				s_StrName = *DynamicCast<CompilerStringValue>(value)->GetPureString();
-			}
+			}*/
 		}
 	}
-	else if (value->IsFunctionAddress())
+	/*else if (value->IsFunctionAddress())
 	{
 		s_StrName = *value->GetPointerFunctionName();
 		if (!s_StrName.empty())
@@ -253,7 +279,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	{
 		find = true;
 		s_StrName = compilerModule->GetCompiler()->GetRegisterName(value);
-	}
+	}*/
 	else
 	{
 		COMPILER_ERR_MODULE_W("生成中间代码错误,变量作用域错误", compilerModule->GetCompiler(), compilerModule->GetName().c_str());
@@ -266,18 +292,29 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 		{
 
 		}*/
-		COMPILER_ERR_MODULE_W("生成中间代码错误,未能找到变量", compilerModule->GetCompiler(), compilerModule->GetName().c_str());
+		auto str = GetCompilerValueName(compilerModule, value).data();
+		COMPILER_ERR_MODULE_W("生成中间代码错误,未能找到变量<%s>", compilerModule->GetCompiler(), compilerModule->GetName().c_str(), str);
 		return;
 	}
 
-	hss << s_StrName << " " << INT_VAR_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " ";
-	value->GetVariableType().StringStreamTo(hss);
+	hss << INT_VAR_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " ";
+	//value->GetVariableType().StringStreamTo(hss);
+	hss << " ";
 
-	if (value->IsString())
+	if (value->IsConstant())
 	{
-		hss << " " << compilerModule->GetGlobalStringIndex(value);
-		//index = compilerModule->GetGlobalStringIndex(value);
+		hss << HazeValueNumberToString(value->GetBaseType(), varId.Value);
 	}
+	else
+	{
+		hss << varId.Id;
+	}
+
+	//if (value->IsString())
+	//{
+		//hss << " " << compilerModule->GetGlobalStringIndex(value);
+		//index = compilerModule->GetGlobalStringIndex(value);
+	//}
 }
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo,
@@ -556,7 +593,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	}
 }
 
-HString GenIRCode(InstructionOpCode opCode, x_uint64 number)
+STDString GenIRCode(InstructionOpCode opCode, x_uint64 number)
 {
 	switch (opCode)
 	{
@@ -564,17 +601,17 @@ HString GenIRCode(InstructionOpCode opCode, x_uint64 number)
 		return GetInstructionString(opCode) + (H_TEXT(" ") + HAZE_TO_HAZE_STR(number)) + H_TEXT("\n");
 	}
 	
-	return HString();
+	return STDString();
 }
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, x_uint64 paramCount, x_uint64 paramSize, Share<CompilerFunction> function,
-	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, x_int16 advanceFuncIndex, const HString* nameSpace)
+	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, x_int16 advanceFuncIndex, const STDString* nameSpace)
 {
 	switch (opCode)
 	{
 	case InstructionOpCode::CALL:
 	{
-		HString varName;
+		HStringView varName;
 		hss << GetInstructionString(InstructionOpCode::CALL) << " ";
 		if (function)
 		{

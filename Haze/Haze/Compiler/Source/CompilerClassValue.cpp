@@ -26,12 +26,12 @@ unsigned int CompilerClassValue::GetSize()
 	return m_OwnerClass->GetDataSize();
 }
 
-const HString& CompilerClassValue::GetOwnerClassName()
+const STDString& CompilerClassValue::GetOwnerClassName()
 {
 	return m_OwnerClass->GetName();
 }
 
-Share<CompilerValue> CompilerClassValue::GetMember(const HString& name, HString* nameSpace)
+Share<CompilerValue> CompilerClassValue::GetMember(const STDString& name, STDString* nameSpace)
 {
 	auto index = GetMemberIndex(name, nameSpace);
 	if (index < 0)
@@ -52,7 +52,7 @@ Share<CompilerValue> CompilerClassValue::GetMember(x_int32 index, bool indexFrom
 	return m_Data[index];
 }
 
-int CompilerClassValue::GetMemberIndex(const HString& memberName, HString* nameSpace)
+int CompilerClassValue::GetMemberIndex(const STDString& memberName, STDString* nameSpace)
 {
 	return m_OwnerClass->GetMemberIndex(memberName, nameSpace);
 }

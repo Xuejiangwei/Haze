@@ -42,7 +42,7 @@ struct HookInfo
 
 struct BreakPoint
 {
-	HString FilePath;
+	STDString FilePath;
 	x_uint32 Line;
 
 	bool operator==(const BreakPoint& BP) const
@@ -55,6 +55,6 @@ struct BreakPointHash
 {
 	x_uint64 operator()(const BreakPoint& BP) const
 	{
-		return std::hash<HString>()(BP.FilePath) + BP.Line;
+		return std::hash<STDString>()(BP.FilePath) + BP.Line;
 	}
 };

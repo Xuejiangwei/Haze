@@ -10,7 +10,7 @@ class ASTBase;
 
 struct CompilerFunctionParamData
 {
-	HString Name;
+	STDString Name;
 	Share<CompilerValue> Value;
 	Unique<ASTBase> DefaultParamAST;
 };
@@ -26,7 +26,7 @@ class CompilerFunction
 	friend class ASTMultiExpression;
 
 public:
-	CompilerFunction(CompilerModule* compilerModule, const HString& name, const HazeVariableType& type,
+	CompilerFunction(CompilerModule* compilerModule, const STDString& name, const HazeVariableType& type,
 		V_Array<HazeDefineVariable>& params, HazeFunctionDesc desc, CompilerClass* compilerClass = nullptr);
 
 	virtual ~CompilerFunction();
@@ -36,11 +36,11 @@ public:
 	Share<CompilerValue> GetParamVariableRightToLeft(x_uint32 index);
 	Share<CompilerValue> GetParamVariableLeftToRight(x_uint32 index);
 
-	Share<CompilerValue> GetLocalVariable(const HString& VariableName, HString* nameSpace);
+	Share<CompilerValue> GetLocalVariable(const STDString& VariableName, STDString* nameSpace);
 
-	const HString& GetName() const { return m_Name; }
+	const STDString& GetName() const { return m_Name; }
 
-	HString GetRealName() const;
+	STDString GetRealName() const;
 
 	const HazeVariableType& GetFunctionType() const { return m_Type; }
 
@@ -54,23 +54,24 @@ public:
 
 	void GenI_Code(HAZE_STRING_STREAM& hss);
 
-	HString GenDafaultBlockName();
+	STDString GenDafaultBlockName();
 
-	HString GenIfThenBlockName();
+	STDString GenIfThenBlockName();
 
-	HString GenElseBlockName();
+	STDString GenElseBlockName();
 
-	HString GenLoopBlockName();
+	STDString GenLoopBlockName();
 
-	HString GenWhileBlockName();
+	STDString GenWhileBlockName();
 
-	HString GenForBlockName();
+	STDString GenForBlockName();
 
-	HString GenForConditionBlockName();
+	STDString GenForConditionBlockName();
 
-	HString GenForStepBlockName();
+	STDString GenForStepBlockName();
 
-	bool FindLocalVariableName(const Share<CompilerValue> value, HString& outName);
+	bool FindLocalVariableName(const Share<CompilerValue> value, HStringView& outName);
+	bool FindLocalVariableIndex(const Share<CompilerValue> value, InstructionOpId& outIndex);
 
 	int FindLocalVariableIndex(const Share<CompilerValue> value);
 
@@ -112,6 +113,7 @@ protected:
 protected:
 	struct TempRegisterCountData
 	{
+		HString Name;
 		Share<CompilerValue> Value = nullptr;
 		int Offset = 0;
 		bool HasClear = false;
@@ -126,7 +128,7 @@ protected:
 	CompilerModule* m_Module;
 	CompilerClass* m_OwnerClass;
 
-	HString m_Name;
+	STDString m_Name;
 	HazeVariableType m_Type;
 
 	V_Array<CompilerFunctionParamData> m_Params;	//从右到左加入参数, 只用做查询, 实际变量生成的在block中
@@ -135,7 +137,7 @@ protected:
 	V_Array<TempRegisterCountData> m_TempRegisters;		//{ 临时寄存器, 相对偏移个数 } 相对偏移是 个数 * 8
 
 	Share<CompilerBlock> m_EntryBlock;
-	V_Array<HString> m_DefaultParamIRCodes;
+	V_Array<STDString> m_DefaultParamIRCodes;
 
 	int m_CurrBlockCount;
 	int m_CurrVariableCount;

@@ -15,10 +15,16 @@ public:
 	void Parse();
 
 public:
-	x_uint32 const GetClassSize(const HString& className);
+	x_uint32 const GetClassSize(const STDString& className);
 
 private:
 	void GetNextLexeme();
+
+	void GetNextLexmeAssign_HazeString(STDString& dst)
+	{
+		GetNextLexeme();
+		dst = m_CurrLexeme;
+	};
 
 	void GetNextLexmeAssign_HazeString(HString& dst)
 	{
@@ -26,7 +32,7 @@ private:
 		dst = m_CurrLexeme;
 	};
 
-	void GetNextLexmeAssign_HazeStringCustomClassName(const HString*& dst);
+	void GetNextLexmeAssign_HazeStringCustomClassName(const STDString*& dst);
 
 	template<typename T>
 	void GetNextLexmeAssign_StandardType(T& dst)
@@ -72,29 +78,31 @@ private:
 		ModuleUnit::FunctionTable& newFunctionTable, size_t& functionCount);
 
 	inline void ResetLocalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
-		HashMap<HString, int>& localVariable, HashMap<HString, int> tempRegister);
+		HashMap<STDString, int>& localVariable, HashMap<STDString, int> tempRegister);
 
 	inline void ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::GlobalDataTable& newGlobalDataTable);
 
 	void FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable, ModuleUnit::FunctionTable& newFunctionTable);
 
-	const ModuleUnit::ClassTableData* const GetClass(const HString& className);
+	const ModuleUnit::ClassTableData* const GetClass(const STDString& className);
 
-	x_uint32 GetClassIndex(const HString& className);
+	x_uint32 GetClassIndex(const STDString& className);
 
-	x_uint32 GetMemberOffset(const ModuleUnit::ClassTableData& classData, const HString& memberName);
+	x_uint32 GetMemberOffset(const ModuleUnit::ClassTableData& classData, const STDString& memberName);
 
 private:
 	HazeVM* m_VM;
 
 	const x_HChar* m_CurrCode;
-	HString m_CurrLexeme;
+	STDString m_CurrLexeme;
 
 	Share<ModuleUnit> m_CurrParseModule;
-	HashMap<HString, Share<ModuleUnit>> m_Modules;
+	HashMap<STDString, Share<ModuleUnit>> m_Modules;
 
-	HashSet<HString> m_InterSymbol;
+	HashSet<STDString> m_InterSymbol;
 
 	V_Array<Pair<x_uint32, V_Array<x_uint32>>> m_TypeInfoFunction;
-	V_Array<Pair<HString, Pair<x_uint32, HazeComplexTypeInfo>>> m_TypeInfo;
+	V_Array<Pair<STDString, Pair<x_uint32, HazeComplexTypeInfo>>> m_TypeInfo;
+
+	STDString m_StaticConstantStr = HAZE_JMP_NULL;
 };

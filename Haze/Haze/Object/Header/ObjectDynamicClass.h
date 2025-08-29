@@ -13,9 +13,9 @@ public:
 		//需要每个都设置
 		void(*Constructor)(void*);
 		void(*Deconstructor)(void*);
-		void(*GetMember)(HazeStack* stack, const HString& name, void* dataPtr);
-		void(*SetMember)(HazeStack* stack, const HString& name, void* dataPtr, x_uint8* currESP);
-		void(*CallFunction)(HazeStack* stack, const HString& name, void* dataPtr, x_uint8* currESP);
+		void(*GetMember)(HazeStack* stack, const STDString& name, void* dataPtr);
+		void(*SetMember)(HazeStack* stack, const STDString& name, void* dataPtr, x_uint8* currESP);
+		void(*CallFunction)(HazeStack* stack, const STDString& name, void* dataPtr, x_uint8* currESP);
 
 		bool IsValid() const
 		{

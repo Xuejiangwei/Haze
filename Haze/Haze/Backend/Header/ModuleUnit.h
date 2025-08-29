@@ -4,7 +4,7 @@ class ModuleUnit
 {
 	friend class Optimizer;
 public:
-	ModuleUnit(const HString& name);
+	ModuleUnit(const STDString& name);
 
 	~ModuleUnit();
 
@@ -24,7 +24,8 @@ public:
 
 	struct GlobalData
 	{
-		HString Name;
+		STDString Name;
+		x_uint64 Id;
 		HazeVariableType Type;
 
 		/*uint32 StartAddress;
@@ -42,7 +43,7 @@ public:
 			InitFunctionIndex.clear();
 		}
 
-		int GetIndex(const HString& name)
+		int GetIndex(const STDString& name)
 		{
 			for (x_uint64 i = 0; i < Data.size(); i++)
 			{
@@ -60,7 +61,7 @@ public:
 	struct StringTableData
 	{
 		//HString Name;
-		HString String;
+		STDString String;
 	};
 
 	struct StringTable
@@ -83,23 +84,23 @@ public:
 
 	struct ClassTableData
 	{
-		HString Name;
+		STDString Name;
 		x_uint32 Size;
 		x_uint32 TypeId;
 		V_Array<ClassMemberData> Members;
-		V_Array<HString> ParentClasses;
+		V_Array<STDString> ParentClasses;
 	};
 
 	struct ClassTable
 	{
 		V_Array<ClassTableData> Classes;
-		HashMap<HString, x_uint32> IndexMap;
+		HashMap<STDString, x_uint32> IndexMap;
 	};
 
 public:
 	struct FunctionBlock
 	{
-		HString BlockName;
+		STDString BlockName;
 		int InstructionNum;
 		int StartAddress;
 
@@ -109,8 +110,8 @@ public:
 
 	struct FunctionTableData
 	{
-		HString ClassName;
-		HString Name;
+		STDString ClassName;
+		STDString Name;
 		HazeVariableType Type;
 		V_Array<HazeDefineVariable> Params;
 		V_Array<HazeVariableData> Variables;
@@ -147,8 +148,8 @@ public:
 
 private:
 	HazeLibraryType m_LibraryType;
-	HString m_Path;
-	HString m_Name;
+	STDString m_Path;
+	STDString m_Name;
 
 	GlobalDataTable m_GlobalDataTable;
 	StringTable m_StringTable;

@@ -215,7 +215,7 @@ void Optimizer::AnalyzeDataFlow(ModuleUnit::FunctionTableData& function, Control
         
         for (auto& block : cfg.blocks)
         {
-            std::unordered_set<HString> old_live_out = block.live_out;
+            std::unordered_set<STDString> old_live_out = block.live_out;
             
             // live_out[B] = union(live_in[S] for S in successors(B))
             block.live_out.clear();
@@ -351,7 +351,7 @@ void Optimizer::markReachableInstructions(ModuleUnit::FunctionTableData& functio
         if (inst.InsCode == InstructionOpCode::JMP)
         {
             // 无条件跳转
-            HString target = inst.Operator[0].Variable.Name;
+            STDString& target = inst.Operator[0].Variable.Name;
             size_t target_inst = findLabelInstruction(function, target);
             if (target_inst < function.Instructions.size())
             {
@@ -363,7 +363,7 @@ void Optimizer::markReachableInstructions(ModuleUnit::FunctionTableData& functio
             // 条件跳转 - 两个分支都可能执行
             if (inst.Operator.size() >= 1)
             {
-                HString true_target = inst.Operator[0].Variable.Name;
+                STDString& true_target = inst.Operator[0].Variable.Name;
                 size_t true_inst = findLabelInstruction(function, true_target);
                 if (true_inst < function.Instructions.size())
                 {
@@ -373,7 +373,7 @@ void Optimizer::markReachableInstructions(ModuleUnit::FunctionTableData& functio
             
             if (inst.Operator.size() >= 2)
             {
-                HString false_target = inst.Operator[1].Variable.Name;
+                STDString& false_target = inst.Operator[1].Variable.Name;
                 size_t false_inst = findLabelInstruction(function, false_target);
                 if (false_inst < function.Instructions.size())
                 {
@@ -488,7 +488,7 @@ void Optimizer::markDeadLoopsAndBranches(ModuleUnit::FunctionTableData& function
 }
 
 // 辅助函数
-size_t Optimizer::findLabelInstruction(ModuleUnit::FunctionTableData& function, const HString& label)
+size_t Optimizer::findLabelInstruction(ModuleUnit::FunctionTableData& function, const STDString& label)
 {
     for (size_t i = 0; i < function.Instructions.size(); ++i)
     {
@@ -539,8 +539,8 @@ bool Optimizer::isRedundantInstruction(const ModuleUnit::FunctionInstruction& in
     // 检查冗余的MOV指令
     if (inst.InsCode == InstructionOpCode::MOV && inst.Operator.size() >= 2)
     {
-        HString dest = inst.Operator[0].Variable.Name;
-        HString src = inst.Operator[1].Variable.Name;
+        const STDString& dest = inst.Operator[0].Variable.Name;
+        const STDString& src = inst.Operator[1].Variable.Name;
         
         // MOV x, x 是冗余的
         if (dest == src)
@@ -803,9 +803,9 @@ bool Optimizer::OptimizeInstructionSequence(std::vector<ModuleUnit::FunctionInst
     return false;
 }
 
-std::vector<HString> Optimizer::getUsedVariables(const ModuleUnit::FunctionInstruction& inst)
+std::vector<STDString> Optimizer::getUsedVariables(const ModuleUnit::FunctionInstruction& inst)
 {
-    std::vector<HString> used;
+    std::vector<STDString> used;
     
     for (const auto& operand : inst.Operator)
     {
@@ -820,9 +820,9 @@ std::vector<HString> Optimizer::getUsedVariables(const ModuleUnit::FunctionInstr
     return used;
 }
 
-std::vector<HString> Optimizer::getDefinedVariables(const ModuleUnit::FunctionInstruction& inst)
+std::vector<STDString> Optimizer::getDefinedVariables(const ModuleUnit::FunctionInstruction& inst)
 {
-    std::vector<HString> defined;
+    std::vector<STDString> defined;
     
     if (!inst.Operator.empty())
     {
@@ -832,7 +832,7 @@ std::vector<HString> Optimizer::getDefinedVariables(const ModuleUnit::FunctionIn
     return defined;
 }
 
-bool Optimizer::isVariableLive(const HString& var, size_t instruction_index, const ControlFlowGraph& cfg)
+bool Optimizer::isVariableLive(const STDString& var, size_t instruction_index, const ControlFlowGraph& cfg)
 {
     auto it = cfg.instruction_to_block.find(instruction_index);
     if (it == cfg.instruction_to_block.end()) return false;
@@ -906,7 +906,7 @@ void Optimizer::constantPropagationFunction(ModuleUnit::FunctionTableData& funct
     //buildControlFlowGraph(function, cfg);
     
     // 初始化常量映射
-    std::unordered_map<HString, HazeValue> constant_map;
+    std::unordered_map<STDString, HazeValue> constant_map;
     
     // 前向传播常量
     bool changed = true;
@@ -935,7 +935,7 @@ void Optimizer::constantPropagationFunction(ModuleUnit::FunctionTableData& funct
 }
 
 bool Optimizer::canPropagateConstant(const ModuleUnit::FunctionInstruction& inst, 
-                                    const std::unordered_map<HString, HazeValue>& constant_map)
+                                    const std::unordered_map<STDString, HazeValue>& constant_map)
 {
     // 检查指令的操作数是否都是已知常量
     for (int i = 1; i < inst.Operator.size(); ++i)
@@ -944,7 +944,7 @@ bool Optimizer::canPropagateConstant(const ModuleUnit::FunctionInstruction& inst
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
             inst.Operator[i].Desc != HazeDataDesc::NullPtr)
         {
-            HString var_name = inst.Operator[i].Variable.Name;
+            const STDString& var_name = inst.Operator[i].Variable.Name;
             if (constant_map.find(var_name) == constant_map.end())
             {
                 return false;
@@ -955,7 +955,7 @@ bool Optimizer::canPropagateConstant(const ModuleUnit::FunctionInstruction& inst
 }
 
 bool Optimizer::propagateConstant(ModuleUnit::FunctionInstruction& inst, 
-                                 const std::unordered_map<HString, HazeValue>& constant_map)
+                                 const std::unordered_map<STDString, HazeValue>& constant_map)
 {
     // 将变量替换为常量值
     for (int i = 1; i < inst.Operator.size(); ++i)
@@ -964,7 +964,7 @@ bool Optimizer::propagateConstant(ModuleUnit::FunctionInstruction& inst,
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
             inst.Operator[i].Desc != HazeDataDesc::NullPtr)
         {
-            HString var_name = inst.Operator[i].Variable.Name;
+            const STDString& var_name = inst.Operator[i].Variable.Name;
             auto it = constant_map.find(var_name);
             if (it != constant_map.end())
             {
@@ -978,14 +978,14 @@ bool Optimizer::propagateConstant(ModuleUnit::FunctionInstruction& inst,
 }
 
 void Optimizer::updateConstantMap(const ModuleUnit::FunctionInstruction& inst, 
-                                 std::unordered_map<HString, HazeValue>& constant_map)
+                                 std::unordered_map<STDString, HazeValue>& constant_map)
 {
     // 更新常量映射
     if (inst.Operator[0].Desc != HazeDataDesc::Constant && 
         inst.Operator[0].Desc != HazeDataDesc::ConstantString &&
         inst.Operator[0].Desc != HazeDataDesc::NullPtr)
     {
-        HString var_name = inst.Operator[0].Variable.Name;
+        const STDString& var_name = inst.Operator[0].Variable.Name;
         
         if (inst.InsCode == InstructionOpCode::MOV && 
             inst.Operator[1].Desc == HazeDataDesc::Constant)
@@ -1163,7 +1163,7 @@ bool Optimizer::isInvariantInstruction(const ModuleUnit::FunctionInstruction& in
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
             inst.Operator[i].Desc != HazeDataDesc::NullPtr)
         {
-            HString var_name = inst.Operator[i].Variable.Name;
+            const STDString& var_name = inst.Operator[i].Variable.Name;
             if (isVariableModifiedInLoop(var_name, loop, cfg, function))
             {
                 return false;
@@ -1173,7 +1173,7 @@ bool Optimizer::isInvariantInstruction(const ModuleUnit::FunctionInstruction& in
     return true;
 }
 
-bool Optimizer::isVariableModifiedInLoop(const HString& var_name, const LoopInfo& loop, const ControlFlowGraph& cfg, const ModuleUnit::FunctionTableData& function)
+bool Optimizer::isVariableModifiedInLoop(const STDString& var_name, const LoopInfo& loop, const ControlFlowGraph& cfg, const ModuleUnit::FunctionTableData& function)
 {
     for (size_t block_idx : loop.body)
     {
@@ -1190,7 +1190,7 @@ bool Optimizer::isVariableModifiedInLoop(const HString& var_name, const LoopInfo
     return false;
 }
 
-bool Optimizer::isVariableDefined(const ModuleUnit::FunctionInstruction& inst, const HString& var_name)
+bool Optimizer::isVariableDefined(const ModuleUnit::FunctionInstruction& inst, const STDString& var_name)
 {
     return inst.Operator[0].Desc != HazeDataDesc::Constant && 
            inst.Operator[0].Desc != HazeDataDesc::ConstantString &&
@@ -1350,7 +1350,7 @@ void Optimizer::functionInliningFunction(ModuleUnit::FunctionTableData& function
         size_t call_site = call_sites[i];
         auto& inst = function.Instructions[call_site];
         
-        HString callee_name = inst.Operator[0].Variable.Name;
+        const STDString& callee_name = inst.Operator[0].Variable.Name;
         
         // 检查是否可以内联
         if (shouldInlineFunction(callee_name, module))
@@ -1360,7 +1360,7 @@ void Optimizer::functionInliningFunction(ModuleUnit::FunctionTableData& function
     }
 }
 
-bool Optimizer::shouldInlineFunction(const HString& function_name, const ModuleUnit& module)
+bool Optimizer::shouldInlineFunction(const STDString& function_name, const ModuleUnit& module)
 {
     // 查找被调用函数
     const ModuleUnit::FunctionTableData* callee = nullptr;
@@ -1412,7 +1412,7 @@ bool Optimizer::hasComplexControlFlow(const ModuleUnit::FunctionTableData& funct
     return jump_count > 3; // 超过3个跳转认为复杂
 }
 
-void Optimizer::inlineFunctionCall(ModuleUnit::FunctionTableData& function, size_t call_site, const HString& callee_name, const ModuleUnit& module)
+void Optimizer::inlineFunctionCall(ModuleUnit::FunctionTableData& function, size_t call_site, const STDString& callee_name, const ModuleUnit& module)
 {
     // 获取被调用函数
     const ModuleUnit::FunctionTableData* callee = nullptr;
@@ -1455,7 +1455,7 @@ void Optimizer::inlineFunctionCall(ModuleUnit::FunctionTableData& function, size
     m_stats.functions_inlined++;
 }
 
-void Optimizer::renameLocalVariables(ModuleUnit::FunctionInstruction& inst, const HString& caller_name)
+void Optimizer::renameLocalVariables(ModuleUnit::FunctionInstruction& inst, const STDString& caller_name)
 {
     // 重命名局部变量以避免冲突
     for (int i = 0; i < inst.Operator.size(); ++i)
@@ -1464,17 +1464,17 @@ void Optimizer::renameLocalVariables(ModuleUnit::FunctionInstruction& inst, cons
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
             inst.Operator[i].Desc != HazeDataDesc::NullPtr)
         {
-            HString old_name = inst.Operator[i].Variable.Name;
+            const STDString& old_name = inst.Operator[i].Variable.Name;
             if (isLocalVariable(old_name))
             {
-                HString new_name = caller_name + H_TEXT("_") + old_name;
-                inst.Operator[i].Variable.Name = new_name;
+                STDString new_name = caller_name + H_TEXT("_") + old_name;
+                inst.Operator[i].Variable.Name = Move(new_name);
             }
         }
     }
 }
 
-bool Optimizer::isLocalVariable(const HString& var_name)
+bool Optimizer::isLocalVariable(const STDString& var_name)
 {
     // 检查是否为局部变量
     // 这里简化实现，实际需要更复杂的分析
@@ -1493,7 +1493,7 @@ void Optimizer::commonSubexpressionElimination(ModuleUnit& module)
 
 void Optimizer::commonSubexpressionEliminationFunction(ModuleUnit::FunctionTableData& function)
 {
-    std::unordered_map<HString, size_t> expression_cache;
+    std::unordered_map<STDString, size_t> expression_cache;
     
     for (size_t i = 0; i < function.Instructions.size(); ++i)
     {
@@ -1501,7 +1501,7 @@ void Optimizer::commonSubexpressionEliminationFunction(ModuleUnit::FunctionTable
         
         if (IsArithmeticOpCode(inst.InsCode) || IsComparisonOpCode(inst.InsCode))
         {
-            HString expression_key = generateExpressionKey(inst);
+            STDString expression_key = generateExpressionKey(inst);
             
             auto it = expression_cache.find(expression_key);
             if (it != expression_cache.end())
@@ -1532,12 +1532,12 @@ void Optimizer::commonSubexpressionEliminationFunction(ModuleUnit::FunctionTable
     }
 }
 
-HString Optimizer::generateExpressionKey(const ModuleUnit::FunctionInstruction& inst)
+STDString Optimizer::generateExpressionKey(const ModuleUnit::FunctionInstruction& inst)
 {
     // 生成表达式的唯一键
-    HString key = ToHazeString(static_cast<int>(inst.InsCode));
+    STDString key = ToHazeString(static_cast<int>(inst.InsCode));
     
-    for (int i = 1; i < inst.Operator.size(); ++i)
+   /* for (int i = 1; i < inst.Operator.size(); ++i)
     {
         if (inst.Operator[i].Desc != HazeDataDesc::Constant && 
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
@@ -1549,7 +1549,7 @@ HString Optimizer::generateExpressionKey(const ModuleUnit::FunctionInstruction& 
         {
             key += H_TEXT("_C") + inst.Operator[i].Variable.Name;
         }
-    }
+    }*/
     
     return key;
 }
@@ -1588,7 +1588,7 @@ void Optimizer::registerAllocationFunction(ModuleUnit::FunctionTableData& functi
     buildInterferenceGraph(function, cfg, interference_graph);
     
     // 图着色分配寄存器
-    std::unordered_map<HString, int> register_assignment;
+    std::unordered_map<STDString, int> register_assignment;
     if (colorGraph(interference_graph, register_assignment))
     {
         // 应用寄存器分配
@@ -1603,7 +1603,7 @@ void Optimizer::buildInterferenceGraph(ModuleUnit::FunctionTableData& function, 
     interference_graph.clear();
     
     // 为每个变量创建节点
-    std::unordered_set<HString> all_variables;
+    std::unordered_set<STDString> all_variables;
     for (const auto& inst : function.Instructions)
     {
         for (int i = 0; i < inst.Operator.size(); ++i)
@@ -1619,13 +1619,13 @@ void Optimizer::buildInterferenceGraph(ModuleUnit::FunctionTableData& function, 
     
     for (const auto& var : all_variables)
     {
-        interference_graph[var] = std::unordered_set<HString>();
+        interference_graph[var] = std::unordered_set<STDString>();
     }
     
     // 构建干扰边
     for (const auto& block : cfg.blocks)
     {
-        std::vector<HString> live_vars;
+        std::vector<STDString> live_vars;
         
         for (size_t inst_idx : block.instructions)
         {
@@ -1636,7 +1636,7 @@ void Optimizer::buildInterferenceGraph(ModuleUnit::FunctionTableData& function, 
                 inst.Operator[0].Desc != HazeDataDesc::ConstantString &&
                 inst.Operator[0].Desc != HazeDataDesc::NullPtr)
             {
-                HString def_var = inst.Operator[0].Variable.Name;
+                const STDString& def_var = inst.Operator[0].Variable.Name;
                 live_vars.push_back(def_var);
             }
             
@@ -1657,7 +1657,7 @@ void Optimizer::buildInterferenceGraph(ModuleUnit::FunctionTableData& function, 
                     inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
                     inst.Operator[i].Desc != HazeDataDesc::NullPtr)
                 {
-                    HString use_var = inst.Operator[i].Variable.Name;
+                    const STDString& use_var = inst.Operator[i].Variable.Name;
                     auto it = std::find(live_vars.begin(), live_vars.end(), use_var);
                     if (it != live_vars.end())
                     {
@@ -1670,10 +1670,10 @@ void Optimizer::buildInterferenceGraph(ModuleUnit::FunctionTableData& function, 
 }
 
 bool Optimizer::colorGraph(const InterferenceGraph& interference_graph,
-                          std::unordered_map<HString, int>& register_assignment)
+                          std::unordered_map<STDString, int>& register_assignment)
 {
     // 简化的图着色算法
-    std::vector<HString> variables;
+    std::vector<STDString> variables;
     for (const auto& pair : interference_graph)
     {
         variables.push_back(pair.first);
@@ -1681,7 +1681,7 @@ bool Optimizer::colorGraph(const InterferenceGraph& interference_graph,
     
     // 按度数排序（启发式）
     std::sort(variables.begin(), variables.end(),
-              [&](const HString& a, const HString& b) {
+              [&](const STDString& a, const STDString& b) {
                   return interference_graph.at(a).size() > interference_graph.at(b).size();
               });
     
@@ -1721,7 +1721,7 @@ bool Optimizer::colorGraph(const InterferenceGraph& interference_graph,
 }
 
 void Optimizer::applyRegisterAllocation(ModuleUnit::FunctionTableData& function,
-                                       const std::unordered_map<HString, int>& register_assignment)
+                                       const std::unordered_map<STDString, int>& register_assignment)
 {
     // 应用寄存器分配结果
     for (auto& inst : function.Instructions)
@@ -1732,12 +1732,12 @@ void Optimizer::applyRegisterAllocation(ModuleUnit::FunctionTableData& function,
                 inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
                 inst.Operator[i].Desc != HazeDataDesc::NullPtr)
             {
-                HString var_name = inst.Operator[i].Variable.Name;
+                const STDString& var_name = inst.Operator[i].Variable.Name;
                 auto it = register_assignment.find(var_name);
                 if (it != register_assignment.end())
                 {
                     // 将变量替换为寄存器
-                    inst.Operator[i].Variable.Name = H_TEXT("R") + ToHazeString(it->second);
+                    inst.Operator[i].Variable.Name = H_TEXT("R") + STDString(ToHazeString(it->second).c_str());
                 }
             }
         }
@@ -1802,7 +1802,7 @@ bool Optimizer::hasDependency(const ModuleUnit::FunctionInstruction& inst1, cons
         inst1.Operator[0].Desc != HazeDataDesc::ConstantString &&
         inst1.Operator[0].Desc != HazeDataDesc::NullPtr)
     {
-        HString def_var = inst1.Operator[0].Variable.Name;
+        const STDString& def_var = inst1.Operator[0].Variable.Name;
         
         for (int i = 1; i < inst2.Operator.size(); ++i)
         {

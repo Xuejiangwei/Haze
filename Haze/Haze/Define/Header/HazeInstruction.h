@@ -20,7 +20,8 @@ enum class HazeDataDesc : x_uint32
 	None,
 	/*Global,
 	Local,*/
-	Constant,
+
+	ConstantValue,
 	ConstantString,
 
 	RegisterBegin,
@@ -64,6 +65,15 @@ enum class HazeFunctionDesc : x_uint8
 	Closure,
 };
 
+enum class HazeVirtualRegister : x_uint8
+{
+	RET,
+	CMP,
+
+
+	_END,
+};
+
 enum class InstructionOpCode : x_uint32
 {
 #define HAZE_OP_CODE_DEFINE(OP_CODE) OP_CODE,
@@ -101,11 +111,23 @@ enum class InstructionAddressType : x_uint8
 	Register,
 };
 
+struct InstructionOpId
+{
+	union
+	{
+		HazeValue Value;
+		x_uint64 Id;
+	};
+};
+
 struct InstructionData
 {
-	HazeDefineVariable Variable;
+	//HazeDefineVariable Variable;
+
 	HazeVariableScope Scope;
 	HazeDataDesc Desc;
+	HazeValueType Type;
+	x_uint64 VariableIndexOrId;
 	InstructionAddressType AddressType;
 
 	struct AddressData
@@ -157,7 +179,7 @@ struct InstructionData
 		}
 	} Extra;
 
-	InstructionData() : Variable(), Desc(HazeDataDesc::None)
+	InstructionData() : VariableIndexOrId(0), Desc(HazeDataDesc::None)
 	{
 		AddressType = InstructionAddressType::Local;
 		memset(&Extra, 0, sizeof(Extra));
@@ -198,8 +220,8 @@ struct FunctionDescData
 
 struct ModuleData
 {
-	HString Name;
-	HString Path;
+	STDString Name;
+	STDString Path;
 	Pair<x_uint32, x_uint32> GlobalDataIndex;
 	Pair<x_uint32, x_uint32> StringIndex;
 	Pair<x_uint32, x_uint32> ClassIndex;
@@ -208,7 +230,6 @@ struct ModuleData
 
 	ModuleData()
 	{
-		Name.clear();
 		GlobalDataIndex = { 0, 0 };
 		StringIndex = { 0, 0 };
 		ClassIndex = { 0, 0 };
@@ -218,11 +239,11 @@ struct ModuleData
 
 struct ClassData
 {
-	HString Name;
+	STDString Name;
 	x_uint32 Size;
 	x_uint32 TypeId;
 	V_Array<HazeVariableData> Members;
-	HashMap<HString, x_uint32> Functions;
+	HashMap<STDString, x_uint32> Functions;
 	V_Array<x_uint32> InheritClasses;
 };
 
@@ -256,9 +277,10 @@ struct HazeRegister
 //	V_Array<HazeDefineVariable*> LocalParams;
 //};
 
-bool IsRegisterDesc(HazeDataDesc desc);
-bool IsClassMember(HazeDataDesc desc);
-bool IsConstant(HazeDataDesc desc);
+inline bool IsRegisterDesc(HazeDataDesc desc);
+inline bool IsConstDesc(HazeDataDesc desc);
+inline bool IsConstStringDesc(HazeDataDesc desc);
+inline bool IsClassMember(HazeDataDesc desc);
 
 bool IsJmpOpCode(InstructionOpCode code);
 bool IsArithmeticOpCode(InstructionOpCode opcode);
@@ -266,6 +288,8 @@ bool IsComparisonOpCode(InstructionOpCode opcode);
 bool IsCallOpCode(InstructionOpCode opcode);
 bool IsMovOpCode(InstructionOpCode opcode);
 
+HazeVirtualRegister GetVirtualRegisterByDesc(HazeDataDesc desc);
+
 const x_HChar* GetInstructionString(InstructionOpCode code);
 
-InstructionOpCode GetInstructionByString(const HString& str);
+InstructionOpCode GetInstructionByString(const STDString& str);

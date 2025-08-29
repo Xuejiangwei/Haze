@@ -16,9 +16,9 @@
 
 #include "ASTBase.h"
 
-CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const HString& name, const HazeVariableType& type, 
+CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const STDString& name, const HazeVariableType& type, 
 	V_Array<HazeDefineVariable>& params, HazeFunctionDesc desc, CompilerClass* compilerClass)
-	: m_Module(compilerModule), m_Name(name), m_Type(type), m_OwnerClass(compilerClass), m_CurrBlockCount(0), 
+	: m_Module(compilerModule), m_Name(name.c_str()), m_Type(type), m_OwnerClass(compilerClass), m_CurrBlockCount(0), 
 		m_CurrVariableCount(0), m_StartLine(0), m_EndLine(0), m_Desc(desc)
 {
 	for (int i = (int)params.size() - 1; i >= 0; i--)
@@ -152,7 +152,7 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeVariableType
 			break;
 	}
 
-	m_TempRegisters.push_back({ v , offset });
+	m_TempRegisters.push_back({ (STDString(HAZE_LOCAL_TEMP_REGISTER) + String2WString(ToString(m_TempRegisters.size()))), v , offset });
 
 	/*if (IsStringType(type.BaseType) && str)
 	{
@@ -186,7 +186,7 @@ void CompilerFunction::TryClearTempRegister()
 	}
 }
 
-Share<CompilerValue> CompilerFunction::GetLocalVariable(const HString& variableName, HString* nameSpace)
+Share<CompilerValue> CompilerFunction::GetLocalVariable(const STDString& variableName, STDString* nameSpace)
 {
 	Share<CompilerValue> ret = nullptr;
 
@@ -221,7 +221,7 @@ Share<CompilerValue> CompilerFunction::GetLocalVariable(const HString& variableN
 	return ret;
 }
 
-HString CompilerFunction::GetRealName() const
+STDString CompilerFunction::GetRealName() const
 {
 	return m_OwnerClass ? GetHazeClassFunctionName(m_OwnerClass->GetName(), m_Name) : m_Name;
 }
@@ -257,7 +257,7 @@ void CompilerFunction::ParseIntermediate(HAZE_IFSTREAM& stream, CompilerModule* 
 {
 	if (m)
 	{
-		HString str;
+		STDString str;
 		stream >> str;
 	}
 }
@@ -298,7 +298,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		hss << HAZE_ENDL;
 	}
 
-	HString LocalVariableName;
+	HStringView LocalVariableName;
 	int size = -HAZE_ADDRESS_SIZE;
 
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
@@ -310,7 +310,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		}
 		size -= m_LocalVariables[i].first->GetVariableType().GetTypeSize();
 		
-		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
+		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName << HAZE_LOCAL_VARIABLE_CONBINE << m_LocalVariables[i].first->GetCount();
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 
 		hss << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
@@ -321,7 +321,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	for (size_t i = m_Params.size(); i < m_LocalVariables.size(); i++)
 	{
 		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);
-		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName;
+		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName << HAZE_LOCAL_VARIABLE_CONBINE << m_LocalVariables[i].first->GetCount();
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 		hss << " " << m_LocalVariables[i].first->GetVariableType().GetTypeSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
 		size += m_LocalVariables[i].first->GetVariableType().GetTypeSize();
@@ -329,8 +329,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 
 	for (x_uint64 i = 0; i < m_TempRegisters.size(); i++)
 	{
-		hss << HAZE_LOCAL_TEMP_REGISTER_HEADER << " " << HAZE_LOCAL_TEMP_REGISTER << i << " "
-			<< size + m_TempRegisters[i].Offset * 8 << " ";
+		hss << HAZE_LOCAL_TEMP_REGISTER_HEADER << " " << HAZE_LOCAL_TEMP_REGISTER << i << " " << size + m_TempRegisters[i].Offset * sizeof(HazeValue) << " ";
 		m_TempRegisters[i].Value->GetVariableType().StringStreamTo(hss);
 		hss << HAZE_ENDL;
 	}
@@ -354,74 +353,98 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	m_EntryBlock->ClearLocalVariable();
 }
 
-HString CompilerFunction::GenDafaultBlockName()
+STDString CompilerFunction::GenDafaultBlockName()
 {
 	HAZE_STRING_STREAM hss;
 	hss << BLOCK_DEFAULT << ++m_CurrBlockCount;
 	return hss.str();
 }
 
-HString CompilerFunction::GenIfThenBlockName()
+STDString CompilerFunction::GenIfThenBlockName()
 {
 	HAZE_STRING_STREAM hss;
 	hss << BLOCK_IF_THEN << ++m_CurrBlockCount;
 	return hss.str();
 }
 
-HString CompilerFunction::GenElseBlockName()
+STDString CompilerFunction::GenElseBlockName()
 {
 	HAZE_STRING_STREAM hss;
 	hss << BLOCK_ELSE << ++m_CurrBlockCount;
 	return hss.str();
 }
 
-HString CompilerFunction::GenLoopBlockName()
+STDString CompilerFunction::GenLoopBlockName()
 {
 	HAZE_STRING_STREAM hss;
 	hss << BLOCK_LOOP << ++m_CurrBlockCount;
 	return hss.str();
 }
 
-HString CompilerFunction::GenWhileBlockName()
+STDString CompilerFunction::GenWhileBlockName()
 {
 	HAZE_STRING_STREAM hss;
 	hss << BLOCK_WHILE << ++m_CurrBlockCount;
 	return hss.str();
 }
 
-HString CompilerFunction::GenForBlockName()
+STDString CompilerFunction::GenForBlockName()
 {
 	HAZE_STRING_STREAM hss;
 	hss << BLOCK_FOR << ++m_CurrBlockCount;
 	return hss.str();
 }
 
-HString CompilerFunction::GenForConditionBlockName()
+STDString CompilerFunction::GenForConditionBlockName()
 {
 	HAZE_STRING_STREAM hss;
 	hss << BLOCK_FOR_CONDITION << ++m_CurrBlockCount;
 	return hss.str();
 }
 
-HString CompilerFunction::GenForStepBlockName()
+STDString CompilerFunction::GenForStepBlockName()
 {
 	HAZE_STRING_STREAM hss;
 	hss << BLOCK_FOR_STEP << ++m_CurrBlockCount;
 	return hss.str();
 }
 
-bool CompilerFunction::FindLocalVariableName(const Share<CompilerValue> value, HString& outName)
+bool CompilerFunction::FindLocalVariableName(const Share<CompilerValue> value, HStringView& outName)
 {
 	if (m_EntryBlock->FindLocalVariableName(value, outName))
 	{
 		return true;
 	}
 
+	for (auto& it : m_TempRegisters)
+	{
+		if (it.Value == value)
+		{
+			outName = it.Name;
+			return true;
+
+		}
+	}
+
+	return false;
+}
+
+bool CompilerFunction::FindLocalVariableIndex(const Share<CompilerValue> value, InstructionOpId& outIndex)
+{
+	for (x_uint64 i = 0; i < m_LocalVariables.size(); i++)
+	{
+		if (value == m_LocalVariables[i].first)
+		{
+			outIndex.Id = i;
+			return true;
+		}
+	}
+
 	for (x_uint64 i = 0; i < m_TempRegisters.size(); i++)
 	{
-		if (m_TempRegisters[i].Value == value)
+		if (value == m_TempRegisters[i].Value)
 		{
-			outName = HAZE_LOCAL_TEMP_REGISTER + String2WString(ToString(i));
+			outIndex.Id = i;
 			return true;
 		}
 	}
@@ -562,6 +585,6 @@ Share<CompilerClassValue> CompilerFunction::GetThisLocalVariable()
 void CompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)
 {
 	//m_Module->BeginCreateFunctionParamVariable();
-	m_Params.push_back({ variable.Name, CreateVariable(m_Module, variable.Type, HazeVariableScope::Local, HazeDataDesc::None, 0), nullptr });
+	m_Params.push_back({ variable.Name.data(), CreateVariable(m_Module, variable.Type, HazeVariableScope::Local, HazeDataDesc::None, 0), nullptr});
 	//m_Module->EndCreateFunctionParamVariable();
 }
