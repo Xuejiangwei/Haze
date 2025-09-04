@@ -1,5 +1,6 @@
 #include "HazePch.h"
 #include "Compiler.h"
+#include "CompilerSymbol.h"
 #include "CompilerModule.h"
 
 #include "ASTFunction.h"

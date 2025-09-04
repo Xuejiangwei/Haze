@@ -45,8 +45,6 @@ const x_HChar* GetFunctionTempRegisterHeader();
 const x_HChar* GetFunctionStartHeader();
 const x_HChar* GetFunctionEndHeader();
 
-const x_HChar* GetBlockFlowHeader();
-
 const x_HChar* GetClosureRefrenceVariableHeader();
 
 const x_HChar* GetEnumTableLabelHeader();
@@ -106,8 +104,6 @@ STDString ToHazeString(T value);
 void ConvertBaseTypeValue(HazeValueType type1, HazeValue& v1, HazeValueType type2, const HazeValue& v2);
 
 V_Array<STDString> HazeStringSplit(const STDString& str, const STDString& delimiter);
-
-HazeValueType GetHazeBaseTypeByDesc(HazeDataDesc desc);
 
 // 编译环境信息显示
 void ShowCompilerInfo();

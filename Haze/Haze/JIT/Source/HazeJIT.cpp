@@ -80,22 +80,20 @@ void HazeJIT::basicOptimization(JITCompilationUnit* unit)
     // JIT特有的优化：运行时常量折叠
     // 只处理后端优化无法处理的运行时常量
     for (auto& inst : unit->bytecode) {
-        if (inst.InsCode == InstructionOpCode::ADD && 
-            inst.Operator[1].Desc == HazeDataDesc::Constant &&
-            inst.Operator[2].Desc == HazeDataDesc::Constant) {
+        if (inst.InsCode == InstructionOpCode::ADD && IsConstDesc(inst.Operator[1].Desc) && IsConstDesc(inst.Operator[2].Desc)) {
             
             // 检查是否为运行时确定的常量（后端优化时未知）
             if (isRuntimeConstant(inst.Operator[1]) || isRuntimeConstant(inst.Operator[2])) {
                 // 编译时计算常量加法
-                int val1 = StringToStandardType<int>(inst.Operator[1].Variable.Name);
-                int val2 = StringToStandardType<int>(inst.Operator[2].Variable.Name);
-                int result = val1 + val2;
-                
-                // 替换为MOV指令
-                inst.InsCode = InstructionOpCode::MOV;
-                inst.Operator[1].Variable.Name = ToHazeString(result);
-                inst.Operator[1].Desc = HazeDataDesc::Constant;
-                inst.Operator[2] = InstructionData(); // 清空第二个操作数
+                //int val1 = StringToStandardType<int>(inst.Operator[1].Variable.Name);
+                //int val2 = StringToStandardType<int>(inst.Operator[2].Variable.Name);
+                //int result = val1 + val2;
+                //
+                //// 替换为MOV指令
+                //inst.InsCode = InstructionOpCode::MOV;
+                //inst.Operator[1].Variable.Name = ToHazeString(result);
+                //inst.Operator[1].Desc = HazeDataDesc::Constant;
+                //inst.Operator[2] = InstructionData(); // 清空第二个操作数
             }
         }
     }
@@ -286,7 +284,7 @@ bool HazeJIT::isRuntimeConstant(const InstructionData& operand)
 {
     // 检查是否为运行时才知道的常量
     // 例如：配置值、环境变量、用户输入等
-    if (operand.Desc == HazeDataDesc::Constant) {
+    if (IsConstDesc(operand.Desc)) {
         // 检查常量名称是否包含运行时信息
         /*HString const_name = operand.Variable.Name;
         return const_name.find(H_TEXT("runtime_")) != HString::npos ||
@@ -348,7 +346,7 @@ bool HazeJIT::isRuntimeConditionalDeadCode(const Instruction& inst, size_t index
 // 新增：检查是否为配置值
 bool HazeJIT::isConfigValue(const InstructionData& operand)
 {
-    if (operand.Desc == HazeDataDesc::Constant) {
+    if (IsConstDesc(operand.Desc)) {
         /*HString const_name = operand.Variable.Name;
         return const_name.find(H_TEXT("debug_")) != HString::npos ||
                const_name.find(H_TEXT("feature_")) != HString::npos ||
@@ -466,10 +464,10 @@ void HazeJIT::optimizeRegisterAllocationWithProfile(JITCompilationUnit* unit)
     for (const auto& inst : unit->bytecode) {
         // 统计变量使用次数
         for (const auto& operand : inst.Operator) {
-            if (operand.Desc != HazeDataDesc::Constant && 
+            if (operand.Desc != HazeDataDesc::ConstantValue && 
                 operand.Desc != HazeDataDesc::ConstantString &&
                 operand.Desc != HazeDataDesc::NullPtr) {
-                variable_usage_count[operand.Variable.Name]++;
+                //variable_usage_count[operand.Variable.Name]++;
             }
         }
     }
@@ -558,18 +556,18 @@ void HazeJIT::devirtualizeCalls(JITCompilationUnit* unit)
 
 size_t HazeJIT::findLabelIndex(JITCompilationUnit* unit, const STDString& label_name)
 {
-    for (size_t i = 0; i < unit->bytecode.size(); ++i) {
-        auto& inst = unit->bytecode[i];
-        if (inst.InsCode == InstructionOpCode::LINE) {
-            if (i + 1 < unit->bytecode.size()) {
-                auto& next_inst = unit->bytecode[i + 1];
-                if (next_inst.Operator.size() > 0 && 
-                    next_inst.Operator[0].Variable.Name == label_name) {
-                    return i + 1;
-                }
-            }
-        }
-    }
+    //for (size_t i = 0; i < unit->bytecode.size(); ++i) {
+    //    auto& inst = unit->bytecode[i];
+    //    if (inst.InsCode == InstructionOpCode::LINE) {
+    //        if (i + 1 < unit->bytecode.size()) {
+    //            auto& next_inst = unit->bytecode[i + 1];
+    //            if (next_inst.Operator.size() > 0 && 
+    //                next_inst.Operator[0].Variable.Name == label_name) {
+    //                return i + 1;
+    //            }
+    //        }
+    //    }
+    //}
     return unit->bytecode.size(); // 未找到
 }
 
@@ -630,16 +628,16 @@ void HazeJIT::applyRegisterAllocation(JITCompilationUnit* unit, const std::unord
     // 应用寄存器分配
     for (auto& inst : unit->bytecode) {
         for (auto& operand : inst.Operator) {
-            if (operand.Desc != HazeDataDesc::Constant && 
+            if (operand.Desc != HazeDataDesc::ConstantValue && 
                 operand.Desc != HazeDataDesc::ConstantString &&
                 operand.Desc != HazeDataDesc::NullPtr) {
                 
-                auto it = register_assignment.find(operand.Variable.Name);
-                if (it != register_assignment.end()) {
-                    // 替换为寄存器引用
-                    operand.Desc = HazeDataDesc::RegisterTemp;
-                    //operand.Variable.Name = H_TEXT("R") + ToHazeString(it->second);
-                }
+                //auto it = register_assignment.find(operand.Variable.Name);
+                //if (it != register_assignment.end()) {
+                //    // 替换为寄存器引用
+                //    operand.Desc = HazeDataDesc::RegisterTemp;
+                //    //operand.Variable.Name = H_TEXT("R") + ToHazeString(it->second);
+                //}
             }
         }
     }
@@ -654,8 +652,7 @@ bool HazeJIT::isDynamicTypeOperation(const Instruction& inst)
         return true;
     case InstructionOpCode::MOV:
         // 某些MOV操作可能涉及动态类型
-        return inst.Operator.size() >= 2 && 
-               inst.Operator[1].Variable.Type.BaseType == HazeValueType::ObjectFunction;
+        return inst.Operator.size() >= 2 && inst.Operator[1].Type == HazeValueType::ObjectFunction;
     default:
         return false;
     }
@@ -825,7 +822,7 @@ bool HazeJIT::isInvariantInstruction(const Instruction& inst, size_t loop_start,
     // 检查指令是否为循环不变
     // 简化实现：检查是否只使用常量
     for (const auto& operand : inst.Operator) {
-        if (operand.Desc != HazeDataDesc::Constant && 
+        if (operand.Desc != HazeDataDesc::ConstantValue && 
             operand.Desc != HazeDataDesc::ConstantString &&
             operand.Desc != HazeDataDesc::NullPtr) {
             return false; // 使用了变量，不是不变指令
@@ -846,13 +843,13 @@ void HazeJIT::strengthReduction(JITCompilationUnit* unit, size_t loop_start, siz
         if (inst.InsCode == InstructionOpCode::MUL) {
             if (inst.Operator.size() >= 3) {
                 auto& op2 = inst.Operator[2];
-                if (op2.Desc == HazeDataDesc::Constant) {
-                    int constant = StringToStandardType<int>(op2.Variable.Name);
-                    if (constant == 2) {
-                        // x * 2 -> x + x
-                        inst.InsCode = InstructionOpCode::ADD;
-                        inst.Operator[2] = inst.Operator[1]; // 复制操作数
-                    }
+                if (IsConstDesc(op2.Desc)) {
+                    //int constant = StringToStandardType<int>(op2.Variable.Name);
+                    //if (constant == 2) {
+                    //    // x * 2 -> x + x
+                    //    inst.InsCode = InstructionOpCode::ADD;
+                    //    inst.Operator[2] = inst.Operator[1]; // 复制操作数
+                    //}
                 }
             }
         }
@@ -871,12 +868,12 @@ void HazeJIT::basicStrengthReduction(JITCompilationUnit* unit, size_t loop_start
         if (inst.InsCode == InstructionOpCode::MUL) {
             if (inst.Operator.size() >= 3) {
                 auto& op2 = inst.Operator[2];
-                if (op2.Desc == HazeDataDesc::Constant) {
-                    int constant = StringToStandardType<int>(op2.Variable.Name);
-                    if (constant == 1) {
-                        // x * 1 -> x (删除指令)
-                        inst.InsCode = InstructionOpCode::NONE;
-                    }
+                if (IsConstDesc(op2.Desc)) {
+                    //int constant = StringToStandardType<int>(op2.Variable.Name);
+                    //if (constant == 1) {
+                    //    // x * 1 -> x (删除指令)
+                    //    inst.InsCode = InstructionOpCode::NONE;
+                    //}
                 }
             }
         }

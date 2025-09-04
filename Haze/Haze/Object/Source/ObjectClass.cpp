@@ -8,6 +8,8 @@
 #include "HazeLibraryDefine.h"
 #include "MemoryHelper.h"
 
+#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "类对象")
+
 ObjectClass::ObjectClass(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
 	: GCObject(gcIndex)
 {
@@ -94,13 +96,7 @@ void ObjectClass::GetOffset(HAZE_OBJECT_CALL_PARAM)
 	x_uint64 index = 0;
 
 	GET_PARAM_START();
-	GET_PARAM(classObj);
-	if (!classObj)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
+	GET_OBJ(classObj);
 
 	GET_PARAM(index);
 	
@@ -121,14 +117,7 @@ void ObjectClass::SetOffset(HAZE_OBJECT_CALL_PARAM)
 	char* value = nullptr;
 
 	GET_PARAM_START();
-	GET_PARAM(classObj);
-	if (!classObj)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(classObj);
 
 	GET_PARAM(index);
 	
@@ -147,13 +136,7 @@ void ObjectClass::GetClassName(HAZE_OBJECT_CALL_PARAM)
 	ObjectClass* classObj;
 
 	GET_PARAM_START();
-	GET_PARAM(classObj);
-	if (!classObj)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
+	GET_OBJ(classObj);
 
 	auto name = ObjectString::Create(classObj->m_ClassInfo->Name.c_str(), true);
 	SET_RET_BY_TYPE(HAZE_VAR_TYPE(HazeValueType::String), name);

@@ -182,6 +182,7 @@ void CompilerSymbol::Register_Function(const STDString& moduleName, const STDStr
 	auto m = m_Compiler->GetModule(moduleName);
 	auto iter = m_FunctionSymbols.end();
 	FunctionSymbol* data = nullptr;
+	bool check = true;
 	if (className)
 	{
 		STDString classFuncName = GetHazeClassFunctionName(*className, name);
@@ -190,6 +191,8 @@ void CompilerSymbol::Register_Function(const STDString& moduleName, const STDStr
 		if (iter == m_FunctionSymbols.end())
 		{
 			data = &m_FunctionSymbols[classFuncName];
+			iter = m_FunctionSymbols.find(classFuncName);
+			check = false;
 		}
 	}
 	else
@@ -197,7 +200,7 @@ void CompilerSymbol::Register_Function(const STDString& moduleName, const STDStr
 		iter = m_FunctionSymbols.find(name);
 	}
 
-	if (iter != m_FunctionSymbols.end())
+	if (check && iter != m_FunctionSymbols.end())
 	{
 		// 比对检查
 		if (iter->second.Params.size() != params.size())
@@ -222,6 +225,7 @@ void CompilerSymbol::Register_Function(const STDString& moduleName, const STDStr
 		if (!data)
 		{
 			data = &m_FunctionSymbols[name];
+			iter = m_FunctionSymbols.find(name);
 		}
 
 		data->Module = m;
@@ -241,6 +245,16 @@ void CompilerSymbol::Register_Function(const STDString& moduleName, const STDStr
 		{
 			data->ParamNames[i] = params[i].Name.data();
 		}
+
+		V_Array<x_uint32> paramId(params.size());
+		for (x_uint64 i = 0; i < paramId.size(); i++)
+		{
+			paramId[i] = params[i].Type.TypeId;
+		}
+
+		auto funcParamId = m_TypeInfo->RegisterType(moduleName, functionType, Move(paramId));
+		FUNCTION_TYPE_INFO(info, functionType, funcParamId);
+		data->FunctionId = m_TypeInfo->RegisterSymbol(moduleName, iter->first, &info);
 	}
 }
 
@@ -577,6 +591,18 @@ x_uint32 CompilerSymbol::GetGlobalVariableId(const STDString& name)
 	}
 
 	SYMBOL_ERR_W("全局变量符号<%s>未能找到有效的类型ID", name.c_str());
+	return 0;
+}
+
+x_uint32 CompilerSymbol::GetFunctionId(const STDString& name)
+{
+	auto iter = m_FunctionSymbols.find(name);
+	if (iter != m_FunctionSymbols.end())
+	{
+		return iter->second.FunctionId;
+	}
+
+	SYMBOL_ERR_W("函数符号<%s>未能找到有效的类型ID", name.c_str());
 	return 0;
 }
 

@@ -96,7 +96,7 @@ STDString HazeStream::GetObjectFormatString(HAZE_STD_CALL_PARAM)
 			if (*start == x_HChar('d'))
 			{
 				auto ins = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - argNum - 1];
-				int size = ins.Operator[0].Variable.Type.GetTypeSize();
+				int size = GetSizeByHazeType(ins.Operator[0].Type);
 
 				offset -= size;
 				if (size == 1)

@@ -297,9 +297,8 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 		return;
 	}
 
-	hss << INT_VAR_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " ";
+	hss << INT_VAR_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " " << CAST_TYPE(value->GetBaseType()) << " ";
 	//value->GetVariableType().StringStreamTo(hss);
-	hss << " ";
 
 	if (value->IsConstant())
 	{
@@ -469,80 +468,92 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	
 	switch (opCode)
 	{
-	case InstructionOpCode::NONE:
-		COMPILER_ERR_MODULE_W("生成中间代码错误, 中间操作码为空", m->GetCompiler(), m->GetName().c_str());
-		break;
-	case InstructionOpCode::MOV:
-	case InstructionOpCode::MOVPV:
-	case InstructionOpCode::MOVTOPV:
-	case InstructionOpCode::LEA:
-	case InstructionOpCode::BIT_NEG:
-	case InstructionOpCode::NOT:
-	case InstructionOpCode::NEG:
-	case InstructionOpCode::NEW:
-	case InstructionOpCode::CVT:
-	case InstructionOpCode::MOV_DCU:
-	{
+		case InstructionOpCode::NONE:
+			COMPILER_ERR_MODULE_W("生成中间代码错误, 中间操作码为空", m->GetCompiler(), m->GetName().c_str());
+			break;
+		case InstructionOpCode::MOV:
+		case InstructionOpCode::MOVPV:
+		case InstructionOpCode::MOVTOPV:
+		case InstructionOpCode::LEA:
+		case InstructionOpCode::BIT_NEG:
+		case InstructionOpCode::NOT:
+		case InstructionOpCode::NEG:
+		case InstructionOpCode::NEW:
+		case InstructionOpCode::CVT:
+		case InstructionOpCode::MOV_DCU:
+		{
 
-		hss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(m, hss, assignTo);
-		hss << " ";
-		GenVariableHzic(m, hss, oper1);
-	}
-		break;
-	case InstructionOpCode::ADD:
-	case InstructionOpCode::SUB:
-	case InstructionOpCode::MUL:
-	case InstructionOpCode::DIV:
-	case InstructionOpCode::MOD:
-	case InstructionOpCode::BIT_AND:
-	case InstructionOpCode::BIT_OR:
-	case InstructionOpCode::BIT_XOR:
-	case InstructionOpCode::SHL:
-	case InstructionOpCode::SHR:
-	{
-		hss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(m, hss, assignTo);
-		hss << " ";
-		GenVariableHzic(m, hss, oper1);
-		hss << " ";
-		GenVariableHzic(m, hss, oper2);
-	}
-		break;
-	case InstructionOpCode::CMP:
-	{
-		hss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(m, hss, oper1);
-		hss << " ";
-		GenVariableHzic(m, hss, oper2);
-	}
-		break;
-	case InstructionOpCode::PUSH:
-	case InstructionOpCode::POP:
-	{
-		hss << GetInstructionString(opCode) << " ";
-		GenVariableHzic(m, hss, oper1);
-	}
-		break;
-	case InstructionOpCode::RET:
-	{
-		if (oper1)
+			hss << GetInstructionString(opCode) << " ";
+			GenVariableHzic(m, hss, assignTo);
+			hss << " ";
+			GenVariableHzic(m, hss, oper1);
+		}
+			break;
+		case InstructionOpCode::CMP:
+		{
+			hss << GetInstructionString(opCode) << " ";
+			GenVariableHzic(m, hss, oper1);
+			hss << " ";
+			GenVariableHzic(m, hss, oper2);
+		}
+			break;
+		case InstructionOpCode::ADD:
+		case InstructionOpCode::SUB:
+		case InstructionOpCode::MUL:
+		case InstructionOpCode::DIV:
+		case InstructionOpCode::MOD:
+		case InstructionOpCode::BIT_AND:
+		case InstructionOpCode::BIT_OR:
+		case InstructionOpCode::BIT_XOR:
+		case InstructionOpCode::SHL:
+		case InstructionOpCode::SHR:
+		{
+			hss << GetInstructionString(opCode) << " ";
+			GenVariableHzic(m, hss, assignTo);
+			hss << " ";
+			GenVariableHzic(m, hss, oper1);
+			hss << " ";
+			GenVariableHzic(m, hss, oper2);
+		}
+			break;
+		case InstructionOpCode::PUSH:
+		case InstructionOpCode::POP:
 		{
 			hss << GetInstructionString(opCode) << " ";
 			GenVariableHzic(m, hss, oper1);
 		}
-		else
+			break;
+		case InstructionOpCode::RET:
 		{
-			HazeVariableType voidType(HazeValueType::Void);
-			hss << GetInstructionString(InstructionOpCode::RET) << " " << H_TEXT("Void") << " " << 
-				INT_VAR_SCOPE(HazeVariableScope::None) << " " << CAST_DESC(HazeDataDesc::None) << " ";
-
-			voidType.StringStreamTo(hss);
+			if (oper1)
+			{
+				hss << GetInstructionString(opCode) << " ";
+				GenVariableHzic(m, hss, oper1);
+			}
+			else
+			{
+				GenIRCode(hss, InstructionOpCode::RET, HazeVariableScope::None, HazeDataDesc::None, HazeValueType::Void, 0);
+			}
 		}
+			break;
+		default:
+			break;
 	}
-		break;
-	default:
-		break;
+
+	hss << HAZE_ENDL;
+}
+
+void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, HazeVariableScope scope, HazeDataDesc desc, HazeValueType type, InstructionOpId id)
+{
+	hss << GetInstructionString(opCode) << " " << INT_VAR_SCOPE(scope) << " " << CAST_DESC(desc) << " " << CAST_TYPE(type) << " ";
+
+	if (IsConstDesc(desc))
+	{
+		hss << HazeValueNumberToString(type, id.Value);
+	}
+	else
+	{
+		hss << id.Id;
 	}
 
 	hss << HAZE_ENDL;
@@ -554,7 +565,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	switch (opCode)
 	{
 		case InstructionOpCode::JMP:
-			hss << GetInstructionString(opCode) << " " << block1->GetName() << HAZE_ENDL;
+			hss << GetInstructionString(opCode) << " " << block1->GetIndex() << HAZE_ENDL;
 			break;
 		case InstructionOpCode::JNE:
 		case InstructionOpCode::JNG:
@@ -567,20 +578,20 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 
 			if (block1)
 			{
-				hss << block1->GetName() << " ";
+				hss << block1->GetIndex() << " ";
 			}
 			else
 			{
-				hss << HAZE_JMP_NULL << " ";
+				hss << -1 << " ";
 			}
 
 			if (block2)
 			{
-				hss << block2->GetName();
+				hss << block2->GetIndex();
 			}
 			else
 			{
-				hss << HAZE_JMP_NULL << " ";
+				hss << -1 << " ";
 			}
 
 			hss << HAZE_ENDL;
@@ -609,54 +620,51 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 {
 	switch (opCode)
 	{
-	case InstructionOpCode::CALL:
-	{
-		HStringView varName;
-		hss << GetInstructionString(InstructionOpCode::CALL) << " ";
-		if (function)
+		case InstructionOpCode::CALL:
 		{
-			auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
-			auto& funcName = desc == HazeDataDesc::FunctionDynamicAddress ? function->GetName() : function->GetRealName();
-			hss << funcName << " " << CAST_TYPE(HazeValueType::None) << " " << INT_VAR_SCOPE(HazeVariableScope::Ignore) << " " <<
-				CAST_DESC(desc) << " " << paramCount << " " << paramSize << HAZE_ENDL;/*<< " " << function->GetModule()->GetName() << " "
-				<< CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;*/
-		}
-		else if (pointerFunction)
-		{
-			m->GetGlobalVariableName(m, pointerFunction, varName);
-			if (varName.empty())
+			hss << GetInstructionString(InstructionOpCode::CALL) << " ";
+			if (function)
 			{
-				m->GetCurrFunction()->FindLocalVariableName(pointerFunction, varName);
-				if (varName.empty())
-				{
-					HAZE_LOG_ERR_W("函数指针调用失败!\n");
-					return;
-				}
+				auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
+				auto id = m->GetCompiler()->GetCompilerSymbol()->GetFunctionId(desc == HazeDataDesc::FunctionDynamicAddress ? function->GetName() : function->GetRealName());
+				hss << id << " " << CAST_TYPE(HazeValueType::None) << " " << INT_VAR_SCOPE(HazeVariableScope::Ignore) << " " <<
+					CAST_DESC(desc) << " " << paramCount << " " << paramSize << HAZE_ENDL;/*<< " " << function->GetModule()->GetName() << " "
+					<< CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;*/
 			}
-
-			hss << varName << " " << CAST_TYPE(HazeValueType::Function) << " "
-				<< INT_VAR_SCOPE(pointerFunction->GetVariableScope()) << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
-				<< " " << paramSize << HAZE_ENDL;//<< " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;
-		}
-		else
-		{
-			m->GetGlobalVariableName(m, advancePointerTo, varName);
-			if (varName.empty())
+			else if (pointerFunction)
 			{
-				m->GetCurrFunction()->FindLocalVariableName(advancePointerTo, varName);
-				if (varName.empty())
+				InstructionOpId opId;
+				if (!m->GetGlobalVariableId(m, advancePointerTo, opId))
 				{
-					HAZE_LOG_ERR_W("复杂类型函数调用失败!\n");
-					return;
+					if (!m->GetCurrClosureOrFunction()->FindLocalVariableIndex(advancePointerTo, opId))
+					{
+						HAZE_LOG_ERR_W("函数指针调用失败!\n");
+						return;
+					}
 				}
-			}
 
-			hss << varName << " " << CAST_TYPE(HazeValueType::ObjectFunction) << " " << INT_VAR_SCOPE(advancePointerTo->GetVariableScope()) << " "
-				<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " "// << paramSize << " " << m->GetName() << " " 
-				<< advanceFuncIndex << HAZE_ENDL;
+				hss << opId.Id << " " << CAST_TYPE(HazeValueType::Function) << " "
+					<< INT_VAR_SCOPE(pointerFunction->GetVariableScope()) << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
+					<< " " << paramSize << HAZE_ENDL;//<< " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;
+			}
+			else
+			{
+				InstructionOpId opId;
+				if (!m->GetGlobalVariableId(m, advancePointerTo, opId))
+				{
+					if (!m->GetCurrClosureOrFunction()->FindLocalVariableIndex(advancePointerTo, opId))
+					{
+						HAZE_LOG_ERR_W("复杂类型函数调用失败!\n");
+						return;
+					}
+				}
+
+				hss << opId.Id << " " << CAST_TYPE(HazeValueType::ObjectFunction) << " " << INT_VAR_SCOPE(advancePointerTo->GetVariableScope()) << " "
+					<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " "// << paramSize << " " << m->GetName() << " " 
+					<< advanceFuncIndex << HAZE_ENDL;
+			}
 		}
-	}
-		break;
+			break;
 	}
 }
 

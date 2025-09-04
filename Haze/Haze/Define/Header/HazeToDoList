@@ -12,3 +12,4 @@ HAZE_TO_DO(删除字节码的变量名时 需要考虑全局变量的地址如�
 HAZE_TO_DO(增量编译需要考虑已引用模块修改 但是之后解析的模块有引用但是未修改 这种情况下仍需要重新解析)
 HAZE_TO_DO(字节码存储函数中的临时寄存器的索引 在后端重指地址时需要加在临时变量后)
 HAZE_TO_DO(HazeDataDesc和HazeScope整理)
+HAZE_TO_DO(Optimizer模块代码整理)

@@ -81,7 +81,7 @@ void Optimizer::ConstantFolding(ModuleUnit& module)
                 bool allConstants = true;
                 for (x_uint64 j = 1; j < inst.Operator.size(); j++)
                 {
-                    if (!IsConstant(inst.Operator[j].Desc))
+                    if (!IsConstDesc(inst.Operator[j].Desc))
                     {
                         allConstants = false;
                         break;
@@ -90,24 +90,24 @@ void Optimizer::ConstantFolding(ModuleUnit& module)
 
                 if (allConstants)
                 {
-                    HazeValue result;
-                    if (EvaluateConstantExpression(inst, result))
-                    {
-                        // 创建常量赋值指令
-                        ModuleUnit::FunctionInstruction const_inst;
-                        const_inst.InsCode = InstructionOpCode::MOV;
-                        const_inst.Operator.resize(2);
+                    //HazeValue result;
+                    //if (EvaluateConstantExpression(inst, result))
+                    //{
+                    //    // 创建常量赋值指令
+                    //    ModuleUnit::FunctionInstruction const_inst;
+                    //    const_inst.InsCode = InstructionOpCode::MOV;
+                    //    const_inst.Operator.resize(2);
 
-                        // 目标操作数
-                        const_inst.Operator[0] = inst.Operator[0];
-                        const_inst.Operator[1] = inst.Operator[1];
+                    //    // 目标操作数
+                    //    const_inst.Operator[0] = inst.Operator[0];
+                    //    const_inst.Operator[1] = inst.Operator[1];
 
-                        const_inst.Operator[1].Variable.Name = HazeValueNumberToString(inst.Operator[1].Variable.Type.BaseType, result);
-                        const_inst.Operator[1].Extra.RuntimeDynamicValue = result;
+                    //    const_inst.Operator[1].Variable.Name = HazeValueNumberToString(inst.Operator[1].Variable.Type.BaseType, result);
+                    //    const_inst.Operator[1].Extra.RuntimeDynamicValue = result;
 
-                        replaceInstruction(function, i, const_inst);
-                        m_stats.constants_folded++;
-                    }
+                    //    replaceInstruction(function, i, const_inst);
+                    //    m_stats.constants_folded++;
+                    //}
                 }
             }
         }
@@ -121,7 +121,7 @@ bool Optimizer::EvaluateConstantExpression(const ModuleUnit::FunctionInstruction
         return false;
     }
     
-    CalculateValueByType(inst.Operator[0].Variable.Type.BaseType, inst.InsCode, result, inst.Operator[1].Extra.RuntimeDynamicValue, inst.Operator[2].Extra.RuntimeDynamicValue);
+    CalculateValueByType(inst.Operator[0].Type, inst.InsCode, result, inst.Operator[1].Extra.RuntimeDynamicValue, inst.Operator[2].Extra.RuntimeDynamicValue);
     return false;
 }
 
@@ -351,34 +351,34 @@ void Optimizer::markReachableInstructions(ModuleUnit::FunctionTableData& functio
         if (inst.InsCode == InstructionOpCode::JMP)
         {
             // 无条件跳转
-            STDString& target = inst.Operator[0].Variable.Name;
+            /*STDString& target = inst.Operator[0].Variable.Name;
             size_t target_inst = findLabelInstruction(function, target);
             if (target_inst < function.Instructions.size())
             {
                 markReachableInstructions(function, cfg, target_inst, reachable);
-            }
+            }*/
         }
         else
         {
             // 条件跳转 - 两个分支都可能执行
             if (inst.Operator.size() >= 1)
             {
-                STDString& true_target = inst.Operator[0].Variable.Name;
+                /*STDString& true_target = inst.Operator[0].Variable.Name;
                 size_t true_inst = findLabelInstruction(function, true_target);
                 if (true_inst < function.Instructions.size())
                 {
                     markReachableInstructions(function, cfg, true_inst, reachable);
-                }
+                }*/
             }
             
             if (inst.Operator.size() >= 2)
             {
-                STDString& false_target = inst.Operator[1].Variable.Name;
+                /*STDString& false_target = inst.Operator[1].Variable.Name;
                 size_t false_inst = findLabelInstruction(function, false_target);
                 if (false_inst < function.Instructions.size())
                 {
                     markReachableInstructions(function, cfg, false_inst, reachable);
-                }
+                }*/
             }
             
             // fall-through
@@ -497,11 +497,11 @@ size_t Optimizer::findLabelInstruction(ModuleUnit::FunctionTableData& function, 
         {
             if (i + 1 < function.Instructions.size())
             {
-                auto& next_inst = function.Instructions[i + 1];
+                /*auto& next_inst = function.Instructions[i + 1];
                 if (next_inst.Operator.size() > 0 && next_inst.Operator[0].Variable.Name == label)
                 {
                     return i + 1;
-                }
+                }*/
             }
         }
     }
@@ -539,34 +539,34 @@ bool Optimizer::isRedundantInstruction(const ModuleUnit::FunctionInstruction& in
     // 检查冗余的MOV指令
     if (inst.InsCode == InstructionOpCode::MOV && inst.Operator.size() >= 2)
     {
-        const STDString& dest = inst.Operator[0].Variable.Name;
-        const STDString& src = inst.Operator[1].Variable.Name;
+        //const STDString& dest = inst.Operator[0].Variable.Name;
+        //const STDString& src = inst.Operator[1].Variable.Name;
+        //
+        //// MOV x, x 是冗余的
+        //if (dest == src)
+        //{
+        //    return true;
+        //}
         
-        // MOV x, x 是冗余的
-        if (dest == src)
-        {
-            return true;
-        }
-        
-        // 检查是否覆盖了之前的定义
-        for (int i = static_cast<int>(index) - 1; i >= 0; --i)
-        {
-            auto& prev_inst = function.Instructions[i];
-            auto prev_defs = getDefinedVariables(prev_inst);
-            
-            for (const auto& prev_def : prev_defs)
-            {
-                if (prev_def == dest)
-                {
-                    // 找到了之前的定义，检查是否被使用
-                    if (!isVariableLive(prev_def, i, cfg))
-                    {
-                        return true; // 冗余的MOV
-                    }
-                    break;
-                }
-            }
-        }
+        //// 检查是否覆盖了之前的定义
+        //for (int i = static_cast<int>(index) - 1; i >= 0; --i)
+        //{
+        //    auto& prev_inst = function.Instructions[i];
+        //    auto prev_defs = getDefinedVariables(prev_inst);
+        //    
+        //    for (const auto& prev_def : prev_defs)
+        //    {
+        //        if (prev_def == dest)
+        //        {
+        //            // 找到了之前的定义，检查是否被使用
+        //            if (!isVariableLive(prev_def, i, cfg))
+        //            {
+        //                return true; // 冗余的MOV
+        //            }
+        //            break;
+        //        }
+        //    }
+        //}
     }
     
     return false;
@@ -620,10 +620,10 @@ bool Optimizer::isConditionAlwaysFalse(const ModuleUnit::FunctionInstruction& in
                 auto& op1 = prev_inst.Operator[0];
                 auto& op2 = prev_inst.Operator[1];
                 
-                if (op1.Desc == HazeDataDesc::Constant && op2.Desc == HazeDataDesc::Constant)
+                if (op1.Desc == HazeDataDesc::ConstantValue && op2.Desc == HazeDataDesc::ConstantValue)
                 {
                     // 简化：检查是否为相同的常量
-                    if (op1.Variable.Name == op2.Variable.Name)
+                    if (op1.VariableIndexOrId == op2.VariableIndexOrId)
                     {
                         // CMP相同值，然后JE永远为true，JNE永远为false
                         if (inst.InsCode == InstructionOpCode::JNE)
@@ -653,15 +653,15 @@ bool Optimizer::isConditionAlwaysTrue(const ModuleUnit::FunctionInstruction& ins
                 auto& op1 = prev_inst.Operator[0];
                 auto& op2 = prev_inst.Operator[1];
                 
-                if (op1.Desc == HazeDataDesc::Constant && op2.Desc == HazeDataDesc::Constant)
+                if (op1.Desc == HazeDataDesc::ConstantValue && op2.Desc == HazeDataDesc::ConstantValue)
                 {
-                    if (op1.Variable.Name == op2.Variable.Name)
-                    {
-                        if (inst.InsCode == InstructionOpCode::JE)
-                        {
-                            return true; // JE永远为true
-                        }
-                    }
+                    //if (op1.Variable.Name == op2.Variable.Name)
+                    //{
+                    //    if (inst.InsCode == InstructionOpCode::JE)
+                    //    {
+                    //        return true; // JE永远为true
+                    //    }
+                    //}
                 }
             }
         }
@@ -756,13 +756,13 @@ bool Optimizer::OptimizeInstructionSequence(std::vector<ModuleUnit::FunctionInst
         {
             if (inst1.Operator.size() >= 2 && inst2.Operator.size() >= 2)
             {
-                if (inst1.Operator[0].Variable.Name == inst2.Operator[1].Variable.Name &&
-                    inst1.Operator[1].Variable.Name == inst2.Operator[0].Variable.Name)
-                {
-                    // 移除第二个MOV指令
-                    instructions.erase(instructions.begin() + start + 1);
-                    return true;
-                }
+                //if (inst1.Operator[0].Variable.Name == inst2.Operator[1].Variable.Name &&
+                //    inst1.Operator[1].Variable.Name == inst2.Operator[0].Variable.Name)
+                //{
+                //    // 移除第二个MOV指令
+                //    instructions.erase(instructions.begin() + start + 1);
+                //    return true;
+                //}
             }
         }
 
@@ -779,10 +779,10 @@ bool Optimizer::OptimizeInstructionSequence(std::vector<ModuleUnit::FunctionInst
     }
     
     // 优化2: ADD或SUB的第三个操作数为0
-    if ((inst1.InsCode == InstructionOpCode::ADD || inst1.InsCode == InstructionOpCode::SUB) && inst1.Operator[0].Variable.Name == inst1.Operator[1].Variable.Name)
+    if ((inst1.InsCode == InstructionOpCode::ADD || inst1.InsCode == InstructionOpCode::SUB) && inst1.Operator[0].VariableIndexOrId == inst1.Operator[1].VariableIndexOrId)
     {
         auto& oper2 = inst1.Operator[2];
-        if (IsConstant(oper2.Desc) && IsNumberZero(oper2.Variable.Type.BaseType, oper2.Extra.RuntimeDynamicValue))
+        if (IsConstDesc(oper2.Desc) && IsNumberZero(oper2.Type, oper2.Extra.RuntimeDynamicValue))
         {
             instructions.erase(instructions.begin() + start);
             return true;
@@ -790,10 +790,10 @@ bool Optimizer::OptimizeInstructionSequence(std::vector<ModuleUnit::FunctionInst
     }
     
     // 优化3: MUL或DIV的第三个操作数为1
-    if ((inst1.InsCode == InstructionOpCode::MUL || inst1.InsCode == InstructionOpCode::DIV) && inst1.Operator[0].Variable.Name == inst1.Operator[1].Variable.Name)
+    if ((inst1.InsCode == InstructionOpCode::MUL || inst1.InsCode == InstructionOpCode::DIV) && inst1.Operator[0].VariableIndexOrId == inst1.Operator[1].VariableIndexOrId)
     {
         auto& oper2 = inst1.Operator[2];
-        if (IsConstant(oper2.Desc) && IsNumberOne(oper2.Variable.Type.BaseType, oper2.Extra.RuntimeDynamicValue))
+        if (IsConstDesc(oper2.Desc) && IsNumberOne(oper2.Type, oper2.Extra.RuntimeDynamicValue))
         {
             instructions.erase(instructions.begin() + start);
             return true;
@@ -807,15 +807,15 @@ std::vector<STDString> Optimizer::getUsedVariables(const ModuleUnit::FunctionIns
 {
     std::vector<STDString> used;
     
-    for (const auto& operand : inst.Operator)
+    /*for (const auto& operand : inst.Operator)
     {
-        if (operand.Desc != HazeDataDesc::Constant && 
+        if (operand.Desc != HazeDataDesc::ConstantValue && 
             operand.Desc != HazeDataDesc::ConstantString &&
             operand.Desc != HazeDataDesc::NullPtr)
         {
             used.push_back(operand.Variable.Name);
         }
-    }
+    }*/
     
     return used;
 }
@@ -826,7 +826,7 @@ std::vector<STDString> Optimizer::getDefinedVariables(const ModuleUnit::Function
     
     if (!inst.Operator.empty())
     {
-        defined.push_back(inst.Operator[0].Variable.Name);
+        //defined.push_back(inst.Operator[0].Variable.Name);
     }
     
     return defined;
@@ -940,15 +940,15 @@ bool Optimizer::canPropagateConstant(const ModuleUnit::FunctionInstruction& inst
     // 检查指令的操作数是否都是已知常量
     for (int i = 1; i < inst.Operator.size(); ++i)
     {
-        if (inst.Operator[i].Desc != HazeDataDesc::Constant && 
+        if (inst.Operator[i].Desc != HazeDataDesc::ConstantValue && 
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
             inst.Operator[i].Desc != HazeDataDesc::NullPtr)
         {
-            const STDString& var_name = inst.Operator[i].Variable.Name;
+            /*const STDString& var_name = inst.Operator[i].Variable.Name;
             if (constant_map.find(var_name) == constant_map.end())
             {
                 return false;
-            }
+            }*/
         }
     }
     return true;
@@ -960,18 +960,18 @@ bool Optimizer::propagateConstant(ModuleUnit::FunctionInstruction& inst,
     // 将变量替换为常量值
     for (int i = 1; i < inst.Operator.size(); ++i)
     {
-        if (inst.Operator[i].Desc != HazeDataDesc::Constant && 
+        if (inst.Operator[i].Desc != HazeDataDesc::ConstantValue && 
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
             inst.Operator[i].Desc != HazeDataDesc::NullPtr)
         {
-            const STDString& var_name = inst.Operator[i].Variable.Name;
+            /*const STDString& var_name = inst.Operator[i].Variable.Name;
             auto it = constant_map.find(var_name);
             if (it != constant_map.end())
             {
                 inst.Operator[i].Desc = HazeDataDesc::Constant;
                 inst.Operator[i].Variable.Name = HazeValueNumberToString(inst.Operator[i].Variable.Type.BaseType, it->second);
                 return true;
-            }
+            }*/
         }
     }
     return false;
@@ -981,33 +981,33 @@ void Optimizer::updateConstantMap(const ModuleUnit::FunctionInstruction& inst,
                                  std::unordered_map<STDString, HazeValue>& constant_map)
 {
     // 更新常量映射
-    if (inst.Operator[0].Desc != HazeDataDesc::Constant && 
+    if (inst.Operator[0].Desc != HazeDataDesc::ConstantValue && 
         inst.Operator[0].Desc != HazeDataDesc::ConstantString &&
         inst.Operator[0].Desc != HazeDataDesc::NullPtr)
     {
-        const STDString& var_name = inst.Operator[0].Variable.Name;
-        
-        if (inst.InsCode == InstructionOpCode::MOV && 
-            inst.Operator[1].Desc == HazeDataDesc::Constant)
-        {
-            // 常量赋值
-            HazeValue value = inst.Operator[1].Extra.RuntimeDynamicValue;
-            constant_map[var_name] = value;
-        }
-        else if (IsArithmeticOpCode(inst.InsCode) && canEvaluateConstant(inst))
-        {
-            // 常量表达式
-            HazeValue result;
-            if (EvaluateConstantExpression(inst, result))
-            {
-                constant_map[var_name] = result;
-            }
-        }
-        else
-        {
-            // 变量被重新定义，移除常量信息
-            constant_map.erase(var_name);
-        }
+    //    const STDString& var_name = inst.Operator[0].Variable.Name;
+    //    
+    //    if (inst.InsCode == InstructionOpCode::MOV && 
+    //        inst.Operator[1].Desc == HazeDataDesc::Constant)
+    //    {
+    //        // 常量赋值
+    //        HazeValue value = inst.Operator[1].Extra.RuntimeDynamicValue;
+    //        constant_map[var_name] = value;
+    //    }
+    //    else if (IsArithmeticOpCode(inst.InsCode) && canEvaluateConstant(inst))
+    //    {
+    //        // 常量表达式
+    //        HazeValue result;
+    //        if (EvaluateConstantExpression(inst, result))
+    //        {
+    //            constant_map[var_name] = result;
+    //        }
+    //    }
+    //    else
+    //    {
+    //        // 变量被重新定义，移除常量信息
+    //        constant_map.erase(var_name);
+    //    }
     }
 }
 
@@ -1016,7 +1016,7 @@ bool Optimizer::canEvaluateConstant(const ModuleUnit::FunctionInstruction& inst)
     // 检查是否可以计算常量值
     for (int i = 1; i < inst.Operator.size(); ++i)
     {
-        if (inst.Operator[i].Desc != HazeDataDesc::Constant)
+        if (inst.Operator[i].Desc != HazeDataDesc::ConstantValue)
         {
             return false;
         }
@@ -1159,15 +1159,15 @@ bool Optimizer::isInvariantInstruction(const ModuleUnit::FunctionInstruction& in
     // 检查指令的操作数是否都是循环不变的
     for (int i = 1; i < inst.Operator.size(); ++i)
     {
-        if (inst.Operator[i].Desc != HazeDataDesc::Constant && 
+        if (inst.Operator[i].Desc != HazeDataDesc::ConstantValue &&
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
             inst.Operator[i].Desc != HazeDataDesc::NullPtr)
         {
-            const STDString& var_name = inst.Operator[i].Variable.Name;
+            /*const STDString& var_name = inst.Operator[i].Variable.Name;
             if (isVariableModifiedInLoop(var_name, loop, cfg, function))
             {
                 return false;
-            }
+            }*/
         }
     }
     return true;
@@ -1192,10 +1192,10 @@ bool Optimizer::isVariableModifiedInLoop(const STDString& var_name, const LoopIn
 
 bool Optimizer::isVariableDefined(const ModuleUnit::FunctionInstruction& inst, const STDString& var_name)
 {
-    return inst.Operator[0].Desc != HazeDataDesc::Constant && 
+    return inst.Operator[0].Desc != HazeDataDesc::ConstantValue &&
            inst.Operator[0].Desc != HazeDataDesc::ConstantString &&
-           inst.Operator[0].Desc != HazeDataDesc::NullPtr &&
-           inst.Operator[0].Variable.Name == var_name;
+           inst.Operator[0].Desc != HazeDataDesc::NullPtr /*&&
+           inst.Operator[0].Variable.Name == var_name*/;
 }
 
 bool Optimizer::shouldUnrollLoop(const LoopInfo& loop, const ControlFlowGraph& cfg)
@@ -1280,44 +1280,44 @@ bool Optimizer::canConvertToAddition(const ModuleUnit::FunctionInstruction& inst
 {
     // 检查乘法是否可以转换为加法
     // 例如：x * 2 可以转换为 x + x
-    if (inst.Operator[2].Desc == HazeDataDesc::Constant)
+    if (inst.Operator[2].Desc == HazeDataDesc::ConstantValue)
     {
-        int constant = StringToStandardType<int>(inst.Operator[2].Variable.Name);
-        return constant == 2 || constant == 4 || constant == 8;
+        /*int constant = StringToStandardType<int>(inst.Operator[2].Variable.Name);
+        return constant == 2 || constant == 4 || constant == 8;*/
     }
     return false;
 }
 
 void Optimizer::convertToAddition(ModuleUnit::FunctionTableData& function, size_t inst_idx)
 {
-    auto& inst = function.Instructions[inst_idx];
-    int constant = StringToStandardType<int>(inst.Operator[2].Variable.Name);
-    
-    if (constant == 2)
-    {
-        // x * 2 -> x + x
-        inst.InsCode = InstructionOpCode::ADD;
-        inst.Operator[2] = inst.Operator[1]; // 复制操作数
-    }
-    else if (constant == 4)
-    {
-        // x * 4 -> (x + x) + (x + x)
-        // 需要插入额外的指令
-        ModuleUnit::FunctionInstruction add_inst1, add_inst2;
-        add_inst1.InsCode = InstructionOpCode::ADD;
-        add_inst1.Operator[0] = inst.Operator[0];
-        add_inst1.Operator[1] = inst.Operator[1];
-        add_inst1.Operator[2] = inst.Operator[1];
-        
-        add_inst2.InsCode = InstructionOpCode::ADD;
-        add_inst2.Operator[0] = inst.Operator[0];
-        add_inst2.Operator[1] = inst.Operator[0];
-        add_inst2.Operator[2] = inst.Operator[0];
-        
-        insertInstruction(function, inst_idx, add_inst1);
-        insertInstruction(function, inst_idx + 1, add_inst2);
-        removeInstruction(function, inst_idx + 2);
-    }
+    //auto& inst = function.Instructions[inst_idx];
+    //int constant = StringToStandardType<int>(inst.Operator[2].Variable.Name);
+    //
+    //if (constant == 2)
+    //{
+    //    // x * 2 -> x + x
+    //    inst.InsCode = InstructionOpCode::ADD;
+    //    inst.Operator[2] = inst.Operator[1]; // 复制操作数
+    //}
+    //else if (constant == 4)
+    //{
+    //    // x * 4 -> (x + x) + (x + x)
+    //    // 需要插入额外的指令
+    //    ModuleUnit::FunctionInstruction add_inst1, add_inst2;
+    //    add_inst1.InsCode = InstructionOpCode::ADD;
+    //    add_inst1.Operator[0] = inst.Operator[0];
+    //    add_inst1.Operator[1] = inst.Operator[1];
+    //    add_inst1.Operator[2] = inst.Operator[1];
+    //    
+    //    add_inst2.InsCode = InstructionOpCode::ADD;
+    //    add_inst2.Operator[0] = inst.Operator[0];
+    //    add_inst2.Operator[1] = inst.Operator[0];
+    //    add_inst2.Operator[2] = inst.Operator[0];
+    //    
+    //    insertInstruction(function, inst_idx, add_inst1);
+    //    insertInstruction(function, inst_idx + 1, add_inst2);
+    //    removeInstruction(function, inst_idx + 2);
+    //}
 }
 
 // ==================== 函数内联 ====================
@@ -1345,19 +1345,19 @@ void Optimizer::functionInliningFunction(ModuleUnit::FunctionTableData& function
     }
     
     // 从后往前处理，避免索引变化
-    for (x_int64 i = (x_int64)call_sites.size() - 1; i >= 0; --i)
-    {
-        size_t call_site = call_sites[i];
-        auto& inst = function.Instructions[call_site];
-        
-        const STDString& callee_name = inst.Operator[0].Variable.Name;
-        
-        // 检查是否可以内联
-        if (shouldInlineFunction(callee_name, module))
-        {
-            inlineFunctionCall(function, call_site, callee_name, module);
-        }
-    }
+    //for (x_int64 i = (x_int64)call_sites.size() - 1; i >= 0; --i)
+    //{
+    //    size_t call_site = call_sites[i];
+    //    auto& inst = function.Instructions[call_site];
+    //    
+    //    const STDString& callee_name = inst.Operator[0].Variable.Name;
+    //    
+    //    // 检查是否可以内联
+    //    if (shouldInlineFunction(callee_name, module))
+    //    {
+    //        inlineFunctionCall(function, call_site, callee_name, module);
+    //    }
+    //}
 }
 
 bool Optimizer::shouldInlineFunction(const STDString& function_name, const ModuleUnit& module)
@@ -1390,10 +1390,10 @@ bool Optimizer::isRecursiveFunction(const ModuleUnit::FunctionTableData& functio
     // 检查函数是否递归调用自己
     for (const auto& inst : function.Instructions)
     {
-        if (IsCallOpCode(inst.InsCode) && inst.Operator[0].Variable.Name == function.Name)
+        /*if (IsCallOpCode(inst.InsCode) && inst.Operator[0].Variable.Name == function.Name)
         {
             return true;
-        }
+        }*/
     }
     return false;
 }
@@ -1460,7 +1460,7 @@ void Optimizer::renameLocalVariables(ModuleUnit::FunctionInstruction& inst, cons
     // 重命名局部变量以避免冲突
     for (int i = 0; i < inst.Operator.size(); ++i)
     {
-        if (inst.Operator[i].Desc != HazeDataDesc::Constant && 
+        /*if (inst.Operator[i].Desc != HazeDataDesc::ConstantValue && 
             inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
             inst.Operator[i].Desc != HazeDataDesc::NullPtr)
         {
@@ -1470,7 +1470,7 @@ void Optimizer::renameLocalVariables(ModuleUnit::FunctionInstruction& inst, cons
                 STDString new_name = caller_name + H_TEXT("_") + old_name;
                 inst.Operator[i].Variable.Name = Move(new_name);
             }
-        }
+        }*/
     }
 }
 
@@ -1608,11 +1608,11 @@ void Optimizer::buildInterferenceGraph(ModuleUnit::FunctionTableData& function, 
     {
         for (int i = 0; i < inst.Operator.size(); ++i)
         {
-            if (inst.Operator[i].Desc != HazeDataDesc::Constant && 
+            if (inst.Operator[i].Desc != HazeDataDesc::ConstantValue && 
                 inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
                 inst.Operator[i].Desc != HazeDataDesc::NullPtr)
             {
-                all_variables.insert(inst.Operator[i].Variable.Name);
+                //all_variables.insert(inst.Operator[i].Variable.Name);
             }
         }
     }
@@ -1632,12 +1632,12 @@ void Optimizer::buildInterferenceGraph(ModuleUnit::FunctionTableData& function, 
             auto& inst = function.Instructions[inst_idx];
             
             // 添加新定义的变量到活跃变量列表
-            if (inst.Operator[0].Desc != HazeDataDesc::Constant && 
+            if (inst.Operator[0].Desc != HazeDataDesc::ConstantValue && 
                 inst.Operator[0].Desc != HazeDataDesc::ConstantString &&
                 inst.Operator[0].Desc != HazeDataDesc::NullPtr)
             {
-                const STDString& def_var = inst.Operator[0].Variable.Name;
-                live_vars.push_back(def_var);
+               /* const STDString& def_var = inst.Operator[0].Variable.Name;
+                live_vars.push_back(def_var);*/
             }
             
             // 为所有活跃变量对添加干扰边
@@ -1653,16 +1653,16 @@ void Optimizer::buildInterferenceGraph(ModuleUnit::FunctionTableData& function, 
             // 移除不再活跃的变量
             for (int i = 0; i < inst.Operator.size(); ++i)
             {
-                if (inst.Operator[i].Desc != HazeDataDesc::Constant && 
+                if (inst.Operator[i].Desc != HazeDataDesc::ConstantValue && 
                     inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
                     inst.Operator[i].Desc != HazeDataDesc::NullPtr)
                 {
-                    const STDString& use_var = inst.Operator[i].Variable.Name;
+                    /*const STDString& use_var = inst.Operator[i].Variable.Name;
                     auto it = std::find(live_vars.begin(), live_vars.end(), use_var);
                     if (it != live_vars.end())
                     {
                         live_vars.erase(it);
-                    }
+                    }*/
                 }
             }
         }
@@ -1728,17 +1728,17 @@ void Optimizer::applyRegisterAllocation(ModuleUnit::FunctionTableData& function,
     {
         for (int i = 0; i < inst.Operator.size(); ++i)
         {
-            if (inst.Operator[i].Desc != HazeDataDesc::Constant && 
+            if (inst.Operator[i].Desc != HazeDataDesc::ConstantValue && 
                 inst.Operator[i].Desc != HazeDataDesc::ConstantString &&
                 inst.Operator[i].Desc != HazeDataDesc::NullPtr)
             {
-                const STDString& var_name = inst.Operator[i].Variable.Name;
-                auto it = register_assignment.find(var_name);
-                if (it != register_assignment.end())
-                {
-                    // 将变量替换为寄存器
-                    inst.Operator[i].Variable.Name = H_TEXT("R") + STDString(ToHazeString(it->second).c_str());
-                }
+                //const STDString& var_name = inst.Operator[i].Variable.Name;
+                //auto it = register_assignment.find(var_name);
+                //if (it != register_assignment.end())
+                //{
+                //    // 将变量替换为寄存器
+                //    inst.Operator[i].Variable.Name = H_TEXT("R") + STDString(ToHazeString(it->second).c_str());
+                //}
             }
         }
     }
@@ -1798,22 +1798,22 @@ bool Optimizer::hasDependency(const ModuleUnit::FunctionInstruction& inst1, cons
     // 检查两条指令之间是否有依赖关系
     
     // 1. 数据依赖：inst1定义变量，inst2使用该变量
-    if (inst1.Operator[0].Desc != HazeDataDesc::Constant && 
+    if (inst1.Operator[0].Desc != HazeDataDesc::ConstantValue && 
         inst1.Operator[0].Desc != HazeDataDesc::ConstantString &&
         inst1.Operator[0].Desc != HazeDataDesc::NullPtr)
     {
-        const STDString& def_var = inst1.Operator[0].Variable.Name;
+        /*const STDString& def_var = inst1.Operator[0].Variable.Name;
         
         for (int i = 1; i < inst2.Operator.size(); ++i)
         {
-            if (inst2.Operator[i].Desc != HazeDataDesc::Constant && 
+            if (inst2.Operator[i].Desc != HazeDataDesc::ConstantValue && 
                 inst2.Operator[i].Desc != HazeDataDesc::ConstantString &&
                 inst2.Operator[i].Desc != HazeDataDesc::NullPtr &&
                 inst2.Operator[i].Variable.Name == def_var)
             {
                 return true;
             }
-        }
+        }*/
     }
     
     // 2. 控制依赖：inst1是跳转指令

@@ -28,6 +28,8 @@ public:
 
 	const STDString& GetName() const { return m_Name; }
 
+	int GetIndex() const { return m_Index; }
+
 	x_uint64 GetIRCodeSize() { return m_IRCodes.size() - 1; }
 
 	const V_Array<STDString>& GetIRCode() const { return m_IRCodes; }
@@ -51,8 +53,7 @@ public:
 	void AddPredecessor(Share<CompilerBlock> block);
 	void AddSuccessor(Share<CompilerBlock> block1, Share<CompilerBlock> block2 = nullptr);
 
-	void GenI_Code(HAZE_STRING_STREAM& hss, HashMap<CompilerBlock*, x_uint64>& blockIndex);
-	void GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss, HashMap<CompilerBlock*, x_uint64>& blockIndex);
+	void GenI_Code(HAZE_STRING_STREAM& hss);
 
 	void ClearLocalVariable();
 
@@ -63,6 +64,11 @@ public:
 	void PushIRCode(const STDString& code);
 
 private:
+	void GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss);
+
+private:
+	int m_Index;
+
 	STDString m_Name;
 	CompilerFunction* m_ParentFunction;
 

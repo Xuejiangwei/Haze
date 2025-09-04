@@ -19,18 +19,18 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 		return true;
 	}
 
-	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.BaseType == HazeValueType::ObjectFunction)
+	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Type == HazeValueType::ObjectFunction)
 	{
 		return true;
 	}
 
-	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Variable.Type.BaseType == HazeValueType::Function &&
+	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Type == HazeValueType::Function &&
 		(ins.Operator[0].Desc == HazeDataDesc::RegisterTemp || ins.Operator[0].Scope == HazeVariableScope::Ignore))
 	{
 		return true;
 	}
 
-	if (ins.InsCode == InstructionOpCode::RET && IsVoidType(ins.Operator[0].Variable.Type.BaseType))
+	if (ins.InsCode == InstructionOpCode::RET && IsVoidType(ins.Operator[0].Type))
 	{
 		return true;
 	}
@@ -40,7 +40,7 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 
 static bool IsIgnoreFindAddress(InstructionData& operatorData)
 {
-	if (operatorData.Desc == HazeDataDesc::Constant)
+	if (operatorData.Desc == HazeDataDesc::ConstantValue)
 	{
 		operatorData.AddressType = InstructionAddressType::Constant;
 		return true;
@@ -63,11 +63,16 @@ static bool IsIgnoreFindAddress(InstructionData& operatorData)
 		return true;
 	}
 
-	if (operatorData.Variable.Name == HAZE_CALL_PUSH_ADDRESS_NAME)
+	if (operatorData.Desc == HazeDataDesc::Address)
+	{
+		return true;
+	}
+
+	/*if (operatorData.Variable.Name == HAZE_CALL_PUSH_ADDRESS_NAME)
 	{
 		operatorData.AddressType = InstructionAddressType::Local;
 		return true;
-	}
+	}*/
 
 	if (IsRegisterDesc(operatorData.Desc) && operatorData.Desc != HazeDataDesc::RegisterTemp)
 	{
@@ -612,63 +617,73 @@ void BackendParse::Parse_I_Code_FunctionTable()
 				{
 					GetNextLexmeAssign_CustomType<int>(functionData.StartLine);
 
+					int blockCount;
+					GetNextLexmeAssign_StandardType(blockCount);
+					functionData.Blocks.resize(blockCount);
+
 					GetNextLexeme();
-					while (m_CurrLexeme == BLOCK_START)
+					for (x_uint64 j = 0; j < blockCount; j++)
 					{
-						GetNextLexeme();
-						functionData.Blocks.push_back({ m_CurrLexeme, 0, (int)functionData.Instructions.size() });
-						auto& currBlock = functionData.Blocks.back();
-
-						GetNextLexeme();
-						while (m_CurrLexeme != BLOCK_START && m_CurrLexeme != GetFunctionEndHeader())
-						{
-							ModuleUnit::FunctionInstruction Instruction;
-							Instruction.InsCode = GetInstructionByString(m_CurrLexeme);
-
-							ParseInstruction(Instruction);
-
-							functionData.Instructions.push_back(Instruction);
-
-							currBlock.InstructionNum++;
-
-							GetNextLexeme();
-						}
-
-						if (m_CurrLexeme == GetFunctionEndHeader())
-						{
-							GetNextLexmeAssign_CustomType<int>(functionData.EndLine);
-							break;
-						}
-					}
-				}
-
-				GetNextLexeme();
-				if (m_CurrLexeme == GetBlockFlowHeader())
-				{
-					x_uint32 flowSize;
-					GetNextLexmeAssign_StandardType(flowSize);
-					for (x_uint32 j = 0; j < flowSize; j++)
-					{
-						x_uint32 blockIndex;
+						/*int blockIndex;
 						GetNextLexmeAssign_StandardType(blockIndex);
 
-						GetNextLexmeAssign_StandardType(number);
-						if (number > 0)
+						auto& currBlock = functionData.Blocks[j];*/
+		
+						if (m_CurrLexeme == BLOCK_START)
 						{
-							functionData.Blocks[blockIndex].Predecessors.resize(number);
-							for (x_uint32 k = 0; k < number; k++)
-							{
-								GetNextLexmeAssign_StandardType(functionData.Blocks[blockIndex].Predecessors[k]);
-							}
-						}
+							STDString blockName;
+							GetNextLexmeAssign_HazeString(blockName);
 
-						GetNextLexmeAssign_StandardType(number);
-						if (number > 0)
-						{
-							functionData.Blocks[blockIndex].Successors.resize(number);
-							for (x_uint32 k = 0; k < number; k++)
+							int blockIndex;
+							GetNextLexmeAssign_StandardType(blockIndex);
+							auto& currBlock = functionData.Blocks[blockIndex];
+							currBlock.BlockName = Move(blockName);
+
 							{
-								GetNextLexmeAssign_StandardType(functionData.Blocks[blockIndex].Successors[k]);
+								GetNextLexmeAssign_StandardType(number);
+								if (number > 0)
+								{
+									functionData.Blocks[blockIndex].Predecessors.resize(number);
+									for (x_uint32 k = 0; k < number; k++)
+									{
+										GetNextLexmeAssign_StandardType(functionData.Blocks[blockIndex].Predecessors[k]);
+									}
+								}
+
+								GetNextLexmeAssign_StandardType(number);
+								if (number > 0)
+								{
+									functionData.Blocks[blockIndex].Successors.resize(number);
+									for (x_uint32 k = 0; k < number; k++)
+									{
+										GetNextLexmeAssign_StandardType(functionData.Blocks[blockIndex].Successors[k]);
+									}
+								}
+							}
+
+
+							currBlock.InstructionNum = 0;
+							currBlock.StartAddress = (int)functionData.Instructions.size();
+
+							GetNextLexeme();
+							while (m_CurrLexeme != BLOCK_START && m_CurrLexeme != GetFunctionEndHeader())
+							{
+								ModuleUnit::FunctionInstruction Instruction;
+								Instruction.InsCode = GetInstructionByString(m_CurrLexeme);
+
+								ParseInstruction(Instruction);
+
+								functionData.Instructions.push_back(Instruction);
+
+								currBlock.InstructionNum++;
+
+								GetNextLexeme();
+							}
+
+							if (m_CurrLexeme == GetFunctionEndHeader())
+							{
+								GetNextLexmeAssign_CustomType<int>(functionData.EndLine);
+								break;
 							}
 						}
 					}
@@ -685,31 +700,21 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 	//GetNextLexmeAssign_HazeString(data.Variable.Name);
 	GetNextLexmeAssign_CustomType<x_uint32>(data.Scope);
 	GetNextLexmeAssign_CustomType<x_uint32>(data.Desc);
+	GetNextLexmeAssign_CustomType<x_uint32>(data.Type);
 	//data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
 
 	if (IsConstStringDesc(data.Desc))
 	{
-
+		GetNextLexmeAssign_CustomType<x_uint32>(data.Extra.Index);
 	}
 	else if (IsConstDesc(data.Desc))
 	{
 		GetNextLexmeAssign_HazeString(s_Str);
-		StringToHazeValueNumber(s_Str, GetHazeBaseTypeByDesc(data.Desc), data.Extra.RuntimeDynamicValue);
+		StringToHazeValueNumber(s_Str, data.Type, data.Extra.RuntimeDynamicValue);
 	}
 	else
 	{
 		GetNextLexmeAssign_StandardType(data.VariableIndexOrId);
-	}
-
-
-
-
-	if (data.Desc == HazeDataDesc::Constant)
-	{
-	}
-	else if (data.Desc == HazeDataDesc::ConstantString)
-	{
-		GetNextLexmeAssign_CustomType<x_uint32>(data.Extra.Index);
 	}
 }
 
@@ -724,13 +729,13 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 		case InstructionOpCode::MOVPV:
 		case InstructionOpCode::MOVTOPV:
 		case InstructionOpCode::LEA:
-		case InstructionOpCode::NEG:
-		case InstructionOpCode::NOT:
-		case InstructionOpCode::CMP:
 		case InstructionOpCode::BIT_NEG:
+		case InstructionOpCode::NOT:
+		case InstructionOpCode::NEG:
 		case InstructionOpCode::NEW:
 		case InstructionOpCode::CVT:
 		case InstructionOpCode::MOV_DCU:
+		case InstructionOpCode::CMP:
 		{
 			InstructionData operatorOne;
 			InstructionData operatorTwo;
@@ -778,8 +783,8 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 			InstructionData operatorOne;
 			InstructionData operatorTwo;
 
-			GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
-			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Variable.Type.BaseType);
+			GetNextLexmeAssign_StandardType(operatorOne.VariableIndexOrId);
+			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Type);
 
 			//if (IsFunctionType(operatorOne.Variable.Type.BaseType))
 			{
@@ -796,7 +801,9 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 		case InstructionOpCode::JMP:
 		{
 			InstructionData operatorOne;
-			GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
+			operatorOne.Type = HazeValueType::None;
+
+			GetNextLexmeAssign_StandardType(operatorOne.Extra.Index);
 
 			instruction.Operator = { operatorOne };
 		}
@@ -811,9 +818,10 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 			InstructionData operatorOne;
 			InstructionData operatorTwo;
 
-			GetNextLexmeAssign_HazeString(operatorOne.Variable.Name);
+			operatorOne.Type = operatorTwo.Type = HazeValueType::None;
 
-			GetNextLexmeAssign_HazeString(operatorTwo.Variable.Name);
+			GetNextLexmeAssign_StandardType(operatorOne.Extra.Index);
+			GetNextLexmeAssign_StandardType(operatorTwo.Extra.Index);
 
 			instruction.Operator = { operatorOne, operatorTwo };
 		}
@@ -900,77 +908,36 @@ void BackendParse::ReplaceStringIndex(ModuleUnit::StringTable& newStringTable,
 	}
 }
 
-void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::FunctionTableData& function)
+inline void ResetFunctionBlockOffset(InstructionData& operatorData, ModuleUnit::FunctionTableData& function)
 {
-	static const STDString m_StaticConstantStr = HAZE_JMP_NULL;
-	if (operatorData.Variable.Name != m_StaticConstantStr)
-	{
-		for (x_uint64 i = 0; i < function.Blocks.size(); i++)
-		{
-			if (operatorData.Variable.Name == function.Blocks[i].BlockName)
-			{
-				operatorData.Extra.Jmp.StartAddress = function.Blocks[i].StartAddress;
-				operatorData.Extra.Jmp.InstructionNum = function.Blocks[i].InstructionNum;
-				break;
-			}
-		}
-	}
+	auto index = operatorData.Extra.Index;
+	operatorData.Extra.Jmp.StartAddress = function.Blocks[index].StartAddress;
+	operatorData.Extra.Jmp.InstructionNum = function.Blocks[index].InstructionNum;
 }
 
 inline void BackendParse::ResetLocalOperatorAddress(InstructionData& operatorData, ModuleUnit::FunctionTableData& function,
 	HashMap<STDString, int>& localVariable, HashMap<STDString, int> tempRegister)
 {
+	if (operatorData.Desc == HazeDataDesc::RegisterTemp)
 	{
-		auto iterIndex = localVariable.find(operatorData.Variable.Name);
-		if (iterIndex != localVariable.end())
-		{
-			operatorData.Extra.Address.BaseAddress = function.Variables[iterIndex->second].Offset;
-			operatorData.AddressType = InstructionAddressType::Local;
-		}
-		else
-		{
-			auto tempRegIter = tempRegister.find(operatorData.Variable.Name);
-			if (tempRegIter != tempRegister.end())
-			{
-				operatorData.Extra.Address.BaseAddress = function.TempRegisters[tempRegIter->second].Offset;
-				operatorData.AddressType = InstructionAddressType::Local;
-			}
-			else if (IsPureStringType(operatorData.Variable.Type.BaseType))
-			{
-				operatorData.AddressType = InstructionAddressType::PureString;
-			}
-			else
-			{
-				HAZE_LOG_ERR_W("在函数<%s>中查找<%s>的偏移值失败!\n", function.Name.c_str(), operatorData.Variable.Name.c_str());
-				return;
-			}
-		}
+		operatorData.Extra.Address.BaseAddress = function.TempRegisters[operatorData.VariableIndexOrId].Offset;
 	}
+	else
+	{
+		operatorData.Extra.Address.BaseAddress = function.Variables[operatorData.VariableIndexOrId].Offset;
+	}
+	
+	operatorData.AddressType = InstructionAddressType::Local;
 }
 
 inline void BackendParse::ResetGlobalOperatorAddress(InstructionData& operatorData, ModuleUnit::GlobalDataTable& newGlobalDataTable)
 {
-	int index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.Name);
+	/*int index = (int)newGlobalDataTable.GetIndex(operatorData.Variable.Name);
 	if (index >= 0)
 	{
 		operatorData.Extra.Index = index;
-		operatorData.AddressType = InstructionAddressType::Global;
-	}
-	/*else if (NEW_REGISTER == operatorData.Variable.Name)
-	{
-		operatorData.AddressType = InstructionAddressType::Register;
 	}*/
-	else
-	{
-		if (operatorData.Desc == HazeDataDesc::Constant)
-		{
-			return;
-		}
-
-		HAZE_LOG_ERR_W("未能查找到全局变量<%s>!\n", operatorData.Variable.Name.c_str());
-		return;
-	}
-
+	operatorData.AddressType = InstructionAddressType::Global;
 }
 
 void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
@@ -1009,7 +976,7 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 				//设置 Block块 偏移值
 				for (auto& operatorData : m_CurrFunction.Instructions[i].Operator)
 				{
-					if (operatorData.Variable.Name != m_StaticConstantStr)
+					if (operatorData.Extra.Index >= 0)
 					{
 						ResetFunctionBlockOffset(operatorData, m_CurrFunction);
 					}
@@ -1081,12 +1048,12 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 							}*/
 							else
 							{
-								HAZE_LOG_ERR_W("寻找忽略变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
+								HAZE_LOG_ERR_W("寻找忽略变量的地址失败!\n");
 							}
 						}
 						else
 						{
-							HAZE_LOG_ERR_W("寻找变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
+							HAZE_LOG_ERR_W("寻找变量的地址失败!\n");
 						}
 					}
 				}

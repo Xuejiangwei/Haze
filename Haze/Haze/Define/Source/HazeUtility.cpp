@@ -164,11 +164,6 @@ const x_HChar* GetFunctionEndHeader()
 	return FUNCTION_END_HEADER;
 }
 
-const x_HChar* GetBlockFlowHeader()
-{
-	return BLOCK_FLOW_HEADER;
-}
-
 const x_HChar* GetClosureRefrenceVariableHeader()
 {
 	return CLOSURE_REF_VARIABLE;
@@ -662,40 +657,6 @@ V_Array<STDString> HazeStringSplit(const STDString& str, const STDString& delimi
 	}
 
 	return result;
-}
-
-HazeValueType GetHazeBaseTypeByDesc(HazeDataDesc desc)
-{
-	switch (desc)
-	{
-		case HazeDataDesc::ConstantBool:
-			return HazeValueType::Bool;
-		case HazeDataDesc::ConstantInt8:
-			return HazeValueType::Int8;
-		case HazeDataDesc::ConstantUInt8:
-			return HazeValueType::UInt8;
-		case HazeDataDesc::ConstantInt16:
-			return HazeValueType::Int16;
-		case HazeDataDesc::ConstantUInt16:
-			return HazeValueType::UInt16;
-		case HazeDataDesc::ConstantInt32:
-			return HazeValueType::Int32;
-		case HazeDataDesc::ConstantUInt32:
-			return HazeValueType::UInt32;
-		case HazeDataDesc::ConstantInt64:
-			return HazeValueType::Int64;
-		case HazeDataDesc::ConstantUInt64:
-			return HazeValueType::UInt64;
-		case HazeDataDesc::ConstantFloat32:
-			return HazeValueType::Float32;
-		case HazeDataDesc::ConstantFloat64:
-			return HazeValueType::Float64;
-		default:
-			break;
-	}
-
-	HAZE_LOG_ERR_W("未获得正确的类型!\n");
-	return HazeValueType::None;
 }
 
 #include "HazeCompilerVersion.h"

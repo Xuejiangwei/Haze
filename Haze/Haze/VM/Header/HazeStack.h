@@ -61,9 +61,9 @@ public:
 
 	HazeRegister* GetVirtualRegister(HazeVirtualRegister type) { return &m_VirtualRegister[(x_uint8)type]; }
 
-	const HazeVariableType& GetTempRegister(const x_HChar* name) const;
+	const HazeVariableType& GetTempRegisterType(x_uint64 index) const;
 
-	void ResetTempRegisterTypeByDynamicClassUnknow(const STDString& name, const HazeVariableType& type);
+	void ResetTempRegisterTypeByDynamicClassUnknow(x_uint64 index, const HazeVariableType& type);
 
 private:
 	void Run(bool isHazeCall = false);

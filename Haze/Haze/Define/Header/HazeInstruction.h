@@ -106,7 +106,7 @@ enum class InstructionAddressType : x_uint8
 	NullPtr,
 	ConstantString,
 
-	PureString,
+	//PureString,
 
 	Register,
 };
@@ -118,6 +118,16 @@ struct InstructionOpId
 		HazeValue Value;
 		x_uint64 Id;
 	};
+
+	InstructionOpId()
+	{
+		Id = 0;
+	}
+
+	InstructionOpId(x_uint64 id)
+	{
+		Id = id;
+	}
 };
 
 struct InstructionData
@@ -277,10 +287,10 @@ struct HazeRegister
 //	V_Array<HazeDefineVariable*> LocalParams;
 //};
 
-inline bool IsRegisterDesc(HazeDataDesc desc);
-inline bool IsConstDesc(HazeDataDesc desc);
-inline bool IsConstStringDesc(HazeDataDesc desc);
-inline bool IsClassMember(HazeDataDesc desc);
+bool IsRegisterDesc(HazeDataDesc desc);
+bool IsConstDesc(HazeDataDesc desc);
+bool IsConstStringDesc(HazeDataDesc desc);
+bool IsClassMember(HazeDataDesc desc);
 
 bool IsJmpOpCode(InstructionOpCode code);
 bool IsArithmeticOpCode(InstructionOpCode opcode);

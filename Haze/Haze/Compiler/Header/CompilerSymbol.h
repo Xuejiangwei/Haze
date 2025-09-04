@@ -35,6 +35,7 @@ struct FunctionSymbol : SymbolHeader
 {
 	CompilerModule* Module = nullptr;
 	bool ClassFunctionIsPublic = false;
+	x_uint32 FunctionId = 0;
 	HazeFunctionDesc Desc;
 	x_uint32 ClassTypeId = 0;
 	x_uint32 FunctionType;
@@ -80,6 +81,7 @@ public:
 	bool IsValidSymbol(const STDString& symbol);
 	x_uint32 GetSymbolTypeId(const STDString& symbol);
 	x_uint32 GetGlobalVariableId(const STDString& name);
+	x_uint32 GetFunctionId(const STDString& name);
 	const STDString* GetSymbolByTypeId(x_uint32 typeId);
 	
 private:

@@ -68,8 +68,6 @@ using HStringView = std::wstring_view;
 #define FUNCTION_START_HEADER			H_TEXT("FunctionStart")
 #define FUNCTION_END_HEADER				H_TEXT("FunctionEnd")
 
-#define BLOCK_FLOW_HEADER				H_TEXT("BlockFlows")
-
 #define CLOSURE_NAME_PREFIX				H_TEXT("Closure_")
 #define CLOSURE_REF_VARIABLE			H_TEXT("ClosureRef")
 
@@ -95,9 +93,9 @@ using HStringView = std::wstring_view;
 
 #define HAZE_TEMPLATE_CONBINE			H_TEXT("&")
 
-#define BLOCK_ENTRY_NAME				H_TEXT("Entry")
 #define BLOCK_START						H_TEXT("Block")
 
+#define BLOCK_ENTRY_NAME				H_TEXT("EntryBlock")
 #define BLOCK_DEFAULT					H_TEXT("DefaultBlock")
 #define BLOCK_IF_THEN					H_TEXT("IfThenBlock")
 #define BLOCK_ELSE						H_TEXT("ElseBlock")
@@ -127,9 +125,8 @@ using HStringView = std::wstring_view;
 //#define TEMP_REGISTER_8					H_TEXT("Temp_R8")
 //#define TEMP_REGISTER_9					H_TEXT("Temp_R9")
 
-#define	HAZE_JMP_NULL					H_TEXT("JmpNull")
+//#define	HAZE_JMP_NULL					H_TEXT("JmpNull")
 
-#define HAZE_CALL_PUSH_ADDRESS_NAME		STDString(H_TEXT("RetPC"))
 #define HAZE_CALL_PUSH_ADDRESS_TYPE		(HAZE_ADDRESS_SIZE == 8 ? HazeValueType::Int64 : HAZE_ADDRESS_SIZE == 4 ? HazeValueType::Int32 : HazeValueType::None)
 
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")

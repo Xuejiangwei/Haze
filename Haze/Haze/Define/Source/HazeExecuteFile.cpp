@@ -470,15 +470,10 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 
 	for (auto& iter : instruction.Operator)
 	{
-		s_BinaryString = WString2String(iter.Variable.Name);
-		number = (x_uint32)s_BinaryString.size();
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
-		m_FileStream->write(s_BinaryString.data(), number);											//操作数名字
-
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Scope));										//操作数作用域
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Desc));											//操作数数据描述
-		WriteType(m_FileStream, iter.Variable.Type);
-
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Type));
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.VariableIndexOrId));
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.AddressType));									//操作数取址类型
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Extra));										//操作数额外数据
 	}
@@ -846,24 +841,11 @@ void HazeExecuteFile::ReadInstruction(HazeVM* vm, Instruction& instruction)
 
 	for (auto& iter : instruction.Operator)
 	{
-		m_InFileStream->read(HAZE_READ(number));
-		s_BinaryString.resize(number);
-		m_InFileStream->read(s_BinaryString.data(), number);
-		iter.Variable.Name = String2WString(s_BinaryString);
-
 		m_InFileStream->read(HAZE_READ(iter.Scope));
 		m_InFileStream->read(HAZE_READ(iter.Desc));
-
-		/*if (instruction.InsCode == InstructionOpCode::NEW)
-		{
-			ReadType(vm, m_InFileStream, iter.Variable.Type);
-		}
-		else*/
-		{
-			ReadType(vm, m_InFileStream, iter.Variable.Type);
-		}
+		m_InFileStream->read(HAZE_READ(iter.Type));
+		m_InFileStream->read(HAZE_READ(iter.VariableIndexOrId));
 		m_InFileStream->read(HAZE_READ(iter.AddressType));
-
 		m_InFileStream->read(HAZE_READ(iter.Extra));
 	}
 

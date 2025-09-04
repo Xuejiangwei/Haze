@@ -26,7 +26,7 @@ CompilerFunction::CompilerFunction(CompilerModule* compilerModule, const STDStri
 		AddFunctionParam(params[i]);
 	}
 
-	InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, this, nullptr));
+	InitEntryBlock(CompilerBlock::CreateBaseBlock(GenEntryBlockName(), this, nullptr));
 	m_DescType = GetFunctionTypeByLibraryType(m_Module->GetModuleLibraryType());
 }
 
@@ -71,8 +71,6 @@ Share<CompilerValue> CompilerFunction::GetParamVariableLeftToRight(x_uint32 inde
 			return m_Params[0].Value;
 		}
 	}
-
-	return nullptr;
 }
 
 Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, TemplateDefineTypes* params)
@@ -339,18 +337,25 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 		dynamic_cast<CompilerClosureFunction*>(this)->GenI_Code_RefVariable(hss);
 	}
 
-	hss << GetFunctionStartHeader() << " " << m_StartLine << HAZE_ENDL;
+	hss << GetFunctionStartHeader() << " " << m_StartLine << " " << m_CurrBlockCount << HAZE_ENDL;
 
-	HashMap<CompilerBlock*, x_uint64> blockIndex;
-	m_EntryBlock->GenI_Code(hss, blockIndex);
-	
+	if (m_CurrBlockCount > 0)
+	{
+		m_EntryBlock->GenI_Code(hss);
+	}
+
 	hss << GetFunctionEndHeader() << " " << m_EndLine << HAZE_ENDL << HAZE_ENDL;
 
-	hss << GetBlockFlowHeader() << " " << blockIndex.size() << HAZE_ENDL;
-	m_EntryBlock->GenI_Code_FlowGraph(hss, blockIndex);
 	hss << HAZE_ENDL;
 
 	m_EntryBlock->ClearLocalVariable();
+}
+
+STDString CompilerFunction::GenEntryBlockName()
+{
+	HAZE_STRING_STREAM hss;
+	hss << BLOCK_ENTRY_NAME << ++m_CurrBlockCount;
+	return hss.str();
 }
 
 STDString CompilerFunction::GenDafaultBlockName()

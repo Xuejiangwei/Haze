@@ -2134,7 +2134,7 @@ Unique<ASTFunction> Parse::ParseFunction(const STDString* className, bool isClas
 		{
 			ParseStage1Spin(this);
 
-			RegisterFunctionSymbol(functionName, funcType.TypeId, Move(params), desc, className, isClassPublic);
+			RegisterFunctionSymbol(functionName, funcType.TypeId, params, desc, className, isClassPublic);
 			return nullptr;
 		}
 
@@ -2235,6 +2235,7 @@ V_Array<Unique<ASTFunctionDefine>> Parse::ParseLibrary_FunctionDefine()
 
 					m_StackSectionSignal.pop();
 
+					RegisterFunctionSymbol(functionName, funcType.TypeId, params, HazeFunctionDesc::Normal, nullptr, false);
 					if (TokenIs(HazeToken::RightParentheses, H_TEXT("函数最后需要 ) ")))
 					{
 						functionDefines.push_back(MakeUnique<ASTFunctionDefine>(m_Compiler, /*SourceLocation(m_LineCount),*/ Move(functionName), funcType, params));
@@ -3035,7 +3036,7 @@ void Parse::RegisterEnumData(const STDString& name, V_Array<Pair<STDString, Uniq
 	m_CompilerSymbol->Register_Enum(m_ModuleName, name, Move(newMembers));
 }
 
-void Parse::RegisterFunctionSymbol(const STDString& functionName, x_uint32 funcType, V_Array<Unique<ASTBase>>&& params, HazeFunctionDesc desc, const STDString* className, bool isClassPublic)
+void Parse::RegisterFunctionSymbol(const STDString& functionName, x_uint32 funcType, V_Array<Unique<ASTBase>>& params, HazeFunctionDesc desc, const STDString* className, bool isClassPublic)
 {
 	V_Array<HazeDefineVariableView> funcParams(params.size());
 	for (x_uint64 i = 0; i < funcParams.size(); i++)

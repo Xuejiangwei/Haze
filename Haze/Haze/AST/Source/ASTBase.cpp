@@ -899,7 +899,7 @@ Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 	{
 		if (m_ConstructorParam.size() == 1)
 		{
-			CompilerValueTypeChanger::Reset(value, HAZE_VAR_TYPE(value->GetBaseType()));
+			//CompilerValueTypeChanger::Reset(value, HAZE_VAR_TYPE(value->GetBaseType()));
 			m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, HAZE_OBJECT_BASE_CONSTRUCTOR, { m_ConstructorParam[0]->CodeGen(nullptr) }, value);
 		}
 		else

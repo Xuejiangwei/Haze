@@ -149,7 +149,7 @@ private:
 
 	void RegisterClassData(const STDString& name, V_Array<STDString>& parents, V_Array<Pair<HazeDataDesc, V_Array<Unique<ASTBase>>>>& classDatas);
 	void RegisterEnumData(const STDString& name, V_Array<Pair<STDString, Unique<ASTBase>>>& members);
-	void RegisterFunctionSymbol(const STDString& functionName, x_uint32 funcType, V_Array<Unique<ASTBase>>&& params, HazeFunctionDesc desc, const STDString* className, bool isClassPublic);
+	void RegisterFunctionSymbol(const STDString& functionName, x_uint32 funcType, V_Array<Unique<ASTBase>>& params, HazeFunctionDesc desc, const STDString* className, bool isClassPublic);
 
 	void EnableExpectIdentiferIsClassOrEnum();
 	void OnHitExpectIdentiferIsClassOrEnum();

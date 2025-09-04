@@ -610,7 +610,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_BoolConstantValues[s_Value.Value.Bool] = ret;
 			SET_VAR_VALUE(Bool);
 		}
@@ -622,7 +622,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Int8_ConstantValues[s_Value.Value.Int8] = ret;
 			SET_VAR_VALUE(Int8);
 		}
@@ -634,7 +634,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_UInt8_ConstantValues[s_Value.Value.UInt8] = ret;
 			SET_VAR_VALUE(UInt8);
 		}
@@ -646,7 +646,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Int16_ConstantValues[s_Value.Value.Int16] = ret;
 			SET_VAR_VALUE(Int16);
 		}
@@ -658,7 +658,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_UInt16_ConstantValues[s_Value.Value.UInt16] = ret;
 			SET_VAR_VALUE(UInt16);
 		}
@@ -670,7 +670,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Int32_ConstantValues[s_Value.Value.Int32] = ret;
 			SET_VAR_VALUE(Int32);
 		}
@@ -682,7 +682,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_UInt32_ConstantValues[s_Value.Value.UInt32] = ret;
 			SET_VAR_VALUE(UInt32);
 		}
@@ -694,7 +694,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Int64_ConstantValues[s_Value.Value.Int64] = ret;
 			SET_VAR_VALUE(Int64);
 		}
@@ -706,7 +706,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_UInt64_ConstantValues[s_Value.Value.UInt64] = ret;
 			SET_VAR_VALUE(UInt64);
 		}
@@ -718,7 +718,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Float32_ConstantValues[s_Value.Value.Float32] = ret;
 			SET_VAR_VALUE(Float32);
 		}
@@ -730,7 +730,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::Constant, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Float64_ConstantValues[s_Value.Value.Float64] = ret;
 			SET_VAR_VALUE(Float64);
 		}

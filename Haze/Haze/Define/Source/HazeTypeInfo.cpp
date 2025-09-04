@@ -165,7 +165,8 @@ x_uint32 HazeTypeInfoMap::RegisterType(const STDString& moduleName, x_uint32 fun
 x_uint32 HazeTypeInfoMap::RegisterSymbol(const STDString& moduleName, const STDString& symbol, HazeComplexTypeInfo* type)
 {
 	auto newTypeId = GetNewTypeId(symbol);
-	m_Map[newTypeId] = { H_TEXT(""), 1, newTypeId, *type };
+
+	m_Map[newTypeId] = { (type && type->GetBaseType() == HazeValueType::Function ? symbol : H_TEXT("")), 1, newTypeId, *type };
 	m_NameCache[symbol] = newTypeId;
 	AddModuleRef(moduleName, newTypeId);
 

@@ -396,7 +396,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const STDStrin
 		}
 
 		stream >> str;
-		if (str == GetBlockFlowHeader())
+		/*if (str == GetBlockFlowHeader())
 		{
 			x_uint32 flowCount;
 			stream >> flowCount;
@@ -422,7 +422,7 @@ bool CompilerModule::ParseIntermediateFile(HAZE_IFSTREAM& stream, const STDStrin
 		{
 			HAZE_LOG_ERR_W("<%s>解析临时文件失败, 未能找到函数块控制流的头文本, <%s>!\n", m_Path.c_str(), str.c_str());
 			return false;
-		}
+		}*/
 
 		stream >> str;
 	}
@@ -1110,12 +1110,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		size += thisPointerTo->GetVariableType().GetTypeSize();
 	}
 
-	HazeVariableType retPcType(HAZE_CALL_PUSH_ADDRESS_TYPE);
-	hss << GetInstructionString(InstructionOpCode::PUSH) << " " << HAZE_CALL_PUSH_ADDRESS_NAME << " " << INT_VAR_SCOPE(HazeVariableScope::None)
-		<< " " << (x_uint32)HazeDataDesc::Address << " ";
-	retPcType.StringStreamTo(hss);
-	hss << HAZE_ENDL;
-	
+	GenIRCode(hss, InstructionOpCode::PUSH, HazeVariableScope::None, HazeDataDesc::Address, HAZE_CALL_PUSH_ADDRESS_TYPE, 0);
 	insertBlock->PushIRCode(hss.str());
 
 	hss.str(H_TEXT(""));

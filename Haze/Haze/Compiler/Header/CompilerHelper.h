@@ -31,6 +31,8 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo, 
 	Share<CompilerValue> oper1, Share<CompilerValue> oper2 = nullptr, const HazeVariableType* expectType = nullptr, bool check = true);
 
+void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, HazeVariableScope scope, HazeDataDesc desc, HazeValueType type, InstructionOpId id);
+
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerBlock> block1,
 	Share<CompilerBlock> block2 = nullptr);
 

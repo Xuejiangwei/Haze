@@ -103,6 +103,4 @@ private:
 
 	V_Array<Pair<x_uint32, V_Array<x_uint32>>> m_TypeInfoFunction;
 	V_Array<Pair<STDString, Pair<x_uint32, HazeComplexTypeInfo>>> m_TypeInfo;
-
-	STDString m_StaticConstantStr = HAZE_JMP_NULL;
 };

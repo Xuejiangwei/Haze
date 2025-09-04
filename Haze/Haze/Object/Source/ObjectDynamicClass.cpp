@@ -45,7 +45,7 @@ void ObjectDynamicClass::GetMember(HAZE_OBJECT_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(obj);
-	if (!obj)
+	/*if (!obj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
 		OBJECT_ERR_W("动态类对象<%s>为空", var.Variable.Name.c_str());
@@ -68,7 +68,7 @@ void ObjectDynamicClass::GetMember(HAZE_OBJECT_CALL_PARAM)
 		return;
 	}
 
-	obj->m_Methods->GetMember(stack, *name, obj->m_Data);
+	obj->m_Methods->GetMember(stack, *name, obj->m_Data);*/
 }
 
 void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
@@ -78,7 +78,7 @@ void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(obj);
-	if (!obj)
+	/*if (!obj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
 		OBJECT_ERR_W("动态类对象<%s>为空", var.Variable.Name.c_str());
@@ -102,7 +102,7 @@ void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 	}
 
 	obj->m_Methods->SetMember(stack, *name, obj->m_Data, (x_uint8*)GET_CURRENT_ADDRESS);
-	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Void), obj);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Void), obj);*/
 }
 
 void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)
@@ -112,7 +112,7 @@ void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)
 
 	GET_PARAM_START();
 	GET_PARAM(obj);
-	if (!obj)
+	/*if (!obj)
 	{
 		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
 		OBJECT_ERR_W("动态类对象<%s>为空", var.Variable.Name.c_str());
@@ -135,5 +135,5 @@ void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)
 		return;
 	}
 
-	obj->m_Methods->CallFunction(stack, *name, obj->m_Data, (x_uint8*)GET_CURRENT_ADDRESS);
+	obj->m_Methods->CallFunction(stack, *name, obj->m_Data, (x_uint8*)GET_CURRENT_ADDRESS);*/
 }

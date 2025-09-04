@@ -306,6 +306,7 @@ void StringToHazeValueNumber(const STDString& str, HazeValueType type, HazeValue
 			value.Value.Float64 = StringToStandardType<x_float64>(str);
 			break;
 		default:
+			HAZE_LOG_ERR_W("未能匹配数字<%s>!\n", str.c_str());
 			break;
 	}
 }

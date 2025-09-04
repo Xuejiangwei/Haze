@@ -529,7 +529,7 @@ Pair<HStringView, x_uint32> HazeVM::GetStepIn(x_uint32 CurrLine)
 			const auto& oper = m_Instructions[i].Operator;
 			if (oper.size() >= 1)
 			{
-				if (oper[0].Variable.Type.BaseType == HazeValueType::Function)
+				if (oper[0].Type == HazeValueType::Function)
 				{
 					void* value = GetOperatorAddress(m_Stack.get(), oper[0]);
 					x_uint64 functionAddress;
@@ -552,7 +552,7 @@ Pair<HStringView, x_uint32> HazeVM::GetStepIn(x_uint32 CurrLine)
 						}
 					}
 				}
-				else
+				/*else
 				{
 					int functionIndex = GetFucntionIndexByName(oper[0].Variable.Name);
 					if (functionIndex >= 0)
@@ -563,7 +563,7 @@ Pair<HStringView, x_uint32> HazeVM::GetStepIn(x_uint32 CurrLine)
 							return { oper[1].Variable.Name, function.FunctionDescData.StartLine };
 						}
 					}
-				}
+				}*/
 			}
 		}
 	}

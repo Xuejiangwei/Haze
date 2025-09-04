@@ -9,6 +9,8 @@
 #include "HazeStream.h"
 
 #define STR_LEN_SIZE(STR) (STR->m_Length * sizeof(x_HChar))
+#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "字符串")
+
 
 ObjectString::ObjectString(x_uint32 gcIndex, const x_HChar* str, bool fixedCapacity)
 	: GCObject(gcIndex), m_Data(nullptr), m_Length(0), m_Capacity(0), m_DataGCIndex(0)
@@ -79,13 +81,7 @@ void ObjectString::Append(HAZE_OBJECT_CALL_PARAM)
 	ObjectString* thisStr;
 	ObjectString* str;
 	GET_PARAM_START();
-	GET_PARAM(thisStr);
-	if (!thisStr)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("字符串对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
+	GET_OBJ(thisStr);
 
 	GET_PARAM(str);
 
@@ -116,13 +112,7 @@ void ObjectString::Format(HAZE_OBJECT_CALL_PARAM)
 
 	ObjectString* thisStr;
 	GET_PARAM_START();
-	GET_PARAM(thisStr);
-	if (!thisStr)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0];
-		OBJECT_ERR_W("字符串对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
+	GET_OBJ(thisStr);
 
 	if (str.length() <= thisStr->m_Capacity)
 	{

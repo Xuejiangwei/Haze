@@ -15,6 +15,7 @@ CompilerBlock::CompilerBlock(STDString&& name, CompilerFunction* parentFunction,
 {
 	m_IRCodes.clear();
 	m_Allocas.clear();
+	m_Index = parentFunction->GetCurrBlockCount() - 1;
 	PushIRCode(STDString(BLOCK_START) + H_TEXT(" ") + m_Name + H_TEXT("\n"));
 }
 
@@ -94,60 +95,41 @@ void CompilerBlock::AddSuccessor(Share<CompilerBlock> block1, Share<CompilerBloc
 	}
 }
 
-void CompilerBlock::GenI_Code(HAZE_STRING_STREAM& hss, HashMap<CompilerBlock*, x_uint64>& blockIndex)
+void CompilerBlock::GenI_Code(HAZE_STRING_STREAM& hss)
 {
 	hss << HAZE_ENDL;
+	hss << m_IRCodes[0];
 
-	if (m_IRCodes.size() > 0)
-	{
-		blockIndex[this] = blockIndex.size();
-	}
+	GenI_Code_FlowGraph(hss);
 
-	for (x_uint64 i = 0; i < m_IRCodes.size(); i++)
+	for (x_uint64 i = 1; i < m_IRCodes.size(); i++)
 	{
 		hss << m_IRCodes[i];
 	}
 
 	for (auto& iter : m_ChildBlocks)
 	{
-		iter->GenI_Code(hss, blockIndex);
+		iter->GenI_Code(hss);
 	}
 }
 
-void CompilerBlock::GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss, HashMap<CompilerBlock*, x_uint64>& blockIndex)
+void CompilerBlock::GenI_Code_FlowGraph(HAZE_STRING_STREAM& hss)
 {
-	auto iter = blockIndex.find(this);
-	if (iter != blockIndex.end())
+	hss << m_Index << " ";
+
+	hss << m_Predecessors.size() << " ";
+	for (auto it = m_Predecessors.begin(); it != m_Predecessors.end(); it++)
 	{
-		hss << iter->second << " ";
+		hss << (*it)->GetIndex() << " ";
+	}
 
-		hss << m_Predecessors.size() << " ";
-		for (auto it = m_Predecessors.begin(); it != m_Predecessors.end(); it++)
-		{
-			iter = blockIndex.find(it->get());
-			if (iter != blockIndex.end())
-			{
-				hss << iter->second << " ";
-			}
-		}
-
-		hss << m_Successors.size() << " ";
-		for (auto it = m_Successors.begin(); it != m_Successors.end(); it++)
-		{
-			iter = blockIndex.find(it->get());
-			if (iter != blockIndex.end())
-			{
-				hss << iter->second << " ";
-			}
-		}
+	hss << m_Successors.size() << " ";
+	for (auto it = m_Successors.begin(); it != m_Successors.end(); it++)
+	{
+		hss << (*it)->GetIndex() << " ";
+	}
 		
-		hss << HAZE_ENDL;
-	}
-
-	for (auto& block : m_ChildBlocks)
-	{
-		block->GenI_Code_FlowGraph(hss, blockIndex);
-	}
+	hss << HAZE_ENDL;
 }
 
 void CompilerBlock::ClearLocalVariable()
@@ -165,7 +147,7 @@ void CompilerBlock::ClearLocalVariable()
 	}
 }
 
-Share<CompilerBlock> CompilerBlock::CreateBaseBlock(STDString&& name, Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock)
+Share<CompilerBlock> CompilerBlock::CreateBaseBlock(STDString&& name,  Share<CompilerFunction> parent, Share<CompilerBlock> parentBlock)
 {
 	return CreateBaseBlock(Move(name), parent.get(), parentBlock.get());
 }

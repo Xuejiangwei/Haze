@@ -54,6 +54,8 @@ public:
 
 	void GenI_Code(HAZE_STRING_STREAM& hss);
 
+	STDString GenEntryBlockName();
+
 	STDString GenDafaultBlockName();
 
 	STDString GenIfThenBlockName();
@@ -69,6 +71,8 @@ public:
 	STDString GenForConditionBlockName();
 
 	STDString GenForStepBlockName();
+
+	int GetCurrBlockCount() const { return m_CurrBlockCount; }
 
 	bool FindLocalVariableName(const Share<CompilerValue> value, HStringView& outName);
 	bool FindLocalVariableIndex(const Share<CompilerValue> value, InstructionOpId& outIndex);

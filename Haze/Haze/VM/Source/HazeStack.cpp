@@ -63,31 +63,16 @@ void HazeStack::JmpTo(const InstructionData& data)
 	m_PC--;
 }
 
-const HazeVariableType& HazeStack::GetTempRegister(const x_HChar* name) const
+const HazeVariableType& HazeStack::GetTempRegisterType(x_uint64 index) const
 {
 	auto& backFrame = m_StackFrame.back();
-	for (auto& reg : backFrame.FunctionInfo->TempRegisters)
-	{
-		if (reg.Name == name)
-		{
-			return reg.Type;
-		}
-	}
-
-	return HazeVariableType::VoidType();
+	return backFrame.FunctionInfo->TempRegisters[index].Type;
 }
 
-void HazeStack::ResetTempRegisterTypeByDynamicClassUnknow(const STDString& name, const HazeVariableType& type)
+void HazeStack::ResetTempRegisterTypeByDynamicClassUnknow(x_uint64 index, const HazeVariableType& type)
 {
 	auto& backFrame = m_StackFrame.back();
-	for (auto& reg : backFrame.FunctionInfo->TempRegisters)
-	{
-		if (reg.Name == name)
-		{
-			const_cast<HazeVariableType&>(reg.Type) = type;
-			break;
-		}
-	}
+	const_cast<HazeVariableType&>(backFrame.FunctionInfo->TempRegisters[index].Type) = type;
 }
 
 void HazeStack::Run(bool isHazeCall)
