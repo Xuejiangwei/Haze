@@ -308,12 +308,6 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	{
 		hss << varId.Id;
 	}
-
-	//if (value->IsString())
-	//{
-		//hss << " " << compilerModule->GetGlobalStringIndex(value);
-		//index = compilerModule->GetGlobalStringIndex(value);
-	//}
 }
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo,

@@ -17,7 +17,7 @@
 #include <Windows.h>
 
 #define HAZE_CALL_LOG				0
-#define HAZE_DEBUG_ENABLE			1
+#define HAZE_DEBUG_ENABLE			0
 
 #define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); \
 				auto type = OPER[0].Variable.Type.SecondaryType; \
@@ -166,6 +166,7 @@ static HashSet<InstructionOpCode> s_DebugCode = {
 		{ InstructionOpCode::JL },
 		{ InstructionOpCode::CVT },
 		{ InstructionOpCode::LINE },
+		{ InstructionOpCode::RET },
 };
 
 class InstructionProcessor
@@ -675,7 +676,7 @@ public:
 				
 #if HAZE_CALL_LOG
 				HString functionName = stack->m_VM->GetAdvanceFunctionName((x_uint16)oper[0].Extra.ObjectCall.Index);;
-				HAZE_LOG_INFO(H_TEXT("调用对象<%s>函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), functionName.c_str(), stack->m_EBP, stack->m_ESP);
+				HAZE_LOG_INFO(H_TEXT("调用对象<%s>函数<%s> EBP<%d>  ESP<%d>\n"), functionName.c_str(), functionName.c_str(), stack->m_EBP, stack->m_ESP);
 #endif
 				
 				stack->m_VM->GetAdvanceFunction((x_uint16)oper[0].Extra.ObjectCall.Index)->ClassFunc(stack, oper[0].Extra.Call.ParamNum, paramByteSize);
@@ -688,9 +689,9 @@ public:
 			}
 			else if (oper[0].Type == HazeValueType::Function)
 			{
-#if HAZE_CALL_LOG
-				HAZE_LOG_INFO(H_TEXT("调用函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
-#endif
+//#if HAZE_CALL_LOG
+//				HAZE_LOG_INFO(H_TEXT("调用函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
+//#endif
 				void* value = GetOperatorAddress(stack, oper[0]);
 				x_uint64 functionAddress;
 				memcpy(&functionAddress, (char*)value, sizeof(functionAddress));
@@ -714,7 +715,7 @@ public:
 				}
 
 #if HAZE_CALL_LOG
-				HAZE_LOG_INFO(H_TEXT("调用函数<%s> EBP<%d>  ESP<%d>\n"), oper[0].Variable.Name.c_str(), stack->m_EBP, stack->m_ESP);
+				HAZE_LOG_INFO(H_TEXT("调用函数<%s> EBP<%d>  ESP<%d>\n"), symbolName->c_str(), stack->m_EBP, stack->m_ESP);
 #endif
 				 
 				if (functionIndex >= 0)
@@ -1120,7 +1121,7 @@ private:
 		{
 			case InstructionAddressType::Global:
 			{
-				ret = stack->m_VM->GetGlobalValueByIndex(insData.Extra.Index);
+				ret = stack->m_VM->GetGlobalValueById(insData.VariableIndexOrId);
 			}
 				break;
 			case InstructionAddressType::Local:
@@ -1141,6 +1142,12 @@ private:
 				auto& value = const_cast<HazeValue&>(insData.Extra.RuntimeDynamicValue);
 				//StringToHazeValueNumber(insData.Variable.Name, insData.Variable.Type.BaseType, value);
 				ret = GetBinaryPointer(insData.Type, value);
+
+				if (insData.Type == HazeValueType::Enum)
+				{
+					ret = ret;
+				}
+
 			}
 				break;
 			case InstructionAddressType::NullPtr:
@@ -1163,7 +1170,7 @@ private:
 				if (hazeRegister->Type.BaseType != insData.Type)
 				{
 					//hazeRegister->Type = insData.Type;
-					HAZE_LOG_INFO_W("获取寄存器数据\n");
+					//HAZE_LOG_INFO_W("获取寄存器数据\n");
 					hazeRegister->Data.resize(GetSizeByHazeType(insData.Type));
 				}
 

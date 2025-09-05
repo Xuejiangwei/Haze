@@ -169,12 +169,19 @@ void BackendParse::GetNextLexeme()
 		}
 	}
 
+	if (*m_CurrCode == 0)
+	{
+		return;
+	}
+
 	m_CurrLexeme.clear();
 	while (!HazeIsSpace(*m_CurrCode) || (ParseStringCount.first && ParseStringCount.second > 0))
 	{
 		m_CurrLexeme += *(m_CurrCode++);
 		ParseStringCount.second--;
 	}
+
+	//HAZE_LOG_INFO_W("%s\n", m_CurrLexeme.c_str());
 }
 
 void BackendParse::GetNextLexmeAssign_HazeStringCustomClassName(const STDString*& dst)

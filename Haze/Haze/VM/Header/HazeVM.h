@@ -72,7 +72,7 @@ public:
 
 	const class ObjectString* GetConstantStringByIndex(int index) const;
 
-	char* GetGlobalValueByIndex(x_uint32 index);
+	char* GetGlobalValueById(x_uint32 id);
 
 	ClassData* FindClass(x_uint32 typeId);
 	ClassData* FindClass(const STDString& name);
@@ -136,7 +136,7 @@ private:
 	V_Array<STDString> m_ModuleFilePath;
 
 	V_Array<x_uint64> m_GlobalInitFunction;
-	V_Array<HazeVariable> m_GlobalData;
+	HashMap<x_uint32, HazeVariable> m_GlobalData;
 	V_Array<ObjectClass*> m_ExtreGlobalData;
 
 	V_Array<ObjectString*> m_StringTable;

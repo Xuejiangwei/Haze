@@ -25,7 +25,7 @@ public:
 	struct GlobalData
 	{
 		STDString Name;
-		x_uint64 Id;
+		x_uint32 Id;
 		HazeVariableType Type;
 
 		/*uint32 StartAddress;

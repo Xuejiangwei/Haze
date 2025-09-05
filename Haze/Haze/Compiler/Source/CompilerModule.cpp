@@ -1218,6 +1218,7 @@ Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const STDSt
 	{
 		return it->second;
 	}
+
 	m_HashMap_StringTable[str] = nullptr;
 
 	it = m_HashMap_StringTable.find(str);
@@ -1524,6 +1525,8 @@ bool CompilerModule::GetGlobalVariableId_Internal(const Share<CompilerValue>& va
 
 	if (m_GlobalDataFunction->FindLocalVariableIndex(value, outId))
 	{
+		auto& var = m_GlobalDataFunction->GetEntryBlock()->GetAllocaList()[outId.Id];
+		outId.Id = m_Compiler->GetCompilerSymbol()->GetGlobalVariableId(var.first);
 		return true;
 	}
 
@@ -1554,7 +1557,7 @@ bool CompilerModule::GetGlobalVariableId_Internal(const Share<CompilerValue>& va
 	{
 		if (it.second == value)
 		{
-			outId.Id = 0;//HAZE_CONSTANT_STRING_NAME;//It.first;
+			outId.Id = it.second->GetValue().Value.Extra.StringTableIndex;
 			return true;
 		}
 	}

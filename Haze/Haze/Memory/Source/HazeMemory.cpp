@@ -451,7 +451,7 @@ void HazeMemory::Mark()
 
 		for (auto& it : m_VM->m_GlobalData)
 		{
-			MarkVariable(it.m_Type, it.GetValue().Value.Pointer);
+			MarkVariable(it.second.m_Type, it.second.GetValue().Value.Pointer);
 		}
 
 		for (auto& it : m_VM->m_StringTable)

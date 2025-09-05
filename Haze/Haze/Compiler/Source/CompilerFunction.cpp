@@ -283,8 +283,11 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	hss << HAZE_ENDL;
 
 	//Push所有参数，从右到左, push 参数与返回地址的事由function call去做
+	int size = -HAZE_ADDRESS_SIZE;
 	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
 	{
+		size -= m_LocalVariables[i].first->GetVariableType().GetTypeSize();
+
 		hss << GetFunctionParamHeader() << " " << m_Params[i].Name << " ";
 
 		if (!m_Params[i].Value->GetVariableType().StringStreamTo(hss))
@@ -297,25 +300,23 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	}
 
 	HStringView LocalVariableName;
-	int size = -HAZE_ADDRESS_SIZE;
-
-	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
+	for (x_uint64 i = 0; i < m_Params.size(); i++)
 	{
 		if (!FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName))
 		{
 			HAZE_LOG_ERR_W("函数<%s>生成中间代码错误，未能找到参数临时变量!\n", m_Name.c_str());
 			return;
 		}
-		size -= m_LocalVariables[i].first->GetVariableType().GetTypeSize();
 		
 		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName << HAZE_LOCAL_VARIABLE_CONBINE << m_LocalVariables[i].first->GetCount();
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 
 		hss << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
+	
+		size += m_LocalVariables[i].first->GetVariableType().GetTypeSize();
 	}
 
 	size = 0;
-
 	for (size_t i = m_Params.size(); i < m_LocalVariables.size(); i++)
 	{
 		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);

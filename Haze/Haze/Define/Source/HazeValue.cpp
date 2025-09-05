@@ -315,6 +315,7 @@ STDString HazeValueNumberToString(HazeValueType type, HazeValue value)
 {
 	switch (type)
 	{
+		case HazeValueType::Bool:
 		case HazeValueType::Int8:
 			return ToHazeString(value.Value.Int8);
 		case HazeValueType::Int16:
@@ -335,7 +336,10 @@ STDString HazeValueNumberToString(HazeValueType type, HazeValue value)
 			return ToHazeString(value.Value.Float32);
 		case HazeValueType::Float64:
 			return ToHazeString(value.Value.Float64);
+		case HazeValueType::Enum:
+			return ToHazeString(value.Value.Int32);
 		default:
+			HAZE_LOG_ERR_W("<%s>类型不是数字!\n", GetHazeValueTypeString(type));
 			break;
 	}
 

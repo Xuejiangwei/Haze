@@ -299,6 +299,7 @@ void HazeExecuteFile::WriteGlobalDataTable(const ModuleUnit::GlobalDataTable& ta
 		number = (x_uint32)s_BinaryString.size();
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(number));
 		m_FileStream->write(s_BinaryString.c_str(), number);
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Id));
 		WriteType(m_FileStream, iter.Type);
 	}
 }
@@ -621,16 +622,21 @@ void HazeExecuteFile::ReadGlobalDataTable(HazeVM* vm)
 		vm->m_GlobalInitFunction[i] = index;
 	}
 	
-	m_InFileStream->read(HAZE_READ(number));
-	vm->m_GlobalData.resize(number);
-	for (x_uint64 i = 0; i < vm->m_GlobalData.size(); i++)
+	x_uint32 globalVarCount = 0;
+	m_InFileStream->read(HAZE_READ(globalVarCount));
+	for (x_uint32 i = 0; i < globalVarCount; i++)
 	{
-		auto& globalData = vm->m_GlobalData[i];
 		m_InFileStream->read(HAZE_READ(number));
 		s_BinaryString.resize(number);
 		m_InFileStream->read(s_BinaryString.data(), number);
-		globalData.m_Name = String2WString(s_BinaryString);
-		ReadType(vm, m_InFileStream, globalData.m_Type);
+		auto name = String2WString(s_BinaryString);
+
+		x_uint32 id;
+		m_InFileStream->read(HAZE_READ(id));
+		auto& iter = vm->m_GlobalData[id];
+		iter.m_Name = Move(name);
+		
+		ReadType(vm, m_InFileStream, iter.m_Type);
 	}
 }
 

@@ -344,11 +344,12 @@ const ObjectString* HazeVM::GetConstantStringByIndex(int index) const
 	return m_StringTable[index];
 }
 
-char* HazeVM::GetGlobalValueByIndex(x_uint32 index)
+char* HazeVM::GetGlobalValueById(x_uint32 id)
 {
-	if (index < m_GlobalData.size())
+	auto it = m_GlobalData.find(id);
+	if (it != m_GlobalData.end())
 	{
-		return (char*)(&m_GlobalData[index].GetValue().Value);
+		return (char*)(&it->second.GetValue().Value);
 	}
 
 	return nullptr;
@@ -588,7 +589,6 @@ void HazeVM::RemoveGlobalValue(x_uint32 index)
 void HazeVM::ClearGlobalData()
 {
 	m_GlobalData.clear();
-	m_GlobalData.shrink_to_fit();
 
 	m_ExtreGlobalData.clear();
 	m_ExtreGlobalData.shrink_to_fit();

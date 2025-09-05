@@ -32,7 +32,7 @@ HazeValue* ASTFunction::CodeGen()
 	V_Array<HazeDefineVariable> paramDefines(m_FunctionParams.size());
 
 	bool startCheckDefaultValue = false;
-	for (size_t i = 0; i < m_FunctionParams.size(); i++)
+	for (x_uint64 i = 0; i < m_FunctionParams.size(); i++)
 	{
 		paramDefines[i] = m_FunctionParams[i]->GetDefine();
 
@@ -49,6 +49,11 @@ HazeValue* ASTFunction::CodeGen()
 				return nullptr;
 			}
 		}
+	}
+
+	if (m_FunctionName == H_TEXT("放子"))
+	{
+		m_FunctionName = H_TEXT("放子");
 	}
 
 	if (m_Section == HazeSectionSignal::Global)
@@ -157,9 +162,11 @@ void ASTFunctionDefine::CodeGen()
 
 	m_Compiler->SetInsertBlock(CompilerFunction->GetEntryBlock());
 
-	for (auto& iter : m_FunctionParams)
+	for (int i = (int)m_FunctionParams.size() - 1; i >= 0; i--)
 	{
-		iter->CodeGen(nullptr);
+		currModule->BeginCreateFunctionParamVariable((x_int8)i);
+		m_FunctionParams[i]->CodeGen(nullptr);
+		currModule->EndCreateFunctionParamVariable();
 	}
 }
 
