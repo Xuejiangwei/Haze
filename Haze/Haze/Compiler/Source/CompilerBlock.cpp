@@ -169,19 +169,20 @@ void CompilerBlock::PushIRCode(const STDString& code)
 	m_IRCodes.push_back(code);
 }
 
-Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, HazeVariableScope scope,
+Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, /*HazeVariableScope scope,*/HazeDataDesc desc,
 	Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
 	for (auto& iter : m_Allocas)
 	{
 		if (iter.first == defineVar.Name)
 		{
-			if (scope == HazeVariableScope::Global)
+			//if (scope == HazeVariableScope::Global)
+			if (IsGlobalDesc(desc))
 			{
 				return iter.second;
 				//COMPILER_ERR_MODULE_W("重复全局添加变量<%s>", m_ParentFunction->GetModule()->GetCompiler(), m_ParentFunction->GetModule()->GetName().c_str(), defineVar.Name.c_str());
 			}
-			else if (scope == HazeVariableScope::Local)
+			else if (IsLocalDesc(desc))
 			{
 				COMPILER_ERR_MODULE_W("重复添加局部变量<%s>", m_ParentFunction->GetModule()->GetCompiler(), m_ParentFunction->GetModule()->GetName().c_str(), defineVar.Name.c_str());
 			}
@@ -206,8 +207,9 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 		return nullptr;
 	}
 
-	HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
-	Share<CompilerValue> allocaValue = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, scope, desc, count, refValue, params);
+	desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
+	//HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
+	Share<CompilerValue> allocaValue = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, /*scope,*/ desc, count, refValue, params);
 	m_Allocas.push_back({ STDString(defineVar.Name.c_str()), allocaValue });
 
 	m_ParentFunction->AddLocalVariable(allocaValue, line);

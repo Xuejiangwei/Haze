@@ -7,7 +7,7 @@ class CompilerPointerFunction : public CompilerValue
 	friend class CompilerModule;
 public:
 	explicit CompilerPointerFunction(CompilerModule* compilerModule, const HazeVariableType& defineType,
-		HazeVariableScope scope, HazeDataDesc desc, int count, TemplateDefineTypes* params);
+		/*HazeVariableScope scope, */HazeDataDesc desc, int count, TemplateDefineTypes* params);
 
 	virtual ~CompilerPointerFunction() override;
 

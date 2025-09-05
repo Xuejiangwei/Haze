@@ -8,7 +8,7 @@ class CompilerClassValue : public CompilerValue
 {
 	friend class CompilerClass;
 public:
-	explicit CompilerClassValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
+	explicit CompilerClassValue(CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/
 		HazeDataDesc desc, int count);
 
 	virtual ~CompilerClassValue() override;

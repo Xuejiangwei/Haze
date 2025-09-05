@@ -5,7 +5,7 @@
 class CompilerArrayValue : public CompilerValue
 {
 public:
-	explicit CompilerArrayValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope, 
+	explicit CompilerArrayValue(CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope, */
 		HazeDataDesc desc, int count);
 
 	virtual ~CompilerArrayValue() override;

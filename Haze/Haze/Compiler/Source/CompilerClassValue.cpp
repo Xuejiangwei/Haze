@@ -9,12 +9,12 @@
 //extern Share<HazeCompilerValue> CreateVariableImpl(HazeCompilerModule* Module, const HazeDefineType& Type, HazeVariableScope Scope, HazeDataDesc Desc, int Count,
 //	Share<HazeCompilerValue> RefValue, V_Array<Share<HazeCompilerValue>> ArraySize, HazeValue* DefaultValue, V_Array<HazeDefineType>* Vector_Param);
 
-CompilerClassValue::CompilerClassValue(CompilerModule* compilerModule, const HazeVariableType& defineType,
-	HazeVariableScope scope, HazeDataDesc desc, int count)
-	: CompilerValue(compilerModule, defineType, scope, desc, count)
+CompilerClassValue::CompilerClassValue(CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/
+	HazeDataDesc desc, int count)
+	: CompilerValue(compilerModule, defineType, /*scope,*/ desc, count)
 {
 	m_OwnerClass = compilerModule->GetClass(*compilerModule->GetCompiler()->GetCompilerSymbol()->GetSymbolByTypeId(defineType.TypeId)).get();
-	m_Data = m_OwnerClass->CreateVariableCopyClassMember(compilerModule, scope);
+	m_Data = m_OwnerClass->CreateVariableCopyClassMember(compilerModule/*, scope*/);
 }
 
 CompilerClassValue::~CompilerClassValue()

@@ -11,7 +11,7 @@ public:
 
 	//HazeCompilerValue(HazeValue Value, HazeDataDesc Section);
 
-	CompilerValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
+	CompilerValue(CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/
 		HazeDataDesc desc, int count, Share<CompilerValue> assignValue = nullptr);
 
 	virtual ~CompilerValue();
@@ -26,21 +26,23 @@ public:
 
 	const HazeValue& GetValue() const { return m_Value; }
 
-	HazeVariableScope GetVariableScope() const { return m_Scope; }
+	//HazeVariableScope GetVariableScope() const { return m_Scope; }
 
 	HazeDataDesc GetVariableDesc() const { return m_Desc; }
 
 	int GetCount() const { return m_Count; }
 
-	bool IsGlobalVariable() const { return m_Scope == HazeVariableScope::Global; }
+	//bool IsGlobalVariable() const { return m_Scope == HazeVariableScope::Global; }
+	bool IsGlobalVariable() const { return IsGlobalDesc(m_Desc); }
 
-	bool IsLocalVariable() const { return m_Scope == HazeVariableScope::Local; }
+	//bool IsLocalVariable() const { return m_Scope == HazeVariableScope::Local; }
+	bool IsLocalVariable() const { return IsLocalDesc(m_Desc); }
 
 	bool IsTempVariable() const { return m_Desc == HazeDataDesc::RegisterTemp; }
 
-	bool IsFunctionAddress() const { return m_Desc == HazeDataDesc::FunctionAddress; }
+	bool IsFunctionAddress() const { return m_Desc == HazeDataDesc::Function_Normal; }
 
-	void SetScope(HazeVariableScope scope) { m_Scope = scope; }
+	//void SetScope(HazeVariableScope scope) { m_Scope = scope; }
 
 	void SetDataDesc(HazeDataDesc desc) { m_Desc = desc; }
 
@@ -52,7 +54,7 @@ public:
 
 	bool IsRegister(HazeDataDesc type) const { return IsRegisterDesc(m_Desc) && m_Desc == type; }
 
-	bool IsConstant() const { return IsConstDesc(m_Desc) && !IsConstStringDesc(m_Desc); }
+	bool IsConstant() const { return IsConstDesc(m_Desc); }
 
 	bool IsString() const { return IsConstStringDesc(m_Desc); }
 
@@ -103,7 +105,7 @@ protected:
 	HazeVariableType m_Type;
 	HazeValue m_Value;
 	CompilerModule* m_Module;
-	HazeVariableScope m_Scope;
+	//HazeVariableScope m_Scope;
 	HazeDataDesc m_Desc;
 
 	int m_Count;			//命名计数

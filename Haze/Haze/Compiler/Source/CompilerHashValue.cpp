@@ -5,8 +5,8 @@
 #include "CompilerArrayValue.h "
 #include "CompilerSymbol.h"
 
-CompilerHashValue::CompilerHashValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count)
-	: CompilerValue(compilerModule, defineType, scope, desc, count)
+CompilerHashValue::CompilerHashValue(CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/ HazeDataDesc desc, int count)
+	: CompilerValue(compilerModule, defineType, /*scope,*/ desc, count)
 {
 	auto typeInfoMap = m_Module->GetCompiler()->GetCompilerSymbol()->GetTypeInfoMap();
 	auto typeInfo = (HazeComplexTypeInfo::Hash*)typeInfoMap->GetTypeById(defineType.TypeId);

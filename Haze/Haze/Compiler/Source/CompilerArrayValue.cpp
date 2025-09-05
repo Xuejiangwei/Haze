@@ -9,9 +9,9 @@
 #include "CompilerClassValue.h"
 #include "HazeLogDefine.h"
 
-CompilerArrayValue::CompilerArrayValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
+CompilerArrayValue::CompilerArrayValue(CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/
 	HazeDataDesc desc, int count)
-	: CompilerValue(compilerModule, defineType, scope, desc, count)
+	: CompilerValue(compilerModule, defineType, /*scope,*/ desc, count)
 {
 }
 

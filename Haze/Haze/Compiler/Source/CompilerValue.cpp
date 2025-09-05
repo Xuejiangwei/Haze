@@ -5,18 +5,9 @@
 
 #include <string.h>
 
-//HazeCompilerValue::HazeCompilerValue() : Module(nullptr), Scope(HazeDataDesc::Local), Count(0)
-//{
-//	memset(&Value, 0, sizeof(Value));
-//}
-
-//HazeCompilerValue::HazeCompilerValue(HazeValue Value, HazeDataDesc Scope) : Module(nullptr), Value(Value), Scope(Scope), Count(0)
-//{
-//}
-
-CompilerValue::CompilerValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
+CompilerValue::CompilerValue(CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/
 	HazeDataDesc desc, int count, Share<CompilerValue> AssignValue)
-	: m_Module(compilerModule), m_Type(defineType), m_Scope(scope), m_Desc(desc), m_Count(count)
+	: m_Module(compilerModule), m_Type(defineType), /*m_Scope(scope),*/ m_Desc(desc), m_Count(count)
 {
 	if (AssignValue)
 	{

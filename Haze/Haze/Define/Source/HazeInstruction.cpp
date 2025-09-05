@@ -58,6 +58,16 @@ bool IsClassMember(HazeDataDesc desc)
 	return desc >= HazeDataDesc::ClassMember_Local_Public && desc <= HazeDataDesc::ClassMember_Local_Private;
 }
 
+bool IsGlobalDesc(HazeDataDesc desc)
+{
+	return desc == HazeDataDesc::Variable_Global || IsConstDesc(desc) || IsConstStringDesc(desc) || desc == HazeDataDesc::NullPtr;
+}
+
+bool IsLocalDesc(HazeDataDesc desc)
+{
+	return desc == HazeDataDesc::Variable_Local || desc == HazeDataDesc::RegisterTemp || desc == HazeDataDesc::Element;
+}
+
 const x_HChar* GetInstructionString(InstructionOpCode code)
 {
 	static HashMap<InstructionOpCode, const x_HChar*> s_HashMap_Code2String;

@@ -1110,7 +1110,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		size += thisPointerTo->GetVariableType().GetTypeSize();
 	}
 
-	GenIRCode(hss, InstructionOpCode::PUSH, HazeVariableScope::None, HazeDataDesc::Address, HAZE_CALL_PUSH_ADDRESS_TYPE, 0);
+	GenIRCode(hss, InstructionOpCode::PUSH, /*HazeVariableScope::None,*/ HazeDataDesc::Address, HAZE_CALL_PUSH_ADDRESS_TYPE, 0);
 	insertBlock->PushIRCode(hss.str());
 
 	hss.str(H_TEXT(""));
@@ -1226,7 +1226,7 @@ Share<CompilerValue> CompilerModule::GetOrCreateGlobalStringVariable(const STDSt
 	m_HashMap_StringMapping[(int)m_HashMap_StringMapping.size()] = it->first;
 
 	HazeVariableType defineVarType = HAZE_VAR_TYPE(HazeValueType::String);
-	it->second = CreateVariable(this, defineVarType, HazeVariableScope::Global, HazeDataDesc::ConstantString, 0);
+	it->second = CreateVariable(this, defineVarType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantString, 0);
 
 	HazeValue& hazeValue = const_cast<HazeValue&>(it->second->GetValue());
 	hazeValue.Value.Extra.StringTableIndex = (int)m_HashMap_StringMapping.size() - 1;

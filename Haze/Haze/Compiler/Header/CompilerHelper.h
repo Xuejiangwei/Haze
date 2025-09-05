@@ -17,10 +17,10 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 Share<CompilerValue> CreateAstTempVariable(CompilerModule* compilerModule, const HazeVariableType& type);
 
 Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeVariableType& type,
-	HazeVariableScope scope, HazeDataDesc desc, int count, Share<CompilerValue> refValue = nullptr,
+	/*HazeVariableScope scope,*/ HazeDataDesc desc, int count, Share<CompilerValue> refValue = nullptr,
 	TemplateDefineTypes* params = nullptr);
 
-Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var);
+Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, /*HazeVariableScope scope,*/ Share<CompilerValue> var);
 
 //bool TrtGetVariableName(const Pair<STDString, Share<CompilerValue>>& data, const CompilerValue* value, HStringView& outName);
 
@@ -31,7 +31,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo, 
 	Share<CompilerValue> oper1, Share<CompilerValue> oper2 = nullptr, const HazeVariableType* expectType = nullptr, bool check = true);
 
-void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, HazeVariableScope scope, HazeDataDesc desc, HazeValueType type, InstructionOpId id);
+void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, /*HazeVariableScope scope,*/ HazeDataDesc desc, HazeValueType type, InstructionOpId id);
 
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerBlock> block1,
 	Share<CompilerBlock> block2 = nullptr);

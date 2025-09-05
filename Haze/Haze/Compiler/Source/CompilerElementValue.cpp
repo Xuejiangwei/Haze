@@ -8,7 +8,7 @@
 #include "Compiler.h"
 
 CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, Share<CompilerValue> element)
-	: CompilerValue(compilerModule, element->GetVariableType(), HazeVariableScope::Local, HazeDataDesc::Element, 0), m_Parent(parent), m_Element(element), m_ElementName(nullptr)
+	: CompilerValue(compilerModule, element->GetVariableType(), /*HazeVariableScope::Local,*/ HazeDataDesc::Element, 0), m_Parent(parent), m_Element(element), m_ElementName(nullptr)
 {
 	if (parent->IsArray())
 	{
@@ -21,7 +21,7 @@ CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share
 }
 
 CompilerElementValue::CompilerElementValue(CompilerModule* compilerModule, Share<CompilerValue> parent, const STDString& elementName)
-	: CompilerValue(compilerModule, HazeVariableType::GetDynamicClassUnknowType(), HazeVariableScope::Local, HazeDataDesc::Element, 0),
+	: CompilerValue(compilerModule, HazeVariableType::GetDynamicClassUnknowType(), /*HazeVariableScope::Local,*/ HazeDataDesc::Element, 0),
 	m_Parent(parent), m_Element(nullptr), m_ElementName(MakeUnique<STDString>(elementName))
 {
 

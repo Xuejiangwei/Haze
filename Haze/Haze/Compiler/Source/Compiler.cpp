@@ -27,8 +27,8 @@ Compiler::Compiler(HazeVM* vm) : m_VM(vm), m_MarkError(false), m_MarkNewCode(fal
 	m_CompilerSymbol = MakeUnique<CompilerSymbol>(this);
 
 	m_GlobalRegisters = {
-		CreateVariable(nullptr, HAZE_VAR_TYPE(HazeValueType::Void), HazeVariableScope::Global, HazeDataDesc::RegisterRet, 0),
-		CreateVariable(nullptr, HAZE_VAR_TYPE(HazeValueType::Void), HazeVariableScope::Global, HazeDataDesc::RegisterCmp, 0),
+		CreateVariable(nullptr, HAZE_VAR_TYPE(HazeValueType::Void), /*HazeVariableScope::Global,*/ HazeDataDesc::RegisterRet, 0),
+		CreateVariable(nullptr, HAZE_VAR_TYPE(HazeValueType::Void), /*HazeVariableScope::Global,*/ HazeDataDesc::RegisterCmp, 0),
 	};
 }
 
@@ -610,7 +610,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_BoolConstantValues[s_Value.Value.Bool] = ret;
 			SET_VAR_VALUE(Bool);
 		}
@@ -622,7 +622,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Int8_ConstantValues[s_Value.Value.Int8] = ret;
 			SET_VAR_VALUE(Int8);
 		}
@@ -634,7 +634,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_UInt8_ConstantValues[s_Value.Value.UInt8] = ret;
 			SET_VAR_VALUE(UInt8);
 		}
@@ -646,7 +646,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Int16_ConstantValues[s_Value.Value.Int16] = ret;
 			SET_VAR_VALUE(Int16);
 		}
@@ -658,7 +658,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_UInt16_ConstantValues[s_Value.Value.UInt16] = ret;
 			SET_VAR_VALUE(UInt16);
 		}
@@ -670,7 +670,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Int32_ConstantValues[s_Value.Value.Int32] = ret;
 			SET_VAR_VALUE(Int32);
 		}
@@ -682,7 +682,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_UInt32_ConstantValues[s_Value.Value.UInt32] = ret;
 			SET_VAR_VALUE(UInt32);
 		}
@@ -694,7 +694,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Int64_ConstantValues[s_Value.Value.Int64] = ret;
 			SET_VAR_VALUE(Int64);
 		}
@@ -706,7 +706,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_UInt64_ConstantValues[s_Value.Value.UInt64] = ret;
 			SET_VAR_VALUE(UInt64);
 		}
@@ -718,7 +718,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType, /*HazeVariableScope::Global,*/ HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Float32_ConstantValues[s_Value.Value.Float32] = ret;
 			SET_VAR_VALUE(Float32);
 		}
@@ -730,7 +730,7 @@ Share<CompilerValue> Compiler::GenConstantValue(HazeValueType type, const HazeVa
 			{
 				return it->second;
 			}
-			ret = CreateVariable(nullptr, s_DefineVariableType, HazeVariableScope::Global, HazeDataDesc::ConstantValue, 0, nullptr, {});
+			ret = CreateVariable(nullptr, s_DefineVariableType,/* HazeVariableScope::Global, */HazeDataDesc::ConstantValue, 0, nullptr, {});
 			m_Float64_ConstantValues[s_Value.Value.Float64] = ret;
 			SET_VAR_VALUE(Float64);
 		}
@@ -800,7 +800,7 @@ Share<CompilerValue> Compiler::GenConstantValueBool(bool isTrue)
 Share<CompilerValue> Compiler::GetNullPtr()
 {
 	// UInt64类型可以是class的stronger
-	static auto s_Null = CreateVariable(nullptr, HazeVariableType(HazeValueType::UInt64), HazeVariableScope::Global, HazeDataDesc::NullPtr, 0);
+	static auto s_Null = CreateVariable(nullptr, HazeVariableType(HazeValueType::UInt64), /*HazeVariableScope::Global,*/ HazeDataDesc::NullPtr, 0);
 	return s_Null;
 }
 
@@ -1000,7 +1000,7 @@ Share<CompilerValue> Compiler::CreateGlobalVariable(Unique<CompilerModule>& comp
 Share<CompilerValue> Compiler::CreateClassVariable(CompilerModule* compilerModule, const HazeVariableType& type,
 	Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
-	return CreateVariable(compilerModule, type, HazeVariableScope::None, HazeDataDesc::Class, 0, refValue, params);
+	return CreateVariable(compilerModule, type, /*HazeVariableScope::None,*/ HazeDataDesc::Class, 0, refValue, params);
 }
 
 Share<CompilerValue> Compiler::CreateRet(Share<CompilerValue> value)
@@ -1196,7 +1196,7 @@ Share<CompilerValue> Compiler::CreateSetAdvanceElement(Share<CompilerElementValu
 				{ assignValue, GetConstantValueUint64(DynamicCast<CompilerClassValue>(element->GetParent())->GetMemberIndex(element->GetElement().get())) }, element->GetParent());
 		case HazeValueType::DynamicClass:
 		{
-			auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), HazeVariableScope::Local, HazeDataDesc::None, 0);
+			auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
 			prueStr->SetPureString(element->GetElementName());
 			return CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, { assignValue, prueStr }, element->GetParent());
 		}
@@ -1294,7 +1294,7 @@ Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classVa
 
 Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> dynamicClassValue, const STDString& memberName)
 {
-	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), HazeVariableScope::Local, HazeDataDesc::None, 0);
+	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
 	prueStr->SetPureString(&memberName);
 	V_Array<Share<CompilerValue>> params = { prueStr };
 
@@ -1308,7 +1308,7 @@ Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> 
 
 Share<CompilerValue> Compiler::CreateSetDynamicClassMember(Share<CompilerValue> classValue, const STDString& memberName, Share<CompilerValue> assignValue)
 {
-	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), HazeVariableScope::Local, HazeDataDesc::None, 0);
+	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local, */HazeDataDesc::Variable_Local, 0);
 	prueStr->SetPureString(&memberName);
 	V_Array<Share<CompilerValue>> params = { assignValue, prueStr };
 
@@ -1322,7 +1322,7 @@ Share<CompilerValue> Compiler::CreateSetDynamicClassMember(Share<CompilerValue> 
 
 Share<CompilerValue> Compiler::CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const STDString& functionName, const V_Array<Share<CompilerValue>>& params)
 {
-	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), HazeVariableScope::Local, HazeDataDesc::None, 0);
+	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
 	prueStr->SetPureString(&functionName);
 	const_cast<V_Array<Share<CompilerValue>>&>(params).push_back(prueStr);
 
@@ -1377,9 +1377,13 @@ Share<CompilerValue> Compiler::CreatePointerToFunction(Share<CompilerFunction> f
 {
 	STDString tempFunctionName = function->GetRealName();
 	auto tempPointer = GetTempRegister(HAZE_VAR_TYPE(HazeValueType::Function));
-	tempPointer->SetScope(HazeVariableScope::Ignore);
-	tempPointer->SetDataDesc(HazeDataDesc::FunctionAddress);
+
+
+	//tempPointer->SetScope(HazeVariableScope::Ignore);
+	tempPointer->SetDataDesc(HazeDataDesc::Function_Normal);
 	tempPointer->SetPointerFunctionName(&function->GetName());
+
+	COMPILER_ERR_MODULE_W("暂不支持函数指针", this, GetCurrModuleName().c_str());
 
 	return CreateLea(pointer, tempPointer);
 }

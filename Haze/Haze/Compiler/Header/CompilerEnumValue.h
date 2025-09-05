@@ -13,7 +13,7 @@ public:
 	explicit CompilerEnumValue(CompilerEnum* owner, Share<CompilerValue> value);
 
 	// 变量创建
-	explicit CompilerEnumValue(CompilerEnum* owner, CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope,
+	explicit CompilerEnumValue(CompilerEnum* owner, CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/
 		HazeDataDesc desc, int count, Share<CompilerValue> assignValue = nullptr);
 
 	virtual ~CompilerEnumValue() override;

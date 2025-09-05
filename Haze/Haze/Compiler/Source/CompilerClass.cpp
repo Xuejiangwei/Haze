@@ -393,19 +393,19 @@ x_uint32 CompilerClass::GetOffset(x_uint32 index, Share<CompilerValue> member)
 	return index * member->GetSize();
 }
 
-V_Array<Share<CompilerValue>> CompilerClass::CreateVariableCopyClassMember(CompilerModule* compilerModule, HazeVariableScope scope)
+V_Array<Share<CompilerValue>> CompilerClass::CreateVariableCopyClassMember(CompilerModule* compilerModule/*, HazeVariableScope scope*/)
 {
 	V_Array<Share<CompilerValue>> members;
 	for (x_uint64 i = 0; i < m_ParentClass.size(); i++)
 	{
-		auto m = m_ParentClass[i]->CreateVariableCopyClassMember(compilerModule, scope);
+		auto m = m_ParentClass[i]->CreateVariableCopyClassMember(compilerModule/*, scope*/);
 		members.insert(members.end(), m.begin(), m.end());
 	}
 
 	members.reserve(members.size() + m_Data.size());
 	for (auto& it : m_Data)
 	{
-		members.push_back(CreateVariableCopyVar(compilerModule, scope, it.second));
+		members.push_back(CreateVariableCopyVar(compilerModule,/* scope, */it.second));
 	}
 
 	return members;

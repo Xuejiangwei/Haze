@@ -3,13 +3,13 @@
 #include "CompilerEnum.h"
 
 CompilerEnumValue::CompilerEnumValue(CompilerEnum* owner, Share<CompilerValue> value)
-	: m_OwnerEnum(owner), CompilerValue(nullptr, HazeVariableType(HazeValueType::Enum, owner->GetTypeId()), value->GetVariableScope(), value->GetVariableDesc(), 0, value)
+	: m_OwnerEnum(owner), CompilerValue(nullptr, HazeVariableType(HazeValueType::Enum, owner->GetTypeId()), /*value->GetVariableScope(),*/ value->GetVariableDesc(), 0, value)
 {
 }
 
-CompilerEnumValue::CompilerEnumValue(CompilerEnum* owner, CompilerModule* compilerModule, const HazeVariableType& defineType,
-	HazeVariableScope scope, HazeDataDesc desc, int count, Share<CompilerValue> assignValue)
-	: m_OwnerEnum(owner), CompilerValue(compilerModule, defineType, scope, desc, count, assignValue)
+CompilerEnumValue::CompilerEnumValue(CompilerEnum* owner, CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/
+	HazeDataDesc desc, int count, Share<CompilerValue> assignValue)
+	: m_OwnerEnum(owner), CompilerValue(compilerModule, defineType, /*scope,*/ desc, count, assignValue)
 {
 }
 

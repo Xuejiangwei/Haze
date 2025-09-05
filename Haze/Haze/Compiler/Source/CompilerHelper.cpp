@@ -97,10 +97,10 @@ void HazeCompilerStream(HAZE_STRING_STREAM& hss, Share<CompilerValue> value, boo
 
 Share<CompilerValue> CreateAstTempVariable(CompilerModule* compilerModule, const HazeVariableType& type)
 {
-	return MakeShare<CompilerValue>(compilerModule, type, HazeVariableScope::Ignore, HazeDataDesc::None, 0);
+	return MakeShare<CompilerValue>(compilerModule, type, /*HazeVariableScope::Ignore,*/ HazeDataDesc::Ignore, 0);
 }
 
-Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeVariableType& type, HazeVariableScope scope, 
+Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const HazeVariableType& type,/* HazeVariableScope scope, */
 	HazeDataDesc desc, int count, Share<CompilerValue> assignValue, TemplateDefineTypes* params)
 {
 	switch (type.BaseType)
@@ -121,31 +121,31 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		case HazeValueType::DynamicClass:
 		case HazeValueType::DynamicClassUnknow:
 		case HazeValueType::Address:
-			return MakeShare<CompilerValue>(compilerModule, type, scope, desc, count, assignValue);
+			return MakeShare<CompilerValue>(compilerModule, type, /*scope,*/ desc, count, assignValue);
 		case HazeValueType::Array:
-			return MakeShare<CompilerArrayValue>(compilerModule, type, scope, desc, count);
+			return MakeShare<CompilerArrayValue>(compilerModule, type, /*scope,*/ desc, count);
 		case HazeValueType::Refrence:
-			return MakeShare<CompilerRefValue>(compilerModule, type, scope, desc, count, assignValue);
+			return MakeShare<CompilerRefValue>(compilerModule, type, /*scope,*/ desc, count, assignValue);
 		case HazeValueType::Function:
-			return MakeShare<CompilerPointerFunction>(compilerModule, type, scope, desc, count, params);
+			return MakeShare<CompilerPointerFunction>(compilerModule, type, /*scope,*/ desc, count, params);
 		case HazeValueType::String:
-			return MakeShare<CompilerStringValue>(compilerModule, type, scope, desc, count);
+			return MakeShare<CompilerStringValue>(compilerModule, type,/* scope,*/ desc, count);
 		case HazeValueType::Class:
 		{
-			return MakeShare<CompilerClassValue>(compilerModule, type, scope, desc, count);
+			return MakeShare<CompilerClassValue>(compilerModule, type, /*scope,*/ desc, count);
 		}
 		case HazeValueType::Enum:
 		{
 			
 			auto enumValue = compilerModule->GetEnum(compilerModule, type.TypeId).get();
-			return MakeShare<CompilerEnumValue>(enumValue, compilerModule, type, scope, desc, count, assignValue);
+			return MakeShare<CompilerEnumValue>(enumValue, compilerModule, type, /*scope,*/ desc, count, assignValue);
 		}
 		case HazeValueType::ObjectBase:
-			return MakeShare<CompilerObjectBaseValue>(compilerModule, type, scope, desc, count);
+			return MakeShare<CompilerObjectBaseValue>(compilerModule, type, /*scope,*/ desc, count);
 		case HazeValueType::Hash:
-			return MakeShare<CompilerHashValue>(compilerModule, type, scope, desc, count);
+			return MakeShare<CompilerHashValue>(compilerModule, type, /*scope,*/ desc, count);
 		case HazeValueType::Closure:
-			return MakeShare<CompilerClosureValue>(compilerModule, type, scope, desc, count, params);
+			return MakeShare<CompilerClosureValue>(compilerModule, type, /*scope,*/ desc, count, params);
 		default:
 			COMPILER_ERR_MODULE_W("不能创建<%s>类型的变量", compilerModule->GetCompiler(), compilerModule->GetName().c_str(), compilerModule->GetCompiler()->GetCompilerSymbol()->GetSymbolByTypeId(type.TypeId)->c_str());
 			break;
@@ -154,15 +154,15 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 	return nullptr;
 }
 
-Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeVariableType& type, HazeVariableScope scope,
+Share<CompilerValue> CreateVariable(CompilerModule* compilerModule, const HazeVariableType& type, /*HazeVariableScope scope,*/
 	HazeDataDesc desc, int count, Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
-	return CreateVariableImpl(compilerModule, type, scope, desc, count, refValue, params);
+	return CreateVariableImpl(compilerModule, type, /*scope,*/ desc, count, refValue, params);
 }
 
-Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule, HazeVariableScope scope, Share<CompilerValue> var)
+Share<CompilerValue> CreateVariableCopyVar(CompilerModule* compilerModule,/* HazeVariableScope scope,*/ Share<CompilerValue> var)
 {
-	return CreateVariableImpl(compilerModule, var->GetVariableType(), scope, var->GetVariableDesc(), 0, var,
+	return CreateVariableImpl(compilerModule, var->GetVariableType(), /*scope,*/ var->GetVariableDesc(), 0, var,
 		/*var->IsFunction() ? &const_cast<V_Array<HazeDefineType>&>(DynamicCast<CompilerPointerFunction>(var)->GetParamTypes()) : */nullptr);
 }
 
@@ -297,7 +297,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 		return;
 	}
 
-	hss << INT_VAR_SCOPE(value->GetVariableScope()) << " " << CAST_DESC(value->GetVariableDesc()) << " " << CAST_TYPE(value->GetBaseType()) << " ";
+	hss << /*INT_VAR_SCOPE(value->GetVariableScope()) << " " <<*/ CAST_DESC(value->GetVariableDesc()) << " " << CAST_TYPE(value->GetBaseType()) << " ";
 	//value->GetVariableType().StringStreamTo(hss);
 
 	if (value->IsConstant())
@@ -526,7 +526,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			}
 			else
 			{
-				GenIRCode(hss, InstructionOpCode::RET, HazeVariableScope::None, HazeDataDesc::None, HazeValueType::Void, 0);
+				GenIRCode(hss, InstructionOpCode::RET, /*HazeVariableScope::None, */HazeDataDesc::None, HazeValueType::Void, 0);
 			}
 		}
 			break;
@@ -537,9 +537,9 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	hss << HAZE_ENDL;
 }
 
-void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, HazeVariableScope scope, HazeDataDesc desc, HazeValueType type, InstructionOpId id)
+void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, /*HazeVariableScope scope,*/ HazeDataDesc desc, HazeValueType type, InstructionOpId id)
 {
-	hss << GetInstructionString(opCode) << " " << INT_VAR_SCOPE(scope) << " " << CAST_DESC(desc) << " " << CAST_TYPE(type) << " ";
+	hss << GetInstructionString(opCode) << " " /*<< INT_VAR_SCOPE(scope) << " "*/ << CAST_DESC(desc) << " " << CAST_TYPE(type) << " ";
 
 	if (IsConstDesc(desc))
 	{
@@ -619,9 +619,9 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			hss << GetInstructionString(InstructionOpCode::CALL) << " ";
 			if (function)
 			{
-				auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::FunctionDynamicAddress : HazeDataDesc::FunctionAddress;
-				auto id = m->GetCompiler()->GetCompilerSymbol()->GetFunctionId(desc == HazeDataDesc::FunctionDynamicAddress ? function->GetName() : function->GetRealName());
-				hss << id << " " << CAST_TYPE(HazeValueType::None) << " " << INT_VAR_SCOPE(HazeVariableScope::Ignore) << " " <<
+				auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::Function_Virtual : HazeDataDesc::Function_Normal;
+				auto id = m->GetCompiler()->GetCompilerSymbol()->GetFunctionId(desc == HazeDataDesc::Function_Virtual ? function->GetName() : function->GetRealName());
+				hss << id << " " << CAST_TYPE(HazeValueType::None) << " " << //INT_VAR_SCOPE(HazeVariableScope::Ignore) << " " <<
 					CAST_DESC(desc) << " " << paramCount << " " << paramSize << HAZE_ENDL;/*<< " " << function->GetModule()->GetName() << " "
 					<< CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;*/
 			}
@@ -638,7 +638,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 				}
 
 				hss << opId.Id << " " << CAST_TYPE(HazeValueType::Function) << " "
-					<< INT_VAR_SCOPE(pointerFunction->GetVariableScope()) << " " << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
+					/*<< INT_VAR_SCOPE(pointerFunction->GetVariableScope()) << " "*/ << CAST_DESC(pointerFunction->GetVariableDesc()) << " " << paramCount
 					<< " " << paramSize << HAZE_ENDL;//<< " " << m->GetName() << " " << CAST_DESC(HazeDataDesc::CallFunctionModule) << HAZE_ENDL;
 			}
 			else
@@ -653,7 +653,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 					}
 				}
 
-				hss << opId.Id << " " << CAST_TYPE(HazeValueType::ObjectFunction) << " " << INT_VAR_SCOPE(advancePointerTo->GetVariableScope()) << " "
+				hss << opId.Id << " " << CAST_TYPE(HazeValueType::ObjectFunction) << " " //<< INT_VAR_SCOPE(advancePointerTo->GetVariableScope()) << " "
 					<< CAST_DESC(advancePointerTo->GetVariableDesc()) << " " << paramCount << " "// << paramSize << " " << m->GetName() << " " 
 					<< advanceFuncIndex << HAZE_ENDL;
 			}

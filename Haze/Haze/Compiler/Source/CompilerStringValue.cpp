@@ -5,8 +5,8 @@
 #include "HazeLog.h"
 
 CompilerStringValue::CompilerStringValue(CompilerModule* compilerModule, const HazeVariableType& defineType,
-	HazeVariableScope scope, HazeDataDesc desc, int count)
-	: CompilerValue(compilerModule, defineType, scope, desc, count), m_PureString(nullptr)
+	/*HazeVariableScope scope,*/ HazeDataDesc desc, int count)
+	: CompilerValue(compilerModule, defineType, /*scope,*/ desc, count), m_PureString(nullptr)
 {
 }
 

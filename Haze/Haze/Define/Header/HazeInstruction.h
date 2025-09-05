@@ -1,25 +1,33 @@
 #pragma once
 
-#define INT_VAR_SCOPE(V) (x_uint32)V
-#define IS_SCOPE_GLOBAL(V) V == HazeVariableScope::Global
-#define IS_SCOPE_LOCAL(V) V == HazeVariableScope::Local
-#define IS_SCOPE_IGNORE(V) V == HazeVariableScope::Ignore
-enum class HazeVariableScope : x_uint32
-{
-	None,
-	Global,
-	Local,
-	Static,
-
-	Ignore,		
-};
+#define INT_VAR_SCOPE(V) 
+//(x_uint32)V
+#define IS_SCOPE_GLOBAL(V)
+//V == HazeVariableScope::Global
+#define IS_SCOPE_LOCAL(V)
+//V == HazeVariableScope::Local
+#define IS_SCOPE_IGNORE(V)
+//V == HazeVariableScope::Ignore
+//enum class HazeVariableScope : x_uint32
+//{
+//	None,
+//
+//	Global,
+//	
+//	Local,
+//
+//	Ignore,
+//};
 
 #define CAST_DESC(V) (x_uint32)V
 enum class HazeDataDesc : x_uint32
 {
 	None,
-	/*Global,
-	Local,*/
+
+	Ignore,
+
+	Variable_Global,
+	Variable_Local,
 
 	ConstantValue,
 	ConstantString,
@@ -32,9 +40,10 @@ enum class HazeDataDesc : x_uint32
 	RegisterEnd,
 
 	Address,
-	FunctionAddress,
-	FunctionDynamicAddress,
-	FunctionObjectAddress,
+
+	Function_Normal,
+	Function_Virtual,
+	//Function_Object,
 
 	Element,
 
@@ -134,7 +143,7 @@ struct InstructionData
 {
 	//HazeDefineVariable Variable;
 
-	HazeVariableScope Scope;
+	//HazeVariableScope Scope;
 	HazeDataDesc Desc;
 	HazeValueType Type;
 	x_uint64 VariableIndexOrId;
@@ -291,6 +300,9 @@ bool IsRegisterDesc(HazeDataDesc desc);
 bool IsConstDesc(HazeDataDesc desc);
 bool IsConstStringDesc(HazeDataDesc desc);
 bool IsClassMember(HazeDataDesc desc);
+
+bool IsGlobalDesc(HazeDataDesc desc);
+bool IsLocalDesc(HazeDataDesc desc);
 
 bool IsJmpOpCode(InstructionOpCode code);
 bool IsArithmeticOpCode(InstructionOpCode opcode);

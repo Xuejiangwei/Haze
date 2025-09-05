@@ -5,7 +5,7 @@
 class CompilerHashValue : public CompilerValue
 {
 public:
-	explicit CompilerHashValue(CompilerModule* compilerModule, const HazeVariableType& defineType, HazeVariableScope scope, HazeDataDesc desc, int count);
+	explicit CompilerHashValue(CompilerModule* compilerModule, const HazeVariableType& defineType, /*HazeVariableScope scope,*/ HazeDataDesc desc, int count);
 
 	virtual ~CompilerHashValue() override;
 

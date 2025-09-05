@@ -15,7 +15,7 @@ public:
 
 	CompilerBlock& operator=(const CompilerBlock&) = delete;
 
-	Share<CompilerValue> CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, HazeVariableScope scope,
+	Share<CompilerValue> CreateAlloce(const HazeDefineVariable& defineVar, int line, int count, /*HazeVariableScope scope,*/ HazeDataDesc desc,
 		Share<CompilerValue> refValue = nullptr, TemplateDefineTypes* Params = nullptr);
 
 	Share<CompilerBlock> GetShared() { return shared_from_this(); }

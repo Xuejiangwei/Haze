@@ -75,13 +75,13 @@ Share<CompilerValue> CompilerFunction::GetParamVariableLeftToRight(x_uint32 inde
 
 Share<CompilerValue> CompilerFunction::CreateGlobalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue, TemplateDefineTypes* params)
 {
-	return m_EntryBlock->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Global, refValue, params);
+	return m_EntryBlock->CreateAlloce(variable, line, ++m_CurrVariableCount, /*HazeVariableScope::Global,*/ HazeDataDesc::Variable_Global, refValue, params);
 }
 
 Share<CompilerValue> CompilerFunction::CreateLocalVariable(const HazeDefineVariable& variable, int line, Share<CompilerValue> refValue)
 {
 	auto block = m_Module->GetCompiler()->GetInsertBlock();
-	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, HazeVariableScope::Local, refValue);
+	return block->CreateAlloce(variable, line, ++m_CurrVariableCount, /*HazeVariableScope::Local,*/HazeDataDesc::Variable_Local, refValue);
 }
 
 void CompilerFunction::PushDefaultParam(x_uint64 pushCount)
@@ -146,7 +146,7 @@ Share<CompilerValue> CompilerFunction::CreateTempRegister(const HazeVariableType
 			HAZE_LOG_ERR_W("创建错误类型的临时变量\n");
 			break;
 		default:
-			v = CreateVariable(m_Module, type, HazeVariableScope::Local, HazeDataDesc::RegisterTemp, 0);
+			v = CreateVariable(m_Module, type, /*HazeVariableScope::Local, */HazeDataDesc::RegisterTemp, 0);
 			break;
 	}
 
@@ -591,6 +591,6 @@ Share<CompilerClassValue> CompilerFunction::GetThisLocalVariable()
 void CompilerFunction::AddFunctionParam(const HazeDefineVariable& variable)
 {
 	//m_Module->BeginCreateFunctionParamVariable();
-	m_Params.push_back({ variable.Name.data(), CreateVariable(m_Module, variable.Type, HazeVariableScope::Local, HazeDataDesc::None, 0), nullptr});
+	m_Params.push_back({ variable.Name.data(), CreateVariable(m_Module, variable.Type, /*HazeVariableScope::Local, */HazeDataDesc::Variable_Local, 0), nullptr});
 	//m_Module->EndCreateFunctionParamVariable();
 }

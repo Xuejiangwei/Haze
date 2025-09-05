@@ -25,7 +25,7 @@ static bool IsIgnoreFindAddressInsCode(ModuleUnit::FunctionInstruction& ins)
 	}
 
 	if (ins.InsCode == InstructionOpCode::CALL && ins.Operator[0].Type == HazeValueType::Function &&
-		(ins.Operator[0].Desc == HazeDataDesc::RegisterTemp || ins.Operator[0].Scope == HazeVariableScope::Ignore))
+		(ins.Operator[0].Desc == HazeDataDesc::RegisterTemp || ins.Operator[0].Desc == HazeDataDesc::Ignore))
 	{
 		return true;
 	}
@@ -704,8 +704,7 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 {
 	static STDString s_Str;
 
-	//GetNextLexmeAssign_HazeString(data.Variable.Name);
-	GetNextLexmeAssign_CustomType<x_uint32>(data.Scope);
+	//GetNextLexmeAssign_CustomType<x_uint32>(data.Scope);
 	GetNextLexmeAssign_CustomType<x_uint32>(data.Desc);
 	GetNextLexmeAssign_CustomType<x_uint32>(data.Type);
 	//data.Variable.Type.StringStream<BackendParse>(this, &BackendParse::GetNextLexmeAssign_CustomType<x_uint32>);
@@ -795,7 +794,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			//if (IsFunctionType(operatorOne.Variable.Type.BaseType))
 			{
-				GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Scope);
+				//GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Scope);
 				GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Desc);
 
 				GetNextLexmeAssign_CustomType<int>(operatorOne.Extra.Call.ParamNum);
@@ -1019,11 +1018,13 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 				{
 					if (!IsIgnoreFindAddress(operatorData))
 					{
-						if (IS_SCOPE_LOCAL(operatorData.Scope))
+						//if (IS_SCOPE_LOCAL(operatorData.Scope))
+						if (IsLocalDesc(operatorData.Desc))
 						{
 							ResetLocalOperatorAddress(operatorData, m_CurrFunction, localVariables, tempRegisters);
 						}
-						else if (IS_SCOPE_GLOBAL(operatorData.Scope))
+						//else if (IS_SCOPE_GLOBAL(operatorData.Scope))
+						else if (IsGlobalDesc(operatorData.Desc))
 						{
 							ResetGlobalOperatorAddress(operatorData, newGlobalDataTable);
 						}
@@ -1039,13 +1040,14 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 						//		HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
 						//	}
 						//}
-						else if (IS_SCOPE_IGNORE(operatorData.Scope))
+						//else if (IS_SCOPE_IGNORE(operatorData.Scope))
+						else if (operatorData.Desc == HazeDataDesc::Ignore)
 						{
-							if (operatorData.Desc == HazeDataDesc::FunctionAddress)
+							if (operatorData.Desc == HazeDataDesc::Function_Normal)
 							{
 								operatorData.AddressType = InstructionAddressType::FunctionAddress;
 							}
-							else if (operatorData.Desc == HazeDataDesc::FunctionDynamicAddress)
+							else if (operatorData.Desc == HazeDataDesc::Function_Virtual)
 							{
 								operatorData.AddressType = InstructionAddressType::FunctionDynamicAddress;
 							}

@@ -5,8 +5,8 @@
 #include "HazeLogDefine.h"
 
 CompilerPointerFunction::CompilerPointerFunction(CompilerModule* compilerModule, const HazeVariableType& defineType,
-	HazeVariableScope scope, HazeDataDesc desc, int count, TemplateDefineTypes* paramTypes)
-	: CompilerValue(compilerModule, defineType, scope, desc, count), m_OwnerClass(nullptr)
+	/*HazeVariableScope scope,*/ HazeDataDesc desc, int count, TemplateDefineTypes* paramTypes)
+	: CompilerValue(compilerModule, defineType, /*scope,*/ desc, count), m_OwnerClass(nullptr)
 {
 	if (paramTypes)
 	{

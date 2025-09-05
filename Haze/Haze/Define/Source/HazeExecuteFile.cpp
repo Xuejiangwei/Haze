@@ -471,8 +471,8 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 
 	for (auto& iter : instruction.Operator)
 	{
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Scope));										//操作数作用域
-		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Desc));											//操作数数据描述
+		//m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Scope));										//操作数作用域
+		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Desc));										//操作数数据描述
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.Type));
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.VariableIndexOrId));
 		m_FileStream->write(HAZE_WRITE_AND_SIZE(iter.AddressType));									//操作数取址类型
@@ -847,7 +847,7 @@ void HazeExecuteFile::ReadInstruction(HazeVM* vm, Instruction& instruction)
 
 	for (auto& iter : instruction.Operator)
 	{
-		m_InFileStream->read(HAZE_READ(iter.Scope));
+		//m_InFileStream->read(HAZE_READ(iter.Scope));
 		m_InFileStream->read(HAZE_READ(iter.Desc));
 		m_InFileStream->read(HAZE_READ(iter.Type));
 		m_InFileStream->read(HAZE_READ(iter.VariableIndexOrId));

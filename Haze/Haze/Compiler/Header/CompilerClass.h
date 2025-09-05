@@ -65,7 +65,7 @@ public:
 
 	//int GetClassInheritLevel() const;
 
-	V_Array<Share<CompilerValue>> CreateVariableCopyClassMember(CompilerModule* compilerModule, HazeVariableScope scope);
+	V_Array<Share<CompilerValue>> CreateVariableCopyClassMember(CompilerModule* compilerModule/*, HazeVariableScope scope*/);
 
 	bool IsParentClass(CompilerClass* c) const;
 
