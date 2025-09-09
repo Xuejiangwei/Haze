@@ -74,7 +74,7 @@ static bool IsIgnoreFindAddress(InstructionData& operatorData)
 		return true;
 	}*/
 
-	if (IsRegisterDesc(operatorData.Desc) && operatorData.Desc != HazeDataDesc::RegisterTemp)
+	if (IsGlobalRegisterDesc(operatorData.Desc))
 	{
 		operatorData.AddressType = InstructionAddressType::Register;
 		return true;
@@ -1018,49 +1018,23 @@ void BackendParse::FindAddress(ModuleUnit::GlobalDataTable& newGlobalDataTable,
 				{
 					if (!IsIgnoreFindAddress(operatorData))
 					{
-						//if (IS_SCOPE_LOCAL(operatorData.Scope))
 						if (IsLocalDesc(operatorData.Desc))
 						{
 							ResetLocalOperatorAddress(operatorData, m_CurrFunction, localVariables, tempRegisters);
 						}
-						//else if (IS_SCOPE_GLOBAL(operatorData.Scope))
 						else if (IsGlobalDesc(operatorData.Desc))
 						{
 							ResetGlobalOperatorAddress(operatorData, newGlobalDataTable);
 						}
-						//else if (IS_SCOPE_TEMP(operatorData.Scope))
-						//{
-						//	/*if (operatorData.Desc == HazeDataDesc::FunctionAddress)
-						//	{
-						//		operatorData.AddressType = InstructionAddressType::FunctionAddress;
-						//	}
-						//	else*/
-						//	{
-						//		operatorData.AddressType = InstructionAddressType::Register;
-						//		HAZE_LOG_ERR_W("寻找临时变量<%s>的地址失败!\n", operatorData.Variable.Name.c_str());
-						//	}
-						//}
-						//else if (IS_SCOPE_IGNORE(operatorData.Scope))
-						else if (operatorData.Desc == HazeDataDesc::Ignore)
+						else if (operatorData.Desc == HazeDataDesc::Function_Normal)
 						{
-							if (operatorData.Desc == HazeDataDesc::Function_Normal)
-							{
-								operatorData.AddressType = InstructionAddressType::FunctionAddress;
-							}
-							else if (operatorData.Desc == HazeDataDesc::Function_Virtual)
-							{
-								operatorData.AddressType = InstructionAddressType::FunctionDynamicAddress;
-							}
-							/*else if (operatorData.Desc == HazeDataDesc::FunctionObjectAddress)
-							{
-								operatorData.AddressType = InstructionAddressType::FunctionObjectAddress;
-							}*/
-							else
-							{
-								HAZE_LOG_ERR_W("寻找忽略变量的地址失败!\n");
-							}
+							operatorData.AddressType = InstructionAddressType::FunctionAddress;
 						}
-						else
+						else if (operatorData.Desc == HazeDataDesc::Function_Virtual)
+						{
+							operatorData.AddressType = InstructionAddressType::FunctionDynamicAddress;
+						}
+						else if(operatorData.Desc != HazeDataDesc::Ignore)
 						{
 							HAZE_LOG_ERR_W("寻找变量的地址失败!\n");
 						}

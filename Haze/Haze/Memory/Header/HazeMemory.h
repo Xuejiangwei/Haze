@@ -7,11 +7,7 @@
 //https://zhuanlan.zhihu.com/p/41398507
 
 #include "GCObjectList.h"
-
-#define MAX_HAZE_ALLOC_SIZE 2048
-#define GRANULE 16
-#define PAGE_UNIT 4096
-#define PAGE_NUM 60
+#include "MemoryDefine.h"
 
 class HazeVM;
 class MemoryFreeList;
@@ -30,13 +26,13 @@ public:
 
 	static HazeMemory* GetMemory();
 
-	static Pair<void*, x_uint32> AllocaGCData(x_uint64 size, GC_ObjectType type);
+	static Pair<void*, x_uint32> Alloca(x_uint64 size, GC_ObjectType type);
+	static void Free(void* data, x_uint64 memorySize, x_uint32 gcIndex) { GetMemory()->Remove(data, memorySize, gcIndex); }
 
 	void SetVM(HazeVM* vm) { m_VM = vm; }
 
 	void AddToRoot(void*);
 
-	void Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex);
 
 	void Mark();
 
@@ -52,10 +48,16 @@ public:
 		Mark,
 		MarkEnd,
 		Sweep,
+		Arrange,
+		Finish,
 	};
 
 private:
-	static void* Alloca(x_uint64 size, GC_ObjectType type);
+	void* AllocaGCData(x_uint64 size, GC_ObjectType type);
+	
+	void Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex);
+
+	void TriggerArrange();
 
 	void ForceGC();
 
@@ -71,8 +73,8 @@ private:
 	x_uint64 m_MaxMarkTime;			//毫秒
 
 	Unique<MemoryFreeList> m_FreeList[MAX_HAZE_ALLOC_SIZE / GRANULE];
-	MemoryBlock* m_MemoryBlocks[PAGE_NUM];
-	HashMap<void*, Pair<GC_State, void*>> m_BigMemorys;
+	MemoryBlock* m_MemoryBlocks[MAX_HAZE_ALLOC_SIZE / GRANULE];
+	LessRBTreeMap<void*, Pair<GC_State, void*>> m_BigMemorys;
 
 	x_uint64 m_LastGCTime;
 	x_uint64 m_CurrMarkBaseIndex;

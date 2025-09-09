@@ -14,7 +14,7 @@ ObjectClass::ObjectClass(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
 	: GCObject(gcIndex)
 {
 	m_ClassInfo = vm->FindClass(typeId);
-	auto pair = HazeMemory::AllocaGCData(m_ClassInfo->Size, GC_ObjectType::ClassData);
+	auto pair = HAZE_MALLOC(m_ClassInfo->Size, GC_ObjectType::ClassData);
 	m_Data = pair.first;
 	m_DataGCIndex = pair.second;
 	//HAZE_LOG_INFO(H_TEXT("<%s><%p> <%p> Constructor\n"), m_ClassInfo->Name.c_str(), this, m_Data);
@@ -22,7 +22,7 @@ ObjectClass::ObjectClass(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
 
 ObjectClass::~ObjectClass()
 {
-	HazeMemory::GetMemory()->Remove(m_Data, m_ClassInfo->Size, m_DataGCIndex);
+	HAZE_FREE(m_Data, m_ClassInfo->Size, m_DataGCIndex);
 }
 
 AdvanceClassInfo* ObjectClass::GetAdvanceClassInfo()
@@ -48,7 +48,7 @@ bool ObjectClass::IsEqual(ObjectClass* obj1, ObjectClass* obj2)
 
 ObjectClass* ObjectClass::Create(HazeVM* vm, ClassData* classData)
 {
-	auto allocaData = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
+	auto allocaData = HAZE_MALLOC(sizeof(ObjectClass), GC_ObjectType::Class);
 	new(allocaData.first) ObjectClass(allocaData.second, vm, classData->TypeId);
 
 	auto constructor = vm->GetFunctionDataByName(GetHazeClassFunctionName(classData->Name, classData->Name));

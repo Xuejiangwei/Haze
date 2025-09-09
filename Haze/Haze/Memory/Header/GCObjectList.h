@@ -3,7 +3,7 @@
 enum class GC_State : x_uint8
 {
 	White,			//Garbage
-	Gray,			//UnCertain, no scan completed
+	//Gray,			//UnCertain, no scan completed
 	Black,			//Reserve
 };
 
@@ -56,6 +56,9 @@ public:
 
 	void MarkAllWhite();
 	void MarkObjectBlack(x_uint32 index);
+
+	bool IsBlack(x_uint32 index) const { return m_StateList[index].State == GC_State::Black; }
+	bool IsWhite(x_uint32 index) const { return m_StateList[index].State == GC_State::White; }
 
 private:
 	V_Array<ObjectCacheState> m_StateList;

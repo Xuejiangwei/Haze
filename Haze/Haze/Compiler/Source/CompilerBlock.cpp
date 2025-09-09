@@ -207,7 +207,7 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 		return nullptr;
 	}
 
-	desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
+	desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : desc;
 	//HazeDataDesc desc = defineVar.Name == TOKEN_THIS ? HazeDataDesc::ClassThis : HazeDataDesc::None;
 	Share<CompilerValue> allocaValue = CreateVariable(m_ParentFunction->GetModule(), defineVar.Type, /*scope,*/ desc, count, refValue, params);
 	m_Allocas.push_back({ STDString(defineVar.Name.c_str()), allocaValue });

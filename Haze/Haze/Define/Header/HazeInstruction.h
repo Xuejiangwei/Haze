@@ -297,6 +297,8 @@ struct HazeRegister
 //};
 
 bool IsRegisterDesc(HazeDataDesc desc);
+bool IsGlobalRegisterDesc(HazeDataDesc desc);
+
 bool IsConstDesc(HazeDataDesc desc);
 bool IsConstStringDesc(HazeDataDesc desc);
 bool IsClassMember(HazeDataDesc desc);

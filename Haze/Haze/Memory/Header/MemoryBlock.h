@@ -26,8 +26,9 @@ struct MemoryBlockInfo
 
 class MemoryBlock
 {
-public:
 	friend class HazeMemory;
+	friend class MemoryBlockIteration;
+public:
 
 	MemoryBlock(x_uint32 unitSize);
 
@@ -35,15 +36,15 @@ public:
 
 	void MarkBlack(void* address);
 
-	void MarkWrite(void* address);
+	void MarkWhite(void* address);
 
-	void MarkAllWrite();
+	void MarkAllWhite();
 
 	bool IsUsed() const { return m_BlockInfo.State == MemoryBlockState::Used; }
 
 	MemoryBlock* GetNext() { return m_BlockInfo.Next; }
 
-	void SetNext(MemoryBlock* block) { m_BlockInfo.Next = block; block->m_BlockInfo.Prev = this; }
+	void SetNext(MemoryBlock* block) { m_BlockInfo.Next = block; if(block) block->m_BlockInfo.Prev = this; }
 
 	bool IsInBlock(void* address);
 
@@ -52,6 +53,38 @@ public:
 	void Recycle();
 
 private:
-	char m_Memory[4096];
+	void StartArrangeFragment();
+
+	void MarkOnFreeListCount(void* address);
+
+	bool OnMarkFreeListEnd();
+
+	bool IsPendingArrange() const { return m_OnFreeListCount > 0; }
+
+	x_uint32 GetOnFreeListCount() const { return m_OnFreeListCount; }
+
+private:
+	x_uint32 m_OnFreeListCount;
+	char m_Memory[PAGE_UNIT];
 	MemoryBlockInfo m_BlockInfo;
+};
+
+class MemoryBlockIteration
+{
+public:
+	MemoryBlockIteration(MemoryBlock* block);
+	
+	~MemoryBlockIteration() {}
+
+	bool IsValid() const { return m_Block && m_Counter < m_Block->m_BlockInfo.MarkCount; }
+
+	MemoryBlockIteration& operator++();
+
+	MemoryBlockIteration& operator++(int) { return this->operator++(); }
+
+	void* GetAddress() { return m_Block->m_Memory + m_Counter * m_Block->m_BlockInfo.UnitSize; }
+
+private:
+	MemoryBlock* m_Block;
+	x_uint32 m_Counter;
 };

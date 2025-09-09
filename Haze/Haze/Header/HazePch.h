@@ -22,3 +22,5 @@
 
 #include "HazeHeader.h"
 #include "HazeLogDefine.h"
+
+#include "MemoryDefine.h"

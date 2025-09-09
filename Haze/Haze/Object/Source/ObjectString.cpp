@@ -28,7 +28,7 @@ ObjectString::ObjectString(x_uint32 gcIndex, const x_HChar* str, bool fixedCapac
 			}
 		}
 
-		auto pair = HazeMemory::AllocaGCData(GetCapacityByteSize(), GC_ObjectType::StringData);
+		auto pair = HAZE_MALLOC(GetCapacityByteSize(), GC_ObjectType::StringData);
 		m_Data = pair.first;
 		m_DataGCIndex = pair.second;
 		memcpy(m_Data, str, STR_LEN_SIZE(this));
@@ -37,7 +37,7 @@ ObjectString::ObjectString(x_uint32 gcIndex, const x_HChar* str, bool fixedCapac
 
 ObjectString::~ObjectString()
 {
-	HazeMemory::GetMemory()->Remove(m_Data, GetCapacityByteSize(), m_DataGCIndex);
+	HAZE_FREE(m_Data, GetCapacityByteSize(), m_DataGCIndex);
 }
 
 AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
@@ -56,7 +56,7 @@ bool ObjectString::IsEqual(ObjectString* obj1, ObjectString* obj2)
 
 ObjectString* ObjectString::Create(const x_HChar* str, bool fixedCapacity)
 {
-	auto allocaData = HazeMemory::AllocaGCData(sizeof(ObjectString), GC_ObjectType::String);
+	auto allocaData = HAZE_MALLOC(sizeof(ObjectString), GC_ObjectType::String);
 	return new(allocaData.first) ObjectString(allocaData.second, str, fixedCapacity);
 }
 
@@ -97,7 +97,7 @@ void ObjectString::Append(HAZE_OBJECT_CALL_PARAM)
 		thisStr->m_Length += str->m_Length;
 		thisStr->m_Capacity = thisStr->m_Length + 1;
 
-		auto pair = HazeMemory::AllocaGCData(thisStr->GetCapacityByteSize(), GC_ObjectType::StringData);
+		auto pair = HAZE_MALLOC(thisStr->GetCapacityByteSize(), GC_ObjectType::StringData);
 		memcpy(pair.first, thisStr->m_Data, oldLength* sizeof(x_HChar));
 		memcpy((x_HChar*)pair.first + oldLength, str->m_Data, STR_LEN_SIZE(str));
 		
@@ -123,7 +123,7 @@ void ObjectString::Format(HAZE_OBJECT_CALL_PARAM)
 		thisStr->m_Length = str.length();
 		thisStr->m_Capacity = thisStr->m_Length + 1;
 
-		auto pair = HazeMemory::AllocaGCData(thisStr->GetCapacityByteSize(), GC_ObjectType::StringData);
+		auto pair = HAZE_MALLOC(thisStr->GetCapacityByteSize(), GC_ObjectType::StringData);
 		memcpy(pair.first, str.c_str(), str.length() * sizeof(x_HChar));
 
 		thisStr->m_Data = pair.first;

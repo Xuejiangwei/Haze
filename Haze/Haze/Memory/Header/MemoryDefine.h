@@ -1,0 +1,18 @@
+
+#ifdef USE_MEMORY
+	#define HAZE_MALLOC(SIZE, TYPE) malloc(SIZE)
+	#define HAZE_FREE(ADDRESS, SIZE, INDEX) free(ADDRESS)
+#else
+	#define HAZE_MALLOC(SIZE, TYPE) HazeMemory::Alloca(SIZE, TYPE)
+	#define HAZE_FREE(ADDRESS, SIZE, INDEX) HazeMemory::Free(ADDRESS, SIZE, INDEX)
+#endif // HAZE_MEMORY
+
+
+#define MAX_HAZE_ALLOC_SIZE 2048
+#define GRANULE 16
+#define PAGE_UNIT 4096
+#define PAGE_NUM 60
+
+#define BUDDY_MIN_SIZE 16
+#define BUDDY_MAX_ORDER 8
+#define BUDDY_MAX_SIZE (BUDDY_MIN_SIZE << BUDDY_MAX_ORDER)

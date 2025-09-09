@@ -25,13 +25,13 @@ ObjectArray::ObjectArray(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId, x_uint64
 		m_Length = lengths[0];
 		m_Capacity = m_Length;
 
-		auto pair = HazeMemory::AllocaGCData(m_Length * sizeof(ObjectArray), GC_ObjectType::ArrayData);
+		auto pair = HAZE_MALLOC(m_Length * sizeof(ObjectArray), GC_ObjectType::ArrayData);
 		m_Data = pair.first;
 		m_DataGCIndex = pair.second;
 
 		for (x_uint64 i = 0; i < m_Length; i++)
 		{
-			pair = HazeMemory::HazeMemory::AllocaGCData(sizeof(ObjectArray), GC_ObjectType::Array);
+			pair = HAZE_MALLOC(sizeof(ObjectArray), GC_ObjectType::Array);
 
 			new((char*)pair.first) ObjectArray(pair.second, vm, m_ValueType.TypeId, lengths + 1);
 			((ObjectArray**)m_Data)[i] = (ObjectArray*)pair.first;
@@ -46,13 +46,13 @@ ObjectArray::ObjectArray(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId, x_uint64
 		{
 			m_Capacity = DEFAULT_CAPACITY;
 
-			auto pair = HazeMemory::AllocaGCData(m_Capacity * GetSizeByHazeType(m_ValueType.BaseType), GC_ObjectType::ArrayData);
+			auto pair = HAZE_MALLOC(m_Capacity * GetSizeByHazeType(m_ValueType.BaseType), GC_ObjectType::ArrayData);
 			m_Data = pair.first;
 			m_DataGCIndex = pair.second;
 		}
 		else
 		{
-			auto pair = HazeMemory::AllocaGCData(m_Length * GetSizeByHazeType(m_ValueType.BaseType), GC_ObjectType::ArrayData);
+			auto pair = HAZE_MALLOC(m_Length * GetSizeByHazeType(m_ValueType.BaseType), GC_ObjectType::ArrayData);
 			m_Data = pair.first;
 			m_DataGCIndex = pair.second;
 		}
@@ -63,11 +63,11 @@ ObjectArray::~ObjectArray()
 {
 	if (m_DimensionCount <= 1)
 	{
-		HazeMemory::GetMemory()->Remove(m_Data, m_Capacity * GetSizeByHazeType(m_ValueType.BaseType), m_DataGCIndex);
+		HAZE_FREE(m_Data, m_Capacity * GetSizeByHazeType(m_ValueType.BaseType), m_DataGCIndex);
 	}
 	else
 	{
-		HazeMemory::GetMemory()->Remove(m_Data, m_Capacity * sizeof(ObjectArray), m_DataGCIndex);
+		HAZE_FREE(m_Data, m_Capacity * sizeof(ObjectArray), m_DataGCIndex);
 	}
 }
 
@@ -135,7 +135,7 @@ void ObjectArray::Add(HAZE_OBJECT_CALL_PARAM)
 	{
 		arr->m_Capacity *= 2;
 
-		auto pair = HazeMemory::AllocaGCData(arr->m_Capacity * size, GC_ObjectType::ArrayData);
+		auto pair = HAZE_MALLOC(arr->m_Capacity * size, GC_ObjectType::ArrayData);
 		memcpy(pair.first, arr->m_Data, arr->m_Length * size);
 
 		arr->m_Data = pair.first;

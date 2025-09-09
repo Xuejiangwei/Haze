@@ -140,7 +140,7 @@ ObjectHash::ObjectHash(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
 		m_ValueType = HazeVariableType(vm->GetTypeInfoMap()->GetTypeById(info->Info._Hash.TypeId2)->GetBaseType(), info->Info._Hash.TypeId2);
 	}
 	
-	auto pair = HazeMemory::GetMemory()->AllocaGCData(m_Capacity * sizeof(ObjectHashNode), GC_ObjectType::HashData);
+	auto pair = HAZE_MALLOC(m_Capacity * sizeof(ObjectHashNode), GC_ObjectType::HashData);
 	m_DataGCIndex = pair.second;
 	m_Data = (ObjectHashNode*)pair.first;
 	m_LastFreeNode = m_Data + m_Capacity;
@@ -148,7 +148,7 @@ ObjectHash::ObjectHash(x_uint32 gcIndex, HazeVM* vm, x_uint32 typeId)
 
 ObjectHash::~ObjectHash()
 {
-	HazeMemory::GetMemory()->Remove(m_Data, m_Capacity * sizeof(ObjectHashNode), m_DataGCIndex);
+	HAZE_FREE(m_Data, m_Capacity * sizeof(ObjectHashNode), m_DataGCIndex);
 }
 
 AdvanceClassInfo* ObjectHash::GetAdvanceClassInfo()
@@ -196,7 +196,7 @@ void ObjectHash::Rehash()
 		newCapacity = newCapacity << 1;
 	}
 
-	auto pair = HazeMemory::GetMemory()->AllocaGCData(newCapacity * sizeof(ObjectHashNode), GC_ObjectType::HashData);
+	auto pair = HAZE_MALLOC(newCapacity * sizeof(ObjectHashNode), GC_ObjectType::HashData);
 	m_DataGCIndex = pair.second;
 
 	auto oldData = m_Data;

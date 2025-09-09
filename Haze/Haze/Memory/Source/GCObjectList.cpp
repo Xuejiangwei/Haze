@@ -59,7 +59,7 @@ void GCObjectList::Remove(x_uint32 index)
 
 void GCObjectList::MarkAllWhite()
 {
-	for (size_t i = 0; i < m_StateList.size(); i++)
+	for (x_uint64 i = 0; i < m_StateList.size(); i++)
 	{
 		m_StateList[i].State = GC_State::White;
 	}

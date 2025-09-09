@@ -35,7 +35,7 @@ void CompilerValue::SetPointerFunctionName(const STDString* name)
 
 bool CompilerValue::TryGetVariableName(HStringView& outName)
 {
-	static const x_HChar* s_prefix = H_TEXT("≥£¡ø");
+	static const x_HChar* s_prefix = H_TEXT("Â∏∏Èáè");
 	static STDString s_constantName;
 
 	bool ret = false;

@@ -7,8 +7,9 @@ static inline void*& NextObj(void* obj)
 
 class MemoryFreeList
 {
-public:
 	friend class MemoryBlock;
+	friend class HazeMemory;
+public:
 
 	MemoryFreeList();
 

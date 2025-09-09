@@ -43,6 +43,11 @@ bool IsRegisterDesc(HazeDataDesc desc)
 	return HazeDataDesc::RegisterBegin < desc && desc < HazeDataDesc::RegisterEnd;
 }
 
+bool IsGlobalRegisterDesc(HazeDataDesc desc)
+{
+	return HazeDataDesc::RegisterBegin < desc && desc < HazeDataDesc::RegisterEnd && desc != HazeDataDesc::RegisterTemp;
+}
+
 bool IsConstDesc(HazeDataDesc desc)
 {
 	return desc == HazeDataDesc::ConstantValue;
@@ -60,12 +65,12 @@ bool IsClassMember(HazeDataDesc desc)
 
 bool IsGlobalDesc(HazeDataDesc desc)
 {
-	return desc == HazeDataDesc::Variable_Global || IsConstDesc(desc) || IsConstStringDesc(desc) || desc == HazeDataDesc::NullPtr;
+	return desc == HazeDataDesc::Variable_Global || IsConstDesc(desc) || IsConstStringDesc(desc) || desc == HazeDataDesc::NullPtr || IsGlobalRegisterDesc(desc);
 }
 
 bool IsLocalDesc(HazeDataDesc desc)
 {
-	return desc == HazeDataDesc::Variable_Local || desc == HazeDataDesc::RegisterTemp || desc == HazeDataDesc::Element;
+	return desc == HazeDataDesc::Variable_Local || desc == HazeDataDesc::RegisterTemp || desc == HazeDataDesc::Element || desc == HazeDataDesc::ClassThis;
 }
 
 const x_HChar* GetInstructionString(InstructionOpCode code)
@@ -823,35 +828,35 @@ public:
 					lengths[i] = v1.Value.UInt64;
 				}
 
-				address = HazeMemory::AllocaGCData(sizeof(ObjectArray), GC_ObjectType::Array);
+				address = HAZE_MALLOC(sizeof(ObjectArray), GC_ObjectType::Array);
 				new((char*)address.first) ObjectArray(address.second, stack->m_VM, type.TypeId, lengths);
 
 				delete[] lengths;
 			}
 			else if (IsStringType(type.BaseType))
 			{
-				address = HazeMemory::AllocaGCData(sizeof(ObjectString), GC_ObjectType::String);
+				address = HAZE_MALLOC(sizeof(ObjectString), GC_ObjectType::String);
 				new(address.first) ObjectString(address.second, nullptr);
 			}
 			else if (IsClassType(type.BaseType))
 			{
-				address = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
+				address = HAZE_MALLOC(sizeof(ObjectClass), GC_ObjectType::Class);
 				new(address.first) ObjectClass(address.second, stack->m_VM, type.TypeId);
 			}
 			else if (IsHashType(type.BaseType))
 			{
-				address = HazeMemory::AllocaGCData(sizeof(ObjectHash), GC_ObjectType::Hash);
+				address = HAZE_MALLOC(sizeof(ObjectHash), GC_ObjectType::Hash);
 				new(address.first) ObjectHash(address.second, stack->m_VM, type.TypeId);
 			}
 			else if (IsObjectBaseType(type.BaseType))
 			{
-				address = HazeMemory::AllocaGCData(sizeof(ObjectBase), GC_ObjectType::ObjectBase);
+				address = HAZE_MALLOC(sizeof(ObjectBase), GC_ObjectType::ObjectBase);
 				new(address.first) ObjectBase(address.second, stack->m_VM, type.TypeId);
 			}
 			else if (IsClosureType(type.BaseType))
 			{
 				auto& frame = stack->GetCurrFrame();
-				address = HazeMemory::AllocaGCData(sizeof(ObjectClosure), GC_ObjectType::Closure);
+				address = HAZE_MALLOC(sizeof(ObjectClosure), GC_ObjectType::Closure);
 				new(address.first) ObjectClosure(address.second, ((FunctionData**)GetOperatorAddress(stack, oper[0]))[0], frame.FunctionInfo, &stack->m_StackMain[frame.CurrParamESP]);
 			}
 			else

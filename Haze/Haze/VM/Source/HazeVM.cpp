@@ -203,7 +203,7 @@ STDString HazeVM::GetAdvanceFunctionName(x_uint16 index)
 
 ObjectClass* HazeVM::CreateObjectClass(const x_HChar* className, ...)
 {
-	auto pair = HazeMemory::AllocaGCData(sizeof(ObjectClass), GC_ObjectType::Class);
+	auto pair = HAZE_MALLOC(sizeof(ObjectClass), GC_ObjectType::Class);
 	new(pair.first) ObjectClass(pair.second, this, m_TypeInfoMap->GetTypeIdByClassName(className));
 
 	auto& constructorFunc = GetFunctionByName(className, className);

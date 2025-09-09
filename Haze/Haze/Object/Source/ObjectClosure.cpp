@@ -12,7 +12,7 @@ ObjectClosure::ObjectClosure(x_uint32 gcIndex, const FunctionData* functionData,
 	: GCObject(gcIndex), m_FunctionData(functionData)
 {
 	// 保留外部变量的引用, 因为能够引用的都是对象类型, 所以字节大小都是8
-	auto pair = HazeMemory::GetMemory()->AllocaGCData(m_FunctionData->RefVariables.size() * sizeof(ClosureRefVariable), GC_ObjectType::ClosureData);
+	auto pair = HAZE_MALLOC(m_FunctionData->RefVariables.size() * sizeof(ClosureRefVariable), GC_ObjectType::ClosureData);
 	m_Data = (ClosureRefVariable*)pair.first;
 	m_DataGCIndex = pair.second;
 
@@ -28,7 +28,7 @@ ObjectClosure::~ObjectClosure()
 {
 	if (m_FunctionData->RefVariables.size() > 0)
 	{
-		HazeMemory::GetMemory()->Remove(m_Data, m_FunctionData->RefVariables.size() * sizeof(ClosureRefVariable), m_DataGCIndex);
+		HAZE_FREE(m_Data, m_FunctionData->RefVariables.size() * sizeof(ClosureRefVariable), m_DataGCIndex);
 	}
 }
 

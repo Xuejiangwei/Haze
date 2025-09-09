@@ -19,6 +19,11 @@
 #define GC_TIME			50
 #define ENABLE_GC_LOG	0
 
+#define OBJ_CLASS(ADDRESS)    ((ObjectClass*)ADDRESS)
+#define OBJ_ARRAY(ADDRESS)    ((ObjectArray*)ADDRESS)
+#define OBJ_HASH(ADDRESS)     ((ObjectHash*)ADDRESS)
+#define OBJ_CLOSURE(ADDRESS)  ((ObjectClosure*)ADDRESS)
+
 #if ENABLE_GC_LOG
 #define ENABLE_MEMORY_LOG	1
 	static x_uint64 s_TotalAllocMemory = 0;
@@ -127,16 +132,16 @@ HazeMemory* HazeMemory::GetMemory()
 	return s_Memory.get();
 }
 
-Pair<void*, x_uint32> HazeMemory::AllocaGCData(x_uint64 size, GC_ObjectType type)
+Pair<void*, x_uint32> HazeMemory::Alloca(x_uint64 size, GC_ObjectType type)
 {
 	auto memoryIns = GetMemory();
-	auto address = memoryIns->Alloca(size, type);
+	auto address = memoryIns->AllocaGCData(size, type);
 	auto index = memoryIns->m_ObjectList->Add(address, type);
 
 	return  { address, index };
 }
 
-void* HazeMemory::Alloca(x_uint64 size, GC_ObjectType type)
+void* HazeMemory::AllocaGCData(x_uint64 size, GC_ObjectType type)
 {
 	void* ret = nullptr;
 	if (size == 0)
@@ -165,9 +170,8 @@ void* HazeMemory::Alloca(x_uint64 size, GC_ObjectType type)
 		}
 		else
 		{
-			index = (x_uint32)size / PAGE_UNIT;
-			
 			MemoryBlock* block = nullptr;
+			bool reuseBlock = false;
 			if (memoryIns->m_MemoryBlocks[index])
 			{
 				block = memoryIns->m_MemoryBlocks[index];
@@ -190,8 +194,36 @@ void* HazeMemory::Alloca(x_uint64 size, GC_ObjectType type)
 				}
 				else
 				{
-					block = new MemoryBlock((x_uint32)size);
-					prevBlock->SetNext(block);
+					// 尝试寻找并选择最高使用率的待内存整理的块
+					block = memoryIns->m_MemoryBlocks[index];
+					MemoryBlock* pendingBlock = nullptr;
+					while (block)
+					{
+						if (block->IsPendingArrange())
+						{
+							if (pendingBlock && block->GetOnFreeListCount() < pendingBlock->GetOnFreeListCount())
+							{
+								pendingBlock = block;
+							}
+							else
+							{
+								pendingBlock = block;
+							}
+						}
+
+						block = block->GetNext();
+					}
+
+					if (pendingBlock)
+					{
+						block = pendingBlock;
+						reuseBlock = true;
+					}
+					else
+					{
+						block = new MemoryBlock((x_uint32)size);
+						prevBlock->SetNext(block);
+					}
 				}
 			}
 			else
@@ -200,13 +232,23 @@ void* HazeMemory::Alloca(x_uint64 size, GC_ObjectType type)
 				memoryIns->m_MemoryBlocks[index] = block;
 			}
 
-			x_uint32 length = sizeof(block->m_Memory) / block->m_BlockInfo.UnitSize;
-			char* address = block->m_Memory;
-			while (length-- > 0)
+			//if (reuseBlock)
 			{
-				freeList->Push(address);
-				address += block->m_BlockInfo.UnitSize;
+				for (MemoryBlockIteration iter = block; iter.IsValid(); iter++)
+				{
+					freeList->Push(iter.GetAddress());
+				}
 			}
+			/*else
+			{
+				x_uint32 length = sizeof(block->m_Memory) / block->m_BlockInfo.UnitSize;
+				char* address = block->m_Memory;
+				while (length-- > 0)
+				{
+					freeList->Push(address);
+					address += block->m_BlockInfo.UnitSize;
+				}
+			}*/
 
 			ret = freeList->Pop();
 		}
@@ -236,7 +278,7 @@ void HazeMemory::Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex)
 	if (data)
 	{
 		m_ObjectList->Remove(gcIndex);
-		memorySize = RoundUp(memorySize);
+		memorySize = RoundUpToPowerOf2(memorySize);
 		if (memorySize > 0)
 		{
 			if (memorySize <= MAX_HAZE_ALLOC_SIZE)
@@ -245,7 +287,7 @@ void HazeMemory::Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex)
 				x_uint32 index = (x_uint32)memorySize / GRANULE + offset;
 				m_FreeList[index]->Push(data);
 
-				HAZE_TO_DO(内存碎片合并);
+				TriggerArrange();
 			}
 			else
 			{
@@ -269,18 +311,92 @@ void HazeMemory::Remove(void* data, x_uint64 memorySize, x_uint32 gcIndex)
 	}
 }
 
-//需要考虑到循环引用的引起的死循环情况, 要么在Object中添加标记位（例如ObjectClass中添加uint8类型成员去做标记位），要么hashSet存储已标记的object
+void HazeMemory::TriggerArrange()
+{
+	if (m_MarkStage != MarkStage::Arrange)
+	{
+		return;
+	}
+
+	for (x_uint64 i = 0; i < _countof(m_FreeList); i++)
+	{
+		if (!m_FreeList[i])
+		{
+			continue;
+		}
+
+		auto& freeList = m_FreeList[i];
+
+		// 将所有block的State设为Black, 再将所有FreeList的地址Pop, 将对应Block的对应地址状态标记为White, 再将第一个block的White地址放入FreeList
+
+		auto block = m_MemoryBlocks[i];
+		while (block)
+		{
+			block->StartArrangeFragment();
+			block = block->GetNext();
+		}
+		
+		auto listLength = freeList->m_Length;
+		for (x_uint64 j = 0; j < listLength; j++)
+		{
+			auto address = freeList->Pop();
+			block = m_MemoryBlocks[i];
+			while (block)
+			{
+				if (block->IsInBlock(address))
+				{
+					//计数未使用数
+					block->MarkOnFreeListCount(address);
+					break;
+				}
+
+				block = block->GetNext();
+			}
+		}
+
+		block = m_MemoryBlocks[i];
+		while (block)
+		{
+			if (block != m_MemoryBlocks[i])
+			{
+				// 如果未使用数等于MarkCount, 则表明这个块可以整个回收
+				if (block->OnMarkFreeListEnd())
+				{
+					block->m_BlockInfo.Prev->SetNext(block->GetNext());
+					auto freeBlock = block;
+					block = block->m_BlockInfo.Prev->GetNext();
+
+					delete freeBlock;
+				}
+			}
+			else
+			{
+				for (MemoryBlockIteration iter = block; iter.IsValid(); iter++)
+				{
+					freeList->Push(iter.GetAddress());
+				}
+			}
+
+			if (block)
+			{
+				block = block->GetNext();
+			}
+		}
+	}
+}
+
+//考虑到循环引用的引起的死循环情况, 需要判断是否标记为白色
 void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 {
 	switch (type.BaseType)
 	{
 		case HazeValueType::Class:
 		{
-			if ((ObjectClass*)address)
+			if (OBJ_CLASS(address) && m_ObjectList->IsWhite(OBJ_CLASS(address)->m_GCIndex))
 			{
-				m_ObjectList->MarkObjectBlack(((ObjectClass*)address)->m_GCIndex);
-				m_ObjectList->MarkObjectBlack(((ObjectClass*)address)->m_DataGCIndex);
-				MarkClassMember(((ObjectClass*)address)->m_ClassInfo, (char*)((ObjectClass*)address)->m_Data);
+				m_ObjectList->MarkObjectBlack(OBJ_CLASS(address)->m_GCIndex);
+				m_ObjectList->MarkObjectBlack(OBJ_CLASS(address)->m_DataGCIndex);
+				MarkClassMember(OBJ_CLASS(address)->m_ClassInfo, (char*)OBJ_CLASS(address)->m_Data);
 			}
 		}
 			break;
@@ -294,12 +410,12 @@ void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 			break;
 		case HazeValueType::Array:
 		{
-			if ((ObjectArray*)address)
+			if (OBJ_ARRAY(address) && m_ObjectList->IsWhite(OBJ_CLASS(address)->m_GCIndex))
 			{
-				m_ObjectList->MarkObjectBlack(((ObjectArray*)address)->m_GCIndex);
-				m_ObjectList->MarkObjectBlack(((ObjectArray*)address)->m_DataGCIndex);
+				m_ObjectList->MarkObjectBlack(OBJ_ARRAY(address)->m_GCIndex);
+				m_ObjectList->MarkObjectBlack(OBJ_ARRAY(address)->m_DataGCIndex);
 
-				auto objectArray = ((ObjectArray*)address);
+				auto objectArray = OBJ_ARRAY(address);
 				x_uint64 length = objectArray->m_Length;
 				if (IsArrayType(objectArray->m_ValueType.BaseType))
 				{
@@ -318,7 +434,7 @@ void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 				{
 					for (x_uint64 i = 0; i < length; i++)
 					{
-						auto v = (ObjectClass*)objectArray->m_Data + i;
+						auto v = OBJ_CLASS(objectArray->m_Data) + i;
 						MarkVariable({ HazeVariableType(HazeValueType::Class, v->m_ClassInfo->TypeId) }, v);
 					}
 				}
@@ -362,18 +478,18 @@ void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 			break;
 		case HazeValueType::Hash:
 		{
-			if ((ObjectHash*)address)
+			if (OBJ_HASH(address) && m_ObjectList->IsWhite(OBJ_HASH(address)->m_GCIndex))
 			{
-				m_ObjectList->MarkObjectBlack(((ObjectHash*)address)->m_GCIndex);
-				m_ObjectList->MarkObjectBlack(((ObjectHash*)address)->m_DataGCIndex);
+				m_ObjectList->MarkObjectBlack(OBJ_HASH(address)->m_GCIndex);
+				m_ObjectList->MarkObjectBlack(OBJ_HASH(address)->m_DataGCIndex);
 
-				auto keyBaseType = ((ObjectHash*)address)->GetKeyBaseType();
-				auto valueBaseType = ((ObjectHash*)address)->GetValueBaseType();
+				auto keyBaseType = OBJ_HASH(address)->GetKeyBaseType();
+				auto valueBaseType = OBJ_HASH(address)->GetValueBaseType();
 				bool keyIsAdvance = IsAdvanceType(keyBaseType.BaseType);
 				bool valueIsAdvance = IsAdvanceType(valueBaseType.BaseType);
-				for (x_uint64 i = 0; i < ((ObjectHash*)address)->m_Capacity; i++)
+				for (x_uint64 i = 0; i < OBJ_HASH(address)->m_Capacity; i++)
 				{
-					auto& data = ((ObjectHash*)address)->m_Data[i];
+					auto& data = OBJ_HASH(address)->m_Data[i];
 					if (!data.IsNone())
 					{
 						if (keyIsAdvance)
@@ -400,14 +516,14 @@ void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 			break;
 		case HazeValueType::Closure:
 		{
-			if ((ObjectClosure*)address)
+			if (OBJ_CLOSURE(address) && m_ObjectList->IsWhite(OBJ_CLOSURE(address)->m_GCIndex))
 			{
-				m_ObjectList->MarkObjectBlack(((ObjectClosure*)address)->m_GCIndex);
-				m_ObjectList->MarkObjectBlack(((ObjectClosure*)address)->m_DataGCIndex);
+				m_ObjectList->MarkObjectBlack(OBJ_CLOSURE(address)->m_GCIndex);
+				m_ObjectList->MarkObjectBlack(OBJ_CLOSURE(address)->m_DataGCIndex);
 
-				for (x_uint64 i = 0; i < ((ObjectClosure*)address)->m_FunctionData->RefVariables.size(); i++)
+				for (x_uint64 i = 0; i < OBJ_CLOSURE(address)->m_FunctionData->RefVariables.size(); i++)
 				{
-					MarkVariable((((ObjectClosure*)address)->m_Data + i)->Type, (((ObjectClosure*)address)->m_Data + i)->Object);
+					MarkVariable(((OBJ_CLOSURE(address))->m_Data + i)->Type, (OBJ_CLOSURE(address)->m_Data + i)->Object);
 				}
 			}
 		}
@@ -420,7 +536,7 @@ void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 void HazeMemory::MarkClassMember(ClassData* classData, const char* baseAddress)
 {
 	void* address = 0;
-	for (size_t i = 0; i < classData->Members.size(); i++)
+	for (x_uint64 i = 0; i < classData->Members.size(); i++)
 	{
 		auto& member = classData->Members[i];
 		memcpy(&address, baseAddress + member.Offset, sizeof(address));
@@ -546,27 +662,27 @@ void HazeMemory::Sweep()
 					break;
 				case GC_ObjectType::String:
 					memorySize = sizeof(ObjectString);
-					((ObjectString*)m_ObjectList->m_ObjectList[i])->~ObjectString();
+					((ObjectString*)gcObject)->~ObjectString();
 					break;
 				case GC_ObjectType::Array:
 					memorySize = sizeof(ObjectArray);
-					((ObjectArray*)m_ObjectList->m_ObjectList[i])->~ObjectArray();
+					((ObjectArray*)gcObject)->~ObjectArray();
 					break;
 				case GC_ObjectType::DynamicClass:
 					memorySize = sizeof(ObjectDynamicClass);
-					((ObjectDynamicClass*)m_ObjectList->m_ObjectList[i])->~ObjectDynamicClass();
+					((ObjectDynamicClass*)gcObject)->~ObjectDynamicClass();
 					break;
 				case GC_ObjectType::Hash:
 					memorySize = sizeof(ObjectHash);
-					((ObjectHash*)m_ObjectList->m_ObjectList[i])->~ObjectHash();
+					((ObjectHash*)gcObject)->~ObjectHash();
 					break;
 				case GC_ObjectType::ObjectBase:
 					memorySize = sizeof(ObjectBase);
-					((ObjectBase*)m_ObjectList->m_ObjectList[i])->~ObjectBase();
+					((ObjectBase*)gcObject)->~ObjectBase();
 					break;
 				case GC_ObjectType::Closure:
 					memorySize = sizeof(ObjectClosure);
-					((ObjectClosure*)m_ObjectList->m_ObjectList[i])->~ObjectClosure();
+					((ObjectClosure*)gcObject)->~ObjectClosure();
 					break;
 				default:
 					break;
@@ -654,6 +770,9 @@ void HazeMemory::ForceGC()
 	Mark();
 	Sweep();
 
+	m_MarkStage = MarkStage::Arrange;
+	TriggerArrange();
+	
 	m_IsForceGC = false;
 	m_LastGCTime = std::chrono::seconds(std::time(NULL)).count();
 }

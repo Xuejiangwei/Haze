@@ -11,7 +11,6 @@ public:
 #define CHECK_GET_STACK_OBJECT(OBJ, TYPE_STR) GET_PARAM(OBJ); \
 	if (!OBJ) \
 	{ \
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 1].Operator[0]; \
 		OBJECT_ERR_W(TYPE_STR "对象为空"); \
 		return; \
 	}
