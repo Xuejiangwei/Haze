@@ -548,7 +548,7 @@ bool Compiler::IsClass(const STDString& name)
 
 	if (IsStage1())
 	{
-		return m_CompilerSymbol->IsValidSymbol(name);
+		return m_CompilerSymbol->IsValidClassSymbol(name);
 	}
 
 	return false;
@@ -1196,8 +1196,9 @@ Share<CompilerValue> Compiler::CreateSetAdvanceElement(Share<CompilerElementValu
 				{ assignValue, GetConstantValueUint64(DynamicCast<CompilerClassValue>(element->GetParent())->GetMemberIndex(element->GetElement().get())) }, element->GetParent());
 		case HazeValueType::DynamicClass:
 		{
-			auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
-			prueStr->SetPureString(element->GetElementName());
+			auto prueStr = GenStringVariable(*element->GetElementName());
+			//auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
+			//prueStr->SetPureString(element->GetElementName());
 			return CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, { assignValue, prueStr }, element->GetParent());
 		}
 		case HazeValueType::Hash:
@@ -1294,8 +1295,9 @@ Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classVa
 
 Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> dynamicClassValue, const STDString& memberName)
 {
-	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
-	prueStr->SetPureString(&memberName);
+	auto prueStr = GenStringVariable(memberName);
+	//auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
+	//prueStr->SetPureString(&memberName);
 	V_Array<Share<CompilerValue>> params = { prueStr };
 
 	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_GET_MEMBER, params, dynamicClassValue);
@@ -1308,8 +1310,9 @@ Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> 
 
 Share<CompilerValue> Compiler::CreateSetDynamicClassMember(Share<CompilerValue> classValue, const STDString& memberName, Share<CompilerValue> assignValue)
 {
-	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local, */HazeDataDesc::Variable_Local, 0);
-	prueStr->SetPureString(&memberName);
+	auto prueStr = GenStringVariable(memberName);
+	//auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local, */HazeDataDesc::Variable_Local, 0);
+	//prueStr->SetPureString(&memberName);
 	V_Array<Share<CompilerValue>> params = { assignValue, prueStr };
 
 	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, params, classValue);
@@ -1322,8 +1325,9 @@ Share<CompilerValue> Compiler::CreateSetDynamicClassMember(Share<CompilerValue> 
 
 Share<CompilerValue> Compiler::CreateDynamicClassFunctionCall(Share<CompilerValue> classValue, const STDString& functionName, const V_Array<Share<CompilerValue>>& params)
 {
-	auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
-	prueStr->SetPureString(&functionName);
+	auto prueStr = GenStringVariable(functionName);
+	//auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
+	//prueStr->SetPureString(&functionName);
 	const_cast<V_Array<Share<CompilerValue>>&>(params).push_back(prueStr);
 
 	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_CALL_FUNCTION, params, classValue);

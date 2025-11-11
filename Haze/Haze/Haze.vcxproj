@@ -143,7 +143,7 @@
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;HAZE;_USE_STD_VECTOR_ALGORITHMS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header;$(ProjectDir)BaseContainer/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -201,14 +201,15 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectHash.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\GCObjectList.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Memory\Header\MemoryDefine.h"  "$(OutDir)..\include\"</Command>
+      xcopy /y /d "$(ProjectDir)Memory\Header\MemoryDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)BaseContainer\Header\HazeString.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='UnrealDebug|x64'">
     <ClCompile>
       <WarningLevel>Level4</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_ITERATOR_DEBUG_LEVEL=0;_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_ITERATOR_DEBUG_LEVEL=0;_CRT_SECURE_NO_WARNINGS;WIN32;_WINDOWS;HAZE;_USE_STD_VECTOR_ALGORITHMS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header;$(ProjectDir)BaseContainer/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -265,7 +266,8 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectHash.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\GCObjectList.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Memory\Header\MemoryDefine.h"  "$(OutDir)..\include\"</Command>
+      xcopy /y /d "$(ProjectDir)Memory\Header\MemoryDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)BaseContainer\Header\HazeString.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -274,7 +276,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;HAZE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;HAZE;_USE_STD_VECTOR_ALGORITHMS=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>$(ProjectDir)XJson;$ProjectDir)ThirdParty;$(ProjectDir)Debugger/Header;$(ProjectDir)Header;$(ProjectDir)AST/Header;$(ProjectDir)VM/Header;$(ProjectDir)Compiler/Header;$(ProjectDir)Memory/Header;$(ProjectDir)MetaData/Header;$(ProjectDir)HazeLog/Header;$(ProjectDir)Backend/Header;$(ProjectDir)Define/Header;$(ProjectDir)Library/Header;$(ProjectDir)Object/Header;$(ProjectDir)JIT/Header;$(ProjectDir)BaseContainer/Header</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
@@ -330,7 +332,8 @@
       xcopy /y /d "$(ProjectDir)Object\Header\ObjectHash.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\GCObjectList.h"  "$(OutDir)..\include\"
       xcopy /y /d "$(ProjectDir)Memory\Header\HazeMemory.h"  "$(OutDir)..\include\"
-      xcopy /y /d "$(ProjectDir)Memory\Header\MemoryDefine.h"  "$(OutDir)..\include\"</Command>
+      xcopy /y /d "$(ProjectDir)Memory\Header\MemoryDefine.h"  "$(OutDir)..\include\"
+      xcopy /y /d "$(ProjectDir)BaseContainer\Header\HazeString.h"  "$(OutDir)..\include\"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

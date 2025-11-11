@@ -95,7 +95,7 @@ void ObjectArray::GetLength(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectArray* arr;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_OBJ(arr);
 	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::UInt64), arr->m_Length);
 }
@@ -105,7 +105,7 @@ void ObjectArray::GetLengthOfDimension(HAZE_OBJECT_CALL_PARAM)
 	ObjectArray* arr;
 	x_uint64 dimension;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_OBJ(arr);
 	GET_PARAM(dimension);
 	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::UInt64), stack->GetVM()->GetInstruction()[arr->m_PcAddress + dimension + 1].Operator[0].Extra.SignData);
@@ -115,7 +115,7 @@ void ObjectArray::GetDimensionCount(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectArray* arr;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_OBJ(arr);
 	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::UInt64), arr->m_DimensionCount);
 }
@@ -153,7 +153,7 @@ void ObjectArray::Get(HAZE_OBJECT_CALL_PARAM)
 	ObjectArray* arr;
 	x_uint64 offset = 0;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_OBJ(arr);
 	GET_PARAM(offset);
 

@@ -410,7 +410,7 @@ void HazeMemory::MarkVariable(const HazeVariableType& type, const void* address)
 			break;
 		case HazeValueType::Array:
 		{
-			if (OBJ_ARRAY(address) && m_ObjectList->IsWhite(OBJ_CLASS(address)->m_GCIndex))
+			if (OBJ_ARRAY(address) && m_ObjectList->IsWhite(OBJ_ARRAY(address)->m_GCIndex))
 			{
 				m_ObjectList->MarkObjectBlack(OBJ_ARRAY(address)->m_GCIndex);
 				m_ObjectList->MarkObjectBlack(OBJ_ARRAY(address)->m_DataGCIndex);

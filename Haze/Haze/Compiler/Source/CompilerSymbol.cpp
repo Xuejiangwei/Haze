@@ -31,6 +31,8 @@ CompilerSymbol::~CompilerSymbol()
 			case HazeValueType::Enum:
 				delete (EnumSymbol*)iter.second.second;
 				break;
+			case HazeValueType::PureString:
+				delete (SymbolTypeHeader*)iter.second.second;
 			default:
 				break;
 		}
@@ -193,6 +195,14 @@ void CompilerSymbol::Register_Function(const STDString& moduleName, const STDStr
 			data = &m_FunctionSymbols[classFuncName];
 			iter = m_FunctionSymbols.find(classFuncName);
 			check = false;
+		}
+
+		if (IS_VIRTUAL(desc) || IS_PURE_VIRTUAL(desc) && !IsValidSymbol(name))
+		{
+			AddModuleRefSymbol(moduleName, name);
+			auto header = new SymbolTypeHeader();
+			header->Type = HazeValueType::PureString;
+			m_Symbols[name].second = header;
 		}
 	}
 	else
@@ -378,6 +388,7 @@ void CompilerSymbol::IdentifySymbolType()
 					compEnum->AddEnumValue(info->Members[i].first, m_Compiler->GetConstantValueInt(info->Members[i].second));
 				}
 			}
+			else if (IsPureStringType(iter.second.second->Type)) { }
 			else
 			{
 				SYMBOL_ERR_W("符号<%s>解析为<%s>类型", iter.first.c_str(), GetHazeValueTypeString(iter.second.second->Type));
@@ -549,11 +560,11 @@ bool CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& c
 
 		for (x_uint64 i = 0; i < firstScopeMembers->size(); i++)
 		{
-			classData.push_back({ Move(firstScopeMembers->at(i).first), m_Compiler->CreateClassVariable(data.CompClass->m_Module, m_TypeInfo->GetVarTypeById(firstScopeMembers->at(i).second)) });
+			classData.push_back({ firstScopeMembers->at(i).first, m_Compiler->CreateClassVariable(data.CompClass->m_Module, m_TypeInfo->GetVarTypeById(firstScopeMembers->at(i).second)) });
 		}
 		for (x_uint64 i = 0; i < secondScopeMembers->size(); i++)
 		{
-			classData.push_back({ Move(secondScopeMembers->at(i).first), m_Compiler->CreateClassVariable(data.CompClass->m_Module, m_TypeInfo->GetVarTypeById(secondScopeMembers->at(i).second)) });
+			classData.push_back({ secondScopeMembers->at(i).first, m_Compiler->CreateClassVariable(data.CompClass->m_Module, m_TypeInfo->GetVarTypeById(secondScopeMembers->at(i).second)) });
 		}
 
 		data.CompClass->ResolveClassData(Move(classData));
@@ -568,6 +579,20 @@ bool CompilerSymbol::ResolveCompilerClass(HashMap<x_uint32, ResolveClassData>& c
 bool CompilerSymbol::IsValidSymbol(const STDString& symbol)
 {
 	return m_Symbols.find(symbol) != m_Symbols.end();
+}
+
+bool CompilerSymbol::IsValidClassSymbol(const STDString& symbol)
+{
+	auto it = m_Symbols.find(symbol);
+	if (it != m_Symbols.end())
+	{
+		if (it->second.second && it->second.second->Type == HazeValueType::Class)
+		{
+			return true;
+		}
+	}
+
+	return  false;
 }
 
 x_uint32 CompilerSymbol::GetSymbolTypeId(const STDString& symbol)
@@ -600,6 +625,12 @@ x_uint32 CompilerSymbol::GetFunctionId(const STDString& name)
 	if (iter != m_FunctionSymbols.end())
 	{
 		return iter->second.FunctionId;
+	}
+
+	auto it = m_Symbols.find(name);
+	if (it != m_Symbols.end() && it->second.second && IsPureStringType(it->second.second->Type))
+	{
+		return it->second.first;
 	}
 
 	SYMBOL_ERR_W("函数符号<%s>未能找到有效的类型ID", name.c_str());

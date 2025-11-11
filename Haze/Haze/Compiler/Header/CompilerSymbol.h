@@ -79,6 +79,7 @@ public:
 	void IdentifySymbolType();
 
 	bool IsValidSymbol(const STDString& symbol);
+	bool IsValidClassSymbol(const STDString& symbol);
 	x_uint32 GetSymbolTypeId(const STDString& symbol);
 	x_uint32 GetGlobalVariableId(const STDString& name);
 	x_uint32 GetFunctionId(const STDString& name);

@@ -40,7 +40,7 @@ void HazeFileLib::OpenFile(HAZE_STD_CALL_PARAM)
 	x_HChar* filePath;
 	int type;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(filePath);
 	GET_PARAM(type);
 
@@ -89,7 +89,7 @@ void HazeFileLib::ReadChar(HAZE_STD_CALL_PARAM)
 {
 	int* file;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(file);
 
 	auto result = fgetwc((FILE*)file);
@@ -103,7 +103,7 @@ void HazeFileLib::ReadString(HAZE_STD_CALL_PARAM)
 	int maxNum;
 	x_HChar* str;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(file);
 	GET_PARAM(maxNum);
 	GET_PARAM(str);
@@ -119,7 +119,7 @@ void HazeFileLib::Read(HAZE_STD_CALL_PARAM)
 	x_uint64 count;
 	void* buffer;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(file);
 	GET_PARAM(size);
 	GET_PARAM(count);
@@ -134,7 +134,7 @@ void HazeFileLib::ReadLine(HAZE_STD_CALL_PARAM)
 	int* file;
 	x_HChar* buffer;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(file);
 	GET_PARAM(buffer);
 
@@ -156,7 +156,7 @@ void HazeFileLib::WriteChar(HAZE_STD_CALL_PARAM)
 	x_HChar* file;
 	x_HChar c;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(file);
 	GET_PARAM(c);
 
@@ -169,7 +169,7 @@ void HazeFileLib::WriteString(HAZE_STD_CALL_PARAM)
 	x_HChar* file;
 	x_HChar* str;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(file);
 	GET_PARAM(str);
 
@@ -184,7 +184,7 @@ void HazeFileLib::Write(HAZE_STD_CALL_PARAM)
 	x_uint64 count;
 	void* buffer;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(file);
 	GET_PARAM(size);
 	GET_PARAM(count);

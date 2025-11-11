@@ -29,6 +29,11 @@ private:
 
 	static void Format(HAZE_OBJECT_CALL_PARAM);
 
+	static void Equal(HAZE_OBJECT_CALL_PARAM);
+
+	static void NotEqual(HAZE_OBJECT_CALL_PARAM);
+
+
 	void BeEnd() { ((x_HChar*)m_Data)[m_Length] = 0; }
 
 private:

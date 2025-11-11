@@ -132,6 +132,8 @@ using HStringView = std::wstring_view;
 #define HAZE_OBJECT_ARRAY_CONSTRUCTOR	H_TEXT("多对象构造")
 #define HAZE_ADVANCE_GET_FUNCTION		H_TEXT("获得")
 #define HAZE_ADVANCE_SET_FUNCTION		H_TEXT("设置")
+#define HAZE_ADVANCE_EQUAL_FUNCTION		H_TEXT("等于")
+#define HAZE_ADVANCE_NOT_EQUAL_FUNCTION	H_TEXT("不等于")
 #define HAZE_OBJECT_BASE_CONSTRUCTOR	H_TEXT("@基本对象构造")
 
 #define HAZE_CUSTOM_GET_MEMBER			H_TEXT("获得")

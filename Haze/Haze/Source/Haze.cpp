@@ -8,6 +8,8 @@
 #include "HazeLibraryManager.h"
 #include "HazeDebugger.h"
 
+#include "ObjectString.h"
+
 extern Unique<HazeDebugger> g_Debugger;
 extern Unique<HazeLibraryManager> g_HazeLibManager;
 
@@ -217,6 +219,7 @@ HazeVM* HazeMain(int argCount, char* argValue[])
 	if (vm && vm->GetFucntionIndexByName(mainFunction) >= 0)
 	{
 		std::cout << HAZE_ENDL << HAZE_ENDL << "Haze Start" << HAZE_ENDL << HAZE_ENDL;
+
 		vm->CallFunction(mainFunction.c_str());
 
 		vm->ClearGlobalData();

@@ -341,7 +341,7 @@ void CompilerClass::ResolveClassParent(V_Array<CompilerClass*>&& parentClass)
 
 void CompilerClass::ResolveClassData(V_Array<Pair<STDString, Share<CompilerValue>>>&& data)
 {
-	m_Data = data;
+	m_Data = Move(data);
 	InitMemberData();
 }
 

@@ -4,6 +4,7 @@
 #include "HazeStack.h"
 #include "Compiler.h"
 #include "HazeLibraryDefine.h"
+#include "ObjectString.h"
 
 #define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "基本类型")
 
@@ -26,7 +27,8 @@ AdvanceClassInfo* ObjectBase::GetAdvanceClassInfo()
 	info.Add(HAZE_OBJECT_BASE_CONSTRUCTOR, { &ObjectBase::Constructor, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
 	info.Add(HAZE_ADVANCE_GET_FUNCTION, { &ObjectBase::Get, OBJ_TYPE_DEF(Void), { } });
 	info.Add(HAZE_ADVANCE_SET_FUNCTION, { &ObjectBase::Set, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) } });
-	info.Add(H_TEXT("等于"), { &ObjectBase::Equal, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(ObjectBase) } });
+	info.Add(HAZE_ADVANCE_EQUAL_FUNCTION, { &ObjectBase::Equal, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(ObjectBase) } });
+	info.Add(HAZE_ADVANCE_NOT_EQUAL_FUNCTION, { &ObjectBase::NotEqual, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(ObjectBase) } });
 	info.Add(H_TEXT("地址"), { &ObjectBase::GetAddress, OBJ_TYPE_DEF(Address), { } });
 
 	return &info;
@@ -52,14 +54,34 @@ void ObjectBase::Equal(HAZE_OBJECT_CALL_PARAM)
 	GET_OBJ(obj2);
 
 	bool isEqual = IsEqual(obj1, obj2);
-	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Bool), isEqual);
+	//SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Bool), isEqual);
+
+	auto hazeRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
+	hazeRegister->Data.resize(3); hazeRegister->Data[0] = isEqual;
+	hazeRegister->Data[1] = false; hazeRegister->Data[2] = false;
+}
+
+void ObjectBase::NotEqual(HAZE_OBJECT_CALL_PARAM)
+{
+	ObjectBase* obj1;
+	ObjectBase* obj2;
+
+	GET_PARAM_START();
+	GET_OBJ(obj1);
+	GET_OBJ(obj2);
+
+	bool isEqual = IsEqual(obj1, obj2);
+
+	auto hazeRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
+	hazeRegister->Data.resize(3); hazeRegister->Data[0] = !isEqual;
+	hazeRegister->Data[1] = false; hazeRegister->Data[2] = false;
 }
 
 void ObjectBase::Get(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectBase* obj;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_OBJ(obj);
 	SET_RET_BY_TYPE(HazeVariableType(obj->m_Type), obj->m_Value);
 
@@ -84,7 +106,7 @@ void ObjectBase::GetAddress(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectBase* obj;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_OBJ(obj);
 
 	auto address = GetBinaryPointer(obj->m_Type, obj->m_Value);

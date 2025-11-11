@@ -21,18 +21,38 @@ using ExeFuncType = int(*)(const wchar_t*, char*, char*, void*);
 
 #define NO_PARAM_WARNING() { multiParamNum = multiParamNum; paramByteSize = paramByteSize; }
 #define GET_PARAM_START() NO_PARAM_WARNING() paramByteSize = 0; x_int64 zzzOffset = 0; auto zzzAddress = stack->GetAddressByESP(HAZE_ADDRESS_SIZE)
+#define __WITH_RET_SCOPE() struct __zWithRet \
+{ \
+	__zWithRet(HazeStack* stack) : Stack(stack), HasRet(false) {} \
+	~__zWithRet() \
+	{ \
+		if (!HasRet) \
+		{ \
+			Stack->OnError(); \
+		} \
+	} \
+	void SetHasRet(bool hasRet) { HasRet = hasRet; } \
+private: \
+		HazeStack* Stack; \
+		bool HasRet; \
+}; \
+__zWithRet _zWithRet(stack)
+
+#define GET_PARAM_START_WITH_RET() __WITH_RET_SCOPE(); \
+GET_PARAM_START()
+
 #define GET_CURRENT_ADDRESS (zzzAddress - zzzOffset)
 #define GET_PARAM(V)  memcpy(&V, zzzAddress - sizeof(V) - zzzOffset, sizeof(V)); zzzOffset += sizeof(V); paramByteSize = (int)zzzOffset
 #define GET_PARAM_ADDRESS(V, SIZE)  V = zzzAddress - SIZE - zzzOffset; zzzOffset += SIZE; paramByteSize = (int)zzzOffset
 #define SET_HAZE_CALL_PARAM(...) COUNT_ARG(__VA_ARGS__), __VA_ARGS__
 
-#define SET_RET_BY_TYPE(TYPE, V) \
+#define SET_RET_BY_TYPE(TYPE, V) _zWithRet.SetHasRet(true); \
 	HazeRegister* retRegister = stack->GetVirtualRegister(HazeVirtualRegister::RET); \
 	retRegister->Type = TYPE; \
 	retRegister->Data.resize(retRegister->Type.GetTypeSize()); \
 	memcpy(retRegister->Data.begin()._Unwrapped(), &V, retRegister->Data.size())
 
-#define SET_RET_BY_TYPE_AND_ADDRESS(TYPE, V) \
+#define SET_RET_BY_TYPE_AND_ADDRESS(TYPE, V) _zWithRet.SetHasRet(true); \
 	HazeRegister* retRegister = stack->GetVirtualRegister(HazeVirtualRegister::RET); \
 	retRegister->Type = TYPE; \
 	retRegister->Data.resize(retRegister->Type.GetTypeSize()); \

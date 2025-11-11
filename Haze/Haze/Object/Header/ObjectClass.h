@@ -24,6 +24,8 @@ public:
 
 	const ClassData* GetClassData() const { return m_ClassInfo; }
 
+	const FunctionData* GetFunctionData(HazeVM* vm, const x_HChar* functionName) const;
+
 private:
 	static void GetOffset(HAZE_OBJECT_CALL_PARAM);
 

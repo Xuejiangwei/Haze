@@ -198,7 +198,7 @@ struct InstructionData
 		}
 	} Extra;
 
-	InstructionData() : VariableIndexOrId(0), Desc(HazeDataDesc::None)
+	InstructionData() : Desc(HazeDataDesc::None), VariableIndexOrId(0)
 	{
 		AddressType = InstructionAddressType::Local;
 		memset(&Extra, 0, sizeof(Extra));

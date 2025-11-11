@@ -277,7 +277,7 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 	else if (value->IsTempVariable())
 	{
-		find = true;
+		find = true;CreateDynamicClassFunctionCall
 		s_StrName = compilerModule->GetCompiler()->GetRegisterName(value);
 	}*/
 	else

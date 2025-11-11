@@ -44,13 +44,14 @@ void HazeStack::OnError()
 {
 	LogStack();
 	m_CallHazeStack.clear();
+	m_StackFrame.clear();
 }
 
 void HazeStack::LogStack()
 {
 	for (x_int64 i = (x_int64)m_StackFrame.size() - 1; i >= 0; i--)
 	{
-		HAZE_LOG_ERR_W("Error<%s>\n", m_VM->GetFunctionNameByData(m_StackFrame[i].FunctionInfo)->c_str());
+		HAZE_LOG_ERR_W("Error stack <%s>\n", m_VM->GetFunctionNameByData(m_StackFrame[i].FunctionInfo)->c_str());
 	}
 }
 

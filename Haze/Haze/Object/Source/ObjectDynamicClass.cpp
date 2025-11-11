@@ -7,6 +7,9 @@
 #include "ObjectString.h"
 #include "HazeMemory.h"
 
+#define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "动态类对象")
+#define CHECK_METHOD() if (!obj->m_Methods || !obj->m_Methods->IsValid()) { OBJECT_ERR_W("动态类对象的调用函数表为空"); return; }
+
 ObjectDynamicClass::ObjectDynamicClass(x_uint32 gcIndex, CustomMethods* methods, void* dataPtr)
 	: GCObject(gcIndex), m_Methods(methods), m_Data(dataPtr)
 {
@@ -41,99 +44,39 @@ AdvanceClassInfo* ObjectDynamicClass::GetAdvanceClassInfo()
 void ObjectDynamicClass::GetMember(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
-	STDString* name;
+	ObjectString* name;
 
 	GET_PARAM_START();
-	GET_PARAM(obj);
-	/*if (!obj)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("动态类对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(obj);
 	GET_PARAM(name);
-	if (!name)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		auto& var2 = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 3].Operator[0];
-		OBJECT_ERR_W("动态类对象获取<%s>成员错误", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
-		return;
-	}
-
-	if (!obj->m_Methods || !obj->m_Methods->IsValid())
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("动态类对象<%s>的获取函数表为空", var.Variable.Name.c_str());
-		return;
-	}
-
-	obj->m_Methods->GetMember(stack, *name, obj->m_Data);*/
+	
+	CHECK_METHOD();
+	obj->m_Methods->GetMember(stack, name->GetData(), obj->m_Data);
 }
 
 void ObjectDynamicClass::SetMember(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
-	STDString* name;
+	ObjectString* name;
 
-	GET_PARAM_START();
-	GET_PARAM(obj);
-	/*if (!obj)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("动态类对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_PARAM_START_WITH_RET();
+	GET_OBJ(obj);
 	GET_PARAM(name);
-	if (!name)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		auto& var2 = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 3].Operator[0];
-		OBJECT_ERR_W("动态类对象设置<%s>成员错误", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
-		return;
-	}
 
-	if (!obj->m_Methods || !obj->m_Methods->IsValid())
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("动态类对象<%s>的设置函数表为空", var.Variable.Name.c_str());
-		return;
-	}
-
-	obj->m_Methods->SetMember(stack, *name, obj->m_Data, (x_uint8*)GET_CURRENT_ADDRESS);
-	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Void), obj);*/
+	CHECK_METHOD();
+	obj->m_Methods->SetMember(stack, name->GetData(), obj->m_Data, (x_uint8*)GET_CURRENT_ADDRESS);
+	SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Void), obj);
 }
 
 void ObjectDynamicClass::CallFunction(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectDynamicClass* obj;
-	STDString* name;
+	ObjectString* name;
 
 	GET_PARAM_START();
-	GET_PARAM(obj);
-	/*if (!obj)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("动态类对象<%s>为空", var.Variable.Name.c_str());
-		return;
-	}
-
+	GET_OBJ(obj);
 	GET_PARAM(name);
-	if (!name)
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		auto& var2 = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 3].Operator[0];
-		OBJECT_ERR_W("动态类对象调用<%s>函数错误", var.Variable.Name.c_str(), var2.Variable.Name.c_str());
-		return;
-	}
-
-	if (!obj->m_Methods || !obj->m_Methods->IsValid())
-	{
-		auto& var = stack->GetVM()->GetInstruction()[stack->GetCurrPC() - 2].Operator[0];
-		OBJECT_ERR_W("动态类对象<%s>的调用函数表为空", var.Variable.Name.c_str());
-		return;
-	}
-
-	obj->m_Methods->CallFunction(stack, *name, obj->m_Data, (x_uint8*)GET_CURRENT_ADDRESS);*/
+	
+	CHECK_METHOD();
+	obj->m_Methods->CallFunction(stack, name->GetData(), obj->m_Data, (x_uint8*)GET_CURRENT_ADDRESS);
 }

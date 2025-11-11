@@ -253,15 +253,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 	}
 	else if (classObj)
 	{
-		if (classObj->IsElement())
-		{
-			advanceFunctionInfo = m_Compiler->GetAdvanceFunctionInfo(DynamicCast<CompilerElementValue>(classObj)->GetParentBaseType().BaseType, m_Name);
-		}
-		else
-		{
-			advanceFunctionInfo = m_Compiler->GetAdvanceFunctionInfo(classObj->GetBaseType(), m_Name);
-		}
-
+		advanceFunctionInfo = m_Compiler->GetAdvanceFunctionInfo(classObj->GetBaseType(), m_Name);
 		if (advanceFunctionInfo)
 		{
 			for (x_uint64 i = 0; i < paramInferValues.size(); i++)
@@ -269,6 +261,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 				paramInferValues[i] = CreateAstTempVariable(currModule.get(), advanceFunctionInfo->Params[i]);
 			}
 		}
+		else if (IsDynamicClassType(classObj->GetBaseType())) { }
 		else
 		{
 			AST_ERR_W("生成函数调用错误, 未能找到函数<%s>", m_Name.c_str());
@@ -366,81 +359,6 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 
 	return ret;
 }
-
-//ASTClassAttr::ASTClassAttr(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
-//	HString& classObjName, Unique<ASTBase>& preAst, HString& attrName, bool isFunction,
-//	V_Array<Unique<ASTBase>>* functionParam)
-//	: ASTBase(compiler, location), m_SectionSignal(section), m_PreAst(Move(preAst)), m_IsFunction(isFunction),
-//	 m_AttrName(Move(attrName))
-//{
-//	m_DefineVariable.Name = Move(classObjName);
-//	if (functionParam)
-//	{
-//		m_Params = Move(*functionParam);
-//	}
-//}
-//
-//Share<CompilerValue> ASTClassAttr::CodeGen()
-//{
-//	Share<CompilerValue> v;
-//	if (!m_DefineVariable.Name.empty())
-//	{
-//		if (m_SectionSignal == HazeSectionSignal::Global)
-//		{
-//			v = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
-//		}
-//		else if (m_SectionSignal == HazeSectionSignal::Local)
-//		{
-//			v = m_Compiler->GetLocalVariable(m_DefineVariable.Name);
-//			if (!v)
-//			{
-//				v = m_Compiler->GetGlobalVariable(m_DefineVariable.Name);
-//			}
-//			else if (v->IsClassMember())
-//			{
-//				auto currFunc = m_Compiler->GetCurrModule()->GetCurrFunction();
-//				if (currFunc)
-//				{
-//					auto thisValue = currFunc->GetThisLocalVariable();
-//					if (thisValue && thisValue->GetMember(m_DefineVariable.Name) == v)
-//					{
-//						v = m_Compiler->CreateGetClassMember(thisValue, m_DefineVariable.Name);
-//					}
-//				}
-//			}
-//		}
-//	}
-//	else
-//	{
-//		v = m_PreAst->CodeGen();
-//	}
-//
-//	auto classValue = DynamicCast<CompilerClassValue>(v);
-//	Share<CompilerValue> ret = nullptr;
-//	if (m_IsFunction)
-//	{
-//		V_Array<Share<CompilerValue>> param;
-//		for (int i = (int)m_Params.size() - 1; i >= 0; i--)
-//		{
-//			param.push_back(m_Params[i]->CodeGen());
-//		}	
-//
-//		if (!classValue && IsAdvanceType(v->GetValueType()))
-//		{
-//			ret = m_Compiler->CreateAdvanceTypeFunctionCall(v->GetValueType(), m_AttrName, param,v);
-//		}
-//		else
-//		{
-//			ret = m_Compiler->CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(m_AttrName), param, classValue);
-//		}
-//	}
-//	else
-//	{
-//		ret = m_Compiler->CreateGetClassMember(classValue, m_AttrName);
-//	}
-//
-//	return TryAssign(assignToAst, ret);
-//}
 
 ASTVariableDefine::ASTVariableDefine(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	HazeDefineVariable&& defineVar, Unique<ASTBase> expression)
@@ -1430,9 +1348,42 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 		case HazeToken::Less:
 		case HazeToken::LessEqual:
 		{
+			Share<CompilerValue> retValue = nullptr;
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
-			auto retValue = m_Compiler->CreateIntCmp(left, right);
+
+			// 字符串
+			if (left->IsString() || right->IsString())
+			{
+				if (!left->IsString())
+				{
+					AST_ERR_W("<%s><%s>比较错误, <%s>不是字符类型", m_LeftAST->GetName(), m_RightAST->GetName(), m_LeftAST->GetName());
+				}
+				else if (!right->IsString())
+				{
+					AST_ERR_W("<%s><%s>比较错误, <%s>不是字符类型", m_LeftAST->GetName(), m_RightAST->GetName(), m_RightAST->GetName());
+				}
+				else if (!(m_OperatorToken == HazeToken::Equal || m_OperatorToken == HazeToken::NotEqual))
+				{
+					AST_ERR_W("<%s><%s>比较错误, 只能比较等于或者不等于", m_LeftAST->GetName(), m_RightAST->GetName());
+				}
+				else
+				{
+					if (m_OperatorToken == HazeToken::Equal)
+					{
+						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::String, HAZE_ADVANCE_EQUAL_FUNCTION, { right }, left);
+					}
+					else if (m_OperatorToken == HazeToken::NotEqual)
+					{
+						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::String, HAZE_ADVANCE_NOT_EQUAL_FUNCTION, { right }, left);
+					}
+				}
+			}
+			else
+			{
+				retValue = m_Compiler->CreateIntCmp(left, right);
+			}
+			
 			if (m_LeftBlock || m_RightBlock)
 			{
 				if (m_ParentAst)

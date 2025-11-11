@@ -56,8 +56,6 @@ public:
 
 	bool IsConstant() const { return IsConstDesc(m_Desc); }
 
-	bool IsString() const { return IsConstStringDesc(m_Desc); }
-
 	bool IsElement() const { return m_Desc == HazeDataDesc::Element; }
 
 	bool IsClassMember() const { return IsClassPublicMember() || IsClassPrivateMember(); }
@@ -84,6 +82,8 @@ public:
 	bool IsClass() const { return IsClassType(m_Type.BaseType); }
 
 	bool IsAdvance() const { return IsAdvanceType(m_Type.BaseType); }
+
+	bool IsString() const { return IsConstStringDesc(m_Desc) || IsStringType(m_Type.BaseType) || IsPureString(); }
 
 	bool IsPureString() const { return IsPureStringType(m_Type.BaseType); }
 

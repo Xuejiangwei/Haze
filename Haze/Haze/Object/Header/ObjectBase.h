@@ -25,6 +25,8 @@ private:
 
 	static void Equal(HAZE_OBJECT_CALL_PARAM);
 
+	static void NotEqual(HAZE_OBJECT_CALL_PARAM);
+
 	static void Get(HAZE_OBJECT_CALL_PARAM);
 
 	static void Set(HAZE_OBJECT_CALL_PARAM);

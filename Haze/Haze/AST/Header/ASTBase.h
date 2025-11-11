@@ -111,23 +111,6 @@ private:
 	V_Array<Unique<ASTBase>> m_FunctionParam;
 };
 
-//class ASTClassAttr : public ASTBase
-//{
-//public:
-//	ASTClassAttr(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section, HString& classObjName, 
-//		Unique<ASTBase>& preAst, HString& attrName, bool isFunction, V_Array<Unique<ASTBase>>* functionParam = nullptr);
-//	virtual ~ASTClassAttr() override {}
-//
-//	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
-//
-//private:
-//	bool m_IsFunction;
-//	HazeSectionSignal m_SectionSignal;
-//	HString m_AttrName;
-//	Unique<ASTBase> m_PreAst;
-//	V_Array<Unique<ASTBase>> m_Params;
-//};
-
 //变量定义 基本类型 类对象
 class ASTVariableDefine : public ASTBase
 {

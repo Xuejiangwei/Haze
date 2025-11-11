@@ -45,6 +45,8 @@ AdvanceClassInfo* ObjectString::GetAdvanceClassInfo()
 	static AdvanceClassInfo info;
 	info.Add(H_TEXT("接"), { &ObjectString::Append, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(String) } });
 	info.Add(H_TEXT("格式化"), { &ObjectString::Format, OBJ_TYPE_DEF(String), { OBJ_TYPE_DEF(String), OBJ_TYPE_DEF(MultiVariable) } });
+	info.Add(HAZE_ADVANCE_EQUAL_FUNCTION, { &ObjectString::Equal, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(String) } });
+	info.Add(HAZE_ADVANCE_NOT_EQUAL_FUNCTION, { &ObjectString::NotEqual, OBJ_TYPE_DEF(Bool), { OBJ_TYPE_DEF(String) } });
 
 	return &info;
 }
@@ -129,4 +131,37 @@ void ObjectString::Format(HAZE_OBJECT_CALL_PARAM)
 		thisStr->m_Data = pair.first;
 		thisStr->m_DataGCIndex = pair.second;
 	}
+}
+
+void ObjectString::Equal(HAZE_OBJECT_CALL_PARAM)
+{
+	ObjectString* obj1;
+	ObjectString* obj2;
+
+	GET_PARAM_START();
+	GET_OBJ(obj1);
+	GET_OBJ(obj2);
+
+	bool isEqual = IsEqual(obj1, obj2);
+	//SET_RET_BY_TYPE(HazeVariableType(HazeValueType::Bool), isEqual);
+
+	auto hazeRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
+	hazeRegister->Data.resize(3); hazeRegister->Data[0] = isEqual;
+	hazeRegister->Data[1] = false; hazeRegister->Data[2] = false;
+}
+
+void ObjectString::NotEqual(HAZE_OBJECT_CALL_PARAM)
+{
+	ObjectString* obj1;
+	ObjectString* obj2;
+
+	GET_PARAM_START();
+	GET_OBJ(obj1);
+	GET_OBJ(obj2);
+
+	bool isEqual = IsEqual(obj1, obj2);
+
+	auto hazeRegister = stack->GetVirtualRegister(HazeVirtualRegister::CMP);
+	hazeRegister->Data.resize(3); hazeRegister->Data[0] = !isEqual;
+	hazeRegister->Data[1] = false; hazeRegister->Data[2] = false;
 }

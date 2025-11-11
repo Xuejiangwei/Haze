@@ -90,12 +90,17 @@ void ObjectClass::SetMember(const x_HChar* memberName, void* value)
 	}
 }
 
+const FunctionData* ObjectClass::GetFunctionData(HazeVM* vm, const x_HChar* functionName) const
+{
+	return vm->GetFunctionDataByName(functionName, m_ClassInfo->Name.c_str());
+}
+
 void ObjectClass::GetOffset(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectClass* classObj;
 	x_uint64 index = 0;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_OBJ(classObj);
 
 	GET_PARAM(index);
@@ -135,7 +140,7 @@ void ObjectClass::GetClassName(HAZE_OBJECT_CALL_PARAM)
 {
 	ObjectClass* classObj;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_OBJ(classObj);
 
 	auto name = ObjectString::Create(classObj->m_ClassInfo->Name.c_str(), true);

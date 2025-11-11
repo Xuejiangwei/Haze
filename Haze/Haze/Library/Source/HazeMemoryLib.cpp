@@ -60,7 +60,7 @@ void HazeMemoryLib::CreateClassByName(HAZE_STD_CALL_PARAM)
 	HazeVM* vm = stack->GetVM();
 	ObjectString* name;
 
-	GET_PARAM_START();
+	GET_PARAM_START_WITH_RET();
 	GET_PARAM(name);
 
 	STDString strName = name->GetData();
@@ -73,6 +73,5 @@ void HazeMemoryLib::CreateClassByName(HAZE_STD_CALL_PARAM)
 	else
 	{
 		HAZE_LOG_ERR_W("生成类对象<%s>错误, 未能找到或没有引用导致未能生成类型信息\n", strName.c_str());
-		stack->OnError();
 	}
 }

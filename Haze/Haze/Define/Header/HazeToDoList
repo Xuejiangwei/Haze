@@ -2,11 +2,11 @@ HAZE_TO_DO(编译的警告问题)
 HAZE_TO_DO(二段解析解决模块循环引用捎带解决解析临时文件的问题)
 HAZE_TO_DO(分代GC和定期碎片合并);
 HAZE_TO_DO(整个项目和符号表的StringView尝试替代);
+HAZE_TO_DO(HString与STDString的替换);
 HAZE_TO_DO(Vector查找的替代);
 HAZE_TO_DO(并行文件IO);
 HAZE_TO_DO(GC循环引用);
 HAZE_TO_DO(解析模块的临时文件时存在循环引用的问题);
-HAZE_TO_DO(gc类对象之间也有循环引用的问题)
 HAZE_TO_DO(增量编译需要考虑已引用模块修改 但是之后解析的模块有引用但是未修改 这种情况下仍需要重新解析)
 HAZE_TO_DO(Optimizer模块代码整理)
 HAZE_TO_DO(函数指针的纠正支持)
