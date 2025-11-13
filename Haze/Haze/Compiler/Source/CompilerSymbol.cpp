@@ -268,6 +268,10 @@ void CompilerSymbol::Register_Function(const STDString& moduleName, const STDStr
 	}
 }
 
+void CompilerSymbol::Register_Closure(const STDString& name)
+{
+}
+
 void CompilerSymbol::AddModuleRefSymbol(const STDString& moduleName, const STDString& symbol)
 {
 	auto iter = m_Symbols.find(symbol);
@@ -593,6 +597,16 @@ bool CompilerSymbol::IsValidClassSymbol(const STDString& symbol)
 	}
 
 	return  false;
+}
+
+bool CompilerSymbol::IsValidFunctionSymbolById(x_uint32 id)
+{
+	auto name = m_TypeInfo->GetTypeName(id);
+	if (name && m_FunctionSymbols.find(*name) != m_FunctionSymbols.end())
+	{
+		return true;
+	}
+	return false;
 }
 
 x_uint32 CompilerSymbol::GetSymbolTypeId(const STDString& symbol)

@@ -73,6 +73,8 @@ public:
 	void Register_Enum(const STDString& moduleName, const STDString& name, V_Array<Pair<STDString, int>>&& members);
 	void Register_Function(const STDString& moduleName, const STDString& name, x_uint32 functionType, V_Array<HazeDefineVariableView>&& params, HazeFunctionDesc desc, const STDString* className = nullptr, bool isClassPublic = false);
 
+	void Register_Closure(const STDString& name);
+
 	void AddModuleRefSymbol(const STDString& moduleName, const STDString& symbol);
 
 	//当第一遍收集完所有符号后，在第二遍解析前，已经可以将所有之前未定的符号，如暂时将枚举当做类，这些都全部纠正过来，可以加个是否正确确定所有类型的标记和log看哪些被修改过来了。
@@ -80,6 +82,7 @@ public:
 
 	bool IsValidSymbol(const STDString& symbol);
 	bool IsValidClassSymbol(const STDString& symbol);
+	bool IsValidFunctionSymbolById(x_uint32 id);
 	x_uint32 GetSymbolTypeId(const STDString& symbol);
 	x_uint32 GetGlobalVariableId(const STDString& name);
 	x_uint32 GetFunctionId(const STDString& name);

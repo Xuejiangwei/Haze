@@ -140,10 +140,6 @@ bool HazeVM::InitVM(V_Array<STDString> Vector_ModulePath)
 	return true;
 }
 
-void HazeVM::LoadStandardLibrary(V_Array<STDString> Vector_ModulePath)
-{
-}
-
 void HazeVM::CallFunction(const x_HChar* functionName, ...)
 {
 	auto& function = GetFunctionByName(functionName);
@@ -337,6 +333,12 @@ const FunctionData* HazeVM::GetFunctionDataByName(const STDString& name, const x
 {
 	int index = GetFucntionIndexByName(className ? GetHazeClassFunctionName(className, name) : name);
 	return index >= 0 ? &m_FunctionTable[index] : nullptr;
+}
+
+const FunctionData* HazeVM::GetFunctionDataById(x_uint32 id)
+{
+	auto symbol = m_TypeInfoMap->GetTypeName(id);
+	return symbol ? GetFunctionDataByName(*symbol) : nullptr;
 }
 
 const ObjectString* HazeVM::GetConstantStringByIndex(int index) const

@@ -7,22 +7,18 @@ class CompilerPointerFunction : public CompilerValue
 	friend class CompilerModule;
 public:
 	explicit CompilerPointerFunction(CompilerModule* compilerModule, const HazeVariableType& defineType,
-		/*HazeVariableScope scope, */HazeDataDesc desc, int count, TemplateDefineTypes* params);
+		/*HazeVariableScope scope, */HazeDataDesc desc, int count);
 
 	virtual ~CompilerPointerFunction() override;
 
-	//const V_Array<HazeDefineType>& GetParamTypes() const { return m_ParamTypes; }
+	HazeVariableType GetFunctionType() const;
 
-	const HazeVariableType& GetFunctionType() const { return m_FuncType.Type->BaseType; }
+	HazeVariableType GetParamTypeByIndex(x_uint64 index) const;
 
-	const HazeVariableType& GetParamTypeByIndex(x_uint64 index) const;
-
-	const HazeVariableType& GetParamTypeLeftToRightByIndex(x_uint64 index) const;
+	HazeVariableType GetParamTypeLeftToRightByIndex(x_uint64 index) const;
 
 	const x_uint64 GetParamCount() const;
 
 private:
-	V_Array<TemplateDefineType> m_ParamTypes;
-	TemplateDefineType m_FuncType;
 	CompilerClass* m_OwnerClass;
 };

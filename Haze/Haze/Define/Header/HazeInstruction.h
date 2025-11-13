@@ -180,6 +180,7 @@ struct InstructionData
 			x_uint32 TemplateCount;
 			x_uint32 ArrayDimension;
 		};
+		x_uint32 Extra;
 	};
 
 	union Extra

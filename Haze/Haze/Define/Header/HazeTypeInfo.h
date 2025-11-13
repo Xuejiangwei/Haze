@@ -124,6 +124,8 @@ public:
 
 	const x_uint32 GetTypeId(const STDString& name) const;
 
+	V_Array<x_uint32>* GetFunctionInfoByType(x_uint32 id);
+
 	ModuleRefrenceTypeId& GetModuleRefTypeId(const STDString& name);
 
 	void GenICode(HAZE_STRING_STREAM& hss);

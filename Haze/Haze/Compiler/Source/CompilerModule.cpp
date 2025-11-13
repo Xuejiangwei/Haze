@@ -24,7 +24,7 @@
 
 struct PushTempRegister
 {
-	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule, const HazeVariableType* defineType, Share<CompilerValue>* retValue)
+	PushTempRegister(HAZE_STRING_STREAM& hss, Compiler* compiler, CompilerModule* compilerModule, HazeVariableType defineType, Share<CompilerValue>* retValue)
 		: Size(0), Hss(hss), Compiler(compiler), Module(compilerModule), DefineType(defineType), RetValue(retValue)
 	{
 	}
@@ -33,9 +33,10 @@ struct PushTempRegister
 	{
 		Compiler->GetInsertBlock()->PushIRCode(Hss.str());
 
-		if (DefineType && !IsVoidType(DefineType->BaseType) && RetValue)
+		if (!IsNoneType(DefineType.BaseType) && !IsVoidType(DefineType.BaseType) && RetValue)
 		{
-			*RetValue = Compiler->GetRetRegister(DefineType->BaseType, DefineType->TypeId);
+			*RetValue = Compiler->GetRetRegister(DefineType.BaseType, DefineType.TypeId);
+			*RetValue = Compiler->CreateMov(Compiler->GetTempRegister(*RetValue), *RetValue);
 		}
 	}
 
@@ -45,7 +46,7 @@ private:
 	HAZE_STRING_STREAM& Hss;
 	Compiler* Compiler;
 	CompilerModule* Module;
-	const HazeVariableType* DefineType;
+	HazeVariableType DefineType;
 	Share<CompilerValue>* RetValue;
 };
 
@@ -659,6 +660,15 @@ Share<CompilerFunction> CompilerModule::CreateFunction(Share<CompilerClass> comp
 Share<CompilerClosureFunction> CompilerModule::CreateClosureFunction(HazeVariableType& type, V_Array<HazeDefineVariable>& params)
 {
 	STDString name = CLOSURE_NAME_PREFIX + GetName() + ToHazeString(m_ClosureStack.size());
+
+	V_Array<HazeDefineVariableView> paramsView(params.size());
+	for (x_uint64 i = 0; i < paramsView.size(); i++)
+	{
+		paramsView[i].Name = params[i].Name;
+		paramsView[i].Type = params[i].Type;
+	}
+
+	m_Compiler->GetCompilerSymbol()->Register_Function(GetName(), name, type.TypeId, Move(paramsView), HazeFunctionDesc::Closure);
 	auto closure = MakeShare<CompilerClosureFunction>(this, name, type, params);
 	//closure->InitEntryBlock(CompilerBlock::CreateBaseBlock(BLOCK_ENTRY_NAME, closure, nullptr));
 
@@ -817,12 +827,18 @@ Share<CompilerValue> CompilerModule::CreateNew(const HazeVariableType& data, V_A
 
 	auto tempRegister = m_Compiler->GetTempRegister(data);
 	
+	x_uint32 closureReplaceTypeId = tempRegister->GetTypeId();
 	if (closure)
 	{
-		m_Compiler->CreatePointerToFunction(closure, tempRegister);
+		CompilerValueTypeChanger::Reset(tempRegister, HazeVariableType(tempRegister->GetBaseType(), m_Compiler->GetCompilerSymbol()->GetFunctionId(closure->GetName())));
 	}
 
 	GenIRCode(hss, this, InstructionOpCode::NEW, tempRegister, m_Compiler->GetConstantValueUint64(countValue ? countValue->size() : 0), nullptr, &data);
+
+	if (closure)
+	{
+		CompilerValueTypeChanger::Reset(tempRegister, HazeVariableType(tempRegister->GetBaseType(), closureReplaceTypeId));
+	}
 
 	if (countValue)
 	{
@@ -940,7 +956,7 @@ Share<CompilerValue> CompilerModule::GetClosureVariable(const STDString& name, b
 			if (i < m_ClosureStack.size() - 1 && addRef)
 			{
 				int refIndex = m_ClosureStack[i]->FindLocalVariableIndex(var);
-				for (int j = i + 1; j < m_ClosureStack.size() - 1; j++)
+				for (int j = i + 1; j < m_ClosureStack.size(); j++)
 				{
 					if (refIndex >= 0)
 					{
@@ -961,7 +977,7 @@ void CompilerModule::ClosureAddLocalRef(Share<CompilerValue> value, const STDStr
 	auto index = GetCurrFunction()->FindLocalVariableIndex(value);
 	for (x_uint64 i = 0; i < m_ClosureStack.size(); i++)
 	{
-		m_ClosureStack[i]->AddRefValue(index, value, name);
+		index = m_ClosureStack[i]->AddRefValue(index, value, name);
 	}
 }
 
@@ -1067,7 +1083,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 
 		if (paramSize > 0)
 		{
-			auto& lastParam = callFunction ? callFunction->GetParamTypeByIndex(0) :
+			auto lastParam = callFunction ? callFunction->GetParamTypeByIndex(0) :
 				pointerFunc ? pointerFunc->GetParamTypeByIndex(0) : advancFunctionInfo->Params.at(advancFunctionInfo->Params.size() - 1);
 			if ((IsMultiVariableType(lastParam.BaseType) && params.size() + 1 >= paramSize)) {}
 			else if (!IsMultiVariableType(lastParam.BaseType) && (params.size() + (callFunction ? callFunction->GetDefaultParamCount() : 0) >= paramSize))
@@ -1124,7 +1140,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerFunction> 
 
 	Share<CompilerValue> ret = nullptr;
 	{
-		PushTempRegister pushTempRegister(hss, m_Compiler, this, &callFunction->GetFunctionType(), &ret);
+		PushTempRegister pushTempRegister(hss, m_Compiler, this, callFunction->GetFunctionType(), &ret);
 		FunctionCall(hss, callFunction, nullptr, nullptr, size, params, thisPointerTo);
 		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, callFunction, nullptr, nullptr, -1, nameSpace);
 	}
@@ -1151,7 +1167,7 @@ Share<CompilerValue> CompilerModule::CreateFunctionCall(Share<CompilerValue> poi
 
 	Share<CompilerValue> ret = nullptr;
 	{
-		PushTempRegister pushTempRegister(hss, m_Compiler, this, &DynamicCast<CompilerPointerFunction>(pointerFunction)->GetFunctionType(), &ret);
+		PushTempRegister pushTempRegister(hss, m_Compiler, this, DynamicCast<CompilerPointerFunction>(pointerFunction)->GetFunctionType(), &ret);
 		FunctionCall(hss, nullptr, pointerFunction, nullptr, size, params, thisPointerTo);
 		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, pointerFunction);
 	}
@@ -1167,7 +1183,7 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 	InstructionOpId opId;
 	if (!GetGlobalVariableId(this, thisPointerTo, opId))
 	{
-		if (!GetCurrFunction()->FindLocalVariableIndex(thisPointerTo, opId))
+		if (!GetCurrClosureOrFunction()->FindLocalVariableIndex(thisPointerTo, opId))
 		{
 			HAZE_LOG_ERR_W("函数指针调用失败!\n");
 			return nullptr;
@@ -1188,10 +1204,14 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 			funcType = HAZE_VAR_TYPE((HazeValueType)m_Compiler->GetCompilerSymbol()->GetTypeInfoMap()->GetTypeById(thisPointerTo->GetVariableType().TypeId)->_ObjectBase.TypeId1);
 		}
 	}
+	else if (thisPointerTo->IsClosure())
+	{
+		funcType = DynamicCast<CompilerPointerFunction>(thisPointerTo)->GetFunctionType();
+	}
 
 	Share<CompilerValue> ret = nullptr;
 	{
-		PushTempRegister pushTempRegister(hss, m_Compiler, this, &funcType, &ret);
+		PushTempRegister pushTempRegister(hss, m_Compiler, this, funcType, &ret);
 		FunctionCall(hss, nullptr, nullptr, functionInfo, size, params, thisPointerTo);
 		GenIRCode(hss, this, InstructionOpCode::CALL, params.size(), size, nullptr, nullptr, thisPointerTo, index);
 	}

@@ -72,6 +72,10 @@ private:
 
 	void InitStackRegister();
 
+	void OnObjectFunctionCall();
+
+	void OnObjectFunctionRet(int paramByteSize);
+
 	void OnCall(const FunctionData* info, int paramSize);
 
 	void OnRet();
@@ -103,5 +107,5 @@ private:
 
 	V_Array<Pair<void*, const HazeVariableType*>> m_GCTempRegisters;
 
-	//TemplateDefineTypes m_NewSignType;
+	V_Array<x_uint32> m_ObjectFunctionCallStack;
 };

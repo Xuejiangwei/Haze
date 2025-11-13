@@ -35,8 +35,6 @@ public:
 
 	bool IsDebug() const { return GenType == HazeRunType::Debug; }
 
-	void LoadStandardLibrary(V_Array<STDString> Vector_ModulePath);
-
 	const V_Array<Instruction>& GetInstruction() const { return m_Instructions; }
 
 	void CallFunction(const x_HChar* functionName, ...);
@@ -69,6 +67,8 @@ public:
 	const FunctionData& GetFunctionByName(const STDString& name, const x_HChar* className = nullptr);
 
 	const FunctionData* GetFunctionDataByName(const STDString& name, const x_HChar* className = nullptr);
+
+	const FunctionData* GetFunctionDataById(x_uint32 id);
 
 	const class ObjectString* GetConstantStringByIndex(int index) const;
 

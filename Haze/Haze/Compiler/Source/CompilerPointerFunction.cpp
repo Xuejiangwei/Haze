@@ -2,62 +2,52 @@
 #include "CompilerPointerFunction.h"
 #include "Compiler.h"
 #include "CompilerModule.h"
+#include "CompilerSymbol.h"
+#include "HazeTypeInfo.h"
 #include "HazeLogDefine.h"
 
 CompilerPointerFunction::CompilerPointerFunction(CompilerModule* compilerModule, const HazeVariableType& defineType,
-	/*HazeVariableScope scope,*/ HazeDataDesc desc, int count, TemplateDefineTypes* paramTypes)
+	/*HazeVariableScope scope,*/ HazeDataDesc desc, int count)
 	: CompilerValue(compilerModule, defineType, /*scope,*/ desc, count), m_OwnerClass(nullptr)
 {
-	if (paramTypes)
-	{
-		m_ParamTypes = Move(paramTypes->Types);
-		m_FuncType = m_ParamTypes[0];
-		m_ParamTypes.erase(m_ParamTypes.begin());
-	}
 }
 
 CompilerPointerFunction::~CompilerPointerFunction()
 {
 }
 
-const HazeVariableType& CompilerPointerFunction::GetParamTypeByIndex(x_uint64 index) const
+HazeVariableType CompilerPointerFunction::GetFunctionType() const
 {
-	if (index + 1 < m_ParamTypes.size())
-	{
-		return m_ParamTypes[m_ParamTypes.size() - 1 - index].Type->BaseType;
-	}
-	else
-	{
-		if (index > 0)
-		{
-			COMPILER_ERR_W("从右往左，获得指针函数的第<%d>个参数错误", index);
-			return m_ParamTypes[0].Type->BaseType;
-		}
-		else
-		{
-			return m_ParamTypes[0].Type->BaseType;
-		}
-	}
+	auto typeInfoMap = m_Module->GetCompiler()->GetCompilerSymbol()->GetTypeInfoMap();
+	auto info = typeInfoMap->GetFunctionInfoByType(m_Type.TypeId);
+	return info ? typeInfoMap->GetVarTypeById(info->at(0)) : HAZE_VAR_TYPE(HazeValueType::None);
 }
 
-const HazeVariableType& CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index) const
+HazeVariableType CompilerPointerFunction::GetParamTypeByIndex(x_uint64 index) const
 {
-	if (index < m_ParamTypes.size())
+	auto typeInfoMap = m_Module->GetCompiler()->GetCompilerSymbol()->GetTypeInfoMap();
+	auto info = typeInfoMap->GetFunctionInfoByType(m_Type.TypeId);
+	if (info && info->size() - 1 > index)
 	{
-		return m_ParamTypes[index].Type->BaseType;
+		return typeInfoMap->GetVarTypeById(info->at(info->size() - 1 - index));
 	}
-	else
-	{
-		if (index > 0)
-		{
-			COMPILER_ERR_W("从左往右，获得指针函数的第<%d>个参数错误", m_ParamTypes.size() - 1 - index);
-		}
 
-		return m_ParamTypes[0].Type->BaseType;
+	return HAZE_VAR_TYPE(HazeValueType::None);
+}
+
+HazeVariableType CompilerPointerFunction::GetParamTypeLeftToRightByIndex(x_uint64 index) const
+{
+	auto typeInfoMap = m_Module->GetCompiler()->GetCompilerSymbol()->GetTypeInfoMap();
+	auto info = typeInfoMap->GetFunctionInfoByType(m_Type.TypeId);
+	if (info && info->size() - 1 > index)
+	{
+		return typeInfoMap->GetVarTypeById(info->at(index + 1));
 	}
+
+	return HAZE_VAR_TYPE(HazeValueType::None);
 }
 
 const x_uint64 CompilerPointerFunction::GetParamCount() const
 {
-	return m_OwnerClass ? m_ParamTypes.size() - 1 : m_ParamTypes.size();
+	return 0;// m_OwnerClass ? m_ParamTypes.size() - 1 : m_ParamTypes.size();
 }

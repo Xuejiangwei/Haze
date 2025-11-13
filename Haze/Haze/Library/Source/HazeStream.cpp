@@ -579,8 +579,10 @@ void TestDeconstructor(void* ptr)
 
 void TestGetMember(HazeStack* stack, const STDString& name, void* obj)
 {
+	__WITH_RET_SCOPE();
+
 	HAZE_LOG_INFO(H_TEXT("get member %s\n"), name.c_str());
-	//SET_RET_BY_TYPE(HAZE_VAR_TYPE(HazeValueType::Int32), ((TestDynamic*)obj)->value);
+	SET_RET_BY_TYPE(HAZE_VAR_TYPE(HazeValueType::Int32), ((TestDynamic*)obj)->value);
 }
 
 void TestSetMember(HazeStack* stack, const STDString& name, void* obj, x_uint8* currESP)
@@ -599,8 +601,10 @@ void TestCallFunction(HazeStack* stack, const STDString& name, void* obj, x_uint
 	memcpy(&a, currESP - sizeof(a), sizeof(a));
 	memcpy(&b, currESP - sizeof(a) - sizeof(b), sizeof(b));
 
+	__WITH_RET_SCOPE();
+
 	((TestDynamic*)obj)->Add(a, b);
-	//SET_RET_BY_TYPE(HAZE_VAR_TYPE(HazeValueType::Void), obj);
+	SET_RET_BY_TYPE(HAZE_VAR_TYPE(HazeValueType::Void), obj);
 }
 
 void HazeStream::CreateDynamicClass(HAZE_STD_CALL_PARAM)

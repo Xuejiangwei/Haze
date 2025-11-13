@@ -23,7 +23,7 @@ HAZE_TYPE_DEFINE(Float64)
 
 HAZE_TYPE_DEFINE(__BaseType_End)
 
-// 纯字符串, 用作操作数的Variable名字当作dynamicClass的成员名, 虚函数名的字符串
+// 纯字符串, 用作操作数的Variable名字当作dynamicClass的成员名, 虚函数名的字符串, 闭包的名字
 HAZE_TYPE_DEFINE(PureString)
 
 // 引用, 只作用于基本类型, 因为类和数组本来就是指针

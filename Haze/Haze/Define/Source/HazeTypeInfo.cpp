@@ -244,6 +244,17 @@ const x_uint32 HazeTypeInfoMap::GetTypeId(const STDString& name) const
 	return 0;
 }
 
+V_Array<x_uint32>* HazeTypeInfoMap::GetFunctionInfoByType(x_uint32 id)
+{
+	auto it = m_FunctionInfoMap.find(id);
+	if (it != m_FunctionInfoMap.end())
+	{
+		return &it->second;
+	}
+
+	return nullptr;
+}
+
 HazeTypeInfoMap::ModuleRefrenceTypeId& HazeTypeInfoMap::GetModuleRefTypeId(const STDString& name)
 {
 	return m_ModuleRefTypes[name];

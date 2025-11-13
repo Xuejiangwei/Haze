@@ -4,6 +4,7 @@
 #include "CompilerClassValue.h"
 #include "CompilerBlock.h"
 #include "CompilerModule.h"
+#include "Compiler.h"
 #include "CompilerHelper.h"
 
 CompilerClosureFunction::CompilerClosureFunction(CompilerModule* compilerModule, const STDString& name, HazeVariableType& type, V_Array<HazeDefineVariable>& params)
@@ -17,6 +18,12 @@ CompilerClosureFunction::~CompilerClosureFunction()
 
 int CompilerClosureFunction::AddRefValue(int variableIndex, Share<CompilerValue> refValue, const STDString& name)
 {
+	if (!refValue->IsAdvance())
+	{
+		COMPILER_ERR_W("添加闭包引用<%s>错误, 类型必须为复杂类型", name.c_str());
+		return 0;
+	}
+
 	for (auto& v : m_RefValues)
 	{
 		if (v.first == variableIndex)

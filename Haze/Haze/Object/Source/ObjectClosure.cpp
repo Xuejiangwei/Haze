@@ -55,8 +55,14 @@ void ObjectClosure::CallFunction(HAZE_OBJECT_CALL_PARAM)
 		SetHazeValueByData(params[i], type.BaseType, value);
 	}*/
 
+	stack->m_EBP = stack->m_ObjectFunctionCallStack.back();
 	auto func = obj->m_FunctionData;
-	stack->OnCall(func, (int)paramByteSize);
+	for (x_uint64 i = 0; i < func->Params.size(); i++)
+	{
+		paramByteSize += GetSizeByHazeType(func->Params[i].Type.BaseType);
+	}
+
+	stack->OnCall(func, paramByteSize);
 
 	for (x_uint64 i = 0; i < func->RefVariables.size(); i++)
 	{
@@ -64,4 +70,5 @@ void ObjectClosure::CallFunction(HAZE_OBJECT_CALL_PARAM)
 	}
 
 	paramByteSize = -1;
+	//stack->m_PC = cachePC;
 }

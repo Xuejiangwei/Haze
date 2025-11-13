@@ -62,7 +62,7 @@ ASTNumber::ASTNumber(Compiler* compiler, const SourceLocation& location, HazeVal
 
 Share<CompilerValue> ASTNumber::CodeGen(Share<CompilerValue> inferValue)
 {
-	if (inferValue && m_DefineVariable.Type.BaseType != inferValue->GetBaseType())
+	if (inferValue && m_DefineVariable.Type.BaseType != inferValue->GetBaseType() && !IsMultiVariableType(inferValue->GetBaseType()))
 	{
 		AST_ERR_W("数字<%s>变量类型与赋值变量不符", HazeValueNumberToString(m_DefineVariable.Type.BaseType, m_Value).c_str());
 	}
@@ -248,7 +248,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 		auto pointerFuncValue = DynamicCast<CompilerPointerFunction>(pointerFunction);
 		for (x_uint64 i = 0; i < paramInferValues.size(); i++)
 		{
-			paramInferValues[i] = CreateAstTempVariable(currModule.get(), pointerFunction->GetVariableType());
+			paramInferValues[i] = CreateAstTempVariable(currModule.get(), pointerFuncValue->GetParamTypeLeftToRightByIndex((x_uint32)i));
 		}
 	}
 	else if (classObj)
@@ -592,7 +592,7 @@ Share<CompilerValue> ASTVariableDefine_Closure::CodeGen(Share<CompilerValue> inf
 		AST_ERR_W("生成匿名函数<%s>结束错误, 不是当前模块解析的函数<%s>", m_DefineVariable.Name.c_str(), currModule->GetCurrClosure()->GetName().c_str());
 	}
 
-	auto closureValue = m_Compiler->CreateNew(HazeVariableType(HazeValueType::Closure, 0), nullptr, closureFunction);
+	auto closureValue = m_Compiler->CreateNew(HazeVariableType(HazeValueType::Closure, m_TemplateTypeId), nullptr, closureFunction);
 	//V_Array<HazeVariableType> paramTypes(m_TemplateTypes.Types.size() + 1);
 
 	////返回类型设置到第0个
@@ -1352,30 +1352,35 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
 
-			// 字符串
-			if (left->IsString() || right->IsString())
+			// 复杂类型
+			if (!((left->IsNullPtr() && IsAdvanceType(right->GetBaseType())) || (right->IsNullPtr() && IsAdvanceType(left->GetBaseType()))) &&
+				(IsAdvanceType(left->GetBaseType()) || IsAdvanceType(right->GetBaseType())))
 			{
-				if (!left->IsString())
+				if (!IsAdvanceType(left->GetBaseType()))
 				{
-					AST_ERR_W("<%s><%s>比较错误, <%s>不是字符类型", m_LeftAST->GetName(), m_RightAST->GetName(), m_LeftAST->GetName());
+					AST_ERR_W("<%s><%s>比较错误, <%s>不是复杂类型", m_LeftAST->GetName(), m_RightAST->GetName(), m_LeftAST->GetName());
 				}
-				else if (!right->IsString())
+				else if (!IsAdvanceType(right->GetBaseType()))
 				{
-					AST_ERR_W("<%s><%s>比较错误, <%s>不是字符类型", m_LeftAST->GetName(), m_RightAST->GetName(), m_RightAST->GetName());
+					AST_ERR_W("<%s><%s>比较错误, <%s>不是复杂类型", m_LeftAST->GetName(), m_RightAST->GetName(), m_RightAST->GetName());
 				}
 				else if (!(m_OperatorToken == HazeToken::Equal || m_OperatorToken == HazeToken::NotEqual))
 				{
 					AST_ERR_W("<%s><%s>比较错误, 只能比较等于或者不等于", m_LeftAST->GetName(), m_RightAST->GetName());
 				}
+				else if (left->GetTypeId() != right->GetTypeId())
+				{
+					AST_ERR_W("<%s><%s>比较错误, 不是相同类型", m_LeftAST->GetName(), m_RightAST->GetName());
+				}
 				else
 				{
 					if (m_OperatorToken == HazeToken::Equal)
 					{
-						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::String, HAZE_ADVANCE_EQUAL_FUNCTION, { right }, left);
+						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(left->GetBaseType(), HAZE_ADVANCE_EQUAL_FUNCTION, { right }, left);
 					}
 					else if (m_OperatorToken == HazeToken::NotEqual)
 					{
-						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::String, HAZE_ADVANCE_NOT_EQUAL_FUNCTION, { right }, left);
+						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(left->GetBaseType(), HAZE_ADVANCE_NOT_EQUAL_FUNCTION, { right }, left);
 					}
 				}
 			}

@@ -738,7 +738,6 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 		case InstructionOpCode::BIT_NEG:
 		case InstructionOpCode::NOT:
 		case InstructionOpCode::NEG:
-		case InstructionOpCode::NEW:
 		case InstructionOpCode::CVT:
 		case InstructionOpCode::MOV_DCU:
 		case InstructionOpCode::CMP:
@@ -751,7 +750,21 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne, operatorTwo };
 		}
-		break;
+			break;
+		case InstructionOpCode::NEW:
+		{
+			InstructionData operatorOne;
+			InstructionData operatorTwo;
+
+			ParseInstructionData(operatorOne);
+			GetNextLexmeAssign_CustomType<x_uint32>(operatorOne.Extra.SignData.Extra);
+
+			ParseInstructionData(operatorTwo);
+
+			//operatorOne.Extra.SignData.Extra = operatorOne.Type
+			instruction.Operator = { operatorOne, operatorTwo };
+		}
+			break;
 		case InstructionOpCode::ADD:
 		case InstructionOpCode::SUB:
 		case InstructionOpCode::MUL:
@@ -773,7 +786,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne, operatorTwo, operatorThree };
 		}
-		break;
+			break;
 		case InstructionOpCode::PUSH:
 		case InstructionOpCode::POP:
 		case InstructionOpCode::RET:
@@ -783,7 +796,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne };
 		}
-		break;
+			break;
 		case InstructionOpCode::CALL:
 		{
 			InstructionData operatorOne;
@@ -803,7 +816,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne };
 		}
-		break;
+			break;
 		case InstructionOpCode::JMP:
 		{
 			InstructionData operatorOne;
@@ -813,7 +826,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne };
 		}
-		break;
+			break;
 		case InstructionOpCode::JNE:
 		case InstructionOpCode::JNG:
 		case InstructionOpCode::JNL:
@@ -831,7 +844,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne, operatorTwo };
 		}
-		break;
+			break;
 		case InstructionOpCode::LINE:
 		{
 			InstructionData operatorOne;
@@ -839,7 +852,7 @@ void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction
 
 			instruction.Operator = { operatorOne };
 		}
-		break;
+			break;
 		/*case InstructionOpCode::NEW_SIGN:
 		{
 			InstructionData operatorOne;

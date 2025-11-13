@@ -142,6 +142,23 @@ void HazeStack::InitStackRegister()
 	//};
 }
 
+void HazeStack::OnObjectFunctionCall()
+{
+	m_ObjectFunctionCallStack.push_back(m_EBP);
+	m_EBP = m_ESP;
+}
+
+void HazeStack::OnObjectFunctionRet(int paramByteSize)
+{
+	if (paramByteSize >= 0)
+	{
+		m_ESP -= (paramByteSize + HAZE_ADDRESS_SIZE);
+		m_EBP = m_ObjectFunctionCallStack.back();
+
+		m_ObjectFunctionCallStack.pop_back();
+	}
+}
+
 void HazeStack::OnCall(const FunctionData* info, int paramSize)
 {
 	RegisterData registerDara({ GetVirtualRegister(HazeVirtualRegister::CMP)->Data });

@@ -211,8 +211,8 @@ class InstructionProcessor
 
 			if (Data.size() == 2)
 			{
-				HAZE_LOG_ERR_W("开始 操作数一地址<%p> 存储地址<%p> 操作数二地址<%p> EBP<%d> ESP<%d>", address, (char*)Address, GetOperatorAddress(stack, Data[1]),
-					Stack->m_EBP, Stack->m_ESP);
+				HAZE_LOG_ERR_W("开始 操作数一类型<%s>地址<%p> 存储地址<%p> 操作数二类型<%s>地址<%p> EBP<%d> ESP<%d>", GetHazeValueTypeString(Data[0].Type), address, 
+					(char*)Address, GetHazeValueTypeString(Data[1].Type), GetOperatorAddress(stack, Data[1]), Stack->m_EBP, Stack->m_ESP);
 				ShowData2();
 				HAZE_LOG_ERR_W("\n");
 
@@ -220,7 +220,7 @@ class InstructionProcessor
 			}
 			else
 			{
-				HAZE_LOG_ERR_W("开始 操作数一地址<%p> 存储地址<%p> EBP<%d> ESP<%d>\n", address, (char*)Address, Stack->m_EBP, Stack->m_ESP);
+				HAZE_LOG_ERR_W("开始 操作数一类型<%s>地址<%p> 存储地址<%p> EBP<%d> ESP<%d>\n", GetHazeValueTypeString(Data[0].Type), address, (char*)Address, Stack->m_EBP, Stack->m_ESP);
 
 				HAZE_LOG_INFO(H_TEXT("执行指令<%s> \n"), GetInstructionString(opCode));
 			}
@@ -404,6 +404,7 @@ public:
 		if (oper.size() == 1)
 		{
 			int size = GetSizeByHazeType(oper[0].Type);
+
 			if (oper[0].Desc == HazeDataDesc::Address)
 			{
 				memcpy(&stack->m_StackMain[stack->m_ESP], &stack->m_PC, HAZE_ADDRESS_SIZE);
@@ -685,22 +686,17 @@ public:
 
 			if (oper[0].Type == HazeValueType::ObjectFunction)
 			{
-				x_uint32 tempEBP = stack->m_EBP;
-				stack->m_EBP = stack->m_ESP;
+				stack->OnObjectFunctionCall();
 				int paramByteSize = 0;
 				
 #if HAZE_CALL_LOG
 				HString functionName = stack->m_VM->GetAdvanceFunctionName((x_uint16)oper[0].Extra.ObjectCall.Index);;
-				HAZE_LOG_INFO(H_TEXT("调用对象<%s>函数<%s> EBP<%d>  ESP<%d>\n"), functionName.c_str(), functionName.c_str(), stack->m_EBP, stack->m_ESP);
+				HAZE_LOG_INFO(H_TEXT("调用对象函数<%s> EBP<%d>  ESP<%d>\n"), functionName.c_str(), stack->m_EBP, stack->m_ESP);
 #endif
 				
 				stack->m_VM->GetAdvanceFunction((x_uint16)oper[0].Extra.ObjectCall.Index)->ClassFunc(stack, oper[0].Extra.Call.ParamNum, paramByteSize);
-
-				if (paramByteSize >= 0)
-				{
-					stack->m_ESP -= (paramByteSize + HAZE_ADDRESS_SIZE);
-					stack->m_EBP = tempEBP;
-				}
+				stack->OnObjectFunctionRet(paramByteSize);
+				
 			}
 			else if (oper[0].Type == HazeValueType::Function)
 			{
@@ -857,7 +853,7 @@ public:
 			{
 				auto& frame = stack->GetCurrFrame();
 				address = HAZE_MALLOC(sizeof(ObjectClosure), GC_ObjectType::Closure);
-				new(address.first) ObjectClosure(address.second, ((FunctionData**)GetOperatorAddress(stack, oper[0]))[0], frame.FunctionInfo, &stack->m_StackMain[frame.CurrParamESP]);
+				new(address.first) ObjectClosure(address.second, stack->GetVM()->GetFunctionDataById(oper[0].Extra.SignData.Extra), frame.FunctionInfo, &stack->m_StackMain[frame.CurrParamESP]);
 			}
 			else
 			{

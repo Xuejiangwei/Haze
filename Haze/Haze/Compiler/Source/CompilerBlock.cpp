@@ -201,7 +201,7 @@ Share<CompilerValue> CompilerBlock::CreateAlloce(const HazeDefineVariable& defin
 		return nullptr;
 	}
 
-	if (dynamic_cast<CompilerClosureFunction*>(m_ParentFunction) && dynamic_cast<CompilerClosureFunction*>(m_ParentFunction)->ExistRefVariable(defineVar.Name))
+	if (dynamic_cast<CompilerClosureFunction*>(m_ParentFunction) && dynamic_cast<CompilerClosureFunction*>(m_ParentFunction)->ExistRefVariable(defineVar.Name) && defineVar.Name != HAZE_CLOSURE_NAME)
 	{
 		COMPILER_ERR_MODULE_W("局部变量<%s>存在相同名字的闭包引用", m_ParentFunction->GetModule()->GetCompiler(), m_ParentFunction->GetModule()->GetName().c_str(), defineVar.Name.c_str());
 		return nullptr;

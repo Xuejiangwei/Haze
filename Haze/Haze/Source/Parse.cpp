@@ -200,9 +200,10 @@ static HashMap<HazeToken, int> s_HashMap_OperatorPriority =
 };
 
 static const HashMap<STDString, HazeToken> s_NumberMap = {
-		{ TOKEN_INT_8 , HazeToken::Int8 }, { TOKEN_UINT_8 , HazeToken::UInt8 }, { TOKEN_INT_16 , HazeToken::Int16 },
-		{ TOKEN_UINT_16 , HazeToken::UInt16 }, { TOKEN_INT_32 , HazeToken::Int32 }, { TOKEN_UINT_32 , HazeToken::UInt32 },
-		{ TOKEN_INT_64 , HazeToken::UInt64 }, { TOKEN_UINT_64 , HazeToken::UInt64 },
+		{ TOKEN_INT_8 , HazeToken::Int8 }, { TOKEN_UINT_8 , HazeToken::UInt8 },
+		{ TOKEN_INT_16 , HazeToken::Int16 }, { TOKEN_UINT_16 , HazeToken::UInt16 },
+		{ TOKEN_INT_32 , HazeToken::Int32 }, { TOKEN_UINT_32 , HazeToken::UInt32 },
+		{ TOKEN_INT_64 , HazeToken::Int64 }, { TOKEN_UINT_64 , HazeToken::UInt64 },
 		{ TOKEN_FLOAT_32 , HazeToken::Float32 }, { TOKEN_FLOAT_64 , HazeToken::Float64 },
 };
 

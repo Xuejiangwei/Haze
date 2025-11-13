@@ -460,19 +460,19 @@ bool CompilerFunction::FindLocalVariableIndex(const Share<CompilerValue> value, 
 
 int CompilerFunction::FindLocalVariableIndex(const Share<CompilerValue> value)
 {
-	for (x_uint64 i = 0; i < m_Params.size(); i++)
+	/*for (x_uint64 i = 0; i < m_Params.size(); i++)
 	{
 		if (m_Params[i].Value == value)
 		{
 			return (int)i;
 		}
-	}
+	}*/
 
 	for (x_uint64 i = 0; i < m_LocalVariables.size(); i++)
 	{
 		if (m_LocalVariables[i].first == value)
 		{
-			return (int)(i + m_Params.size());
+			return (int)(i /*+ m_Params.size()*/);
 		}
 	}
 

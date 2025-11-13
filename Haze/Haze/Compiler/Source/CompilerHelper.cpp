@@ -127,7 +127,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		case HazeValueType::Refrence:
 			return MakeShare<CompilerRefValue>(compilerModule, type, /*scope,*/ desc, count, assignValue);
 		case HazeValueType::Function:
-			return MakeShare<CompilerPointerFunction>(compilerModule, type, /*scope,*/ desc, count, params);
+			return MakeShare<CompilerPointerFunction>(compilerModule, type, /*scope,*/ desc, count);
 		case HazeValueType::String:
 			return MakeShare<CompilerStringValue>(compilerModule, type,/* scope,*/ desc, count);
 		case HazeValueType::Class:
@@ -145,7 +145,7 @@ Share<CompilerValue> CreateVariableImpl(CompilerModule* compilerModule, const Ha
 		case HazeValueType::Hash:
 			return MakeShare<CompilerHashValue>(compilerModule, type, /*scope,*/ desc, count);
 		case HazeValueType::Closure:
-			return MakeShare<CompilerClosureValue>(compilerModule, type, /*scope,*/ desc, count, params);
+			return MakeShare<CompilerClosureValue>(compilerModule, type, /*scope,*/ desc, count);
 		default:
 			COMPILER_ERR_MODULE_W("不能创建<%s>类型的变量", compilerModule->GetCompiler(), compilerModule->GetName().c_str(), compilerModule->GetCompiler()->GetCompilerSymbol()->GetSymbolByTypeId(type.TypeId)->c_str());
 			break;
@@ -304,6 +304,10 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	{
 		hss << HazeValueNumberToString(value->GetBaseType(), varId.Value);
 	}
+	/*else if (value->IsClosure() && compilerModule->GetCompiler()->GetCompilerSymbol()->IsValidFunctionSymbolById(value->GetTypeId()))
+	{
+		hss << value->GetTypeId();
+	}*/
 	else
 	{
 		hss << varId.Id;
@@ -472,7 +476,6 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		case InstructionOpCode::BIT_NEG:
 		case InstructionOpCode::NOT:
 		case InstructionOpCode::NEG:
-		case InstructionOpCode::NEW:
 		case InstructionOpCode::CVT:
 		case InstructionOpCode::MOV_DCU:
 		{
@@ -483,6 +486,15 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			GenVariableHzic(m, hss, oper1);
 		}
 			break;
+		case InstructionOpCode::NEW:
+		{
+
+			hss << GetInstructionString(opCode) << " ";
+			GenVariableHzic(m, hss, assignTo);
+			hss << " " << assignTo->GetTypeId() << " ";
+			GenVariableHzic(m, hss, oper1);
+		}
+		break;
 		case InstructionOpCode::CMP:
 		{
 			hss << GetInstructionString(opCode) << " ";
