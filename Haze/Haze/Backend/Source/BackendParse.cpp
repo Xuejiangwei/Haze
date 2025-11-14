@@ -726,6 +726,10 @@ void BackendParse::ParseInstructionData(InstructionData& data)
 
 void BackendParse::ParseInstruction(ModuleUnit::FunctionInstruction& instruction)
 {
+#if HAZE_DEBUGGER
+	GetNextLexmeAssign_CustomType<x_uint32>(instruction.Line);
+#endif
+
 	STDString str;
 	switch (instruction.InsCode)
 	{

@@ -475,7 +475,7 @@ public:
 class ASTIfExpression : public ASTBase
 {
 public:
-	ASTIfExpression(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
+	ASTIfExpression(Compiler* compiler, const SourceLocation& location, const SourceLocation& finishLocation, Unique<ASTBase>& condition,
 		Unique<ASTBase>& ifExpression, Unique<ASTBase>& elseExpression);
 	virtual ~ASTIfExpression() override {}
 
@@ -486,6 +486,7 @@ public:
 	bool HasElseExpression() const;
 
 private:
+	SourceLocation m_FinishLocation;
 	Unique<ASTBase> m_Condition;
 	Unique<ASTBase> m_IfExpression;
 	Unique<ASTBase> m_ElseExpression;

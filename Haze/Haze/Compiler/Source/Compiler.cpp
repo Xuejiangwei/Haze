@@ -381,12 +381,9 @@ bool Compiler::GetBaseModuleGlobalVariableId(const Share<CompilerValue>& value, 
 	return false;
 }
 
-void Compiler::InsertLineCount(x_int64 lineCount)
+void Compiler::UpdateLineCount(x_int64 lineCount)
 {
-	if (m_VM->IsDebug() && m_InsertBaseBlock)
-	{
-		m_InsertBaseBlock->PushIRCode(GenIRCode(InstructionOpCode::LINE, lineCount));
-	}
+	m_LineCount = lineCount;
 }
 
 bool Compiler::IsDebug() const
@@ -1375,21 +1372,6 @@ Share<CompilerValue> Compiler::CreatePointerToValue(Share<CompilerValue> value)
 		COMPILER_ERR_MODULE_W("取址类型错误", this, GetCurrModuleName().c_str());
 		return nullptr;
 	}
-}
-
-Share<CompilerValue> Compiler::CreatePointerToFunction(Share<CompilerFunction> function, Share<CompilerValue> pointer)
-{
-	STDString tempFunctionName = function->GetRealName();
-	auto tempPointer = GetTempRegister(HAZE_VAR_TYPE(HazeValueType::Function));
-
-
-	//tempPointer->SetScope(HazeVariableScope::Ignore);
-	tempPointer->SetDataDesc(HazeDataDesc::Function_Normal);
-	tempPointer->SetPointerFunctionName(&function->GetName());
-
-	COMPILER_ERR_MODULE_W("暂不支持函数指针", this, GetCurrModuleName().c_str());
-
-	return CreateLea(pointer, tempPointer);
 }
 
 Share<CompilerValue> Compiler::CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, Share<CompilerFunction> closure)

@@ -2,6 +2,7 @@
 
 #include "HazeDebugInfo.h"
 #include <unordered_set>
+#include <mutex>
 
 #include "XJson.h"
 
@@ -60,6 +61,8 @@ public:
 
 	bool IsPause() const { return m_IsPause; }
 
+	void WaitIfPaused();
+
 public:
 	void AddTempBreakPoint(x_uint32 line);
 
@@ -99,6 +102,7 @@ private:
 	HashMap<STDString, Pair<HashSet<x_uint32>, STDString>> m_TempBreakPoints;
 
 	CurrParseModuleData m_CurrPauseModule;
+	bool m_IsStart;
 	bool m_IsPause;
 
 	V_Array<Pair<STDString, x_uint32>> m_StepInStack;
@@ -106,4 +110,7 @@ private:
 
 	bool m_IsStepIn;
 	bool m_IsStepInInstruction;
+
+	std::mutex m_Mutex;
+	std::condition_variable m_CV;
 };

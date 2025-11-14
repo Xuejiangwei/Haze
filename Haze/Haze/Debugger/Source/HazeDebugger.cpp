@@ -6,6 +6,9 @@
 #include "HazeFilePathHelper.h"
 #include "HazeDebuggerServer.h"
 
+#include "ObjectString.h"
+#include "ObjectBase.h"
+
 #define ENABLE_DEBUGGER_LOG 0
 
 static STDString GetFileName(const x_HChar*& msg)
@@ -40,92 +43,122 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 {
 	switch (type)
 	{
-	case HazeValueType::Bool:
-	{
-		bool Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::Int8:
-	{
-		x_int8 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::UInt8:
-	{
-		x_uint8 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::Int16:
-	{
-		x_int16 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::UInt16:
-	{
-		x_uint16 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::Int32:
-	{
-		x_int32 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::UInt32:
-	{
-		x_uint32 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::Int64:
-	{
-		x_int64 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break; 
-	case HazeValueType::UInt64:
-	{
-		x_uint64 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	case HazeValueType::Float32:
-	{
-		x_float32 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	
-	case HazeValueType::Float64:
-	{
-		x_float64 Value;
-		memcpy(&Value, address, sizeof(Value));
-		json = Value;
-	}
-	break;
-	default:
-		HAZE_LOG_ERR_W("Debug 获得基础类型<%d>数据错误!\n", (x_uint32)type);
+		case HazeValueType::Bool:
+		{
+			bool Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
 		break;
+		case HazeValueType::Int8:
+		{
+			x_int8 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::UInt8:
+		{
+			x_uint8 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::Int16:
+		{
+			x_int16 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::UInt16:
+		{
+			x_uint16 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::Int32:
+		{
+			x_int32 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::UInt32:
+		{
+			x_uint32 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::Int64:
+		{
+			x_int64 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break; 
+		case HazeValueType::UInt64:
+		{
+			x_uint64 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::Float32:
+		{
+			x_float32 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::Float64:
+		{
+			x_float64 Value;
+			memcpy(&Value, address, sizeof(Value));
+			json = Value;
+		}
+		break;
+		case HazeValueType::String:
+		{
+			ObjectString* str;
+			memcpy(&str, address, sizeof(str));
+			json = str->GetData();
+		}
+		break;
+		case HazeValueType::ObjectBase:
+		{
+			ObjectBase* obj;
+			memcpy(&obj, address, sizeof(obj));
+			json["ObjectBase"]["Pointer"] = obj;
+			GetHazeValueByBaseType(json["ObjectBase"]["Value"], (char*)obj->GetBaseData(), obj->GetBaseType());
+		}
+		break;
+		case HazeValueType::Array:
+		{
+		}
+		break;
+		case HazeValueType::Hash:
+		{
+		}
+		break;
+		case HazeValueType::Class:
+		{
+		}
+		break;
+		case HazeValueType::DynamicClass:
+		{
+		}
+		break;
+		default:
+			HAZE_LOG_ERR_W("Debug 获得基础类型<%d>数据错误!\n", (x_uint32)type);
+			break;
 	}
 }
 
 HazeDebugger::HazeDebugger(HazeVM* vm, void(*endCall)()) 
-	: m_VM(vm), m_EndCall(endCall), m_HookFunctionCall(&HookCall), m_HookType((x_uint32)DebuggerHookType::Line), m_IsPause(true), 
+	: m_VM(vm), m_EndCall(endCall), m_HookFunctionCall(&HookCall), m_HookType((x_uint32)DebuggerHookType::Line), m_IsStart(false), m_IsPause(true),
 	 m_IsStepIn(false), m_IsStepInInstruction(false)
 {
 	m_BreakPoints.clear();
@@ -167,11 +200,7 @@ void HazeDebugger::AddBreakPoint(const char* message)
 		m_BreakPoints[moduleName] = { { Line }, fileName };
 	}
 
-#if ENABLE_DEBUGGER_LOG
-
 	HAZE_LOG_INFO(H_TEXT("添加断点<%s><%s><%d>\n"), moduleName.c_str(), fileName.c_str(), Line);
-
-#endif
 }
 
 void HazeDebugger::DeleteBreakPoint(const char* message)
@@ -223,14 +252,13 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* message)
 
 void HazeDebugger::OnExecLine(x_uint32 line)
 {
+	std::lock_guard<std::mutex> lock(m_Mutex);
+	if (line == 0 || !m_IsStart)
+	{
+		return;
+	}
+
 	auto moduleName = m_VM->GetModuleNameByCurrFunction();
-
-#if ENABLE_DEBUGGER_LOG
-
-	HAZE_LOG_INFO(H_TEXT("运行到<%s><%d>行!\n"), moduleName->c_str(), line);
-
-#endif // ENABLE_DEBUGGER_LOG
-
 	auto iter = m_BreakPoints.find(*moduleName);
 	if (iter != m_BreakPoints.end())
 	{
@@ -318,11 +346,13 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 
 void HazeDebugger::Start()
 {
-	m_IsPause = false;
+	m_IsStart = true;
+	Continue();
 }
 
 void HazeDebugger::End()
 {
+	Continue();
 	exit(0);
 }
 
@@ -332,8 +362,7 @@ void HazeDebugger::StepOver()
 
 	if (m_IsPause)
 	{
-		m_IsPause = false;
-		//m_CurrPauseModule.second = m_VM->GetNextLine(m_CurrPauseModule.second);
+		Continue();
 	}
 	else
 	{
@@ -345,7 +374,8 @@ void HazeDebugger::StepIn()
 {
 	if (m_IsPause)
 	{
-		m_IsPause = false;
+		Continue();
+
 		m_IsStepIn = true;
 		m_StepInStack.push_back({ m_CurrPauseModule.ModuleName, m_VM->GetNextInstructionLine(m_CurrPauseModule.CurrLine) });
 		auto pauseModule = m_VM->GetStepIn(m_CurrPauseModule.CurrLine);
@@ -362,11 +392,19 @@ void HazeDebugger::StepIn()
 
 void HazeDebugger::StepInstruction()
 {
+	Continue();
 }
 
 void HazeDebugger::Continue()
 {
+	m_IsPause = false;
 	ClearCurrParseModuleData();
+
+	{
+		std::lock_guard<std::mutex> lock(m_Mutex);
+		m_IsPause = false;
+	}
+	m_CV.notify_one();
 }
 
 void HazeDebugger::SetJsonLocalVariable(XJson& json)
@@ -403,6 +441,16 @@ void HazeDebugger::SetJsonModuleGlobalVariable(XJson& json)
 			SetJsonVariableData(info[i], frame.FunctionInfo->Variables[i]);
 		}
 	}
+}
+
+void HazeDebugger::WaitIfPaused()
+{
+	std::unique_lock<std::mutex> lock(m_Mutex);
+	m_CV.wait(lock, [this]
+		{
+			return !m_IsPause;
+		}
+	);
 }
 
 void HazeDebugger::AddTempBreakPoint(x_uint32 line)
@@ -448,12 +496,12 @@ void HazeDebugger::SetJsonBreakFilePath(XJson& json, STDString path)
 
 void HazeDebugger::SendBreakInfo()
 {
-	//auto iter = m_BreakPoints.find(m_CurrPauseModule.first);
-	//if (iter != m_BreakPoints.end())
+	auto iter = m_BreakPoints.find(m_CurrPauseModule.ModuleName.data());
+	if (iter != m_BreakPoints.end())
 	{
 		XJson json;
 		SetJsonType(json, HazeDebugInfoType::BreakInfo);
-		SetJsonBreakFilePath(json, GetModuleFilePath(m_CurrPauseModule.ModuleName.data()));
+		SetJsonBreakFilePath(json, iter->second.second);
 		SetJsonBreakLine(json, m_CurrPauseModule.CurrLine);
 		SetJsonLocalVariable(json);
 		//SetJsonModuleGlobalVariable(json);

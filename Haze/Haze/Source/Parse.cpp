@@ -1624,7 +1624,7 @@ Unique<ASTBase> Parse::ParseIfExpression(/*bool recursion*/)
 						temp.Reset();
 					}
 
-					return MakeUnique<ASTIfExpression>(m_Compiler, SourceLocation(tempLineCount), conditionExpression, ifMultiExpression, elseExpression);
+					return MakeUnique<ASTIfExpression>(m_Compiler, SourceLocation(tempLineCount), SourceLocation(m_LineCount), conditionExpression, ifMultiExpression, elseExpression);
 				}
 			}
 		}
@@ -1914,17 +1914,6 @@ Unique<ASTBase> Parse::ParseNullPtr()
 
 Unique<ASTBase> Parse::ParseGetAddress()
 {
-	x_uint32 tempLineCount = m_LineCount;
-	if (ExpectNextTokenIs(HazeToken::LeftParentheses, H_TEXT("取址需要 ( 符号")))
-	{
-		GetNextToken();
-		auto expression = ParseExpression();
-		if (ExpectNextTokenIs(HazeToken::RightParentheses, H_TEXT("取址需要 ) 符号")))
-		{
-			return MakeUnique<ASTGetAddress>(m_Compiler, SourceLocation(tempLineCount), expression);
-		}
-	}
-
 	return nullptr;
 }
 
@@ -3138,13 +3127,9 @@ void Parse::IncLineCount()
 	HAZE_LOG_ERR_W("Line %d %s\n", m_LineCount, code);
 #endif
 
-
-	//#if HAZE_DEBUG_ENABLE
-	//
-	//	if (Insert)
-	//	{
-	//		Compiler->InsertLineCount(m_LineCount);
-	//	}
-	//
-	//#endif // HAZE_DEBUG_ENABLE
+//#if HAZE_DEBUGGER
+//
+//	m_Compiler->UpdateLineCount(m_LineCount);
+//
+//#endif // HAZE_DEBUGGER
 }

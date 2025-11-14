@@ -314,6 +314,18 @@ void GenVariableHzic(CompilerModule* compilerModule, HAZE_STRING_STREAM& hss, co
 	}
 }
 
+static inline void GenIRCodeOpString(CompilerModule* m, HAZE_STRING_STREAM& hss, InstructionOpCode opCode)
+{
+	hss << GetInstructionString(opCode) << " ";
+
+#if HAZE_DEBUGGER
+
+	hss << m->GetCompiler()->GetLineCount() << " ";
+
+#endif // HAZE_DEBUGGER
+
+}
+
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, Share<CompilerValue> assignTo,
 	Share<CompilerValue> oper1, Share<CompilerValue> oper2, const HazeVariableType* expectType, bool check)
 {
@@ -480,7 +492,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		case InstructionOpCode::MOV_DCU:
 		{
 
-			hss << GetInstructionString(opCode) << " ";
+			GenIRCodeOpString(m, hss, opCode);
 			GenVariableHzic(m, hss, assignTo);
 			hss << " ";
 			GenVariableHzic(m, hss, oper1);
@@ -489,7 +501,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		case InstructionOpCode::NEW:
 		{
 
-			hss << GetInstructionString(opCode) << " ";
+			GenIRCodeOpString(m, hss, opCode);
 			GenVariableHzic(m, hss, assignTo);
 			hss << " " << assignTo->GetTypeId() << " ";
 			GenVariableHzic(m, hss, oper1);
@@ -497,7 +509,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		break;
 		case InstructionOpCode::CMP:
 		{
-			hss << GetInstructionString(opCode) << " ";
+			GenIRCodeOpString(m, hss, opCode);
 			GenVariableHzic(m, hss, oper1);
 			hss << " ";
 			GenVariableHzic(m, hss, oper2);
@@ -514,7 +526,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		case InstructionOpCode::SHL:
 		case InstructionOpCode::SHR:
 		{
-			hss << GetInstructionString(opCode) << " ";
+			GenIRCodeOpString(m, hss, opCode);
 			GenVariableHzic(m, hss, assignTo);
 			hss << " ";
 			GenVariableHzic(m, hss, oper1);
@@ -525,7 +537,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		case InstructionOpCode::PUSH:
 		case InstructionOpCode::POP:
 		{
-			hss << GetInstructionString(opCode) << " ";
+			GenIRCodeOpString(m, hss, opCode);
 			GenVariableHzic(m, hss, oper1);
 		}
 			break;
@@ -533,12 +545,12 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		{
 			if (oper1)
 			{
-				hss << GetInstructionString(opCode) << " ";
+				GenIRCodeOpString(m, hss, opCode);
 				GenVariableHzic(m, hss, oper1);
 			}
 			else
 			{
-				GenIRCode(hss, InstructionOpCode::RET, /*HazeVariableScope::None, */HazeDataDesc::None, HazeValueType::Void, 0);
+				GenIRCode(hss, m, InstructionOpCode::RET, /*HazeVariableScope::None, */HazeDataDesc::None, HazeValueType::Void, 0);
 			}
 		}
 			break;
@@ -549,9 +561,10 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	hss << HAZE_ENDL;
 }
 
-void GenIRCode(HAZE_STRING_STREAM& hss, InstructionOpCode opCode, /*HazeVariableScope scope,*/ HazeDataDesc desc, HazeValueType type, InstructionOpId id)
+void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, /*HazeVariableScope scope,*/ HazeDataDesc desc, HazeValueType type, InstructionOpId id)
 {
-	hss << GetInstructionString(opCode) << " " /*<< INT_VAR_SCOPE(scope) << " "*/ << CAST_DESC(desc) << " " << CAST_TYPE(type) << " ";
+	GenIRCodeOpString(m, hss, opCode);
+	hss << CAST_DESC(desc) << " " << CAST_TYPE(type) << " ";
 
 	if (IsConstDesc(desc))
 	{
@@ -571,7 +584,10 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	switch (opCode)
 	{
 		case InstructionOpCode::JMP:
-			hss << GetInstructionString(opCode) << " " << block1->GetIndex() << HAZE_ENDL;
+		{
+			GenIRCodeOpString(m, hss, opCode);
+			hss << block1->GetIndex() << HAZE_ENDL;
+		}
 			break;
 		case InstructionOpCode::JNE:
 		case InstructionOpCode::JNG:
@@ -580,7 +596,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 		case InstructionOpCode::JG:
 		case InstructionOpCode::JL:
 		{
-			hss << GetInstructionString(opCode) << " ";
+			GenIRCodeOpString(m, hss, opCode);
 
 			if (block1)
 			{
@@ -610,17 +626,6 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	}
 }
 
-STDString GenIRCode(InstructionOpCode opCode, x_uint64 number)
-{
-	switch (opCode)
-	{
-	case InstructionOpCode::LINE:
-		return GetInstructionString(opCode) + (H_TEXT(" ") + HAZE_TO_HAZE_STR(number)) + H_TEXT("\n");
-	}
-	
-	return STDString();
-}
-
 void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opCode, x_uint64 paramCount, x_uint64 paramSize, Share<CompilerFunction> function,
 	Share<CompilerValue> pointerFunction, Share<CompilerValue> advancePointerTo, x_int16 advanceFuncIndex, const STDString* nameSpace)
 {
@@ -628,7 +633,7 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 	{
 		case InstructionOpCode::CALL:
 		{
-			hss << GetInstructionString(InstructionOpCode::CALL) << " ";
+			GenIRCodeOpString(m, hss, opCode);
 			if (function)
 			{
 				auto desc = function->IsVirtualFunction() && !nameSpace ? HazeDataDesc::Function_Virtual : HazeDataDesc::Function_Normal;
@@ -673,26 +678,3 @@ void GenIRCode(HAZE_STRING_STREAM& hss, CompilerModule* m, InstructionOpCode opC
 			break;
 	}
 }
-
-//void GenIRCode_NewSignInternal(HAZE_STRING_STREAM& hss, TemplateDefineType& types)
-//{
-//	if (types.IsDefines)
-//	{
-//		GenIRCode_NewSign(hss, types.Defines.get());
-//	}
-//	else
-//	{
-//		hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " ";
-//		types.Type->BaseType.StringStreamTo(hss);
-//		hss << " " << types.Type->ArrayDimension << HAZE_ENDL;
-//	}
-//}
-//
-//void GenIRCode_NewSign(HAZE_STRING_STREAM& hss, TemplateDefineTypes* defineTypes)
-//{
-//	hss << GetInstructionString(InstructionOpCode::NEW_SIGN) << " " << CAST_TYPE(HazeValueType::None)  << " " << defineTypes->Types.size() << HAZE_ENDL;
-//	for (x_uint32 i = 0; i < defineTypes->Types.size(); i++)
-//	{
-//		GenIRCode_NewSignInternal(hss, defineTypes->Types[i]);
-//	}
-//}

@@ -38,9 +38,6 @@ void CompilerFunction::SetStartEndLine(x_uint32 startLine, x_uint32 endLine)
 {
 	m_StartLine = startLine;
 	m_EndLine = endLine;
-#if HAZE_DEBUG_ENABLE
-	HAZE_LOG_ERR_W("SetStartEndLine %s %d %d\n", m_Name.c_str(), startLine, endLine);
-#endif // HAZE_DEBUG_ENABLE
 }
 
 Share<CompilerValue> CompilerFunction::GetParamVariableRightToLeft(x_uint32 index)

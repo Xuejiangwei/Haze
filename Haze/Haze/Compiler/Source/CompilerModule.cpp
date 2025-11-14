@@ -1126,7 +1126,7 @@ void CompilerModule::FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunctio
 		size += thisPointerTo->GetVariableType().GetTypeSize();
 	}
 
-	GenIRCode(hss, InstructionOpCode::PUSH, /*HazeVariableScope::None,*/ HazeDataDesc::Address, HAZE_CALL_PUSH_ADDRESS_TYPE, 0);
+	GenIRCode(hss, this, InstructionOpCode::PUSH, /*HazeVariableScope::None,*/ HazeDataDesc::Address, HAZE_CALL_PUSH_ADDRESS_TYPE, 0);
 	insertBlock->PushIRCode(hss.str());
 
 	hss.str(H_TEXT(""));

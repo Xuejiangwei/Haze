@@ -15,6 +15,11 @@ public:
 	struct FunctionInstruction
 	{
 		InstructionOpCode InsCode;
+
+#if HAZE_DEBUGGER
+		x_uint32 Line;
+#endif // HAZE_DEBUGGER
+
 		V_Array<InstructionData> Operator;
 
 		FunctionInstruction() : InsCode(InstructionOpCode::NONE), Operator()

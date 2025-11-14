@@ -231,7 +231,6 @@ public:
 	Share<CompilerValue> CreateElementValue(Share<CompilerValue> parentValue, const STDString& memberName);
 
 	Share<CompilerValue> CreatePointerToValue(Share<CompilerValue> value);
-	Share<CompilerValue> CreatePointerToFunction(Share<CompilerFunction> function, Share<CompilerValue> pointer);
 
 	void ReplaceConstantValueByStrongerType(Share<CompilerValue>& left, Share<CompilerValue>& right);
 
@@ -333,7 +332,8 @@ public:
 
 	CompilerSymbol* GetCompilerSymbol() { return m_CompilerSymbol.get(); }
 
-	void InsertLineCount(x_int64 lineCount);
+	x_uint32 GetLineCount() const { return m_LineCount; }
+	void UpdateLineCount(x_int64 lineCount);
 
 	bool IsDebug() const;
 
@@ -378,6 +378,7 @@ private:
 
 	HashMap<STDString, ModuleParseInfo> m_ModuleParseStates;
 
+	x_uint32 m_LineCount;
 	ParseStage m_ParseStage;
 	bool m_MarkError;
 	bool m_MarkNewCode;

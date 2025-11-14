@@ -80,21 +80,14 @@ void HazeStack::Run(bool isHazeCall)
 {
 	while (m_PC < (x_int64)m_VM->m_Instructions.size())
 	{
-		while (m_VM->IsDebug())
+#if HAZE_DEBUGGER
+		if (m_VM->IsDebug() && g_Debugger)
 		{
-			if (!g_Debugger)
-			{
-				continue;
-			}
-			else
-			{
-				if (g_Debugger->IsPause())
-				{
-					continue;
-				}
-				break;
-			}
+			g_Debugger->OnExecLine(m_VM->m_Instructions[m_PC].Line);
+			g_Debugger->WaitIfPaused();
 		}
+#endif // HAZE_DEBUGGER
+
 
 		g_InstructionProcessor[(x_uint32)m_VM->m_Instructions[m_PC].InsCode](this);
 

@@ -439,7 +439,8 @@ void HazeStream::HazePrintf(HAZE_STD_CALL_PARAM)
 
 void HazeStream::HazePrintfCall(const x_HChar* V)
 {
-	std::wcout << V;
+	HazeLog::LogInfo(0, H_TEXT("%s"), V);
+	//std::wcout << V;
 }
 
 void HazeStream::HazeScanf(HAZE_STD_CALL_PARAM)

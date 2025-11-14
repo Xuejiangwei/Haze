@@ -466,6 +466,10 @@ void HazeExecuteFile::WriteInstruction(const ModuleUnit::FunctionInstruction& in
 {
 	m_FileStream->write(HAZE_WRITE_AND_SIZE(instruction.InsCode));				//字节码
 
+#if HAZE_DEBUGGER
+	m_FileStream->write(HAZE_WRITE_AND_SIZE(instruction.Line));				//行数
+#endif // HAZE_DEBUGGER
+
 	x_uint32 number = (x_uint32)instruction.Operator.size();
 	m_FileStream->write(HAZE_WRITE_AND_SIZE(number));						//操作数个数
 
@@ -804,6 +808,11 @@ void HazeExecuteFile::ReadFunctionInstruction(HazeVM* vm)
 	for (x_uint64 i = 0; i < vm->m_Instructions.size(); i++)
 	{
 		m_InFileStream->read(HAZE_READ(vm->m_Instructions[i].InsCode));
+
+#if HAZE_DEBUGGER
+		m_InFileStream->read(HAZE_READ(vm->m_Instructions[i].Line));
+#endif // HAZE_DEBUGGER
+
 		ReadInstruction(vm, vm->m_Instructions[i]);
 	}
 

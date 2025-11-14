@@ -17,6 +17,14 @@
 #include "CompilerEnumValue.h"
 #include "CompilerHelper.h"
 
+#if HAZE_DEBUGGER 
+	#define UPDATE_COMPILER_LINE_COUNT() m_Compiler->UpdateLineCount(m_Location.Line)
+	#define UPDATE_COMPILER_LINE_COUNT1(LINE) m_Compiler->UpdateLineCount(LINE)
+#else
+	#define UPDATE_COMPILER_LINE_COUNT()
+	#define UPDATE_COMPILER_LINE_COUNT1(LINE)
+#endif
+
 //struct InferScope
 //{
 //	InferScope(Compiler* compiler, Share<CompilerValue> value) : _Compiler(compiler), Value(value) {}
@@ -50,6 +58,7 @@ ASTBool::ASTBool(Compiler* compiler, const SourceLocation& location, const HazeV
 
 Share<CompilerValue> ASTBool::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
 	return m_Compiler->GenConstantValue(HazeValueType::Bool, m_Value);
 }
 
@@ -62,6 +71,7 @@ ASTNumber::ASTNumber(Compiler* compiler, const SourceLocation& location, HazeVal
 
 Share<CompilerValue> ASTNumber::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
 	if (inferValue && m_DefineVariable.Type.BaseType != inferValue->GetBaseType() && !IsMultiVariableType(inferValue->GetBaseType()))
 	{
 		AST_ERR_W("数字<%s>变量类型与赋值变量不符", HazeValueNumberToString(m_DefineVariable.Type.BaseType, m_Value).c_str());
@@ -76,6 +86,7 @@ ASTStringText::ASTStringText(Compiler* compiler, const SourceLocation& location,
 
 Share<CompilerValue> ASTStringText::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
 	return m_Compiler->GenStringVariable(m_Text);
 }
 
@@ -89,6 +100,8 @@ ASTIdentifier::ASTIdentifier(Compiler* compiler, const SourceLocation& location,
 
 Share<CompilerValue> ASTIdentifier::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	Share<CompilerValue> preValue = m_PreAst ? m_PreAst->CodeGen(nullptr) : nullptr;
 	Share<CompilerValue> retValue = GetNameValue();
 
@@ -199,7 +212,6 @@ ASTFunctionCall::ASTFunctionCall(Compiler* compiler, const SourceLocation& locat
 
 Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
 	auto& currModule = m_Compiler->GetCurrModule();
 
 	V_Array<Share<CompilerValue>> paramInferValues(m_FunctionParam.size());
@@ -280,6 +292,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 		}
 	}
 
+	UPDATE_COMPILER_LINE_COUNT();
 	std::reverse(paramInferValues.begin(), paramInferValues.end());
 
 	Share<CompilerValue> ret = nullptr;
@@ -372,6 +385,8 @@ ASTVariableDefine::ASTVariableDefine(Compiler* compiler, const SourceLocation& l
 
 Share<CompilerValue> ASTVariableDefine::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
@@ -422,6 +437,7 @@ Share<CompilerValue> ASTVariableDefine::TryAssign(Share<CompilerValue> var, cons
 				auto v = GenExpressionValue(var);
 				if (v)
 				{
+					UPDATE_COMPILER_LINE_COUNT();
 					return m_Compiler->CreateMov(var, v);
 				}
 				else
@@ -452,6 +468,8 @@ ASTVariableDefine_MultiVariable::ASTVariableDefine_MultiVariable(Compiler* compi
 
 Share<CompilerValue> ASTVariableDefine_MultiVariable::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	return m_Compiler->CreateVariableBySection(HazeSectionSignal::Local, currModule, currModule->GetCurrClosureOrFunction(), m_DefineVariable, m_Location.Line);
 }
@@ -464,6 +482,8 @@ ASTVariableDefine_Class::ASTVariableDefine_Class(Compiler* compiler, const Sourc
 
 Share<CompilerValue> ASTVariableDefine_Class::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
@@ -482,6 +502,8 @@ ASTVariableDefine_Array::ASTVariableDefine_Array(Compiler* compiler, const Sourc
 
 Share<CompilerValue> ASTVariableDefine_Array::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
@@ -497,6 +519,8 @@ ASTVariableDefine_Function::ASTVariableDefine_Function(Compiler* compiler, const
 
 Share<CompilerValue> ASTVariableDefine_Function::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	//V_Array<HazeVariableType> paramTypes(m_TemplateTypes.Types.size() + 1);
 
@@ -524,6 +548,8 @@ ASTVariableDefine_ObjectBase::ASTVariableDefine_ObjectBase(Compiler* compiler, c
 
 Share<CompilerValue> ASTVariableDefine_ObjectBase::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
@@ -539,8 +565,9 @@ ASTVariableDefine_Hash::ASTVariableDefine_Hash(Compiler* compiler, const SourceL
 
 Share<CompilerValue> ASTVariableDefine_Hash::CodeGen(Share<CompilerValue> inferValue)
 {
-	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
+	UPDATE_COMPILER_LINE_COUNT();
 
+	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
 	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
 		m_DefineVariable, m_Location.Line, nullptr);
 
@@ -592,6 +619,7 @@ Share<CompilerValue> ASTVariableDefine_Closure::CodeGen(Share<CompilerValue> inf
 		AST_ERR_W("生成匿名函数<%s>结束错误, 不是当前模块解析的函数<%s>", m_DefineVariable.Name.c_str(), currModule->GetCurrClosure()->GetName().c_str());
 	}
 
+	UPDATE_COMPILER_LINE_COUNT();
 	auto closureValue = m_Compiler->CreateNew(HazeVariableType(HazeValueType::Closure, m_TemplateTypeId), nullptr, closureFunction);
 	//V_Array<HazeVariableType> paramTypes(m_TemplateTypes.Types.size() + 1);
 
@@ -611,82 +639,12 @@ Share<CompilerValue> ASTVariableDefine_Closure::CodeGen(Share<CompilerValue> inf
 	return m_Compiler->CreateMov(var, closureValue);
 }
 
-//ASTClosure::ASTClosure(Compiler* compiler, const SourceLocation& location, const SourceLocation& startLocation, const SourceLocation& endLocation, HazeSectionSignal section,
-//	Unique<ASTBase>& expression, V_Array<Unique<ASTBase>>& params)
-//	: ASTBase(compiler, location), m_Expression(Move(expression)), m_Params(Move(params)), m_StartLocation(startLocation), m_EndLocation(endLocation)
-//{
-//}
-//
-//ASTClosure::~ASTClosure()
-//{
-//}
-//
-//Share<CompilerValue> ASTClosure::CodeGen()
-//{
-//	Unique<CompilerModule>& currModule = m_Compiler->GetCurrModule();
-//
-//	Share<CompilerClosureFunction> closureFunction = nullptr;
-//	Share<CompilerClass> currClass = nullptr;
-//
-//	V_Array<HazeDefineVariable> paramDefines(m_Params.size());
-//	for (size_t i = 0; i < m_Params.size(); i++)
-//	{
-//		paramDefines[i] = m_Params[i]->GetDefine();
-//	}
-//
-//	closureFunction = currModule->CreateClosureFunction(m_DefineVariable.Type, paramDefines);
-//	closureFunction->SetStartEndLine(m_StartLocation.Line, m_EndLocation.Line);
-//	m_Compiler->SetInsertBlock(closureFunction->GetEntryBlock());
-//
-//	for (int i = (int)m_Params.size() - 1; i >= 0; i--)
-//	{
-//		currModule->BeginCreateFunctionParamVariable();
-//		m_Params[i]->CodeGen();
-//		currModule->EndCreateFunctionParamVariable();
-//	}
-//
-//	if (m_Expression)
-//	{
-//		m_Expression->CodeGen();
-//	}
-//
-//	if (closureFunction == currModule->GetCurrClosure())
-//	{
-//		currModule->FinishClosure();
-//	}
-//	else
-//	{
-//		//auto& m_Location = m_EndLocation;
-//		AST_ERR_W("生成匿名函数<%s>结束错误, 不是当前模块解析的函数<%s>", m_DefineVariable.Name.c_str(), currModule->GetCurrClosure()->GetName().c_str());
-//	}
-//
-//	auto closureValue = m_Compiler->CreateNew(HazeValueType::Closure, nullptr, nullptr, closureFunction);
-//	V_Array<HazeDefineType> paramTypes(m_TemplateTypes.Types.size() + 1);
-//
-//	//返回类型设置到第0个
-//	m_TemplateTypes.Types.push_back({ false, nullptr, MakeShare<HazeNewDefineType>(m_DefineVariable.Type, 0) });
-//	//m_Compiler->GetRealTemplateTypes(m_TemplateTypes, paramTypes);
-//
-//	/*for (x_uint64 i = 0; i < m_TemplateTypes.Types.size(); i++)
-//	{
-//		paramTypes[i + 1] = *m_TemplateTypes.Types[i].Type;
-//	}*/
-//
-//	m_DefineVariable.Type = HazeValueType::Closure;
-//	auto var = m_Compiler->CreateVariableBySection(m_SectionSignal, currModule, currModule->GetCurrClosureOrFunction(),
-//		m_DefineVariable, m_Location.Line, nullptr, {}, &m_TemplateTypes);
-//
-//	return m_Compiler->CreateMov(var, closureValue);
-//}
-
 ASTReturn::ASTReturn(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression)
 	:ASTBase(compiler, location), m_Expression(Move(expression)) {
 }
 
 Share<CompilerValue> ASTReturn::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
-
 	auto& funcType = m_Compiler->GetCurrModule()->GetCurrClosureOrFunction()->GetFunctionType();
 	auto retReg = m_Compiler->GetRetRegister(funcType.BaseType, 0);
 	Share<CompilerValue> retValue = m_Expression ? m_Expression->CodeGen(nullptr) : m_Compiler->GetConstantValueInt(0);
@@ -698,6 +656,7 @@ Share<CompilerValue> ASTReturn::CodeGen(Share<CompilerValue> inferValue)
 
 	if (m_Expression ? (retValueType == funcType || CanCVT(funcType.BaseType, retValueType.BaseType)) : IsVoidType(funcType.BaseType))
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		return m_Compiler->CreateRet(retValue);
 	}
 	else
@@ -721,6 +680,8 @@ ASTNew::ASTNew(Compiler* compiler, const SourceLocation& location, HazeDefineVar
 
 Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	if (!IsAdvanceType(m_DefineVariable.Type.BaseType) || IsDynamicClassType(m_DefineVariable.Type.BaseType))
 	{
 		AST_ERR_W("生成类型错误, 只能生成<类><数组><字符串>");
@@ -835,53 +796,7 @@ ASTGetAddress::ASTGetAddress(Compiler* compiler, const SourceLocation& location,
 
 Share<CompilerValue> ASTGetAddress::CodeGen(Share<CompilerValue> inferValue)
 {
-	Share<CompilerValue> retValue = nullptr;
-	if (m_Expression)
-	{
-		retValue = m_Expression->CodeGen(nullptr);
-	}
-
-	if (!retValue)
-	{
-		//获得函数地址
-		auto function = m_Compiler->GetCurrModule()->GetFunction(m_Expression->GetName());
-		if (function)
-		{
-			retValue = m_Compiler->CreatePointerToFunction(function, m_Compiler->GetTempRegister(HazeVariableType(HazeValueType::Function, function->GetFunctionPointerTypeId())));
-		}
-		else if (!m_Expression->GetDefine().Name.empty() && dynamic_cast<ASTIdentifier*>(m_Expression.get()))
-		{
-			// 类的成员函数
-			auto& nameSpace = dynamic_cast<ASTIdentifier*>(m_Expression.get())->GetNameSpace();
-			auto compilerClass = m_Compiler->GetCurrModule()->GetClass(nameSpace);
-			if (compilerClass)
-			{
-				function = compilerClass->FindFunction(m_Expression->GetName(), nullptr);
-				if (function)
-				{
-					retValue = m_Compiler->CreatePointerToFunction(function, m_Compiler->GetTempRegister(HazeVariableType(HazeValueType::Function, function->GetFunctionPointerTypeId())));
-				}
-				else
-				{
-					AST_ERR_W("获得函数地址<%s>错误, 未能找到引用类<%s>的成员函数<%s>", m_Expression->GetName(), nameSpace.c_str(), m_Expression->GetName());
-				}
-			}
-			else
-			{
-				AST_ERR_W("获得函数地址<%s>错误, 未能找到引用类<%s>", m_Expression->GetDefine().Name.c_str(), m_Expression->GetName());
-			}
-		}
-		else
-		{
-			AST_ERR_W("未能找到函数<%s>去获得函数地址", m_Expression->GetName());
-		}
-	}
-	else
-	{
-		retValue = m_Compiler->CreatePointerToValue(retValue);
-	}
-
-	return retValue;
+	return nullptr;
 }
 
 ASTNeg::ASTNeg(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& expression, bool isNumberNeg)
@@ -893,6 +808,7 @@ Share<CompilerValue> ASTNeg::CodeGen(Share<CompilerValue> inferValue)
 	auto v = m_Expression->CodeGen(nullptr);
 	if (v)
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		if (m_IsNumberNeg)
 		{
 			return m_Compiler->CreateNeg(nullptr, v);
@@ -914,6 +830,7 @@ ASTNullPtr::ASTNullPtr(Compiler* compiler, const SourceLocation& location) : AST
 
 Share<CompilerValue> ASTNullPtr::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
 	return m_Compiler->GetNullPtr();
 }
 
@@ -931,6 +848,7 @@ Share<CompilerValue> ASTNot::CodeGen(Share<CompilerValue> inferValue)
 	auto value = m_Expression->CodeGen(nullptr);
 	if (value)
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		return m_Compiler->CreateNot(nullptr, value);
 	}
 	else
@@ -948,10 +866,10 @@ ASTInc::ASTInc(Compiler* compiler, const SourceLocation& location, Unique<ASTBas
 
 Share<CompilerValue> ASTInc::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
 	auto value = m_Expression->CodeGen(nullptr);
 	if (value)
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		return m_Compiler->CreateInc(value, m_IsPreInc);
 	}
 	else
@@ -968,10 +886,10 @@ ASTDec::ASTDec(Compiler* compiler, const SourceLocation& location, Unique<ASTBas
 
 Share<CompilerValue> ASTDec::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
 	auto value = m_Expression->CodeGen(nullptr);
 	if (value)
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		return m_Compiler->CreateDec(value, m_IsPreDec);
 
 	}
@@ -990,6 +908,8 @@ ASTDataSection::ASTDataSection(Compiler* compiler, const SourceLocation& locatio
 
 Share<CompilerValue> ASTDataSection::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+
 	m_Compiler->GetCurrModule()->BeginGlobalDataDefine();
 
 	for (size_t i = 0; i < m_Expressions.size(); i++)
@@ -1008,6 +928,8 @@ ASTMultiExpression::ASTMultiExpression(Compiler* compiler, const SourceLocation&
 
 Share<CompilerValue> ASTMultiExpression::CodeGen(Share<CompilerValue> inferValue)
 {
+	UPDATE_COMPILER_LINE_COUNT();
+	
 	//要考虑清楚无效的临时寄存器中引用的情况，全局变量的初始不用考虑，会在执行进入主函数字节码之前初始化完成
 	auto func = m_Compiler->GetCurrModule()->GetCurrFunction();
 	if (!func)
@@ -1094,84 +1016,95 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 #define BINARYOPER(OPER) m_Compiler->Create##OPER(m_AssignToAst ? m_AssignToAst->CodeGen(nullptr) : nullptr, left, right);
 #define ASSERT_GEN(V, AST) auto V = AST; if (!V) return nullptr
 
-	m_Compiler->InsertLineCount(m_Location.Line);
-
 	switch (m_OperatorToken)
 	{
 		case HazeToken::Add:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(Add);
 		}
 		case HazeToken::Sub:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(Sub);
 		}
 		case HazeToken::Mul:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(Mul);
 		}
 		case HazeToken::Div:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(Div);
 		}
 		case HazeToken::Inc:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateInc(left, false);
 		}
 		case HazeToken::Dec:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateDec(left, false);
 		}
 		case HazeToken::Mod:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateMod(nullptr, left, right);
 		}
 		case HazeToken::Not:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateNot(left, right);
 		}
 		case HazeToken::Shl:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(Shl);
 		}
 		case HazeToken::Shr:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(Shr);
 		}
 		case HazeToken::BitAnd:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(BitAnd);
 		}
 		case HazeToken::BitOr:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(BitOr);
 		}
 		case HazeToken::BitXor:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return BINARYOPER(BitXor);
 		}
 		case HazeToken::Assign:
@@ -1187,66 +1120,77 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 			}*/
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateMov(left, right);
 		}
 		case HazeToken::AddAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateAdd(left, left, right);
 		}
 		case HazeToken::SubAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateSub(left, left, right);
 		}
 		case HazeToken::MulAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateMul(left, left, right);
 		}
 		case HazeToken::DivAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateDiv(left, left, right);
 		}
 		case HazeToken::ModAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateMod(left, left, right);
 		}
 		case HazeToken::BitAndAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateBitAnd(left, left, right);
 		}
 		case HazeToken::BitOrAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateBitOr(left, left, right);
 		}
 		case HazeToken::BitXorAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateBitXor(left, left, right);
 		}
 		case HazeToken::ShlAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateShl(left, left, right);
 		}
 		case HazeToken::ShrAssign:
 		{
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->CreateShr(left, left, right);
 		}
 		case HazeToken::And:
@@ -1266,6 +1210,7 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 			}
 
 			auto leftValue = m_LeftAST->CodeGen(nullptr);
+			UPDATE_COMPILER_LINE_COUNT();
 			if (leftValue)
 			{
 				if (!leftExp)
@@ -1281,6 +1226,7 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 			}
 
 			auto rightValue = m_RightAST->CodeGen(nullptr);
+			UPDATE_COMPILER_LINE_COUNT();
 			if (rightValue)
 			{
 				if (!rightExp)
@@ -1310,6 +1256,7 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 			}
 
 			auto leftValue = m_LeftAST->CodeGen(nullptr);
+			UPDATE_COMPILER_LINE_COUNT();
 			if (leftValue)
 			{
 				if (!leftExp)
@@ -1324,6 +1271,7 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 				m_Compiler->SetInsertBlock(m_ShortCircuitBlock->GetShared());
 			}
 			auto rightValue = m_RightAST->CodeGen(nullptr);
+			UPDATE_COMPILER_LINE_COUNT();
 			if (rightValue)
 			{
 				if (!rightExp)
@@ -1351,6 +1299,7 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 			Share<CompilerValue> retValue = nullptr;
 			ASSERT_GEN(left, m_LeftAST->CodeGen(inferValue));
 			ASSERT_GEN(right, m_RightAST->CodeGen(left));
+			UPDATE_COMPILER_LINE_COUNT();
 
 			// 复杂类型
 			if (!((left->IsNullPtr() && IsAdvanceType(right->GetBaseType())) || (right->IsNullPtr() && IsAdvanceType(left->GetBaseType()))) &&
@@ -1417,7 +1366,6 @@ ASTThreeExpression::ASTThreeExpression(Compiler* compiler, const SourceLocation&
 
 Share<CompilerValue> ASTThreeExpression::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
 
 	auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
 
@@ -1442,11 +1390,15 @@ Share<CompilerValue> ASTThreeExpression::CodeGen(Share<CompilerValue> inferValue
 	m_Compiler->SetInsertBlock(blockLeft);
 	auto value = m_LeftAST->CodeGen(inferValue);
 	auto retValue = m_Compiler->GetTempRegister(value);
+
+	UPDATE_COMPILER_LINE_COUNT();
 	m_Compiler->CreateMov(retValue, value);
 	m_Compiler->CreateJmpToBlock(defauleBlock);
 
 	m_Compiler->SetInsertBlock(blockRight);
 	value = m_RightAST->CodeGen(inferValue);
+	
+	UPDATE_COMPILER_LINE_COUNT();
 	m_Compiler->CreateMov(retValue, value);
 	m_Compiler->CreateJmpToBlock(defauleBlock);
 
@@ -1482,7 +1434,7 @@ ASTBreakExpression::ASTBreakExpression(Compiler* compiler, const SourceLocation&
 
 Share<CompilerValue> ASTBreakExpression::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
+	UPDATE_COMPILER_LINE_COUNT();
 	m_Compiler->CreateJmpToBlock(m_Compiler->GetInsertBlock()->FindLoopBlock()->GetLoopEnd()->GetShared());
 	return nullptr;
 }
@@ -1493,20 +1445,21 @@ ASTContinueExpression::ASTContinueExpression(Compiler* compiler, const SourceLoc
 
 Share<CompilerValue> ASTContinueExpression::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
+	UPDATE_COMPILER_LINE_COUNT();
 	m_Compiler->CreateJmpToBlock(m_Compiler->GetInsertBlock()->FindLoopBlock()->GetLoopStep()->GetShared());
 	return nullptr;
 }
 
-ASTIfExpression::ASTIfExpression(Compiler* compiler, const SourceLocation& location, Unique<ASTBase>& condition,
+ASTIfExpression::ASTIfExpression(Compiler* compiler, const SourceLocation& location, const SourceLocation& finishLocation, Unique<ASTBase>& condition,
 	Unique<ASTBase>& ifExpression, Unique<ASTBase>& elseExpression)
-	: ASTBase(compiler, location), m_Condition(Move(condition)), m_IfExpression(Move(ifExpression)),
-	m_ElseExpression(Move(elseExpression)) {
+	: ASTBase(compiler, location), m_FinishLocation(finishLocation), m_Condition(Move(condition)), m_IfExpression(Move(ifExpression)),
+	m_ElseExpression(Move(elseExpression))
+{
 }
 
 Share<CompilerValue> ASTIfExpression::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
+	UPDATE_COMPILER_LINE_COUNT();
 
 	auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
 
@@ -1530,12 +1483,16 @@ Share<CompilerValue> ASTIfExpression::CodeGen(Share<CompilerValue> inferValue)
 
 	m_Compiler->SetInsertBlock(ifThenBlock);
 	m_IfExpression->CodeGen(nullptr);
+	
+	UPDATE_COMPILER_LINE_COUNT1(m_FinishLocation.Line);
 	m_Compiler->CreateJmpToBlock(nextBlock);
 
 	if (m_ElseExpression)
 	{
 		m_Compiler->SetInsertBlock(elseBlock);
 		m_ElseExpression->CodeGen(nullptr);
+		
+		UPDATE_COMPILER_LINE_COUNT1(m_FinishLocation.Line);
 		m_Compiler->CreateJmpToBlock(nextBlock);
 	}
 
@@ -1563,7 +1520,6 @@ ASTWhileExpression::ASTWhileExpression(Compiler* compiler, const SourceLocation&
 
 Share<CompilerValue> ASTWhileExpression::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
 
 	auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
 
@@ -1582,12 +1538,15 @@ Share<CompilerValue> ASTWhileExpression::CodeGen(Share<CompilerValue> inferValue
 	}
 	else
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		m_Compiler->CreateBoolCmp(m_Condition->CodeGen(nullptr));
 		m_Compiler->CreateCompareJmp(HazeCmpType::Equal, whileBlock, nextBlock);
 	}
 
 	m_Compiler->SetInsertBlock(whileBlock);
 	m_MultiExpression->CodeGen(nullptr);
+	
+	UPDATE_COMPILER_LINE_COUNT();
 	m_Compiler->CreateJmpToBlock(whileBlock);
 
 	m_Compiler->SetInsertBlock(nextBlock);
@@ -1598,12 +1557,13 @@ ASTForExpression::ASTForExpression(Compiler* compiler, const SourceLocation& loc
 	Unique<ASTBase>& initExpression, Unique<ASTBase>& conditionExpression,
 	Unique<ASTBase>& stepExpression, Unique<ASTBase>& multiExpression)
 	: ASTBase(compiler, location), m_InitExpression(Move(initExpression)), m_ConditionExpression(Move(conditionExpression)),
-	m_StepExpression(Move(stepExpression)), m_MultiExpression(Move(multiExpression)) {
+	m_StepExpression(Move(stepExpression)), m_MultiExpression(Move(multiExpression))
+{
 }
 
 Share<CompilerValue> ASTForExpression::CodeGen(Share<CompilerValue> inferValue)
 {
-	m_Compiler->InsertLineCount(m_Location.Line);
+	UPDATE_COMPILER_LINE_COUNT();
 
 	auto function = m_Compiler->GetCurrModule()->GetCurrFunction();
 	auto parentBlock = m_Compiler->GetInsertBlock();
@@ -1631,16 +1591,22 @@ Share<CompilerValue> ASTForExpression::CodeGen(Share<CompilerValue> inferValue)
 	}
 	else
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		m_Compiler->CreateBoolCmp(m_ConditionExpression->CodeGen(nullptr));
 		m_Compiler->CreateCompareJmp(HazeCmpType::Equal, loopBlock, endLoopBlock);
 	}
 
 	m_Compiler->SetInsertBlock(loopBlock);
 	m_MultiExpression->CodeGen(nullptr);
+
+	UPDATE_COMPILER_LINE_COUNT();
 	m_Compiler->CreateJmpToBlock(forStepBlock);
 
 	m_Compiler->SetInsertBlock(forStepBlock);
 	m_StepExpression->CodeGen(nullptr);
+
+
+	UPDATE_COMPILER_LINE_COUNT();
 	m_Compiler->CreateJmpToBlock(forConditionBlock);
 
 	m_Compiler->SetInsertBlock(endLoopBlock);
@@ -1659,6 +1625,7 @@ Share<CompilerValue> ASTCast::CodeGen(Share<CompilerValue> inferValue)
 	auto value = m_Expression->CodeGen(nullptr);
 	if (value)
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		return m_Compiler->CreateCast(m_DefineVariable.Type, value);
 	}
 	else
@@ -1682,6 +1649,7 @@ Share<CompilerValue> ASTSizeOf::CodeGen(Share<CompilerValue> inferValue)
 		auto value = m_Expression->CodeGen(nullptr);
 		if (value)
 		{
+			UPDATE_COMPILER_LINE_COUNT();
 			return m_Compiler->GetConstantValueUint64(value->GetSize());
 		}
 		else
@@ -1691,6 +1659,7 @@ Share<CompilerValue> ASTSizeOf::CodeGen(Share<CompilerValue> inferValue)
 	}
 	else
 	{
+		UPDATE_COMPILER_LINE_COUNT();
 		return m_Compiler->GetConstantValueUint64(m_DefineVariable.Type.GetTypeSize());
 	}
 

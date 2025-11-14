@@ -219,6 +219,11 @@ struct InstructionData
 struct Instruction
 {
 	InstructionOpCode InsCode;
+
+#if HAZE_DEBUGGER
+	x_uint32 Line;
+#endif
+
 	V_Array<InstructionData> Operator;
 };
 

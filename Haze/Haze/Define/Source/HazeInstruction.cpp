@@ -17,7 +17,7 @@
 #include <Windows.h>
 
 #define HAZE_CALL_LOG				0
-#define HAZE_DEBUG_ENABLE			0
+#define HAZE_INS_LOG_ENABLE			0
 
 #define POINTER_ADD_SUB(T, S, STACK, OPER, INS) T v; memcpy(&v, S, sizeof(T)); \
 				auto type = OPER[0].Variable.Type.SecondaryType; \
@@ -188,7 +188,7 @@ class InstructionProcessor
 {
 	friend void CallHazeFunction(HazeStack* stack, const FunctionData* funcData, va_list& args);
 	friend void* const GetOperatorAddress(HazeStack* stack, const InstructionData& insData);
-#if HAZE_DEBUG_ENABLE
+#if HAZE_INS_LOG_ENABLE
 	struct DataDebugScope
 	{
 		DataDebugScope(HazeStack* stack, const V_Array<InstructionData>& data, InstructionOpCode opCode)

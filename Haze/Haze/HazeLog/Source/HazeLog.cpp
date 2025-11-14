@@ -9,6 +9,19 @@ static char s_CahceLog[512];
 static void (*s_WPrintFunction)(int type, const wchar_t* str);
 static void (*s_PrintFunction)(int type, const char* str);
 
+static const x_HChar* GetThreadName()
+{
+	extern std::thread::id g_DebuggerThreadId;
+	auto id = std::this_thread::get_id();
+
+	if (id == g_DebuggerThreadId)
+	{
+		return H_TEXT("[Debugger] ");
+	}
+
+	return H_TEXT("[Main    ] ");
+}
+
 void HazeLog::SetSystemColor(int type)
 {
 	switch (type)
@@ -43,6 +56,12 @@ void HazeLog::LogInfo(int type, const wchar_t* format, ...)
 	std::lock_guard lock(g_LogMutex);
 
 	SetSystemColor(type);
+
+	if (type > 0)
+	{
+		wprintf(L"%s", GetThreadName());
+	}
+
 	va_list st;
 	va_start(st, format);
 	//vwprintf(format, st);
@@ -61,6 +80,12 @@ void HazeLog::LogInfo(int type, const char* format, ...)
 	std::lock_guard lock(g_LogMutex);
 
 	SetSystemColor(type);
+
+	if (type > 0)
+	{
+		printf("%s", GetThreadName() == H_TEXT("[Debugger] ") ? "[Debugger] " : "[Main    ] ");
+	}
+
 	va_list st;
 	va_start(st, format);
 	//vprintf(format, st);
