@@ -89,6 +89,16 @@ STDString GetHazeModuleGlobalDataInitFunctionName(const STDString& moduleName)
 	return moduleName + HAZE_GLOBAL_DATA_INIT_FUNCTION;
 }
 
+STDString GetFunctionVariableCountName(const STDString& name, int count)
+{
+	return name + HAZE_LOCAL_VARIABLE_CONBINE + ToHazeString(count);
+}
+
+STDString GetFunctionVariableNameTrimCount(const STDString& name)
+{
+	return name.substr(0, name.find_first_of(HAZE_LOCAL_VARIABLE_CONBINE));
+}
+
 const x_HChar* GetImportHeaderString()
 {
 	return HEADER_IMPORT_MODULE;

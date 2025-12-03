@@ -7,6 +7,7 @@
 #include "HazeDebuggerServer.h"
 
 #include "ObjectString.h"
+#include "ObjectClosure.h"
 #include "ObjectBase.h"
 
 #define ENABLE_DEBUGGER_LOG 0
@@ -39,7 +40,7 @@ void HookCall(HazeVM* vm)
 	}
 }
 
-void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type)
+void GetHazeValueByBaseType(HazeVM* vm, XJson& json, const char* address, HazeValueType type)
 {
 	switch (type)
 	{
@@ -131,8 +132,19 @@ void GetHazeValueByBaseType(XJson& json, const char* address, HazeValueType type
 		{
 			ObjectBase* obj;
 			memcpy(&obj, address, sizeof(obj));
-			json["ObjectBase"]["Pointer"] = obj;
-			GetHazeValueByBaseType(json["ObjectBase"]["Value"], (char*)obj->GetBaseData(), obj->GetBaseType());
+
+			auto& baseObjectJson = json["ObjectBase"];
+
+			baseObjectJson["Pointer"] = ToString((void*)obj);
+			GetHazeValueByBaseType(vm, baseObjectJson["Value"], (char*)obj->GetBaseData(), obj->GetBaseType());
+			baseObjectJson["ValueType"] = WString2String(*vm->GetTypeInfoMap()->GetTypeName(HAZE_TYPE_ID(obj->GetBaseType())));
+		}
+		break;
+		case HazeValueType::Closure:
+		{
+			ObjectClosure* obj;
+			memcpy(&obj, address, sizeof(obj));
+			json["Closure"]["Pointer"] = ToString((void*)obj);
 		}
 		break;
 		case HazeValueType::Array:
@@ -193,11 +205,12 @@ void HazeDebugger::AddBreakPoint(const char* message)
 	auto iter = m_BreakPoints.find(moduleName);
 	if (iter != m_BreakPoints.end())
 	{
-		iter->second.first.insert(Line);
+		iter->second.State[Line] = { BreakPointState::None };
 	}
 	else
 	{
-		m_BreakPoints[moduleName] = { { Line }, fileName };
+		m_BreakPoints[moduleName].Path = fileName;
+		m_BreakPoints[moduleName].State[Line] = BreakPointState::None;
 	}
 
 	HAZE_LOG_INFO(H_TEXT("添加断点<%s><%s><%d>\n"), moduleName.c_str(), fileName.c_str(), Line);
@@ -215,10 +228,10 @@ void HazeDebugger::DeleteBreakPoint(const char* message)
 	auto iter = m_BreakPoints.find(fileName);
 	if (iter != m_BreakPoints.end())
 	{
-		auto it = iter->second.first.find(line);
-		if (it != iter->second.first.end())
+		auto it = iter->second.State.find(line);
+		if (it != iter->second.State.end())
 		{
-			iter->second.first.erase(it);
+			iter->second.State.erase(it);
 		}
 		else
 		{
@@ -244,7 +257,7 @@ void HazeDebugger::DeleteModuleAllBreakPoint(const char* message)
 	auto iter = m_BreakPoints.find(moduleName);
 	if (iter != m_BreakPoints.end())
 	{
-		iter->second.first.clear();
+		iter->second.State.clear();
 	}
 
 	HAZE_LOG_ERR_W("清除模块<%s>的所有断点!\n", moduleName.c_str());
@@ -262,18 +275,27 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 	auto iter = m_BreakPoints.find(*moduleName);
 	if (iter != m_BreakPoints.end())
 	{
-		auto it = iter->second.first.find(line);
-		if (it != iter->second.first.end())
+		auto it = iter->second.State.find(line);
+		if (it != iter->second.State.end())
 		{
-			if (m_HookType & (x_uint32)DebuggerHookType::Line)
+			if (m_HookType & (x_uint32)DebuggerHookType::Line && it->second != BreakPointState::Hit)
 			{
 				if (m_HookFunctionCall)
 				{
 					m_HookFunctionCall(m_VM);
 				}
 
+				it->second = BreakPointState::Hit;
 				m_CurrPauseModule = { iter->first, line };
 				m_IsPause = true;
+			}
+		}
+
+		for (auto& info : iter->second.State)
+		{
+			if (info.first != line && info.second == BreakPointState::Hit)
+			{
+				info.second = BreakPointState::None;
 			}
 		}
 	}
@@ -282,18 +304,16 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 	{
 		if (CurrModuleIsStepOver())
 		{
-			if (*moduleName == m_CurrPauseModule.ModuleName)
+			if (line > m_CurrPauseModule.CurrLine)
 			{
-				if (line != m_CurrPauseModule.CurrLine)
-				{
-					m_IsPause = true;
-					m_CurrPauseModule.CurrLine = line;
-				}
-				/*else if (line <= m_CurrPauseModule.CurrLine && m_VM->FindClass)
-				{
-
-				}*/
+				m_IsPause = true;
+				m_CurrPauseModule.ModuleName = *moduleName;
+				m_CurrPauseModule.CurrLine = line;
 			}
+			/*else if (line <= m_CurrPauseModule.CurrLine && m_VM->FindClass)
+			{
+
+			}*/
 		}
 			
 		if (m_IsStepIn)
@@ -398,7 +418,7 @@ void HazeDebugger::StepInstruction()
 void HazeDebugger::Continue()
 {
 	m_IsPause = false;
-	ClearCurrParseModuleData();
+	//ClearCurrParseModuleData();
 
 	{
 		std::lock_guard<std::mutex> lock(m_Mutex);
@@ -433,12 +453,13 @@ void HazeDebugger::SetJsonModuleGlobalVariable(XJson& json)
 {
 	auto& info = json["GlobalVariable"];
 
-	auto& frame = m_VM->m_Stack->GetCurrFrame();
-	if (frame.FunctionInfo)
+	auto funcation = m_VM->GetFunctionDataByName(GetHazeModuleGlobalDataInitFunctionName(m_CurrPauseModule.ModuleName));
+	if (funcation)
 	{
-		for (size_t i = 0; i < frame.FunctionInfo->Variables.size(); i++)
+		for (x_uint64 i = 0; i < funcation->Variables.size(); i++)
 		{
-			SetJsonVariableData(info[i], frame.FunctionInfo->Variables[i]);
+			auto name = GetFunctionVariableNameTrimCount(funcation->Variables[i].Variable.Name);
+			SetJsonVariableData(info[i], funcation->Variables[i], m_VM->GetGlobalValueById(HazeTypeInfoMap::GenSymbolId(name)), false);
 		}
 	}
 }
@@ -501,10 +522,10 @@ void HazeDebugger::SendBreakInfo()
 	{
 		XJson json;
 		SetJsonType(json, HazeDebugInfoType::BreakInfo);
-		SetJsonBreakFilePath(json, iter->second.second);
+		SetJsonBreakFilePath(json, iter->second.Path);
 		SetJsonBreakLine(json, m_CurrPauseModule.CurrLine);
 		SetJsonLocalVariable(json);
-		//SetJsonModuleGlobalVariable(json);
+		SetJsonModuleGlobalVariable(json);
 
 		auto& data = json.Encode();
 		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
@@ -515,7 +536,7 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 {
 	static std::string s_String;
 
-	s_String = WString2String(variable.Variable.Name);
+	s_String = WString2String(GetFunctionVariableNameTrimCount(variable.Variable.Name));
 	json["Name"] = GB2312_2_UFT8(s_String.c_str());
 
 	auto dataAddress = isStack ? m_VM->m_Stack->GetAddressByEBP(variable.Offset) : address;
@@ -568,10 +589,22 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
 		GetHazeValueByBaseType(json["Value"], dataAddress, HazeValueType::UInt64);*/
 	}
+	else if(IsObjectBaseType(variable.Variable.Type.BaseType))
+	{
+		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.BaseType));
+		json["Type"] = GB2312_2_UFT8(s_String.c_str());
+		GetHazeValueByBaseType(m_VM, json["Value"], dataAddress, variable.Variable.Type.BaseType);
+	}
+	else if (IsClosureType(variable.Variable.Type.BaseType))
+	{
+		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.BaseType));
+		json["Type"] = GB2312_2_UFT8(s_String.c_str());
+		GetHazeValueByBaseType(m_VM, json["Value"], dataAddress, variable.Variable.Type.BaseType);
+	}
 	else
 	{
 		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.BaseType));
 		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-		GetHazeValueByBaseType(json["Value"], dataAddress, variable.Variable.Type.BaseType);
+		GetHazeValueByBaseType(m_VM, json["Value"], dataAddress, variable.Variable.Type.BaseType);
 	}
 }

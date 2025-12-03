@@ -357,6 +357,41 @@ const x_uint32 HazeTypeInfoMap::GetTypeIdByClassName(const STDString& name) cons
 	return 0;
 }
 
+x_uint32 HazeTypeInfoMap::GenSymbolId(const STDString& symbol)
+{
+#define SIP_ROTATE_LEFT(X, BITS) ((X << BITS) | (X >> (64 - BITS)))
+#define SIP_ROUND(V0, V1, V2, V3) V0 += V1; V1 = SIP_ROTATE_LEFT(V1, 13); V1 ^= V0; V0 = SIP_ROTATE_LEFT(V0, 32); \
+								  v2 += v3; v3 = SIP_ROTATE_LEFT(v3, 16); v3 ^= v2; \
+								  v0 += v3; v3 = SIP_ROTATE_LEFT(v3, 21); v3 ^= v0; \
+								  v2 += v1; v1 = SIP_ROTATE_LEFT(v1, 17); v1 ^= v2; v2 = SIP_ROTATE_LEFT(v2, 32) \
+
+#define SIP_FINISH_64() (v0 ^ v1 ^ v2 ^ v3)
+#define SIP_FINISH_32() static_cast<uint32_t>(SIP_FINISH_64() ^ (SIP_FINISH_64() >> 32))
+
+	// 简化的SipHash实现，固定种子确保一致性
+	x_uint64 v0 = 0x736f6d6570736575ULL;
+	x_uint64 v1 = 0x646f72616e646f6dULL;
+	x_uint64 v2 = 0x6c7967656e657261ULL;
+	x_uint64 v3 = 0x7465646279746573ULL;
+
+	for (x_uint64 i = 0; i < symbol.length(); ++i)
+	{
+		auto c = symbol[i];
+		v3 ^= c;
+
+		SIP_ROUND(v0, v1, v2, v3);
+
+		v0 ^= c;
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		SIP_ROUND(v0, v1, v2, v3);
+	}
+
+	return (SIP_FINISH_32() % std::numeric_limits<x_uint32>::max()) + COMPLEX_TYPE_START;
+}
+
 void HazeTypeInfoMap::AddFunctionTypeInfo(x_uint32 typeId, V_Array<x_uint32>& typeAndParams)
 {
 	m_FunctionInfoMap[typeId] = Move(typeAndParams);
@@ -502,38 +537,7 @@ void HazeTypeInfoMap::ParseInterFile(HAZE_IFSTREAM& stream)
 
 x_uint32 HazeTypeInfoMap::GetNewTypeId(const STDString& symbol)
 {
-#define SIP_ROTATE_LEFT(X, BITS) ((X << BITS) | (X >> (64 - BITS)))
-#define SIP_ROUND(V0, V1, V2, V3) V0 += V1; V1 = SIP_ROTATE_LEFT(V1, 13); V1 ^= V0; V0 = SIP_ROTATE_LEFT(V0, 32); \
-								  v2 += v3; v3 = SIP_ROTATE_LEFT(v3, 16); v3 ^= v2; \
-								  v0 += v3; v3 = SIP_ROTATE_LEFT(v3, 21); v3 ^= v0; \
-								  v2 += v1; v1 = SIP_ROTATE_LEFT(v1, 17); v1 ^= v2; v2 = SIP_ROTATE_LEFT(v2, 32) \
-
-#define SIP_FINISH_64() (v0 ^ v1 ^ v2 ^ v3)
-#define SIP_FINISH_32() static_cast<uint32_t>(SIP_FINISH_64() ^ (SIP_FINISH_64() >> 32))
-
-	// 简化的SipHash实现，固定种子确保一致性
-	x_uint64 v0 = 0x736f6d6570736575ULL;
-	x_uint64 v1 = 0x646f72616e646f6dULL;
-	x_uint64 v2 = 0x6c7967656e657261ULL;
-	x_uint64 v3 = 0x7465646279746573ULL;
-
-	for (x_uint64 i = 0; i < symbol.length(); ++i)
-	{
-		auto c = symbol[i];
-		v3 ^= c;
-		
-		SIP_ROUND(v0, v1, v2, v3);
-
-		v0 ^= c;
-	}
-	
-	for (int i = 0; i < 4; i++)
-	{
-		SIP_ROUND(v0, v1, v2, v3);
-	}
-
-	x_uint32 newTypeId = (SIP_FINISH_32() % std::numeric_limits<x_uint32>::max()) + COMPLEX_TYPE_START;
-
+	x_uint32 newTypeId = GenSymbolId(symbol);
 	auto iter = m_Map.find(newTypeId);
 	if (iter != m_Map.end())
 	{

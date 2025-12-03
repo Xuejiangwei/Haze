@@ -1084,19 +1084,19 @@ Share<CompilerValue> Compiler::CreateShr(Share<CompilerValue> assignTo, Share<Co
 	return assignTo;
 }
 
-Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerFunction> function, const V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo,
+Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerFunction> function, const V_Array<Share<CompilerValue>>& param, bool pushParam, Share<CompilerValue> thisPointerTo,
 	const STDString* nameSpace)
 {
-	return GetCurrModule()->CreateFunctionCall(function, param, thisPointerTo, nameSpace);
+	return GetCurrModule()->CreateFunctionCall(function, param, pushParam, thisPointerTo, nameSpace);
 }
 
-Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo)
+Share<CompilerValue> Compiler::CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, bool pushParam, Share<CompilerValue> thisPointerTo)
 {
-	return GetCurrModule()->CreateFunctionCall(pointerFunction, param, thisPointerTo);
+	return GetCurrModule()->CreateFunctionCall(pointerFunction, param, pushParam, thisPointerTo);
 }
 
 Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const STDString& functionName, const V_Array<Share<CompilerValue>>& param,
-	Share<CompilerValue> thisPointerTo, HazeVariableType* expectType)
+	Share<CompilerValue> thisPointerTo, bool pushParam, HazeVariableType* expectType)
 {
 	auto iter = m_AdvanceClassIndexInfo.find(advanceType);
 	if (iter != m_AdvanceClassIndexInfo.end())
@@ -1109,7 +1109,7 @@ Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advan
 				thisPointerTo = DynamicCast<CompilerElementValue>(thisPointerTo)->CreateGetFunctionCall();
 			}
 
-			return GetCurrModule()->CreateAdvanceTypeFunctionCall(func.first, func.second, param, thisPointerTo, expectType);
+			return GetCurrModule()->CreateAdvanceTypeFunctionCall(func.first, func.second, param, pushParam, thisPointerTo, expectType);
 		}
 		else if (thisPointerTo->IsDynamicClass())
 		{
@@ -1120,7 +1120,7 @@ Share<CompilerValue> Compiler::CreateAdvanceTypeFunctionCall(HazeValueType advan
 			auto classValue = DynamicCast<CompilerClassValue>(DynamicCast<CompilerElementValue>(thisPointerTo)->CreateGetFunctionCall());
 			if (classValue)
 			{
-				return CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(functionName, nullptr), param, classValue);
+				return CreateFunctionCall(classValue->GetOwnerClass()->FindFunction(functionName, nullptr), param, pushParam, classValue);
 			}
 			else
 			{
@@ -1187,16 +1187,16 @@ Share<CompilerValue> Compiler::CreateSetAdvanceElement(Share<CompilerElementValu
 	switch (element->GetParentBaseType().BaseType)
 	{
 		case HazeValueType::Array:
-			return CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_SET_FUNCTION, { assignValue, element->GetElement() }, element->GetParent());
+			return CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_SET_FUNCTION, { assignValue, element->GetElement() }, element->GetParent(), true);
 		case HazeValueType::Class:
 			return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION,
-				{ assignValue, GetConstantValueUint64(DynamicCast<CompilerClassValue>(element->GetParent())->GetMemberIndex(element->GetElement().get())) }, element->GetParent());
+				{ assignValue, GetConstantValueUint64(DynamicCast<CompilerClassValue>(element->GetParent())->GetMemberIndex(element->GetElement().get())) }, element->GetParent(), true);
 		case HazeValueType::DynamicClass:
 		{
 			auto prueStr = GenStringVariable(*element->GetElementName());
 			//auto prueStr = MakeShare<CompilerStringValue>(GetCurrModule().get(), HAZE_VAR_TYPE(HazeValueType::PureString), /*HazeVariableScope::Local,*/ HazeDataDesc::Variable_Local, 0);
 			//prueStr->SetPureString(element->GetElementName());
-			return CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, { assignValue, prueStr }, element->GetParent());
+			return CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, { assignValue, prueStr }, element->GetParent(), true);
 		}
 		case HazeValueType::Hash:
 		{
@@ -1219,7 +1219,7 @@ Share<CompilerValue> Compiler::CreateSetAdvanceElement(Share<CompilerElementValu
 				}
 			}
 
-			return CreateAdvanceTypeFunctionCall(HazeValueType::Hash, HAZE_ADVANCE_SET_FUNCTION, { assignValue,  keyValue }, hashValue);
+			return CreateAdvanceTypeFunctionCall(HazeValueType::Hash, HAZE_ADVANCE_SET_FUNCTION, { assignValue,  keyValue }, hashValue, true);
 		}
 		default:
 			break;
@@ -1241,13 +1241,13 @@ Share<CompilerValue> Compiler::CreateGetArrayElement(Share<CompilerValue> arrayV
 	auto value = DynamicCast<CompilerArrayValue>(arrayValue);
 	V_Array<Share<CompilerValue>> params = { index };
 	return CreateMov(GetTempRegister(value->GetElementType()),
-		CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, params, value));
+		CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, params, value, true));
 }
 
 Share<CompilerValue> Compiler::CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue)
 {
 	V_Array<Share<CompilerValue>> params = { assignValue, index };
-	return CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_SET_FUNCTION, params, arrayValue);
+	return CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_SET_FUNCTION, params, arrayValue, true);
 }
 
 Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classValue, const STDString& memberName)
@@ -1258,7 +1258,7 @@ Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classVa
 
 	V_Array<Share<CompilerValue>> params = { GetConstantValueUint64(index) };
 	return CreateMov(GetTempRegister(classMemberValue),
-		CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, classValue));
+		CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, classValue, true));
 }
 
 //Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue)
@@ -1287,7 +1287,7 @@ Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classVa
 	auto index = v->GetMemberIndex(member.get());
 
 	V_Array<Share<CompilerValue>> params = { assignValue, GetConstantValueUint64(index) };
-	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue);
+	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue, true);
 }
 
 Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> dynamicClassValue, const STDString& memberName)
@@ -1297,7 +1297,7 @@ Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> 
 	//prueStr->SetPureString(&memberName);
 	V_Array<Share<CompilerValue>> params = { prueStr };
 
-	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_GET_MEMBER, params, dynamicClassValue);
+	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_GET_MEMBER, params, dynamicClassValue, true);
 
 	HazeVariableType type = HazeVariableType::GetDynamicClassUnknowType();
 	CompilerValueTypeChanger::Reset(ret, type);
@@ -1312,7 +1312,7 @@ Share<CompilerValue> Compiler::CreateSetDynamicClassMember(Share<CompilerValue> 
 	//prueStr->SetPureString(&memberName);
 	V_Array<Share<CompilerValue>> params = { assignValue, prueStr };
 
-	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, params, classValue);
+	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_SET_MEMBER, params, classValue, true);
 
 	HazeVariableType type = HazeVariableType::GetDynamicClassUnknowType();
 	CompilerValueTypeChanger::Reset(ret, type);
@@ -1327,7 +1327,7 @@ Share<CompilerValue> Compiler::CreateDynamicClassFunctionCall(Share<CompilerValu
 	//prueStr->SetPureString(&functionName);
 	const_cast<V_Array<Share<CompilerValue>>&>(params).push_back(prueStr);
 
-	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_CALL_FUNCTION, params, classValue);
+	auto ret = CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, HAZE_CUSTOM_CALL_FUNCTION, params, classValue, true);
 
 	HazeVariableType type = HazeVariableType::GetDynamicClassUnknowType();
 	CompilerValueTypeChanger::Reset(ret, type);

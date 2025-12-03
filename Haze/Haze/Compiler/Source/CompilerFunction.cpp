@@ -305,7 +305,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 			return;
 		}
 		
-		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName << HAZE_LOCAL_VARIABLE_CONBINE << m_LocalVariables[i].first->GetCount();
+		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << GetFunctionVariableCountName(LocalVariableName.data(), m_LocalVariables[i].first->GetCount());
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 
 		hss << " " << m_LocalVariables[i].first->GetSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
@@ -317,7 +317,7 @@ void CompilerFunction::GenI_Code(HAZE_STRING_STREAM& hss)
 	for (size_t i = m_Params.size(); i < m_LocalVariables.size(); i++)
 	{
 		FindLocalVariableName(m_LocalVariables[i].first, LocalVariableName);
-		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << LocalVariableName << HAZE_LOCAL_VARIABLE_CONBINE << m_LocalVariables[i].first->GetCount();
+		hss << HAZE_LOCAL_VARIABLE_HEADER << " " << size << " " << GetFunctionVariableCountName(LocalVariableName.data(), m_LocalVariables[i].first->GetCount());
 		HazeCompilerStream(hss, m_LocalVariables[i].first, false);
 		hss << " " << m_LocalVariables[i].first->GetVariableType().GetTypeSize() << " " << m_LocalVariables[i].second << HAZE_ENDL;
 		size += m_LocalVariables[i].first->GetVariableType().GetTypeSize();

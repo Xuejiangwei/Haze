@@ -135,6 +135,8 @@ public:
 public:
 	const x_uint32 GetTypeIdByClassName(const STDString& name) const;
 
+	static x_uint32 GenSymbolId(const STDString& symbol);
+
 public:
 	void AddFunctionTypeInfo(x_uint32 typeId, V_Array<x_uint32>& typeAndParams);
 	void AddTypeInfo(STDString&& name, x_uint32 typeId, HazeComplexTypeInfo* info);

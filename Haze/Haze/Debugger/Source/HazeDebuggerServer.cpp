@@ -107,7 +107,7 @@ static bool HandleMessage(char* Message)
 	Message = UTF8_2_GB2312(Message);
 	std::string Str;
 	Str += Message[0];
-	x_uint32 m_Type = StringToStandardType<x_uint32>(Str);
+	x_uint32 m_Type = Message[0];
 	HAZE_LOG_INFO("handle message %d %s\n", m_Type, Message + 1);
 	switch ((HazeDebugOperatorType)m_Type)
 	{

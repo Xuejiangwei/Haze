@@ -25,10 +25,22 @@ public:
 		Function = 1 << 2,
 	};
 
+	enum class BreakPointState
+	{
+		None,
+		Hit,
+	};
+
 	struct CurrParseModuleData
 	{
 		STDString ModuleName;
 		x_uint32 CurrLine;
+	};
+
+	struct BreakPointStateInfo
+	{
+		STDString Path;
+		HashMap<x_uint32, BreakPointState> State;
 	};
 
 	void SetHook(void(*hookCall)(HazeVM* vm), x_uint32 type);
@@ -98,7 +110,7 @@ private:
 	void(*m_EndCall)();
 	x_uint32 m_HookType;
 
-	HashMap<STDString, Pair<HashSet<x_uint32>, STDString>> m_BreakPoints;
+	HashMap<STDString, BreakPointStateInfo> m_BreakPoints;
 	HashMap<STDString, Pair<HashSet<x_uint32>, STDString>> m_TempBreakPoints;
 
 	CurrParseModuleData m_CurrPauseModule;

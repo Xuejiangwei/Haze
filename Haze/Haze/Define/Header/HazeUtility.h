@@ -22,6 +22,9 @@ STDString NativeClassFunctionName(const STDString& className, const STDString& f
 
 STDString GetHazeModuleGlobalDataInitFunctionName(const STDString& moduleName);
 
+STDString GetFunctionVariableCountName(const STDString& name, int count);
+STDString GetFunctionVariableNameTrimCount(const STDString& name);
+
 const x_HChar* GetImportHeaderString();
 const x_HChar* GetImportHeaderModuleString();
 

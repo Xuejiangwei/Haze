@@ -158,12 +158,12 @@ private:
 
 	Share<CompilerValue> CreateNew(const HazeVariableType& data, V_Array<Share<CompilerValue>>* countValue, Share<CompilerFunction> closure = nullptr);
 
-	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr,
+	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> callFunction, const V_Array<Share<CompilerValue>>& params, bool pushParam, Share<CompilerValue> thisPointerTo = nullptr,
 		const STDString* nameSpace = nullptr);
 
-	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr);
+	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& params, bool pushParam, Share<CompilerValue> thisPointerTo = nullptr);
 
-	Share<CompilerValue> CreateAdvanceTypeFunctionCall(struct AdvanceFunctionInfo* functionInfo, x_uint16 index, const V_Array<Share<CompilerValue>>& params, Share<CompilerValue> thisPointerTo = nullptr, HazeVariableType* expectType = nullptr);
+	Share<CompilerValue> CreateAdvanceTypeFunctionCall(struct AdvanceFunctionInfo* functionInfo, x_uint16 index, const V_Array<Share<CompilerValue>>& params, bool pushParam, Share<CompilerValue> thisPointerTo = nullptr, HazeVariableType* expectType = nullptr);
 
 	void GenIRCode_BinaryOperater(Share<CompilerValue> assignTo, Share<CompilerValue> oper1, Share<CompilerValue> oper2, InstructionOpCode opCode, bool check = true);
 
@@ -178,7 +178,7 @@ private:
 private:
 	void FunctionCall(HAZE_STRING_STREAM& hss, Share<CompilerFunction> callFunction, Share<CompilerValue> pointerFunction,
 		AdvanceFunctionInfo* advancFunctionInfo, x_uint32& size, const V_Array<Share<CompilerValue>>& params,
-		Share<CompilerValue> thisPointerTo);
+		Share<CompilerValue> thisPointerTo, bool pushParam);
 
 	void GenCodeFile();
 

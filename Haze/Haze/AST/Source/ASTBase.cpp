@@ -25,17 +25,61 @@
 	#define UPDATE_COMPILER_LINE_COUNT1(LINE)
 #endif
 
-//struct InferScope
-//{
-//	InferScope(Compiler* compiler, Share<CompilerValue> value) : _Compiler(compiler), Value(value) {}
-//	~InferScope()
-//	{
-//		A
-//	}
-//private:
-//	Compiler* _Compiler;
-//	Share<CompilerValue> Value;
-//};
+struct ASTFunctionCallScope
+{
+	ASTFunctionCallScope(Compiler* compiler, const STDString* nameSpace = nullptr)
+		: C(compiler), NameSpace(nameSpace) { }
+
+	/*void SetThis(Share<CompilerValue> thisPointer)
+	{
+		if (!This)
+		{
+			HAZE_LOG_ERR_W("<语法分析错误>：" H_TEXT(" 【<%s>模块】!\n"), C->GetCurrModuleName().c_str());
+			C->MarkCompilerError();
+		}
+
+		This = thisPointer;
+	}*/
+
+	// Left(index 0) -> Right
+	void AddParam(ASTBase* paramAST, Share<CompilerValue> inferValue) { Param.push_back(paramAST); InferValue.push_back(inferValue); }
+
+	Share<CompilerValue> Call(Share<CompilerFunction> function, Share<CompilerValue> thisPointer = nullptr)
+	{
+		for (int i = (int)Param.size() - 1; i >= 0; i--)
+		{
+			InferValue[i] = Param[i]->CodeGen(InferValue[i]);
+			C->CreatePush(InferValue[i]);
+		}
+
+		std::reverse(InferValue.begin(), InferValue.end());
+		return C->CreateFunctionCall(function, InferValue, false, thisPointer, NameSpace);
+	}
+
+	Share<CompilerValue> AdvanceCall(HazeValueType type, const STDString& functionName, Share<CompilerValue> thisPointer = nullptr)
+	{ 
+		return AdvanceCall(type, functionName.c_str(), thisPointer);
+	}
+
+	Share<CompilerValue> AdvanceCall(HazeValueType type, const x_HChar* functionName, Share<CompilerValue> thisPointer = nullptr)
+	{
+		assert(IsAdvanceType(type));
+
+		for (int i = (int)Param.size() - 1; i >= 0; i--)
+		{
+			InferValue[i] = Param[i]->CodeGen(InferValue[i]);
+			C->CreatePush(InferValue[i]);
+		}
+
+		return C->CreateAdvanceTypeFunctionCall(type, functionName, InferValue, thisPointer, false);
+	}
+
+private:
+	const STDString* NameSpace;
+	Compiler* C;
+	V_Array<ASTBase*> Param;
+	V_Array<Share<CompilerValue>> InferValue;
+};
 
 //Base
 ASTBase::ASTBase(Compiler* compiler, const SourceLocation& location) : m_Compiler(compiler), m_Location(location)
@@ -213,11 +257,10 @@ ASTFunctionCall::ASTFunctionCall(Compiler* compiler, const SourceLocation& locat
 Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 {
 	auto& currModule = m_Compiler->GetCurrModule();
-
 	V_Array<Share<CompilerValue>> paramInferValues(m_FunctionParam.size());
 
 	Share<CompilerFunction> function = nullptr;
-	Share<CompilerValue> pointerFunction = nullptr;
+	Share<CompilerValue> closure = nullptr;
 
 	Share<CompilerValue> classObj = nullptr;
 
@@ -239,10 +282,10 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 		function = m_Compiler->GetFunction(m_Name);
 		if (!function)
 		{
-			pointerFunction = currModule->GetClosureVariable(m_Name, true);
-			if (!pointerFunction)
+			closure = currModule->GetClosureVariable(m_Name, true);
+			if (!closure)
 			{
-				pointerFunction = currModule->GetCurrFunction()->GetLocalVariable(m_Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
+				closure = currModule->GetCurrFunction()->GetLocalVariable(m_Name, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 			}
 		}
 	}
@@ -255,9 +298,9 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 			paramInferValues[i] = function->GetParamVariableLeftToRight((x_uint32)i);
 		}
 	}
-	else if (pointerFunction)
+	else if (closure)
 	{
-		auto pointerFuncValue = DynamicCast<CompilerPointerFunction>(pointerFunction);
+		auto pointerFuncValue = DynamicCast<CompilerPointerFunction>(closure);
 		for (x_uint64 i = 0; i < paramInferValues.size(); i++)
 		{
 			paramInferValues[i] = CreateAstTempVariable(currModule.get(), pointerFuncValue->GetParamTypeLeftToRightByIndex((x_uint32)i));
@@ -280,9 +323,19 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 		}
 	}
 
-	for (int i = (int)m_FunctionParam.size() - 1; i >= 0; i--)
+
+	ASTFunctionCallScope callScope(m_Compiler, m_NameSpace.empty() ? nullptr : &m_NameSpace);
+
+
+	for (x_uint64 i = 0; i < m_FunctionParam.size(); i++)
+	{
+		callScope.AddParam(m_FunctionParam[i].get(), paramInferValues[i]);
+	}
+
+	/*for (int i = (int)m_FunctionParam.size() - 1; i >= 0; i--)
 	{
 		auto value = m_FunctionParam[i]->CodeGen(paramInferValues[i]);
+		m_Compiler->CreatePush(value);
 
 		paramInferValues[i] = value;
 		if (!value)
@@ -290,10 +343,9 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 			AST_ERR_W("函数<%s>中<%d>行调用<%s>第<%d>个参数错误", currModule->GetCurrFunction()->GetName().c_str(), m_Location.Line, m_Name.c_str(), i + 1);
 			return nullptr;
 		}
-	}
+	}*/
 
 	UPDATE_COMPILER_LINE_COUNT();
-	std::reverse(paramInferValues.begin(), paramInferValues.end());
 
 	Share<CompilerValue> ret = nullptr;
 	if (function)
@@ -309,46 +361,46 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 				}
 			}
 
-			ret = m_Compiler->CreateFunctionCall(function, paramInferValues, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
+			ret = callScope.Call(function, classObj);
+
+			//ret = m_Compiler->CreateFunctionCall(function, paramInferValues, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 		}
-		else
+		/*else
 		{
 			ret = m_Compiler->CreateFunctionCall(function, paramInferValues, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
-		}
+		}*/
+
+		ret = callScope.Call(function, classObj);
 	}
-	else if (pointerFunction)
+	else if (closure)
 	{
-		if (pointerFunction->IsFunction())
-		{
-			ret = m_Compiler->CreateFunctionCall(pointerFunction, paramInferValues);
-		}
-		else if (pointerFunction->IsClosure())
-		{
-			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Closure, HAZE_CUSTOM_CALL_FUNCTION, paramInferValues, pointerFunction);
-		}
+		ret = callScope.AdvanceCall(HazeValueType::Closure, HAZE_CUSTOM_CALL_FUNCTION, closure);
+		//ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Closure, HAZE_CUSTOM_CALL_FUNCTION, paramInferValues, pointerFunction, false);
 	}
 	else if (classObj)
 	{
 		if (classObj->IsElement())
 		{
 			auto elementValue = DynamicCast<CompilerElementValue>(classObj);
-			ret = m_Compiler->CreateAdvanceTypeFunctionCall(elementValue->GetParentBaseType().BaseType, m_Name, paramInferValues, elementValue);
+			ret = callScope.AdvanceCall(elementValue->GetParentBaseType().BaseType, m_Name, classObj);
+			//ret = m_Compiler->CreateAdvanceTypeFunctionCall(elementValue->GetParentBaseType().BaseType, m_Name, paramInferValues, elementValue, false);
 		}
-		else if (classObj->IsDynamicClass())
+		/*else if (classObj->IsDynamicClass())
 		{
-			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, m_Name, paramInferValues, classObj);
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::DynamicClass, m_Name, paramInferValues, classObj, false);
 		}
 		else if (classObj->IsObjectBase())
 		{
-			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, m_Name, paramInferValues, classObj);
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, m_Name, paramInferValues, classObj, false);
 		}
 		else if (classObj->IsClass())
 		{
-			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Class, m_Name, paramInferValues, classObj);
-		}
+			ret = m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::Class, m_Name, paramInferValues, classObj, false);
+		}*/
 		else
 		{
-			AST_ERR_W("生成函数调用错误, <%s>类型错误", m_Name.c_str());
+			ret = callScope.AdvanceCall(classObj->GetBaseType(), m_Name, classObj);
+			//AST_ERR_W("生成函数调用错误, <%s>类型错误", m_Name.c_str());
 		}
 	}
 
@@ -709,6 +761,8 @@ Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 
 	Share<CompilerValue> value = m_Compiler->CreateNew(m_DefineVariable.Type, &countValue);
 
+	ASTFunctionCallScope callScope(m_Compiler);
+
 	//new申请内存后，若是类的话，需要调用构造函数
 	if (value->IsClass())
 	{
@@ -761,16 +815,19 @@ Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 			auto function = newClass->FindFunction(classValue->GetOwnerClassName(), nullptr);
 			//value = m_Compiler->CreateMov(m_Compiler->GetTempRegister(value->GetVariableType()), value);
 
+
 			if (function)
 			{
-				V_Array<Share<CompilerValue>> param;
+				//V_Array<Share<CompilerValue>> param;
 
 				//构造参数
-				for (int i = (int)m_ConstructorParam.size() - 1; i >= 0; i--)
+				for (x_uint64 i = 0; i < m_ConstructorParam.size(); i++)
 				{
-					param.push_back(m_ConstructorParam[i]->CodeGen(function->GetParamVariableRightToLeft((x_uint32)(m_ConstructorParam.size() - 1 - i))));
+					callScope.AddParam(m_ConstructorParam[i].get(), function->GetParamVariableLeftToRight(0));
+					//param.push_back(m_ConstructorParam[i]->CodeGen(function->GetParamVariableRightToLeft((x_uint32)(m_ConstructorParam.size() - 1 - i))));
 				}
-				m_Compiler->CreateFunctionCall(function, param, value);
+				//m_Compiler->CreateFunctionCall(function, param, value);
+				callScope.Call(function, value);
 			}
 		}
 	}
@@ -778,8 +835,11 @@ Share<CompilerValue> ASTNew::CodeGen(Share<CompilerValue> inferValue)
 	{
 		if (m_ConstructorParam.size() == 1)
 		{
-			//CompilerValueTypeChanger::Reset(value, HAZE_VAR_TYPE(value->GetBaseType()));
-			m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, HAZE_OBJECT_BASE_CONSTRUCTOR, { m_ConstructorParam[0]->CodeGen(nullptr) }, value);
+			callScope.AddParam(m_ConstructorParam[0].get(), nullptr);
+			callScope.AdvanceCall(value->GetBaseType(), HAZE_OBJECT_BASE_CONSTRUCTOR, value);
+
+			//m_Compiler->CreateAdvanceTypeFunctionCall(HazeValueType::ObjectBase, HAZE_OBJECT_BASE_CONSTRUCTOR, { m_ConstructorParam[0]->CodeGen(nullptr) }, value);
+
 		}
 		else
 		{
@@ -1325,11 +1385,11 @@ Share<CompilerValue> ASTBinaryExpression::CodeGen(Share<CompilerValue> inferValu
 				{
 					if (m_OperatorToken == HazeToken::Equal)
 					{
-						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(left->GetBaseType(), HAZE_ADVANCE_EQUAL_FUNCTION, { right }, left);
+						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(left->GetBaseType(), HAZE_ADVANCE_EQUAL_FUNCTION, { right }, left, false);
 					}
 					else if (m_OperatorToken == HazeToken::NotEqual)
 					{
-						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(left->GetBaseType(), HAZE_ADVANCE_NOT_EQUAL_FUNCTION, { right }, left);
+						retValue = m_Compiler->CreateAdvanceTypeFunctionCall(left->GetBaseType(), HAZE_ADVANCE_NOT_EQUAL_FUNCTION, { right }, left, false);
 					}
 				}
 			}

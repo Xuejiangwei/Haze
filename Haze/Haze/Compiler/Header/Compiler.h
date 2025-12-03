@@ -276,13 +276,13 @@ public:
 	Share<CompilerValue> CreateFunctionRet(const HazeVariableType& type);
 
 	// 以下是创建函数调用字节码
-	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> function, const V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr,
+	Share<CompilerValue> CreateFunctionCall(Share<CompilerFunction> function, const V_Array<Share<CompilerValue>>& param, bool pushParam, Share<CompilerValue> thisPointerTo = nullptr,
 		const STDString* nameSpace = nullptr);
 
-	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, Share<CompilerValue> thisPointerTo = nullptr);
+	Share<CompilerValue> CreateFunctionCall(Share<CompilerValue> pointerFunction, V_Array<Share<CompilerValue>>& param, bool pushParam, Share<CompilerValue> thisPointerTo = nullptr);
 
 	Share<CompilerValue> CreateAdvanceTypeFunctionCall(HazeValueType advanceType, const STDString& functionName, const V_Array<Share<CompilerValue>>& param,
-		Share<CompilerValue> thisPointerTo, HazeVariableType* expectType = nullptr);
+		Share<CompilerValue> thisPointerTo, bool pushParam, HazeVariableType* expectType = nullptr);
 
 	Share<CompilerValue> CreateGetAdvanceElement(Share<CompilerElementValue> element);
 	Share<CompilerValue> CreateSetAdvanceElement(Share<CompilerElementValue> element, Share<CompilerValue> assignValue);

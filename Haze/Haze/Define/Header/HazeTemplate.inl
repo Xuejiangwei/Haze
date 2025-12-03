@@ -42,6 +42,14 @@ HAZE_BINARY_STRING ToString(T value)
 	return HAZE_TO_STR(value);
 }
 
+template <>
+HAZE_BINARY_STRING ToString(void* value)
+{
+	std::stringstream ss;
+	ss << value;
+	return ss.str();
+}
+
 template <typename T>
 STDString ToHazeString(T value)
 {
