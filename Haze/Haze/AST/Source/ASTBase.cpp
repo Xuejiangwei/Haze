@@ -361,7 +361,7 @@ Share<CompilerValue> ASTFunctionCall::CodeGen(Share<CompilerValue> inferValue)
 				}
 			}
 
-			ret = callScope.Call(function, classObj);
+			//ret = callScope.Call(function, classObj);
 
 			//ret = m_Compiler->CreateFunctionCall(function, paramInferValues, classObj, m_NameSpace.empty() ? nullptr : &m_NameSpace);
 		}

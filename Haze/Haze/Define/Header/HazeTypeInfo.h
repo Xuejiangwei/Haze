@@ -135,6 +135,10 @@ public:
 public:
 	const x_uint32 GetTypeIdByClassName(const STDString& name) const;
 
+	const STDString* GetBaseTypeInfoName(HazeValueType baseType) const;
+
+	x_uint32 GetBaseIdByTypeName(const STDString& name) const;
+
 	static x_uint32 GenSymbolId(const STDString& symbol);
 
 public:

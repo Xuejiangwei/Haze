@@ -86,10 +86,10 @@ AdvanceClassInfo* ObjectArray::GetAdvanceClassInfo()
 	return &info;
 }
 
-//void ObjectArray::NewObjectArray(HAZE_STD_CALL_PARAM)
-//{
-//
-//}
+const char* ObjectArray::GetIndex(x_uint64 index) const
+{
+	return ((const char*)m_Data) + index * GetSizeByHazeType(m_ValueType.BaseType);
+}
 
 void ObjectArray::GetLength(HAZE_OBJECT_CALL_PARAM)
 {

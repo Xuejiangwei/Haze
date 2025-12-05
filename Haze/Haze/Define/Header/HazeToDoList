@@ -10,3 +10,4 @@ HAZE_TO_DO(解析模块的临时文件时存在循环引用的问题);
 HAZE_TO_DO(增量编译需要考虑已引用模块修改 但是之后解析的模块有引用但是未修改 这种情况下仍需要重新解析)
 HAZE_TO_DO(Optimizer模块代码整理)
 HAZE_TO_DO(调试插件)
+HAZE_TO_DO(Advanced类型的遍历实现)

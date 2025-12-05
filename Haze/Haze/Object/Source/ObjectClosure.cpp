@@ -9,7 +9,7 @@
 #define GET_OBJ(OBJ) CHECK_GET_STACK_OBJECT(OBJ, "闭包")
 
 ObjectClosure::ObjectClosure(x_uint32 gcIndex, const FunctionData* functionData, const FunctionData* refFunction, char* refStackESP)
-	: GCObject(gcIndex), m_FunctionData(functionData)
+	: GCObject(gcIndex), m_FunctionData(functionData), m_RefFunctionData(refFunction)
 {
 	// 保留外部变量的引用, 因为能够引用的都是对象类型, 所以字节大小都是8
 	auto pair = HAZE_MALLOC(m_FunctionData->RefVariables.size() * sizeof(ClosureRefVariable), GC_ObjectType::ClosureData);
@@ -38,6 +38,17 @@ AdvanceClassInfo* ObjectClosure::GetAdvanceClassInfo()
 	info.Add(HAZE_CUSTOM_CALL_FUNCTION, {&ObjectClosure::CallFunction, OBJ_TYPE_DEF(Void), { OBJ_TYPE_DEF(MultiVariable) }});
 
 	return &info;
+}
+
+x_uint64 ObjectClosure::GetRefVariableSize() const
+{
+	return m_FunctionData->RefVariables.size();
+}
+
+const HazeVariableData* ObjectClosure::GetRefFunctionVariableDataByIndex(x_uint64 index) const
+{
+	return &m_RefFunctionData->Variables[m_FunctionData->RefVariables[index].first];
+
 }
 
 void ObjectClosure::CallFunction(HAZE_OBJECT_CALL_PARAM)

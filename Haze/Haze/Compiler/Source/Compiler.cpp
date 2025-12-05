@@ -1148,10 +1148,20 @@ Share<CompilerValue> Compiler::CreateGetAdvanceElement(Share<CompilerElementValu
 		{
 			auto value = DynamicCast<CompilerArrayValue>(element->GetParent());
 			auto elementType = value->GetElementType();
-			return CreateMov(GetTempRegister(value->GetElementType()), CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, { element->GetElement() }, value, &elementType), false);
+			return CreateMov(GetTempRegister(value->GetElementType()), CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, 
+				{ element->GetElement() }, value, true, &elementType), true);
 		}
 		case HazeValueType::Class:
-			return CreateGetClassMember(element->GetParent(), element->GetElement());
+		{
+			auto v = DynamicCast<CompilerClassValue>(element->GetParent());
+			auto index = v->GetMemberIndex(element->GetElement().get());
+
+			V_Array<Share<CompilerValue>> params = { GetConstantValueUint64(index) };
+
+			auto varType = element->GetElement()->GetVariableType();
+			return CreateMov(GetTempRegister(element->GetElement()), CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, element->GetParent(), true, &varType), true);
+		}
+			//return CreateGetClassMember(element->GetParent(), element->GetElement());
 		case HazeValueType::DynamicClass:
 			return CreateGetDynamicClassMember(element->GetParent(), *element->GetElementName());
 		case HazeValueType::Hash:
@@ -1172,7 +1182,7 @@ Share<CompilerValue> Compiler::CreateGetAdvanceElement(Share<CompilerElementValu
 			}
 
 			auto valueType = hashValue->GetValueType();
-			return CreateMov(GetTempRegister(hashValue->GetValueType()), CreateAdvanceTypeFunctionCall(HazeValueType::Hash, HAZE_ADVANCE_GET_FUNCTION, { keyValue }, hashValue, &valueType), false);
+			return CreateMov(GetTempRegister(hashValue->GetValueType()), CreateAdvanceTypeFunctionCall(HazeValueType::Hash, HAZE_ADVANCE_GET_FUNCTION, { keyValue }, hashValue, true, &valueType), true);
 		}
 		default:
 			COMPILER_ERR_MODULE_W("复杂类型<%s>没有<%s>函数", this, GetHazeValueTypeString(element->GetParentBaseType().BaseType), HAZE_ADVANCE_GET_FUNCTION, element->GetModule()->GetName().c_str());
@@ -1228,67 +1238,30 @@ Share<CompilerValue> Compiler::CreateSetAdvanceElement(Share<CompilerElementValu
 	return nullptr;
 }
 
-//Share<CompilerValue> Compiler::CreateSetElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue)
-//{
-//	if (true)
-//	{
-//
-//	}
-//}
-
-Share<CompilerValue> Compiler::CreateGetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index)
-{
-	auto value = DynamicCast<CompilerArrayValue>(arrayValue);
-	V_Array<Share<CompilerValue>> params = { index };
-	return CreateMov(GetTempRegister(value->GetElementType()),
-		CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_GET_FUNCTION, params, value, true));
-}
-
-Share<CompilerValue> Compiler::CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue)
-{
-	V_Array<Share<CompilerValue>> params = { assignValue, index };
-	return CreateAdvanceTypeFunctionCall(HazeValueType::Array, HAZE_ADVANCE_SET_FUNCTION, params, arrayValue, true);
-}
-
-Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classValue, const STDString& memberName)
-{
-	auto v = DynamicCast<CompilerClassValue>(classValue);
-	auto index = v->GetMemberIndex(memberName);
-	auto classMemberValue = v->GetMember(memberName);
-
-	V_Array<Share<CompilerValue>> params = { GetConstantValueUint64(index) };
-	return CreateMov(GetTempRegister(classMemberValue),
-		CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, classValue, true));
-}
-
-//Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classValue, const HString& memberName, Share<CompilerValue> assignValue)
+//Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classValue, const STDString& memberName)
 //{
 //	auto v = DynamicCast<CompilerClassValue>(classValue);
-//	auto index = (uint64)v->GetOwnerClass()->GetMemberIndex(memberName);
+//	auto index = v->GetMemberIndex(memberName);
+//	auto classMemberValue = v->GetMember(memberName);
 //
-//	V_Array<Share<CompilerValue>> params = { assignValue, GetConstantValueUint64(index) };
-//	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue);
+//	V_Array<Share<CompilerValue>> params = { GetConstantValueUint64(index) };
+//	return CreateMov(GetTempRegister(classMemberValue),
+//		CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, classValue, true));
 //}
 
-Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member)
-{
-	auto v = DynamicCast<CompilerClassValue>(classValue);
-	auto index = v->GetMemberIndex(member.get());
+//Share<CompilerValue> Compiler::CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member)
+//{
+//	
+//}
 
-	V_Array<Share<CompilerValue>> params = { GetConstantValueUint64(index) };
-
-	auto varType = member->GetVariableType();
-	return CreateMov(GetTempRegister(member), CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_GET_FUNCTION, params, classValue, &varType), false);
-}
-
-Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue)
-{
-	auto v = DynamicCast<CompilerClassValue>(classValue);
-	auto index = v->GetMemberIndex(member.get());
-
-	V_Array<Share<CompilerValue>> params = { assignValue, GetConstantValueUint64(index) };
-	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue, true);
-}
+//Share<CompilerValue> Compiler::CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue)
+//{
+//	auto v = DynamicCast<CompilerClassValue>(classValue);
+//	auto index = v->GetMemberIndex(member.get());
+//
+//	V_Array<Share<CompilerValue>> params = { assignValue, GetConstantValueUint64(index) };
+//	return CreateAdvanceTypeFunctionCall(HazeValueType::Class, HAZE_ADVANCE_SET_FUNCTION, params, classValue, true);
+//}
 
 Share<CompilerValue> Compiler::CreateGetDynamicClassMember(Share<CompilerValue> dynamicClassValue, const STDString& memberName)
 {

@@ -35,6 +35,7 @@ public:
 	{
 		STDString ModuleName;
 		x_uint32 CurrLine;
+		x_uint32 StackDepth;
 	};
 
 	struct BreakPointStateInfo
@@ -81,6 +82,8 @@ public:
 	void AddTempBreakPoint(const STDString& moduleName, x_uint32 line);
 
 	void SendProgramEnd();
+
+	void SendVariableInfo(const char* jsonStr);
 
 private:
 	void ClearCurrParseModuleData()

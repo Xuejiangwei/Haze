@@ -103,11 +103,13 @@ void HazeStack::Run(bool isHazeCall)
 void HazeStack::PCStepInc()
 {
 	static x_uint64 pcRunTimes = 0;
+	
+	// 假设每条字节码运行平均花费1.5微秒, 暂时10秒检测一次, 则大约运行30万次字节码GC一次
+	static const x_uint64 s_GcTimes = (x_uint64)(10 * 1000 * 1000 * 2 / 3.f);
 
 	++m_PC;
 
-	// 假设每条字节码运行平均花费1.5微秒, 暂时10秒检测一次, 则大约运行30万次字节码GC一次
-	if (++pcRunTimes > (10 * 1000 * 1000  * 2 / 3))
+	if (++pcRunTimes > s_GcTimes)
 	{
 		HazeMemory::GetMemory()->TryGC();
 		pcRunTimes = 0;

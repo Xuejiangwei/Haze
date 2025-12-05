@@ -18,6 +18,7 @@ public:
 
 	static ObjectClass* Create(HazeVM* vm, ClassData* classData);
 
+	const char* GetMemberByIndex(x_uint64 index);
 	const char* GetMember(const x_HChar* memberName);
 
 	void SetMember(const x_HChar* memberName, void* value);

@@ -8,7 +8,10 @@
 
 #include "ObjectString.h"
 #include "ObjectClosure.h"
+#include "ObjectArray.h"
+#include "ObjectHash.h"
 #include "ObjectBase.h"
+#include "ObjectClass.h"
 
 #define ENABLE_DEBUGGER_LOG 0
 
@@ -40,92 +43,108 @@ void HookCall(HazeVM* vm)
 	}
 }
 
-void GetHazeValueByBaseType(HazeVM* vm, XJson& json, const char* address, HazeValueType type)
+void GetHazeValueByBaseType(HazeVM* vm, XJson& json, const char* address, HazeValueType type, bool expand)
 {
+#define ADDRESS_TEXT			"Address"
+#define VALUE_TYPE_TEXT			"ValueType"
+#define SIZE_TEXT				"Length"
+#define CAPACITY_TEXT			"Capacity"
+#define JSON_MEMBER(VAR)		auto& VAR = json["Member"]
+
+#define HASH_KEY_TEXT			"Key"
+#define HASH_VALUE_TEXT			"Value"
+
+	json["Type"] = WString2String(*vm->GetTypeInfoMap()->GetTypeName(HAZE_TYPE_ID(type)));
+	auto& valueJson = json["Value"];
 	switch (type)
 	{
 		case HazeValueType::Bool:
 		{
 			bool Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::Int8:
 		{
 			x_int8 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::UInt8:
 		{
 			x_uint8 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::Int16:
 		{
 			x_int16 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::UInt16:
 		{
 			x_uint16 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::Int32:
 		{
 			x_int32 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::UInt32:
 		{
 			x_uint32 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::Int64:
 		{
 			x_int64 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break; 
 		case HazeValueType::UInt64:
 		{
 			x_uint64 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::Float32:
 		{
 			x_float32 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::Float64:
 		{
 			x_float64 Value;
 			memcpy(&Value, address, sizeof(Value));
-			json = Value;
+			valueJson = Value;
 		}
 		break;
 		case HazeValueType::String:
 		{
-			ObjectString* str;
-			memcpy(&str, address, sizeof(str));
-			json = str->GetData();
+			ObjectString* obj;
+			memcpy(&obj, address, sizeof(obj));
+
+			json[ADDRESS_TEXT] = ToString((void*)obj);
+			valueJson = GB2312_2_UFT8(WString2String(obj->GetData()).c_str());
+
+			json[SIZE_TEXT] = obj->GetLength();
+			json[CAPACITY_TEXT] = obj->GetCapacity();
 		}
 		break;
 		case HazeValueType::ObjectBase:
@@ -133,34 +152,105 @@ void GetHazeValueByBaseType(HazeVM* vm, XJson& json, const char* address, HazeVa
 			ObjectBase* obj;
 			memcpy(&obj, address, sizeof(obj));
 
-			auto& baseObjectJson = json["ObjectBase"];
+			json[ADDRESS_TEXT] = ToString((void*)obj);
 
-			baseObjectJson["Pointer"] = ToString((void*)obj);
-			GetHazeValueByBaseType(vm, baseObjectJson["Value"], (char*)obj->GetBaseData(), obj->GetBaseType());
-			baseObjectJson["ValueType"] = WString2String(*vm->GetTypeInfoMap()->GetTypeName(HAZE_TYPE_ID(obj->GetBaseType())));
+			GetHazeValueByBaseType(vm, valueJson, (char*)obj->GetBaseData(), obj->GetBaseType(), false);
+			json[VALUE_TYPE_TEXT] = WString2String(*vm->GetTypeInfoMap()->GetTypeName(HAZE_TYPE_ID(obj->GetBaseType())));
 		}
 		break;
 		case HazeValueType::Closure:
 		{
 			ObjectClosure* obj;
 			memcpy(&obj, address, sizeof(obj));
-			json["Closure"]["Pointer"] = ToString((void*)obj);
+			json[ADDRESS_TEXT] = ToString((void*)obj);
+
+			if (expand)
+			{
+				JSON_MEMBER(memberJson);
+				for (x_uint64 i = 0; i < obj->GetRefVariableSize(); i++)
+				{
+					auto refVar = obj->GetRefVariableDataByIndex(i);
+					auto varData = obj->GetRefFunctionVariableDataByIndex(i);
+					GetHazeValueByBaseType(vm, memberJson[GB2312_2_UFT8(WString2String(GetFunctionVariableNameTrimCount(varData->Variable.Name)).c_str())], 
+						(const char*)(&refVar->Object), refVar->Type.BaseType, false);
+				}
+			}
 		}
 		break;
 		case HazeValueType::Array:
 		{
+			ObjectArray* obj;
+			memcpy(&obj, address, sizeof(obj));
+			json[ADDRESS_TEXT] = ToString((void*)obj);
+			json[SIZE_TEXT] = obj->GetLength();
+			json[CAPACITY_TEXT] = obj->GetCapacity();
+
+			json[VALUE_TYPE_TEXT] = WString2String(*vm->GetTypeInfoMap()->GetTypeName(HAZE_TYPE_ID(type)));
+
+			if (expand)
+			{
+				JSON_MEMBER(memberJson);
+				for (x_uint64 i = 0; i < obj->GetLength(); i++)
+				{
+					GetHazeValueByBaseType(vm, memberJson[i], obj->GetIndex(i), obj->GetType().BaseType, false);
+				}
+			}
 		}
 		break;
 		case HazeValueType::Hash:
 		{
+			ObjectHash* obj;
+			memcpy(&obj, address, sizeof(obj));
+			json[ADDRESS_TEXT] = ToString((void*)obj);
+			json[SIZE_TEXT] = obj->GetLength();
+			json[CAPACITY_TEXT] = obj->GetCapacity();
+
+			json[VALUE_TYPE_TEXT] = WString2String(*vm->GetTypeInfoMap()->GetTypeName(HAZE_TYPE_ID(type)));
+
+			if (expand)
+			{
+				JSON_MEMBER(memberJson);
+				auto keyType = obj->GetKeyBaseType().BaseType;
+				auto valueType = obj->GetValueBaseType().BaseType;
+				for (x_uint64 i = 0; i < obj->GetCapacity(); i++)
+				{
+					auto node = obj->GetIndex(i);
+					if (!node->IsNone())
+					{
+						GetHazeValueByBaseType(vm, memberJson[i][HASH_KEY_TEXT], (const char*)(&node->Key), keyType, false);
+						GetHazeValueByBaseType(vm, memberJson[i][HASH_VALUE_TEXT], (const char*)(&node->Value), valueType, false);
+					}
+				}
+			}
 		}
 		break;
 		case HazeValueType::Class:
 		{
+			ObjectClass* obj;
+			memcpy(&obj, address, sizeof(obj));
+			json[ADDRESS_TEXT] = ToString((void*)obj);
+
+
+			auto classData = obj->GetClassData();
+			json[VALUE_TYPE_TEXT] = GB2312_2_UFT8(WString2String(*vm->GetTypeInfoMap()->GetTypeName(classData->TypeId)).c_str());
+
+			if (expand)
+			{
+				JSON_MEMBER(memberJson);
+				for (x_uint64 i = 0; i < classData->Members.size(); i++)
+				{
+					auto& member = classData->Members[i];
+					GetHazeValueByBaseType(vm, memberJson[GB2312_2_UFT8(WString2String(member.Variable.Name).c_str())], obj->GetMemberByIndex(i), member.Variable.Type.BaseType, false);
+				}
+			}
 		}
 		break;
 		case HazeValueType::DynamicClass:
 		{
+			ObjectClass* obj;
+			memcpy(&obj, address, sizeof(obj));
+			json[ADDRESS_TEXT] = ToString((void*)obj);
+			json[VALUE_TYPE_TEXT] = WString2String(*vm->GetTypeInfoMap()->GetTypeName(HAZE_TYPE_ID(type)));
 		}
 		break;
 		default:
@@ -286,7 +376,7 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 				}
 
 				it->second = BreakPointState::Hit;
-				m_CurrPauseModule = { iter->first, line };
+				m_CurrPauseModule = { iter->first, line, (x_uint32)m_VM->m_Stack->m_StackFrame.size() };
 				m_IsPause = true;
 			}
 		}
@@ -304,7 +394,8 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 	{
 		if (CurrModuleIsStepOver())
 		{
-			if (line > m_CurrPauseModule.CurrLine)
+			auto stackDepth = m_VM->m_Stack->m_StackFrame.size();
+			if (stackDepth <= m_CurrPauseModule.StackDepth && line != m_CurrPauseModule.CurrLine)
 			{
 				m_IsPause = true;
 				m_CurrPauseModule.ModuleName = *moduleName;
@@ -430,7 +521,6 @@ void HazeDebugger::Continue()
 void HazeDebugger::SetJsonLocalVariable(XJson& json)
 {
 	auto& info = json["LocalVariable"];
-
 	auto& frame = m_VM->m_Stack->GetCurrFrame();
 	if (frame.FunctionInfo)
 	{
@@ -442,17 +532,11 @@ void HazeDebugger::SetJsonLocalVariable(XJson& json)
 			}
 		}
 	}
-
-	if (info.Empty())
-	{
-		info = "";
-	}
 }
 
 void HazeDebugger::SetJsonModuleGlobalVariable(XJson& json)
 {
 	auto& info = json["GlobalVariable"];
-
 	auto funcation = m_VM->GetFunctionDataByName(GetHazeModuleGlobalDataInitFunctionName(m_CurrPauseModule.ModuleName));
 	if (funcation)
 	{
@@ -496,6 +580,28 @@ void HazeDebugger::SendProgramEnd()
 	HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
 }
 
+void HazeDebugger::SendVariableInfo(const char* jsonStr)
+{
+	XJson json;
+	json.Decode(jsonStr);
+	auto id = json["QueryId"].StringToInt32();
+	auto addressStr = HAZE_BINARY_STRING("0x") + json["Address"].Data();
+	auto name = json["VariableName"].Data();
+	auto type = json["Type"].Data();
+
+	auto address = std::stoull(addressStr, nullptr, 16);
+
+	XJson json1;
+	json1["QueryId"] = id;
+	json1["Type"] = (int)HazeDebugInfoType::VariableInfo;
+
+	auto varType = m_VM->GetTypeInfoMap()->GetBaseIdByTypeName(String2WString(type));
+	GetHazeValueByBaseType(m_VM, json1["Variable"], (const char*)(&address), HAZE_ID_2_TYPE(varType), true);
+	
+	auto& data = json1.Encode();
+	HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
+}
+
 bool HazeDebugger::CurrModuleIsStepOver()
 {
 	auto moduleName = m_VM->GetModuleNameByCurrFunction();
@@ -524,8 +630,15 @@ void HazeDebugger::SendBreakInfo()
 		SetJsonType(json, HazeDebugInfoType::BreakInfo);
 		SetJsonBreakFilePath(json, iter->second.Path);
 		SetJsonBreakLine(json, m_CurrPauseModule.CurrLine);
+
 		SetJsonLocalVariable(json);
 		SetJsonModuleGlobalVariable(json);
+
+
+		if (json.Empty())
+		{
+			json = "";
+		}
 
 		auto& data = json.Encode();
 		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
@@ -544,67 +657,6 @@ void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& vari
 	{
 		dataAddress += variable.Offset;
 	}
-
-	if (IsClassType(variable.Variable.Type.BaseType))
-	{
-		auto classData = m_VM->FindClass(variable.Variable.Type.TypeId);
-		s_String = WString2String(classData->Name);
-		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-
-		for (size_t j = 0; j < classData->Members.size(); j++)
-		{
-			SetJsonVariableData(json["Value"][j], classData->Members[j], dataAddress);
-		}
-	}
-	else if (IsArrayType(variable.Variable.Type.BaseType))
-	{
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.BaseType));
-		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-		
-		/*s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.SecondaryType));
-		json["SubType"] = GB2312_2_UFT8(s_String.c_str());
-
-		int size = variable.Variable.Type.GetTypeSize();
-
-		if (!variable.Variable.Type.CustomName)
-		{
-			for (int i = 0; i < (int)variable.Size / size; i++)
-			{
-				GetHazeValueByBaseType(json["Value"][i], dataAddress + i * size,
-					variable.Variable.Type.SecondaryType);
-			}
-
-		}
-		else
-		{
-			for (int i = 0; i < (int)variable.Size / size; i++)
-			{
-				SetJsonVariableData(json["Value"][i], variable, dataAddress + size * i);
-			}
-		}*/
-	}
-	else if (IsRefrenceType(variable.Variable.Type.BaseType))
-	{
-		/*s_String = "Ref" + WString2String(GetHazeValueTypeString(variable.Variable.Type.SecondaryType));
-		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-		GetHazeValueByBaseType(json["Value"], dataAddress, HazeValueType::UInt64);*/
-	}
-	else if(IsObjectBaseType(variable.Variable.Type.BaseType))
-	{
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.BaseType));
-		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-		GetHazeValueByBaseType(m_VM, json["Value"], dataAddress, variable.Variable.Type.BaseType);
-	}
-	else if (IsClosureType(variable.Variable.Type.BaseType))
-	{
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.BaseType));
-		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-		GetHazeValueByBaseType(m_VM, json["Value"], dataAddress, variable.Variable.Type.BaseType);
-	}
-	else
-	{
-		s_String = WString2String(GetHazeValueTypeString(variable.Variable.Type.BaseType));
-		json["Type"] = GB2312_2_UFT8(s_String.c_str());
-		GetHazeValueByBaseType(m_VM, json["Value"], dataAddress, variable.Variable.Type.BaseType);
-	}
+	
+	GetHazeValueByBaseType(m_VM, json, dataAddress, variable.Variable.Type.BaseType, false);
 }

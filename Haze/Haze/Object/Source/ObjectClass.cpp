@@ -60,6 +60,11 @@ ObjectClass* ObjectClass::Create(HazeVM* vm, ClassData* classData)
 	return (ObjectClass*)allocaData.first;
 }
 
+const char* ObjectClass::GetMemberByIndex(x_uint64 index)
+{
+	return (char*)m_Data + m_ClassInfo->Members[index].Offset;
+}
+
 const char* ObjectClass::GetMember(const x_HChar* memberName)
 {
 	STDString name = memberName;

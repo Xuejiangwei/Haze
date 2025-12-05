@@ -154,16 +154,16 @@ static bool HandleMessage(char* Message)
 		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<继续>操作\n"));
 		g_Debugger->Continue();
 		return true;
-	case HazeDebugOperatorType::GetLocalVariable:
+	case HazeDebugOperatorType::GetVariableInfo:
 		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<请求临时变量数据>操作\n"));
-		{
-			XJson json;
-			json["Type"] = (int)HazeDebugOperatorType::GetLocalVariable;
-			g_Debugger->SetJsonLocalVariable(json);
-			auto data = json.Encode();
-			HazeDebuggerServer::SendData(data.data(), (int)data.length());
-		}
+		g_Debugger->SendVariableInfo(Message + 1);
 		return true;
+	/*case HazeDebugOperatorType::GetGlobalVariable:
+		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<请求全局变量数据>操作\n"));
+		{
+			
+		}
+		return true;*/
 	default:
 		break;
 	}

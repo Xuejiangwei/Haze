@@ -12,6 +12,7 @@ public:
 	friend class InstructionProcessor;
 	friend class HazeMemory;
 	friend class ObjectClosure;
+	friend class HazeDebugger;
 
 	HazeStack(HazeVM* vm);
 

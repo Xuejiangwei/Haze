@@ -40,8 +40,13 @@ public:
 
 	//static void NewObjectArray(HAZE_STD_CALL_PARAM);
 
-	HazeVariableType GetKeyBaseType();
-	HazeVariableType GetValueBaseType();
+	HazeVariableType GetKeyBaseType() const { return m_KeyType; };
+	HazeVariableType GetValueBaseType() const { return m_ValueType; }
+
+	const ObjectHashNode* GetIndex(x_uint64 index) const { return m_Data + index; }
+
+	x_uint64 GetLength() const { return m_Length; }
+	x_uint64 GetCapacity() const { return m_Capacity; }
 
 private:
 	static void GetLength(HAZE_OBJECT_CALL_PARAM);

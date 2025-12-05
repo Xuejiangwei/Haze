@@ -1216,10 +1216,15 @@ void XJson::WriteObject()
 		for (size_t i = 0; i < size; ++i)
 		{
 			if (!(*m_JsonValue)[i]) continue;
-			if (idx > 0)
+			if (idx > 0 && (*m_JsonValue)[i]->m_Type != JsonType::None)
 			{
 				m_Encodecontext->m_WriteBuffer.append(",");
 			}
+			else if ((*m_JsonValue)[i]->m_Type == JsonType::None)
+			{
+				continue;
+			}
+
 			(*m_JsonValue)[i]->Write(m_Encodecontext);
 			++idx;
 		}
@@ -1248,10 +1253,15 @@ void XJson::WriteArray()
 		for (size_t i = 0; i < size; ++i)
 		{
 			if (!(*m_JsonValue)[i]) continue;
-			if (idx > 0)
+			if (idx > 0 && (*m_JsonValue)[i]->m_Type != JsonType::None)
 			{
 				m_Encodecontext->m_WriteBuffer.append(",");
 			}
+			else if ((*m_JsonValue)[i]->m_Type == JsonType::None)
+			{
+				continue;
+			}
+
 			(*m_JsonValue)[i]->Write(m_Encodecontext);
 			++idx;
 		}

@@ -23,7 +23,12 @@ public:
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 
-	//static void NewObjectArray(HAZE_STD_CALL_PARAM);
+public:
+	x_uint64 GetRefVariableSize() const;
+
+	const ClosureRefVariable* GetRefVariableDataByIndex(x_uint64 index) const { return m_Data + index; }
+
+	const HazeVariableData* GetRefFunctionVariableDataByIndex(x_uint64 index) const;
 
 private:
 	static void CallFunction(HAZE_OBJECT_CALL_PARAM);
@@ -33,4 +38,6 @@ private:
 
 	ClosureRefVariable* m_Data;
 	const FunctionData* m_FunctionData;
+	const FunctionData* m_RefFunctionData;
+
 };

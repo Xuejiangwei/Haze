@@ -1175,6 +1175,10 @@ Share<CompilerValue> CompilerModule::CreateAdvanceTypeFunctionCall(AdvanceFuncti
 	{
 		funcType = DynamicCast<CompilerPointerFunction>(thisPointerTo)->GetFunctionType();
 	}
+	/*else if (thisPointerTo->IsArray())
+	{
+		funcType = DynamicCast<CompilerArrayValue>(thisPointerTo)->GetElementType();
+	}*/
 
 	Share<CompilerValue> ret = nullptr;
 	{

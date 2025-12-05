@@ -287,12 +287,7 @@ public:
 	Share<CompilerValue> CreateGetAdvanceElement(Share<CompilerElementValue> element);
 	Share<CompilerValue> CreateSetAdvanceElement(Share<CompilerElementValue> element, Share<CompilerValue> assignValue);
 
-	Share<CompilerValue> CreateGetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index);
-	Share<CompilerValue> CreateSetArrayElement(Share<CompilerValue> arrayValue, Share<CompilerValue> index, Share<CompilerValue> assignValue);
-
-	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, const STDString& memberName);
-	Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member);
-	Share<CompilerValue> CreateSetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member, Share<CompilerValue> assignValue);
+	//Share<CompilerValue> CreateGetClassMember(Share<CompilerValue> classValue, Share<CompilerValue> member);
 
 	Share<CompilerValue> CreateGetDynamicClassMember(Share<CompilerValue> classValue, const STDString& memberName);
 	Share<CompilerValue> CreateSetDynamicClassMember(Share<CompilerValue> classValue, const STDString& memberName, Share<CompilerValue> assignValue);

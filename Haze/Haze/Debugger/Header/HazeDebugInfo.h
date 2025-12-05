@@ -16,7 +16,9 @@ enum class HazeDebugOperatorType : x_uint8
 
 	Continue,
 
-	GetLocalVariable,
+	GetVariableInfo,
+	/*GetLocalVariable,
+	GetGlobalVariable*/
 };
 
 enum class HazeDebugInfoType : x_uint8
@@ -25,6 +27,7 @@ enum class HazeDebugInfoType : x_uint8
 	ProgramEnd,
 	BreakInfo,
 	StepInInfo,
+	VariableInfo,
 };
 
 struct SourceLocation

@@ -18,7 +18,12 @@ public:
 
 	static struct AdvanceClassInfo* GetAdvanceClassInfo();
 
-	//static void NewObjectArray(HAZE_STD_CALL_PARAM);
+	HazeVariableType GetType() const { return m_ValueType; }
+
+	x_uint64 GetLength() const { return m_Length; }
+	x_uint64 GetCapacity() const { return m_Capacity; }
+
+	const char* GetIndex(x_uint64 index) const;
 
 private:
 	static void GetLength(HAZE_OBJECT_CALL_PARAM);
@@ -42,5 +47,5 @@ private:
 	x_uint64 m_Capacity;
 	x_uint64 m_PcAddress;
 	HazeVariableType m_ValueType;
-	ClassData* m_ClassInfo;
+	//ClassData* m_ClassInfo;
 };

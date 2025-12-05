@@ -21,6 +21,7 @@ public:
 	x_uint64 GetCapacityByteSize() const { return m_Capacity * sizeof(x_HChar); }
 
 	x_uint64 GetLength() const { return m_Length; }
+	x_uint64 GetCapacity() const { return m_Capacity; }
 
 	x_uint64 Hash() const;
 

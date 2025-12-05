@@ -357,6 +357,30 @@ const x_uint32 HazeTypeInfoMap::GetTypeIdByClassName(const STDString& name) cons
 	return 0;
 }
 
+const STDString* HazeTypeInfoMap::GetBaseTypeInfoName(HazeValueType baseType) const
+{
+	auto iter = m_Map.find((x_uint32)baseType);
+	if (iter != m_Map.end())
+	{
+		return &iter->second.Name;
+	}
+
+	return nullptr;
+}
+
+x_uint32 HazeTypeInfoMap::GetBaseIdByTypeName(const STDString& name) const
+{
+	for (auto& iter : m_Map)
+	{
+		if (iter.second.Name == name)
+		{
+			return iter.first;
+		}
+	}
+
+	return 0;
+}
+
 x_uint32 HazeTypeInfoMap::GenSymbolId(const STDString& symbol)
 {
 #define SIP_ROTATE_LEFT(X, BITS) ((X << BITS) | (X >> (64 - BITS)))

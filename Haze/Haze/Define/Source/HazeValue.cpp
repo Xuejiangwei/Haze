@@ -803,8 +803,6 @@ const x_HChar* GetHazeValueTypeString(HazeValueType type)
 		{
 			s_HashMap_Code2String[GetValueTypeByToken(iter.second)] = iter.first.c_str();
 		}
-
-		s_HashMap_Code2String[HazeValueType::Closure] = TYPE_NAME_CLOSURE;
 	}
 
 	auto iter = s_HashMap_Code2String.find(type);

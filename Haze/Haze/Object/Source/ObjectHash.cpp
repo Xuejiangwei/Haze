@@ -164,16 +164,6 @@ AdvanceClassInfo* ObjectHash::GetAdvanceClassInfo()
 	return &info;
 }
 
-HazeVariableType ObjectHash::GetKeyBaseType()
-{
-	return m_KeyType;
-}
-
-HazeVariableType ObjectHash::GetValueBaseType()
-{
-	return m_ValueType;
-}
-
 ObjectHashNode* ObjectHash::GetFreeNode()
 {
 	while (m_LastFreeNode > m_Data)
