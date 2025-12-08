@@ -65,7 +65,20 @@ HazeValue* ASTFunction::CodeGen()
 		currClass = currModule->GetClass(*m_Compiler->GetCompilerSymbol()->GetSymbolByTypeId(m_FunctionParams[0]->GetDefine().Type.TypeId));
 		compilerFunction = currModule->CreateFunction(currClass, m_Desc, m_FunctionName, m_FunctionType, paramDefines);
 	}
-	compilerFunction->SetStartEndLine(m_StartLocation.Line, m_EndLocation.Line);
+	
+	auto startLine = m_StartLocation.Line;
+	if (m_Body)
+	{
+		auto multiBody = dynamic_cast<ASTMultiExpression*>(m_Body.get());
+		if (multiBody)
+		{
+			startLine = multiBody->GetStartLine();
+		}
+	}
+	
+	compilerFunction->SetStartEndLine(startLine, m_EndLocation.Line);
+
+
 	m_Compiler->SetInsertBlock(compilerFunction->GetEntryBlock());
 
 	for (int i = (int)m_FunctionParams.size() - 1; i >= 0; i--)

@@ -60,6 +60,8 @@ public:
 public:
 	const STDString* GetModuleNameByCurrFunction();
 
+	const STDString* GetModulePathByName(const STDString& name);
+
 	const STDString* GetFunctionNameByData(const FunctionData* data);
 
 	int GetFucntionIndexByName(const STDString& name);
@@ -133,7 +135,6 @@ private:
 
 private:
 	V_Array<ModuleData> m_ModuleData;
-	V_Array<STDString> m_ModuleFilePath;
 
 	V_Array<x_uint64> m_GlobalInitFunction;
 	HashMap<x_uint32, HazeVariable> m_GlobalData;

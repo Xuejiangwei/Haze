@@ -294,6 +294,19 @@ const STDString* HazeVM::GetModuleNameByCurrFunction()
 	return nullptr;
 }
 
+const STDString* HazeVM::GetModulePathByName(const STDString& name)
+{
+	for (auto& iter : m_ModuleData)
+	{
+		if (iter.Name == name)
+		{
+			return &iter.Path;
+		}
+	}
+
+	return nullptr;
+}
+
 const STDString* HazeVM::GetFunctionNameByData(const FunctionData* data)
 {
 	for (x_uint32 i = 0; i < m_FunctionTable.size(); i++)
@@ -532,41 +545,25 @@ Pair<HStringView, x_uint32> HazeVM::GetStepIn(x_uint32 CurrLine)
 			const auto& oper = m_Instructions[i].Operator;
 			if (oper.size() >= 1)
 			{
-				if (oper[0].Type == HazeValueType::Function)
+				if (oper[0].VariableIndexOrId > 0)
 				{
-					void* value = GetOperatorAddress(m_Stack.get(), oper[0]);
-					x_uint64 functionAddress;
-					memcpy(&functionAddress, value, sizeof(functionAddress));
-					auto function = (FunctionData*)functionAddress;
-					if (function->FunctionDescData.Type == InstructionFunctionType::HazeFunction)
-					{
-						for (size_t j = 0; j < m_FunctionTable.size(); j++)
-						{
-							if (&m_FunctionTable[j] == function)
-							{
-								for (auto& Iter : m_ModuleData)
-								{
-									if (Iter.FunctionIndex.first <= i && i < Iter.FunctionIndex.second)
-									{
-										return { Iter.Name, function->FunctionDescData.StartLine };
-									}
-								}
-							}
-						}
-					}
-				}
-				/*else
-				{
-					int functionIndex = GetFucntionIndexByName(oper[0].Variable.Name);
+					auto symbolName = m_TypeInfoMap->GetTypeName(oper[0].VariableIndexOrId);
+					auto functionIndex = GetFucntionIndexByName(*symbolName);
 					if (functionIndex >= 0)
 					{
 						auto& function = m_FunctionTable[functionIndex];
 						if (function.FunctionDescData.Type == InstructionFunctionType::HazeFunction)
 						{
-							return { oper[1].Variable.Name, function.FunctionDescData.StartLine };
+							for (auto& m : m_ModuleData)
+							{
+								if (m.FunctionIndex.first <= functionIndex && functionIndex < m.FunctionIndex.second)
+								{
+									return { m.Name, function.FunctionDescData.StartLine };
+								}
+							}
 						}
 					}
-				}*/
+				}
 			}
 		}
 	}

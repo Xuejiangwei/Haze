@@ -1011,6 +1011,16 @@ Share<CompilerValue> ASTMultiExpression::CodeGen(Share<CompilerValue> inferValue
 	return nullptr;
 }
 
+x_uint32 ASTMultiExpression::GetStartLine() const
+{
+	if (m_Expressions.size() > 0)
+	{
+		return m_Expressions[0]->GetLine();
+	}
+
+	return GetLine();
+}
+
 ASTBinaryExpression::ASTBinaryExpression(Compiler* compiler, const SourceLocation& location, HazeSectionSignal section,
 	HazeToken operatorToken, Unique<ASTBase>& leftAST, Unique<ASTBase>& rightAST)
 	: ASTBase(compiler, location), m_SectionSignal(section), m_OperatorToken(operatorToken), m_LeftAST(Move(leftAST)),

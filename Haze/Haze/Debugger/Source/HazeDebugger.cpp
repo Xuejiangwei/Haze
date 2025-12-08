@@ -417,7 +417,7 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 				{
 					if (m_HookType & (x_uint32)DebuggerHookType::Line)
 					{
-						m_CurrPauseModule = { tempIter->first, line };
+						m_CurrPauseModule = { tempIter->first, line, (x_uint32)m_VM->m_Stack->m_StackFrame.size() };
 						m_IsPause = true;
 						m_IsStepIn = false;
 
@@ -434,7 +434,7 @@ void HazeDebugger::OnExecLine(x_uint32 line)
 			{
 				m_IsPause = true;
 				m_StepInStack.pop_back();
-				m_CurrPauseModule = { *moduleName, line };
+				m_CurrPauseModule = { *moduleName, line, (x_uint32)m_VM->m_Stack->m_StackFrame.size() };
 			}
 		}
 	}
@@ -506,14 +506,19 @@ void HazeDebugger::StepInstruction()
 	Continue();
 }
 
-void HazeDebugger::Continue()
+void HazeDebugger::Continue(bool clearAll)
 {
-	m_IsPause = false;
-	//ClearCurrParseModuleData();
-
 	{
 		std::lock_guard<std::mutex> lock(m_Mutex);
 		m_IsPause = false;
+
+		if (clearAll)
+		{
+			m_IsStepOvers.clear();
+			m_CurrPauseModule.ModuleName.clear();
+			m_TempBreakPoints.clear();
+			m_StepInStack.clear();
+		}
 	}
 	m_CV.notify_one();
 }
@@ -623,26 +628,24 @@ void HazeDebugger::SetJsonBreakFilePath(XJson& json, STDString path)
 
 void HazeDebugger::SendBreakInfo()
 {
-	auto iter = m_BreakPoints.find(m_CurrPauseModule.ModuleName.data());
-	if (iter != m_BreakPoints.end())
+	auto path = m_VM->GetModulePathByName(m_CurrPauseModule.ModuleName);
+
+	XJson json;
+	SetJsonType(json, HazeDebugInfoType::BreakInfo);
+	SetJsonBreakFilePath(json, *path);
+	SetJsonBreakLine(json, m_CurrPauseModule.CurrLine);
+
+	SetJsonLocalVariable(json);
+	SetJsonModuleGlobalVariable(json);
+
+
+	if (json.Empty())
 	{
-		XJson json;
-		SetJsonType(json, HazeDebugInfoType::BreakInfo);
-		SetJsonBreakFilePath(json, iter->second.Path);
-		SetJsonBreakLine(json, m_CurrPauseModule.CurrLine);
-
-		SetJsonLocalVariable(json);
-		SetJsonModuleGlobalVariable(json);
-
-
-		if (json.Empty())
-		{
-			json = "";
-		}
-
-		auto& data = json.Encode();
-		HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
+		json = "";
 	}
+
+	auto& data = json.Encode();
+	HazeDebuggerServer::SendData(const_cast<char*>(data.data()), (int)data.length());
 }
 
 void HazeDebugger::SetJsonVariableData(XJson& json, const HazeVariableData& variable, const char* address, bool isStack)

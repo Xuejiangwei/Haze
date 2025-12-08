@@ -433,6 +433,8 @@ public:
 
 	virtual Share<CompilerValue> CodeGen(Share<CompilerValue> inferValue) override;
 
+	x_uint32 GetStartLine() const;
+
 private:
 	HazeSectionSignal m_SectionSignal;
 	V_Array<Unique<ASTBase>> m_Expressions;

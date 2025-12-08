@@ -66,7 +66,7 @@ public:
 
 	void StepInstruction();
 
-	void Continue();
+	void Continue(bool clearAll = false);
 
 	void SetJsonLocalVariable(XJson& json);
 

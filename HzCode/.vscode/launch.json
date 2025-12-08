@@ -1,0 +1,19 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "Haze",
+            "request": "launch",
+            "name": "启动 Haze 调试",
+            "program": "${file}",
+            // "runtimePath": "H:\\GitHub\\Haze\\HazeLaunch.exe",
+            "runtimeArgs": [
+                "-m", "H:\\GitHub\\Haze\\Haze\\..\\HzCode\\HazeCode.hz",
+                "-mf", "测试主函数",
+                "-ifp", "H:\\GitHub\\Haze\\Haze\\..",
+                "-d", "debug"
+            ],
+            "stopOnEntry": false
+        }
+    ]
+}

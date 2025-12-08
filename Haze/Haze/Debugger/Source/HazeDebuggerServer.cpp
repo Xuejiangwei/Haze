@@ -111,61 +111,61 @@ static bool HandleMessage(char* Message)
 	HAZE_LOG_INFO("handle message %d %s\n", m_Type, Message + 1);
 	switch ((HazeDebugOperatorType)m_Type)
 	{
-	case HazeDebugOperatorType::None:
-		HAZE_LOG_ERR_W("Haze调试接收到<空调试>操作\n");
-		return false;
-	case HazeDebugOperatorType::Start:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<开始>操作\n"));
-		g_Debugger->Start();
-		return true;
-	case HazeDebugOperatorType::End:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<退出>操作\n"));
-		g_Debugger->End();
-		return true;
-	case HazeDebugOperatorType::StepOver:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<单步断点>操作\n"));
-		g_Debugger->StepOver();
-		return true;
-	case HazeDebugOperatorType::StepIn:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<单步进入>操作\n"));
-		g_Debugger->StepIn();
-		return true;
-	case HazeDebugOperatorType::StepInstruction:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<单步指令>操作\n"));
-		g_Debugger->StepInstruction();
-		return true;
-	case HazeDebugOperatorType::AddBreakPoint:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<添加断点>操作\n"));
-		g_Debugger->AddBreakPoint(Message + 1);
-		return true;
-	case HazeDebugOperatorType::DeleteBreakPoint:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<删除断点>操作\n"));
-		g_Debugger->DeleteBreakPoint(Message + 1);
-		return true;
-	case HazeDebugOperatorType::DeleteModuleAllBreakPoint:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<删除模块所有断点>操作\n"));
-		g_Debugger->DeleteModuleAllBreakPoint(Message + 1);
-		return true;
-	case HazeDebugOperatorType::DeleteAllBreakPoint:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<删除所有断点>操作\n"));
-		g_Debugger->DeleteAllBreakPoint();
-		return true;
-	case HazeDebugOperatorType::Continue:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<继续>操作\n"));
-		g_Debugger->Continue();
-		return true;
-	case HazeDebugOperatorType::GetVariableInfo:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<请求临时变量数据>操作\n"));
-		g_Debugger->SendVariableInfo(Message + 1);
-		return true;
-	/*case HazeDebugOperatorType::GetGlobalVariable:
-		HAZE_LOG_INFO(H_TEXT("Haze调试接收到<请求全局变量数据>操作\n"));
-		{
+		case HazeDebugOperatorType::None:
+			HAZE_LOG_ERR_W("Haze调试接收到<空调试>操作\n");
+			return false;
+		case HazeDebugOperatorType::Start:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<开始>操作\n"));
+			g_Debugger->Start();
+			return true;
+		case HazeDebugOperatorType::End:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<退出>操作\n"));
+			g_Debugger->End();
+			return true;
+		case HazeDebugOperatorType::StepOver:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<单步断点>操作\n"));
+			g_Debugger->StepOver();
+			return true;
+		case HazeDebugOperatorType::StepIn:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<单步进入>操作\n"));
+			g_Debugger->StepIn();
+			return true;
+		case HazeDebugOperatorType::StepInstruction:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<单步指令>操作\n"));
+			g_Debugger->StepInstruction();
+			return true;
+		case HazeDebugOperatorType::AddBreakPoint:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<添加断点>操作\n"));
+			g_Debugger->AddBreakPoint(Message + 1);
+			return true;
+		case HazeDebugOperatorType::DeleteBreakPoint:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<删除断点>操作\n"));
+			g_Debugger->DeleteBreakPoint(Message + 1);
+			return true;
+		case HazeDebugOperatorType::DeleteModuleAllBreakPoint:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<删除模块所有断点>操作\n"));
+			g_Debugger->DeleteModuleAllBreakPoint(Message + 1);
+			return true;
+		case HazeDebugOperatorType::DeleteAllBreakPoint:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<删除所有断点>操作\n"));
+			g_Debugger->DeleteAllBreakPoint();
+			return true;
+		case HazeDebugOperatorType::Continue:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<继续>操作\n"));
+			g_Debugger->Continue(true);
+			return true;
+		case HazeDebugOperatorType::GetVariableInfo:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<请求临时变量数据>操作\n"));
+			g_Debugger->SendVariableInfo(Message + 1);
+			return true;
+		/*case HazeDebugOperatorType::GetGlobalVariable:
+			HAZE_LOG_INFO(H_TEXT("Haze调试接收到<请求全局变量数据>操作\n"));
+			{
 			
-		}
-		return true;*/
-	default:
-		break;
+			}
+			return true;*/
+		default:
+			break;
 	}
 
 	return false;

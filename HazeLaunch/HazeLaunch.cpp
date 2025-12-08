@@ -12,6 +12,7 @@ int main(int ArgCount, char* ArgValue[])
 	HazeLog::SetWPrintFunction(&HazeWPrint);
 	HazeLog::SetPrintFunction(&HazePrint);
 	HazeMain(ArgCount, ArgValue);
+
 	return 0;
 }
 
